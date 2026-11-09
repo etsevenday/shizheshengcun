@@ -25692,48 +25692,61 @@
         "id": "awakening_1",
         "eventId": "opening",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "喂，你醒了没有？……我饿得睡不着。",
-        "note": "你在临时营地醒来。那声音从脑子里响起来。"
+        "note": "你在临时营地醒来。那声音从脑子里响起来。",
+        "noteKind": "narration"
       },
       {
         "id": "awakening_2",
         "eventId": "opening",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "你听见我了，是不是？我想不起自己叫什么。",
-        "note": "你在心里给这声音起了个名字：饱饱。"
+        "note": "你在心里给这声音起了个名字：饱饱。",
+        "noteKind": "narration"
       },
       {
         "id": "food_water",
         "eventId": "opening",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "先喝口水吧。你嘴里发干，我也能觉出来。",
-        "note": "营地地面有罐头和净水。想出发时，可前往农野荒地。"
+        "note": "营地地面有罐头和净水。想出发时，可前往农野荒地。",
+        "noteKind": "guide"
       },
       {
         "id": "tutorial_arrive",
         "eventId": "tutorial_arrive",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "等等。它走路的声音不对。你看它的脚。",
-        "note": "轮到你时可用行动点（AP）。先选技能，再查看亮起目标的右侧预测，点目标执行。自用或无目标技能请用旁边的确认按钮。用完行动点，或点「结束行动」，战斗就会继续。"
+        "note": "轮到你时可用行动点（AP）。先选技能，再查看亮起目标的右侧预测，点目标执行。自用或无目标技能请用旁边的确认按钮。用完行动点，或点「结束行动」，战斗就会继续。",
+        "noteKind": "guide"
       },
       {
         "id": "tutorial_won",
         "eventId": "tutorial_won",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "那一团还在动。它离我那么远，我怎么觉得它就在嘴边？",
-        "note": "地面新增一份「未鉴定的活性物质」。选中它，可在卡下使用「吞噬融合」。"
+        "note": "地面新增一份「未鉴定的活性物质」。选中它，可在卡下使用「吞噬融合」。",
+        "noteKind": "guide"
       },
       {
         "id": "fusion_done_1",
         "eventId": "fusion_done",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "刚才那一下……你的手有力了一点。我也觉到了。",
-        "note": "本次融合：攻击力+0.1。"
+        "note": "本次融合：攻击力+0.1。",
+        "noteKind": "result"
       },
       {
         "id": "fusion_done_2",
         "eventId": "fusion_done",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "这次还好。下一口会怎样，我说不准。",
         "note": ""
       },
@@ -25741,6 +25754,7 @@
         "id": "NTL_0001",
         "eventId": "visitor_arrival_camp",
         "speaker": "",
+        "kind": "narration",
         "text": "营地外的脚步声停了。背旧挎包的人站在原地，先举起一只空手。",
         "note": ""
       },
@@ -25748,6 +25762,7 @@
         "id": "NTL_0002",
         "eventId": "visitor_arrival_camp",
         "speaker": "程望",
+        "kind": "speech",
         "text": "我就站这儿。叫我程望，替营区跑腿的。我路过，看见这边有人活动，来打个招呼。",
         "note": ""
       },
@@ -25755,6 +25770,7 @@
         "id": "NTL_0003",
         "eventId": "visitor_arrival_camp",
         "speaker": "你",
+        "kind": "speech",
         "text": "营区？从这儿走要多久？",
         "note": ""
       },
@@ -25762,6 +25778,7 @@
         "id": "NTL_0004",
         "eventId": "visitor_arrival_camp",
         "speaker": "程望",
+        "kind": "speech",
         "text": "得过个村子，再走一截旧公路。你要问路，我就在这儿，犯不着现在就上路。",
         "note": ""
       },
@@ -25769,6 +25786,7 @@
         "id": "NTL_0028",
         "eventId": "visitor_late_or_legacy",
         "speaker": "程望",
+        "kind": "speech",
         "text": "这回碰上你了。我看见营地有人活动，就在这儿等了一阵。想去营区的话，我给你指路。",
         "note": ""
       },
@@ -25776,6 +25794,7 @@
         "id": "NTL_0029",
         "eventId": "visitor_late_or_legacy",
         "speaker": "你",
+        "kind": "speech",
         "text": "我刚腾出手。你说营区？",
         "note": ""
       },
@@ -25783,6 +25802,7 @@
         "id": "NTL_0030",
         "eventId": "visitor_late_or_legacy",
         "speaker": "程望",
+        "kind": "speech",
         "text": "嗯。路牌还在，晚一点照样能走。你先看看身上有没有哪儿撑不住。",
         "note": ""
       },
@@ -25790,6 +25810,7 @@
         "id": "NTL_0006",
         "eventId": "visitor_route_first",
         "speaker": "你",
+        "kind": "speech",
         "text": "你们那儿有人看病吗？",
         "note": ""
       },
@@ -25797,6 +25818,7 @@
         "id": "NTL_0007",
         "eventId": "visitor_route_first",
         "speaker": "程望",
+        "kind": "speech",
         "text": "幸存者营区有间医务室，里面有人当班。你哪儿伤了？",
         "note": ""
       },
@@ -25804,6 +25826,7 @@
         "id": "NTL_0008",
         "eventId": "visitor_route_first",
         "speaker": "你",
+        "kind": "speech",
         "text": "说不准是不是伤。我想找个懂的人看看。",
         "note": ""
       },
@@ -25811,6 +25834,7 @@
         "id": "NTL_0009",
         "eventId": "visitor_route_first",
         "speaker": "程望",
+        "kind": "speech",
         "text": "能问。治不治得了，这话我不替医生说。",
         "note": ""
       },
@@ -25818,6 +25842,7 @@
         "id": "NTL_0010",
         "eventId": "visitor_route_first",
         "speaker": "你",
+        "kind": "speech",
         "text": "给我指条路吧。",
         "note": ""
       },
@@ -25825,6 +25850,7 @@
         "id": "NTL_0011",
         "eventId": "visitor_route_first",
         "speaker": "程望",
+        "kind": "speech",
         "text": "先到废弃村庄。南口有根歪木桩，旧牌子背面刻着往南的箭头。跟着旧公路走，过检查哨，前头是营门。",
         "note": ""
       },
@@ -25832,6 +25858,7 @@
         "id": "NTL_0012",
         "eventId": "visitor_route_first",
         "speaker": "程望",
+        "kind": "speech",
         "text": "路牌只能给你认第一段。没走过的地方，到了再摸清楚，别拿我这几句话当通行证。",
         "note": ""
       },
@@ -25839,6 +25866,7 @@
         "id": "NTL_0013",
         "eventId": "visitor_route_first",
         "speaker": "你",
+        "kind": "speech",
         "text": "到了营门，我得先答应替谁做事吗？",
         "note": ""
       },
@@ -25846,6 +25874,7 @@
         "id": "NTL_0014",
         "eventId": "visitor_route_first",
         "speaker": "程望",
+        "kind": "speech",
         "text": "报个来处和去向，守营里的规矩。你是去看病，愿不愿帮忙是另一回事。",
         "note": ""
       },
@@ -25853,6 +25882,7 @@
         "id": "NTL_0015",
         "eventId": "visitor_route_first",
         "speaker": "程望",
+        "kind": "speech",
         "text": "带上水和能入口的东西，脚力留一半给回来。锅和火堆都搁在原地，别为了看着它们耽搁。",
         "note": ""
       },
@@ -25860,6 +25890,7 @@
         "id": "NTL_0016",
         "eventId": "visitor_route_first",
         "speaker": "你",
+        "kind": "speech",
         "text": "村南、旧路、检查哨。我记住了。",
         "note": ""
       },
@@ -25867,6 +25898,7 @@
         "id": "NTL_0017",
         "eventId": "visitor_route_first",
         "speaker": "",
+        "kind": "result",
         "text": "已记录营区路线：废弃村庄南口 → 旧公路 → 检查哨 → 营门。",
         "note": ""
       },
@@ -25874,6 +25906,7 @@
         "id": "NTL_0018",
         "eventId": "visitor_after_route_baobao",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "那人要是听见我……会把我弄出去吗？",
         "note": ""
       },
@@ -25881,6 +25914,7 @@
         "id": "NTL_0019",
         "eventId": "visitor_after_route_baobao",
         "speaker": "你",
+        "kind": "speech",
         "text": "我也没弄明白我身上怎么了。见了人，我会先问清楚。",
         "note": ""
       },
@@ -25888,6 +25922,7 @@
         "id": "NTL_0020",
         "eventId": "visitor_after_route_baobao",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "我就怕你一开口，我便没法跟你说话了。",
         "note": ""
       },
@@ -25895,6 +25930,7 @@
         "id": "NTL_0021",
         "eventId": "visitor_after_route_baobao",
         "speaker": "你",
+        "kind": "speech",
         "text": "要说什么，我自己开口。你先别抢我的话。",
         "note": ""
       },
@@ -25902,6 +25938,7 @@
         "id": "NTL_0022",
         "eventId": "visitor_after_route_without_baobao",
         "speaker": "你",
+        "kind": "speech",
         "text": "先问身体的事。一路认好回头的路，等听到说得通的答案再作决定。",
         "note": ""
       },
@@ -25909,6 +25946,7 @@
         "id": "NTL_0023",
         "eventId": "visitor_route_repeat",
         "speaker": "程望",
+        "kind": "speech",
         "text": "还是村南那根木桩，接旧公路。过了检查哨才到营门。看得见下一个路标，再走下一段。",
         "note": ""
       },
@@ -25916,6 +25954,7 @@
         "id": "NTL_0024",
         "eventId": "visitor_route_repeat",
         "speaker": "你",
+        "kind": "speech",
         "text": "回来也走这条？",
         "note": ""
       },
@@ -25923,6 +25962,7 @@
         "id": "NTL_0025",
         "eventId": "visitor_route_repeat",
         "speaker": "程望",
+        "kind": "speech",
         "text": "走得通就能回来。你的锅在原处等你，又不会长脚。",
         "note": ""
       },
@@ -25930,6 +25970,7 @@
         "id": "NTL_0026",
         "eventId": "visitor_not_ready",
         "speaker": "你",
+        "kind": "speech",
         "text": "我收拾好再走。现在身上还缺东西。",
         "note": ""
       },
@@ -25937,6 +25978,7 @@
         "id": "NTL_0027",
         "eventId": "visitor_not_ready",
         "speaker": "程望",
+        "kind": "speech",
         "text": "行，按你身子和天色来。记下的路线不会过期，别为了追我赶路。",
         "note": ""
       },
@@ -25944,6 +25986,7 @@
         "id": "NTL_0031",
         "eventId": "PRO15_relief_note",
         "speaker": "",
+        "kind": "document",
         "text": "残页写着：「往南去营区求医的，到营门先说明来路。医务室按伤情和手头药材安排，能不能处理得看具体情况。」",
         "note": ""
       },
@@ -25951,6 +25994,7 @@
         "id": "NTL_0032",
         "eventId": "PRO15_relief_note",
         "speaker": "",
+        "kind": "document",
         "text": "页角泡过水。路线图洇成一片，剩下几个字：「南口旧路牌」。",
         "note": ""
       },
@@ -25958,6 +26002,7 @@
         "id": "NTL_0033",
         "eventId": "PRO15_relief_note",
         "speaker": "你",
+        "kind": "speech",
         "text": "还有人在给后来的人留话。",
         "note": ""
       },
@@ -25965,6 +26010,7 @@
         "id": "NTL_0034",
         "eventId": "PRO15_relief_note",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "你看这么久。上头有什么？",
         "note": ""
       },
@@ -25972,6 +26018,7 @@
         "id": "NTL_0035",
         "eventId": "PRO15_relief_note",
         "speaker": "你",
+        "kind": "speech",
         "text": "有人知道去哪里问医务室。够我往前走一段了。",
         "note": ""
       },
@@ -25979,6 +26026,7 @@
         "id": "NTL_0036",
         "eventId": "village_south_sign",
         "speaker": "",
+        "kind": "document",
         "text": "歪木桩背面的箭头旁刻着「旧公路 → 检查哨 → 营门」。牌脚还有一行小字：「天黑前，先认下一个路标。」",
         "note": ""
       },
@@ -25986,6 +26034,7 @@
         "id": "NTL_0037",
         "eventId": "village_south_sign",
         "speaker": "你",
+        "kind": "speech",
         "text": "这就是程望说的木桩。先走到下一处看看。",
         "note": ""
       },
@@ -25993,6 +26042,7 @@
         "id": "NTL_0038",
         "eventId": "village_south_sign_route_unknown",
         "speaker": "",
+        "kind": "document",
         "text": "木桩上只认得「旧公路」和一支箭头。再往哪走，剩下的字辨不出来。",
         "note": ""
       },
@@ -26000,6 +26050,7 @@
         "id": "NTL_0039",
         "eventId": "village_south_sign_route_unknown",
         "speaker": "你",
+        "kind": "speech",
         "text": "有人从这儿走过。先找个认路的人问清楚。",
         "note": ""
       },
@@ -26007,6 +26058,7 @@
         "id": "NTL_0040",
         "eventId": "camp_route_log",
         "speaker": "",
+        "kind": "document",
         "text": "去营区求医：从废弃村庄南口按路标上旧公路，探清前路，经检查哨到营门登记。查看路线只读已有线索，不移动角色或揭示未知资源。",
         "note": ""
       },
@@ -26014,6 +26066,7 @@
         "id": "NTL_0041",
         "eventId": "camp_route_log",
         "speaker": "",
+        "kind": "document",
         "text": "返程走已打通的路。离开后，临时营地的设施、库存、已发现内容和未完成目标保留。「查看路线」不能传送。",
         "note": ""
       },
@@ -26021,6 +26074,7 @@
         "id": "NTL_0042",
         "eventId": "camp_route_log",
         "speaker": "",
+        "kind": "document",
         "text": "途中可以停下补给或回头。来客没有离开倒计时。符合出区资格即可离开，无需做完全部教学或先融合样本。",
         "note": ""
       },
@@ -26028,6 +26082,7 @@
         "id": "NTL_0044",
         "eventId": "PRO01_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "你刚才看的那件，是在地上，还是已经拿起来了？",
         "note": ""
       },
@@ -26035,6 +26090,7 @@
         "id": "NTL_0045",
         "eventId": "PRO01_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "在地上的东西，还没进我的包。",
         "note": ""
       },
@@ -26042,6 +26098,7 @@
         "id": "NTL_0048",
         "eventId": "PRO02_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "你一饿，肚子就响。刚才那声我也听见了。",
         "note": ""
       },
@@ -26049,6 +26106,7 @@
         "id": "NTL_0049",
         "eventId": "PRO02_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "我知道饿。吃多少，我来定。",
         "note": ""
       },
@@ -26056,6 +26114,7 @@
         "id": "NTL_0052",
         "eventId": "PRO03_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "要是它扑过来，你手里现在有什么？",
         "note": ""
       },
@@ -26063,6 +26122,7 @@
         "id": "NTL_0053",
         "eventId": "PRO03_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "我先找件握得住的东西。",
         "note": ""
       },
@@ -26070,6 +26130,7 @@
         "id": "NTL_0056",
         "eventId": "PRO04_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "它往这边来了。别看我，看它。",
         "note": ""
       },
@@ -26077,6 +26138,7 @@
         "id": "NTL_0057",
         "eventId": "PRO04_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "我盯着它。你先安静一会儿。",
         "note": ""
       },
@@ -26084,6 +26146,7 @@
         "id": "NTL_0060",
         "eventId": "PRO05_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "那一团的气味……我想再靠近一点。",
         "note": ""
       },
@@ -26091,6 +26154,7 @@
         "id": "NTL_0061",
         "eventId": "PRO05_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "我先看清是什么。你不用什么都尝一口。",
         "note": ""
       },
@@ -26098,6 +26162,7 @@
         "id": "NTL_0064",
         "eventId": "PRO06_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "嘴里又干了。你找到能喝的水了吗？",
         "note": ""
       },
@@ -26105,6 +26170,7 @@
         "id": "NTL_0065",
         "eventId": "PRO06_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "有水先看水质。光听声音分不出来。",
         "note": ""
       },
@@ -26112,6 +26178,7 @@
         "id": "NTL_0068",
         "eventId": "PRO07_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "手指又僵了。你能生个火吗？",
         "note": ""
       },
@@ -26119,6 +26186,7 @@
         "id": "NTL_0069",
         "eventId": "PRO07_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "得找些能烧的。光有个火堆没用。",
         "note": ""
       },
@@ -26126,6 +26194,7 @@
         "id": "NTL_0072",
         "eventId": "PRO08_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "水都在这儿了，还要等？",
         "note": ""
       },
@@ -26133,6 +26202,7 @@
         "id": "NTL_0073",
         "eventId": "PRO08_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "等处理完再喝。我宁肯多等一会儿。",
         "note": ""
       },
@@ -26140,6 +26210,7 @@
         "id": "NTL_0076",
         "eventId": "PRO09_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "我闻着比刚才香。还不能吃？",
         "note": ""
       },
@@ -26147,6 +26218,7 @@
         "id": "NTL_0077",
         "eventId": "PRO09_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "得等熟了。罐头也不能一直吃下去。",
         "note": ""
       },
@@ -26154,6 +26226,7 @@
         "id": "NTL_0080",
         "eventId": "PRO10_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "那东西真能替你省点劲儿？",
         "note": ""
       },
@@ -26161,6 +26234,7 @@
         "id": "NTL_0081",
         "eventId": "PRO10_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "先看配方，凑得齐材料再做。",
         "note": ""
       },
@@ -26168,6 +26242,7 @@
         "id": "NTL_0084",
         "eventId": "PRO11_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "再多带一件，你的肩膀撑得住吗？",
         "note": ""
       },
@@ -26175,6 +26250,7 @@
         "id": "NTL_0085",
         "eventId": "PRO11_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "背得起来也得放得下。我把带不走的留在这儿。",
         "note": ""
       },
@@ -26182,6 +26258,7 @@
         "id": "NTL_0088",
         "eventId": "PRO12_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "你刚才眼睛闭了好一会儿。",
         "note": ""
       },
@@ -26189,6 +26266,7 @@
         "id": "NTL_0089",
         "eventId": "PRO12_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "我得找个地方睡。先看看这一觉能缓过来多少。",
         "note": ""
       },
@@ -26196,6 +26274,7 @@
         "id": "NTL_0092",
         "eventId": "PRO13_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "要是下雨，我们能躲到哪儿？",
         "note": ""
       },
@@ -26203,6 +26282,7 @@
         "id": "NTL_0093",
         "eventId": "PRO13_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "我先看看能不能在这里搭个遮雨的地方。",
         "note": ""
       },
@@ -26210,6 +26290,7 @@
         "id": "NTL_0096",
         "eventId": "PRO14_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "越走越远了。刚才那段路，你还记得吗？",
         "note": ""
       },
@@ -26217,6 +26298,7 @@
         "id": "NTL_0097",
         "eventId": "PRO14_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "我记着。回程要用的力气也得留着。",
         "note": ""
       },
@@ -26224,6 +26306,7 @@
         "id": "NTL_0100",
         "eventId": "PRO15_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "这字是别人写的？这里还有人？",
         "note": ""
       },
@@ -26231,6 +26314,7 @@
         "id": "NTL_0101",
         "eventId": "PRO15_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "先把留下的话读完。也许有人知道下一段路。",
         "note": ""
       },
@@ -26238,6 +26322,7 @@
         "id": "NTL_0104",
         "eventId": "PRO16_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "他会知道你为什么变成这样吗？",
         "note": ""
       },
@@ -26245,6 +26330,7 @@
         "id": "NTL_0105",
         "eventId": "PRO16_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "先问他认不认识路。身体的事，找懂的人问。",
         "note": ""
       },
@@ -26252,6 +26338,7 @@
         "id": "NTL_0108",
         "eventId": "PRO17_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "带这么些，回来的时候还有得吃吗？",
         "note": ""
       },
@@ -26259,6 +26346,7 @@
         "id": "NTL_0109",
         "eventId": "PRO17_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "出去带一份，回头那份也留好。",
         "note": ""
       },
@@ -26266,6 +26354,7 @@
         "id": "NTL_0112",
         "eventId": "PRO18_reaction",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "你还认得回这儿的路吧？",
         "note": ""
       },
@@ -26273,6 +26362,7 @@
         "id": "NTL_0113",
         "eventId": "PRO18_reaction",
         "speaker": "你",
+        "kind": "speech",
         "text": "认得。先去找到能问的人。",
         "note": ""
       },
@@ -26280,6 +26370,7 @@
         "id": "NTL_0167",
         "eventId": "npc_lu_heng_dialogue_first_greeting",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "站这儿就行。你从哪边过来，接下来往哪儿去？我得记清。",
         "note": ""
       },
@@ -26287,6 +26378,7 @@
         "id": "NTL_0168",
         "eventId": "npc_lu_heng_dialogue_role",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "营门的登记和公开通行归我。把来路和去向说清就行。誓言不用留在这儿。",
         "note": ""
       },
@@ -26294,6 +26386,7 @@
         "id": "NTL_0169",
         "eventId": "npc_lu_heng_dialogue_quest_offer",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "先说来处和去向，再确认登记。过了门，得走到广场把登记办完。",
         "note": ""
       },
@@ -26301,6 +26394,7 @@
         "id": "NTL_0170",
         "eventId": "npc_lu_heng_dialogue_quest_return",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "登记这件事还没办完。营门这一步有了授权，就沿通道走到广场。到了才算数。",
         "note": ""
       },
@@ -26308,6 +26402,7 @@
         "id": "NTL_0171",
         "eventId": "npc_lu_heng_dialogue_idle",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "营门这会儿没有别的手续。走远路前，低头看看自己带齐了什么。",
         "note": ""
       },
@@ -26315,6 +26410,7 @@
         "id": "NTL_0172",
         "eventId": "npc_lu_heng_dialogue_locked",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "先看登记说明。路线还没开放的话，就在这儿等，别往没弄清的地方走。",
         "note": ""
       },
@@ -26322,6 +26418,7 @@
         "id": "NTL_0173",
         "eventId": "npc_lu_heng_dialogue_service_end",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "营门这边看你眼前的手续。要去广场，认准前头那条通道。",
         "note": ""
       },
@@ -26329,6 +26426,7 @@
         "id": "NTL_0174",
         "eventId": "npc_lu_heng_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "今天我守营门。登记、公开通行都可以问我。进门报清来处和去向就行，没人要你宣誓。",
         "note": ""
       },
@@ -26336,6 +26434,7 @@
         "id": "NTL_0175",
         "eventId": "npc_lu_heng_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26343,6 +26442,7 @@
         "id": "NTL_0334",
         "eventId": "npc_lu_heng_dialogue_service_offer",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "办登记就从这儿开始。走哪一步，先认清路。",
         "note": ""
       },
@@ -26350,6 +26450,7 @@
         "id": "NTL_0176",
         "eventId": "npc_xu_an_dialogue_first_greeting",
         "speaker": "许安",
+        "kind": "speech",
         "text": "进来缓口气。你今天最想弄清哪件事？咱们从那件说起。",
         "note": ""
       },
@@ -26357,6 +26458,7 @@
         "id": "NTL_0177",
         "eventId": "npc_xu_an_dialogue_role",
         "speaker": "许安",
+        "kind": "speech",
         "text": "告示归我收拾，路怎么走也记在上头。具体的事，还得去管那件事的人跟前办。",
         "note": ""
       },
@@ -26364,6 +26466,7 @@
         "id": "NTL_0178",
         "eventId": "npc_xu_an_dialogue_quest_offer",
         "speaker": "许安",
+        "kind": "speech",
         "text": "教会和科学院都能去问。你可以先走近的，也可以两边都问，自己安排。",
         "note": ""
       },
@@ -26371,6 +26474,7 @@
         "id": "NTL_0179",
         "eventId": "npc_xu_an_dialogue_quest_return",
         "speaker": "许安",
+        "kind": "speech",
         "text": "把已经核过的路段留下。剩下的工作接着做就行，我给没完成的地方留着空。",
         "note": ""
       },
@@ -26378,6 +26482,7 @@
         "id": "NTL_0180",
         "eventId": "npc_xu_an_dialogue_idle",
         "speaker": "许安",
+        "kind": "speech",
         "text": "这会儿没人等你答复。要出远门，先给回来的那段路留点吃喝。",
         "note": ""
       },
@@ -26385,6 +26490,7 @@
         "id": "NTL_0181",
         "eventId": "npc_xu_an_dialogue_locked",
         "speaker": "许安",
+        "kind": "speech",
         "text": "先看任务册还缺哪份记录。同行的人今天没来，也不妨碍你把材料备齐。",
         "note": ""
       },
@@ -26392,6 +26498,7 @@
         "id": "NTL_0182",
         "eventId": "npc_xu_an_dialogue_service_end",
         "speaker": "许安",
+        "kind": "speech",
         "text": "办完的事都有记载。要再出门，记得给回来的路也留一口水。",
         "note": ""
       },
@@ -26399,6 +26506,7 @@
         "id": "NTL_0183",
         "eventId": "npc_xu_an_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "今天这张桌我来守。公事和路线还记在那份告示上。真要办哪项，得去办那项事的地方。",
         "note": ""
       },
@@ -26406,6 +26514,7 @@
         "id": "NTL_0184",
         "eventId": "npc_xu_an_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26413,6 +26522,7 @@
         "id": "NTL_0335",
         "eventId": "npc_xu_an_dialogue_service_offer",
         "speaker": "许安",
+        "kind": "speech",
         "text": "先挑眼下要办的事。几件搁在一块儿，反倒容易漏。",
         "note": ""
       },
@@ -26420,6 +26530,7 @@
         "id": "NTL_0185",
         "eventId": "npc_luo_zheng_dialogue_first_greeting",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "工具先放稳。台上若有人做着活，就换一边看。",
         "note": ""
       },
@@ -26427,6 +26538,7 @@
         "id": "NTL_0186",
         "eventId": "npc_luo_zheng_dialogue_role",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "工坊和工务账归我。会做、料齐、台子能用，三个条件都得看。",
         "note": ""
       },
@@ -26434,6 +26546,7 @@
         "id": "NTL_0187",
         "eventId": "npc_luo_zheng_dialogue_quest_offer",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "修泵、整备、调查，翻翻现有记录。挑得下来的活，再核对要做什么。",
         "note": ""
       },
@@ -26441,6 +26554,7 @@
         "id": "NTL_0188",
         "eventId": "npc_luo_zheng_dialogue_quest_return",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "做完哪一截就记哪一截。还有活就接着做，领过的材料别又算进去。",
         "note": ""
       },
@@ -26448,6 +26562,7 @@
         "id": "NTL_0189",
         "eventId": "npc_luo_zheng_dialogue_idle",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "用过的工具放回手边。材料有预留，开工前看一眼，省得两边都找不到。",
         "note": ""
       },
@@ -26455,6 +26570,7 @@
         "id": "NTL_0190",
         "eventId": "npc_luo_zheng_dialogue_locked",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "先看缺知识、材料还是设施。远处那堆料得自己带来。",
         "note": ""
       },
@@ -26462,6 +26578,7 @@
         "id": "NTL_0191",
         "eventId": "npc_luo_zheng_dialogue_service_end",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "收拾一下台面。自己的东西记得带走。",
         "note": ""
       },
@@ -26469,6 +26586,7 @@
         "id": "NTL_0192",
         "eventId": "npc_luo_zheng_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "工坊这班归我。工务记录照常查，工位照常用。要开工，先看你会不会做、材料齐不齐、台子能不能用。",
         "note": ""
       },
@@ -26476,6 +26594,7 @@
         "id": "NTL_0193",
         "eventId": "npc_luo_zheng_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26483,6 +26602,7 @@
         "id": "NTL_0336",
         "eventId": "npc_luo_zheng_dialogue_service_offer",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "要做东西就看工位，要找做法就翻公开资料。两头都能查。",
         "note": ""
       },
@@ -26490,6 +26610,7 @@
         "id": "NTL_0194",
         "eventId": "npc_chen_zhi_dialogue_first_greeting",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "慢慢说。先告诉我哪里不舒服，再想想它是从什么时候开始的。",
         "note": ""
       },
@@ -26497,6 +26618,7 @@
         "id": "NTL_0195",
         "eventId": "npc_chen_zhi_dialogue_role",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "想问情况、包扎还是歇一歇？各有各的做法。看过记录后，我只能说能看出来的部分。",
         "note": ""
       },
@@ -26504,6 +26626,7 @@
         "id": "NTL_0196",
         "eventId": "npc_chen_zhi_dialogue_quest_offer",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "有症状记录就带上。没记也可以从记得的地方说起，先后顺序比猜原因有用。",
         "note": ""
       },
@@ -26511,6 +26634,7 @@
         "id": "NTL_0197",
         "eventId": "npc_chen_zhi_dialogue_quest_return",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "还在查的事继续照记录走。查到哪一步，我就把那一步说清。",
         "note": ""
       },
@@ -26518,6 +26642,7 @@
         "id": "NTL_0198",
         "eventId": "npc_chen_zhi_dialogue_idle",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "没什么急事也可以问。你要是拿不准身体怎么了，先把现有状态看一眼。",
         "note": ""
       },
@@ -26525,6 +26650,7 @@
         "id": "NTL_0199",
         "eventId": "npc_chen_zhi_dialogue_locked",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "包扎前看你带的耗材，也得看这个人上次什么时候处理过。条件和原因都写在预览里。",
         "note": ""
       },
@@ -26532,6 +26658,7 @@
         "id": "NTL_0200",
         "eventId": "npc_chen_zhi_dialogue_service_end",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "这一趟的结果记下了。身上有新变化，就按那时的情况再看。",
         "note": ""
       },
@@ -26539,6 +26666,7 @@
         "id": "NTL_0201",
         "eventId": "npc_chen_zhi_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "我今天在医务室当班。要问伤情、换药还是歇会儿？三样分开办。把记录看一遍，伤也还得照看。",
         "note": ""
       },
@@ -26546,6 +26674,7 @@
         "id": "NTL_0202",
         "eventId": "npc_chen_zhi_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26553,6 +26682,7 @@
         "id": "NTL_0337",
         "eventId": "npc_chen_zhi_dialogue_service_offer",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "先说是来问伤、换药，还是让大家坐一会儿。慢慢说。",
         "note": ""
       },
@@ -26560,6 +26690,7 @@
         "id": "NTL_0203",
         "eventId": "npc_tao_cen_dialogue_first_greeting",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "带了样本的话，先放在你能看清的地方。急着吞下去，待会儿可没法再看看它。",
         "note": ""
       },
@@ -26567,6 +26698,7 @@
         "id": "NTL_0204",
         "eventId": "npc_tao_cen_dialogue_role",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "我查原料和来源。颜色是一条线索，融合会发生什么，还得另看。",
         "note": ""
       },
@@ -26574,6 +26706,7 @@
         "id": "NTL_0205",
         "eventId": "npc_tao_cen_dialogue_quest_offer",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "先听明白品质和去向。你可以空着手来，我也照样讲。",
         "note": ""
       },
@@ -26581,6 +26714,7 @@
         "id": "NTL_0206",
         "eventId": "npc_tao_cen_dialogue_quest_return",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "说明听到哪儿，就记到哪儿。那份教学样本单独算，普通交易收不了它。",
         "note": ""
       },
@@ -26588,6 +26722,7 @@
         "id": "NTL_0207",
         "eventId": "npc_tao_cen_dialogue_idle",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "你还拿不定主意，就先收着。样本留在手里，决定可以慢慢做。",
         "note": ""
       },
@@ -26595,6 +26730,7 @@
         "id": "NTL_0208",
         "eventId": "npc_tao_cen_dialogue_locked",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "先看样本在不在这里、有没有预留，再看能不能做你选的项目。",
         "note": ""
       },
@@ -26602,6 +26738,7 @@
         "id": "NTL_0209",
         "eventId": "npc_tao_cen_dialogue_service_end",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "看看结果和剩余物品，没提交的就还在原处。",
         "note": ""
       },
@@ -26609,6 +26746,7 @@
         "id": "NTL_0210",
         "eventId": "npc_tao_cen_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "鉴定这班我接。拿哪份来，就说哪份的性质和来源。看见个颜色，还猜不出融合的结果。",
         "note": ""
       },
@@ -26616,6 +26754,7 @@
         "id": "NTL_0211",
         "eventId": "npc_tao_cen_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26623,6 +26762,7 @@
         "id": "NTL_0338",
         "eventId": "npc_tao_cen_dialogue_service_offer",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "样本先别急着递过来。看说明、做记录、换东西，都可以分开办。",
         "note": ""
       },
@@ -26630,6 +26770,7 @@
         "id": "NTL_0212",
         "eventId": "npc_du_sui_dialogue_first_greeting",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "想找同行的人？先看看名单。最后得问问对方的意思。",
         "note": ""
       },
@@ -26637,6 +26778,7 @@
         "id": "NTL_0213",
         "eventId": "npc_du_sui_dialogue_role",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "这边登记同行和安置。愿意留在这里，和愿意跟你走，是两回事。",
         "note": ""
       },
@@ -26644,6 +26786,7 @@
         "id": "NTL_0214",
         "eventId": "npc_du_sui_dialogue_quest_offer",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "固定同行者、本期候选、应急补员分开看。记得核对有没有位置，也看一眼人现在怎么样。",
         "note": ""
       },
@@ -26651,6 +26794,7 @@
         "id": "NTL_0215",
         "eventId": "npc_du_sui_dialogue_quest_return",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "说明可以接着看。留守还是同行，你确认了人选才会动名册。",
         "note": ""
       },
@@ -26658,6 +26802,7 @@
         "id": "NTL_0216",
         "eventId": "npc_du_sui_dialogue_idle",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "还是这一期的名单。多问我几遍，答应来的人也还是这些。",
         "note": ""
       },
@@ -26665,6 +26810,7 @@
         "id": "NTL_0217",
         "eventId": "npc_du_sui_dialogue_locked",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "先看是不是满员、还在忙，或人没到能办理的地方。要换谁，得在能办的时候当面确认。",
         "note": ""
       },
@@ -26672,6 +26818,7 @@
         "id": "NTL_0218",
         "eventId": "npc_du_sui_dialogue_service_end",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "名册上有登记结果。接下来，就看这位同行者去哪里落脚。",
         "note": ""
       },
@@ -26679,6 +26826,7 @@
         "id": "NTL_0219",
         "eventId": "npc_du_sui_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "安置这班我值。同行意愿、候选资料和住处都在这边记。有地方安置，还是得问本人愿不愿跟你走。",
         "note": ""
       },
@@ -26686,6 +26834,7 @@
         "id": "NTL_0220",
         "eventId": "npc_du_sui_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26693,6 +26842,7 @@
         "id": "NTL_0339",
         "eventId": "npc_du_sui_dialogue_service_offer",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "名册可以慢慢看。先想想队伍缺什么，也想想人家来了安置在哪儿。",
         "note": ""
       },
@@ -26700,6 +26850,7 @@
         "id": "NTL_0221",
         "eventId": "npc_qi_wen_dialogue_first_greeting",
         "speaker": "祁闻",
+        "kind": "speech",
         "text": "远路来的客人，到庭里说吧。你是来问路，还是想听听我们怎么说新生？",
         "note": ""
       },
@@ -26707,6 +26858,7 @@
         "id": "NTL_0222",
         "eventId": "npc_qi_wen_dialogue_role",
         "speaker": "祁闻",
+        "kind": "speech",
         "text": "公开委托我能接，教会的邀请也由我转达。肯帮我们走一趟，就已经可以谈委托了。",
         "note": ""
       },
@@ -26714,6 +26866,7 @@
         "id": "NTL_0223",
         "eventId": "npc_qi_wen_dialogue_quest_offer",
         "speaker": "祁闻",
+        "kind": "speech",
         "text": "封锁区留有旧路记录，我们想请人取回。回来若肯说说你亲眼见到的事，我也愿意听。",
         "note": ""
       },
@@ -26721,6 +26874,7 @@
         "id": "NTL_0224",
         "eventId": "npc_qi_wen_dialogue_quest_return",
         "speaker": "祁闻",
+        "kind": "speech",
         "text": "调查照你接下的继续。日后愿不愿意作见证，由你决定。已经拿到的路线照样记着。",
         "note": ""
       },
@@ -26728,6 +26882,7 @@
         "id": "NTL_0225",
         "eventId": "npc_qi_wen_dialogue_idle",
         "speaker": "祁闻",
+        "kind": "speech",
         "text": "只问路也可以。公开的那份，我照样给你看。",
         "note": ""
       },
@@ -26735,6 +26890,7 @@
         "id": "NTL_0226",
         "eventId": "npc_qi_wen_dialogue_locked",
         "speaker": "祁闻",
+        "kind": "speech",
         "text": "通道有危险，先看公开的通行条件。你是否入教，由你自己决定。",
         "note": ""
       },
@@ -26742,6 +26898,7 @@
         "id": "NTL_0227",
         "eventId": "npc_qi_wen_dialogue_service_end",
         "speaker": "祁闻",
+        "kind": "speech",
         "text": "路上保重。见过的事照实说，没见过的就先留着。",
         "note": ""
       },
@@ -26749,6 +26906,7 @@
         "id": "NTL_0228",
         "eventId": "npc_qi_wen_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "今天接待庭是我当班。公开委托和教会的邀请都能在这儿问，答应帮忙跟接受教义是两件事。",
         "note": ""
       },
@@ -26756,6 +26914,7 @@
         "id": "NTL_0229",
         "eventId": "npc_qi_wen_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26763,6 +26922,7 @@
         "id": "NTL_0340",
         "eventId": "npc_qi_wen_dialogue_service_offer",
         "speaker": "祁闻",
+        "kind": "speech",
         "text": "来问路的话，可以先听路线。要怎么做，由你自己定。",
         "note": ""
       },
@@ -26770,6 +26930,7 @@
         "id": "NTL_0230",
         "eventId": "npc_bai_ling_dialogue_first_greeting",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "门口让一让。若是来领吃的喝的，告诉我眼下最缺哪一样。",
         "note": ""
       },
@@ -26777,6 +26938,7 @@
         "id": "NTL_0231",
         "eventId": "npc_bai_ling_dialogue_role",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "施济账和紧急援助我管。物资是一份份数出来的，换个人来问也得查同一本账。",
         "note": ""
       },
@@ -26784,6 +26946,7 @@
         "id": "NTL_0232",
         "eventId": "npc_bai_ling_dialogue_quest_offer",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "拿现场记录跟清单对一遍。有出入就记下来，写你确实查到的。",
         "note": ""
       },
@@ -26791,6 +26954,7 @@
         "id": "NTL_0233",
         "eventId": "npc_bai_ling_dialogue_quest_return",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "没对完的继续对。你写的是事实，赞词我用不着。",
         "note": ""
       },
@@ -26798,6 +26962,7 @@
         "id": "NTL_0234",
         "eventId": "npc_bai_ling_dialogue_idle",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "暂时没有新账要核。缺吃喝的话，看看今天哪一项还能领。",
         "note": ""
       },
@@ -26805,6 +26970,7 @@
         "id": "NTL_0235",
         "eventId": "npc_bai_ling_dialogue_locked",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "要合条件，也得看今天还剩没有。两样都能领时，先选眼下最缺的一样。",
         "note": ""
       },
@@ -26812,6 +26978,7 @@
         "id": "NTL_0236",
         "eventId": "npc_bai_ling_dialogue_service_end",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "领到的那份按结果从地上拿。已经领了多少，施济账上记着。",
         "note": ""
       },
@@ -26819,6 +26986,7 @@
         "id": "NTL_0237",
         "eventId": "npc_bai_ling_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "这班由我核施济账。紧急援助照原条件发。账上今天领过的那一份，我这班也得算在里头。",
         "note": ""
       },
@@ -26826,6 +26994,7 @@
         "id": "NTL_0238",
         "eventId": "npc_bai_ling_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26833,6 +27002,7 @@
         "id": "NTL_0341",
         "eventId": "npc_bai_ling_dialogue_service_offer",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "是饿得难受，还是渴得厉害？先看看谁最需要这一份。",
         "note": ""
       },
@@ -26840,6 +27010,7 @@
         "id": "NTL_0239",
         "eventId": "npc_ji_mu_dialogue_first_greeting",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "训诫堂有训诫堂的规矩。你来交记录，还是有话要同我们商量？",
         "note": ""
       },
@@ -26847,6 +27018,7 @@
         "id": "NTL_0240",
         "eventId": "npc_ji_mu_dialogue_role",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "公开协商在我这里谈。谈到人的身体，愿不愿意，要由本人开口。",
         "note": ""
       },
@@ -26854,6 +27026,7 @@
         "id": "NTL_0241",
         "eventId": "npc_ji_mu_dialogue_quest_offer",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "抄本可以谈。你若肯公开认可我们的说法，我当然欢迎。要留住资料，也有公开的办法。",
         "note": ""
       },
@@ -26861,6 +27034,7 @@
         "id": "NTL_0242",
         "eventId": "npc_ji_mu_dialogue_quest_return",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "按你选的办法继续把资料保存下来。谈过教义和宣过誓，是两件不同的事。",
         "note": ""
       },
@@ -26868,6 +27042,7 @@
         "id": "NTL_0243",
         "eventId": "npc_ji_mu_dialogue_idle",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "眼下没有新事要谈。你想好了，再来同我讲来由。",
         "note": ""
       },
@@ -26875,6 +27050,7 @@
         "id": "NTL_0244",
         "eventId": "npc_ji_mu_dialogue_locked",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "前一份账还要核。等核账办完，再谈抄本。",
         "note": ""
       },
@@ -26882,6 +27058,7 @@
         "id": "NTL_0245",
         "eventId": "npc_ji_mu_dialogue_service_end",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "今天谈的是资料怎么留下。你的身份仍由你自己作主。",
         "note": ""
       },
@@ -26889,6 +27066,7 @@
         "id": "NTL_0246",
         "eventId": "npc_ji_mu_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "今天训诫堂的公开协商由我接。抄本、怎么留档，这些可以谈。要动你的身体，谁也没从这张桌子拿到许可。",
         "note": ""
       },
@@ -26896,6 +27074,7 @@
         "id": "NTL_0247",
         "eventId": "npc_ji_mu_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26903,6 +27082,7 @@
         "id": "NTL_0342",
         "eventId": "npc_ji_mu_dialogue_service_offer",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "公开资料可以交接。先说清要怎么留档，别把话带到别处去。",
         "note": ""
       },
@@ -26910,6 +27090,7 @@
         "id": "NTL_0248",
         "eventId": "npc_song_zhu_dialogue_first_greeting",
         "speaker": "宋烛",
+        "kind": "speech",
         "text": "慢点翻，纸脆。先找到那一页，我再告诉你哪行是路。",
         "note": ""
       },
@@ -26917,6 +27098,7 @@
         "id": "NTL_0249",
         "eventId": "npc_song_zhu_dialogue_role",
         "speaker": "宋烛",
+        "kind": "speech",
         "text": "我抄路，也抄证言。纸上挨着写的两行，一行可能是地名，一行可能只是人的看法。",
         "note": ""
       },
@@ -26924,6 +27106,7 @@
         "id": "NTL_0250",
         "eventId": "npc_song_zhu_dialogue_quest_offer",
         "speaker": "宋烛",
+        "kind": "speech",
         "text": "先把手里的记录和目录对上。已经有的那页，犯不着再费一遍笔墨。",
         "note": ""
       },
@@ -26931,6 +27114,7 @@
         "id": "NTL_0251",
         "eventId": "npc_song_zhu_dialogue_quest_return",
         "speaker": "宋烛",
+        "kind": "speech",
         "text": "做过的备份有标记。还差哪份就补哪份，这里只办资料。",
         "note": ""
       },
@@ -26938,6 +27122,7 @@
         "id": "NTL_0252",
         "eventId": "npc_song_zhu_dialogue_idle",
         "speaker": "宋烛",
+        "kind": "speech",
         "text": "目录在这儿。以前查过的，记不清了也可以回来翻。",
         "note": ""
       },
@@ -26945,6 +27130,7 @@
         "id": "NTL_0253",
         "eventId": "npc_song_zhu_dialogue_locked",
         "speaker": "宋烛",
+        "kind": "speech",
         "text": "想查深处，先看通道资格和清理记录。公开调查的路照它自己的条件办。",
         "note": ""
       },
@@ -26952,6 +27138,7 @@
         "id": "NTL_0254",
         "eventId": "npc_song_zhu_dialogue_service_end",
         "speaker": "宋烛",
+        "kind": "speech",
         "text": "原件收好。把已经记下来的那份带走。",
         "note": ""
       },
@@ -26959,6 +27146,7 @@
         "id": "NTL_0255",
         "eventId": "npc_song_zhu_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "今天是我誊录。公开路线和证言都照原规矩抄。路怎么走，看路线那一栏。证人怎么想，记在他的证言里。",
         "note": ""
       },
@@ -26966,6 +27154,7 @@
         "id": "NTL_0256",
         "eventId": "npc_song_zhu_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -26973,6 +27162,7 @@
         "id": "NTL_0343",
         "eventId": "npc_song_zhu_dialogue_service_offer",
         "speaker": "宋烛",
+        "kind": "speech",
         "text": "要找路线，就看公开的备份。先认准哪一份，再动笔。",
         "note": ""
       },
@@ -26980,6 +27170,7 @@
         "id": "NTL_0257",
         "eventId": "npc_fu_heng_dialogue_first_greeting",
         "speaker": "傅珩",
+        "kind": "speech",
         "text": "你既到了圣堂，或许已经听过新生。愿意说说，你听见的是哪一种说法？",
         "note": ""
       },
@@ -26987,6 +27178,7 @@
         "id": "NTL_0258",
         "eventId": "npc_fu_heng_dialogue_role",
         "speaker": "傅珩",
+        "kind": "speech",
         "text": "我主持圣堂，也希望人们能信同一种解释。你愿听多少，自己拿主意。",
         "note": ""
       },
@@ -26994,6 +27186,7 @@
         "id": "NTL_0259",
         "eventId": "npc_fu_heng_dialogue_quest_offer",
         "speaker": "傅珩",
+        "kind": "speech",
         "text": "你愿听，我就讲。听完也可以说不。这里的话用不着拿同行的人来换。",
         "note": ""
       },
@@ -27001,6 +27194,7 @@
         "id": "NTL_0260",
         "eventId": "npc_fu_heng_dialogue_quest_return",
         "speaker": "傅珩",
+        "kind": "speech",
         "text": "交过的记录还在原处。若想再谈，就谈你自己的看法。",
         "note": ""
       },
@@ -27008,6 +27202,7 @@
         "id": "NTL_0261",
         "eventId": "npc_fu_heng_dialogue_idle",
         "speaker": "傅珩",
+        "kind": "speech",
         "text": "没话想说也好。你可以安静待会儿，想走时便走。",
         "note": ""
       },
@@ -27015,6 +27210,7 @@
         "id": "NTL_0262",
         "eventId": "npc_fu_heng_dialogue_locked",
         "speaker": "傅珩",
+        "kind": "speech",
         "text": "通道和歇息都有各自的条件。先看眼前能做什么，誓词不能把危险抹掉。",
         "note": ""
       },
@@ -27022,6 +27218,7 @@
         "id": "NTL_0263",
         "eventId": "npc_fu_heng_dialogue_service_end",
         "speaker": "傅珩",
+        "kind": "speech",
         "text": "歇好了就起来走走。你不想开口的话，可以留着。",
         "note": ""
       },
@@ -27029,6 +27226,7 @@
         "id": "NTL_0264",
         "eventId": "npc_fu_heng_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "圣堂这会儿我值。想找个安静地方歇会儿，照原条件办。教义的事，你想听再听。",
         "note": ""
       },
@@ -27036,6 +27234,7 @@
         "id": "NTL_0265",
         "eventId": "npc_fu_heng_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -27043,6 +27242,7 @@
         "id": "NTL_0344",
         "eventId": "npc_fu_heng_dialogue_service_offer",
         "speaker": "傅珩",
+        "kind": "speech",
         "text": "想坐一会儿，就看看静处。要说的话，等有力气再说。",
         "note": ""
       },
@@ -27050,6 +27250,7 @@
         "id": "NTL_0266",
         "eventId": "npc_wen_cheng_dialogue_first_greeting",
         "speaker": "温澄",
+        "kind": "speech",
         "text": "先认准公开区域的标识。几组人各有各的门牌，走错了还得回来问我。",
         "note": ""
       },
@@ -27057,6 +27258,7 @@
         "id": "NTL_0267",
         "eventId": "npc_wen_cheng_dialogue_role",
         "speaker": "温澄",
+        "kind": "speech",
         "text": "我管来访和公开路线。研究组会争自己的说法，身体试验仍得你自己同意。",
         "note": ""
       },
@@ -27064,6 +27266,7 @@
         "id": "NTL_0268",
         "eventId": "npc_wen_cheng_dialogue_quest_offer",
         "speaker": "温澄",
+        "kind": "speech",
         "text": "要查环境，我可以给你公开路线。检测可以先拒绝，给你的还是同一份路线。",
         "note": ""
       },
@@ -27071,6 +27274,7 @@
         "id": "NTL_0269",
         "eventId": "npc_wen_cheng_dialogue_quest_return",
         "speaker": "温澄",
+        "kind": "speech",
         "text": "接触和路线照你办过的步骤记。下一步按任务册走，两种说法用的是同一份路线。",
         "note": ""
       },
@@ -27078,6 +27282,7 @@
         "id": "NTL_0270",
         "eventId": "npc_wen_cheng_dialogue_idle",
         "speaker": "温澄",
+        "kind": "speech",
         "text": "公开说明可以接着看。没有新委托的时候，你也不用为了见我签字。",
         "note": ""
       },
@@ -27085,6 +27290,7 @@
         "id": "NTL_0271",
         "eventId": "npc_wen_cheng_dialogue_locked",
         "speaker": "温澄",
+        "kind": "speech",
         "text": "去检测室先看公开通行条件。到了之后，再决定要不要接受观察。",
         "note": ""
       },
@@ -27092,6 +27298,7 @@
         "id": "NTL_0272",
         "eventId": "npc_wen_cheng_dialogue_service_end",
         "speaker": "温澄",
+        "kind": "speech",
         "text": "出去先看门牌。刚才听到的是这里的说法，院里未必人人同意。",
         "note": ""
       },
@@ -27099,6 +27306,7 @@
         "id": "NTL_0273",
         "eventId": "npc_wen_cheng_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "科学院接待处今天我值。来访和公开路线照常办。要不要参加身体试验，只听你本人怎么说。",
         "note": ""
       },
@@ -27106,6 +27314,7 @@
         "id": "NTL_0274",
         "eventId": "npc_wen_cheng_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -27113,6 +27322,7 @@
         "id": "NTL_0345",
         "eventId": "npc_wen_cheng_dialogue_service_offer",
         "speaker": "温澄",
+        "kind": "speech",
         "text": "先分清你是来问公开路线，还是来谈观察。可以一件一件来。",
         "note": ""
       },
@@ -27120,6 +27330,7 @@
         "id": "NTL_0275",
         "eventId": "npc_ji_wen_dialogue_first_greeting",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "先说你愿意让我们看哪些东西。哪一项不愿意，也请明说。",
         "note": ""
       },
@@ -27127,6 +27338,7 @@
         "id": "NTL_0276",
         "eventId": "npc_ji_wen_dialogue_role",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "我负责检测说明和已有记录。要额外取样或碰你的身体，得先得到你明确同意。",
         "note": ""
       },
@@ -27134,6 +27346,7 @@
         "id": "NTL_0277",
         "eventId": "npc_ji_wen_dialogue_quest_offer",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "可以只核环境记录。选非侵入观察，也只读现有指标。两种都只是核对。",
         "note": ""
       },
@@ -27141,6 +27354,7 @@
         "id": "NTL_0278",
         "eventId": "npc_ji_wen_dialogue_quest_return",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "照你同意的范围接着核。还没核完的留着，范围外的事不做。",
         "note": ""
       },
@@ -27148,6 +27362,7 @@
         "id": "NTL_0279",
         "eventId": "npc_ji_wen_dialogue_idle",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "现在没有新的观察要做。公开路线已经按原来的条件办，不用为了它再测一回。",
         "note": ""
       },
@@ -27155,6 +27370,7 @@
         "id": "NTL_0280",
         "eventId": "npc_ji_wen_dialogue_locked",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "先看还缺哪份记录。你可以拒绝身体观察，拒绝本身不会改变你的身体状况。",
         "note": ""
       },
@@ -27162,6 +27378,7 @@
         "id": "NTL_0281",
         "eventId": "npc_ji_wen_dialogue_service_end",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "能从记录确认的，都写下来了。剩下的先空着。",
         "note": ""
       },
@@ -27169,6 +27386,7 @@
         "id": "NTL_0282",
         "eventId": "npc_ji_wen_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "今天我负责把检测说明和已有记录给你看。要加取样或做身体操作，得先取得你的明确同意。",
         "note": ""
       },
@@ -27176,6 +27394,7 @@
         "id": "NTL_0283",
         "eventId": "npc_ji_wen_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -27183,6 +27402,7 @@
         "id": "NTL_0346",
         "eventId": "npc_ji_wen_dialogue_service_offer",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "先说你愿意核对到哪一步。范围说清，才好往下谈。",
         "note": ""
       },
@@ -27190,6 +27410,7 @@
         "id": "NTL_0284",
         "eventId": "npc_shao_ning_dialogue_first_greeting",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "报告先别看结论。翻一页，看看它是在什么条件下写的。",
         "note": ""
       },
@@ -27197,6 +27418,7 @@
         "id": "NTL_0285",
         "eventId": "npc_shao_ning_dialogue_role",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "我把档案并在一起读。哪句有记录撑着，哪句是作者猜的，得分开划。",
         "note": ""
       },
@@ -27204,6 +27426,7 @@
         "id": "NTL_0286",
         "eventId": "npc_shao_ning_dialogue_quest_offer",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "拿到封存区的流程，再对这两份报告。两份都写着安全，看的却未必是同一件事。",
         "note": ""
       },
@@ -27211,6 +27434,7 @@
         "id": "NTL_0287",
         "eventId": "npc_shao_ning_dialogue_quest_return",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "还有没核清的地方，就按流程再查。笔记写到哪一步，线索也只说到那一步。",
         "note": ""
       },
@@ -27218,6 +27442,7 @@
         "id": "NTL_0288",
         "eventId": "npc_shao_ning_dialogue_idle",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "原件还可以读。查过的地方忘了，就回来重看那一段。",
         "note": ""
       },
@@ -27225,6 +27450,7 @@
         "id": "NTL_0289",
         "eventId": "npc_shao_ning_dialogue_locked",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "先找对应的流程记录。谁跟你一起来、你有没有带样本，都用不着替代那份记录。",
         "note": ""
       },
@@ -27232,6 +27458,7 @@
         "id": "NTL_0290",
         "eventId": "npc_shao_ning_dialogue_service_end",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "能核实的记一边，暂时说不准的记另一边。带走时也这样分。",
         "note": ""
       },
@@ -27239,6 +27466,7 @@
         "id": "NTL_0291",
         "eventId": "npc_shao_ning_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "档案桌今天我值。卷里哪一句有原记录，哪一句是写报告的人自己推的，摊开了再一条条对。",
         "note": ""
       },
@@ -27246,6 +27474,7 @@
         "id": "NTL_0292",
         "eventId": "npc_shao_ning_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -27253,6 +27482,7 @@
         "id": "NTL_0347",
         "eventId": "npc_shao_ning_dialogue_service_offer",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "要比对报告就把记录找齐。先看对得上的，再谈哪里有出入。",
         "note": ""
       },
@@ -27260,6 +27490,7 @@
         "id": "NTL_0293",
         "eventId": "npc_he_yuan_dialogue_first_greeting",
         "speaker": "何远",
+        "kind": "speech",
         "text": "裸线别碰。要找哪个装置，先指给我看。",
         "note": ""
       },
@@ -27267,6 +27498,7 @@
         "id": "NTL_0294",
         "eventId": "npc_he_yuan_dialogue_role",
         "speaker": "何远",
+        "kind": "speech",
         "text": "我管这里现有的设备和操作说明。配方归配方，门口那张观察告示归告示。",
         "note": ""
       },
@@ -27274,6 +27506,7 @@
         "id": "NTL_0295",
         "eventId": "npc_he_yuan_dialogue_quest_offer",
         "speaker": "何远",
+        "kind": "speech",
         "text": "技术整备先看现有记录。要去观察区，门口有公开说明，拒绝试验也可以选只观察。",
         "note": ""
       },
@@ -27281,6 +27514,7 @@
         "id": "NTL_0296",
         "eventId": "npc_he_yuan_dialogue_quest_return",
         "speaker": "何远",
+        "kind": "speech",
         "text": "设备做到了哪步，就从那步接。开过菜单用不着写进完工记录。",
         "note": ""
       },
@@ -27288,6 +27522,7 @@
         "id": "NTL_0297",
         "eventId": "npc_he_yuan_dialogue_idle",
         "speaker": "何远",
+        "kind": "speech",
         "text": "眼下没有新的设备委托。已经开放的工坊，想看就看。",
         "note": ""
       },
@@ -27295,6 +27530,7 @@
         "id": "NTL_0298",
         "eventId": "npc_he_yuan_dialogue_locked",
         "speaker": "何远",
+        "kind": "speech",
         "text": "知识、材料、设施，缺哪样先看清。能进门之后，还得核你要用的配方。",
         "note": ""
       },
@@ -27302,6 +27538,7 @@
         "id": "NTL_0299",
         "eventId": "npc_he_yuan_dialogue_service_end",
         "speaker": "何远",
+        "kind": "speech",
         "text": "工位看过了。真要动手时，再照配方备料。",
         "note": ""
       },
@@ -27309,6 +27546,7 @@
         "id": "NTL_0300",
         "eventId": "npc_he_yuan_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "今天工坊设备和公开操作的说明由我管。工位照原条件使用。门口那张纸能告诉你怎么查，做法还得另学。",
         "note": ""
       },
@@ -27316,6 +27554,7 @@
         "id": "NTL_0301",
         "eventId": "npc_he_yuan_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -27323,6 +27562,7 @@
         "id": "NTL_0348",
         "eventId": "npc_he_yuan_dialogue_service_offer",
         "speaker": "何远",
+        "kind": "speech",
         "text": "想动手就先看哪张台能用。要去观察区，门旁另有告示。",
         "note": ""
       },
@@ -27330,6 +27570,7 @@
         "id": "NTL_0302",
         "eventId": "npc_yin_ke_dialogue_first_greeting",
         "speaker": "尹珂",
+        "kind": "speech",
         "text": "进来前，先想好你愿意让人看什么。只想看记录，也可以。",
         "note": ""
       },
@@ -27337,6 +27578,7 @@
         "id": "NTL_0303",
         "eventId": "npc_yin_ke_dialogue_role",
         "speaker": "尹珂",
+        "kind": "speech",
         "text": "我管这里的区域边界和已有记录。你想只读、退出或拒绝试验，直接说就行。",
         "note": ""
       },
@@ -27344,6 +27586,7 @@
         "id": "NTL_0304",
         "eventId": "npc_yin_ke_dialogue_quest_offer",
         "speaker": "尹珂",
+        "kind": "speech",
         "text": "你选到哪一项，我就接到哪一项。观察协作的工时已经记过，这里不再收一次。",
         "note": ""
       },
@@ -27351,6 +27594,7 @@
         "id": "NTL_0305",
         "eventId": "npc_yin_ke_dialogue_quest_return",
         "speaker": "尹珂",
+        "kind": "speech",
         "text": "范围照原记录查。还需要核对的，回检测室办原来的那项工作。",
         "note": ""
       },
@@ -27358,6 +27602,7 @@
         "id": "NTL_0306",
         "eventId": "npc_yin_ke_dialogue_idle",
         "speaker": "尹珂",
+        "kind": "speech",
         "text": "没有新的观察要求。你可以看看公开记录，想走就走。",
         "note": ""
       },
@@ -27365,6 +27610,7 @@
         "id": "NTL_0307",
         "eventId": "npc_yin_ke_dialogue_locked",
         "speaker": "尹珂",
+        "kind": "speech",
         "text": "还没办公共通行的话，先去看工坊告示。是否接受试验，由你另作选择。",
         "note": ""
       },
@@ -27372,6 +27618,7 @@
         "id": "NTL_0308",
         "eventId": "npc_yin_ke_dialogue_service_end",
         "speaker": "尹珂",
+        "kind": "speech",
         "text": "就看到这里。你可以离开，原先同意的范围照旧。",
         "note": ""
       },
@@ -27379,6 +27626,7 @@
         "id": "NTL_0309",
         "eventId": "npc_yin_ke_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "观察区今天我值。只看记录、随时退出或者拒绝试验，都照你原来选的范围办。区域边界也没变。",
         "note": ""
       },
@@ -27386,6 +27634,7 @@
         "id": "NTL_0310",
         "eventId": "npc_yin_ke_dialogue_institution_substitute",
         "speaker": "",
+        "kind": "status",
         "text": "本岗沿用原登记、领取额度和任务进度。尚缺的条件仍须满足。",
         "note": ""
       },
@@ -27393,6 +27642,7 @@
         "id": "NTL_0349",
         "eventId": "npc_yin_ke_dialogue_service_offer",
         "speaker": "尹珂",
+        "kind": "speech",
         "text": "要查观察记录，先看自己同意过哪些内容。这里可以核对。",
         "note": ""
       },
@@ -27400,6 +27650,7 @@
         "id": "NTL_0311",
         "eventId": "gate_h01_registration",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "来处报一下，再说要去哪儿。同行的照常跟你走。营门只办登记授权，归谁管是你自己的事。",
         "note": ""
       },
@@ -27407,6 +27658,7 @@
         "id": "NTL_0312",
         "eventId": "gate_h01_registration",
         "speaker": "你",
+        "kind": "speech",
         "text": "我找医务室。还想打听在哪儿补给。",
         "note": ""
       },
@@ -27414,6 +27666,7 @@
         "id": "NTL_0313",
         "eventId": "gate_h01_registration",
         "speaker": "陆衡",
+        "kind": "speech",
         "text": "授权记好了。沿通道去广场，到了再办登记。",
         "note": ""
       },
@@ -27421,6 +27674,7 @@
         "id": "NTL_0318",
         "eventId": "academy_public_observation_notice",
         "speaker": "",
+        "kind": "document",
         "text": "观察区通行告示：可以只看现有记录，也可以拒绝身体试验。选定范围后登记通行。登记本身不改变身体状态。",
         "note": ""
       },
@@ -27428,6 +27682,7 @@
         "id": "NTL_0319",
         "eventId": "academy_public_observation_notice",
         "speaker": "你",
+        "kind": "speech",
         "text": "把我刚选的那一项记下来。就这一项。",
         "note": ""
       },
@@ -27435,6 +27690,7 @@
         "id": "NTL_0320",
         "eventId": "FA01_public_brief",
         "speaker": "许安",
+        "kind": "speech",
         "text": "教会和科学院，各走一条公开的路。你想先敲哪边的门都可以，也可以两边都问。",
         "note": ""
       },
@@ -27442,6 +27698,7 @@
         "id": "NTL_0321",
         "eventId": "FA01_public_brief",
         "speaker": "你",
+        "kind": "speech",
         "text": "我先找能看诊的人，再看看手里这些记录能对上多少。",
         "note": ""
       },
@@ -27449,6 +27706,7 @@
         "id": "NTL_0322",
         "eventId": "FA01_public_brief",
         "speaker": "许安",
+        "kind": "speech",
         "text": "行。跟着公开路线走。谁跟你说「可以通行」，到路口还得核对手续。",
         "note": ""
       },
@@ -27456,6 +27714,7 @@
         "id": "NTL_0314",
         "eventId": "FA02_route_choice",
         "speaker": "祁闻",
+        "kind": "speech",
         "text": "封锁区那份旧路线还没收回来。你若找到了，带给我们看看。至于新生，亲眼见过的人开口，旁人才肯听。",
         "note": ""
       },
@@ -27463,6 +27722,7 @@
         "id": "NTL_0315",
         "eventId": "FA02_route_choice",
         "speaker": "你",
+        "kind": "speech",
         "text": "路线我可以找。见到了什么，到时由我自己说。",
         "note": ""
       },
@@ -27470,6 +27730,7 @@
         "id": "NTL_0316",
         "eventId": "FA03_environment_choice",
         "speaker": "温澄",
+        "kind": "speech",
         "text": "公开封存的流程，你可以查。要观察你的身体，我得另问你同不同意。你现在就可以说不。",
         "note": ""
       },
@@ -27477,6 +27738,7 @@
         "id": "NTL_0317",
         "eventId": "FA03_environment_choice",
         "speaker": "你",
+        "kind": "speech",
         "text": "先给我能查的路线。身体的事等范围写清楚再谈。",
         "note": ""
       },
@@ -27484,6 +27746,7 @@
         "id": "NTL_0323",
         "eventId": "FA04_merge_accept",
         "speaker": "许安",
+        "kind": "speech",
         "text": "两边的资料都带回来了。摊开看看，哪一段路线能跟封存流程对上。对得上的才拿去办旧城后段的通行。",
         "note": ""
       },
@@ -27491,6 +27754,7 @@
         "id": "NTL_0324",
         "eventId": "FA04_merge_accept",
         "speaker": "你",
+        "kind": "speech",
         "text": "把对得上的那几笔抄下来就好。谁的承诺也别写到我名下。",
         "note": ""
       },
@@ -27498,6 +27762,7 @@
         "id": "NTL_0325",
         "eventId": "FA04_merge_accept",
         "speaker": "",
+        "kind": "guide",
         "text": "到「同一条归路」的工作预览核对记录，提交后才算整理完成。",
         "note": ""
       },
@@ -27505,6 +27770,7 @@
         "id": "NTL_0326",
         "eventId": "FA04_merge_complete",
         "speaker": "许安",
+        "kind": "speech",
         "text": "合好了。拿这份记录去办后段通行。之前交过的单子，我收在原处。",
         "note": ""
       },
@@ -27512,6 +27778,7 @@
         "id": "NTL_0327",
         "eventId": "FA04_merge_complete",
         "speaker": "你",
+        "kind": "speech",
         "text": "回来的那一段也请给我标上。",
         "note": ""
       },
@@ -27519,6 +27786,7 @@
         "id": "NTL_0328",
         "eventId": "FA05_power_contact",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "领过电源，账上有。整备照原来的流程走，电源后来用掉了也不必重新领来证明。",
         "note": ""
       },
@@ -27526,6 +27794,7 @@
         "id": "NTL_0329",
         "eventId": "FA05_power_contact",
         "speaker": "你",
+        "kind": "speech",
         "text": "先把联络接上。听见答复以后，再问剩下的事。",
         "note": ""
       },
@@ -27533,6 +27802,7 @@
         "id": "NTL_0330",
         "eventId": "FA05_contact_complete",
         "speaker": "",
+        "kind": "result",
         "text": "联络已记录。本章通信目标已完成。未解锁根治药、永久免疫或额外扩容。",
         "note": ""
       },
@@ -27540,6 +27810,7 @@
         "id": "NTL_0331",
         "eventId": "FA05_contact_complete",
         "speaker": "你",
+        "kind": "speech",
         "text": "有回声……等等，有人在答。",
         "note": ""
       },
@@ -27547,6 +27818,7 @@
         "id": "NTL_0332",
         "eventId": "FA05_contact_complete",
         "speaker": "饱饱",
+        "kind": "speech",
         "text": "你说话他们听得见。那我呢？",
         "note": ""
       },
@@ -27554,6 +27826,7 @@
         "id": "NTL_0333",
         "eventId": "FA05_contact_complete",
         "speaker": "你",
+        "kind": "speech",
         "text": "我自己听得见。先别告诉他们。",
         "note": ""
       },
@@ -27561,6 +27834,7 @@
         "id": "NTL_0115",
         "eventId": "HU01_offer",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "这三栏分开看。原料的品质是一栏，融合后的结果是另一栏。这份是不是教学样本，单独记。空着手也能听我讲。",
         "note": ""
       },
@@ -27568,6 +27842,7 @@
         "id": "NTL_0116",
         "eventId": "HU01_offer",
         "speaker": "你",
+        "kind": "speech",
         "text": "先听明白。真要验的时候，我自己挑那一份。",
         "note": ""
       },
@@ -27575,6 +27850,7 @@
         "id": "NTL_0117",
         "eventId": "HU01_work",
         "speaker": "",
+        "kind": "guide",
         "text": "查看物质品质、融合结果品质及教学样本的区别。可空手查看，实际鉴定另看报价。",
         "note": ""
       },
@@ -27582,6 +27858,7 @@
         "id": "NTL_0118",
         "eventId": "HU01_turnin",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "说明记上了。你的样本还在原处。下次真要鉴定，先看我给那一份报多少。",
         "note": ""
       },
@@ -27589,6 +27866,7 @@
         "id": "NTL_0119",
         "eventId": "HU01_turnin",
         "speaker": "",
+        "kind": "result",
         "text": "说明已读。回看不耗时，奖励只结算一次。",
         "note": ""
       },
@@ -27596,6 +27874,7 @@
         "id": "NTL_0120",
         "eventId": "HU01_repeat",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "说明存着，你想看就翻。真有样本要验，再拿那份来谈。",
         "note": ""
       },
@@ -27603,6 +27882,7 @@
         "id": "NTL_0121",
         "eventId": "HU02_offer",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "普通的那份，留着也行，按规矩融合也行，或者看看今天的交易。教学样本单放，普通交易不收。",
         "note": ""
       },
@@ -27610,6 +27890,7 @@
         "id": "NTL_0122",
         "eventId": "HU02_offer",
         "speaker": "你",
+        "kind": "speech",
         "text": "我先留着。要选哪条路，得看手上那份究竟是什么。",
         "note": ""
       },
@@ -27617,6 +27898,7 @@
         "id": "NTL_0123",
         "eventId": "HU02_work",
         "speaker": "",
+        "kind": "guide",
         "text": "比较普通样本的保留、融合和交易。教学样本不参加普通交易。阅读说明不会处置样本。",
         "note": ""
       },
@@ -27624,6 +27906,7 @@
         "id": "NTL_0124",
         "eventId": "HU02_turnin",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "知道去哪里查就行，样本继续在你手里。今天不必做一笔给我看。",
         "note": ""
       },
@@ -27631,6 +27914,7 @@
         "id": "NTL_0125",
         "eventId": "HU02_turnin",
         "speaker": "",
+        "kind": "result",
         "text": "样本处置说明已读。回看不耗时，奖励只结算一次。",
         "note": ""
       },
@@ -27638,6 +27922,7 @@
         "id": "NTL_0126",
         "eventId": "HU02_repeat",
         "speaker": "陶岑",
+        "kind": "speech",
         "text": "那张说明还在。要谈交易，回头先看当天的清单。",
         "note": ""
       },
@@ -27645,6 +27930,7 @@
         "id": "NTL_0127",
         "eventId": "HU03_offer",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "名册我分三处记，固定同行的、这期愿意来的、应急补员。有人来问还不算跟你走，跟你走也不用改归属。",
         "note": ""
       },
@@ -27652,6 +27938,7 @@
         "id": "NTL_0128",
         "eventId": "HU03_offer",
         "speaker": "你",
+        "kind": "speech",
         "text": "我先看名册。队里还空几个位置？",
         "note": ""
       },
@@ -27659,6 +27946,7 @@
         "id": "NTL_0129",
         "eventId": "HU03_work",
         "speaker": "",
+        "kind": "guide",
         "text": "查看固定同行者、本期候选和应急补员，再核对队伍容量。阅读说明不办理登记。",
         "note": ""
       },
@@ -27666,6 +27954,7 @@
         "id": "NTL_0130",
         "eventId": "HU03_turnin",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "名册给你看过了，人还在原处，队伍位也没变。要找谁同行，之后再谈那个人。",
         "note": ""
       },
@@ -27673,6 +27962,7 @@
         "id": "NTL_0131",
         "eventId": "HU03_turnin",
         "speaker": "",
+        "kind": "result",
         "text": "名册说明已读。回看不耗时，奖励只结算一次。",
         "note": ""
       },
@@ -27680,6 +27970,7 @@
         "id": "NTL_0132",
         "eventId": "HU03_repeat",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "名册的说明在这儿。真要加人，你来告诉我想找谁。",
         "note": ""
       },
@@ -27687,6 +27978,7 @@
         "id": "NTL_0133",
         "eventId": "HU04_offer",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "考虑留守的话，先看他伤在哪儿、在流不流血。公家的照护有能做的，也有够不着的。写进名册，伤和感染还得看着。",
         "note": ""
       },
@@ -27694,6 +27986,7 @@
         "id": "NTL_0134",
         "eventId": "HU04_offer",
         "speaker": "你",
+        "kind": "speech",
         "text": "我能先问清楚，今天不留人吧？",
         "note": ""
       },
@@ -27701,6 +27994,7 @@
         "id": "NTL_0135",
         "eventId": "HU04_work",
         "speaker": "",
+        "kind": "guide",
         "text": "查看留守照护范围，以及感染、活性和出血风险。阅读说明不调整队伍，也不处理伤病。",
         "note": ""
       },
@@ -27708,6 +28002,7 @@
         "id": "NTL_0136",
         "eventId": "HU04_turnin",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "能。今天只记你看过。以后真要换人，再把谁留、东西怎么放说清楚。",
         "note": ""
       },
@@ -27715,6 +28010,7 @@
         "id": "NTL_0137",
         "eventId": "HU04_turnin",
         "speaker": "",
+        "kind": "result",
         "text": "留守照护说明已读。回看不耗时，奖励只结算一次。",
         "note": ""
       },
@@ -27722,6 +28018,7 @@
         "id": "NTL_0138",
         "eventId": "HU04_repeat",
         "speaker": "杜穗",
+        "kind": "speech",
         "text": "上次那张照护说明还在。你若打算留人，得看那个人今天的伤势。",
         "note": ""
       },
@@ -27729,6 +28026,7 @@
         "id": "NTL_0139",
         "eventId": "CH01_offer",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "你带回来的路线里记了物资去了哪儿。跟这张公开清单挨行对一下。有缺口就空着，别替谁填。",
         "note": ""
       },
@@ -27736,6 +28034,7 @@
         "id": "NTL_0140",
         "eventId": "CH01_offer",
         "speaker": "你",
+        "kind": "speech",
         "text": "这几笔对不上。我能查到哪儿，就写到哪儿。",
         "note": ""
       },
@@ -27743,6 +28042,7 @@
         "id": "NTL_0141",
         "eventId": "CH01_work",
         "speaker": "",
+        "kind": "guide",
         "text": "核对圣所旧路档册与公开物资账，记下不一致处。只陈述可核实的事实即可。",
         "note": ""
       },
@@ -27750,6 +28050,7 @@
         "id": "NTL_0142",
         "eventId": "CH01_turnin",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "这笔我收下。东西给到谁，谁又被逼着开口，账面上都该记清楚。先把核对结果留好。",
         "note": ""
       },
@@ -27757,6 +28058,7 @@
         "id": "NTL_0143",
         "eventId": "CH01_turnin",
         "speaker": "",
+        "kind": "result",
         "text": "核对结果已保存。回看不耗时，奖励只结算一次。",
         "note": ""
       },
@@ -27764,6 +28066,7 @@
         "id": "NTL_0144",
         "eventId": "CH01_repeat",
         "speaker": "白苓",
+        "kind": "speech",
         "text": "你核过的那份在账里。想翻哪笔，自己指给我看。",
         "note": ""
       },
@@ -27771,6 +28074,7 @@
         "id": "NTL_0145",
         "eventId": "CH02_offer",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "抄本留在我这里，免得外头越传越走样。你若肯照圣所的说法当众讲一次，手续好办些。",
         "note": ""
       },
@@ -27778,6 +28082,7 @@
         "id": "NTL_0146",
         "eventId": "CH02_offer",
         "speaker": "你",
+        "kind": "speech",
         "text": "见证的话我不答应。公开抄本可以核对，我拿到的实地记录也可以带回营区备份。",
         "note": ""
       },
@@ -27785,6 +28090,7 @@
         "id": "NTL_0147",
         "eventId": "CH02_work",
         "speaker": "",
+        "kind": "guide",
         "text": "协商归还公开路线抄本，或将实地记录带回营区备份。按所选分支保存资料。",
         "note": ""
       },
@@ -27792,6 +28098,7 @@
         "id": "NTL_0148",
         "eventId": "CH02_turnin",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "资料保存的回执我收到了。你走的那条路办得成。我的账上没写你宣过誓。",
         "note": ""
       },
@@ -27799,6 +28106,7 @@
         "id": "NTL_0149",
         "eventId": "CH02_turnin",
         "speaker": "",
+        "kind": "result",
         "text": "路线资料已保存。回看不耗时，奖励只结算一次。",
         "note": ""
       },
@@ -27806,6 +28114,7 @@
         "id": "NTL_0150",
         "eventId": "CH02_repeat",
         "speaker": "纪牧",
+        "kind": "speech",
         "text": "保存回执就在卷里。你想看哪一页？",
         "note": ""
       },
@@ -27813,6 +28122,7 @@
         "id": "NTL_0350",
         "eventId": "CH02_hub_backup_turnin",
         "speaker": "许安",
+        "kind": "speech",
         "text": "实地记录在营区备份了。没有誓词，也没交人。这一笔只记资料存下来了。",
         "note": ""
       },
@@ -27820,6 +28130,7 @@
         "id": "NTL_0351",
         "eventId": "CH02_hub_backup_turnin",
         "speaker": "你",
+        "kind": "speech",
         "text": "以后有人走那条路，能翻到就好。",
         "note": ""
       },
@@ -27827,6 +28138,7 @@
         "id": "NTL_0151",
         "eventId": "AC01_offer",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "先写允许我做什么。你可以只交环境记录，也可以让我读你已有的指标。后一样不取样。两项只选前一项也能走公开路线。",
         "note": ""
       },
@@ -27834,6 +28146,7 @@
         "id": "NTL_0152",
         "eventId": "AC01_offer",
         "speaker": "你",
+        "kind": "speech",
         "text": "那就在这一页写明白。范围之外的，我没答应。",
         "note": ""
       },
@@ -27841,6 +28154,7 @@
         "id": "NTL_0153",
         "eventId": "AC01_work",
         "speaker": "",
+        "kind": "guide",
         "text": "确认范围：只交环境记录，或同意只读现有指标的非侵入观察。拒绝身体观察仍可调查公开路线。",
         "note": ""
       },
@@ -27848,6 +28162,7 @@
         "id": "NTL_0154",
         "eventId": "AC01_turnin",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "你同意的范围和结果都归档了。我没取样，也没做治疗。身体状态没有因为这次观察改变。",
         "note": ""
       },
@@ -27855,6 +28170,7 @@
         "id": "NTL_0155",
         "eventId": "AC01_turnin",
         "speaker": "",
+        "kind": "result",
         "text": "观察范围和记录已保存。回看不耗时，奖励只结算一次。",
         "note": ""
       },
@@ -27862,6 +28178,7 @@
         "id": "NTL_0156",
         "eventId": "AC01_repeat",
         "speaker": "季闻",
+        "kind": "speech",
         "text": "你选的范围还在。要核对，翻这一页。",
         "note": ""
       },
@@ -27869,6 +28186,7 @@
         "id": "NTL_0157",
         "eventId": "AC02_offer",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "这两份都写「安全」，可他们看的东西不一样。把你带回来的流程记录放旁边，能对上的画实线。",
         "note": ""
       },
@@ -27876,6 +28194,7 @@
         "id": "NTL_0158",
         "eventId": "AC02_offer",
         "speaker": "你",
+        "kind": "speech",
         "text": "我能核对的是他们做了什么。病从哪儿来、治不治得了，还没证据。",
         "note": ""
       },
@@ -27883,6 +28202,7 @@
         "id": "NTL_0159",
         "eventId": "AC02_work",
         "speaker": "",
+        "kind": "guide",
         "text": "用带回的流程记录核对两份报告，分开已证实内容和待验证假说。此处无需解释灾变起因。",
         "note": ""
       },
@@ -27890,6 +28210,7 @@
         "id": "NTL_0160",
         "eventId": "AC02_turnin",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "笔记好了。末页是能去问诊的地方，还有该带的记录。那里能不能治，要等医生看过再说。",
         "note": ""
       },
@@ -27897,6 +28218,7 @@
         "id": "NTL_0161",
         "eventId": "AC02_turnin",
         "speaker": "",
+        "kind": "result",
         "text": "核对笔记已保存。回看不耗时，奖励只结算一次。",
         "note": ""
       },
@@ -27904,6 +28226,7 @@
         "id": "NTL_0162",
         "eventId": "AC02_repeat",
         "speaker": "邵宁",
+        "kind": "speech",
         "text": "对照表还在。两份报告的差别，我都标在边上了。",
         "note": ""
       },
@@ -27911,6 +28234,7 @@
         "id": "NTL_0163",
         "eventId": "AC02_external_medical_note",
         "speaker": "",
+        "kind": "document",
         "text": "咨询地点：幸存者营区医务室。向陈芷或同岗位值班员说明症状出现时间、近期咬伤和用药情况。可独自前往。",
         "note": ""
       },
@@ -27918,6 +28242,7 @@
         "id": "NTL_0164",
         "eventId": "AC02_external_medical_note",
         "speaker": "",
+        "kind": "document",
         "text": "可带材料：已有的症状与用药时间、药品标签、村庄诊所公开旧记录。缺其中任何一项也可以先问诊。",
         "note": ""
       },
@@ -27925,6 +28250,7 @@
         "id": "NTL_0165",
         "eventId": "AC02_external_medical_note",
         "speaker": "",
+        "kind": "document",
         "text": "已核实的是封存区当时的操作流程，不能据此把同一种治疗用于所有感染者。感染仍按现行医疗规则处理。体内声音的来源、灾变起因和永久根治方案尚无结论。",
         "note": ""
       },
@@ -27932,6 +28258,7 @@
         "id": "NTL_0166",
         "eventId": "AC02_external_medical_note",
         "speaker": "你",
+        "kind": "speech",
         "text": "这回至少知道该带什么、该问什么。",
         "note": ""
       },
@@ -27939,6 +28266,7 @@
         "id": "NTL_RN_01",
         "eventId": "RN01_recruit_offer",
         "speaker": "林昭",
+        "kind": "speech",
         "text": "你带回的道路记录我看过了。我平时帮着搬东西，也跟队巡路，手还不算熟。要不要一起走？路上包太沉就分我一点。你看前头，我也能替你留意背后。",
         "note": ""
       },
@@ -27946,6 +28274,7 @@
         "id": "NTL_RN_02",
         "eventId": "RN02_recruit_offer",
         "speaker": "周砚",
+        "kind": "speech",
         "text": "道路记录和检修分工都在这儿。碰上没见过的设备，我先验工具，再对一遍步骤。有一步没弄懂，就先把手放下来。你要是也肯停这一会儿，我们可以一起走。",
         "note": ""
       },
@@ -27953,6 +28282,7 @@
         "id": "NTL_RN_03",
         "eventId": "RN03_recruit_offer",
         "speaker": "沈禾",
+        "kind": "speech",
         "text": "转运说明你慢慢看，我等你。路上真要处理伤口，我会先说我能做什么、哪里有风险。等你点头，我再动手。你愿意的话，我们同行，路上也好互相照应。",
         "note": ""
       },
@@ -27960,6 +28290,7 @@
         "id": "NTL_RN_04",
         "eventId": "RN04_recruit_offer",
         "speaker": "唐梨",
+        "kind": "speech",
         "text": "林子里我走过的路，都记在这张纸上。我能用弓，也能找东西。可再想捡的东西，我也得先看看怎么回来。你想一起走吗？",
         "note": ""
       },
@@ -27967,6 +28298,7 @@
         "id": "NTL_RN_05",
         "eventId": "RN05_recruit_offer",
         "speaker": "顾承",
+        "kind": "speech",
         "text": "封存清单先对一遍。出发前查装备、分好各自的活。我以前做设施巡防，现在跟营区外勤搭手。你愿意同行，就按这个次序准备，走之前都说清楚。",
         "note": ""
       },
@@ -27974,6 +28306,7 @@
         "id": "NTL_RN_06",
         "eventId": "RN06_recruit_offer",
         "speaker": "叶洵",
+        "kind": "speech",
         "text": "值守记录分两边。亲眼见的写这边，听来的写那边。我在通信设施外围收过记录，再往里的事，我说不准。你要是愿意，我们可以一道走。",
         "note": ""
       },
@@ -27981,6 +28314,7 @@
         "id": "NTL_Q217_EXQ05_offer",
         "eventId": "EXQ05_offer",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "水厂那份阀控记录，工坊用得上。哪段管子还接着，哪段已经断了，得拿记录来对。你若去水厂，就找那份记录。图上画得再清楚，水也得处理过才能喝。",
         "note": ""
       },
@@ -27988,6 +28322,7 @@
         "id": "NTL_Q217_EXQ05_turnin",
         "eventId": "EXQ05_turnin",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "阀控记录收好了。对得上的，我记在一栏。还要复查的，另起一栏。净水和维护的做法也归档。至于水能不能喝，得看取来的那一份怎么处理。",
         "note": ""
       },
@@ -27995,6 +28330,7 @@
         "id": "NTL_Q217_EXQ06_offer",
         "eventId": "EXQ06_offer",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "矿道的工具，谁都敢说一句“还能用”。我想看原来的作业手册，出工前怎么查，出了岔子怎么退。你若去矿洞，帮工坊找找那本手册。",
         "note": ""
       },
@@ -28002,6 +28338,7 @@
         "id": "NTL_Q217_EXQ06_turnin",
         "eventId": "EXQ06_turnin",
         "speaker": "罗铮",
+        "kind": "speech",
         "text": "手册收下了。怎么查工具、怎么做防护，我分开归档。要做东西，按做法备料就行。",
         "note": ""
       },
@@ -28009,6 +28346,7 @@
         "id": "NTL_Q217_EXQ07_offer",
         "eventId": "EXQ07_offer",
         "speaker": "许安",
+        "kind": "speech",
         "text": "我想给营区留一份商场的疏散记录，看看当时的人是怎么绕开封闭通道的。你若经过旧城商圈，帮我找找他们留下的簿子。旧图上画着出口，今天未必走得通。",
         "note": ""
       },
@@ -28016,6 +28354,7 @@
         "id": "NTL_Q217_EXQ07_turnin",
         "eventId": "EXQ07_turnin",
         "speaker": "许安",
+        "kind": "speech",
         "text": "商场的簿子收到了。旧图归旧图，你实地见过的另记，下一队才知道该信到哪一步。里面能用的衣物和随行医疗做法，我也归进去。",
         "note": ""
       },
@@ -28023,6 +28362,7 @@
         "id": "NTL_Q217_EXQ08_offer",
         "eventId": "EXQ08_offer",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "应急仓那批东西，外包装再整齐，我也不能凭这一眼说能用。你若进冷链仓，帮医务室找那份调度档案。保存条件要看记录，药要看实物。",
         "note": ""
       },
@@ -28030,6 +28370,7 @@
         "id": "NTL_Q217_EXQ08_turnin",
         "eventId": "EXQ08_turnin",
         "speaker": "陈芷",
+        "kind": "speech",
         "text": "冷链档案收到了。保存条件得一条条和现在对照。配给袋的做法可以整理出来。药盒上那张封存标签，还得和盒里的东西分开看。",
         "note": ""
       },
@@ -28037,6 +28378,7 @@
         "id": "NTL_Q236_IDLE_01",
         "eventId": "npc_lu_heng_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "营门这边照常值守。临走看看吃喝和装备，缺了东西，出门再折回来费脚。",
         "note": ""
       },
@@ -28044,6 +28386,7 @@
         "id": "NTL_Q236_OFFER_01",
         "eventId": "npc_lu_heng_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "营门有委托可办。先看事项上的要求，再决定接不接。",
         "note": ""
       },
@@ -28051,6 +28394,7 @@
         "id": "NTL_Q236_PENDING_01",
         "eventId": "npc_lu_heng_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "你接下的事还在账上。翻任务册，照下一步和上面写的条件继续。",
         "note": ""
       },
@@ -28058,6 +28402,7 @@
         "id": "NTL_Q236_IDLE_02",
         "eventId": "npc_xu_an_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "告示和路线记录都在这里。真要走远路，把去程和回程一块儿想想。",
         "note": ""
       },
@@ -28065,6 +28410,7 @@
         "id": "NTL_Q236_OFFER_02",
         "eventId": "npc_xu_an_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "这儿有可办的委托。先从事项里挑一件眼下想做的，看看需要什么。",
         "note": ""
       },
@@ -28072,6 +28418,7 @@
         "id": "NTL_Q236_PENDING_02",
         "eventId": "npc_xu_an_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "已经接过的委托照原记录继续。任务册里写着办到哪儿、接着要准备什么。",
         "note": ""
       },
@@ -28079,6 +28426,7 @@
         "id": "NTL_Q236_IDLE_03",
         "eventId": "npc_luo_zheng_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "台上的料各有归处。开工前核一下，做完把工具带走。",
         "note": ""
       },
@@ -28086,6 +28434,7 @@
         "id": "NTL_Q236_OFFER_03",
         "eventId": "npc_luo_zheng_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "工务这边有委托可办。先核事项里的要求，合适再接。",
         "note": ""
       },
@@ -28093,6 +28442,7 @@
         "id": "NTL_Q236_PENDING_03",
         "eventId": "npc_luo_zheng_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "原来那件活还在。按任务册里记的进度接着做，先看下一步缺什么。",
         "note": ""
       },
@@ -28100,6 +28450,7 @@
         "id": "NTL_Q236_IDLE_04",
         "eventId": "npc_chen_zhi_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "赶路回来先看看伤口。哪里不对劲，就说从什么时候开始的。",
         "note": ""
       },
@@ -28107,6 +28458,7 @@
         "id": "NTL_Q236_OFFER_04",
         "eventId": "npc_chen_zhi_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "这边有可办的委托。把事项里的要求看明白，决定好了再办。",
         "note": ""
       },
@@ -28114,6 +28466,7 @@
         "id": "NTL_Q236_PENDING_04",
         "eventId": "npc_chen_zhi_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "之前接的委托仍按原记录。要继续的话，看任务册里还缺哪一步。",
         "note": ""
       },
@@ -28121,6 +28474,7 @@
         "id": "NTL_Q236_IDLE_05",
         "eventId": "npc_tao_cen_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "样本可以先收着。你想查什么，想明白了再拿出来。",
         "note": ""
       },
@@ -28128,6 +28482,7 @@
         "id": "NTL_Q236_OFFER_05",
         "eventId": "npc_tao_cen_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "鉴定所这边有可接的事项。先读清范围，愿意做再确认。",
         "note": ""
       },
@@ -28135,6 +28490,7 @@
         "id": "NTL_Q236_PENDING_05",
         "eventId": "npc_tao_cen_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "接过的委托已经记在任务册里。先看剩下哪一步，别把它和另办的服务混在一起。",
         "note": ""
       },
@@ -28142,6 +28498,7 @@
         "id": "NTL_Q236_IDLE_06",
         "eventId": "npc_du_sui_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "安置和同行都得先问本人。你先看资料，决定可以晚些做。",
         "note": ""
       },
@@ -28149,6 +28506,7 @@
         "id": "NTL_Q236_OFFER_06",
         "eventId": "npc_du_sui_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "收容所这边有可办的委托。先看看事项里写的条件，再决定。",
         "note": ""
       },
@@ -28156,6 +28514,7 @@
         "id": "NTL_Q236_PENDING_06",
         "eventId": "npc_du_sui_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "之前接的事按任务册继续。想知道接下来要做什么，那里有记录。",
         "note": ""
       },
@@ -28163,6 +28522,7 @@
         "id": "NTL_Q236_IDLE_07",
         "eventId": "npc_qi_wen_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "公开的路都可以问。听过以后，往哪儿走由你自己定。",
         "note": ""
       },
@@ -28170,6 +28530,7 @@
         "id": "NTL_Q236_OFFER_07",
         "eventId": "npc_qi_wen_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "接待庭有公开委托可办。先读事项上的要求，愿意走这一趟再接。",
         "note": ""
       },
@@ -28177,6 +28538,7 @@
         "id": "NTL_Q236_PENDING_07",
         "eventId": "npc_qi_wen_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "你原来接过的委托还在册上。照任务册里记的下一步走就行。",
         "note": ""
       },
@@ -28184,6 +28546,7 @@
         "id": "NTL_Q236_IDLE_08",
         "eventId": "npc_bai_ling_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "要用的物资都得一份份数清。若缺吃喝，就先看眼下能办哪一项。",
         "note": ""
       },
@@ -28191,6 +28554,7 @@
         "id": "NTL_Q236_OFFER_08",
         "eventId": "npc_bai_ling_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "施济处有委托可办。先看看事项里要核什么，拿得准了再接。",
         "note": ""
       },
@@ -28198,6 +28562,7 @@
         "id": "NTL_Q236_PENDING_08",
         "eventId": "npc_bai_ling_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "原来的委托还没结。任务册列着接下来的条件，照那份记录继续。",
         "note": ""
       },
@@ -28205,6 +28570,7 @@
         "id": "NTL_Q236_IDLE_09",
         "eventId": "npc_ji_mu_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "想谈抄本的时候，带上你手头的记录。我们从你亲眼看见的那一段谈起。",
         "note": ""
       },
@@ -28212,6 +28578,7 @@
         "id": "NTL_Q236_OFFER_09",
         "eventId": "npc_ji_mu_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "训诫堂有可办的委托。先看事项上的要求，再决定是否要谈。",
         "note": ""
       },
@@ -28219,6 +28586,7 @@
         "id": "NTL_Q236_PENDING_09",
         "eventId": "npc_ji_mu_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "接下的委托仍照原进度。余下怎么做，先看任务册记的条件。",
         "note": ""
       },
@@ -28226,6 +28594,7 @@
         "id": "NTL_Q236_IDLE_10",
         "eventId": "npc_song_zhu_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "抄本照原来的目录收着。找哪一段，慢慢翻，纸可经不起急。",
         "note": ""
       },
@@ -28233,6 +28602,7 @@
         "id": "NTL_Q236_OFFER_10",
         "eventId": "npc_song_zhu_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "典藏室这边有可办的委托。读清事项里要核哪份资料，确认后再办。",
         "note": ""
       },
@@ -28240,6 +28610,7 @@
         "id": "NTL_Q236_PENDING_10",
         "eventId": "npc_song_zhu_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "上回的委托仍在册上。查到哪里、接下来查什么，都按原记录。",
         "note": ""
       },
@@ -28247,6 +28618,7 @@
         "id": "NTL_Q236_IDLE_11",
         "eventId": "npc_fu_heng_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "这里可以安静待一会儿。愿意说话就说，想走时也请自便。",
         "note": ""
       },
@@ -28254,6 +28626,7 @@
         "id": "NTL_Q236_OFFER_11",
         "eventId": "npc_fu_heng_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "圣堂眼下有可办理的委托。先读事项里的要求，愿意接再答复。",
         "note": ""
       },
@@ -28261,6 +28634,7 @@
         "id": "NTL_Q236_PENDING_11",
         "eventId": "npc_fu_heng_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "已经接下的事仍按任务册继续。下一步有条件的话，先照那里核对。",
         "note": ""
       },
@@ -28268,6 +28642,7 @@
         "id": "NTL_Q236_IDLE_12",
         "eventId": "npc_wen_cheng_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "公开说明在这儿。没想好的事，可以等看明白了再签。",
         "note": ""
       },
@@ -28275,6 +28650,7 @@
         "id": "NTL_Q236_OFFER_12",
         "eventId": "npc_wen_cheng_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "接待处有可办的委托。先确定事项的范围和要求，再决定。",
         "note": ""
       },
@@ -28282,6 +28658,7 @@
         "id": "NTL_Q236_PENDING_12",
         "eventId": "npc_wen_cheng_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "先前接的委托沿用原记录。任务册里有进度，也有接着要看的条件。",
         "note": ""
       },
@@ -28289,6 +28666,7 @@
         "id": "NTL_Q236_IDLE_13",
         "eventId": "npc_ji_wen_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "看记录和做检测，各有各的范围。先听清楚，再决定做到哪一步。",
         "note": ""
       },
@@ -28296,6 +28674,7 @@
         "id": "NTL_Q236_OFFER_13",
         "eventId": "npc_ji_wen_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "检测室这里有可办的委托。先看事项写的工作范围，确认以后再办。",
         "note": ""
       },
@@ -28303,6 +28682,7 @@
         "id": "NTL_Q236_PENDING_13",
         "eventId": "npc_ji_wen_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "原委托还在进行。请看任务册里的下一步和条件，按已经选定的范围继续。",
         "note": ""
       },
@@ -28310,6 +28690,7 @@
         "id": "NTL_Q236_IDLE_14",
         "eventId": "npc_shao_ning_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "看一份报告时，把记录和猜想分开。拿不准的地方，原件还可以查。",
         "note": ""
       },
@@ -28317,6 +28698,7 @@
         "id": "NTL_Q236_OFFER_14",
         "eventId": "npc_shao_ning_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "档案室有可办的委托。先看事项要求核对的内容，读过再决定。",
         "note": ""
       },
@@ -28324,6 +28706,7 @@
         "id": "NTL_Q236_PENDING_14",
         "eventId": "npc_shao_ning_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "原委托按已有进度接着查。任务册里记着还需要什么记录。",
         "note": ""
       },
@@ -28331,6 +28714,7 @@
         "id": "NTL_Q236_IDLE_15",
         "eventId": "npc_he_yuan_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "动手前先看设备说明。哪里不会用，就先停在那一步。",
         "note": ""
       },
@@ -28338,6 +28722,7 @@
         "id": "NTL_Q236_OFFER_15",
         "eventId": "npc_he_yuan_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "工坊这边有可办的委托。先核事项里的要求，合条件再办。",
         "note": ""
       },
@@ -28345,6 +28730,7 @@
         "id": "NTL_Q236_PENDING_15",
         "eventId": "npc_he_yuan_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "做过的部分照原进度算。还有什么要核，到任务册里看下一步。",
         "note": ""
       },
@@ -28352,6 +28738,7 @@
         "id": "NTL_Q236_IDLE_16",
         "eventId": "npc_yin_ke_dialogue_substitute_idle",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "已有的观察记录可以查。想停、想走，都可以直接说。",
         "note": ""
       },
@@ -28359,6 +28746,7 @@
         "id": "NTL_Q236_OFFER_16",
         "eventId": "npc_yin_ke_dialogue_substitute_quest_offer",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "观察区这里有可办的委托。先看事项写的范围，你同意了再办。",
         "note": ""
       },
@@ -28366,6 +28754,7 @@
         "id": "NTL_Q236_PENDING_16",
         "eventId": "npc_yin_ke_dialogue_substitute_quest_return",
         "speaker": "机构当班接续员",
+        "kind": "speech",
         "text": "接过的委托仍照原范围继续。任务册写着下一步，确认后再做。",
         "note": ""
       }
@@ -37612,6 +38001,38 @@
       {
         "id": "RN06_recruit_offer",
         "title": "值守记录：邀约"
+      },
+      {
+        "id": "EXQ05_offer",
+        "title": "水从哪里来：接取"
+      },
+      {
+        "id": "EXQ05_turnin",
+        "title": "水从哪里来：交付"
+      },
+      {
+        "id": "EXQ06_offer",
+        "title": "矿道里的旧工具：接取"
+      },
+      {
+        "id": "EXQ06_turnin",
+        "title": "矿道里的旧工具：交付"
+      },
+      {
+        "id": "EXQ07_offer",
+        "title": "最后一张疏散图：接取"
+      },
+      {
+        "id": "EXQ07_turnin",
+        "title": "最后一张疏散图：交付"
+      },
+      {
+        "id": "EXQ08_offer",
+        "title": "封存不是永存：接取"
+      },
+      {
+        "id": "EXQ08_turnin",
+        "title": "封存不是永存：交付"
       }
     ]
   },

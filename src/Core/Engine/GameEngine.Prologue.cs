@@ -100,6 +100,11 @@ namespace Survival.Core.Engine
         public string Presence { get; set; } = "";
         /// <summary>B24（A10-CITY §6）：可接/可交任务短标（“可接1 · 可交1”）；没有为空。只定位，不自动接任务。</summary>
         public string QuestMarks { get; set; } = "";
+        /// <summary>
+        /// Q312（B39）：「交谈」当前可执行且这次确实会接取一项委托时的预告「这次交谈会接取「{任务名}」。」；只会闲谈、介绍、交付或受阻时为 null。
+        /// 壳在推进中（行动进行中）也应省略。只读，执行仍走原交谈路径与重验。
+        /// </summary>
+        public string? TalkPreview { get; set; }
     }
 
     /// <summary>设施栏的固定文书/路标卡（PRO15 救助残页、南口路标）。</summary>

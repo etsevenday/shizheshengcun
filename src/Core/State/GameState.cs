@@ -1161,6 +1161,12 @@ namespace Survival.Core.State
         public string Text { get; set; } = "";
         /// <summary>随句的叙述/场景说明（中性样式显示）；没有为空串。</summary>
         public string Note { get; set; } = "";
+        /// <summary>
+        /// 展示时的显示类型快照（B39，Q305/Q316）：取自配置 kind；旧快照为空串，按原说话方回落（有发言人为人物对白，空发言人为中性旁白）。
+        /// </summary>
+        public string Kind { get; set; } = "";
+        /// <summary>附注显示类型快照（配置 noteKind）；旧快照为空串，按普通附注显示。</summary>
+        public string NoteKind { get; set; } = "";
         public DialogueSide Side { get; set; } = DialogueSide.Right;
         public int? Minute { get; set; }
         public string? LocationId { get; set; }

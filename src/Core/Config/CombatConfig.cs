@@ -1171,8 +1171,15 @@ namespace Survival.Core.Config
         public string EventId { get; set; } = "";
         [JsonIgnore] public string Event => string.IsNullOrEmpty(EventId) ? Id : EventId;
         public string Speaker { get; set; } = "";
+        /// <summary>
+        /// 显示类型（N02 §2、附录 §1 Q316，B39）：speech / narration / document / guide / result / status（<see cref="Survival.Core.Engine.DialogueKinds"/>）。
+        /// 只决定呈现，不参与事务；发布配置每行必填，由自动测试扫描（不在 Validate 里拦，测试夹具可以省略）。
+        /// </summary>
+        public string Kind { get; set; } = "";
         public string Text { get; set; } = "";
         public string Note { get; set; } = "";
+        /// <summary>附注的显示类型（Q316）：Note 非空时必填；只有 guide 显示行首「操作提示」（Q305）。</summary>
+        public string NoteKind { get; set; } = "";
     }
 
     /// <summary>开发测试箱（v0.5 §15）：只经调试入口取得，正常流程不可见。</summary>

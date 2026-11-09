@@ -40,9 +40,9 @@ public class B38N02RewriteTests : TestBase
         // 每个事件里的台词顺序不变
         foreach (var g in rows.GroupBy(r => (string)r["eventId"]!))
             Assert.That(Cfg.Story.Dialogues.Where(d => d.Event == g.Key).Select(d => d.Id), Is.EqualTo(g.Select(r => (string)r["id"]!)), g.Key);
-        // 原始 JSON 里也没有新增呈现字段（kind/noteKind 属 B39）
+        // 原始 JSON 里只多出 B39 补的呈现字段 kind/noteKind（Q316，B39ReadingLayerTests 另验）
         foreach (var d in (JArray)Raw["story"]!["dialogues"]!)
-            Assert.That(((JObject)d).Properties().Select(p => p.Name), Is.SubsetOf(new[] { "id", "eventId", "speaker", "text", "note" }));
+            Assert.That(((JObject)d).Properties().Select(p => p.Name), Is.SubsetOf(new[] { "id", "eventId", "speaker", "kind", "text", "note", "noteKind" }));
     }
 
     private static JToken Section(string section, string? id) => section switch

@@ -183,6 +183,8 @@ namespace Survival.Core.Engine
                     TalkBlocked = TalkBlocked(s),
                     Presence = absent ? "代班" : "在场",
                     QuestMarks = NpcQuestMarks(s, n.NpcId),
+                    // Q312（B39）：这次交谈确实会接取时，「交谈」旁的预告（与 TalkCityNpc 同一选择）
+                    TalkPreview = TalkOfferTitle(s, n.NpcId) is string qt ? TalkOfferPreviewText(qt) : null,
                 };
             }
         }

@@ -129,6 +129,7 @@ namespace Survival.Core.Engine
                 d.Lines.Add(new DialogueLine
                 {
                     LineId = id, Order = d.Lines.Count + 1, Speaker = SpeakerNow(s, cfg.Speaker), Text = cfg.Text, Note = cfg.Note, Side = SideOf(cfg),
+                    Kind = cfg.Kind, NoteKind = string.IsNullOrEmpty(cfg.Note) ? "" : cfg.NoteKind,
                     Minute = s.GameMinute, LocationId = s.CurrentLocation,
                 });
                 if (d.Minute == null) { d.Minute = s.GameMinute; d.LocationId = s.CurrentLocation; }
