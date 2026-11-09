@@ -89,15 +89,10 @@
             @foreach (var c in v.Candidates)
             {
                 var cid = c.CandidateId;
-                var templateId = s.Recruit.Candidates.FirstOrDefault(entry => entry.CandidateId == cid)?.TemplateId;
                 var choiceKey = ChoiceKey(v);
                 var why = c.Status == "available" ? (c.Blocked ?? busy ?? ChoiceBlocked(v)) : c.StatusText;
                 <div class="rc-card @(c.Status)" data-candidate="@cid">
-                    <div class="rc-head ink-person-heading">
-                        <img src="@ArtAssets.Portrait("recruitTemplate:" + templateId)" alt="" />
-                        <div><b>@c.Name</b> <span class="muted small">@c.StatusText · @c.TemplateName（@c.TemplateUse）</span>
-                            <small class="ink-template-note">职业示意 · 本人外观见下方资料</small></div>
-                    </div>
+                    <div class="rc-head"><b>@c.Name</b> <span class="muted small">@c.StatusText · @c.TemplateName（@c.TemplateUse）</span></div>
                     @* M381：属性按“ · ”分段，每段不拆行（1280 宽下数值与单位不再断开） *@
                     <div class="small rc-segs rc-identity">@Segs(c.IdentityText)</div>
                     <div class="small rc-segs">@Segs(c.SkillText)</div>

@@ -1,5 +1,4 @@
 @inherits GameComponent
-@inject NavigationManager Navigation
 
 @* 三城主城鸟瞰（开发计划 v0.9 B24，R73；A10「A10-CITY」§2—§7、S14「中枢联动归档」、S07 中枢联动归档 1/2）：
    覆盖①地图②设施③当前地面三行（tall-panel），④随身原位只读。示意图按地图数据画：每栋建筑一个 nodeId 热区（按钮，≥44px），
@@ -31,13 +30,12 @@
     if (focusB?.Path != null) foreach (var st in focusB.Path) pathEdges.Add(Key(st.From, st.To));
     var outside = e.CityOutsideNote(s, v.CityId);
     var style = v.CityId switch { "c02_church" => "church", "r02_academy" => "academy", _ => "hub" };
-    var faction = style switch { "church" => "faction_church", "academy" => "faction_academy", _ => "hub_survivor" };
 }
 
 <div class="sub-panel city-panel city-@style" role="dialog" aria-label="@($"{v.Title}主城鸟瞰")" @oncontextmenu="CancelPick" @oncontextmenu:preventDefault="true">
     <div class="sub-head">
         <div>
-            <h2><i class="ink-inline">@Icons.Markup("faction:" + faction)</i>@v.Title · 主城鸟瞰</h2>
+            <h2>@v.Title · 主城鸟瞰</h2>
             <span class="sub">只读浏览 · 上三行覆盖 · 不耗时</span>
         </div>
         <div class="city-head-btns">
@@ -52,7 +50,7 @@
     }
     <div class="city-body">
         <div class="city-main">
-        <div class="city-map" style="--cols:@cols;--rows:@rows;--city-scene:url('@Navigation.ToAbsoluteUri(ArtAssets.Scene(v.CityId))')">
+        <div class="city-map" style="--cols:@cols;--rows:@rows">
             <svg class="city-roads" viewBox="@($"0 0 {cols * 100} {rows * 100}")" preserveAspectRatio="none" aria-hidden="true">
                 @foreach (var r in v.Roads)
                 {

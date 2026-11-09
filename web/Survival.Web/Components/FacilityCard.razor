@@ -18,7 +18,7 @@
 }
 <ObjectCard CssClass="fac-card" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
             Tooltip="@(built ? effect : $"{title}未建造：{need}")" OnClick="Open">
-    <Art>@Icons.Markup("facility:" + (Kind == "workshops" ? "workbench" : Kind))</Art>
+    <Art>@Icons.Markup(Kind == "workshops" ? "parts" : Kind)</Art>
     <ChildContent>
         <div class="oc-line">@(built ? effect : need)</div>
     </ChildContent>

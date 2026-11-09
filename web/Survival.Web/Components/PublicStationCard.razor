@@ -8,7 +8,7 @@
 }
 <ObjectCard CssClass="fac-card public-station" Id="@($"ps-{Station.StationId}")" Title="@Station.Name" Badge="@(open ? "公共" : "未开放")" BadgeClass="@(open ? "built" : "unbuilt")" Dashed="@(!open)"
             Tooltip="@(open ? $"{Station.Name}：公共设施，0额外费用；点击打开制作面板（{G.E.StationName(Station.StationId)}分类）。制作照常按配方材料、工时、知识与熟练门槛" : $"{Station.Name}未开放：{Station.Blocked}")" OnClick="Open">
-    <Art>@Icons.Markup("facility:" + Station.StationId)</Art>
+    <Art>@Icons.Markup(Art(Station.StationId))</Art>
     <ChildContent>
         <div class="oc-line @(open ? "" : "warn-line")" title="@(Station.Blocked ?? "可用 · 0额外费用")">@(open ? "可用 · 0额外费用" : Station.Blocked)</div>
     </ChildContent>
@@ -18,4 +18,14 @@
     [Parameter, EditorRequired] public PublicStationView Station { get; set; } = null!;
 
     private void Open() => G.OpenCraftStation(Station.StationId);
+
+    /// <summary>与“营地建造”里的工坊同一套图标。</summary>
+    private static string Art(string station) => station switch
+    {
+        "forge" => "fire_lit",
+        "sewing" => "cloth",
+        "medical" => "bandage",
+        "armory" => "crossbow",
+        _ => "parts",
+    };
 }

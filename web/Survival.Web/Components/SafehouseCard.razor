@@ -40,7 +40,7 @@
 }
 <ObjectCard CssClass="fac-card sh-card" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
             Tooltip="@tip" OnClick="Open" AriaLabel="@($"{title}，{badge}：{line}")">
-    <Art>@Icons.Markup("facility:safehouse")</Art>
+    <Art>@Icons.Markup("shelter")</Art>
     <ChildContent>
         @* N5：柜子重量段不拆行 *@
         <div class="oc-line" title="@tip">@if (cab != null) {@lead<span class="nw">@cab</span>} else {@line@(!built && reasons.Count > 1 ? $"（另{reasons.Count - 1}条）" : "")}</div>

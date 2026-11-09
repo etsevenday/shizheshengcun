@@ -114,7 +114,7 @@
                     {
                         var packWhy = G.Running || s.Main != null ? "行动进行中" : e.CanStart(s, GameEngine.Pack(tarp));
                         <ObjectCard @key="@("tarp")" CssClass="fac-card" Title="野营遮雨布" Badge="已铺开" BadgeClass="built" Tooltip="铺开期间在这里睡眠算遮蔽（至多4人）；不挡遭遇，没有安全屋休息加成">
-                            <Art>@Icons.Markup("facility:camping")</Art>
+                            <Art>@Icons.Markup("field_tarp")</Art>
                             <ChildContent><div class="oc-line">睡眠遮蔽 · 不挡遭遇</div></ChildContent>
                             <Footer>
                                 <button type="button" class="loc-btn res-btn" disabled="@(packWhy != null)" title="@(packWhy ?? $"收起野营遮雨布（{e.Config.Safehouse.Camping.TarpPackMinutes}分钟）")"
@@ -356,7 +356,7 @@
                     <ObjectCard @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="res-card" Title="@r.Name" AriaLabel="@(noOutputLine == null ? null : $"{r.Name}：{noOutputLine}")" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
                                 Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
                                 DataDrop="@($"res:{nodeId}")" Tooltip="@(r.IsRecord ? "核心记录：点击查看领取预估" : r.IsCampaign ? "本局唯一领取：点击查看领取预估" : toolNames != null ? $"{(r.ToolBonus!.LockedSearch ? "锁闭储物点" : "资源点")}：点击查看采集预估；可用工具：{toolNames}（把它拖到这里指定使用）{(r.ToolBonus.LockedSearch ? "；" + e.ConditionalToolHint(r) : "")}" : "资源点：点击查看采集预估；这里没有可用工具，徒手进行")" OnClick="() => SelectResource(nodeId)">
-                        <Art>@Icons.Markup($"resource:{r.LocationId}:{r.NodeId}")</Art>
+                        <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
                         <ChildContent>
                             @* M84：耗时只写在按钮上（“采集/搜集 + N分钟”），状态行不再重复，给名称和产出留位 *@
                             @if (r.IsRecord)

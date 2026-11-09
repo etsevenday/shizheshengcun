@@ -40,7 +40,7 @@
                     var sid = sk.Id;
                     var unlocked = sk.Nodes.Count(n => sk.Level >= n.Level);
                     <button type="button" class="growth-skill @(sid == cur.Id ? "on" : "")" data-skill="@sid" @onclick="() => PickSkill(sid)">
-                        <b><i class="ink-inline">@Icons.Markup("skillFamily:" + sid)</i>@sk.Name</b><span>@(sk.Level)/@(sk.Cap)级 · 技能@(unlocked)/@(sk.Nodes.Count)</span>
+                        <b>@sk.Name</b><span>@(sk.Level)/@(sk.Cap)级 · 技能@(unlocked)/@(sk.Nodes.Count)</span>
                     </button>
                 }
             }
@@ -68,7 +68,7 @@
                 {
                     var on = cur.Level >= n.Level;
                     <div class="growth-node @(on ? "unlocked" : "locked")" data-node="@n.Id">
-                        <header><b><i class="ink-inline">@Icons.Markup("skill:" + n.Id)</i>@(n.Level)级 · @n.Name</b><em class="@(on ? "ok" : "muted")">@(on ? "已解锁" : "未解锁")</em></header>
+                        <header><b>@(n.Level)级 · @n.Name</b><em class="@(on ? "ok" : "muted")">@(on ? "已解锁" : "未解锁")</em></header>
                         <p>@n.Text</p>
                         <small class="muted">@NodeMeta(n)</small>
                         <small class="@(on ? "muted" : "warn-text")">@(on ? Status(actor, cur, n) : $"解锁条件：{cur.Name}达到{n.Level}级（当前{cur.Level}级）")</small>

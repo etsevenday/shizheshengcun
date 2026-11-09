@@ -546,12 +546,19 @@ else
 
     private string RecipeIcon(RecipeConfig r) => r.FacilityResult switch
     {
-        "shelterBuilt" => "facility:shelter",
-        "bedBuilt" => "facility:bed",
-        string result when result.StartsWith("workshop:", StringComparison.Ordinal) => "facility:" + result[9..],
-        "safehouse" => "facility:safehouse",
-        "fireBuilt" => "facility:fire_out",
-        _ => r.IsRepair ? "repair" : r.Outputs.Keys.FirstOrDefault() ?? "glyph:recipe",
+        "shelterBuilt" => "shelter",
+        "bedBuilt" => "bed",
+        "workshop:workbench" => "parts",
+        "workshop:forge" => "fire_lit",
+        "workshop:sewing" => "cloth",
+        "workshop:medical" => "bandage",
+        "workshop:armory" => "crossbow",
+        "workshop:kiln" => "ceramic_shell",
+        "workshop:water_station" => "clean_water",
+        "workshop:drying_rack" => "dried_meat",
+        "safehouse" => "shelter",
+        "fireBuilt" => "fire_out",
+        _ => r.IsRepair ? "repair" : r.Outputs.Keys.FirstOrDefault() ?? "stone",
     };
 
     /// <summary>配方短元信息：基础分钟 · 门槛等级（按配方的技能门槛，医疗台加工读医疗）。</summary>

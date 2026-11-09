@@ -36,7 +36,7 @@
                         : $"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）";
                 <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(post || companion ? " post-card" : "")}{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(post || companion ? n.KindLabel : n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
                             Tooltip="@tip" OnClick="() => Talk(id, why)">
-                    <Art>@Icons.Markup((n.Substitute ? "duty:" : "actor:") + id)</Art>
+                    <Art><img class="npc-portrait" src="img/portraits/unknown.svg" alt="@($"{n.Name}（临时形象）")" draggable="false" /></Art>
                     <ChildContent>
                         @{
                             // B24（A10-CITY §6）：卡面补组织、在场/代班与可接/可交短标（只定位，不自动接任务）
@@ -89,7 +89,7 @@
                 var id = d.Id;
                 <ObjectCard @key="@("doc-" + id)" Id="@($"doc-{id}")" CssClass="@($"res-card doc-card{(d.Choices.Count > 0 ? " choice-card" : "")}{(focus == "doc:" + id ? " tut-lit" : "")}")" Title="@d.Title"
                             Tooltip="@(why != null ? $"{d.Title}：{d.Status}。" : $"{d.Title}：{d.Status}。点卡片或“查看”阅读（不耗时，不移动、不揭开未知地点；可重读）")" OnClick="() => Read(id, why)">
-                    <Art>@Icons.Markup(id == "village_south_sign" ? "glyph:route" : "glyph:knowledge")</Art>
+                    <Art>@Icons.Markup(id == "village_south_sign" ? "route" : "placeholder")</Art>
                     <ChildContent>
                         @* Q259：状态行只写文书自身状态，全局原因在下面按钮的 disabled 和 title。
                            Q270 选 A：读不了（why 非空：缺前置、忙碌、未读对白等）时卡面悬停只写“{标题}：{状态}。”，阅读指引只在可读时写；
