@@ -1,38 +1,43 @@
 @inherits GameComponent
 
-@* 中央时间推进条（S14 §11、S01 §9、S13 §5）：所有主动推进世界时间的行动开始后，在屏幕中央显示紧凑横条——行动名、进度条、
-   剩余游戏时间（固定时长“剩余X”，工作/等待烹饪“预计剩余X”，燃料不足等写明原因而不是假倒计时）与明确的“退出”。
-   150ms 淡入、150ms 淡出（只是表现：不推进 tick、不延迟退出、淡出期间不拦截操作）。暂停时同一区域显示真实原因与“继续/退出”；
-   对话等待时标“对话中，时间未推进”并暂隐条形动画。数据全部来自内核 ActionProgress，界面不另建现实秒表。
-   InFlow：嵌在暂停层中间行（暂停/补给时），否则悬浮在中部正中。 *@
+@* 中央行动位（S14 §11、S01 §9、S13 §5；B31b R55 按 a9b93f0 PXn／PXe，逐字稿 §1.1 Q320）：所有主动推进世界时间的行动开始后，
+   在中部正中显示「行动进行中」浮窗——行动名、「已推进{已耗时} / {计划时长}」与「剩余{时长}」（工作量型与等待烹饪为「已推进{已耗时}」与
+   「预计剩余{时长}」，算不出时剩余行让位给实际原因）、进度条、「退出行动」。暂停时同一组件嵌在「行动暂停中」居中弹窗里，给「暂停原因」与
+   「继续行动」「退出行动」。150ms 淡入淡出只是表现（不推进 tick、不延迟退出、淡出期间不拦截操作）。数据全部来自内核 ActionProgress。
+   InFlow：嵌在暂停弹窗中间行；Docked：中部开着一级面板时收成底部窄条，不盖面板里的按钮（修 1280 下浮窗盖住城市面板「接取」）。 *@
 @{
     var p = Info ?? G.ProgressInfo();
 }
 @if (p != null)
 {
     var dlg = p.DialogueWaiting;
-    var remain = p.RemainingMinutes is int r
-        ? (p.Estimated ? $"预计剩余{Clock.Duration(r)}" : $"剩余{Clock.Duration(r)}")
-        : p.Paused ? "暂停中" : "无法给出剩余时间";
+    var (advanced, remain) = ShellText.ProgressLines(p);
     var pct = Math.Clamp(p.Fraction, 0, 1) * 100;
     var busy = G.Running || G.S.Sub != null;
     var exitNote = G.ExitNote != null && G.ExitNoteAction == p.ActionId ? G.ExitNote : null;
-    <div class="cprog @(InFlow ? "inflow" : "float") @(Fading ? "fading" : "") @(p.Paused ? "paused" : "") @(dlg ? "dlg" : "")"
-         role="status" aria-live="polite" aria-label="@($"{p.Label}：{(dlg ? "对话中，时间未推进" : remain)}")" inert="@(Fading || G.DialogueLocked)">
+    <div class="cprog @(InFlow ? "inflow" : Docked ? "float docked" : "float") @(Fading ? "fading" : "") @(p.Paused ? "paused" : "") @(dlg ? "dlg" : "")"
+         role="status" aria-live="polite" aria-label="@($"{p.Label}：{(dlg ? "对话中，时间未推进" : remain ?? advanced)}")" inert="@(Fading || G.DialogueLocked)">
         <div class="cp-head">
-            <span class="cp-chip @(p.IsSub ? "sub" : p.Paused ? "paused" : "")">@(p.IsSub ? "补给／维护" : p.Paused ? "已暂停" : dlg ? "等待对话" : "进行中")</span>
             <b class="cp-name">@p.Label</b>
-            <span class="cp-remain @(p.RemainingMinutes == null && !p.Paused ? "warn-text" : "")">@(dlg ? "对话中，时间未推进" : remain)</span>
+            <span class="cp-chip @(p.IsSub ? "sub" : p.Paused ? "paused" : "")">@(p.IsSub ? "补给／维护" : dlg ? "等待对话" : p.Paused ? ShellText.ActionPaused : ShellText.ActionRunning)</span>
         </div>
-        @if (!dlg)
+        @if (dlg)
         {
+            <div class="cp-lines"><span class="cp-remain">对话中，时间未推进</span></div>
+        }
+        else
+        {
+            <div class="cp-lines">
+                <span class="cp-adv">@advanced</span>
+                @if (remain != null) { <span class="cp-remain @(p.RemainingMinutes == null && !p.Paused ? "warn-text" : "")">@remain</span> }
+            </div>
             <div class="cp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@((int)pct)"><i style="width:@pct.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></i></div>
         }
         @if (p.Paused && !string.IsNullOrEmpty(p.PauseText))
         {
-            <div class="cp-reason">暂停原因：@p.PauseText</div>
+            <div class="cp-reason">@ShellText.PauseReason：@p.PauseText</div>
         }
-        @if (!string.IsNullOrEmpty(p.StopNote))
+        @if (!string.IsNullOrEmpty(p.StopNote) && p.StopNote != remain)
         {
             <div class="cp-note warn-text">@p.StopNote</div>
         }
@@ -48,22 +53,24 @@
         <div class="cp-ctrl">
             @if (p.Paused && !p.IsSub)
             {
-                <button type="button" class="primary cp-go" disabled="@busy" @onclick="G.Resume">继续</button>
+                <button type="button" class="primary cp-go" disabled="@busy" @onclick="G.Resume">@ShellText.ResumeAction</button>
             }
             else if (G.Running && !dlg)
             {
                 <button type="button" class="secondary cp-skip" @onclick="G.SkipAnimation" title="只跳过表现，不改变游戏时间与结果">跳过动画</button>
             }
-            @* 附带小改：退出会作废本次成果的行动（探索/清理/采集/制作/处理尸体/移动）在“退出”旁常驻写明后果 *@
+            @* 附带小改：退出会作废本次成果的行动（探索/清理/采集/制作/处理尸体/移动）在退出旁常驻写明后果 *@
             <span class="cp-exit-note @(p.ExitForfeits ? "forfeit" : "")">@(exitNote ?? (p.Exit == ExitKind.None || p.Exit == ExitKind.CompletesCurrentTransaction || p.ExitForfeits ? p.ExitNote : ""))</span>
-            <button type="button" class="secondary danger cp-exit" disabled="@(p.Exit == ExitKind.None)" title="@p.ExitNote" @onclick="G.Exit">退出</button>
+            <button type="button" class="secondary danger cp-exit" disabled="@(p.Exit == ExitKind.None)" title="@p.ExitNote" @onclick="G.Exit">@ShellText.ExitAction</button>
         </div>
     </div>
 }
 
 @code {
-    /// <summary>嵌在暂停层中间行；false 时悬浮在中部正中。</summary>
+    /// <summary>嵌在暂停弹窗中间行；false 时悬浮在中部正中。</summary>
     [Parameter] public bool InFlow { get; set; }
+    /// <summary>中部开着一级面板：收成中部底部窄条，不盖面板内容。</summary>
+    [Parameter] public bool Docked { get; set; }
     /// <summary>淡出中的最后一帧（行动已结束/退出）：不拦截输入。</summary>
     [Parameter] public bool Fading { get; set; }
     /// <summary>淡出时沿用的最后数据；为 null 时取当前行动。</summary>

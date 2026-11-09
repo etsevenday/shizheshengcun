@@ -15,9 +15,20 @@
     var busy = sub != null || G.Running;
 }
 
-@* 暂停层（S01 §7、S14 §8、§11）：上半区原因/剩余/预留，中间一行是中央推进条（继续/退出、真实原因，或补给子行动的进度与退出），
-   下半区补给与点火。上下两区各自滚动，中央条始终在正中、可达。 *@
-<div class="center-layer pause-grid" role="alertdialog" aria-label="行动暂停" inert="@G.DialogueLocked">
+@* 暂停层（S01 §7、S14 §8、§11；B31b R55 按 a9b93f0 PXe）：中部遮罩上的「行动暂停中」居中弹窗（1600 基准 760×547，随 Q325 三档）。
+   上半区原因/剩余/预留，中间一行是中央行动位（「继续行动」「退出行动」、暂停原因，或补给子行动的进度与退出），下半区补给与点火；
+   上下两区各自滚动，中间一行始终可达。遮罩只盖中部，左右栏照常可看。
+   中部开着一级面板（事项盘等）时收成中部底部窄条：只留中央行动位与原反馈，不盖面板（修暂停时城市面板盖住暂停层标题与原因）；关面板回到完整弹窗。 *@
+@if (Docked)
+{
+    <div class="pause-dock" role="alertdialog" aria-label="@ShellText.ActionPaused" inert="@G.DialogueLocked">
+        <CentralProgress InFlow="true" />
+        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+    </div>
+    return;
+}
+<div class="pause-scrim">
+<div class="center-layer pause-grid" role="alertdialog" aria-label="@ShellText.ActionPaused" inert="@G.DialogueLocked">
     <div class="pg-top" data-wheel="y">
     @if (sub != null)
     {
@@ -113,8 +124,12 @@
     @if (G.Notice != null) { <div class="notice" style="max-width:720px">@G.Notice</div> }
     </div>
 </div>
+</div>
 
 @code {
+    /// <summary>中部开着一级面板：收成底部窄条。</summary>
+    [Parameter] public bool Docked { get; set; }
+
     private async Task Sub(ActionRequest r) => await G.StartAction(r);
 
 

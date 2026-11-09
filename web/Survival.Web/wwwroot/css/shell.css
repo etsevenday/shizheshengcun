@@ -162,3 +162,55 @@
 .attr-page .op-head h2 { margin: 0 0 4px; font-size: var(--fs-title); font-weight: 500; }
 .attr-page .op-head .attr-name { font-size: var(--fs-body); color: var(--ink2-gold); }
 .attr-page .op-head .attr-name small { font-size: var(--fs-aux); }
+
+/* ───── R55 中央行动位（PXn 行动进行中、PXe 行动暂停中；Q320） ───── */
+/* 新稿两框都以视口正中为准（PXn [512,310,576,281]、PXe [420,187,760,547]）：组件挂在中部，按左右栏、顶底栏差值回正到视口中心 */
+:root {
+  --sh-dx: calc((var(--sh-right) - var(--sh-left)) / 2);
+  --sh-dy: calc((var(--sh-foot) + var(--sh-pad-bottom) - var(--sh-top) - var(--sh-pad-top)) / 2);
+  --dock-h: 104px;
+}
+.wasteland .cprog.float:not(.docked) {
+  width: min(var(--float-w), calc(100% - 16px));
+  transform: translate(calc(-50% + var(--sh-dx)), calc(-50% + var(--sh-dy)));
+  padding: 14px 18px; gap: 10px;
+}
+.cprog .cp-head { align-items: center; justify-content: space-between; }
+.cprog .cp-name { font-size: var(--fs-title); font-weight: 500; }
+.cprog .cp-chip { order: 2; }
+.cprog .cp-lines { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; min-width: 0; }
+.cprog .cp-adv { font-size: var(--fs-dialogue); font-variant-numeric: tabular-nums; color: var(--ink2-light); }
+.cprog .cp-remain { font-size: var(--fs-body); color: var(--muted); }
+.cprog .cp-ctrl .cp-exit { min-width: 120px; min-height: 40px; }
+.cprog .cp-ctrl .cp-go { min-width: 140px; }
+
+/* 暂停弹窗：遮罩只盖中部，弹窗居中（三档 608×438／760×547／912×656，放不下时限制在中部内、留 8px） */
+.pause-scrim {
+  position: absolute; inset: 0; z-index: 25; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--ink2-black) 42%, transparent);
+}
+.pause-scrim > .center-layer.pause-grid {
+  position: relative; inset: auto;
+  width: min(var(--pop-w), calc(100% - 16px)); height: min(var(--pop-h), calc(100% - 16px));
+  transform: none;
+}
+.pause-scrim .pg-mid .cprog.inflow { width: 100%; }
+
+/* 一级面板开着时：中央行动位收成中部底部窄条（不盖面板），整备、成长这类四轨面板让出这一条 */
+.wasteland .cprog.float.docked, .pause-dock {
+  position: absolute; left: 0; right: 0; bottom: 0; top: auto; transform: none; z-index: 45; width: auto;
+}
+.pause-dock { display: flex; flex-direction: column; gap: 4px; }
+.pause-dock .notice { margin: 0; }
+.wasteland .cprog.docked, .pause-dock .cprog.inflow {
+  width: auto; margin: 0; display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+  align-items: center; gap: 4px 14px; padding: 6px 12px;
+}
+.cprog.docked > *, .pause-dock .cprog.inflow > * { grid-column: 1 / -1; }
+.cprog.docked > .cp-head, .pause-dock .cprog > .cp-head { grid-column: 1; grid-row: 1; }
+.cprog.docked > .cp-lines, .pause-dock .cprog > .cp-lines { grid-column: 2; grid-row: 1; }
+.cprog.docked > .cp-ctrl, .pause-dock .cprog > .cp-ctrl { grid-column: 3; grid-row: 1; }
+.cprog.docked .cp-name, .pause-dock .cprog .cp-name { font-size: var(--fs-body); }
+.cprog.docked .cp-adv, .pause-dock .cprog .cp-adv { font-size: var(--fs-body); }
+.cprog.docked .cp-exit-note, .pause-dock .cprog .cp-exit-note { max-width: 260px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.center-scroll.four.full-panel.docked-prog .panel-host { bottom: calc(var(--dock-h) + var(--sh-gap)); }
