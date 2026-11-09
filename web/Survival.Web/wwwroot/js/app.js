@@ -111,6 +111,13 @@ window.survival = {
   saveRemove: function (key) {
     try { window.localStorage.removeItem(key); window.localStorage.removeItem(key + '.tmp'); } catch (e) { }
   },
+  // 阅读字体与动画速度（B31a，Q295/Q321）：font 为 pixel/clear，k 为时长倍率 0.5/1/1.5。
+  // 偏好读写与默认回落在内核 UiPresentationPrefs；这里只把结果落到 <html>，CSS 据此换字体、乘动效时长。
+  applyPresentation: function (font, k) {
+    var r = document.documentElement;
+    if (font === 'clear') r.setAttribute('data-read-font', 'clear'); else r.removeAttribute('data-read-font');
+    r.style.setProperty('--motion-k', String(k > 0 ? k : 1));
+  },
   // 通用留言组件：游戏提供当前状态与存档，其余（截图、系统识别、提交）由组件完成
   initFeedback: function (bridge) {
     if (!window.FeedbackWidget) return;
@@ -420,4 +427,13 @@ window.survivalPop = (function () {
   });
   document.addEventListener('focusout', function (ev) { if (ev.target === anchor) hide(); });
   document.addEventListener('pointerdown', hide, true);
+})();
+
+// B31a（Q295/Q321）：页面一载入就按浏览器偏好套用阅读字体与动画速度（标题页也生效），无有效偏好时用默认（细像素、标准）。
+// 取值与内核 UiPresentationPrefs 的 ParseFont/ParseSpeed 一致；进游戏后由网页壳再按同一偏好设置一次。
+(function () {
+  var font = null, speed = null;
+  try { font = window.localStorage.getItem('survival.pref.readFont'); speed = window.localStorage.getItem('survival.pref.animSpeed'); } catch (e) { }
+  var k = speed === 'fast' ? 0.5 : speed === 'slow' ? 1.5 : 1;
+  window.survival.applyPresentation(font === 'clear' ? 'clear' : 'pixel', k);
 })();

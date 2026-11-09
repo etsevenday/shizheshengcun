@@ -27,7 +27,7 @@
 .center-scroll.four > .section.carried { grid-row: 4; }
 .center-scroll.four > .section { overflow: hidden; padding: 4px 10px 6px; }
 .center-scroll.four > .section .section-head { margin-bottom: 4px; padding-bottom: 2px; }
-.center-scroll.four > .section .section-head h2 { font-size: 16px; }
+.center-scroll.four > .section .section-head h2 { font-size: var(--fs-body); }
 .center-scroll.four .fac-scroll { overflow: auto; }
 .center-scroll.four .map-adjacent { overflow: auto; }
 
@@ -43,7 +43,7 @@
 .center-scroll.four .section.carried .row-scroll.slots5 > .card-col > .card { width: 100%; min-width: 0; max-width: none; aspect-ratio: auto; }
 .slot-free {
   display: flex; align-items: center; justify-content: center; height: 100%; min-height: 0;
-  border: 1px dashed #b4a27a66; border-radius: 4px; color: #bfb79c88; font-size: 13px; letter-spacing: 2px; user-select: none;
+  border: 1px dashed #b4a27a66; border-radius: 4px; color: #bfb79c88; font-size: var(--fs-aux); letter-spacing: 2px; user-select: none;
 }
 
 /* ───── 物品卡：图片区约占卡面 70%（Q28，取代原约80%），下方约 30% 写短名称；数量/状态做带衬底的角标，不压主图主体（S14 §18.2） ───── */
@@ -64,16 +64,16 @@
 .wasteland .center-scroll.four .row-scroll .card.item .ctitle {
   grid-column: 1; grid-row: 2; min-height: 0; overflow: hidden;
   display: flex; align-items: center; justify-content: flex-start;
-  padding: 0 38px 0 7px; font-size: 14px; line-height: 1.1; border: 0;
+  padding: 0 38px 0 7px; font-size: var(--fs-aux); line-height: 1.1; border: 0;
 }
 .wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wasteland .center-scroll.four .row-scroll .card.item .ctitle .qty {
-  position: absolute; top: 4px; right: 4px; z-index: 2; font-size: 13px; padding: 1px 6px;
+  position: absolute; top: 4px; right: 4px; z-index: 2; font-size: var(--fs-aux); padding: 1px 6px;
   background: #f2e6c3f0; border: 1px solid #88784f; box-shadow: 1px 1px #655837;
 }
 .wasteland .center-scroll.four .row-scroll .card.item .cinfo {
   grid-column: 1; grid-row: 1; align-self: end; justify-self: start; z-index: 2;
-  max-width: calc(100% - 8px); margin: 0 4px 3px; padding: 1px 6px; font-size: 12px; line-height: 1.35;
+  max-width: calc(100% - 8px); margin: 0 4px 3px; padding: 1px 6px; font-size: var(--fs-aux); line-height: 1.35;
   background: #efe6cbe8; border-radius: 2px; box-shadow: 0 1px 2px #0004;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -82,7 +82,7 @@
 /* M78-N3：精灵图图块边缘会带进相邻图块的碎片，物品卡里裁掉外圈 4% */
 .wasteland .center-scroll.four .row-scroll .card.item .art > .ink-sprite { clip-path: inset(4%); }
 .slot-span {
-  position: absolute; top: 4px; left: 4px; z-index: 2; font-size: 12px; padding: 1px 5px;
+  position: absolute; top: 4px; left: 4px; z-index: 2; font-size: var(--fs-aux); padding: 1px 5px;
   background: #3a3426e6; color: #f2e6c3; border-radius: 2px;
 }
 /* 锅卡在物品行：卡面只放名称、水量与食材摘要（M77-B2），撑满行高、不卡内滚动；完整内容在选卡浮窗里展开 */
@@ -94,7 +94,7 @@
 .apop.card-pop:not(:has(.tbar)) { display: none; }
 .apop.card-pop .apop-head { position: absolute; top: 4px; right: 4px; z-index: 3; }
 .apop.card-pop .apop-title, .apop.card-pop .apop-art { display: none; }
-.apop.card-pop .apop-x { width: 32px; height: 32px; font-size: 18px; }
+.apop.card-pop .apop-x { width: 32px; height: 32px; font-size: var(--fs-body); }
 .apop.card-pop .apop-body { gap: 0; }
 .apop.card-pop .tbar { border: 0; box-shadow: none; background: transparent; padding: 0; gap: 5px; }
 .apop.card-pop .ca-head { padding-right: 38px; }
@@ -106,29 +106,29 @@
   background: transparent; border: 0; text-align: left;
 }
 .char-fold .fold-name { font-weight: 600; }
-.char-fold .fold-sum { flex: 1 1 auto; min-width: 0; color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.char-fold .fold-sum { flex: 1 1 auto; min-width: 0; color: var(--muted); font-size: var(--fs-aux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .char-fold .skill-list, .char-fold .trait-row, .char-fold .risk { margin: 0 10px 8px; }
 
 /* ───── 右栏人物：装备区七个穿戴槽（B3 H9，S06 全系统更新目标 §1、A10 §7） ───── */
 .char-fold .equip-list { margin: 0 10px 8px; display: flex; flex-direction: column; gap: 2px; }
 /* R90b：槽名一列，右边三行——名称（带实例号）、耐久/弹仓/重量、按钮；1280×720 右栏里三样都可读，不再被按钮挤掉 */
-.equip-row { display: grid; grid-template-columns: 4.6em minmax(0, 1fr); align-items: start; gap: 6px; min-height: 28px; font-size: 14px; padding: 2px 0; border-bottom: 1px solid #ffffff10; }
-.equip-row .eq-slot { color: var(--muted); font-size: 13px; white-space: nowrap; line-height: 24px; }
+.equip-row { display: grid; grid-template-columns: 4.6em minmax(0, 1fr); align-items: start; gap: 6px; min-height: 28px; font-size: var(--fs-aux); padding: 2px 0; border-bottom: 1px solid #ffffff10; }
+.equip-row .eq-slot { color: var(--muted); font-size: var(--fs-aux); white-space: nowrap; line-height: 24px; }
 .equip-row .eq-main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .equip-row .eq-item { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 24px; }
 .equip-row .eq-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.equip-row .eq-kg { margin-left: auto; padding-left: 6px; flex: 0 0 auto; color: var(--muted); font-size: 12px; }
-.equip-row .eq-stat { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.equip-row .eq-kg { margin-left: auto; padding-left: 6px; flex: 0 0 auto; color: var(--muted); font-size: var(--fs-aux); }
+.equip-row .eq-stat { color: var(--muted); font-size: var(--fs-aux); line-height: 1.4; }
 .equip-row.empty .eq-item { color: var(--muted); }
 .equip-row .eq-ico { display: inline-flex; width: 22px; height: 22px; flex: 0 0 22px; }
 .equip-row .eq-ico svg, .equip-row .eq-ico img { width: 100%; height: 100%; }
 .equip-row .eq-btns { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
-.equip-row .eq-btn { font-size: 12px; padding: 1px 10px; min-height: 24px; white-space: nowrap; background: #2f3a31; color: var(--text); border: 1px solid var(--accent); border-radius: 4px; }
+.equip-row .eq-btn { font-size: var(--fs-aux); padding: 1px 10px; min-height: 24px; white-space: nowrap; background: #2f3a31; color: var(--text); border: 1px solid var(--accent); border-radius: 4px; }
 .equip-row .eq-btn:hover:not(:disabled) { background: #3d4a3a; }
 .equip-row .eq-btn.alt { border-color: var(--warn); }
 /* R90c：禁用态明显区别于可点（同 .secondary:disabled 的灰字，并去底色、虚线框） */
 .equip-row .eq-btn:disabled { background: transparent; color: #7d8578; border: 1px dashed var(--line); }
-.equip-list .ca-note { font-size: 12px; margin-top: 4px; }
+.equip-list .ca-note { font-size: var(--fs-aux); margin-top: 4px; }
 
 /* ───── 选中随身武器卡：装备到武器Ⅰ/武器Ⅱ（B3 H9） ───── */
 .tbar-row.equip-to { display: flex; gap: 6px; }
@@ -141,7 +141,7 @@
 /* ───── 旧档非法同类双武器整理（B3 H8） ───── */
 .dup-item { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
 .dup-item .dup-keep { display: flex; align-items: center; gap: 8px; flex: 1 1 260px; cursor: pointer; }
-.dup-item .dup-dest { display: flex; gap: 12px; font-size: 14px; }
+.dup-item .dup-dest { display: flex; gap: 12px; font-size: var(--fs-aux); }
 .dup-item .dup-dest label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
 
 /* ───── 区域地图节点方位徽标（Q22） ───── */
@@ -150,7 +150,7 @@
 /* ───── 随身超额整理窗（S06 §8） ───── */
 .overflow-layer { position: fixed; inset: 0; z-index: 80; background: #050b0dcc; display: flex; align-items: center; justify-content: center; }
 .overflow-box { width: min(620px, 92vw); max-height: 86vh; display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; }
-.ov-head h2 { margin: 0 0 4px; font-size: 20px; }
+.ov-head h2 { margin: 0 0 4px; font-size: var(--fs-title); }
 .ov-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
 .ov-item { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
 .ov-item.on { border-color: var(--accent); }
@@ -170,7 +170,7 @@
 .bt-scene .ally-card { flex: 1 1 auto; display: flex; flex-direction: row; gap: 6px; min-height: 0; padding: 2px; }
 .bt-scene .ally-art { flex: 1 1 0; min-width: 0; min-height: 0; max-height: none; }
 .bt-scene .ally-art img { height: 100%; max-height: none; width: auto; max-width: 100%; object-fit: contain; }
-.bt-scene .ally-foot { flex: 0 0 104px; display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; padding: 2px 6px 3px 0; font-size: 13px; }
+.bt-scene .ally-foot { flex: 0 0 104px; display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; padding: 2px 6px 3px 0; font-size: var(--fs-aux); }
 .bt-scene .ally-head { border: 0; padding: 0; }
 .bt-scene .ally-foot .track { height: 6px; }
 .bt-scene .bt-foes { display: flex; gap: 6px; min-height: 0; }
@@ -191,21 +191,21 @@
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: minmax(0, 1fr) auto;
   gap: 3px 8px; padding: 5px 8px 6px;
 }
-.bt-console .bc-label { display: block; font-size: 12px; color: var(--muted); line-height: 14px; margin-bottom: 2px; white-space: nowrap; }
+.bt-console .bc-label { display: block; font-size: var(--fs-aux); color: var(--muted); line-height: 14px; margin-bottom: 2px; white-space: nowrap; }
 .bt-console .bc-equip { grid-column: 1; grid-row: 1; display: grid; grid-template-columns: 34px minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 5px; min-width: 0; max-width: 140px; }
 .bt-console .bc-equip .bc-label { grid-column: 1 / -1; }
 .bt-console .bc-weapon-art { width: 34px; height: 34px; border-radius: 4px; background: var(--paper); display: flex; align-items: center; justify-content: center; }
 .bt-console .bc-weapon-art svg { width: 30px; height: 30px; }
 .bt-console .bc-weapon-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
-.bt-console .bc-weapon-text b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bt-console .bc-weapon-text small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-console .bc-weapon-text b { font-size: var(--fs-aux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-console .bc-weapon-text small { font-size: var(--fs-aux); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bt-console .bc-groups { grid-column: 2; grid-row: 1; display: flex; gap: 10px; min-width: 0; min-height: 0; overflow-x: auto; overflow-y: hidden; }
 .bt-console .bc-group { flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; }
 .bt-console .bc-cmds { display: flex; gap: 4px; min-height: 0; }
 .bt-console .bc-cmds .cmdt { width: 58px; height: 58px; flex: 0 0 auto; }
 .bt-console .bc-status { grid-column: 3; grid-row: 1; max-width: 120px; min-width: 0; overflow: hidden; }
 .bt-console .bc-feed { grid-column: 1 / -1; grid-row: 2; display: flex; align-items: center; gap: 6px; min-height: 40px; min-width: 0; }
-.bt-console .bc-feed .bx-hint, .bt-console .bc-feed .bx-last { flex: 1 1 auto; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-console .bc-feed .bx-hint, .bt-console .bc-feed .bx-last { flex: 1 1 auto; min-width: 0; font-size: var(--fs-aux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bt-console .bc-feed .bx-last { color: var(--muted); }
 .bt-console .bc-feed .bx-go { min-height: 40px; padding: 2px 12px; }
 .bt-console .bc-feed .bx-x { width: 40px; height: 40px; }
@@ -226,14 +226,14 @@
 .pot-card.compact .pc-icon { flex: 0 0 30px; width: 30px; height: 30px; }
 .pot-card.compact .pc-icon svg, .pot-card.compact .pc-icon img { width: 30px; height: 30px; }
 .pot-card.compact .pc-title { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
-.pot-card.compact .pc-title b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pot-card.compact .pc-title small { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pot-card.compact .pc-title b { font-size: var(--fs-aux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pot-card.compact .pc-title small { font-size: var(--fs-aux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pot-card.compact .pc-head .card-arrow, .pot-card.compact .pc-head .row-arrow { position: relative; right: auto; bottom: auto; flex: 0 0 auto; }
 .pot-card.compact .pot-fill { padding: 2px 5px; min-height: 0; }
-.pot-card.compact .pot-fill-head { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; }
+.pot-card.compact .pot-fill-head { display: flex; justify-content: space-between; gap: 6px; font-size: var(--fs-aux); line-height: 1.3; white-space: nowrap; overflow: hidden; }
 .pot-card.compact .pot-fill-head b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
 .pot-card.compact .pot-fill-head em { font-style: normal; color: #6b3f19; overflow: hidden; text-overflow: ellipsis; }
-.pc-sum { display: flex; align-items: center; gap: 4px; min-height: 26px; padding: 1px 4px; border: 1px dashed #8e805b; border-radius: 2px; font-size: 12px; overflow: hidden; cursor: pointer; }
+.pc-sum { display: flex; align-items: center; gap: 4px; min-height: 26px; padding: 1px 4px; border: 1px dashed #8e805b; border-radius: 2px; font-size: var(--fs-aux); overflow: hidden; cursor: pointer; }
 .pc-sum-label { flex: 0 0 auto; white-space: nowrap; }
 .pc-sum-food { position: relative; flex: 0 0 24px; width: 24px; height: 24px; }
 .pc-sum-food svg, .pc-sum-food img { width: 24px; height: 24px; }
@@ -259,10 +259,10 @@
 .center-scroll.four .fire-card .fc-foot { grid-area: foot; flex-wrap: nowrap; gap: 4px; }
 .center-scroll.four .fire-card .fc-fuel { min-height: 40px; padding: 0 2px; gap: 4px; }
 .center-scroll.four .fire-card .fc-art svg { width: 28px; height: 28px; }
-.center-scroll.four .fire-card .fc-title b { font-size: 15px; }
-.center-scroll.four .fire-card .fuel-line { font-size: 12px; white-space: nowrap; }
-.center-scroll.four .fire-card .fc-btn { min-height: 40px; padding: 1px 6px; font-size: 14px; gap: 3px; min-width: 0; }
-.center-scroll.four .fire-card .fc-btn small { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.center-scroll.four .fire-card .fc-title b { font-size: var(--fs-body); }
+.center-scroll.four .fire-card .fuel-line { font-size: var(--fs-aux); white-space: nowrap; }
+.center-scroll.four .fire-card .fc-btn { min-height: 40px; padding: 1px 6px; font-size: var(--fs-aux); gap: 3px; min-width: 0; }
+.center-scroll.four .fire-card .fc-btn small { font-size: var(--fs-aux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .center-scroll.four .fire-card .fc-btn span { min-width: 0; }
 .center-scroll.four .fire-card .fc-btn.cook { height: 100%; }
 .center-scroll.four .fire-card .fc-slots { gap: 6px; align-items: stretch; }
@@ -302,8 +302,8 @@
 /* N4 等待烹饪的禁用原因最多两行，完整原因在悬停提示 */
 .center-scroll.four .fire-card .fc-btn.cook small { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
 /* 锅卡名称（不带实例号）与第二行 */
-.pot-card.compact .pc-title b { font-size: 14px; }
-.pot-card.compact .pc-title small { font-size: 11px; }
+.pot-card.compact .pc-title b { font-size: var(--fs-aux); }
+.pot-card.compact .pc-title small { font-size: var(--fs-aux); }
 /* 选卡浮窗：操作在上、锅内容在下，浮窗本身不再整体滚动把主按钮滚走 */
 .apop.card-pop.pot { overflow-y: hidden; display: flex; flex-direction: column; }
 .apop.card-pop.pot .apop-body { min-height: 0; display: flex; flex-direction: column; }
@@ -311,7 +311,7 @@
 .apop.card-pop.pot .pot-pop-detail { flex: 1 1 auto; min-height: 48px; }
 /* 结果提示条：落在底栏，最多两行，完整内容在悬停提示 */
 .toast { max-width: min(760px, 70vw); }
-.toast span { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.3; }
+.toast span { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: var(--fs-aux); line-height: 1.3; }
 /* B22h 试玩修复（M448）：长结果提示（80 字以上，如撤退落点带敌踪）最多五行、宽度放到 900px/76vw，向上展开盖住随身行一部分，保证 1280×720 下完整可读 */
 .toast.long { max-width: min(900px, 76vw); padding-top: 4px; padding-bottom: 4px; }
 .toast.long span { -webkit-line-clamp: 5; }
@@ -344,7 +344,7 @@
 .stack-layer .sl-art { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .stack-layer .sl-art svg, .stack-layer .sl-art img, .stack-layer .sl-art > .ink-sprite { width: 100%; height: 100%; object-fit: contain; }
 .stack-layer .sl-tag {
-  flex: 0 0 auto; align-self: stretch; padding: 1px 5px; font-size: 12px; line-height: 1.3; border-radius: 2px;
+  flex: 0 0 auto; align-self: stretch; padding: 1px 5px; font-size: var(--fs-aux); line-height: 1.3; border-radius: 2px;
   background: #efe6cbe8; box-shadow: 0 1px 2px #0004; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* 操作窗里的批次条（同一组批次，默认最前合法可用批次） */
@@ -353,8 +353,8 @@
   display: flex; flex-direction: column; align-items: flex-start; justify-content: center; min-height: 40px; min-width: 72px;
   padding: 2px 8px; border: 1px solid var(--line); border-radius: 3px; background: none; color: inherit; text-align: left;
 }
-.ca-batch b { font-size: 14px; }
-.ca-batch small { font-size: 12px; color: var(--muted); }
+.ca-batch b { font-size: var(--fs-aux); }
+.ca-batch small { font-size: var(--fs-aux); color: var(--muted); }
 .ca-batch.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .ca-batch.spoiled small { color: #f0c7b9; }
 
@@ -385,19 +385,19 @@
   grid-column: 1; grid-row: 2; align-self: end; min-width: 0; padding: 2px 4px 0 7px; border: 0;
 }
 .wasteland .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-head b {
-  font-size: 14px; line-height: 1.15; white-space: normal; word-break: break-all;
+  font-size: var(--fs-aux); line-height: 1.15; white-space: normal; word-break: break-all;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-badge {
-  position: absolute; top: 6px; right: 6px; z-index: 3; font-size: 12px; padding: 0 5px; box-shadow: 0 1px 2px #0005;
+  position: absolute; top: 6px; right: 6px; z-index: 3; font-size: var(--fs-aux); padding: 0 5px; box-shadow: 0 1px 2px #0005;
 }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-body {
   grid-column: 1; grid-row: 3; align-self: start; min-width: 0; margin: 0; padding: 1px 4px 4px 7px; gap: 1px;
-  background: none; box-shadow: none; font-size: 12px; line-height: 1.2;
+  background: none; box-shadow: none; font-size: var(--fs-aux); line-height: 1.2;
 }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor):not(:has(> .oc-foot)) :is(.oc-head, .oc-body) { grid-column: 1 / -1; }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-body :is(.oc-line, .hp-line) {
-  font-size: 12px; line-height: 1.2; white-space: normal; word-break: break-all;
+  font-size: var(--fs-aux); line-height: 1.2; white-space: normal; word-break: break-all;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .center-scroll.four .enemy-card.world .oc-body .hp-line { display: flex; gap: 4px; justify-content: flex-start; }
@@ -409,22 +409,22 @@
 .center-scroll.four :is(.res-card, .enemy-card.world, .loc-card.neighbor) .oc-foot :is(.loc-btn, .oc-btn) {
   width: auto; min-height: 40px; min-width: 52px; padding: 2px 8px; align-items: center; text-align: center;
 }
-.center-scroll.four :is(.res-card, .enemy-card.world, .loc-card.neighbor) .oc-foot :is(.loc-btn, .oc-btn) strong { font-size: 14px; }
-.center-scroll.four .res-card .oc-foot .res-btn small { font-size: 12px; line-height: 1.1; }
-.center-scroll.four .loc-card.neighbor .oc-foot .oc-btn { font-size: 14px; }
+.center-scroll.four :is(.res-card, .enemy-card.world, .loc-card.neighbor) .oc-foot :is(.loc-btn, .oc-btn) strong { font-size: var(--fs-aux); }
+.center-scroll.four .res-card .oc-foot .res-btn small { font-size: var(--fs-aux); line-height: 1.1; }
+.center-scroll.four .loc-card.neighbor .oc-foot .oc-btn { font-size: var(--fs-aux); }
 /* 敌人/角色卡（两行战斗①）：插画约占卡宽 70%，右侧信息栏约 30%，内容在栏内换行（M84：原先信息栏最小内容宽撑开，7:3 不生效） */
 .bt-scene .foe-art { flex: 7 1 0; height: 100%; width: auto; min-width: 0; max-width: none; aspect-ratio: auto; }
 .bt-scene .foe-art svg, .bt-scene .foe-art img { object-fit: contain; }
 .bt-scene .foe-body { flex: 3 1 0; min-width: 0; }
 .bt-scene .foe-body .hp-line { flex-wrap: wrap; gap: 0 3px; justify-content: flex-start; }
 .bt-scene .foe-body .hp-line b, .bt-scene .foe .hp-line b { white-space: normal; word-break: break-all; }
-.bt-scene .foe .intent { flex-wrap: wrap; min-width: 0; word-break: break-all; font-size: 12px; line-height: 1.25; }
+.bt-scene .foe .intent { flex-wrap: wrap; min-width: 0; word-break: break-all; font-size: var(--fs-aux); line-height: 1.25; }
 .bt-scene .ally-art { flex: 7 1 0; min-width: 0; }
-.bt-scene .ally-foot { flex: 3 1 0; min-width: 0; padding-right: 4px; font-size: 12px; }
+.bt-scene .ally-foot { flex: 3 1 0; min-width: 0; padding-right: 4px; font-size: var(--fs-aux); }
 .bt-scene .ally-foot .ally-head { flex-wrap: wrap; gap: 0 4px; padding: 0; }
 .bt-scene .ally-foot .ap-pips { flex-wrap: wrap; }
-.bt-scene .ally-foot .ap-pips small { font-size: 12px; }
-.bt-scene .ally-foot .hp-line { flex-direction: column; align-items: flex-start; font-size: 12px; line-height: 1.2; }
+.bt-scene .ally-foot .ap-pips small { font-size: var(--fs-aux); }
+.bt-scene .ally-foot .hp-line { flex-direction: column; align-items: flex-start; font-size: var(--fs-aux); line-height: 1.2; }
 .center-scroll.four .facility-row .desk-group > .dg-cards { flex: 0 0 auto; }
 
 /* ───── 试玩修复 M84 ───── */
@@ -435,7 +435,7 @@
 .top > * { min-width: 0; }
 /* 4 物品卡名称最多两行（S14 原要求），不再一行截成“未鉴…” */
 .wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child {
-  white-space: normal; word-break: break-all; font-size: 13px; line-height: 1.15;
+  white-space: normal; word-break: break-all; font-size: var(--fs-aux); line-height: 1.15;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 /* 5 选卡浮窗批次条只占一行（多了横向滑动），不把食用/转移主按钮挤出浮窗 */
@@ -484,8 +484,8 @@
 }
 @media (min-height: 1000px) {
   .center-scroll.four .dg-cards > .fire-card { --fire-art: 76px; }
-  .center-scroll.four .fire-card .fc-title b { font-size: 17px; }
-  .center-scroll.four .fire-card .fuel-line { font-size: 13px; }
+  .center-scroll.four .fire-card .fc-title b { font-size: var(--fs-body); }
+  .center-scroll.four .fire-card .fuel-line { font-size: var(--fs-aux); }
   .center-scroll.four .fire-card .pc-sum-food { flex-basis: 36px; width: 36px; height: 36px; }
   .center-scroll.four .fire-card .pc-sum-food svg, .center-scroll.four .fire-card .pc-sum-food img { width: 36px; height: 36px; }
 }
@@ -511,17 +511,17 @@
 .wasteland .center-scroll.four .row-scroll .card.item .art > img { clip-path: none; transform: none; width: 100%; height: 100%; }
 .wasteland .center-scroll.four .row-scroll .card.item .ctitle { display: contents; }
 .wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child {
-  grid-area: name; min-width: 0; font-size: 13px; line-height: 1.2; font-weight: 600;
+  grid-area: name; min-width: 0; font-size: var(--fs-aux); line-height: 1.2; font-weight: 600;
   display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: unset;
 }
 .wasteland .center-scroll.four .row-scroll .card.item .ctitle .qty {
   grid-area: side; position: relative; top: auto; right: auto; align-self: start; justify-self: end; margin-top: 12px;
-  font-size: 12px; line-height: 1.25; padding: 0 3px; box-shadow: none; white-space: nowrap;
+  font-size: var(--fs-aux); line-height: 1.25; padding: 0 3px; box-shadow: none; white-space: nowrap;
 }
 .wasteland .center-scroll.four .row-scroll .card.item .cinfo {
   grid-area: info; align-self: start; justify-self: stretch; position: static; z-index: auto;
   max-width: none; margin: 1px 0 0; padding: 0; background: none; box-shadow: none; border-radius: 0;
-  font-size: 12px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: var(--fs-aux); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .wasteland .center-scroll.four .row-scroll .card.item .card-arrow {
   grid-area: side; align-self: end; justify-self: end; position: relative; margin-bottom: 3px;
@@ -533,7 +533,7 @@
   .wasteland .center-scroll.four .section.ground .row-scroll .card.item { aspect-ratio: 6 / 5; }
   /* 1280×720 卡高约103px：右窄列数量角标与箭头上下错开（箭头可见24px，热区仍 ≥40px） */
   .wasteland .center-scroll.four .row-scroll .card.item .ctitle .qty { line-height: 1.1; }
-  .wasteland .center-scroll.four .row-scroll .card.item .card-arrow { width: 26px; height: 24px; margin-bottom: 1px; font-size: 12px; }
+  .wasteland .center-scroll.four .row-scroll .card.item .card-arrow { width: 26px; height: 24px; margin-bottom: 1px; font-size: var(--fs-aux); }
   .wasteland .center-scroll.four .row-scroll .card.item .card-arrow::after { inset: -9px -8px -8px -8px; }
 }
 @media (min-height: 801px) {
@@ -556,8 +556,8 @@
 .center-scroll.four .pot-card.compact .pc-head { height: 28px; min-height: 0; gap: 4px; }
 .center-scroll.four .pot-card.compact .pc-icon { flex: 0 0 26px; width: 26px; height: 26px; }
 .center-scroll.four .pot-card.compact .pc-icon :is(svg, img) { width: 26px; height: 26px; }
-.center-scroll.four .pot-card.compact .pc-title b { font-size: 13px; line-height: 1.15; }
-.center-scroll.four .pot-card.compact .pc-title small { font-size: 11px; line-height: 1.15; }
+.center-scroll.four .pot-card.compact .pc-title b { font-size: var(--fs-aux); line-height: 1.15; }
+.center-scroll.four .pot-card.compact .pc-title small { font-size: var(--fs-aux); line-height: 1.15; }
 .center-scroll.four .pot-card.compact .pc-head :is(.card-arrow, .row-arrow) { width: 28px; height: 28px; min-width: 0; min-height: 0; }
 .center-scroll.four .pot-card.compact .pc-head :is(.card-arrow, .row-arrow)::after { content: ""; position: absolute; inset: -6px; }
 .center-scroll.four .pot-card.compact .pot-fill { min-height: 0; padding: 2px 5px 3px; }
@@ -567,11 +567,11 @@
 .center-scroll.four .fire-card .fc-slot > .fc-food { padding: 12px 12px 12px 14px; gap: 3px; }
 .center-scroll.four .fire-card .fc-food .ff-head { min-height: 0; }
 .center-scroll.four .fire-card .fc-food .row-arrow { width: 28px; height: 28px; }
-.center-scroll.four .fire-card .fc-food :is(.ff-status, .ff-note) { font-size: 13px; line-height: 1.25; }
+.center-scroll.four .fire-card .fc-food :is(.ff-status, .ff-note) { font-size: var(--fs-aux); line-height: 1.25; }
 .center-scroll.four .fire-card .fc-slots > .slot-empty { padding: 8px; }
 @media (max-height: 800px) {
   .center-scroll.four .dg-cards > .fire-card { --fire-art: 40px; }
-  .center-scroll.four .pot-card.compact .pc-head :is(.card-arrow, .row-arrow) { width: 26px; height: 24px; font-size: 12px; }
+  .center-scroll.four .pot-card.compact .pc-head :is(.card-arrow, .row-arrow) { width: 26px; height: 24px; font-size: var(--fs-aux); }
   .center-scroll.four .pot-card.compact .pc-head :is(.card-arrow, .row-arrow)::after { inset: -8px; }
 }
 /* 行框与面板（铁框线约占 border-image-width 的 13/24，约6.5px）：卡片外缘离行框内缘 ≥2px，行首竖排标题、区标题、左右栏文字离框 ≥8px */
@@ -582,8 +582,8 @@
 .center-scroll.four .fac-scroll { padding-bottom: 0; }
 .center-scroll.four > .section { padding: 14px 9px 9px 15px; }
 .center-scroll.four > .section .section-head { margin-bottom: 4px; padding-bottom: 2px; }
-.center-scroll.four > .section .section-head h2 { font-size: 15px; line-height: 18px; }
-.center-scroll.four > .section .section-head span { font-size: 13px; line-height: 18px; padding-right: 6px; }
+.center-scroll.four > .section .section-head h2 { font-size: var(--fs-body); line-height: 18px; }
+.center-scroll.four > .section .section-head span { font-size: var(--fs-aux); line-height: 18px; padding-right: 6px; }
 .center-scroll.four > .section .row-scroll { padding-bottom: 0; }
 .wasteland .clock { padding: 14px 15px; }
 .wasteland .vitals { padding: 13px 15px; }
@@ -598,7 +598,7 @@
   .center-scroll.four .dg-cards > .fire-card { --fire-art: 32px; padding: 9px 10px 12px; }
   .center-scroll.four .fire-card .fc-fuel { row-gap: 2px; }
   .center-scroll.four .fire-card .fc-title { flex-wrap: nowrap; white-space: nowrap; }
-  .center-scroll.four .fire-card .fc-title .oc-badge { font-size: 12px; padding: 0 4px; }
+  .center-scroll.four .fire-card .fc-title .oc-badge { font-size: var(--fs-aux); padding: 0 4px; }
   .center-scroll.four .fire-card .fc-slots > .fc-slot.food { flex-basis: 200px; }
   .center-scroll.four .fire-card .fc-food .ff-head { gap: 4px; }
   .center-scroll.four .fire-card .fc-food .pc-ico { width: 26px; height: 26px; }
@@ -682,7 +682,7 @@
 .center-scroll.four .fire-card .fc-slots > .fc-slot.food, .center-scroll.four .fire-card .fc-slots > .fc-slot.pot { flex-basis: auto; }
 .center-scroll.four .fire-card .fc-slots > .slot-empty { flex-direction: row; gap: 6px; padding: 4px 8px; border-width: 1px; }
 .center-scroll.four .fire-card .fc-slots > .slot-empty svg { width: 20px; height: 20px; }
-.center-scroll.four .fire-card .fc-slots > .slot-empty span { font-size: 13px; }
+.center-scroll.four .fire-card .fc-slots > .slot-empty span { font-size: var(--fs-aux); }
 /* 加工位里的锅与食材：细线框，内边距 8px */
 .wasteland .center-scroll.four .fire-card .fc-slot > :is(.pot-card.compact, .fc-food) {
   border: 1px solid #8e805b; border-image: none; border-radius: 3px; box-shadow: none; padding: 6px 8px; gap: 2px;
@@ -691,17 +691,17 @@
 .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-head { height: auto; min-height: 0; }
 .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-title small { display: none; }
 .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill { border: 0; padding: 0; background: none; }
-.center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill-head { font-size: 12px; line-height: 1.25; }
+.center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill-head { font-size: var(--fs-aux); line-height: 1.25; }
 .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill-head em { display: none; }
 .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-sum { flex: 0 0 auto; min-height: 0; border: 0; padding: 0; gap: 3px; }
 .center-scroll.four .fire-card .fc-slot > .fc-food .ff-head { min-height: 0; gap: 4px; }
 .center-scroll.four .fire-card .fc-slot > .fc-food .pc-ico { width: 22px; height: 22px; }
 .center-scroll.four .fire-card .fc-slot > .fc-food .pc-ico svg { width: 20px; height: 20px; }
-.center-scroll.four .fire-card .fc-slot > .fc-food .pc-name { font-size: 13px; line-height: 1.25; }
+.center-scroll.four .fire-card .fc-slot > .fc-food .pc-name { font-size: var(--fs-aux); line-height: 1.25; }
 .center-scroll.four .fire-card .fc-slot > .fc-food .pc-status { display: none; }
 /* 2 直烤状态行：按字体行高给足高度，一行省略，不再被盒高切掉字底 */
 .center-scroll.four .fire-card .fc-slot > .fc-food .ff-status {
-  font-size: 12px; line-height: 1.3; min-height: 1.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none;
+  font-size: var(--fs-aux); line-height: 1.3; min-height: 1.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none;
 }
 @media (max-height: 999px) {
   /* 1280×720 每格高约49px、1600×900 约69px：两行（名称+箭头 / 水量·食材数 或 加工状态） */
@@ -711,7 +711,7 @@
   .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-icon :is(svg, img) { width: 18px; height: 18px; }
   .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-track { display: none; }
   .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-sum-food { display: none; }
-  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-sum-label { font-size: 12px; line-height: 1.25; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-sum-label { font-size: var(--fs-aux); line-height: 1.25; }
   .center-scroll.four .fire-card .fc-slot > .fc-food :is(.heat-track, .ff-note) { display: none; }
   .center-scroll.four .facility-row .dg-cards { gap: 8px; }
   .center-scroll.four .facility-row .fac-card { width: 104px; }
@@ -729,11 +729,11 @@
 @media (max-height: 999px) {
   .center-scroll.four .fire-card .fc-slot > .pot-card.compact { grid-template-columns: minmax(0, 1fr) auto; }
   .center-scroll.four .fire-card .fc-slot > .pot-card.compact > .pot-fill { min-width: 0; overflow: hidden; }
-  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill-head b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill-head b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--fs-aux); }
 }
 /* 加工位格子：箭头离细线框 ≥6px（格内边距 7px 8px），箭头可见 18—22px、热区伪元素扩到 ≥40px */
 .wasteland .center-scroll.four .fire-card .fc-slot > :is(.pot-card.compact, .fc-food) { padding: 7px 8px; }
-.center-scroll.four .fire-card .fc-slot :is(.card-arrow, .row-arrow) { width: 22px; height: 22px; flex-basis: 22px; font-size: 11px; }
+.center-scroll.four .fire-card .fc-slot :is(.card-arrow, .row-arrow) { width: 22px; height: 22px; flex-basis: 22px; font-size: var(--fs-aux); }
 .center-scroll.four .fire-card .fc-slot :is(.card-arrow, .row-arrow)::after { inset: -9px; }
 .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-head { gap: 4px; }
 @media (max-height: 800px) {
@@ -798,13 +798,13 @@
 .center-scroll.four > .section > .row-scroll { flex: 1 1 auto; min-width: 0; min-height: 0; }
 /* 左栏携重摘要：总重量（公斤两位）与随身占格 N/5 同一行，负重状态在上方小字；放不下时占格折到下一行，不删数字 */
 .wasteland .weight .weight-main { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 0; min-width: 0; }
-.wasteland .weight .weight-cards { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; color: #e8d6ad; }
+.wasteland .weight .weight-cards { font-size: var(--fs-body); font-variant-numeric: tabular-nums; white-space: nowrap; color: #e8d6ad; }
 .wasteland .weight .weight-cards.warn-text { color: var(--warn); }
 
 /* ───── B2a 答复 Q35（M92）：紧凑模式次要信息——悬停（title）与键盘聚焦（data-tip 浮出说明）都能读到完整内容 ───── */
 .focus-tip {
   position: fixed; z-index: 120; max-width: min(420px, 90vw); padding: 6px 10px; pointer-events: none;
-  font-size: 13px; line-height: 1.35; color: #f2e6c3; background: #10191bf2; border: 1px solid #b4a27a; border-radius: 3px;
+  font-size: var(--fs-aux); line-height: 1.35; color: #f2e6c3; background: #10191bf2; border: 1px solid #b4a27a; border-radius: 3px;
   box-shadow: 0 3px 10px #000a; white-space: normal; word-break: break-all;
 }
 .focus-tip[hidden] { display: none; }
@@ -812,10 +812,10 @@
 @media (min-height: 801px) {
   .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-title { flex-direction: row; align-items: baseline; gap: 4px; min-width: 0; }
   .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-title b { flex: 0 1 auto; min-width: 0; }
-  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-title small { display: block; flex: 0 100 auto; min-width: 0; font-size: 11px; color: #5d5137; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-title small { display: block; flex: 0 100 auto; min-width: 0; font-size: var(--fs-aux); color: #5d5137; }
   .center-scroll.four .fire-card .fc-slot > .fc-food .pc-text { display: flex; flex-direction: row; align-items: baseline; gap: 4px; min-width: 0; overflow: hidden; }
   .center-scroll.four .fire-card .fc-slot > .fc-food .pc-name { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .center-scroll.four .fire-card .fc-slot > .fc-food .pc-status { display: block; flex: 0 100 auto; min-width: 0; font-size: 11px; color: #5d5137; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .pc-status { display: block; flex: 0 100 auto; min-width: 0; font-size: var(--fs-aux); color: #5d5137; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
 /* ───── B2a 答复 Q36（选 B，M93）：屏高≤800 的资源卡、敌踪卡、相邻地点卡也保持上图下文 ─────
@@ -893,8 +893,8 @@
 .bt-console .bc-page.on { border-color: var(--accent); background: #2c3427; }
 .bt-console .bc-page .bc-weapon-art { width: 24px; height: 24px; }
 .bt-console .bc-page .bc-weapon-art svg { width: 21px; height: 21px; }
-.bt-console .bc-page .bc-weapon-text b { font-size: 13px; }
-.bt-console .bc-page .bc-weapon-text small { font-size: 11px; }
+.bt-console .bc-page .bc-weapon-text b { font-size: var(--fs-aux); }
+.bt-console .bc-page .bc-weapon-text small { font-size: var(--fs-aux); }
 
 /* ───── B6 试玩修复（M137）：四对四敌方 1—4 号位 ─────
    UX1：原先 1、2 号位一列（占 2/3）、3、4 号位一列（占 1/3），三敌时 3 号卡只剩约 170px，敌名“狂…”被截、意图后半截被裁。
@@ -906,12 +906,12 @@
 .bt-scene .foe { flex: 1 1 0; min-width: 0; max-width: 50%; }
 .bt-scene .foe-empty {
   flex: 0 0 auto; align-self: stretch; writing-mode: vertical-rl; justify-content: center; align-items: center;
-  min-height: 0; padding: 6px 2px; gap: 2px; border-radius: 10px; font-size: 12px; letter-spacing: 1px; text-orientation: upright;
+  min-height: 0; padding: 6px 2px; gap: 2px; border-radius: 10px; font-size: var(--fs-aux); letter-spacing: 1px; text-orientation: upright;
 }
-.bt-scene .foe-empty b { font-size: 12px; }
+.bt-scene .foe-empty b { font-size: var(--fs-aux); }
 .bt-scene .foe-head { flex-wrap: wrap; row-gap: 0; }
 .bt-scene .foe-head b { flex: 1 0 auto; overflow: visible; text-overflow: clip; }
-.bt-scene .ally-head .ally-pos { font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.bt-scene .ally-head .ally-pos { font-size: var(--fs-aux); font-weight: 600; color: var(--ink); white-space: nowrap; }
 .bt-scene .ally-foot .speed-line, .bt-scene .ally-foot .speed-line span { color: var(--ink); }
 @media (max-height: 800px) {
   .bt-scene .foe-body { max-width: 66%; }
@@ -930,11 +930,11 @@
 .bt-console .bc-cmds .cmdt { width: auto; min-width: 44px; height: 40px; flex: 0 0 auto; flex-direction: row; align-items: center; justify-content: flex-start; gap: 3px; padding: 2px 4px; }
 .bt-console .bc-cmds .cmdt .cmdt-art { width: 22px; height: 22px; }
 .bt-console .bc-cmds .cmdt .cmdt-art svg { width: 20px; height: 20px; }
-.bt-console .bc-cmds .cmdt .cmdt-glyph { right: -5px; bottom: -4px; width: 15px; height: 15px; line-height: 15px; font-size: 12px; }
+.bt-console .bc-cmds .cmdt .cmdt-glyph { right: -5px; bottom: -4px; width: 15px; height: 15px; line-height: 15px; font-size: var(--fs-aux); }
 .bt-console .cmdt-text { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.2; }
-.bt-console .cmdt-text .cmdt-name { font-size: 12px; margin: 0; white-space: nowrap; }
-.bt-console .cmdt-text small { font-size: 12px; white-space: nowrap; visibility: visible; }
-.bt-console .cmdt-text .cmdt-why { position: static; display: block; font-size: 12px; line-height: 1.2; padding: 0; background: none; color: #ffb59c; white-space: nowrap; overflow: visible; }
+.bt-console .cmdt-text .cmdt-name { font-size: var(--fs-aux); margin: 0; white-space: nowrap; }
+.bt-console .cmdt-text small { font-size: var(--fs-aux); white-space: nowrap; visibility: visible; }
+.bt-console .cmdt-text .cmdt-why { position: static; display: block; font-size: var(--fs-aux); line-height: 1.2; padding: 0; background: none; color: #ffb59c; white-space: nowrap; overflow: visible; }
 .bt-console .cmdt.off { opacity: .7; cursor: not-allowed; }
 @media (max-height: 800px) {
   .bt-console .bc-cmds .cmdt.plain .cmdt-art { display: none; }
@@ -944,11 +944,11 @@
   .bt-console .bc-cmds .cmdt { height: 54px; padding: 3px 6px; gap: 5px; }
   .bt-console .bc-cmds .cmdt .cmdt-art { width: 30px; height: 30px; }
   .bt-console .bc-cmds .cmdt .cmdt-art svg { width: 27px; height: 27px; }
-  .bt-console .cmdt-text .cmdt-name { font-size: 14px; }
+  .bt-console .cmdt-text .cmdt-name { font-size: var(--fs-aux); }
 }
 /* B7d（Q80 最小真实槽）：我方 4/3/2/1 号位条，1 号位靠中线；你所在号位高亮，空位只写号码 */
 .bt-scene .ally-head .ally-slots { display: inline-flex; gap: 2px; margin-left: 4px; }
-.bt-scene .ally-head .ally-slots i { font-style: normal; font-size: 11px; line-height: 16px; min-width: 16px; text-align: center; border-radius: 4px; border: 1px dashed var(--line, #8a8070); color: var(--ink); opacity: .75; }
+.bt-scene .ally-head .ally-slots i { font-style: normal; font-size: var(--fs-aux); line-height: 16px; min-width: 16px; text-align: center; border-radius: 4px; border: 1px dashed var(--line, #8a8070); color: var(--ink); opacity: .75; }
 .bt-scene .ally-head .ally-slots i.me { opacity: 1; border-style: solid; background: var(--accent, #c9a14a); color: #1b1712; font-weight: 700; }
 .bt-scene .ally-head .ally-slots i.mate { opacity: 1; border-style: solid; color: var(--ink); }
 
@@ -959,8 +959,8 @@
 .center-scroll.four.tall-panel > * { grid-column: 1; }
 .center-scroll.four.tall-panel > .rows2 { grid-row: 1 / span 3; z-index: 31; }
 /* B10b（Q111）：第一个空加工位里的“煅烧木炭”入口（显式投料，卡旁浮窗确认）；底部仍只放投入木材与点燃/熄灭 */
-.slot-empty .slot-charcoal { display: flex; flex-direction: column; align-items: center; gap: 0; margin-top: 4px; padding: 2px 6px; min-height: 32px; border: 1px solid #6b5c3f; border-radius: 4px; background: #4a4238; color: #f2ecd8; font-size: 13px; font-weight: 600; line-height: 1.2; cursor: pointer; }
-.slot-empty .slot-charcoal small { font-size: 11px; font-weight: 400; opacity: .9; white-space: nowrap; }
+.slot-empty .slot-charcoal { display: flex; flex-direction: column; align-items: center; gap: 0; margin-top: 4px; padding: 2px 6px; min-height: 32px; border: 1px solid #6b5c3f; border-radius: 4px; background: #4a4238; color: #f2ecd8; font-size: var(--fs-aux); font-weight: 600; line-height: 1.2; cursor: pointer; }
+.slot-empty .slot-charcoal small { font-size: var(--fs-aux); font-weight: 400; opacity: .9; white-space: nowrap; }
 .slot-empty .slot-charcoal:hover, .slot-empty .slot-charcoal.on { background: #5d5345; }
 .apop.charcoal { width: clamp(300px, 30vw, 400px); }
 .slot-empty .slot-charcoal { white-space: nowrap; flex: 0 0 auto; }
@@ -979,22 +979,22 @@
 .fc-title .oc-badge.full { background: #6b3f19; color: #f6e2c4; border-color: #6b3f19; }
 @media (max-height: 800px) {
   .center-scroll.four .fire-card .fc-title:has(.oc-badge.full) { flex-wrap: wrap; white-space: normal; row-gap: 1px; }
-  .center-scroll.four .fire-card .fc-title .oc-badge.full { font-size: 11px; line-height: 1.2; }
+  .center-scroll.four .fire-card .fc-title .oc-badge.full { font-size: var(--fs-aux); line-height: 1.2; }
 }
 
 /* ───── 分层地图（开发计划 v0.9 B12，R38；A10-EXUI §1）：一行工具条 + 可拖动视口；可见文字一律 ≥14px（S14 §1.2） ───── */
 .map-panel { display: flex; flex-direction: column; }
 .map-bar { display: flex; align-items: center; gap: 10px; padding: 4px 10px; min-height: 40px; border-bottom: 1px solid var(--line); flex-wrap: nowrap; }
-.map-crumbs { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; font-size: 15px; }
+.map-crumbs { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; font-size: var(--fs-body); }
 .map-crumbs .sep { color: var(--muted); }
-.map-crumbs .crumb { font-size: 15px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; max-width: 16em; flex: 0 1 auto; min-width: 3em; }
+.map-crumbs .crumb { font-size: var(--fs-body); color: var(--muted); overflow: hidden; text-overflow: ellipsis; max-width: 16em; flex: 0 1 auto; min-width: 3em; }
 .map-crumbs .crumb:first-child { flex: none; }
 .map-crumbs .crumb.now { color: #e7ce94; }
 .map-crumbs button.crumb { background: none; border: 0; padding: 2px 4px; color: #d6b779; text-decoration: underline; cursor: pointer; min-height: 0; }
 .map-tools { display: flex; align-items: center; gap: 6px; flex: none; }
-.map-tools .secondary { min-height: 32px; padding: 4px 10px; font-size: 14px; white-space: nowrap; }
+.map-tools .secondary { min-height: 32px; padding: 4px 10px; font-size: var(--fs-aux); white-space: nowrap; }
 .map-tools .secondary.on { border-color: #d8ba78; color: #f0d9a0; }
-.map-tools .map-layer { font-size: 14px; min-height: 32px; max-width: 11em; background: #1d211c; color: var(--text); border: 1px solid var(--line); border-radius: 4px; }
+.map-tools .map-layer { font-size: var(--fs-aux); min-height: 32px; max-width: 11em; background: #1d211c; color: var(--text); border: 1px solid var(--line); border-radius: 4px; }
 .map-stage { position: relative; flex: 1; min-height: 0; }
 .map-viewport { position: absolute; inset: 0; overflow: auto; cursor: grab; outline: none; }
 .map-viewport:focus-visible { box-shadow: inset 0 0 0 2px #d6b77988; }
@@ -1005,7 +1005,7 @@
 .map-canvas .map-edge.locked line { stroke: #b0584a; stroke-width: 3; stroke-dasharray: 5 7; }
 .map-canvas .map-edge rect { fill: #1b221e; }
 .map-canvas .map-edge.locked rect { fill: #2a1d1a; }
-.map-canvas .map-edge text { font-size: 14px; fill: #c9cfbf; }
+.map-canvas .map-edge text { font-size: var(--fs-aux); fill: #c9cfbf; }
 .map-canvas .map-edge.locked text { fill: #e0a796; }
 .map-canvas .map-node { cursor: pointer; outline: none; }
 .map-canvas .map-node rect, .map-canvas .map-node circle { fill: #222b24; stroke: #5d6b58; stroke-width: 2; stroke-dasharray: 7 4; }
@@ -1014,11 +1014,11 @@
 .map-canvas .map-node .ring { fill: none; stroke: #d6b779; stroke-width: 2; }
 .map-canvas .map-node.picked rect, .map-canvas .map-node.picked circle { stroke: #f0d9a0; stroke-width: 4; }
 .map-canvas .map-node:focus-visible rect, .map-canvas .map-node:focus-visible circle { stroke: #f0d9a0; stroke-width: 4; }
-.map-canvas .map-node text.nm { font-size: 15px; fill: #eee9db; }
-.map-canvas .map-node text.st { font-size: 14px; fill: #aab2a4; }
+.map-canvas .map-node text.nm { font-size: var(--fs-body); fill: #eee9db; }
+.map-canvas .map-node text.st { font-size: var(--fs-aux); fill: #aab2a4; }
 .map-canvas .map-node.here text.st { fill: #e7ce94; }
 .map-canvas .map-role rect { fill: #3b2c1c; stroke: #a7824c; stroke-width: 1; }
-.map-canvas .map-role text { font-size: 14px; fill: #f0d9a0; }
+.map-canvas .map-role text { font-size: var(--fs-aux); fill: #f0d9a0; }
 /* Q220：地图水源图标（形状+水滴，脏水水滴空心带斜杠），不靠颜色区分 */
 .map-canvas .map-node .map-water rect { fill: #20271d; stroke: #e9d9ad; stroke-width: 1.5; stroke-dasharray: none; }
 .map-canvas .map-water path { fill: none; stroke: #f0d9a0; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
@@ -1028,8 +1028,8 @@
 .map-canvas .map-pill { cursor: pointer; outline: none; }
 .map-canvas .map-pill rect { fill: #24302a; stroke: #8fa486; stroke-width: 1.5; }
 .map-canvas .map-pill:hover rect, .map-canvas .map-pill:focus-visible rect { stroke: #f0d9a0; }
-.map-canvas .map-pill text { font-size: 14px; fill: #dfe6d4; }
-.map-legend-pop { position: absolute; top: 6px; right: 8px; z-index: 3; max-width: 420px; background: #1b201b; border: 1px solid #796544; border-radius: 6px; padding: 8px 12px; font-size: 14px; color: var(--text); box-shadow: 0 4px 16px #0008; display: grid; gap: 4px; }
+.map-canvas .map-pill text { font-size: var(--fs-aux); fill: #dfe6d4; }
+.map-legend-pop { position: absolute; top: 6px; right: 8px; z-index: 3; max-width: 420px; background: #1b201b; border: 1px solid #796544; border-radius: 6px; padding: 8px 12px; font-size: var(--fs-aux); color: var(--text); box-shadow: 0 4px 16px #0008; display: grid; gap: 4px; }
 .map-legend-pop i { display: inline-block; width: 28px; margin-right: 6px; vertical-align: middle; font-style: normal; text-align: center; }
 .map-legend-pop .lg-line { height: 0; border-top: 3px solid #d6b779; }
 .map-legend-pop .lg-line.locked { border-top: 3px dashed #b0584a; }
@@ -1047,18 +1047,18 @@
 
 /* B12（B11 遗留）：相邻栏同因未开通叠卡与逐条列表 */
 .lock-stack .oc-art, .lock-stack .loc-art { display: none; }
-.apop.lockstack .lockstack-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: 14px; max-height: 240px; overflow-y: auto; }
+.apop.lockstack .lockstack-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: var(--fs-aux); max-height: 240px; overflow-y: auto; }
 .apop.lockstack .lockstack-list li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .apop.lockstack .lockstack-list li span { flex: none; white-space: nowrap; }
-.apop.lockstack .lockstack-list small { font-size: 14px; color: var(--muted); text-align: right; }
+.apop.lockstack .lockstack-list small { font-size: var(--fs-aux); color: var(--muted); text-align: right; }
 /* 带两个选项的告示卡（B14 试玩修复 M306 A2）：选项按钮单独占卡底一整行、两键平分，不再挤在右侧栏里被卡片上沿裁掉 */
 .center-scroll.four .dg-cards > .res-card.choice-card { grid-template-rows: minmax(0, 1fr) auto auto auto; }
 .center-scroll.four .dg-cards > .res-card.choice-card :is(.oc-head, .oc-body) { grid-column: 1 / -1; padding-right: 14px; }
 .center-scroll.four .dg-cards > .res-card.choice-card .oc-body { padding-bottom: 2px; }
 .center-scroll.four .dg-cards > .res-card.choice-card .oc-foot { grid-column: 1 / -1; grid-row: 4; align-self: end; display: flex; gap: 4px; padding: 0 12px 12px; }
 .center-scroll.four .dg-cards > .res-card.choice-card .oc-foot .res-btn { flex: 1 1 0; min-width: 0; min-height: 40px; padding: 2px 4px; }
-.center-scroll.four .dg-cards > .res-card.choice-card .oc-foot .res-btn strong { font-size: 13px; white-space: nowrap; }
-.center-scroll.four .dg-cards > .res-card.choice-card .oc-foot .res-btn small { font-size: 11px; }
+.center-scroll.four .dg-cards > .res-card.choice-card .oc-foot .res-btn strong { font-size: var(--fs-aux); white-space: nowrap; }
+.center-scroll.four .dg-cards > .res-card.choice-card .oc-foot .res-btn small { font-size: var(--fs-aux); }
 
 /* B14b 试玩修复 M315：岗位人物卡有“交谈/事项”两个按钮，屏高 >800（1600×900、1920×1080）时按钮原在右列跨两行，
    文字列只剩约 46px，职务折两行、“可交谈 · 事项 a/b 项可办”被截。改为与告示选项卡同样：职务与状态整宽，两个按钮单独占卡底一行平分。
@@ -1079,7 +1079,7 @@
 .center-scroll.four .dg-cards > .res-card.post-card.has-preview .oc-body .oc-line:first-child:not(:last-child) { display: none; }
 .center-scroll.four .dg-cards > .res-card.has-preview .oc-foot { grid-column: 1 / -1; grid-row: 4; align-self: end; justify-self: stretch; display: flex; flex-wrap: wrap; gap: 2px 4px; padding: 0 10px 8px; }
 .center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .res-btn { flex: 1 1 0; min-width: 0; min-height: 40px; padding: 2px 4px; }
-.center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .npc-preview { order: 1; flex: 1 0 100%; contain: inline-size; font-size: 13px; line-height: 1.2; }
+.center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .npc-preview { order: 1; flex: 1 0 100%; contain: inline-size; font-size: var(--fs-aux); line-height: 1.2; }
 @media (max-height: 800px) {
   .center-scroll.four .dg-cards > .res-card.has-preview { grid-template-rows: 0 auto auto auto; }
   .center-scroll.four .dg-cards > .res-card.has-preview .oc-art { display: none; }
@@ -1087,7 +1087,7 @@
   .center-scroll.four .dg-cards > .res-card.has-preview .oc-body { padding-top: 0; padding-bottom: 1px; }
   .center-scroll.four .dg-cards > .res-card.has-preview .oc-foot { gap: 1px 4px; padding-bottom: 5px; }
   .center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .res-btn { min-height: 34px; }
-  .center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .npc-preview { font-size: 12px; line-height: 1.2; }
+  .center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .npc-preview { font-size: var(--fs-aux); line-height: 1.2; }
 }
 
 /* ───── B16 试玩修复 M351：锅食谱按钮与水壶操作在 1280×720 完整可见 ───── */
@@ -1096,8 +1096,8 @@
 .apop.card-pop.pot .apop-body > :is(.pc-recipes, .pc-recipe-why, .pc-aux, .pc-fail) { flex: 0 0 auto; }
 .pc-recipes { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; margin-top: 6px; }
 .pc-recipes .small-btn { white-space: nowrap; flex: 0 1 auto; min-width: 0; min-height: 32px; }
-.pc-recipes-label { font-size: 12px; white-space: nowrap; opacity: .8; }
-.pc-recipe-why, .pc-aux { font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.pc-recipes-label { font-size: var(--fs-aux); white-space: nowrap; opacity: .8; }
+.pc-recipe-why, .pc-aux { font-size: var(--fs-aux); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 .pc-aux.pc-aux-wrap { white-space: normal; overflow: visible; }
 .pc-recipe-why { color: #d9a25a; }
 /* 水壶浮窗：操作多一组（喝/装入/倒出），整窗加高，不再要窗内滚动 */
@@ -1119,9 +1119,9 @@
 .center-scroll.four .facility-row .fac-card.sh-card .oc-foot { grid-column: 1; grid-row: 4; align-self: end; display: flex; gap: 4px; padding: 0 10px 10px; }
 .center-scroll.four .facility-row .fac-card.sh-card:not(:has(> .oc-foot)) .oc-body { padding-bottom: 12px; }
 .center-scroll.four .facility-row .fac-card.sh-card .oc-foot .res-btn { flex: 1 1 0; min-width: 0; width: auto; min-height: 32px; padding: 2px 4px; align-items: center; text-align: center; }
-.center-scroll.four .facility-row .fac-card.sh-card .oc-foot .res-btn strong { font-size: 13px; white-space: nowrap; }
+.center-scroll.four .facility-row .fac-card.sh-card .oc-foot .res-btn strong { font-size: var(--fs-aux); white-space: nowrap; }
 .center-scroll.four .fire-card .fc-title b { white-space: nowrap; flex: 0 0 auto; }
-@media (max-height: 800px) { .center-scroll.four .facility-row .fac-card.sh-card { width: 108px; } .center-scroll.four .facility-row .fac-card.sh-card .oc-foot .res-btn strong { font-size: 12px; } }
+@media (max-height: 800px) { .center-scroll.four .facility-row .fac-card.sh-card { width: 108px; } .center-scroll.four .facility-row .fac-card.sh-card .oc-foot .res-btn strong { font-size: var(--fs-aux); } }
 /* 安全屋卡状态行：最多两行（“无床·有火·柜0.1/200公斤”在 1280/1600 不再被省略），宽 106px 让 1280 设施行不出横向滚动 */
 .center-scroll.four .facility-row .fac-card.sh-card .oc-body .oc-line { white-space: normal; word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
 @media (max-height: 800px) { .center-scroll.four .facility-row .fac-card.sh-card { width: 106px; } }
@@ -1146,20 +1146,20 @@
 }
 
 /* B23（A10-EXUI §4）：地图上的来源查询列表——左上浮层，可滚动；不可获取的来源灰显不亮绿色 */
-.map-sources { position: absolute; left: 8px; top: 6px; z-index: 4; width: 360px; max-width: calc(100% - 16px); max-height: calc(100% - 12px); overflow: auto; background: #1b201bf2; border: 1px solid #796544; border-radius: 6px; padding: 8px 10px; font-size: 14px; color: var(--text); box-shadow: 0 4px 16px #0008; display: grid; gap: 6px; align-content: start; }
+.map-sources { position: absolute; left: 8px; top: 6px; z-index: 4; width: 360px; max-width: calc(100% - 16px); max-height: calc(100% - 12px); overflow: auto; background: #1b201bf2; border: 1px solid #796544; border-radius: 6px; padding: 8px 10px; font-size: var(--fs-aux); color: var(--text); box-shadow: 0 4px 16px #0008; display: grid; gap: 6px; align-content: start; }
 .map-sources .ms-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .map-sources .ms-row { position: relative; border-top: 1px solid #3a4232; padding: 6px 56px 4px 0; display: grid; gap: 2px; }
 .map-sources .ms-row.ok .ms-title b { color: #9fd18a; }
 .map-sources .ms-row.off { opacity: .8; }
 .acct-ico { display: inline-block; vertical-align: -2px; margin-right: 3px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; flex: none; }
 .acct-ico .fill { fill: currentColor; stroke: none; }
-.map-sources .ms-acct { display: inline-block; margin-right: 6px; padding: 0 6px; border: 1px solid #a88b55; border-radius: 9px; font-size: 13px; color: #e2c27e; }
-.map-sources .ms-row.ms-hint { padding-right: 0; font-size: 14px; line-height: 1.4; color: #cfd6c3; }
-.map-sources .ms-detail, .map-sources .ms-status { font-size: 13px; line-height: 1.35; }
+.map-sources .ms-acct { display: inline-block; margin-right: 6px; padding: 0 6px; border: 1px solid #a88b55; border-radius: 9px; font-size: var(--fs-aux); color: #e2c27e; }
+.map-sources .ms-row.ms-hint { padding-right: 0; font-size: var(--fs-aux); line-height: 1.4; color: #cfd6c3; }
+.map-sources .ms-detail, .map-sources .ms-status { font-size: var(--fs-aux); line-height: 1.35; }
 .map-sources .ms-loc { position: absolute; right: 0; top: 6px; min-height: 30px; padding: 2px 8px; }
-.mat-row .src-btn { margin-right: 6px; font-size: 13px; }
+.mat-row .src-btn { margin-right: 6px; font-size: var(--fs-aux); }
 .exp-stores .remains-row.reward span { color: #b8e0a0; }
-.map-sources .ms-back { min-height: 32px; padding: 2px 12px; font-size: 14px; flex: none; }
+.map-sources .ms-back { min-height: 32px; padding: 2px 12px; font-size: var(--fs-aux); flex: none; }
 
 /* ───── B27 试玩修复：采集资源卡的产量行完整显示（四类账徽标、产量、日补都看得到） ─────
    原来 .oc-body 是 flex 列，行内 overflow:hidden 时会被压扁（1280 档徽标行只剩 10px），产量行单行省略或被两行上限裁掉。
@@ -1188,9 +1188,9 @@
   .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-foot { grid-column: 2; grid-row: 1; padding: 12px 12px 0 0; }
   .wasteland .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-head b { line-height: 1.15; }
   .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-body { grid-row: 2; gap: 0; padding-bottom: 12px; scrollbar-width: none; }
-  .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-body .oc-line { font-size: 11px; line-height: 1.15; }
+  .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-body .oc-line { font-size: var(--fs-aux); line-height: 1.15; }
   .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .acct-ico { width: 12px; height: 12px; margin-right: 2px; }
 }
 /* Q252：第二行只来自资源自身状态（危险、已领取、库存为0等），行动进行中、请先读完对话不写进卡面，主图不因它们消失。
    Q254：没有确定产出的整句较长，不换行、不缩字、不压主图，单行省略，全文在悬停、聚焦朗读和点选详情。 */
-.center-scroll.four .facility-row .desk-group.resources .res-card .oc-body .oc-line.res-yield:not(.warn-line) { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.center-scroll.four .facility-row .desk-group.resources .res-card .oc-body .oc-line.res-yield:not(.warn-line) { font-size: var(--fs-aux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

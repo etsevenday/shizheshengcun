@@ -376,8 +376,8 @@ public class B27aResourceCardTests : TestBase
         var css = File.ReadAllLines(Path.Combine(Root(), "web", "Survival.Web", "wwwroot", "css", "fourrows.css"));
         var rule = css.Single(l => l.Contains(".oc-line.res-yield"));
         Assert.That(rule, Does.Contain("white-space: nowrap").And.Contain("text-overflow: ellipsis"));
-        Assert.That(rule, Does.Contain("font-size: 12px"), "低屏有第二行时这一句也不缩到 11px");
-        var low = Array.FindIndex(css, l => l.Contains(":has(.oc-line + .oc-line) .oc-body .oc-line { font-size: 11px"));
+        Assert.That(rule, Does.Contain("font-size: var(--fs-aux)"), "低屏有第二行时这一句也不缩小（B31a Q327 起辅助字统一 14px）");
+        var low = Array.FindIndex(css, l => l.Contains(":has(.oc-line + .oc-line) .oc-body .oc-line { font-size: var(--fs-aux)"));
         Assert.That(Array.IndexOf(css, rule), Is.GreaterThan(low), "同优先级时写在后面才盖得住");
     }
 }

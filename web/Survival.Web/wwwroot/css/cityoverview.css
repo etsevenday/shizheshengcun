@@ -3,7 +3,7 @@
 .city-panel .sub-head h2 { color: var(--accent); }
 .city-panel .sub-head > button { white-space: nowrap; flex: 0 0 auto; }
 .city-outside { color: var(--muted); }
-.city-legacy { margin: 6px 14px 0; padding: 4px 10px; border: 1px dashed var(--warn); border-radius: 4px; color: var(--warn); font-size: 14px; }
+.city-legacy { margin: 6px 14px 0; padding: 4px 10px; border: 1px dashed var(--warn); border-radius: 4px; color: var(--warn); font-size: var(--fs-aux); }
 .city-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 6px 14px 8px; gap: 4px; }
 .city-map { position: relative; flex: 1; min-height: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
   background: radial-gradient(ellipse at 50% 55%, #2b3326 0%, #1d241d 60%, #151b18 100%); }
@@ -13,7 +13,7 @@
 .city-roads .road { stroke: #8f8466; stroke-width: 7; stroke-linecap: round; opacity: .85; }
 .city-roads .road.locked { stroke: #c46b5a; stroke-width: 4; stroke-dasharray: 10 8; opacity: .9; }
 .city-roads .road.on { stroke: var(--accent); stroke-width: 9; opacity: 1; }
-.road-tag { position: absolute; transform: translate(-50%, -50%); font-size: 13px; line-height: 1.2; padding: 1px 6px; border-radius: 10px;
+.road-tag { position: absolute; transform: translate(-50%, -50%); font-size: var(--fs-aux); line-height: 1.2; padding: 1px 6px; border-radius: 10px;
   background: #11181bd9; color: var(--muted); border: 1px solid #4b4535; white-space: nowrap; pointer-events: auto; }
 .road-tag.locked { color: #f0b3a5; border-color: #c46b5a; border-style: dashed; }
 /* 建筑热区：每栋一个按钮（宽高按格子比例，至少 44×44），互不重叠 */
@@ -29,12 +29,12 @@
 .city-bldg .bldg-art .hw { fill: #c8c08e; opacity: .8; }
 .city-church .city-bldg .bldg-art .hr { fill: #6e5059; } .city-church .city-bldg .bldg-art .hb { fill: #4a4143; }
 .city-academy .city-bldg .bldg-art .hr { fill: #50636e; } .city-academy .city-bldg .bldg-art .hb { fill: #37444c; }
-.city-bldg .bldg-name { font-size: 15px; line-height: 1.2; padding: 1px 8px; border-radius: 4px; background: #11181be6; border: 1px solid #4b4535;
+.city-bldg .bldg-name { font-size: var(--fs-body); line-height: 1.2; padding: 1px 8px; border-radius: 4px; background: #11181be6; border: 1px solid #4b4535;
   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.city-bldg .bldg-tag { position: absolute; left: 4px; top: 2px; font-size: 13px; line-height: 1.2; padding: 0 5px; border-radius: 4px; background: #11181be6; white-space: nowrap; }
+.city-bldg .bldg-tag { position: absolute; left: 4px; top: 2px; font-size: var(--fs-aux); line-height: 1.2; padding: 0 5px; border-radius: 4px; background: #11181be6; white-space: nowrap; }
 .city-bldg .here-tag { color: var(--accent); border: 1px solid var(--accent); }
 .city-bldg .lock-tag { color: #f0b3a5; border: 1px dashed #c46b5a; }
-.city-bldg .bldg-mark { position: absolute; right: 2px; top: 0; width: 22px; height: 22px; line-height: 20px; text-align: center; font-weight: 700; font-size: 15px;
+.city-bldg .bldg-mark { position: absolute; right: 2px; top: 0; width: 22px; height: 22px; line-height: 20px; text-align: center; font-weight: 700; font-size: var(--fs-body);
   border-radius: 50%; background: var(--accent); color: #1b1712; border: 1px solid #1b1712; }
 .city-bldg .bldg-mark.turnin { right: 26px; border-radius: 4px; background: var(--good); }
 /* 当前：金色环 + “◎ 当前”；选中：双线框；未开通：虚线红框 + “锁”；未发现：虚线轮廓（形状与文字区分，不只换颜色） */
@@ -49,28 +49,28 @@
 .city-main { flex: 1; min-height: 0; display: flex; gap: 8px; }
 .city-main .city-map { flex: 1; min-width: 0; }
 .city-side { flex: 0 0 clamp(220px, 30%, 340px); min-height: 0; overflow-y: auto; border: 1px solid var(--line); border-radius: 6px; background: #121a1df2; padding: 8px 10px; }
-.city-side .ci-hint { color: var(--muted); font-size: 14px; }
-.city-info { font-size: 14px; line-height: 1.4; display: flex; flex-direction: column; gap: 2px; }
+.city-side .ci-hint { color: var(--muted); font-size: var(--fs-aux); }
+.city-info { font-size: var(--fs-aux); line-height: 1.4; display: flex; flex-direction: column; gap: 2px; }
 .city-info.pinned { }
 .city-info .ci-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
-.city-info .ci-head b { font-size: 16px; color: var(--accent); }
-.city-info .ci-state { color: var(--muted); font-size: 13px; flex: 1; }
-.city-info .ci-x { min-width: 28px; min-height: 28px; padding: 0 6px; font-size: 16px; }
+.city-info .ci-head b { font-size: var(--fs-body); color: var(--accent); }
+.city-info .ci-state { color: var(--muted); font-size: var(--fs-aux); flex: 1; }
+.city-info .ci-x { min-width: 28px; min-height: 28px; padding: 0 6px; font-size: var(--fs-body); }
 .city-info .ci-line { overflow-wrap: anywhere; }
 .city-info .ci-line.warn { color: #f0b3a5; }
 .city-info .ci-quest { color: var(--warn); }
 .city-info .ci-route { color: var(--text); }
-.city-info .ci-leg { color: var(--muted); font-size: 13px; }
+.city-info .ci-leg { color: var(--muted); font-size: var(--fs-aux); }
 .city-info .ci-actions { display: flex; flex-direction: column; align-items: stretch; gap: 4px; margin: 4px 0 6px; }
-.city-info .ci-actions button { min-height: 36px; font-size: 15px; }
+.city-info .ci-actions button { min-height: 36px; font-size: var(--fs-body); }
 .city-head-btns { display: flex; gap: 8px; align-items: center; flex: 0 0 auto; }
 .city-head-btns .loc-btn.city-btn { min-height: 36px; padding: 2px 12px; }
 /* 主行动进行中打开鸟瞰：中央进度卡停靠到鸟瞰下沿（图例处），不盖住边栏顶部的“前往”与禁用原因 */
 /* 主行动进行中打开鸟瞰：中央进度卡停靠到边栏下部（不盖住图上的楼、路线，也不盖边栏顶部的“前往”与禁用原因） */
 .center.city-open .cprog.float { left: auto; right: 20px; top: auto; bottom: calc(25% + 14px); transform: none; width: clamp(220px, 28%, 330px); padding: 6px 10px; gap: 4px; }
 .center.city-open .cprog.float .cp-head { flex-wrap: wrap; row-gap: 2px; }
-.city-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 13px; color: var(--muted); }
-.city-legend .lg { display: inline-block; width: 16px; height: 12px; margin-right: 4px; vertical-align: -1px; border-radius: 3px; font-style: normal; text-align: center; line-height: 12px; font-size: 11px; }
+.city-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: var(--fs-aux); color: var(--muted); }
+.city-legend .lg { display: inline-block; width: 16px; height: 12px; margin-right: 4px; vertical-align: -1px; border-radius: 3px; font-style: normal; text-align: center; line-height: 12px; font-size: var(--fs-aux); }
 .city-legend .lg.here { border: 2px solid var(--accent); }
 .city-legend .lg.picked { border: 3px double var(--accent); }
 .city-legend .lg.mark { background: var(--accent); color: #1b1712; border-radius: 50%; width: 14px; height: 14px; line-height: 14px; font-weight: 700; }
@@ -80,21 +80,21 @@
 /* 当前地点卡旁“主城鸟瞰”按钮 */
 .loc-btn.city-btn.on { border-color: var(--accent); color: var(--accent); }
 /* 第四行只读提示（鸟瞰期间仅查看） */
-.card-pop .city-readonly { display: flex; flex-direction: column; gap: 2px; padding: 10px 56px 10px 10px; min-height: 52px; max-width: 340px; font-size: 14px; color: var(--warn); }
-.card-pop .city-readonly b { color: var(--text); font-size: 14px; }
+.card-pop .city-readonly { display: flex; flex-direction: column; gap: 2px; padding: 10px 56px 10px 10px; min-height: 52px; max-width: 340px; font-size: var(--fs-aux); color: var(--warn); }
+.card-pop .city-readonly b { color: var(--text); font-size: var(--fs-aux); }
 @media (max-height: 800px) {
   .city-panel .sub-head { padding: 5px 12px; }
   .city-body { padding: 4px 10px 6px; }
-  .city-bldg .bldg-name { font-size: 14px; }
-  .city-info { font-size: 13px; min-width: 200px; }
-  .city-legend { font-size: 12px; gap: 2px 10px; }
+  .city-bldg .bldg-name { font-size: var(--fs-aux); }
+  .city-info { font-size: var(--fs-aux); min-width: 200px; }
+  .city-legend { font-size: var(--fs-aux); gap: 2px 10px; }
 }
 /* B24（A10-CITY §6）：设施栏人物组多于两张时的紧凑选择（与人物卡同高，内部纵滚，不撑高设施行） */
 .desk-group.people .people-more { flex: 0 0 auto; width: 150px; align-self: stretch; display: flex; flex-direction: column; gap: 3px; padding: 4px; overflow-y: auto;
   border: 1px solid var(--line); border-radius: 6px; background: #11181bcc; }
-.people-more .pm-title { font-size: 13px; color: var(--muted); }
+.people-more .pm-title { font-size: var(--fs-aux); color: var(--muted); }
 .people-more .pm-item { display: flex; flex-direction: column; align-items: flex-start; min-height: 40px; padding: 2px 6px; text-align: left; }
-.people-more .pm-item b { font-size: 14px; font-weight: 500; }
-.people-more .pm-item small { font-size: 12px; color: var(--muted); }
+.people-more .pm-item b { font-size: var(--fs-aux); font-weight: 500; }
+.people-more .pm-item small { font-size: var(--fs-aux); color: var(--muted); }
 /* 进度卡停靠在边栏下部时，边栏留出底部空间，长说明可滚到进度卡上方 */
 .center.city-open:has(.cprog.float) .city-side { padding-bottom: 140px; }
