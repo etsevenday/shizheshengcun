@@ -195,6 +195,31 @@ public class B38cOnlineFixTests : TestBase
         Assert.That(DressingBlocked(s), Is.EqualTo($"当前换药没有收益。回血冷却还需{Clock.Duration(60)}。"));
     }
 
+    /// <summary>Q304-A01：健康已满、无出血、仍感染、病毒已到包扎减量下限且病毒减量冷却已结束——回血冷却结束前后同句、无倒计时；未感染与病毒减量冷却在走的分支按 Q302。</summary>
+    [Test]
+    public void Q304_A01_Dressing_VirusAtMin_SameSentenceBeforeAfterHealCooldown()
+    {
+        const string infectedWhy = "健康已满、没有出血，病毒减量也不可用，包扎没有效果";
+        var s = FullHealthAtInfirmary();
+        s.Body.Infected = true;
+        s.Body.VirusLoad = 0;
+        s.BandageReadyAt = s.GameMinute + 60;
+        Assert.That(DressingBlocked(s), Is.EqualTo(infectedWhy));
+        s.BandageReadyAt = 0;
+        Assert.That(DressingBlocked(s), Is.EqualTo(infectedWhy));
+
+        s = FullHealthAtInfirmary();
+        s.BandageReadyAt = s.GameMinute + 60;
+        Assert.That(DressingBlocked(s), Is.EqualTo("健康已满且没有出血，包扎没有效果"));
+
+        s = FullHealthAtInfirmary();
+        s.Body.Infected = true;
+        s.Body.VirusLoad = 0;
+        s.BandageReadyAt = s.GameMinute + 60;
+        s.Body.BandageVirusReadyAt = s.GameMinute + 360;
+        Assert.That(DressingBlocked(s), Is.EqualTo($"当前换药没有收益。病毒减量冷却还需{Clock.Duration(360)}。"));
+    }
+
     /// <summary>Q300：事务重验的无收益分支同句——开工时有收益，完成前变成无收益且冷却在走，失败外层里只列在走的冷却。</summary>
     [Test]
     public void Q300_Dressing_Revalidate_SameSentence()

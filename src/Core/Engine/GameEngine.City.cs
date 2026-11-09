@@ -602,11 +602,13 @@ namespace Survival.Core.Engine
             if (why == null) return null;
             // 冷却造成的无收益：只写一句（试玩修复 M306）。B38c（N02 附录 Q300）：回血或病毒减量（仅仍感染）有任一冷却在走就用
             // “当前换药没有收益。”，按回血、病毒减量顺序只列正在冷却的项目；两项都无冷却时沿用原实际原因。预览与事务重验同走这里。
-            // B38d（N02 附录 Q302）：健康已满且无出血时回血冷却不算适用冷却；因此省掉回血句后什么都不剩时用“健康已满且没有出血，包扎没有效果”。
+            // B38d（N02 附录 Q302）：健康已满且无出血时回血冷却不算适用冷却；因此省掉回血句后什么都不剩时用“健康已满且没有出血，包扎没有效果”；仍感染（病毒已到下限）时按 Q304 用含“病毒减量也不可用”的一句。
             var fullNoBleed = a.Stats.Health >= a.Stats.HealthMax - 1e-9 && a.Body.BleedTriggers <= 0;
             var running = RunningDressingCooldowns(s, a, !fullNoBleed);
             if (running.Length > 0) return "当前换药没有收益。" + running;
-            return fullNoBleed && a.BandageReadyAt > s.GameMinute ? "健康已满且没有出血，包扎没有效果" : why;
+            // Q304：仍感染且病毒已到包扎减量下限时，回血冷却结束前后都用同一句（与 MedicineBlocked 的原因一致）。
+            if (!fullNoBleed || a.BandageReadyAt <= s.GameMinute) return why;
+            return a.Body.Infected ? "健康已满、没有出血，病毒减量也不可用，包扎没有效果" : "健康已满且没有出血，包扎没有效果";
         }
 
         /// <summary>换药无收益时正在走的适用冷却（N02 附录 Q300、Q302）：“回血冷却还需{剩余时长}。”（健康已满且无出血时不列），仍感染再接“病毒减量冷却还需{剩余时长}。”；没有在走的为空串。</summary>
