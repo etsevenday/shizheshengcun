@@ -11,7 +11,7 @@
     var s = G.S;
     var e = G.E;
     var v = e.RecruitPreview(s);
-    var busy = G.Running ? "行动进行中" : null;
+    var busy = G.Running ? GameEngine.CityBusyText : null;   // Q317：事项盘内行动占用统一句
 }
 
 <section class="city-svc recruit-panel">

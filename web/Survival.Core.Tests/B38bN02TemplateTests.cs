@@ -37,8 +37,8 @@ public class B38bN02TemplateTests : TestBase
         E.DebugGive(s, "cloth", 1);
         s.Stats.Health = 10;
         Ok(E.StartCityService(s, "clinic_dressing", GameState.PlayerId));
-        Assert.That(E.CityServicePreview(s, "clinic_consult")!.Blocked, Is.EqualTo("当前行动还没结束。"));
-        Assert.That(GameEngine.CityBusyText, Is.EqualTo("当前行动还没结束。"), "CityServiceOverlay 两处、AppraisalPanel 一处同句");
+        Assert.That(E.CityServicePreview(s, "clinic_consult")!.Blocked, Is.EqualTo("当前行动未结束，暂时无法办理。"), "Q317 取代 Q286 的行动占用句");
+        Assert.That(GameEngine.CityBusyText, Is.EqualTo("当前行动未结束，暂时无法办理。"), "CityServiceOverlay 两处、AppraisalPanel 一处同句（Q317）");
         Ok(E.Cancel(s));
         E.TalkNpc(s, "npc_chen_zhi");
         if (E.DialogueLocked(s))

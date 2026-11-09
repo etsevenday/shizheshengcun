@@ -7,6 +7,8 @@
    B18：鉴定所“活性样本鉴定”换成专用的鉴定交易面板（AppraisalPanel）。B19：收容所“同行者名册”换成周期招募面板（RecruitPanel）。
    B39（N02 附录 §1 Q308、Q309）：受阻按钮用 GateButton——保持禁用语义、键盘可定位，读屏名「{按钮名}，不可用：{原因}」，
    轻点或 Enter／空格在原反馈位显示实时原因（按钮旁的原因句照旧）。
+   Q317（N02 附录 §2）：盘内实际阻断原因为当前行动占用时，接取、委托工作、普通服务与鉴定所、收容所子盘统一写 GameEngine.CityBusyText，
+   按钮旁、读屏名与触发受阻后的反馈位同句；暂停、对白、敌踪等其他原因沿原句与原优先级。
    B15：顶部列这名岗位名下的主线与委托（接取、阅读/核对、回看、AC02 外部医疗线索）；任务类服务（整理调查记录、CH02/AC01/AC02）照常在下面办理。 *@
 @{
     var s = G.S;
@@ -14,7 +16,7 @@
     var npcId = G.CityNpcId ?? "";
     var npc = e.CityNpc(npcId);
     var services = e.CityServicesOf(s, npcId);
-    var quests = e.QuestsOfNpc(s, npcId);
+    var quests = e.CityPanelQuests(s, npcId);   // Q317：接取与工作按钮的行动占用原因用事项盘统一句
     var absent = npc != null && s.City.Absent.Contains(npcId);
 }
 

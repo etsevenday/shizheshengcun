@@ -744,7 +744,15 @@ public sealed class GameSession
     // ───────────── 主线与委托（B15） ─────────────
 
     /// <summary>在委托条目里接取（与岗位交谈同效；同行邀约为选择登记）：0 分钟，播接取对白。</summary>
-    public ActionResult AcceptQuest(string questId) => PrologueDo(() => E.AcceptQuest(S, questId, Guid.NewGuid().ToString("N")));
+    /// <remarks>Q317：只由事项盘调用，失败原因为当前行动占用时与按钮旁同句（<see cref="GameEngine.CityPanelReason"/>）。</remarks>
+    public ActionResult AcceptQuest(string questId) => PrologueDo(() => CityPanelResult(E.AcceptQuest(S, questId, Guid.NewGuid().ToString("N"))));
+
+    /// <summary>Q317：事项盘内的失败结果，行动占用原因换成事项盘统一句，其他原因原样。</summary>
+    private static ActionResult CityPanelResult(ActionResult r)
+    {
+        if (!r.Ok) r.Reason = GameEngine.CityPanelReason(r.Reason) ?? r.Reason;
+        return r;
+    }
 
     /// <summary>
     /// 读完同行邀约后的选择（B15a，Q156 选 B）：“登记同行”入名册候补并结束对话；“暂不登记”只结束对话，以后可再谈。0 分钟 0 物资。
@@ -770,7 +778,7 @@ public sealed class GameSession
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
         if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
-        var res = E.StartQuestWork(S, questId, Guid.NewGuid().ToString("N"));
+        var res = CityPanelResult(E.StartQuestWork(S, questId, Guid.NewGuid().ToString("N")));   // Q317：只由事项盘调用
         Notice = res.Ok ? null : res.Reason;
         if (res.Ok)
         {

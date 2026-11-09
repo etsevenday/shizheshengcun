@@ -198,7 +198,7 @@ public class B14bCityQTests : TestBase
         Assert.That(E.CanStart(t, Craft("make_machete")), Is.Null);
         Start(t, Craft("make_machete"));
         Assert.That(E.CanStart(t, Craft("make_machete")), Is.Not.Null, "忙碌不能再开工");
-        Assert.That(E.CityServicePreview(t, "hub_workshop_access")!.Blocked, Is.EqualTo("当前行动还没结束。"));
+        Assert.That(E.CityServicePreview(t, "hub_workshop_access")!.Blocked, Is.EqualTo("当前行动未结束，暂时无法办理。"), "Q317");
     }
 
     // ───────────── Q148—Q150 公共站与施济显示定稿 ─────────────

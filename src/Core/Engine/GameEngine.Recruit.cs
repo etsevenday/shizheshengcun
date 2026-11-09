@@ -339,7 +339,7 @@ namespace Survival.Core.Engine
         {
             if (s.Progress.Dead) return "本局已结束";
             if (InCombatFlow(s)) return $"战斗中不能{verb}";
-            if (s.Main != null || s.Sub != null) return $"正在行动，不能{verb}";
+            if (s.Main != null || s.Sub != null) return CityBusyText;   // Q317：收容所子盘在事项盘内，行动占用用统一句（原优先级不变）
             if (DialogueLocked(s)) return "先读完对话";
             if (s.CurrentLocation != Rc.LocationId || s.CurrentZone != ExteriorZone) return $"只能在{LocName(Rc.LocationId)}安全空闲时{verb}";
             return null;

@@ -374,8 +374,30 @@ namespace Survival.Core.Engine
 
         /// <summary>CityCommonBlocked 未开放/直接请求拒绝分支（N02 附录 Q286）。</summary>
         public const string CityNotOffered = "这里不办理这项业务。";
-        /// <summary>CityCommonBlocked 行动占用分支，CityServiceOverlay 两处、AppraisalPanel 一处界面忙碌提示同句（N02 附录 Q286）。</summary>
-        public const string CityBusyText = "当前行动还没结束。";
+        /// <summary>
+        /// 城市岗位“事项”盘内当前行动占用的统一句（N02 附录 §2「2026-11-10 Q317」，取代 Q286 的“当前行动还没结束。”）：
+        /// CityCommonBlocked 行动占用分支、收容所子盘的行动占用分支、CityServiceOverlay／AppraisalPanel／RecruitPanel 界面忙碌提示，
+        /// 以及事项盘内委托接取与委托工作按钮（经 <see cref="CityPanelReason"/> 换掉原“行动进行中”）。
+        /// </summary>
+        public const string CityBusyText = "当前行动未结束，暂时无法办理。";
+
+        /// <summary>
+        /// Q317：事项盘内展示原校验选中的阻断原因——原因是当前行动占用（交谈与委托工作校验的“行动进行中”）时换成 <see cref="CityBusyText"/>；
+        /// 暂停、对白、敌踪等其他原因及原优先级原样。只用于事项盘内，人物卡“交谈”、文档卡“查看”与盘外入口不经这里。
+        /// </summary>
+        public static string? CityPanelReason(string? why) => why == "行动进行中" ? CityBusyText : why;
+
+        /// <summary>Q317：事项盘里列出的这名岗位名下任务——与 <see cref="QuestsOfNpc"/> 相同，接取与工作按钮的行动占用原因换成 <see cref="CityBusyText"/>。</summary>
+        public List<QuestView> CityPanelQuests(GameState s, string npcId)
+        {
+            var list = QuestsOfNpc(s, npcId);
+            foreach (var q in list)
+            {
+                q.AcceptBlocked = CityPanelReason(q.AcceptBlocked);
+                q.WorkBlocked = CityPanelReason(q.WorkBlocked);
+            }
+            return list;
+        }
 
         /// <summary>嵌进外层句子前补齐句末句号（已有终止符的不重复）：B38b Q283/Q286“每段末尾一个句号”。</summary>
         public static string Sentence(string text)
