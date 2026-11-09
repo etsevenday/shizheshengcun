@@ -1628,7 +1628,7 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 /* B31a（Q295、Q321、PXb）：菜单「阅读字体」「动画速度」两组偏好；当前档用金色文字与选中框，并有 aria-pressed */
 .pref-group .eyebrow { margin-bottom: 6px; }
 .pref-group .secondary.on { border-color: var(--accent); color: var(--accent); }
-.wasteland .pref-group .secondary.on { border-image-source: var(--ink2-frame-selected); background-color: var(--ink2-tile-top); }
+.wasteland .pref-group .secondary.on { border-image-source: var(--ink2-frame-selected); background-color: var(--ink2-tile-top); color: var(--ink2-gold); }
 
 /* B31a（Q295「跟随系统的减少动态效果」）：系统要求减少动态效果时，过渡与动画直接落到结果状态（静态反馈代替位移、闪烁），
    数值、文字、焦点与真实进度照常显示；世界推进与敌方展示的间隔不受影响（不是位移动效）。 */
