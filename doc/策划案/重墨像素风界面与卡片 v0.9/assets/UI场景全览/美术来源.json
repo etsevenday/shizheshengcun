@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "project": "适者生存",
+  "status": "离线界面样板",
+  "tool": "内置 image_gen",
+  "assets": [
+    {
+      "file": "art/battle-checkpoint.png",
+      "size": [
+        1672,
+        941
+      ],
+      "transparent": false,
+      "sha256": "19f517c910e4b685f3886cec06e42b584954c27836b820996edfdfe90b682fc8",
+      "reference": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+      "prompt": "Create an original standalone wide 16:9 landscape 2D background plate for the same Chinese post-apocalyptic tactics game shown in the reference. The supplied screenshot is only reference for the setting and angular woodcut pixel art, not layout. Empty abandoned Chinese highway quarantine checkpoint, blue charcoal silhouettes of the fenced ruined buildings and bridge, warning-yellow concrete barricades and occasional rust vermilion. Ground plane across entire frame, clear empty walkable strip in lower third where 8 separate actors will be composited later. Very strong deliberate stepped chunky pixel clusters, scratchy thick black ink, high contrast, worn cool blue dusk, small rust accents. No people, monsters, vehicles in foreground, UI, bars, cards, typography, legible signs, border, watermark. Fill the canvas edge to edge. Landscape composition."
+    },
+    {
+      "file": "art/enemy-wanderer.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "transparent": true,
+      "sha256": "21bfc2b1223695622e21400b094ac2448a324e13b273a0ebcd075ccca4df0adc",
+      "reference": "../参考原图/07-怪物类型/01-常见感染者.png",
+      "prompt": "Create one new independent full-body transparent PNG sprite, an original common infected wanderer for the same Chinese wasteland survival game. Reference is a style/shape guide only. Black-ink angular woodcut shading with deliberately stepped coarse chunky pixel clusters and limited bone, muddy charcoal, rust and olive. Three quarter facing LEFT, stooped lean adult silhouette, ripped old civil work jacket, arms hanging, visible boots, neutral combat stance. Entire body and all limbs in frame with clear transparent safety margins. Genuine transparent alpha background; no floor, scenery, baseline, painted matte, black rectangle, UI, writing, or watermark. Restrained stylized grime, no graphic gore. Portrait frame."
+    },
+    {
+      "file": "art/camp-outskirts.png",
+      "size": [
+        1672,
+        941
+      ],
+      "transparent": false,
+      "sha256": "c3e13c0586ebadf9f563c0844f1bbb3a7dc221e0d1623c5d6f6edd19d092fce4",
+      "reference": "../参考原图/05-势力鸟瞰/01-幸存者营区.png",
+      "prompt": "Generate a new standalone 16:9 side-on scene plate for the original Chinese post-apocalyptic survival game. Reference is a style and building materials guide. View from outside the survivor encampment at ground level, ruined low industrial courtyard, patched corrugated barricade and watchtower, a distant ruined Chinese city through bare black trees, weak amber lanterns, no large fire or other placeable facility. Strong angular black woodcut shadows, heavy coarse stepped pixel clusters and limited weathered iron, moss, sepia and dark charcoal, somber late afternoon. Open ground and clear focal silhouette. Full bleed art with no characters, creatures, text, glyphs, border, UI, icons, watermark."
+    },
+    {
+      "file": "art/allies-battle-atlas.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "transparent": true,
+      "sha256": "ede5db092bec575f7299d7564cc8e1b4aa57aa84469cbd821ba3b7750aa23f58",
+      "reference": "../参考原图/04-人物画风/01-幸存者全身造型.png",
+      "prompt": "Transparent game sprite atlas in exactly three equal columns, wide horizontal landscape 3:2 canvas. For an original Chinese post-apocalyptic side-view survival game, remake three distinct adult allies from the reference style, one standing at each column center (x=16.7%, 50%, 83.3%). Left: lean female field medic with short ponytail and light tan ragged canvas jacket holding a compact pistol pointing down. Middle: stocky male laborer with patched blue work jacket, carrying a wrench. Right: agile female scout with weathered dark olive jacket and a short knife. All full body from hair to boots, with bodies entirely within their own column, clearly separated by ample transparent space, facing screen RIGHT in profile, same ground baseline near y=90%. Dark angular black woodcut with strong deliberately stepped coarse pixel clusters, muted rust, warm tan, olive, black. Real transparent alpha everywhere outside characters, no scenery, no shadows, no floor, no labels, no color swatches, no tile lines, no typography or watermark."
+    },
+    {
+      "file": "art/infected-battle-atlas.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "transparent": true,
+      "sha256": "3cd4219c39f2ec361c8a9b8a7bfae5240dcda4bfb1aa0d62df0ad5d8c0213c94",
+      "reference": "../参考原图/07-怪物类型/02-特殊感染者.png",
+      "prompt": "Transparent game sprite atlas in exactly three equal columns, wide horizontal landscape 3:2 canvas. Remake three distinct infected enemy types from a Chinese post-apocalyptic survival game, one at each column center (x=16.7%, 50%, 83.3%). Left: crouching skinny fast infected adult with rags, hands low. Middle: large stooped armored construction worker infected with a dented hard hat and broken heavy workwear. Right: tall emaciated infected with long hanging arms and torn work clothes. All three face screen LEFT, full body and boots, all within their own columns, clearly separated by ample transparent space, same ground baseline near y=90%. Dark angular black woodcut shadows, strong deliberately stepped coarse pixel clusters, limited palette of rust, charcoal, tan and muddy olive, visual style from supplied sheet only. Real transparent alpha everywhere outside each character, no scenery, no shadow, no ground, no labels, no swatches, no tile lines, no text, no watermark, no graphic gore."
+    },
+    {
+      "file": "art/wild-battle-atlas.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "transparent": true,
+      "sha256": "aa99c2741b7275034860cfb720a869d3dafbd44b909018302d575ba7c0cd9645",
+      "reference": "../参考原图/07-怪物类型/03-野外动物与异变轮廓.png",
+      "prompt": "Transparent game sprite atlas in exactly two equal columns, wide horizontal landscape 3:2 canvas. Remake two original wild enemy designs in angular black-ink woodcut with strong deliberately stepped coarse pixel clusters for the Chinese wasteland game shown in the style reference. Left column center x=25%: lean scruffy grey wild wolf, walking and facing LEFT. Right column center x=75%: rugged bristling brown mutated boar with prominent tusks, facing LEFT. Full body and all paws and tails visible, clearly separated with enough transparent space, neither animal crosses center x=50%. Feet share baseline. Muted charcoal, earth and warm tan. True transparent alpha, no scenery, no floor, no shadows, no borders, no labels, no text, no watermark, no graphic gore."
+    }
+  ],
+  "archivedReferences": "场景清单.js 中 ref 为 21 张旧原图，art 定义独立文件和取景坐标。"
+}

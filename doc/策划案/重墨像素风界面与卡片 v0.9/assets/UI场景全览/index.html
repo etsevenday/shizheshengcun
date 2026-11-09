@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>适者生存 · UI 与美术应用场景全览</title>
+<link rel="stylesheet" href="../UI分层样件/css/ink-layers.css">
+<link rel="stylesheet" href="场景皮肤.css">
+<script defer src="场景清单.js"></script>
+<script defer src="屏幕样板.js"></script>
+<script defer src="预览控制.js"></script>
+</head>
+<body>
+<header class="banner">
+  <p class="eyebrow">适者生存　/　重墨像素　/　开发交接</p>
+  <h1>UI 与美术应用场景全览</h1>
+  <p>选择界面，再切换合成、仅 UI 或仅美术。查看同一布局如何复用边框、状态与独立插画。</p>
+  <a href="../../13 UI与美术应用场景全览 v0.9.md">使用说明与验收</a>　<a href="../../交互原型.html">页面流程原型</a>　<a href="../参考原图/索引.md">21 张原图索引</a>
+</header>
+<div class="appLayout">
+  <nav class="catalog" id="catalog" aria-label="场景分类"></nav>
+  <main>
+    <div class="chooser">
+      <h2 id="sceneTitle"></h2>
+      <label>跳到 <select id="scenePick" aria-label="选择场景"></select></label>
+      <button id="prev" type="button">上一张</button>
+      <button id="next" type="button">下一张</button>
+    </div>
+    <div class="layerBar" id="layerBar" aria-label="图层开关">
+      <button type="button" data-mode="combined" aria-pressed="true">合成</button>
+      <button type="button" data-mode="ui" aria-pressed="false">仅 UI</button>
+      <button type="button" data-mode="art" aria-pressed="false">仅美术</button>
+      <label><input type="checkbox" data-toggle="scene" checked>场景</label>
+      <label><input type="checkbox" data-toggle="art" checked>主体</label>
+      <label><input type="checkbox" data-toggle="texture" checked>底纹</label>
+      <label><input type="checkbox" data-toggle="ornament" checked>装饰</label>
+      <label><input type="checkbox" data-toggle="frame" checked>边框</label>
+      <label><input type="checkbox" data-toggle="status" checked>状态</label>
+      <label><input type="checkbox" data-toggle="text" checked>文字</label>
+    </div>
+    <div class="canvas">
+      <section id="screen" class="screen ink-skin" aria-label="场景样板"></section>
+    </div>
+    <p class="scope" id="components"></p>
+    <details class="sourceArea" open>
+      <summary>本页用到的原图及设计依据</summary>
+      <div class="sourceBar" id="sources"></div>
+    </details>
+    <p class="scope">样板只呈现界面与美术组合。按钮切换示例，正式文字、地图坐标、权限和状态取真实数据。</p>
+  </main>
+</div>
+</body>
+</html>
