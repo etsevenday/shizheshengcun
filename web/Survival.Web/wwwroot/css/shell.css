@@ -229,3 +229,112 @@ fieldset.dev-box { min-width: 0; margin: 0; }
 fieldset.dev-box:disabled { opacity: .55; }
 /* 标题页「阅读字体」当前档与游戏菜单一致：金字加选中框（B31a 的规则只限 .wasteland，标题页不在其中） */
 :is(.wasteland, .title-screen) .pref-group .secondary.on { border-image-source: var(--ink2-frame-selected); background-color: var(--ink2-tile-top); color: var(--ink2-gold); }
+
+/* ═════ B31c：局部盘居中（Q324）·公共动效（R114）·结果提示（Q330）·外壳遗留 ═════ */
+
+/* ───── Q324 局部操作盘：屏幕中央，新稿居中框 760×547（1600 基准；三档同 --pop-w/--pop-h），放不下时限制在视口内、距屏边 ≥8 ───── */
+/* 标题与动作固定，正文独立滚动；位置由 app.js survivalPop 按 data-center 居中。背后四轨不加遮罩、不改原交互。 */
+.wasteland .apop.apop-c {
+  width: min(var(--pop-w), calc(100vw - 16px)); height: min(var(--pop-h), calc(100vh - 16px));
+  max-width: none; max-height: none; overflow: hidden;
+  display: flex; flex-direction: column; gap: 10px; padding: 16px 20px 18px;
+}
+.wasteland .apop.card-pop.apop-c:not(:has(.tbar)) { display: none; }
+.wasteland .apop.apop-c > .apop-head { flex: 0 0 auto; padding-bottom: 8px; border-bottom: 1px solid color-mix(in srgb, var(--ink2-line) 60%, transparent); }
+.wasteland .apop.apop-c .apop-title b { font-size: var(--fs-title); font-weight: 500; white-space: normal; }
+.wasteland .apop.apop-c .apop-art { flex-basis: 56px; width: 56px; height: 56px; }
+.wasteland .apop.apop-c .apop-art svg { width: 48px; height: 48px; }
+.wasteland .apop.apop-c > .apop-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; gap: 6px; }
+.wasteland .apop.apop-c > .apop-foot {
+  flex: 0 0 auto; margin-top: 0; padding-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--ink2-line) 60%, transparent);
+}
+/* 新稿：取消在左（190 宽），主动作在右（238 宽） */
+.wasteland .apop.apop-c > .apop-foot > :is(.apop-cancel, [data-feed-cancel]) { order: -1; flex: 0 1 190px; min-height: 40px; }
+.wasteland .apop.apop-c > .apop-foot > .apop-go { flex: 0 1 238px; margin-left: auto; min-height: 40px; }
+/* 选卡操作盘：没有标题行，关闭键固定在右上角，操作条与锅内容在正文里滚动 */
+.wasteland .apop.card-pop.apop-c { padding: 16px 20px; }
+.wasteland .apop.card-pop.apop-c > .apop-head { position: absolute; top: 12px; right: 12px; padding: 0; border: 0; }
+.wasteland .apop.card-pop.pot.apop-c > .apop-body { display: flex; flex-direction: column; }
+/* 点火工具、锁定路线表：列表跟着正文走，不再另设高度上限 */
+.wasteland .apop.apop-c .ignite-menu.in-pop .im-list { max-height: none; }
+.wasteland .apop.lockstack.apop-c .lockstack-list { max-height: none; }
+
+/* 原本就是居中确认框的几类（超额 PXg、封存 PXi、重置 PXj、撤出 PXd、同类武器 P03d、转移数量 PXh）：统一用同一居中框尺寸 */
+.overflow-layer > .overflow-box {
+  width: min(var(--pop-w), calc(100vw - 16px)); height: min(var(--pop-h), calc(100vh - 16px)); max-height: none;
+  padding: 16px 20px 18px;
+}
+.overflow-layer > .overflow-box > :is(.ov-head, .ov-foot, .notice) { flex: 0 0 auto; }
+.overflow-layer > .overflow-box > .ov-foot { margin-top: auto; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--ink2-line) 60%, transparent); }
+.modal-back > .modal {
+  width: min(var(--pop-w), calc(100vw - 16px)); height: min(var(--pop-h), calc(100vh - 16px)); overflow-y: auto;
+  padding: 16px 20px 18px;
+}
+.modal-back > .modal > .btn-row { margin-top: auto; display: flex; justify-content: space-between; gap: 12px; }
+.modal-back > .modal > .btn-row > .secondary { order: -1; flex: 0 1 190px; min-height: 40px; }
+.modal-back > .modal > .btn-row > .primary { flex: 0 1 238px; min-height: 40px; }
+
+/* ───── R114 公共动效（a9b93f0 给开发的动效说明「其他操作的过渡与结果」；时长乘 --motion-k，系统减少动态效果时由 app.css 全局规则直接落到结果） ───── */
+:root {
+  --mo-pop-in: calc(200ms * var(--motion-k));     /* 菜单、确认框、说明、局部盘：入场 180–220ms，位移 8–12px 加淡入 */
+  --mo-pop-out: calc(140ms * var(--motion-k));    /* 退场 120–160ms（app.js 影子层淡出） */
+  --mo-scrim: calc(200ms * var(--motion-k));      /* 遮罩分轨，只淡入淡出 */
+  --mo-drawer: calc(190ms * var(--motion-k));     /* 侧栏、抽屉、二级页：160–220ms 从同侧短滑入 */
+  --mo-hover: calc(140ms * var(--motion-k));      /* 悬停、焦点、选中、不可用：100–180ms */
+  --mo-toast: calc(180ms * var(--motion-k));      /* 结果提示：160–200ms 原位淡入 */
+}
+@keyframes b31c-pop-in { from { opacity: 0; translate: 0 10px; } to { opacity: 1; translate: 0 0; } }
+@keyframes b31c-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes b31c-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes b31c-pop-out { from { opacity: 1; translate: 0 0; } to { opacity: 0; translate: 0 8px; } }
+@keyframes b31c-drawer-top { from { opacity: 0; translate: 0 -12px; } to { opacity: 1; translate: 0 0; } }
+@keyframes b31c-drawer-right { from { opacity: 0; translate: 12px 0; } to { opacity: 1; translate: 0 0; } }
+@keyframes b31c-toast-in { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+
+/* 弹层入场：框体位移加淡入，遮罩单独淡入 */
+:is(.menu-scrim, .overflow-layer, .modal-back, .pause-scrim) { animation: b31c-fade-in var(--mo-scrim) ease-out both; }
+:is(.menu-scrim > .menu-modal, .overflow-layer > .overflow-box, .modal-back > .modal, .pause-scrim > .pause-grid),
+.wasteland .apop.apop-c { animation: b31c-pop-in var(--mo-pop-in) cubic-bezier(.2, .7, .3, 1) both; }
+/* 退场影子层（app.js survivalGhost）：弹层移除后在原位淡出，不接收输入 */
+.pop-ghosts { position: fixed; inset: 0; z-index: 95; pointer-events: none; background: none !important; isolation: auto; }
+.pop-ghosts * { pointer-events: none !important; }
+.pop-ghosts > :is(.menu-scrim, .overflow-layer, .modal-back) { animation: b31c-fade-out var(--mo-pop-out) ease-in both; }
+.pop-ghosts > :is(.menu-scrim, .overflow-layer, .modal-back) > * { animation: b31c-pop-out var(--mo-pop-out) ease-in both; }
+.pop-ghosts > .apop { visibility: visible; animation: b31c-pop-out var(--mo-pop-out) ease-in both; }
+
+/* 一级面板（①② / ①②③ / 四轨）从顶栏一侧短滑入；右栏属性说明子页从右侧滑入；底层桌面与四轨不动 */
+.center-scroll.four .panel-host > * { animation: b31c-drawer-top var(--mo-drawer) ease-out both; }
+.detail .attr-page { animation: b31c-drawer-right var(--mo-drawer) ease-out both; }
+
+/* 悬停、焦点、选中、不可用：边线与底色过渡，形状、文字和焦点环不变 */
+button { transition-duration: var(--mo-hover); }
+.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card) {
+  transition: box-shadow var(--mo-hover) ease, border-color var(--mo-hover) ease, background-color var(--mo-hover) ease, outline-color var(--mo-hover) ease;
+}
+
+/* ───── Q330 结果提示：原位淡入；一般提示约 8 秒后淡出再收起；关键提示（危险、行动中止）常驻到关闭或下一次有效提交 ───── */
+.wasteland .toast { animation: b31c-toast-in var(--mo-toast) ease-out both; }
+.wasteland .toast.leaving { animation: b31c-fade-out var(--mo-pop-out) ease-in forwards; pointer-events: none; }
+.wasteland .toast.bad { border-color: var(--ink2-badge-red-edge); box-shadow: inset 4px 0 0 var(--ink2-badge-red-edge), 0 6px 20px color-mix(in srgb, var(--ink2-black) 55%, transparent); }
+
+/* ───── B31b 遗留：中央行动位窄条与一级面板 ───── */
+/* 窄条贴在面板覆盖区底边（①② 面板：② 底；①②③ 面板：③ 底；四轨面板：中部底），面板让出窄条高度，③④ 不被盖住；
+   没开面板、只开着居中局部盘时贴中部底边 */
+.center-scroll.four.locked.docked-prog:not(.full-panel) .panel-host { bottom: calc(var(--dock-h) + var(--sh-gap)); }
+.center-scroll.four.locked.docked-prog:not(.tall-panel, .full-panel) ~ :is(.cprog.docked, .pause-dock) { bottom: calc(50% + var(--sh-gap) / 2); }
+.center-scroll.four.locked.docked-prog.tall-panel ~ :is(.cprog.docked, .pause-dock) { bottom: calc(25% + var(--sh-gap) / 4); }
+.wasteland :is(.cprog.docked, .pause-dock) { max-height: var(--dock-h); overflow: hidden; }
+
+/* 1280 暂停弹窗：原上下两块各自滚动、各只分到一小截；改为整窗一个滚动区，中间的行动位一行吸附在可视区内（继续与退出始终可达） */
+.pause-scrim > .center-layer.pause-grid {
+  display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; gap: 10px;
+}
+.pause-scrim > .center-layer.pause-grid > :is(.pg-top, .pg-bottom) { flex: 0 0 auto; min-height: auto; overflow: visible; }
+.pause-scrim > .center-layer.pause-grid > .pg-top > :first-child { margin-top: 0; }
+.pause-scrim > .center-layer.pause-grid > .pg-top { margin-top: auto; }
+.pause-scrim > .center-layer.pause-grid > .pg-bottom { margin-bottom: auto; }
+.pause-scrim > .center-layer.pause-grid > .pg-mid {
+  flex: 0 0 auto; position: sticky; top: -12px; bottom: -12px; z-index: 2; padding: 6px 0;
+  background: var(--ink2-dark);
+}

@@ -304,6 +304,15 @@ window.survivalPop = (function () {
     cur.lostAt = 0;
     var W = window.innerWidth, H = window.innerHeight, m = 8, g = 8;
     var w = el.offsetWidth, h = el.offsetHeight;
+    // B31c（Q324）：局部操作盘统一在屏幕中央打开；放不下时限制在视口内、距屏边 ≥8（尺寸由 shell.css 的 --pop-w/--pop-h 三档给出）。
+    // 锚点仍用于“来源失效”判定：发起它的卡滚出或消失时照原规则收起
+    if (el.getAttribute('data-center')) {
+      el.style.left = Math.round(Math.max(m, (W - w) / 2)) + 'px';
+      el.style.top = Math.round(Math.max(m, (H - h) / 2)) + 'px';
+      el.style.visibility = 'visible';
+      el.setAttribute('data-side', 'center');
+      return;
+    }
     var order = (el.getAttribute('data-place') || 'right,left,below,above').split(',');
     // data-bound：浮窗限制在指定容器（中部列）里——上下可用空间也按容器算，放不下就翻到另一侧，不压左右栏和底栏（M77-B4、M78）
     var bsel = el.getAttribute('data-bound');
@@ -451,4 +460,53 @@ window.survivalPop = (function () {
   try { font = window.localStorage.getItem('survival.pref.readFont'); speed = window.localStorage.getItem('survival.pref.animSpeed'); } catch (e) { }
   var k = speed === 'fast' ? 0.5 : speed === 'slow' ? 1.5 : 1;
   window.survival.applyPresentation(font === 'clear' ? 'clear' : 'pixel', k);
+})();
+
+// B31c（R114 popup 退场；a9b93f0 动效说明「打开和关闭菜单、确认框、说明」退场 120–160ms、遮罩分轨）：
+// 居中弹层（局部操作盘、游戏／战斗菜单、确认框、数量框）被移除时，把它的外观复制成一个不接收输入的影子，在原位淡出 140ms×动画速度后删掉。
+// 只是表现：真实弹层已经关闭，输入立即回到背后；同一帧里又出现新弹层（例如从一个局部盘换到另一个）时影子直接删掉，不叠影。
+// 系统减少动态效果时不生成影子（直接落到结果）。影子放在 body 下独立容器里，不进 Blazor 管理的节点。
+(function () {
+  var SEL = '.apop.apop-c, .menu-scrim, .overflow-layer, .modal-back';
+  var host = null;
+  function reduced() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+  function k() { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--motion-k')) || 1; }
+  function hostEl() {
+    if (!host || !host.isConnected) {
+      host = document.createElement('div');
+      host.className = 'wasteland pop-ghosts';
+      host.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(host);
+    }
+    return host;
+  }
+  function spawn(node) {
+    var g = node.cloneNode(true);
+    g.removeAttribute('id');
+    g.querySelectorAll('[id]').forEach(function (x) { x.removeAttribute('id'); });
+    g.setAttribute('inert', '');
+    hostEl().appendChild(g);
+    var done = function () { if (g.parentNode) g.parentNode.removeChild(g); };
+    setTimeout(done, Math.round(160 * k()) + 40);
+    // 新弹层已经接上（换盘）：不留影子
+    requestAnimationFrame(function () {
+      var live = document.querySelectorAll(SEL);
+      for (var i = 0; i < live.length; i++) { if (!host.contains(live[i])) { done(); return; } }
+    });
+  }
+  function start() {
+    if (!window.MutationObserver || !document.body) return;
+    new MutationObserver(function (muts) {
+      if (reduced()) return;
+      for (var i = 0; i < muts.length; i++) {
+        var m = muts[i];
+        if (host && (m.target === host || host.contains(m.target))) continue;
+        for (var j = 0; j < m.removedNodes.length; j++) {
+          var n = m.removedNodes[j];
+          if (n.nodeType === 1 && n.matches && n.matches(SEL) && m.target.isConnected) spawn(n);
+        }
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

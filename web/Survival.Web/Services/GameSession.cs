@@ -114,6 +114,10 @@ public sealed class GameSession
 
     public List<GameEvent> Recent { get; } = new();
     public GameEvent? Toast { get; private set; }
+    /// <summary>B31c（R114 toast）：一般提示约 8 秒到时先淡出（140ms×动画速度）再移除；关键提示（Q330）不自动收起。</summary>
+    public bool ToastLeaving { get; private set; }
+    /// <summary>B31c（Q330）：上次看到的有效提交标记（<see cref="ResultToast.CommitMark"/>），变了就清掉正在显示的结果提示。</summary>
+    private string? _commitMark;
     public HashSet<string> Highlights { get; } = new();
     /// <summary>保持的高亮（B18 试玩修复 M372：换物产物落地后描边保持到离开该处地面或下一批新高亮）。</summary>
     public HashSet<string> HeldHighlights { get; } = new();
@@ -388,6 +392,16 @@ public sealed class GameSession
 
     /// <summary>火堆卡“点燃”按钮下的点火工具菜单是否打开（v0.7 第 4.2 节）；只在会话内，Esc 或点菜单外关闭。</summary>
     public bool IgniteMenuOpen { get; private set; }
+
+    /// <summary>选卡操作盘（CardPop）是否显示：选中地面/随身物品、工具或锅内液体，且没有别的局部盘、整理窗、菜单或对白锁让它让位。</summary>
+    public bool CardPopShown => State != null && Pop == null && FeedPending == null && !IgniteMenuOpen && !DialogueLocked && !OverflowPending && !DuplicateWeaponsPending
+        && !MenuOpen && !BattleMenuOpen && Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid;
+
+    /// <summary>
+    /// B31c（Q324）：屏幕中央有局部操作盘（选卡操作、移动／接近／投炭／采集等就近盘、点火工具、食饮）开着。中央行动位此时与一级面板开着时一样
+    /// 收成中部底部窄条，不被居中盘挡住「退出行动」（排版处理，不改规则）。
+    /// </summary>
+    public bool LocalDiskOpen => State != null && !InBattleUi && (Pop != null || FeedPending != null || IgniteMenuOpen || CardPopShown);
 
     public void ToggleIgniteMenu()
     {
@@ -997,6 +1011,7 @@ public sealed class GameSession
 
     public void Notify()
     {
+        SyncCommitMark();
         ResetOnLocationChange();
         ReconcileFeed();
         OnDialogueOnset();
@@ -1244,7 +1259,8 @@ public sealed class GameSession
         if (sel.Kind != SelectionKind.None) DetailTab = DetailTab.Object;
         Notice = null;
         // 选中卡片后卡下会出现操作条：旧的结果提示收起，不遮挡操作（试玩修复 G5）；内容仍在页脚与行动日志里
-        if (sel.Kind != SelectionKind.None) Toast = null;
+        // B31c（Q330）：选中只是浏览，「危险」「行动中止」等关键提示保留，一般提示照原规则收起
+        if (sel.Kind != SelectionKind.None) SetToast(ResultToast.OnBrowse(Toast));
         // B13 PRO01：第一次实际选中地面/随身物资卡（卡下展开操作预览）记“看清眼前”；只写任务账，不耗时
         // 试玩修复 M503：鸟瞰浏览中第四行只看，点卡不算任务进度
         if (State != null && !CityBrowsing && (sel.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid) && !GameEngine.TaskDone(S, "PRO01"))
@@ -1850,20 +1866,49 @@ public sealed class GameSession
 
     private int _toastSeq;
 
-    /// <summary>结果提示显示约 8 秒后自动收起（界面节奏，非玩法数值）；同一条内容仍留在页脚与行动日志（试玩修复 G5）。</summary>
+    /// <summary>
+    /// 一般结果提示显示约 8 秒后自动收起（界面节奏，非玩法数值；阅读停留不乘动画速度）；同一条内容仍留在页脚与行动日志（试玩修复 G5）。
+    /// B31c：Q330 关键提示（危险、行动中止）不自动收起；收起前先淡出 140ms×动画速度（R114 toast 退场）。
+    /// </summary>
     private async Task AutoDismissToast(int seq)
     {
-        await Task.Delay(8000);
-        if (seq != _toastSeq || Toast == null) return;
-        Toast = null;
+        await Task.Delay(ResultToast.NormalDismissMs);
+        if (seq != _toastSeq || Toast == null || !ResultToast.AutoDismiss(Toast)) return;
+        ToastLeaving = true;
         Notify();
+        await Task.Delay(MotionMs(140));
+        if (seq != _toastSeq) return;
+        SetToast(null);
+        Notify();
+    }
+
+    /// <summary>换结果提示：新的一条重新计时（关键提示不计时）、清掉淡出态。</summary>
+    private void SetToast(GameEvent? t)
+    {
+        if (ReferenceEquals(t, Toast)) return;
+        Toast = t;
+        ToastLeaving = false;
+        _toastSeq++;
+        if (ResultToast.AutoDismiss(t)) _ = AutoDismissToast(_toastSeq);
+    }
+
+    /// <summary>
+    /// B31c（Q330）：内核接受了新的玩法提交（请求号进了 RecentRequestIds）就清掉当前结果提示（含关键提示）。
+    /// 浏览、开关菜单、预览、草稿与被拒请求不改标记，不清。新局、读档时只记下标记。
+    /// </summary>
+    private void SyncCommitMark()
+    {
+        if (State == null) { _commitMark = null; return; }
+        var mark = ResultToast.CommitMark(S);
+        if (ResultToast.Committed(_commitMark, mark) && Toast != null) SetToast(null);
+        _commitMark = mark;
     }
 
     private void Drain()
     {
         if (State == null) return;
-        var toastSet = false;
-        var before = Toast;
+        // B31c（Q330）：先看有没有新的有效提交（清旧提示），再放这次提交及世界推进带来的新结果
+        SyncCommitMark();
         // B18 试玩修复二 M374：离开保持高亮所在的地面（换地点或进出安全屋区）即清掉保持描边与这批高亮，回来不再显示
         if (HeldHighlightAt != null && HeldHighlightAt != S.Ground)
         {
@@ -1871,34 +1916,15 @@ public sealed class GameSession
             HeldHighlights.Clear();
             HeldHighlightAt = null;
         }
+        var batch = new List<GameEvent>();
         foreach (var ev in E.DrainEvents(S))
         {
             if (string.IsNullOrEmpty(ev.Text)) continue;
             Recent.Add(ev);
-            switch (ev.Kind)
-            {
-                case GameEventKind.ActionCompleted:
-                case GameEventKind.ActionAborted:
-                case GameEventKind.ActionCancelled:
-                case GameEventKind.Hazard:
-                case GameEventKind.Death:
-                case GameEventKind.Encounter:
-                case GameEventKind.BattleEnd:
-                    Toast = ev;
-                    toastSet = true;
-                    break;
-                case GameEventKind.Notice:
-                    // B13：来客在营地等候等非阻断短通知，只提示、不打断
-                    if (!toastSet) Toast = ev;
-                    break;
-                case GameEventKind.FacilityDone:
-                    // 设施完成只提示，不暂停、不替换角色行动；同一批里角色行动的结果提示优先
-                    if (!toastSet) Toast = ev;
-                    break;
-                case GameEventKind.SevenDay:
-                    SevenDayPending = true;
-                    break;
-            }
+            // 结果提示（档次与 Q330 关键提示保留规则在内核 ResultToast.Pick）：角色行动结果类同批后到顶替先到；来客等非阻断短通知（B13）与
+            // 设施完成只在同批没有行动结果时提示；一般提示不顶替尚未处理的危险／行动中止提示
+            batch.Add(ev);
+            if (ev.Kind == GameEventKind.SevenDay) SevenDayPending = true;
             if (ev.HighlightIds.Count > 0)
             {
                 Highlights.Clear();
@@ -1913,12 +1939,12 @@ public sealed class GameSession
             }
         }
         if (Recent.Count > 60) Recent.RemoveRange(0, Recent.Count - 60);
-        if (Toast != null && !ReferenceEquals(Toast, before)) _ = AutoDismissToast(++_toastSeq);
+        SetToast(ResultToast.Pick(Toast, batch));
     }
 
     public void DismissToast()
     {
-        Toast = null;
+        SetToast(null);
         Notify();
     }
 
@@ -2442,7 +2468,8 @@ public sealed class GameSession
         var res = E.Engage(S, Guid.NewGuid().ToString("N"));
         Notice = res.Ok ? null : res.Reason;
         ResetBattleUi();
-        Toast = null;
+        // B31c（Q330）：被拒的接敌请求不清结果提示
+        if (res.Ok) Toast = null;
         ClearHoverNow();
         Pop = null;
         Selected = new Selection();

@@ -57,8 +57,10 @@
             // 顶栏面板（地图/制作/休息/日志/目标/提示/对话记录/说明）只覆盖①②两行，③当前地面、④随身不动（S14 §18.1：
             // 导航面板不得重新分配四行高度）；手工制作仍能把地面卡拖进材料槽
             var centerPanel = GameSession.IsTopPanel(G.Panel);
-            // B31b（R55）：一级面板开着时中央行动位收成中部底部窄条，不盖面板里的按钮；三城鸟瞰沿用自己的右下角位置（B24）
+            // B31b（R55）：一级面板开着时中央行动位收成中部底部窄条，不盖面板里的按钮；三城鸟瞰沿用自己的右下角位置（B24）。
             var dockProgress = centerPanel && G.Panel != "citymap";
+            // B31c（Q324）：没开面板、居中局部盘开着时同样收成窄条，居中盘不挡「退出行动」
+            if (!centerPanel && G.LocalDiskOpen) dockProgress = true;
         }
         @* 固定四行（S14 §18.1）：中部净高均分四份——①地图/场景 ②设施/资源 ③当前地面 ④随身；选卡、展开锅、悬停、开面板、对白、
            战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。对白/战斗/面板只占①②合并区域。 *@
@@ -143,9 +145,10 @@
 
         @if (G.Toast != null && !s.Progress.Dead && !fullBattle)
         {
-            var bad = G.Toast.Kind is GameEventKind.Hazard or GameEventKind.ActionAborted;
-            @* B22h 试玩修复（M448）：长结果（如带敌踪的撤退落点）在 1280 下两行放不下，放宽到最多五行、宽度稍大，完整内容仍在悬停提示 *@
-            <div class="toast @(bad ? "bad" : "") @(G.Toast.Text.Length > 80 ? "long" : "")" role="status">
+            var bad = ResultToast.IsCritical(G.Toast);
+            @* B22h 试玩修复（M448）：长结果（如带敌踪的撤退落点）在 1280 下两行放不下，放宽到最多五行、宽度稍大，完整内容仍在悬停提示。
+               B31c（Q330）：危险、行动中止（.bad）保持到点 × 或下一次有效提交；一般提示约 8 秒先淡出再收起（.leaving，R114 toast） *@
+            <div @key="G.Toast" class="toast @(bad ? "bad" : "") @(G.Toast.Text.Length > 80 ? "long" : "") @(G.ToastLeaving ? "leaving" : "")" role="@(bad ? "alert" : "status")">
                 <span title="@G.Toast.Text">@G.Toast.Text</span>
                 <button aria-label="关闭结果提示" @onclick="G.DismissToast">×</button>
             </div>

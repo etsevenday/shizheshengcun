@@ -1,10 +1,12 @@
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
-@* 通用锚定操作浮窗（S14 §14.1、§13.2）：锚在对象卡/指令按钮旁，优先附近空位、放不下时向上/另一侧翻转，限制在屏内（位置由 survivalPop 计算）。
-   内容：对象/目标小图、动作名、必要成本/短风险、明确执行与关闭，不铺长说明。控件阻止冒泡，不点穿为卡片使用/选敌/拖拽；
-   Esc/× 只收起未提交浮窗，不提交、不取消已运行的行动；锚点滚出或消失时收起（OnLost）。 *@
-<div class="apop @CssClass" @ref="_el" data-anchor="@AnchorId" data-place="@Place" data-bound="@Bound" role="dialog" aria-label="@Title"
+@* 通用局部操作盘（S14 §14.1、§13.2；B31c 起按逐字稿 §1.1 Q324 统一在屏幕中央打开）：从对象卡/指令按钮发起，盘本身用新稿居中框
+   （1600×900 基准 760×547，随 Q325 三档 608×438／912×656；放不下时限制在视口内、距屏边 ≥8），标题与动作固定，正文独立滚动。
+   内容：对象/目标小图与真实名、归属与已选参数、必要成本/短风险、明确执行与取消。控件阻止冒泡，不点穿为卡片使用/选敌/拖拽；
+   Esc/× 只收起未提交浮窗，不提交、不取消已运行的行动；发起它的对象卡滚出或消失时收起（OnLost，沿原重验）。
+   背后四轨不加遮罩、不改原交互（点别的卡照原规则换选中）；位置由 survivalPop 计算。Place／Bound 只在旧锚定模式（Centered=false）下使用。 *@
+<div class="apop @(Centered ? "apop-c" : "") @CssClass" @ref="_el" data-anchor="@AnchorId" data-place="@Place" data-bound="@Bound" data-center="@(Centered ? "1" : null)" role="dialog" aria-label="@Title"
      @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true" @onmousedown:stopPropagation="true" @onwheel:stopPropagation="true">
     <div class="apop-head">
         @if (Art != null) { <span class="apop-art" aria-hidden="true">@Art</span> }
@@ -25,6 +27,8 @@
     /// <summary>方向优先顺序（right,left,below,above 的子序列）；默认先右后左再下再上。</summary>
     [Parameter] public string Place { get; set; } = "right,left,below,above";
     [Parameter] public string CssClass { get; set; } = "";
+    /// <summary>B31c（Q324）：局部操作盘在屏幕中央打开（默认）。false 时回到旧的锚卡旁定位（目前没有调用方使用）。</summary>
+    [Parameter] public bool Centered { get; set; } = true;
     /// <summary>限制浮窗不越出的容器（CSS 选择器，如 ".center"）；为空时只限制在视口内（试玩修复 M77-B4）。</summary>
     [Parameter] public string? Bound { get; set; }
     [Parameter] public RenderFragment? Art { get; set; }
