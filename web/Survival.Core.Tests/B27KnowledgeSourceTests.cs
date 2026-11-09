@@ -143,7 +143,7 @@ public class B27KnowledgeSourceTests : TestBase
         Assert.That(s.City.LegacyRegistrationPending, Is.False);
         Travel(s, "h02_square");
         Assert.That(s.Progress.Flags, Does.Contain("hub_registered"));
-        Assert.That(RegistrationLogs(s).Single(), Does.Contain("学会营区登记默认做法知识 21 项"));
+        Assert.That(RegistrationLogs(s).Single(), Does.Contain("学会营区登记默认做法知识21项"));
         Assert.That(KnowsAny(s), Is.False);
         Assert.That(Cfg.Knowledge.Where(k => k.GrantedByFacts.Contains("hub_registered")).All(k => E.KnowsKnowledge(s, k.Id)), Is.True);
         var r = Reload(s);
@@ -206,7 +206,7 @@ public class B27KnowledgeSourceTests : TestBase
         var r = Reload(m);
         Assert.That(r.City.LegacyRegistrationPending, Is.True, "资格随存档");
         Travel(r, "h02_square");
-        Assert.That(RegistrationLogs(r).Single(), Does.Contain("学会营区登记默认做法知识 26 项"));
+        Assert.That(RegistrationLogs(r).Single(), Does.Contain("学会营区登记默认做法知识26项"));
         Assert.That(r.Progress.Flags, Is.SupersetOf(Permanent));
         Assert.That(r.Progress.Flags, Does.Contain("hub_registered").And.Contain(GameEngine.QuestFact("QMAP01", "completed")));
         Assert.That(E.BattleCapacity(r), Is.EqualTo(2));
@@ -235,7 +235,7 @@ public class B27KnowledgeSourceTests : TestBase
         Run(m);
         ReadDialogues(m);
         Assert.That(m.CurrentLocation, Is.EqualTo("h02_square"));
-        Assert.That(RegistrationLogs(m).Single(), Does.Contain("26 项"));
+        Assert.That(RegistrationLogs(m).Single(), Does.Contain("26项"));
     }
 
     // ───────────── KNOW-Q247-02：无资格 ─────────────
@@ -252,7 +252,7 @@ public class B27KnowledgeSourceTests : TestBase
         var r = Reload(m);
         Assert.That(r.City.LegacyRegistrationPending, Is.False, "43 档不重判旧授权");
         Travel(r, "h02_square");
-        Assert.That(RegistrationLogs(r).Single(), Does.Contain("21 项"));
+        Assert.That(RegistrationLogs(r).Single(), Does.Contain("21项"));
         Assert.That(KnowsAny(r), Is.False);
     }
 
@@ -412,7 +412,7 @@ public class B27KnowledgeSourceTests : TestBase
         Assert.That(E.CampaignClaimed(s, "d06_08_unique"), Is.False);
 
         v = E.CityServicePreview(s, "copy_public_knowledge")!;
-        Assert.That(v.Choices[1].Blocked, Does.StartWith("已全部掌握"), "完全已知禁用");
+        Assert.That(v.Choices[1].Blocked, Is.EqualTo("这份资料已全部掌握。"), "完全已知禁用");
         Assert.That(E.StartCityService(s, "copy_public_knowledge", null, "kp_mining").Ok, Is.False);
 
         s.Progress.Flags.Add("knowledge:blueprint_filter_token");

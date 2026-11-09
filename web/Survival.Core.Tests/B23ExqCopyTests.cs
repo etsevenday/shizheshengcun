@@ -37,16 +37,16 @@ public class B23ExqCopyTests : TestBase
         var s = At("h03_workshop");
         LegacyLearned(s);
         var v = E.CityServicesOf(s, "npc_luo_zheng").Single(x => x.Id == "copy_public_knowledge");
-        Assert.That((v.Title, v.TimeText, v.CostText, v.Blocked), Is.EqualTo(("查抄公开资料", "30分钟", "无额外耗材/费用", (string?)null)));
+        Assert.That((v.Title, v.TimeText, v.CostText, v.Blocked), Is.EqualTo(("查抄公开资料", "30分钟", "0材料", (string?)null)));
         Assert.That(v.Choices.Select(c => c.Label), Is.EqualTo(new[]
         {
             "公开资料：净水操作套件的做法（已掌握）、维护手册蓝图",
             "公开作业资料：采集手套的做法（已掌握）、作业长裤的做法（已掌握）",
         }));
         Assert.That(v.Choices[0].Blocked, Is.Null);
-        Assert.That(v.Choices[1].Blocked, Does.StartWith("已全部掌握"));
+        Assert.That(v.Choices[1].Blocked, Is.EqualTo("这份资料已全部掌握。"));
         Assert.That(E.StartCityService(s, "copy_public_knowledge", null, "kp_mining").Ok, Is.False, "完全已知的包禁用");
-        Assert.That(E.StartCityService(s, "copy_public_knowledge").Reason, Is.EqualTo("先选一项"));
+        Assert.That(E.StartCityService(s, "copy_public_knowledge").Reason, Is.EqualTo("先选一项。"));
 
         var flags = s.Progress.Flags.ToHashSet();
         var items = s.Items.Sum(i => i.Count);
@@ -58,12 +58,12 @@ public class B23ExqCopyTests : TestBase
         ReadDialogues(s);
         Assert.That(s.GameMinute - t0, Is.EqualTo(30));
         Assert.That(E.KnowsKnowledge(s, "blueprint_repair_manual"), Is.True);
-        Assert.That(s.Log.Any(l => l.Text.Contains("抄录公开资料，学会做法知识：维护手册蓝图")), Is.True);
+        Assert.That(s.Log.Any(l => l.Text == "抄完公开资料，学会维护手册蓝图。"), Is.True, "B38b Q283：一条定稿句，不外包服务名");
         Assert.That(s.Progress.Flags.Except(flags), Is.EquivalentTo(new[] { "kpcopy:kp_waterworks" }), "只写抄录事实");
         Assert.That(E.CampaignClaimed(s, "d05_07_unique") || GameEngine.QuestDone(s, "EXQ05") || s.DungeonInstances.ContainsKey("d05"), Is.False, "不伪造记录/任务/通关");
         Assert.That((s.Items.Sum(i => i.Count), s.Skills.Sum(kv => kv.Value.Xp), E.BattleCapacity(s)), Is.EqualTo((items, xp, cap)));
         v = E.CityServicePreview(s, "copy_public_knowledge")!;
-        Assert.That(v.Blocked, Does.StartWith("已全部掌握"), "两包都已知后整项禁用");
+        Assert.That(v.Blocked, Is.EqualTo("这里的资料已全部掌握。"), "两包都已知后整项禁用");
     }
 
     /// <summary>h04 陈芷“查抄公开资料”只有物资登记资料一包：不选也直接用它；学会配给袋蓝图。h02 许安的公共告示资料两条都已掌握（已登记旧档，Q246）：整项禁用。</summary>
@@ -83,7 +83,7 @@ public class B23ExqCopyTests : TestBase
         E.DebugMapTeleport(s, "h02_square");
         ReadDialogues(s);
         var h02 = E.CityServicesOf(s, "npc_xu_an").Single(x => x.Id == "copy_public_knowledge_h02");
-        Assert.That(h02.Blocked, Does.StartWith("已全部掌握"));
+        Assert.That(h02.Blocked, Is.EqualTo("这里的资料已全部掌握。"));
         Assert.That(E.StartCityService(s, "copy_public_knowledge_h02").Ok, Is.False);
     }
 
@@ -114,7 +114,7 @@ public class B23ExqCopyTests : TestBase
         s.Progress.Flags.Add("claim:d08_08_unique");   // 模拟途中从别处学会
         Run(s);
         ReadDialogues(s);
-        Assert.That(s.Log.Any(l => l.Text.Contains("查抄公开资料没有完成：这些做法已全部掌握")), Is.True);
+        Assert.That(s.Log.Any(l => l.Text == "查抄公开资料没有完成：这份资料已全部掌握（材料与额度未扣）。"), Is.True);
         Assert.That(s.Progress.Flags, Does.Not.Contain("kpcopy:kp_coldchain"));
     }
 

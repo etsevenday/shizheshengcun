@@ -220,7 +220,7 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That(E.DialogueLocked(s), Is.False, "Q237：已示后服务结束不开对话");
         Assert.That(Since(s, mark), Is.Empty);
         Assert.That(Plays(s, "npc_bai_ling", "service_end"), Is.Zero, "不改播“办完事项”");
-        Assert.That(s.Log.Skip(logs).Any(l => l.Text.Contains("完成")), Is.True, "结束日志照写");
+        Assert.That(s.Log.Skip(logs).Any(l => l.Text.Contains("可自行领取")), Is.True, "结束日志照写");
         Assert.That(s.City.QuotaUsed.Values.Sum(), Is.EqualTo(2), "事务效果不因省对白跳过");
     }
 
@@ -711,7 +711,7 @@ public class B26aSubstituteTalkTests : TestBase
             Assert.That(E.DialogueLocked(s), Is.False);
         }
         Assert.That(Since(s, mark), Is.Empty, "不播 service_end，也不追加 Q236 兜底");
-        Assert.That(s.Log.Skip(logs).Count(l => l.Text.Contains("完成")), Is.EqualTo(2), "每项一条结束日志");
+        Assert.That(s.Log.Skip(logs).Count(l => l.Text.Contains("可自行领取")), Is.EqualTo(2), "每项一条结束日志");
         Assert.That(s.City.QuotaUsed.Values.Sum(), Is.EqualTo(2), "每项结算一次");
     }
 

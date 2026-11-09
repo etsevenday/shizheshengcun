@@ -197,8 +197,8 @@ public class B18AppraisalTests : TestBase
         var bare = E.CreateItems(s, Sub, 1, ItemInstance.Carried).Single();
         Assert.That(E.StartAppraise(s, bare.InstanceId).Reason, Does.Contain("来源不明"));
         E.DebugMapTeleport(s, "h02_square");
-        Assert.That(E.StartAppraise(s, o.InstanceId).Reason, Does.Contain("须实际到达"));
-        Assert.That(E.AppraisalPreview(s).Blocked, Does.Contain("须实际到达"));
+        Assert.That(E.StartAppraise(s, o.InstanceId).Reason, Does.Contain("后才能办理。"));
+        Assert.That(E.AppraisalPreview(s).Blocked, Does.Contain("后才能办理。"));
     }
 
     /// <summary>AT02/AT03：教学样本不能付费鉴定，免费说明 0 分钟写 fixed_tutorial_attack 记录、不扣纤维；原入口直接融合仍得唯一绿色+0.1。</summary>

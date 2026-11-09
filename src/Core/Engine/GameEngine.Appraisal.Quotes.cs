@@ -84,6 +84,9 @@ namespace Survival.Core.Engine
             v.QuoteLocked = snap != null;
             v.NextRefreshText = $"下次世界午夜 {Clock.DayTime(day * Clock.MinutesPerDay)} 起额度恢复{Ap.TradeDailyPartyQuota}包；新一日报价在安全到达鉴定所、或在这里安全打开本面板/开工时锁定（人留在这里过午夜不会自动换表；同日不再变动）";
             v.OutputPlace = $"{ZoneName(s, s.Ground)}地面（不会自动入包，拾取另按五卡/30公斤校验）";
+            v.OutputGround = $"{ZoneName(s, s.Ground)}地面";
+            v.NextMidnightText = Clock.DayTime(day * Clock.MinutesPerDay);
+            v.QuoteLockNote = "新一日报价在安全到达鉴定所、或在这里安全打开本面板/开工时锁定（人留在这里过午夜不会自动换表；同日不再变动）";
             if (snap == null) return;
             foreach (var o in Ap.Offers)
             {

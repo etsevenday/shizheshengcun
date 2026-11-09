@@ -39,6 +39,12 @@ namespace Survival.Core.Engine
         public int QuotaAvailable { get; set; }
         /// <summary>下次世界午夜刷新说明。</summary>
         public string NextRefreshText { get; set; } = "";
+        /// <summary>下一世界午夜的世界日时（“第3日 00:00”，B38b Q288 第 3 行）。</summary>
+        public string NextMidnightText { get; set; } = "";
+        /// <summary>锁表说明原句（B38b Q288：沿现有入口另列）。</summary>
+        public string QuoteLockNote { get; set; } = "";
+        /// <summary>产物落点的地面名（不带括号说明，B38b Q288 换物主句）。</summary>
+        public string OutputGround { get; set; } = "";
         /// <summary>换物产物落点（“鉴定所地面（不会自动入包）”）。</summary>
         public string OutputPlace { get; set; } = "";
         /// <summary>换物通用阻拦（报价未锁存、当日额度用完）；与样本无关。能换为 null。</summary>
@@ -212,7 +218,7 @@ namespace Survival.Core.Engine
                 ServiceId = Ap.ServiceId,
                 LocationName = LocName(Ap.LocationId),
                 ActorName = ActorDisplayName(s, GameState.PlayerId),
-                Blocked = svc == null ? "这里现在不办理这项事项" : CityCommonBlocked(s, svc),
+                Blocked = svc == null ? CityNotOffered : CityCommonBlocked(s, svc),
                 AppraiseMinutes = Ap.AppraiseMinutes,
                 AppraiseCost = string.Join("、", Ap.AppraiseConsume.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}")) + "（完成时才扣；样本不消耗）",
                 FiberSourceText = AppraiseCostSource(s),

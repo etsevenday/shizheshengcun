@@ -9,7 +9,7 @@
     var e = G.E;
     var v = e.AppraisalPreview(s);
     var sample = v.Samples.FirstOrDefault(x => x.InstanceId == _sample) ?? v.Samples.FirstOrDefault(x => !x.Reserved) ?? v.Samples.FirstOrDefault();
-    var busy = G.Running ? "行动进行中" : null;
+    var busy = G.Running ? GameEngine.CityBusyText : null;
 }
 
 <section class="city-svc appraisal-panel">
@@ -35,7 +35,7 @@
                 <label class="@(x.Reserved ? "muted" : "")" title="@($"来源事件（开发核验）：{(x.DevSource == "" ? "无" : x.DevSource)}")">
                     <input type="radio" name="ap-sample" checked="@(sample?.InstanceId == id)" @onchange="() => _sample = id" />
                     <b>@x.Name</b>
-                    <span class="small">@x.QualityText · @x.SourceText · 所选数量1@(x.Count > 1 ? $"（这一堆{x.Count}份）" : "") · @x.HolderText@(x.Reserved ? " · 已预留" : "") · @x.AppraisalText</span>
+                    <span class="small">@x.QualityText · @x.SourceText · 所选1份@(x.Count > 1 ? $"（本堆共{x.Count}份）" : "") · @x.HolderText@(x.Reserved ? " · 已预留" : "") · @x.AppraisalText</span>
                 </label>
             }
         </div>
@@ -52,7 +52,7 @@
                 var sid = sample.InstanceId;
                 <div class="btn-row">
                     <button class="primary" disabled="@(busy != null)" title="0分钟、不扣植物纤维、不耗样本；首次查看把所选这一份记为已鉴定（改名“活性物质（白色·已鉴定·首战教学）”，同堆其余份不变）" @onclick="() => G.AppraisalTutorialNote(sid)">看教学样本免费说明（0分钟）</button>
-                    <span class="muted small">教学样本不需要付费鉴定，也不可交易</span>
+                    <span class="muted small">教学样本可看免费说明，不能交易。</span>
                 </div>
             }
         }
@@ -72,7 +72,8 @@
     }
     else
     {
-        <p class="small"><b>@v.QuoteTitle</b>（第@(v.QuoteDay)日@(v.QuoteLocked ? "已锁定，同日不变" : "未锁定")）：交出所选样本1份 → 换下面一包；产物落在@(v.OutputPlace)。没有货币，换到的物资不能回售或换回样本。</p>
+        @* B38b（N02 附录 §2、Q288 选 A）：主句只写实际地面名；删去货币与回售长说明 *@
+        <p class="small">交出所选普通样本1份，任选一包。换得的物资落在@(v.OutputGround)。</p>
         @if (v.Offers.Count > 0)
         {
             var offer = v.Offers.FirstOrDefault(o => o.OfferId == _offer) ?? v.Offers[0];
@@ -86,7 +87,11 @@
                     </label>
                 }
             </div>
-            <p class="small">今天剩余：可用@(v.QuotaAvailable) / 预留@(v.QuotaReserved) / 已用@(v.QuotaUsed)（全队每日共@(v.QuotaTotal)包，三档合计）。@v.NextRefreshText。</p>
+            @* Q288：报价锁定时三行——额度、报价名与锁定日、下次世界午夜恢复；锁表说明沿原句另列 *@
+            <p class="small">可用@(v.QuotaAvailable) · 预留@(v.QuotaReserved) · 已用@(v.QuotaUsed)（全队每日共@(v.QuotaTotal)包）</p>
+            <p class="small">@v.QuoteTitle：第@(v.QuoteDay)日锁定</p>
+            <p class="small">下次世界午夜@(v.NextMidnightText)起恢复@(v.QuotaTotal)包</p>
+            <p class="small muted">@v.QuoteLockNote</p>
             var why = v.Blocked ?? v.TradeBlocked ?? (sample == null ? "先选一份样本" : sample.TradeBlocked) ?? busy;
             var sid = sample?.InstanceId ?? 0;
             var oid2 = offer.OfferId;

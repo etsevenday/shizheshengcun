@@ -20,7 +20,7 @@
     <div class="sub-head">
         <div>
             <h2>@(absent ? "机构当班接续员" : npc?.Name ?? "事项")</h2>
-            <span class="sub">@(npc == null ? "" : $"{e.FactionName(npc.FactionId)} · {(absent ? "代" : "")}{npc.Role}") · 浏览不耗时</span>
+            <span class="sub">@(npc == null ? "" : $"{e.FactionName(npc.FactionId)} · {(absent ? "代" : "")}{npc.Role}") · 查看不耗时</span>
         </div>
         <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
     </div>
@@ -33,7 +33,7 @@
         @foreach (var q in quests)
         {
             var qid = q.Id;
-            var qbusy = G.Running ? "行动进行中" : null;
+            var qbusy = G.Running ? GameEngine.CityBusyText : null;
             <section class="city-svc city-quest @(q.Status)">
                 <h3>@q.Title <small>@q.KindLabel · @q.StatusText@(q.ChoiceLabel != null ? $" · {q.ChoiceLabel}" : "")@(q.Retro ? " · 旧档追认" : "")</small></h3>
                 <p class="city-summary">@(q.Status == "done" ? "结果：" : "下一步：")@q.Step</p>
@@ -80,15 +80,15 @@
             var pickChoice = PickedChoice(v);
             var t = v.Targets.FirstOrDefault(x => x.ActorId == pickTarget);
             var c = v.Choices.FirstOrDefault(x => x.Id == pickChoice);
-            var why = v.Blocked ?? (v.NeedsTarget && t?.Blocked != null ? $"{t.Name}：{t.Blocked}" : null)
-                      ?? (v.Choices.Count > 0 && c == null ? "先选一项" : null)
+            var why = v.Blocked ?? (v.NeedsTarget && t?.Blocked != null ? t.BlockedLine ?? $"{t.Name}：{t.Blocked}" : null)
+                      ?? (v.Choices.Count > 0 && c == null ? "先选一项。" : null)
                       ?? c?.Blocked
-                      ?? (G.Running ? "行动进行中" : null);
+                      ?? (G.Running ? GameEngine.CityBusyText : null);
+            @* B38b（N02 附录 §2、Q285 选 A）：服务名下依次为岗位短句、对象与选项、耗时与费用、完成结果（EffectText，缺失时才用 Summary，只出现一次）、
+               实际限制与原确认区；普通按钮“{服务名}（{工时}）”，打开类沿原动词 *@
             <section class="city-svc @(v.Implemented ? "" : "pending")">
-                <h3>@v.Title <small>@v.TimeText · @v.CostText</small></h3>
-                @if (!string.IsNullOrEmpty(v.Summary)) { <p class="city-summary">@v.Summary</p> }
+                <h3>@v.Title</h3>
                 @if (!string.IsNullOrEmpty(v.NpcLine)) { <p class="city-line">“@v.NpcLine”</p> }
-                <p class="small">@v.EffectText</p>
                 @if (v.NeedsTarget && v.Implemented)
                 {
                     <div class="city-targets">
@@ -116,9 +116,12 @@
                     </div>
                     @foreach (var ch in v.Choices.Where(x => x.Blocked != null)) { <p class="muted small">@ch.Label：@ch.Blocked</p> }
                 }
+                <p class="small city-cost">@v.TimeText · @v.CostText</p>
+                <p class="small city-effect">@(string.IsNullOrEmpty(v.EffectText) ? v.Summary : v.EffectText)</p>
+                @foreach (var line in v.Lines) { <p class="small city-line-extra">@line</p> }
                 <div class="btn-row">
                     <button class="primary" disabled="@(why != null)" title="@(why ?? $"办理：{v.Title}")" @onclick="() => Do(id, pickTarget, pickChoice)">
-                        @(v.StartLabel ?? (v.OpensCraft ? "打开制作" : v.TimeText == "0分钟" ? "办理（0分钟）" : $"开始（{v.TimeText}）"))
+                        @(v.StartLabel ?? (v.OpensCraft ? "打开制作" : $"{v.Title}（{v.TimeText}）"))
                     </button>
                     @if (why != null) { <span class="muted small">@why</span> }
                 </div>

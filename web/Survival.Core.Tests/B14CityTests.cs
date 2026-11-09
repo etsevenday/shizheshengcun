@@ -93,7 +93,7 @@ public class B14CityTests : TestBase
         Assert.That(s.Progress.Flags, Does.Not.Contain("hub_registered"), "不在 h01 预发");
         Assert.That(s.Story.DialogueLog.Any(d => d.EventId == "gate_h01_registration"), Is.True);
         ReadDialogues(s);
-        Assert.That(E.CityServicePreview(s, "hub_registration_existing")!.Blocked, Does.Contain("已登记授权"));
+        Assert.That(E.CityServicePreview(s, "hub_registration_existing")!.Blocked, Does.StartWith("营门已授权。"));
         var know = Cfg.Knowledge.Where(k => k.GrantedByFacts.Contains("hub_registered")).ToList();
         Assert.That(know.Any(k => E.KnowsKnowledge(s, k.Id)), Is.False);
 
@@ -107,7 +107,7 @@ public class B14CityTests : TestBase
         Travel(s, "h01_gate");
         Travel(s, "h02_square");
         Assert.That(s.Items.Sum(i => i.Count), Is.EqualTo(items), "再到广场不重复登记、不发物");
-        Assert.That(E.CityServicePreview(s, "hub_registration_existing")!.Blocked, Does.Contain("须实际到达"));
+        Assert.That(E.CityServicePreview(s, "hub_registration_existing")!.Blocked, Does.Contain("后才能办理。"));
     }
 
     /// <summary>不先在营门登记，直接被放到广场（开发传送）不算登记；其余 register 边仍锁。</summary>
@@ -195,7 +195,7 @@ public class B14CityTests : TestBase
         SetStats(s, 12, 80, 80, 15, 80, 70);
         s.BandageReadyAt = s.GameMinute + 60;
         var t = E.CityServicePreview(s, "clinic_dressing")!.Targets.Single();
-        Assert.That(t.Blocked, Does.StartWith("现在换药没有效果：回血冷却还需"));
+        Assert.That(t.Blocked, Does.StartWith("当前换药没有收益。回血冷却还需"));
         Assert.That(t.Detail, Is.Empty);
         Assert.That(t.Blocked, Does.Not.Contain("（"));
     }
@@ -230,7 +230,7 @@ public class B14CityTests : TestBase
         Assert.That(E.NpcsHere(t).Select(x => x.Name), Is.EqualTo(new[] { "白苓" }));
         E.DebugMapTeleport(t, "r02_academy");
         Assert.That(E.NpcsHere(t), Is.Empty, "科学院外院是父城区域，没有岗位");
-        Assert.That(E.CityServicesOf(t, "npc_chen_zhi").All(v => v.Blocked != null && v.Blocked.Contains("须实际到达")), Is.True, "不能远程办理");
+        Assert.That(E.CityServicesOf(t, "npc_chen_zhi").All(v => v.Blocked != null && v.Blocked.Contains("后才能办理。")), Is.True, "不能远程办理");
     }
 
     /// <summary>CITY-N03/COMP06：岗位卡标“岗位”、不可招募，交谈不进名册；六名固定队友只加营区职能标签。</summary>
@@ -454,7 +454,7 @@ public class B14CityTests : TestBase
         var before = (s.GameMinute, s.Stats.Health, s.Body.VirusLoad);
         Ok(E.StartCityService(s, "clinic_consult", GameState.PlayerId));
         Assert.That((s.GameMinute, s.Stats.Health, s.Body.VirusLoad), Is.EqualTo(before));
-        Assert.That(s.Log.Last().Text, Does.Contain("伤病咨询"));
+        Assert.That(s.Log.Last().Text, Does.Contain("的现有记录：").And.EndWith("本次只查看记录。"));
         // B15 起主线与城市支线的任务类服务已实装（见 B15QuestTests），B18 起鉴定已实装（见 B18AppraisalTests），B23 起查抄公开资料已实装（见 B23ExqCopyTests）
         Assert.That(Cfg.City.Services.Where(x => !x.Implemented), Is.Empty);
         E.DebugMapTeleport(s, "h06_shelter");

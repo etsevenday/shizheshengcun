@@ -30,8 +30,10 @@ namespace Survival.Core.Engine
         public List<CityChoiceView> Choices { get; set; } = new List<CityChoiceView>();
         /// <summary>办理后界面打开制作面板（公共工坊入口）。</summary>
         public bool OpensCraft { get; set; }
-        /// <summary>办理按钮上的字（为空时界面按工时写“办理（0分钟）”/“开始（N分钟）”）。</summary>
+        /// <summary>办理按钮上的字（为空时界面写“{服务名}（{工时}）”，B38b Q285）。</summary>
         public string? StartLabel { get; set; }
+        /// <summary>完成结果之后另列的行（B38b：施济日额、工坊工位、任务工作进度）。</summary>
+        public List<string> Lines { get; set; } = new List<string>();
     }
 
     public sealed class CityTargetView
@@ -41,6 +43,8 @@ namespace Survival.Core.Engine
         /// <summary>此目标的现有状态说明（咨询内容、预计效果）。</summary>
         public string Detail { get; set; } = "";
         public string? Blocked { get; set; }
+        /// <summary>不单列姓名时的完整原因（按钮旁、开工失败）；B38b Q286 施济写“{人物}的……”，其余“{人物}：{原因}”。</summary>
+        public string? BlockedLine { get; set; }
     }
 
     public sealed class CityChoiceView
@@ -143,7 +147,7 @@ namespace Survival.Core.Engine
                 know += reg.LegacyKnowledge.Count;
                 s.City.LegacyRegistrationPending = false;
             }
-            notes.Add($"营区登记完成：队伍容量升到 C{BattleCapacity(s)}" + (know > 0 ? $"，学会营区登记默认做法知识 {know} 项" : "") + "（不发额外物资，再到广场不会重复登记）");
+            notes.Add($"营区登记完成：队伍容量升到 C{BattleCapacity(s)}" + (know > 0 ? $"，学会营区登记默认做法知识{know}项" : "") + "（不发额外物资，再到广场不会重复登记）");
         }
 
         // ───────────────────────── 岗位 NPC 卡（A11 §1、§6） ─────────────────────────
@@ -366,15 +370,33 @@ namespace Survival.Core.Engine
             return Config.Story.Dialogues.FirstOrDefault(d => d.Event == set)?.Text ?? "";
         }
 
+        /// <summary>CityCommonBlocked 未开放/直接请求拒绝分支（N02 附录 Q286）。</summary>
+        public const string CityNotOffered = "这里不办理这项业务。";
+        /// <summary>CityCommonBlocked 行动占用分支，CityServiceOverlay 两处、AppraisalPanel 一处界面忙碌提示同句（N02 附录 Q286）。</summary>
+        public const string CityBusyText = "当前行动还没结束。";
+
+        /// <summary>嵌进外层句子前补齐句末句号（已有终止符的不重复）：B38b Q283/Q286“每段末尾一个句号”。</summary>
+        public static string Sentence(string text)
+        {
+            var t = text.TrimEnd().TrimEnd('；', '，', '、');
+            if (t.Length == 0) return "";
+            var last = t[t.Length - 1];
+            return last is '。' or '！' or '？' ? t : t + "。";
+        }
+
+        /// <summary>去掉句末句号（完整句嵌入外层括号/冒号前，句末标点由外层统一，N02 附录 Q286）。</summary>
+        public static string NoStop(string text) => text.TrimEnd().TrimEnd('。');
+
         private string? CityCommonBlocked(GameState s, CityServiceConfig svc)
         {
             // Q146：隐藏后的旧入口/直接请求拒绝，零扣费零效果；不写“后续版本开放”
-            if (!svc.Implemented) return "这里现在不办理这项事项";
-            if (s.Progress.Dead) return "角色已死亡";
-            if (s.CurrentLocation != svc.LocationId) return $"须实际到达{LocName(svc.LocationId)}才能办理";
-            if (DialogueLocked(s)) return DialogueLockedReason;
-            if (s.Battle != null || s.Encounter != null) return "先处理眼前的敌踪";
-            if (s.Main != null || s.Sub != null) return "行动进行中";
+            // B38b（N02 附录 Q286 逐字稿）：原分支顺序不变，只换句子
+            if (!svc.Implemented) return CityNotOffered;
+            if (s.Progress.Dead) return "本局已结束，无法办理。";
+            if (s.CurrentLocation != svc.LocationId) return $"到{LocName(svc.LocationId)}后才能办理。";
+            if (DialogueLocked(s)) return "请先读完当前对话。";
+            if (s.Battle != null || s.Encounter != null) return "先处理眼前的敌踪。";
+            if (s.Main != null || s.Sub != null) return CityBusyText;
             return null;
         }
 
@@ -398,24 +420,27 @@ namespace Survival.Core.Engine
             switch (svc.Id)
             {
                 case "hub_registration_existing":
-                    v.EffectText = "核对来路与去向后登记授权（不选阵营、不交同行者）；之后沿营门→广场的路实际走到营区广场，才完成营区登记（队伍容量 C2 与登记默认做法知识，各一次）";
-                    if (v.Blocked == null && f.Contains(reg.RegisteredFact)) v.Blocked = "已完成营区登记";
-                    else if (v.Blocked == null && f.Contains(reg.AuthorizedFact)) v.Blocked = $"已登记授权：沿通道走到{LocName(reg.SquareLocation)}即完成登记";
+                    // B38b（N02 附录 §2、Q286、Q291-4）：预览不写知识数量，实际学会的项数由广场完成日志写
+                    v.EffectText = "在营门确认登记，再沿通道到营区广场完成登记。公共配给到广场另领。";
+                    if (v.Blocked == null && f.Contains(reg.RegisteredFact)) v.Blocked = "营区登记已完成。";
+                    else if (v.Blocked == null && f.Contains(reg.AuthorizedFact)) v.Blocked = $"营门已授权。前往{LocName(reg.SquareLocation)}完成登记。";
                     break;
                 case "hub_workshop_access":
                 case "academy_workshop_access":
                     v.OpensCraft = true;
-                    v.EffectText = WorkshopAccessText(s, svc);
+                    v.EffectText = WorkshopAccessHead;
+                    v.Lines.AddRange(WorkshopAccessLines(s, svc));
                     break;
                 case "clinic_consult":
                     v.NeedsTarget = true;
-                    v.EffectText = "选一名当前同行者，说明本人现有健康、免疫、病毒、出血与回血/病毒减量冷却；不新抽诊断、不恢复、不治愈";
+                    v.EffectText = "查看所选对象当前的健康、免疫、病毒、出血和用药冷却。此项只读。";
                     v.Targets = PresentTargets(s, a => null, ConsultText);
                     break;
                 case "clinic_dressing":
                 {
                     v.NeedsTarget = true;
-                    v.EffectText = $"{svc.WorldMinutes}分钟后由医务室代办一次草药绷带：止血、按原公式回血（医疗按1级、不加装备加值）、病毒减量（最低1）；目标的回血与病毒减量冷却照常共享，主角不得经验；没有任何实际收益不开始";
+                    // B38b（Q285 选 A）：预估挂在对象行，主句指向“所选对象旁的预估”
+                    v.EffectText = "医务室为所选对象换药。可处理的出血、回血与病毒变化见所选对象旁的预估。";
                     var lack = svc.Inputs.Where(kv => AvailableCount(s, kv.Key, true) < kv.Value).Select(kv => $"{ItemName(kv.Key)}{AvailableCount(s, kv.Key, true)}/{kv.Value}").ToList();
                     if (v.Blocked == null && lack.Count > 0) v.Blocked = "材料不足（随身或当地地面）：" + string.Join("、", lack);
                     // 试玩修复 M306：不能换药的目标只写一句原因（原先预计/冷却与原因各写一遍，冷却重复嵌套）
@@ -432,9 +457,13 @@ namespace Survival.Core.Engine
                     v.NeedsTarget = true;
                     var day = Clock.Day(s.GameMinute);
                     var used = CityQuotaUsed(s, svc.Id, day);
-                    v.EffectText = $"{svc.WorldMinutes}分钟后在这里地面领到一份普通食物或净水（不自动吃喝）：目标饱食低于40可领熟块根1份，或水分低于40可领净水1份，只选一项；全队每世界日合计最多{svc.DailyPartyQuota}份（今天已领{used}份）";
-                    if (v.Blocked == null && svc.DailyPartyQuota is int q && used >= q) v.Blocked = $"今天（第{day}日）的救助配给额度已用完（全队每日{q}份，代班或换人来问不会多出一份）";
-                    v.Targets = PresentTargets(s, a => svc.Choices.Any(c => ReliefChoiceOk(a, c)) ? null : "饱食与水分都不低于40，没有可领的一项", a => $"饱食{Fmt.N(a.Stats.Satiety)}、水分{Fmt.N(a.Stats.Hydration)}");
+                    // B38b（N02 附录 §2、Q286、Q291-8）：已领 = 已核销 + 同日有效在办预留（与额度判定同源）
+                    v.EffectText = "符合条件时选一项。办完在这里的地面领取，之后自行食用或饮用。";
+                    var held = ActiveCityTxn(s) is CityServiceTxn rp && rp.ServiceId == svc.Id && rp.StartDay == day && rp.QuotaReserved;
+                    if (svc.DailyPartyQuota is int dq) v.Lines.Add($"本日全队已领{used}/{dq}份" + (held ? "（含在办预留）。" : "。"));
+                    if (v.Blocked == null && svc.DailyPartyQuota is int q && used >= q) v.Blocked = $"第{day}日的全队救助额度已用完（每日{q}份）。";
+                    v.Targets = PresentTargets(s, a => svc.Choices.Any(c => ReliefChoiceOk(a, c)) ? null : "饱食和水分均不低于40，当前没有可领的配给。", a => $"饱食{Fmt.N(a.Stats.Satiety)}、水分{Fmt.N(a.Stats.Hydration)}",
+                        (name, why) => $"{name}的{why}");
                     v.Choices = svc.Choices.Select(c => new CityChoiceView { Id = c.Id, Label = c.Label }).ToList();
                     break;
                 }
@@ -488,13 +517,15 @@ namespace Survival.Core.Engine
             v.TimeText = going ? $"{left}分钟" : $"{q.WorkMinutes}分钟";
             v.EffectText = svc.Id switch
             {
-                "hub_affairs_record" => "交接并整理圣所旧路档册与封存区安全规程两份调查记录（固定等待10分钟，按两段5分钟提交，两段都完成才算整理完成；中途停下保留已完成的段）；完成后旧城后段（警备仓）的通行按这份记录办理，已获得的容量与物资不再发第二次",
+                "hub_affairs_record" => "整理圣所旧路档册与封存区安全规程。两段完成后，旧城后段的通行按这份记录办理。",
                 "church_public_mediation" => "协商抄录公开路线，或以已有实地记录回营区备份（固定等待10分钟，两条路同一份委托记录）；不宣誓、不交出任何人，拒绝不扣精神或免疫、不封主线",
                 "church_archive_copy" => "抄录已公开的路线备份（固定等待10分钟）；已在训诫堂完成同一归档的只回看，不再收时间、不加知识或物资",
                 "academy_noninvasive_observation" => "按你选的范围核对：只核对环境记录，或只读你现有的状态（固定等待10分钟，两种选择同一份委托记录）；不抽血、不提交样本、不改变任何身体数值",
                 "academy_report_compare" => "对照两份观察报告与带回的流程记录，把证据和猜测分开（固定等待10分钟）；完成后得到核对笔记与外部医疗线索，不授新药、永久免疫或容量",
                 _ => q.StepActive,
-            } + (going ? $"；已完成{done}分钟，续做剩余{left}分钟" : "");
+            };
+            // B38b（N02 附录 §2、Q291-7）：FA04 与 CH01/CH02/AC01/AC02 共用进度句，只在已有提交进度且任务未完成时另列
+            if (going) v.Lines.Add($"已完成{done}分钟，还需{left}分钟。");
             if (svc.Choices.Count > 0 && v.Choices.Count == 0) v.Choices = svc.Choices.Select(c => new CityChoiceView { Id = c.Id, Label = c.Label }).ToList();
             if (v.Blocked == null) v.Blocked = QuestServiceBlocked(s, svc, q);
         }
@@ -503,31 +534,42 @@ namespace Survival.Core.Engine
         /// 公共工坊入口的说明（Q141 选 B）：0 分钟、0 额外费用、0 经验打开制作面板；逐站写当地公共站能不能用及真实原因；
         /// 随身手工配方照常；实际制作按原配方材料、工时、知识、熟练与锻炉燃料（每份配方另需木炭1）。
         /// </summary>
-        private string WorkshopAccessText(GameState s, CityServiceConfig svc)
+        /// <remarks>B38b（N02 附录 §2、Q291-3）：主句 + “已开放 {工位列表}”“{工位列表}未开放（{真实原因}）”分行（无对象的行省略），科学院另加告示行；
+        /// 锻炉木炭数量从实际配方条件显示，不再写在这里。</remarks>
+        public const string WorkshopAccessHead = "打开当地制作面板。随身手工配方也可以在这里查看。";
+
+        private List<string> WorkshopAccessLines(GameState s, CityServiceConfig svc)
         {
             var stations = PublicStationsAt(svc.LocationId).ToList();
-            var parts = new List<string>();
+            var lines = new List<string>();
             var open = stations.Where(p => PublicStationBlocked(s, p) == null).Select(p => p.Name).ToList();
-            if (open.Count > 0) parts.Add($"已开放：{string.Join("、", open)}");
+            if (open.Count > 0) lines.Add($"已开放 {string.Join("、", open)}");
             foreach (var g in stations.Where(p => !open.Contains(p.Name)).GroupBy(p => PublicStationBlocked(s, p) ?? ""))
-                parts.Add($"{string.Join("、", g.Select(p => p.Name))}未开放（{g.Key}）");
-            var text = "打开制作面板（0分钟，无额外费用、不给经验）：" + (parts.Count > 0 ? string.Join("；", parts) + "；" : "")
-                + "随身手工配方照常。实际制作仍按配方的材料（只取随身与当地地面）、工时、做法知识与熟练门槛，由你执行"
-                + (stations.Any(p => p.StationId == "forge") ? "；锻炉每份配方另需木炭1" : "");
-            if (svc.Id == "academy_workshop_access") text += "；观察区通行另看门旁的“观察区公开通道告示”，打开工坊不代办";
-            return text;
+                lines.Add($"{string.Join("、", g.Select(p => p.Name))}未开放（{g.Key}）");
+            if (svc.Id == "academy_workshop_access") lines.Add("观察区通行请读门旁的「观察区公开通道告示」。");
+            return lines;
         }
 
-        private List<CityTargetView> PresentTargets(GameState s, Func<ActorState, string?> blocked, Func<ActorState, string> detail) =>
+        private List<CityTargetView> PresentTargets(GameState s, Func<ActorState, string?> blocked, Func<ActorState, string> detail, Func<string, string, string>? line = null) =>
             s.Party.Where(s.Actors.ContainsKey).Select(id => s.Actors[id])
-                .Select(a => new CityTargetView { ActorId = a.Id, Name = ActorDisplayName(s, a.Id), Blocked = blocked(a), Detail = detail(a) }).ToList();
+                .Select(a =>
+                {
+                    var name = ActorDisplayName(s, a.Id);
+                    var why = blocked(a);
+                    return new CityTargetView
+                    {
+                        ActorId = a.Id, Name = name, Blocked = why, Detail = detail(a),
+                        BlockedLine = why == null ? null : line?.Invoke(name, why) ?? $"{name}：{why}",
+                    };
+                }).ToList();
 
         /// <summary>医疗咨询的内容：本人现有 H/I/V、出血与两种冷却（只读）。</summary>
         public string ConsultText(ActorState a)
         {
             var b = a.Body;
             var parts = new List<string> { $"健康{Fmt.N(a.Stats.Health)}/{Fmt.N(a.Stats.HealthMax)}", $"免疫{Fmt.N(b.Immunity)}" };
-            parts.Add(b.Infected ? $"已感染，病毒{Fmt.N(b.VirusLoad)}" : $"未感染（病毒{Fmt.N(b.VirusLoad)}）");
+            // B38b（N02 附录 Q286 咨询感染状态）
+            parts.Add(b.Infected ? $"已感染（病毒{Fmt.N(b.VirusLoad)}）" : $"未感染（病毒{Fmt.N(b.VirusLoad)}）");
             parts.Add(b.BleedTriggers > 0 ? "正在出血" : "没有出血");
             return string.Join("，", parts);
         }
@@ -540,6 +582,15 @@ namespace Survival.Core.Engine
             return string.Join("，", parts);
         }
 
+        /// <summary>咨询与换药无收益的冷却说明（N02 附录 Q286）：“回血冷却还需{剩余时长}。”／“回血冷却已就绪。”，已感染再接病毒减量冷却句。</summary>
+        public string CooldownSentences(GameState s, ActorState a)
+        {
+            var text = a.BandageReadyAt > s.GameMinute ? $"回血冷却还需{Clock.Duration(a.BandageReadyAt - s.GameMinute)}。" : "回血冷却已就绪。";
+            if (a.Body.Infected)
+                text += a.Body.BandageVirusReadyAt > s.GameMinute ? $"病毒减量冷却还需{Clock.Duration(a.Body.BandageVirusReadyAt - s.GameMinute)}。" : "病毒减量冷却已就绪。";
+            return text;
+        }
+
         private ItemUseConfig? BandageUse => BandageItem?.Use;
 
         /// <summary>换药对某名同行者有没有实际收益（与原绷带同一判定：回血、止血、病毒减量三者都无收益时拒绝）。</summary>
@@ -549,8 +600,8 @@ namespace Survival.Core.Engine
             string? why;
             using (FocusOutOfBattleOn(s, a.Id)) why = MedicineBlocked(s, BandageUse);
             if (why == null) return null;
-            // 冷却造成的无收益：只写一句“现在换药没有效果：回血冷却还需…，病毒减量冷却还需…”（试玩修复 M306）
-            return a.BandageReadyAt > s.GameMinute ? "现在换药没有效果：" + ConsultCooldowns(s, a) : why;
+            // 冷却造成的无收益：只写一句（试玩修复 M306）；B38b 起用 N02 附录 Q286“当前换药没有收益。{冷却说明}”
+            return a.BandageReadyAt > s.GameMinute ? "当前换药没有收益。" + CooldownSentences(s, a) : why;
         }
 
         private string DressingText(GameState s, ActorState a, CityServiceConfig svc)
@@ -614,14 +665,14 @@ namespace Survival.Core.Engine
             {
                 t = v.Targets.FirstOrDefault(x => x.ActorId == (targetActorId ?? GameState.PlayerId));
                 if (t == null) return ActionResult.Fail("目标不在当前同行队伍里");
-                if (t.Blocked != null) return ActionResult.Fail($"{t.Name}：{t.Blocked}");
+                if (t.Blocked != null) return ActionResult.Fail(t.BlockedLine ?? $"{t.Name}：{t.Blocked}");
             }
             CityServiceChoiceConfig? choice = null;
             if (svc.Choices.Count > 0)
             {
                 choice = svc.Choices.FirstOrDefault(c => c.Id == choiceId);
-                if (choice == null) return ActionResult.Fail("先选一项");
-                if (!string.IsNullOrEmpty(choice.Stat) && !ReliefChoiceOk(s.Actors[t!.ActorId], choice)) return ActionResult.Fail($"{t.Name}不符合这一项（{choice.Label}）");
+                if (choice == null) return ActionResult.Fail("先选一项。");
+                if (!string.IsNullOrEmpty(choice.Stat) && !ReliefChoiceOk(s.Actors[t!.ActorId], choice)) return ActionResult.Fail($"{t.Name}当前不符合「{choice.Label}」的领取条件。");
             }
             var npc = Config.City.Npcs.FirstOrDefault(n => n.ServiceIds.Contains(serviceId))
                       ?? Config.City.Npcs.FirstOrDefault(n => Config.ExpansionQuests.Packs.Any(p => p.CopyServiceId == serviceId && p.CopyNpcId == n.NpcId));
@@ -631,7 +682,7 @@ namespace Survival.Core.Engine
             {
                 var opts = CopyPacksOf(svc.Id);
                 copyPack = opts.FirstOrDefault(p => p.Id == choiceId) ?? (opts.Count == 1 ? opts[0] : null);
-                if (copyPack == null) return ActionResult.Fail("先选一项");
+                if (copyPack == null) return ActionResult.Fail("先选一项。");
                 if (v.Choices.FirstOrDefault(c => c.Id == copyPack.Id)?.Blocked is string pb) return ActionResult.Fail(pb);
             }
             // B18：鉴定/换物要先在鉴定交易面板里选确切样本与报价（StartAppraise / StartAppraisalTrade），这里不代选
@@ -646,18 +697,24 @@ namespace Survival.Core.Engine
                     s.Progress.Flags.Add(reg.AuthorizedFact);
                     var r = RefreshGates(s);
                     var routes = RouteNotes(s, r, s.CurrentLocation);
-                    Emit(s, GameEventKind.Info, $"{svc.Title}：已在营门确认登记意愿，沿通道实际走到{LocName(reg.SquareLocation)}才完成营区登记（不预发任何物资）" + (routes.Count > 0 ? "；发现" + string.Join("与", routes) : "") + "。");
+                    // B38b（N02 附录 Q286）：营门授权成功句，实际发现路线时追加“新发现路线：……。”
+                    Emit(s, GameEventKind.Info, $"营门已授权。沿通道前往{LocName(reg.SquareLocation)}完成登记。公共配给到广场另领。" + (routes.Count > 0 ? "新发现路线：" + string.Join("与", routes) + "。" : ""));
                     return ActionResult.Success();
                 }
                 case "clinic_consult":
                 {
                     RememberRequest(s, requestId);
                     var a = s.Actors[t!.ActorId];
-                    Emit(s, GameEventKind.Info, $"{svc.Title}（{t.Name}）：{ConsultText(a)}；{ConsultCooldowns(s, a)}。医务室只说明现有记录，不新抽诊断、不处理伤口、不清除感染。");
+                    // B38b（N02 附录 Q286）：“{人物}的现有记录：……。{冷却说明}本次只查看记录。”
+                    Emit(s, GameEventKind.Info, $"{t.Name}的现有记录：{ConsultText(a)}。{CooldownSentences(s, a)}本次只查看记录。");
                     return ActionResult.Success();
                 }
                 case "hub_workshop_access":
                 case "academy_workshop_access":
+                    // B38b（Q283、Q291-3）：办理日志直接用工坊定稿句与工位说明，不再外包“{服务名}：”；一条日志，按工位分行
+                    RememberRequest(s, requestId);
+                    Emit(s, GameEventKind.Info, string.Join("\n", new[] { v.EffectText }.Concat(v.Lines)));
+                    return ActionResult.Success();
                 case "academy_observation_record":
                 case "shelter_recruitment":
                     RememberRequest(s, requestId);
@@ -683,7 +740,7 @@ namespace Survival.Core.Engine
             var quest = QuestOfService(svc);
             // B15：任务工作只补剩余的段（中断保留已完成的段）
             if (quest != null) minutes = QuestWorkLeft(s, quest);
-            if (minutes <= 0) return ActionResult.Fail("这里现在不办理这项事项");
+            if (minutes <= 0) return ActionResult.Fail(CityNotOffered);
             var req = svc.Mode == "rest" ? ActionRequest.Rest(minutes) : ActionRequest.Wait(minutes);
             req.TargetId = CityServicePrefix + svc.Id;
             req.RequestId = requestId;
@@ -739,14 +796,15 @@ namespace Survival.Core.Engine
                 if (!s.Party.Contains(p.TargetActorId) || !s.Actors.TryGetValue(p.TargetActorId, out target)) fail = "目标已不在同行队伍里";
             }
             var made = new List<string>();
-            if (fail == null && svc.Kind == KnowledgeCopyKind) fail = CompleteKnowledgeCopy(s, p, made);
+            string? whole = null;   // B38b：定稿给出完整成功句的（施济、换药、抄录），日志只写这句、不外包“{服务名}完成：”
+            if (fail == null && svc.Kind == KnowledgeCopyKind) fail = CompleteKnowledgeCopy(s, p, out whole);
             else if (fail == null)
             {
                 switch (svc.Id)
                 {
                     case "clinic_dressing":
                     {
-                        if (svc.Inputs.Any(kv => reserved.Where(i => i.ItemId == kv.Key).Sum(i => i.Count) < kv.Value)) { fail = "预留的材料已不在"; break; }
+                        if (svc.Inputs.Any(kv => reserved.Where(i => i.ItemId == kv.Key).Sum(i => i.Count) < kv.Value)) { fail = "预留的换药材料已不足"; break; }
                         var why = DressingBlocked(s, target!);
                         if (why != null) { fail = why; break; }
                         var parts = new List<string>();
@@ -761,19 +819,22 @@ namespace Survival.Core.Engine
                         }
                         foreach (var i in reserved) i.ReservedBy = null;
                         a.ReservedItemIds.Clear();
-                        made.Add($"{ActorDisplayName(s, target.Id)}：{string.Join("，", parts)}；消耗{string.Join("、", svc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"))}");
+                        // B38b（N02 附录 Q286、Q289）：“已为{人物}换药。{实际效果列表}。消耗{材料和数量列表}。”效果沿 ApplyMedicine 一条日志的逗号连接
+                        whole = $"已为{ActorDisplayName(s, target.Id)}换药。{NoStop(string.Join("，", parts))}。消耗{string.Join("、", svc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"))}。";
                         break;
                     }
                     case "church_relief_ration":
                     {
                         var c = svc.Choices.FirstOrDefault(x => x.Id == p.ChoiceId);
-                        if (c == null || !ReliefChoiceOk(target!, c)) { fail = $"{ActorDisplayName(s, target!.Id)}已不符合这一项"; break; }
+                        // B38b（N02 附录 Q286）：失效、重验不合格、开工日额度用完三种原因，外层统一“{服务名}未完成。{真实原因}。材料和额度均未扣除。”
+                        if (c == null) { fail = "所选配给项目已失效"; break; }
+                        if (!ReliefChoiceOk(target!, c)) { fail = $"{ActorDisplayName(s, target!.Id)}已不符合「{c.Label}」的领取条件"; break; }
                         var key = QuotaKey(svc.Id, p.StartDay);
                         var used = s.City.QuotaUsed.TryGetValue(key, out var u) ? u : 0;
-                        if (svc.DailyPartyQuota is int q && used >= q) { fail = "当日救助配给额度已用完"; break; }
+                        if (svc.DailyPartyQuota is int q && used >= q) { fail = $"第{p.StartDay}日的全队救助额度已用完"; break; }
                         s.City.QuotaUsed[key] = used + 1;
                         foreach (var kv in c.Outputs) CreateItems(s, kv.Key, kv.Value, s.Ground);
-                        made.Add($"{string.Join("、", c.Outputs.Select(kv => $"{ItemName(kv.Key)}+{kv.Value}"))}，已放在{ZoneName(s, s.Ground)}地面（不自动吃喝）");
+                        whole = $"{string.Join("、", c.Outputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"))}已放在{ZoneName(s, s.Ground)}地面。可自行领取。";
                         break;
                     }
                     case TrainingServiceId:
@@ -800,11 +861,14 @@ namespace Survival.Core.Engine
             if (fail != null)
             {
                 Release();
-                Emit(s, GameEventKind.ActionCompleted, $"{svc.Title}没有完成：{fail}（材料与额度未扣）。");
+                // B38b（N02 附录 Q286）：施济、换药完成阶段的失败外层；其余服务（抄录 Q287 等）沿原外层，嵌入的完整句去掉句末句号
+                Emit(s, GameEventKind.ActionCompleted, svc.Id is "church_relief_ration" or "clinic_dressing"
+                    ? $"{svc.Title}未完成。{Sentence(fail)}材料和额度均未扣除。"
+                    : $"{svc.Title}没有完成：{NoStop(fail)}（材料与额度未扣）。");
                 return;
             }
             s.City.Completed++;
-            Emit(s, GameEventKind.ActionCompleted, $"{svc.Title}完成" + (made.Count > 0 ? "：" + string.Join("；", made) : "") + "。", null, svc.Choices.SelectMany(c => c.Outputs.Keys));
+            Emit(s, GameEventKind.ActionCompleted, whole ?? $"{svc.Title}完成" + (made.Count > 0 ? "：" + string.Join("；", made) : "") + "。", null, svc.Choices.SelectMany(c => c.Outputs.Keys));
             CityServiceEnd(s, p.NpcId);
         }
 

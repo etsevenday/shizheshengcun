@@ -113,7 +113,7 @@ public class B14bCityQTests : TestBase
         var minute = s.GameMinute;
         var flags = s.Progress.Flags.Count;
         var v = E.CityServicePreview(s, "academy_workshop_access")!;
-        Assert.That(v.EffectText, Does.Contain("已开放：试制工坊工作台"));
+        Assert.That(v.Lines, Does.Contain("已开放 试制工坊工作台"), "B38b：工位分行");
         Ok(E.StartCityService(s, "academy_workshop_access"));
         Assert.That(s.GameMinute, Is.EqualTo(minute), "0 分钟");
         Assert.That(s.Progress.Flags.Count, Is.EqualTo(flags), "打开菜单不写事实");
@@ -198,7 +198,7 @@ public class B14bCityQTests : TestBase
         Assert.That(E.CanStart(t, Craft("make_machete")), Is.Null);
         Start(t, Craft("make_machete"));
         Assert.That(E.CanStart(t, Craft("make_machete")), Is.Not.Null, "忙碌不能再开工");
-        Assert.That(E.CityServicePreview(t, "hub_workshop_access")!.Blocked, Is.EqualTo("行动进行中"));
+        Assert.That(E.CityServicePreview(t, "hub_workshop_access")!.Blocked, Is.EqualTo("当前行动还没结束。"));
     }
 
     // ───────────── Q148—Q150 公共站与施济显示定稿 ─────────────
@@ -214,14 +214,14 @@ public class B14bCityQTests : TestBase
         foreach (var st in new[] { "forge", "armory" })
             Assert.That(E.PublicStationsHere(s).Single(v => v.StationId == st).Blocked, Is.EqualTo(need), st);
         Assert.That(StationWhy(s, "make_steel"), Does.EndWith($"（{need}）"));
-        var text = E.CityServicePreview(s, "hub_workshop_access")!.EffectText;
-        Assert.That(text, Does.Contain(need));
+        var text = string.Join("|", E.CityServicePreview(s, "hub_workshop_access")!.Lines);
+        Assert.That(text, Does.Contain($"营区工坊锻炉、营区工坊军械台未开放（{need}）"));
         foreach (var t0 in new[] { text, StationWhy(s, "make_steel")!, StationWhy(s, "make_gun_service_kit")! })
             Assert.That(t0, Does.Not.Contain("旧存档").And.Not.Contain("工业支援").And.Not.Contain("QMAP"));
 
         var t = Crafter("h03_workshop", "hub_registered", "trusted_legacy_QMAP02_completed");
         Assert.That(E.PublicStationsHere(t).All(v => v.Blocked == null), Is.True, "可信旧资格加登记直接开放，不要求重领档册");
-        Assert.That(E.CityServicePreview(t, "hub_workshop_access")!.EffectText, Does.Not.Contain("旧存档").And.Contain("已开放：营区工坊工作台、营区工坊锻炉、营区工坊军械台"));
+        Assert.That(string.Join("|", E.CityServicePreview(t, "hub_workshop_access")!.Lines), Does.Not.Contain("旧存档").And.Contain("已开放 营区工坊工作台、营区工坊锻炉、营区工坊军械台"));
     }
 
     /// <summary>CITY-Q149-01：两个施济选项逐字用定稿名称；正好 40 不算低于 40；其他领取限制与发物照原规则。</summary>
@@ -391,7 +391,7 @@ public class B14bCityQTests : TestBase
             foreach (var v in E.CityServicesOf(s, n.NpcId))
             {
                 var text = string.Join("|", new[] { v.Title, v.Summary, v.EffectText, v.CostText, v.TimeText, v.Blocked ?? "" }
-                    .Concat(v.Targets.Select(t => t.Detail + t.Blocked)).Concat(v.Choices.Select(c => c.Label)));
+                    .Concat(v.Lines).Concat(v.Targets.Select(t => t.Detail + t.Blocked)).Concat(v.Choices.Select(c => c.Label)));
                 Assert.That(InternalId.IsMatch(text), Is.False, $"{v.Id}：{text}");
                 Assert.That(text, Does.Not.Contain("后续版本开放"), v.Id);
             }
@@ -399,7 +399,7 @@ public class B14bCityQTests : TestBase
         Assert.That(s.Log.Any(l => l.Text.Contains("营门登记已授权")), Is.False);
         E.DebugMapTeleport(s, "h04_infirmary");
         Ok(E.StartCityService(s, "clinic_consult", GameState.PlayerId));
-        Assert.That(s.Log.Last().Text, Does.StartWith("伤病咨询"));
+        Assert.That(s.Log.Last().Text, Does.StartWith("你的现有记录："));
     }
 
     // ───────────── Q146 未实装隐藏 ─────────────
@@ -475,7 +475,7 @@ public class B14bCityQTests : TestBase
         Run(t);
         ReadDialogues(t);
         var relief = E.CityServicesOf(t, "npc_bai_ling").Single();
-        Assert.That(relief.Blocked, Does.Contain("救助配给额度已用完"));
+        Assert.That(relief.Blocked, Does.Contain("全队救助额度已用完"));
         Assert.That(E.NpcsHere(t).Single().ServiceCount, Is.EqualTo(1));
 
         // 后续实装同 ID：自然出现在列表里（配额账不动）。B23 起抄录资料包已实装，以配置开关模拟“先隐藏后实装”

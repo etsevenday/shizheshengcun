@@ -100,30 +100,35 @@ namespace Survival.Core.Engine
         private void KnowledgeCopyPreview(GameState s, CityServiceConfig svc, CityServiceView v)
         {
             var packs = CopyPacksOf(svc.Id);
+            // B38b（N02 附录 §2、Q287）：主句逐字；工时与材料独列“{工时}分钟 · 0材料”（标题行 TimeText · CostText）
             v.TimeText = $"{svc.WorldMinutes}分钟";
-            v.EffectText = $"固定等待{svc.WorldMinutes}分钟、0材料：抄录所选资料里还没掌握的做法知识（只补未学的）；不需要地牢记录，" +
-                           "不写任务调查记录、地牢通关或首通时间，也不加队伍容量；中途停下不授知识，已过的时间不退";
+            v.CostText = "0材料";
+            v.EffectText = "只抄所选资料中还没掌握的做法。无需带地牢记录。中途停下，已过时间保留，做法要抄完才学会。";
             v.Choices = packs.Select(p => new CityChoiceView
             {
                 Id = p.Id,
                 Label = $"{p.CopyLabel}：" + string.Join("、", p.Knowledge.Select(k => KnowledgeName(k) + (KnowsKnowledge(s, k) ? "（已掌握）" : ""))),
-                Blocked = PackUnknown(s, p).Count == 0 ? "已全部掌握：完全已知的资料不抄录，不白耗时间" : null,
+                Blocked = PackUnknown(s, p).Count == 0 ? PackAllKnown : null,
             }).ToList();
             if (v.Blocked != null) return;
             if (!s.Progress.Flags.Contains(Config.City.Registration.RegisteredFact)) v.Blocked = "需要：" + FactLabel(Config.City.Registration.RegisteredFact);
-            else if (v.Choices.All(c => c.Blocked != null)) v.Blocked = "已全部掌握：这里的公开资料里没有你还不会的做法（不白耗时间）";
+            else if (v.Choices.All(c => c.Blocked != null)) v.Blocked = "这里的资料已全部掌握。";
         }
 
+        /// <summary>单包全知（选项禁用与完成重验同句，N02 附录 Q287）。</summary>
+        public const string PackAllKnown = "这份资料已全部掌握。";
+
         /// <summary>抄录完成（段末、死亡已先判过）：重验仍有未掌握的知识，写抄录事实授予；返回失败原因（时间不退），成功为 null。</summary>
-        private string? CompleteKnowledgeCopy(GameState s, CityServiceTxn p, List<string> made)
+        private string? CompleteKnowledgeCopy(GameState s, CityServiceTxn p, out string? done)
         {
+            done = null;
             var pack = Config.ExpansionQuests.Packs.FirstOrDefault(x => x.Id == p.ChoiceId);
             if (pack == null) return "资料不存在";
             var unknown = PackUnknown(s, pack);
-            if (unknown.Count == 0) return "这些做法已全部掌握（已过的时间不退）";
+            if (unknown.Count == 0) return PackAllKnown;
             s.Progress.Flags.Add(pack.CopyFact);
-            made.Add($"抄录{pack.CopyLabel}，学会做法知识：{string.Join("、", unknown.Select(KnowledgeName))}" +
-                     "（只补未掌握的；不写任务调查记录、地牢通关或容量，不发物、不给经验）");
+            // B38b（Q283）：一条日志直接写定稿句，名单只取此次新增，去掉外层服务名
+            done = $"抄完{pack.CopyLabel}，学会{string.Join("、", unknown.Select(KnowledgeName))}。";
             return null;
         }
 
