@@ -222,3 +222,10 @@
   .mc-chip.name::after { content: none; }
 }
 .footer .save .saved::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 8px; background: var(--ink2-sage); vertical-align: middle; }
+
+/* ───── B31b 试玩修复（M614） ───── */
+/* 开发项外框由 div 改为 fieldset（对白锁时整组 disabled），去掉 fieldset 默认边框与内距 */
+fieldset.dev-box { min-width: 0; margin: 0; }
+fieldset.dev-box:disabled { opacity: .55; }
+/* 标题页「阅读字体」当前档与游戏菜单一致：金字加选中框（B31a 的规则只限 .wasteland，标题页不在其中） */
+:is(.wasteland, .title-screen) .pref-group .secondary.on { border-image-source: var(--ink2-frame-selected); background-color: var(--ink2-tile-top); color: var(--ink2-gold); }

@@ -2166,9 +2166,9 @@ public sealed class GameSession
     /// </summary>
     public bool BattleHasEscLayer =>
         State != null && S.Battle != null
-        && (PendingDrop != null || MedTrayOpen || Pop != null || StatusPinned != null || BattleDrawer != null || BattleAction != null || BattleAllyView != null
-            // 只剩一个敌人时查看对象由 AutoTarget 自动选上，不是玩家打开的子层
-            || (BattleTarget != null && S.Battle.Alive.Count() > 1));
+        // B31b 试玩修复（M614）：右栏查看敌人（含执行指令后留下的目标、没选技能直接点敌卡）与查看队友
+        // 只是右栏对象详情，不是带关闭入口的子层，不吃 Esc；开关菜单后原样保留
+        && (PendingDrop != null || MedTrayOpen || Pop != null || StatusPinned != null || BattleDrawer != null || BattleAction != null);
 
     public void BattleEscape()
     {

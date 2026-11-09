@@ -98,7 +98,8 @@
         @if (DevMode)
         {
             @* 开发入口（地址加 ?dev=1 才显示）：开发测试箱、放敌人、立即敌踪、感染与尸变测试。正式流程不可见。 *@
-            <div class="dev-box" inert="@(!ShellMenu.Enabled(ShellMenuItem.Dev, locked))">
+            @* B31b 试玩修复（M614）：对白锁期间整组开发项禁用。用 fieldset disabled 而不是 inert：脚本 click() 也点不动，不会改世界状态 *@
+            <fieldset class="dev-box" disabled="@(!ShellMenu.Enabled(ShellMenuItem.Dev, locked))">
                 <div class="eyebrow">开发入口（?dev=1）</div>
                 <div class="btn-row">
                     <button class="secondary" @onclick="DevKit">开发测试箱</button>
@@ -440,7 +441,7 @@
                         <button class="secondary small-btn" @onclick="() => DevSpawn(id)" title="@($"{en.FamilyName}{(en.Elite ? "精英" : "")} · {en.Ap}AP · 己位{en.OwnSlots}→目标{en.TargetSlots}")">放@(en.Name)</button>
                     }
                 </div>
-            </div>
+            </fieldset>
         }
         <div class="tiny muted">快捷键：M 地图 · C 手工制作 · R 休息 · L 日志 · Esc 关闭当前面板。Esc 不会取消进行中的行动。</div>
     </div>

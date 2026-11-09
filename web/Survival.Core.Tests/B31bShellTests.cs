@@ -276,6 +276,22 @@ public class B31bShellTests : TestBase
         Assert.That(screen, Does.Contain("main?.Type == ActionType.Travel ? $\" → {e.LocName(main.TargetId)}\""));
     }
 
+    /// <summary>B31b 试玩修复（M614）：全屏战斗右栏查看敌人／队友不算 Esc 子层（一次开战斗菜单）；对白锁期间开发项整组 disabled；标题页阅读字体当前档与菜单同样式。</summary>
+    [Test]
+    public void PlaytestFix_M614()
+    {
+        var session = Web("Services", "GameSession.cs");
+        var layer = session.Substring(session.IndexOf("public bool BattleHasEscLayer =>"));
+        layer = layer.Substring(0, layer.IndexOf(';'));
+        Assert.That(layer, Does.Not.Contain("BattleTarget").And.Not.Contain("BattleAllyView"), "右栏查看敌人／队友不吃 Esc");
+        Assert.That(layer, Does.Contain("BattleAction != null"), "选了技能（瞄准中）仍是一层");
+        var menu = Web("Components", "MenuOverlay.razor");
+        Assert.That(menu, Does.Contain("<fieldset class=\"dev-box\" disabled=\"@(!ShellMenu.Enabled(ShellMenuItem.Dev, locked))\">").And.Contain("</fieldset>"));
+        Assert.That(menu, Does.Not.Contain("class=\"dev-box\" inert="));
+        Assert.That(ShellMenu.Enabled(ShellMenuItem.Dev, dialogueLocked: true), Is.False);
+        Assert.That(Web("wwwroot", "css", "shell.css"), Does.Contain(":is(.wasteland, .title-screen) .pref-group .secondary.on {"));
+    }
+
     private static string Root()
     {
         var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
