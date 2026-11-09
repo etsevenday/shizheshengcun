@@ -1,0 +1,37 @@
+{
+  "build": "本地开发版",
+  "bindings": 581,
+  "items": 180,
+  "skillNodes": 75,
+  "posts": 16,
+  "typography": [
+    "\"Chill Bitmap 16\", \"Microsoft YaHei\", \"PingFang SC\", \"Noto Sans SC\", sans-serif",
+    "20px",
+    "34px",
+    "none"
+  ],
+  "fonts": [
+    {
+      "familyName": "寒蝉点阵体 16px",
+      "postScriptName": "ChillBitmap_16px",
+      "isCustomFont": true,
+      "glyphCount": 11
+    }
+  ],
+  "captures": [
+    "01-标题.png",
+    "02-开场对白.png",
+    "03-游戏菜单-清晰阅读.png",
+    "04-游戏菜单-细像素.png",
+    "05-物品卡与详情.png",
+    "06-制作.png",
+    "07-成长技能.png",
+    "08-代班人物卡.png",
+    "09-代班对白.png",
+    "10-代班历史回看.png",
+    "11-招募职业样例.png",
+    "12-势力鸟瞰.png",
+    "13-战斗技能与敌人.png",
+    "14-战斗菜单.png"
+  ]
+}

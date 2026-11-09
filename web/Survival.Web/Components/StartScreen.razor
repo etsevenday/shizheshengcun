@@ -6,11 +6,12 @@
         <h1>适者生存</h1>
         <p class="tagline">末日里的单人卡牌生存。探索地点、搜集物资、烧水做饭、搭棚过夜——先活下来，再去找能帮你的人。</p>
         <div class="actions">
-            <button class="primary" @onclick="OnNew">新游戏</button>
-            <button class="secondary" disabled="@(!hasSave)" @onclick="OnContinue">继续</button>
-            <button class="secondary" @onclick="() => showHelp = !showHelp">玩法说明</button>
+            <button class="primary" @onclick="OnNew"><i class="ink-inline">@Icons.Markup("glyph:fresh")</i>新游戏</button>
+            <button class="secondary" disabled="@(!hasSave)" @onclick="OnContinue"><i class="ink-inline">@Icons.Markup("glyph:continue")</i>继续</button>
+            <button class="secondary" @onclick="() => showHelp = !showHelp"><i class="ink-inline">@Icons.Markup("glyph:help")</i>玩法说明</button>
             <button class="secondary" @onclick="Feedback">反馈问题</button>
         </div>
+        <ReadingMode />
 
         @if (confirmOverwrite)
         {

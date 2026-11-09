@@ -26,6 +26,7 @@
   <ItemGroup>
     <!-- 配置唯一来源：data/config.v0.6.json -->
     <EmbeddedResource Include="../../data/config.v0.6.json" LogicalName="config.v0.6.json" />
+    <EmbeddedResource Include="wwwroot/art/ink-v2/manifest.json" LogicalName="ink-v2.json" />
   </ItemGroup>
 
 </Project>

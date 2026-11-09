@@ -146,7 +146,7 @@
             var shortFuel = info.FuelWoodShort > 0;
             <AnchorPop AnchorId="@pop.AnchorId" Title="煅烧木炭" CssClass="charcoal" Place="above,below,right,left"
                        Sub="@($"{e.ItemName(info.InputId)}×{info.InputCount}→{e.ItemName(info.OutputId)}×{info.OutputCount} · 不耗时投料 · 不给经验")" OnClose="G.ClosePop">
-                <Art>@Icons.Markup("charcoal")</Art>
+                <Art>@Icons.Markup("facility:charcoal")</Art>
                 <ChildContent>
                     <div class="apop-facts">
                         <span title="原料只取你随身与当前地面未预留的木材（随身优先），不取队友或别处的"><span class="pf-weapon" aria-hidden="true">@Icons.Markup("wood")</span>原料@(e.ItemName(info.InputId))@(info.InputCount)份（可用@(info.WoodAvailable)）</span>
@@ -180,7 +180,7 @@
             var p = G.Preview(req);
             var r = e.Resource(req.TargetId);
             <AnchorPop AnchorId="@pop.AnchorId" Title="@G.PendingActionTitle" CssClass="gather" Sub="@($"{r.Name} · 拖入的工具")" OnClose="G.ClosePop">
-                <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
+                <Art>@Icons.Markup($"resource:{r.LocationId}:{r.NodeId}")</Art>
                 <ChildContent>
                     @if (p.Ok)
                     {

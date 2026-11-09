@@ -1,5 +1,16 @@
 // 适者生存网页壳的少量浏览器接口：本地单槽存档与快捷键转发。
+try {
+  if (window.localStorage.getItem('survival.reading-mode') === 'clear') document.documentElement.dataset.readingMode = 'clear';
+} catch (e) { }
+
 window.survival = {
+  readingMode: function () {
+    return document.documentElement.dataset.readingMode === 'clear' ? 'clear' : 'pixel';
+  },
+  setReadingMode: function (mode) {
+    document.documentElement.dataset.readingMode = mode;
+    try { window.localStorage.setItem('survival.reading-mode', mode); } catch (e) { }
+  },
   saveGet: function (key) {
     try { return window.localStorage.getItem(key); } catch (e) { return null; }
   },

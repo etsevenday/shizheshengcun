@@ -78,7 +78,6 @@ button:disabled { cursor: not-allowed; }
 .vital.warning .track i { background: linear-gradient(90deg, #a87f3b, #dfbc78); }
 .vital.critical .track i { background: linear-gradient(90deg, #8e493b, #d8876d); }
 .weight { padding-left: 56px; position: relative; }
-.weight::before { content: ""; width: 42px; height: 50px; position: absolute; top: 15px; left: 8px; background: url('../art/v08/creatures.png') 66.6667% 100% / 400% 400%; pointer-events: none; }
 .weight strong { color: #f0d7a1; font-weight: 700; }
 .weight .tiny { font-size: 14px; margin-left: -44px; margin-top: 6px; }
 .st-ico { background: #172126; border-color: #887648; border-radius: 3px; }
@@ -174,7 +173,7 @@ button:disabled { cursor: not-allowed; }
 .footer .event b { color: #efc978; }
 * { scrollbar-color: #9c8555 #0b1315; scrollbar-width: thin; }
 ::-webkit-scrollbar-thumb, .row-scroll::-webkit-scrollbar-thumb, .fac-scroll::-webkit-scrollbar-thumb, .map-adjacent::-webkit-scrollbar-thumb { background: #8c7950; border: 1px solid #182022; border-radius: 2px; }
-.title-screen { background: linear-gradient(90deg, #071015d9, #12232e70), url('../art/v08/village.png') center / cover; }
+.title-screen { background: linear-gradient(90deg, #100e0ed9, #19140e70), url('../art/ink-v2/scene-camp-outskirts.webp') center / cover; }
 .title-card { background: var(--iron-texture), #10191aeb; border: 2px solid #b49459; border-radius: 4px; box-shadow: 0 16px 80px #000a; }
 .title-card h1 { color: #e9cb90; font-family: var(--title-font); font-weight: 700; }
 
