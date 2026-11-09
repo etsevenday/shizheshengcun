@@ -437,7 +437,7 @@ public class B29FeedTests : TestBase
         var rows = E.CompanionCarried(s, Lin);
         Assert.That(rows.Select(r => r.InstanceId), Is.EqualTo(new[] { food.InstanceId, wood.InstanceId, pot.InstanceId, water.InstanceId }));
         Assert.That(rows.Select(r => r.InPot), Is.EqualTo(new[] { false, false, false, true }));
-        Assert.That(rows[0].Text, Is.EqualTo($"{E.ItemName("canned_food")}×2#{food.InstanceId}"));
+        Assert.That(rows[0].Text, Is.EqualTo($"{E.ItemName("canned_food")}×2"), "Q273 起不带实例编号");
         Assert.That(rows.Select(r => r.Feed != null), Is.EqualTo(new[] { true, false, false, true }));
     }
 

@@ -81,6 +81,26 @@ namespace Survival.Core.Engine
         };
     }
 
+    /// <summary>
+    /// 队伍面板随身展开行的逐字模板（Q273，assets/20261106/q269-q273-display-loot-adjudications.json companionRows）。
+    /// 玩家可见文字不带实例编号；行与按钮仍按 InstanceId 绑定真实实例。
+    /// </summary>
+    public static class CompanionRowCopy
+    {
+        public const string Single = "{物名}";
+        public const string Stack = "{物名}×{数量}";
+        public const string FreshSuffix = "（保质到{截止}）";
+        public const string SpoiledSuffix = "（已腐败）";
+        public const string Pot = "{锅名}（{锅内水况}，食材{已占槽}/{总槽}）";
+        public const string Canteen = "{壶名}（{壶内水况}）";
+
+        /// <summary>合同 companionRows 的键 → 逐字模板，测试逐句比对。</summary>
+        public static readonly IReadOnlyDictionary<string, string> All = new Dictionary<string, string>
+        {
+            ["single"] = Single, ["stack"] = Stack, ["freshSuffix"] = FreshSuffix, ["spoiledSuffix"] = SpoiledSuffix, ["pot"] = Pot, ["canteen"] = Canteen,
+        };
+    }
+
     /// <summary>物品卡上的食饮入口（Q263）：能显示才有，Blocked 非空时置灰。</summary>
     public sealed class FeedEntryInfo
     {
@@ -366,6 +386,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 开发入口（B29）：记容量事实、招前两名固定队友同行，给两人随身放食物、腐败野果、水壶和带水的锅，主角要用的水与耗材放当前地面。
+        /// Q273 起锅里另放一份野果、第二人随身放新鲜野果×2，让队伍展开区摆得出单份、多份、腐败、有保质、锅与锅内子项、水壶各种行。
         /// 同伴随身超过五卡不拦，只用来摆试玩场面。
         /// </summary>
         public string DebugFeedKit(GameState s)
@@ -384,31 +405,55 @@ namespace Survival.Core.Engine
             canteen.LiquidMl = 750;
             var pot = CreateItems(s, "pot", 1, first).Single();
             CreateItems(s, "clean_water", 2, ItemInstance.ContainerOwner(pot.InstanceId));
+            CreateItems(s, "berry", 1, ItemInstance.ContainerOwner(pot.InstanceId));
             CreateItems(s, "canned_food", 1, second);
             CreateItems(s, "dirty_water", 1, second);
+            CreateItems(s, "berry", 2, second);
             foreach (var (id, n) in new (string id, int n)[] { ("clean_water", 2), ("dirty_water", 3), ("canned_food", 1), ("pot", 1), ("purification_tablet", 1), ("filter_cartridge", 2), ("water_filter", 1) })
                 CreateItems(s, id, n, s.Ground);
-            var text = "开发：同行者已编入，两人随身放了食物、腐败野果、水壶与带水的锅；净水2、脏水3、罐头、锅、净水片、滤芯2、滤水器放在当前地面";
+            var text = "开发：同行者已编入，两人随身放了食物、腐败野果、新鲜野果、水壶与带水和一份野果的锅；净水2、脏水3、罐头、锅、净水片、滤芯2、滤水器放在当前地面";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }
 
-        /// <summary>队伍面板展开的真实随身根卡与锅内内容（Q265）。只读，每行带这件东西的食饮入口。</summary>
+        /// <summary>
+        /// 队伍面板展开的真实随身根卡与锅内内容（Q265）。只读，每行带这件东西的食饮入口。
+        /// 行文字按 Q273 模板（CompanionRowCopy），不带实例编号；同名行不合并，按实例号稳定排序。
+        /// </summary>
         public List<CompanionCarriedRow> CompanionCarried(GameState s, string actorId)
         {
             var rows = new List<CompanionCarriedRow>();
             CompanionCarriedRow Row(ItemInstance i, string text, bool inPot) =>
                 new CompanionCarriedRow { InstanceId = i.InstanceId, Text = text, InPot = inPot, Feed = FeedEntry(s, i.InstanceId) };
-            string Plain(ItemInstance i) => $"{InstanceName(i)}{(i.Count > 1 ? $"×{i.Count}" : "")}#{i.InstanceId}";
             var root = ItemInstance.CarriedOwner(actorId);
             foreach (var i in s.Items.Where(x => x.Owner == root).OrderBy(x => x.InstanceId))
             {
-                rows.Add(Row(i, IsPot(i) ? PotDesc(s, i) : IsCanteen(i) ? $"{ItemName(i.ItemId)}#{i.InstanceId}（{CanteenLabel(i)}）" : Plain(i), false));
+                rows.Add(Row(i, IsPot(i) ? CompanionPotLine(s, i) : IsCanteen(i) ? CompanionCanteenLine(i) : CompanionItemLine(s, i), false));
                 if (!IsPot(i)) continue;
                 var inside = ItemInstance.ContainerOwner(i.InstanceId);
-                rows.AddRange(s.Items.Where(x => x.Owner == inside).OrderBy(x => x.InstanceId).Select(x => Row(x, Plain(x), true)));
+                rows.AddRange(s.Items.Where(x => x.Owner == inside).OrderBy(x => x.InstanceId).Select(x => Row(x, CompanionItemLine(s, x), true)));
             }
             return rows;
         }
+
+        /// <summary>普通行与锅内子项：“罐头×2”“野果×2（已腐败）”“罐头（保质到第3日 08:00）”；一份省略×1，无截止不加后缀。</summary>
+        public string CompanionItemLine(GameState s, ItemInstance i)
+        {
+            var name = InstanceName(i);
+            var text = i.Count > 1
+                ? FeedCopy.Fill(CompanionRowCopy.Stack, ("物名", name), ("数量", i.Count.ToString()))
+                : FeedCopy.Fill(CompanionRowCopy.Single, ("物名", name));
+            if (IsSpoiled(s, i)) return text + CompanionRowCopy.SpoiledSuffix;
+            return i.ExpiresAt is int at ? text + FeedCopy.Fill(CompanionRowCopy.FreshSuffix, ("截止", Clock.DayTime(at))) : text;
+        }
+
+        /// <summary>“金属锅（净水100%·1000/1000毫升，食材1/2）”；水况沿 PotLabel（空锅原空态文字）。</summary>
+        public string CompanionPotLine(GameState s, ItemInstance pot) =>
+            FeedCopy.Fill(CompanionRowCopy.Pot, ("锅名", ItemName(pot.ItemId)), ("锅内水况", PotLabel(s, pot)),
+                ("已占槽", PotFood(s, pot.InstanceId).Count.ToString()), ("总槽", PotConfig(pot).FoodSlots.ToString()));
+
+        /// <summary>“分量水壶（净水 750/2000毫升）”；水况沿 CanteenLabel（空壶原空态文字）。</summary>
+        public string CompanionCanteenLine(ItemInstance c) =>
+            FeedCopy.Fill(CompanionRowCopy.Canteen, ("壶名", ItemName(c.ItemId)), ("壶内水况", CanteenLabel(c)));
     }
 }
