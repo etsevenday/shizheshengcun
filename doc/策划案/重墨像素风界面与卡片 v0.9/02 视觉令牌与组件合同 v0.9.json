@@ -228,5 +228,8 @@
     "typographyScope": "全部像素字体",
     "artAcceptance": "INK2-14 正常窗口清晰度，允许连续缩放",
     "portraitsFinalBatch": "UX2-B5"
-  }
+  },
+  "实现同步": [
+    "【实现同步 2026-11-10】palette 已按 Q326 换暖褐新稿色板（--ink2-*，见 web/Survival.Web/wwwroot/css/app.css :root），新稿没有的 teal #5F9698、olive #7C8351 沿本文件；typography 按 Q327 为正文 16、辅助 14、对白 20、标题 24、品牌字与大时钟 32 CSS px，正文行高 1.5、对白 1.7，默认寒蝉点阵体 16px、可切清晰阅读（Q295）；prototypeViewports 三档外壳尺寸由 Q325 取代，随 B31b 实施。开发计划 v1.0 B31a，提交 caf757d、be6e272。"
+  ]
 }
