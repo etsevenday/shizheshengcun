@@ -1,0 +1,38 @@
+[
+  {
+    "id": "fusion_8px",
+    "size": 8,
+    "zh": "fonts/8/fusion-pixel-8px-proportional-zh_hans.otf.woff2",
+    "latin": "fonts/8/fusion-pixel-8px-proportional-latin.otf.woff2",
+    "license": "fonts/8/OFL.txt",
+    "notices": "fonts/8/LICENSES/",
+    "zhSha256": "5d91d10373bd03d921332b35b0f629bb6fdfacfb4213e7d235e606dfb0680e96",
+    "latinSha256": "bcda1aa7eba3e15fe1418d6fce209f6063183ad4c91c7d4357e7a0569e1646bd",
+    "release": "https://github.com/TakWolf/fusion-pixel-font/releases/tag/2026.10.25",
+    "version": "2026.10.25"
+  },
+  {
+    "id": "fusion_10px",
+    "size": 10,
+    "zh": "fonts/10/fusion-pixel-10px-proportional-zh_hans.otf.woff2",
+    "latin": "fonts/10/fusion-pixel-10px-proportional-latin.otf.woff2",
+    "license": "fonts/10/OFL.txt",
+    "notices": "fonts/10/LICENSES/",
+    "zhSha256": "37c5b5f15a84fda5f41f8592970cb0dbb7d2bb3b0d004c18006375dc36803c12",
+    "latinSha256": "d4921f5693ef043e52594de41f8fc2387765db8bdf6a0d1e5575dd723698ef05",
+    "release": "https://github.com/TakWolf/fusion-pixel-font/releases/tag/2026.10.25",
+    "version": "2026.10.25"
+  },
+  {
+    "id": "fusion_12px",
+    "size": 12,
+    "zh": "fonts/12/fusion-pixel-12px-proportional-zh_hans.otf.woff2",
+    "latin": "fonts/12/fusion-pixel-12px-proportional-latin.otf.woff2",
+    "license": "fonts/12/OFL.txt",
+    "notices": "fonts/12/LICENSES/",
+    "zhSha256": "b67eb7aa592622e5bc1152b800d32404bb887a1e3a2e669b0c2a873d388590d6",
+    "latinSha256": "ae0b97b103598d39abc597bcd2ad9d3eac96575bfc86886c0b42539675ce9037",
+    "release": "https://github.com/TakWolf/fusion-pixel-font/releases/tag/2026.10.25",
+    "version": "2026.10.25"
+  }
+]

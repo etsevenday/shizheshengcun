@@ -1,0 +1,1069 @@
+[
+  {
+    "id": "people-companions",
+    "alpha": true,
+    "reference": "../参考原图/04-人物画风/01-幸存者全身造型.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. All facing RIGHT at slight side angle, unobtrusive weapons at rest, not heroic poses. Order strictly LEFT to RIGHT, TOP then BOTTOM: young camp route porter with a patched olive rain cape and wooden spear; broad workwear mechanic with a crowbar and rust apron; calm transfer medic with cream padded jacket and red field satchel; agile suburban forager with short brown cloak and wooden bow; guarded field patrol worker in dark denim and a spear with orange signal tag; quiet record keeper in a long charcoal coat with small field notebook and wooden shield.",
+    "file": "art/people-companions.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "1dc7982b3677946cc684c5fca63a69826673f1d2262976a837bf62757e0e427f",
+    "cells": [
+      {
+        "id": "npc_lin_zhao",
+        "crop": [
+          107,
+          3,
+          357,
+          506
+        ],
+        "face": [
+          178,
+          3,
+          175,
+          192
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_zhou_yan",
+        "crop": [
+          635,
+          3,
+          261,
+          507
+        ],
+        "face": [
+          671,
+          3,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_shen_he",
+        "crop": [
+          1138,
+          9,
+          236,
+          500
+        ],
+        "face": [
+          1185,
+          9,
+          173,
+          190
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_tang_li",
+        "crop": [
+          136,
+          514,
+          272,
+          508
+        ],
+        "face": [
+          157,
+          514,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_gu_cheng",
+        "crop": [
+          602,
+          513,
+          321,
+          509
+        ],
+        "face": [
+          657,
+          513,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_ye_xun",
+        "crop": [
+          1121,
+          514,
+          264,
+          508
+        ],
+        "face": [
+          1167,
+          514,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "people-camp",
+    "alpha": true,
+    "reference": "../参考原图/04-人物画风/02-三方联系人造型.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. Distinct understated camp work uniforms, each facing a slight three-quarter angle. Order strictly LEFT to RIGHT, TOP then BOTTOM: gate clerk with slate peaked wool cap and heavy ledger; civic coordinator with tan tabard, rolled notices and short dark hair; grizzled workshop foreperson with rust mechanic apron and wrench; on-duty physician with ivory sleeve covers and a small medical case; sample appraiser in slate coat with glasses and sample case; settlement intake clerk in olive vest with canvas file sleeve.",
+    "file": "art/people-camp.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "ed896c0d1d33b1433a8d705ff55634233c0632fd7b6acee83d020944d1767ab1",
+    "cells": [
+      {
+        "id": "npc_lu_heng",
+        "crop": [
+          143,
+          0,
+          289,
+          510
+        ],
+        "face": [
+          177,
+          0,
+          177,
+          194
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_xu_an",
+        "crop": [
+          632,
+          6,
+          255,
+          501
+        ],
+        "face": [
+          666,
+          6,
+          173,
+          190
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_luo_zheng",
+        "crop": [
+          1121,
+          0,
+          313,
+          508
+        ],
+        "face": [
+          1195,
+          0,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_chen_zhi",
+        "crop": [
+          132,
+          516,
+          257,
+          507
+        ],
+        "face": [
+          177,
+          516,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_tao_cen",
+        "crop": [
+          620,
+          514,
+          265,
+          507
+        ],
+        "face": [
+          676,
+          514,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_du_sui",
+        "crop": [
+          1145,
+          515,
+          271,
+          508
+        ],
+        "face": [
+          1179,
+          515,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "people-church",
+    "alpha": true,
+    "reference": "../参考原图/04-人物画风/02-三方联系人造型.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. Each facing a slight three-quarter angle; muted old burgundy and canvas for church workers, olive for the final courier. Order strictly LEFT to RIGHT, TOP then BOTTOM: reception attendant wearing a dark umber coat and faded scarf holding folded route sheets; relief worker in bone apron and rust sash carrying a ration basket; stern mediation steward in dark long tunic with square shoulders; copyist with spectacles and a bound folio under one arm; elderly host in worn russet outer robe holding a lantern; young neutral camp courier in olive runner jacket with canvas shoulder pouch.",
+    "file": "art/people-church.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "5d7b240ce9e592ce6dc198708e203321dfb4d827749708d078273d62ebfc3c64",
+    "cells": [
+      {
+        "id": "npc_qi_wen",
+        "crop": [
+          132,
+          2,
+          269,
+          504
+        ],
+        "face": [
+          178,
+          2,
+          175,
+          192
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_bai_ling",
+        "crop": [
+          632,
+          9,
+          316,
+          498
+        ],
+        "face": [
+          666,
+          9,
+          172,
+          189
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_ji_mu",
+        "crop": [
+          1142,
+          0,
+          290,
+          508
+        ],
+        "face": [
+          1190,
+          0,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_song_zhu",
+        "crop": [
+          136,
+          517,
+          250,
+          501
+        ],
+        "face": [
+          173,
+          517,
+          173,
+          190
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_fu_heng",
+        "crop": [
+          617,
+          518,
+          314,
+          500
+        ],
+        "face": [
+          695,
+          518,
+          173,
+          190
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_cheng_wang",
+        "crop": [
+          1167,
+          512,
+          236,
+          506
+        ],
+        "face": [
+          1194,
+          512,
+          175,
+          192
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "people-academy",
+    "alpha": true,
+    "reference": "../参考原图/04-人物画风/02-三方联系人造型.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. Scientific faction with restrained blue slate and worn white fabric, all facing a slight three-quarter angle. Order strictly LEFT to RIGHT, TOP then BOTTOM: public coordinator with slate scarf and a route clipboard; researcher with square glasses and rolled back lab coat sleeves; archivist in blue grey overcoat with clamped folders; equipment technician with dark apron, goggles and a cable case; observation lead with light canvas collar and clip-on gloves; anonymous institution duty cover worker with slate unmarked apron and simple clipboard, visually distinct from the five named figures.",
+    "file": "art/people-academy.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "6cfa74019ac70d2e55e1e602ae29b1fc7ae24a0c5afacb75f0931fb54009b78f",
+    "cells": [
+      {
+        "id": "npc_wen_cheng",
+        "crop": [
+          128,
+          4,
+          283,
+          502
+        ],
+        "face": [
+          179,
+          4,
+          174,
+          191
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_ji_wen",
+        "crop": [
+          627,
+          5,
+          254,
+          501
+        ],
+        "face": [
+          684,
+          5,
+          173,
+          190
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_shao_ning",
+        "crop": [
+          1141,
+          9,
+          256,
+          498
+        ],
+        "face": [
+          1177,
+          9,
+          172,
+          189
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_he_yuan",
+        "crop": [
+          103,
+          513,
+          277,
+          507
+        ],
+        "face": [
+          165,
+          513,
+          176,
+          193
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "npc_yin_ke",
+        "crop": [
+          627,
+          515,
+          282,
+          504
+        ],
+        "face": [
+          660,
+          515,
+          175,
+          192
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "institution-duty",
+        "crop": [
+          1164,
+          516,
+          222,
+          503
+        ],
+        "face": [
+          1179,
+          516,
+          174,
+          191
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "foes-01",
+    "alpha": true,
+    "reference": "../参考原图/07-怪物类型/01-常见感染者.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. All facing LEFT. No graphic gore, only torn cloth and stylized grime. Order strictly LEFT to RIGHT, TOP then BOTTOM: drooping ordinary street wanderer in torn jacket; floor-level crawler on knees and hands; lanky sprinter leaning far forward; broad thick-coated laborer with torn denim work jacket; riot-gear infected wearing cracked helmet and clear riot shield; hunched thin howler with jaw open and prominent scarf.",
+    "file": "art/foes-01.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "f8c84f91690a27b3636d659220c6b02b5f1e8318b122b892ababe4e63e081672",
+    "cells": [
+      {
+        "id": "shambler",
+        "crop": [
+          147,
+          7,
+          266,
+          483
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "crawler",
+        "crop": [
+          529,
+          177,
+          480,
+          316
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "runner",
+        "crop": [
+          1059,
+          26,
+          430,
+          461
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "worker",
+        "crop": [
+          137,
+          513,
+          320,
+          506
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "riot",
+        "crop": [
+          592,
+          513,
+          369,
+          506
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "howler",
+        "crop": [
+          1097,
+          524,
+          379,
+          495
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "foes-02",
+    "alpha": true,
+    "reference": "../参考原图/07-怪物类型/02-特殊感染者.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. All facing LEFT. No graphic gore, only torn cloth and stylized grime. Order strictly LEFT to RIGHT, TOP then BOTTOM: slow stooped infected in ragged long raincoat; infected in a dented industrial helmet with cloth neck guard; spitter with raised neck and muted green mouth stain; bulky hauler with lifting harness and broken crate strap; wiry low forward darting infected with red sleeve; tall screaming infected with clawed hands by head and black vest.",
+    "file": "art/foes-02.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "6dcea40fb68a3783a6a9b95af6e2668b9c227439604d37613ee1c6d503a55c63",
+    "cells": [
+      {
+        "id": "z_slow",
+        "crop": [
+          94,
+          18,
+          326,
+          484
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_helmet",
+        "crop": [
+          636,
+          9,
+          298,
+          493
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_spitter",
+        "crop": [
+          1154,
+          9,
+          257,
+          493
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_hauler",
+        "crop": [
+          82,
+          517,
+          403,
+          499
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_darter",
+        "crop": [
+          558,
+          610,
+          432,
+          398
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_screamer",
+        "crop": [
+          1127,
+          513,
+          317,
+          505
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "foes-03",
+    "alpha": true,
+    "reference": "../参考原图/07-怪物类型/02-特殊感染者.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. All facing LEFT. No graphic gore, only torn cloth and stylized grime. Order strictly LEFT to RIGHT, TOP then BOTTOM: heavy guard with blocky plates and large shoulder guard; clinger crouched low with reaching long hands; broad swollen infected with bulging patched protective suit; infected nurse with faded pale uniform and medical pouch; infected engineer with brass tools and welding goggles; infected signaler with bent signal pipe and battered radio pack.",
+    "file": "art/foes-03.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "6f21c29f92b888dd4161d4228003dabd3bcacdf7474095ab550ac1be77329848",
+    "cells": [
+      {
+        "id": "z_guard",
+        "crop": [
+          107,
+          8,
+          323,
+          496
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_clinger",
+        "crop": [
+          536,
+          141,
+          445,
+          360
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_bloater",
+        "crop": [
+          1069,
+          10,
+          386,
+          491
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_nurse",
+        "crop": [
+          93,
+          518,
+          315,
+          496
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_engineer",
+        "crop": [
+          596,
+          518,
+          340,
+          497
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_signal",
+        "crop": [
+          1084,
+          512,
+          381,
+          506
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "foes-04",
+    "alpha": true,
+    "reference": "../参考原图/07-怪物类型/02-特殊感染者.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. All facing LEFT. No graphic gore, only torn cloth and stylized grime. Order strictly LEFT to RIGHT, TOP then BOTTOM: pump foreman in green waders with heavy valve handle; isolation guard in sealed cream hazmat coat with opaque cracked visor; power guard in heavy black electrical apron with amber insulators; relay guard with aerial backpack and torn signal hood; low chanting infected in ragged ash-cloth ceremonial coat with broad hood; pilot-lab wanderer in white coat with protective mask and green specimen sleeve.",
+    "editPrompt": "Edit this existing 1536×1024 image as exact background extraction. Preserve the six existing isolated full body characters, order, poses, silhouette, color and texture pixel by pixel as much as possible. Remove all white/light gray background, faint gridlines and soft surrounding backdrop from all cells, and replace them with genuinely empty transparent alpha (RGBA alpha 0 in every gap and corner). Do not redraw the characters, no white or checkerboard matte, no dividers. Keep the original 3 column × 2 row arrangement and same aspect ratio, the original colors and objects. Leave transparent breathing room. Deliver a true transparent game sprite atlas.",
+    "file": "art/foes-04.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "6d63aaf9f5ae7aaefbff3381d05071148b45c995a67dbffc0d9c3d83dd9b3b1d",
+    "cells": [
+      {
+        "id": "z_pump_foreman",
+        "crop": [
+          78,
+          10,
+          352,
+          493
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_isolation_guard",
+        "crop": [
+          628,
+          9,
+          277,
+          495
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_power_guard",
+        "crop": [
+          1136,
+          2,
+          318,
+          502
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "z_relay_guard",
+        "crop": [
+          127,
+          512,
+          318,
+          508
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_cantor",
+        "crop": [
+          581,
+          528,
+          375,
+          487
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_labwalker",
+        "crop": [
+          1162,
+          514,
+          273,
+          503
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "foes-05",
+    "alpha": true,
+    "reference": "../参考原图/07-怪物类型/02-特殊感染者.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. All facing LEFT. No graphic gore, only torn cloth and stylized grime. Order strictly LEFT to RIGHT, TOP then BOTTOM: cable-tangled crawling infected with trailing coils; braced storekeeper infected carrying fractured metal shelving; massive crypt guard with stone-like armor panels and censer chain; isolation-core guard with tall broken opaque visor and exposed harness; armory guard with jagged ballistic shield and steel plates; relay boss guard with broken satellite antenna harness and copper cable.",
+    "file": "art/foes-05.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "b32b5a173cc952793dea5e5b43a1f65e0fb4889af7a8ba28e4df2ed3319769ef",
+    "cells": [
+      {
+        "id": "ec_cablecrawler",
+        "crop": [
+          20,
+          153,
+          476,
+          338
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_stockbracer",
+        "crop": [
+          579,
+          9,
+          390,
+          491
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_boss_crypt",
+        "crop": [
+          1071,
+          6,
+          424,
+          494
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_boss_lab",
+        "crop": [
+          108,
+          519,
+          306,
+          497
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_boss_armory",
+        "crop": [
+          546,
+          520,
+          432,
+          494
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_boss_relay",
+        "crop": [
+          1126,
+          512,
+          367,
+          505
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "foes-06",
+    "alpha": true,
+    "reference": "../参考原图/07-怪物类型/02-特殊感染者.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. All facing LEFT. No graphic gore, only torn cloth and stylized grime. The two humans visibly alive. Order strictly LEFT to RIGHT, TOP then BOTTOM: giant pump-room shover with green overalls and handwheel; broad deep-mine bruiser with headlamp and worn pickaxe; flooded mall escalator blocker with broad chrome railing fragments; cold-store guard in quilted insulation coat and frost-grey gas mask; ordinary living raider with rust leather jacket and battered pipe; ordinary living hooded raider with pistol and cloth face covering.",
+    "file": "art/foes-06.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "0bd15a2af73553705141815896dd9d2bd899b6060801acd2c4e2a8660c53f682",
+    "cells": [
+      {
+        "id": "ec_boss_water",
+        "crop": [
+          79,
+          1,
+          353,
+          510
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_boss_mine",
+        "crop": [
+          559,
+          10,
+          380,
+          499
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_boss_mall",
+        "crop": [
+          1111,
+          0,
+          360,
+          509
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "ec_boss_cold",
+        "crop": [
+          101,
+          517,
+          302,
+          500
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "raider_melee",
+        "crop": [
+          573,
+          517,
+          312,
+          503
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "raider_gunner",
+        "crop": [
+          1103,
+          514,
+          355,
+          506
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "foes-07",
+    "alpha": true,
+    "reference": "../参考原图/07-怪物类型/03-野外动物与异变轮廓.png",
+    "prompt": "Create a 3 columns x 2 rows sprite atlas on a 1536x1024 landscape canvas, exactly SIX isolated full-body adult figures. Each of the six equal square cells has exactly one figure at center, with its entire head, hands, gear and feet within its own cell and ~8% empty transparent safety border. No overlap across cells. All six on a true TRANSPARENT alpha background, no ground, shadows, squares, swatches, borders, lettering, numbers or watermarks. Original Chinese post-apocalyptic survival RPG. A style reference only is supplied. Style: black-ink angular woodcut comic fused with very conspicuous chunky stepped pixel art, nearly black shadows, hard ochre bone highlights, worn slate iron and desaturated rust, handmade graphic silhouettes. Strong visual differences in silhouettes, kit and accents between cells. These six are four-legged animals, full body, all facing LEFT, no blood, no human features. Order strictly LEFT to RIGHT, TOP then BOTTOM: small brown feral dog with drooping ears; large grey wolf with heavy winter fur; brown wild boar with short ivory tusks; alert thin stag with large antlers; larger feral dog leader with striped dark back and torn pointed ear; ferocious heavier bristly boar with longer sweeping tusks and scarred snout.",
+    "file": "art/foes-07.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "ef127d706bbc95685e30ebdf65590675e029ce6518241367ecd068a4fd0eb80b",
+    "cells": [
+      {
+        "id": "feral_dog",
+        "crop": [
+          31,
+          166,
+          444,
+          304
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "wolf",
+        "crop": [
+          525,
+          73,
+          477,
+          398
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "boar",
+        "crop": [
+          1038,
+          62,
+          477,
+          409
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "stag",
+        "crop": [
+          47,
+          514,
+          411,
+          474
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "wild_dog_leader",
+        "crop": [
+          514,
+          579,
+          484,
+          397
+        ],
+        "review": "独立透明造型候选"
+      },
+      {
+        "id": "feral_boar",
+        "crop": [
+          1024,
+          578,
+          497,
+          397
+        ],
+        "review": "独立透明造型候选"
+      }
+    ]
+  },
+  {
+    "id": "dungeons-01",
+    "alpha": false,
+    "reference": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "prompt": "Create four original 16:9 dungeon scene plates in EXACT 2 by 2 image atlas, a full-bleed landscape 16:9 output. Each equal quarter is its own complete 16:9 background, edge to edge, distinct environments with no divider or frame. Top left underground abandoned church sanctuary with stone arches and relic caskets, amber/brown. Top right sealed scientific lab with observation windows and rust green containment equipment. Bottom left old urban police armory warehouse, broken olive racks and dusty steel doors. Bottom right remote mountain communications bunker with dead receiver racks and cable trenches. All have a clear lower foreground strip for game actors. Reference only for visual style. Original Chinese dystopian wasteland game, heavy black angular ink, very pronounced chunky deliberate pixel clusters, rusty ochres and charcoal, subdued hard light, no characters, no UI, no labels, signs or writing.",
+    "file": "art/dungeons-01.png",
+    "size": [
+      1672,
+      941
+    ],
+    "sha256": "a152167dee9c0d20afbef264a6006cdd4276fdef2f5504f600d86077ff2ccea0",
+    "cells": [
+      {
+        "id": "d01",
+        "crop": [
+          0,
+          0,
+          836,
+          471
+        ],
+        "review": "区域背景候选"
+      },
+      {
+        "id": "d02",
+        "crop": [
+          836,
+          0,
+          836,
+          471
+        ],
+        "review": "区域背景候选"
+      },
+      {
+        "id": "d03",
+        "crop": [
+          0,
+          471,
+          836,
+          470
+        ],
+        "review": "区域背景候选"
+      },
+      {
+        "id": "d04",
+        "crop": [
+          836,
+          471,
+          836,
+          470
+        ],
+        "review": "区域背景候选"
+      }
+    ]
+  },
+  {
+    "id": "dungeons-02",
+    "alpha": false,
+    "reference": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "prompt": "Create four original 16:9 dungeon scene plates in EXACT 2 by 2 image atlas, a full-bleed landscape 16:9 output. Each equal quarter is its own complete 16:9 background, edge to edge, distinct environments, no divider. Top left water treatment underground pipes, big gate valve and dark green reflective channels. Top right forest mine interior, collapsed iron rails, rock wall and dull amber lamp. Bottom left flooded abandoned shopping mall, broken escalator and still slate blue water. Bottom right emergency cold-chain warehouse, frosted refrigeration racks and broken gray cargo doors. All have clear foreground for game actors. Reference only for visual style. Original Chinese post-apocalyptic game, heavy black angular woodcut ink, very pronounced coarse deliberate pixel clusters, rusty ochres, teal, bone and charcoal, hard shadows, no characters, no UI, no signs or writing.",
+    "file": "art/dungeons-02.png",
+    "size": [
+      1672,
+      941
+    ],
+    "sha256": "043475fae0242384dd3ad33936675b8f09a3479f92eaafc09009bb2bcf5fa799",
+    "cells": [
+      {
+        "id": "d05",
+        "crop": [
+          0,
+          0,
+          836,
+          471
+        ],
+        "review": "区域背景候选"
+      },
+      {
+        "id": "d06",
+        "crop": [
+          836,
+          0,
+          836,
+          471
+        ],
+        "review": "区域背景候选"
+      },
+      {
+        "id": "d07",
+        "crop": [
+          0,
+          471,
+          836,
+          470
+        ],
+        "review": "区域背景候选"
+      },
+      {
+        "id": "d08",
+        "crop": [
+          836,
+          471,
+          836,
+          470
+        ],
+        "review": "区域背景候选"
+      }
+    ]
+  }
+]
