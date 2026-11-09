@@ -238,6 +238,7 @@ fieldset.dev-box:disabled { opacity: .55; }
   width: min(var(--pop-w), calc(100vw - 16px)); height: min(var(--pop-h), calc(100vh - 16px));
   max-width: none; max-height: none; overflow: hidden;
   display: flex; flex-direction: column; gap: 10px; padding: 16px 20px 18px;
+  inset: 0; margin: auto;   /* B31c 试玩修复（B1）：由 CSS 居中，app.js 不再写 left/top */
 }
 .wasteland .apop.card-pop.apop-c:not(:has(.tbar)) { display: none; }
 .wasteland .apop.apop-c > .apop-head { flex: 0 0 auto; padding-bottom: 8px; border-bottom: 1px solid color-mix(in srgb, var(--ink2-line) 60%, transparent); }
@@ -339,3 +340,35 @@ button { transition-duration: var(--mo-hover); }
   flex: 0 0 auto; position: sticky; top: -12px; bottom: -12px; z-index: 2; padding: 6px 0;
   background: var(--ink2-dark);
 }
+
+/* ═════ B31c 试玩修复（线上构建 c15e667）═════ */
+/* B2：食饮盘第四区“确认操作”固定在盘底：区名独占一行，取消在左、说明居中、主动作在右（同其他局部盘 190/238） */
+/* 720 档盘宽放不下 190+说明+238 时，取消与主动作按比例收窄，不换行 */
+.wasteland .apop.feed-pop.apop-c > .apop-foot { display: grid; grid-template-columns: minmax(0, 190px) auto 1fr minmax(0, 238px); column-gap: 12px; row-gap: 6px; }
+.wasteland .apop.feed-pop.apop-c > .apop-foot > .fp-foot-label { grid-column: 1 / -1; grid-row: 1; font-weight: 600; }
+.wasteland .apop.feed-pop.apop-c > .apop-foot > [data-feed-cancel] { grid-column: 1; grid-row: 2; width: 100%; }
+.wasteland .apop.feed-pop.apop-c > .apop-foot > [data-feed-help] { grid-column: 2; grid-row: 2; min-height: 40px; }
+.wasteland .apop.feed-pop.apop-c > .apop-foot > .fp-go { grid-column: 4; grid-row: 2; width: 100%; margin: 0; min-height: 40px; padding: 6px 12px; white-space: normal; }
+
+/* E2：休息与睡眠——休息、睡眠两组时长并排（说明行占满一行），正文自己滚动，开始栏单独一段不压时长卡；
+   720 档收紧标题栏与开始栏，暂停窄条停在②底时正文仍能完整露出一排时长卡 */
+.panel-host .rest-panel > .rest-scroll { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; column-gap: 16px; row-gap: 10px; }
+.panel-host .rest-panel > .rest-scroll > .lines { grid-column: 1 / -1; }
+.panel-host .rest-panel > .rest-go { position: relative; z-index: 1; }
+@media (max-height: 800px) {
+  .panel-host .rest-panel > .sub-head { padding: 4px 12px; }
+  .panel-host .rest-panel > .sub-head > button { min-height: 36px; padding: 4px 12px; }
+  .panel-host .rest-panel > .rest-scroll { padding: 4px 12px 6px; column-gap: 12px; }
+  .panel-host .rest-panel .choice-title { margin-bottom: 2px; }
+  .panel-host .rest-panel .choice { padding: 4px 6px; }
+  .panel-host .rest-panel > .rest-go { padding: 4px 12px; }
+  .panel-host .rest-panel > .rest-go .rg-start { min-height: 36px; padding: 4px 18px; }
+}
+
+/* E1：只开局部盘（没有一级面板）时，行动窄条停在②底（同一级面板的情形），不压③④；被居中盘挡住时右端“退出行动”仍露出可点 */
+.center-scroll.four.docked-prog:not(.locked) ~ :is(.cprog.docked, .pause-dock) { bottom: calc(50% + var(--sh-gap) / 2); }
+
+/* E3：居中确认框底栏统一：取消/关闭在左（190 宽），主动作在右（238 宽），原因与提示行排在底栏之上，底栏贴框底 */
+.overflow-layer > .overflow-box > .ov-foot { order: 1; }
+.overflow-layer > .overflow-box > .ov-foot > .secondary { order: -1; flex: 0 1 190px; width: auto; min-height: 40px; }
+.overflow-layer > .overflow-box > .ov-foot > .primary { flex: 0 1 238px; width: auto; margin-left: auto; min-height: 40px; padding: 6px 12px; white-space: normal; }

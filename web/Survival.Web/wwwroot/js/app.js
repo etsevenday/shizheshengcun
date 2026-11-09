@@ -292,6 +292,14 @@ window.survivalPop = (function () {
     if (!cur) return;
     var el = cur.el;
     if (!el || !el.isConnected) { stop(); return; }
+    // B31c 试玩修复（B1，Q324）：居中盘的位置只由 CSS 决定（shell.css .apop-c：inset 0 + margin auto），不按某一刻量到的尺寸算、
+    // 也不受锚点可见度影响；先居中再做来源失效判定（锚点连续 250ms 看不见仍照原规则收起，收起前不偏位）
+    var centered = !!el.getAttribute('data-center');
+    if (centered) {
+      el.style.left = ''; el.style.top = '';
+      el.style.visibility = 'visible';
+      el.setAttribute('data-side', 'center');
+    }
     var a = cur.anchor ? document.getElementById(cur.anchor) : null;
     var A = a ? visibleRect(a) : null;
     // B21 试玩修复：页面重排（右栏内容变化引起的一闪滚动条等）会让锚点瞬间“看不见”；连续 250ms 仍看不见才算滚出，避免浮窗刚弹出就被收起
@@ -302,17 +310,10 @@ window.survivalPop = (function () {
       return;
     }
     cur.lostAt = 0;
+    // B31c（Q324）：局部操作盘统一在屏幕中央打开（上面已处理）；锚点仍用于“来源失效”判定：发起它的卡滚出或消失时照原规则收起
+    if (centered) return;
     var W = window.innerWidth, H = window.innerHeight, m = 8, g = 8;
     var w = el.offsetWidth, h = el.offsetHeight;
-    // B31c（Q324）：局部操作盘统一在屏幕中央打开；放不下时限制在视口内、距屏边 ≥8（尺寸由 shell.css 的 --pop-w/--pop-h 三档给出）。
-    // 锚点仍用于“来源失效”判定：发起它的卡滚出或消失时照原规则收起
-    if (el.getAttribute('data-center')) {
-      el.style.left = Math.round(Math.max(m, (W - w) / 2)) + 'px';
-      el.style.top = Math.round(Math.max(m, (H - h) / 2)) + 'px';
-      el.style.visibility = 'visible';
-      el.setAttribute('data-side', 'center');
-      return;
-    }
     var order = (el.getAttribute('data-place') || 'right,left,below,above').split(',');
     // data-bound：浮窗限制在指定容器（中部列）里——上下可用空间也按容器算，放不下就翻到另一侧，不压左右栏和底栏（M77-B4、M78）
     var bsel = el.getAttribute('data-bound');

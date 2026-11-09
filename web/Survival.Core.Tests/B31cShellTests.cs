@@ -137,11 +137,32 @@ public class B31cShellTests : TestBase
         Assert.That(pop, Does.Contain("@(Centered ? \"apop-c\" : \"\")"));
         foreach (var f in new[] { "ActionPops.razor", "CardPop.razor", "FeedPop.razor", "IgniteMenu.razor" })
             Assert.That(Web("Components", f), Does.Not.Contain("Centered=\"false\""), f);
+        // M621（试玩 B1）：原断言“居中前先做来源失效判定、按量到的尺寸算 left/top”改为：先由 CSS 居中（清掉 left/top），再做来源失效判定
         var js = Web("wwwroot", "js", "app.js");
-        var place = js.Substring(js.IndexOf("if (el.getAttribute('data-center'))"));
-        place = place.Substring(0, place.IndexOf("return;"));
-        Assert.That(place, Does.Contain("Math.max(m, (W - w) / 2)").And.Contain("Math.max(m, (H - h) / 2)"));
-        Assert.That(js.IndexOf("if (!a || A.vis < 0.25)"), Is.LessThan(js.IndexOf("if (el.getAttribute('data-center'))")), "来源失效判定仍在居中之前（滚出或消失照原规则收起）");
+        var center = js.IndexOf("var centered = !!el.getAttribute('data-center');");
+        Assert.That(center, Is.GreaterThan(0));
+        var branch = js.Substring(center, js.IndexOf("var a = cur.anchor", center) - center);
+        Assert.That(branch, Does.Contain("el.style.left = ''; el.style.top = '';").And.Contain("el.style.visibility = 'visible';"));
+        Assert.That(center, Is.LessThan(js.IndexOf("if (!a || A.vis < 0.25)")), "先居中，再做来源失效判定（收起前不偏位）");
+        Assert.That(js.IndexOf("if (!a || A.vis < 0.25)"), Is.LessThan(js.IndexOf("if (centered) return;")), "滚出或消失仍照原规则收起");
+        Assert.That(Block(Web("wwwroot", "css", "shell.css"), ".wasteland .apop.apop-c {"), Does.Contain("inset: 0; margin: auto;"));
+    }
+
+    /// <summary>M621 试玩修复：食饮盘主动作固定盘底；休息时长并排、开始栏不压卡；只开局部盘时窄条停②底；居中确认框底栏统一。</summary>
+    [Test]
+    public void M621_PlaytestFixes()
+    {
+        var feed = Web("Components", "FeedPop.razor");
+        var actions = feed.Substring(feed.IndexOf("<Actions>"));
+        Assert.That(actions, Does.Contain("data-feed-confirm").And.Contain("data-feed-help").And.Contain("data-feed-cancel").And.Contain("FeedPanelCopy.SectionConfirm"));
+        Assert.That(feed.Substring(0, feed.IndexOf("<Actions>")), Does.Not.Contain("data-feed-confirm"));
+        Assert.That(Web("Components", "RestOverlay.razor"), Does.Contain("class=\"sub-panel rest-panel\""));
+        var css = Web("wwwroot", "css", "shell.css");
+        Assert.That(css, Does.Contain(".panel-host .rest-panel > .rest-scroll { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));"));
+        Assert.That(css, Does.Contain(".center-scroll.four.docked-prog:not(.locked) ~ :is(.cprog.docked, .pause-dock) { bottom: calc(50% + var(--sh-gap) / 2); }"));
+        Assert.That(css, Does.Contain(".overflow-layer > .overflow-box > .ov-foot { order: 1; }"));
+        Assert.That(css, Does.Contain(".overflow-layer > .overflow-box > .ov-foot > .secondary { order: -1; flex: 0 1 190px;"));
+        Assert.That(css, Does.Contain(".overflow-layer > .overflow-box > .ov-foot > .primary { flex: 0 1 238px;"));
     }
 
     /// <summary>Q324：居中框尺寸用 B31b 三档居中弹窗令牌（608×438／760×547／912×656），放不下时限制在视口内留 8；标题与动作固定、正文独立滚动。</summary>
