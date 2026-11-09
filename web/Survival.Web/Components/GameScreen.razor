@@ -167,7 +167,8 @@
                     <span>保存中…</span>
                     break;
                 case SaveStatus.Saved:
-                    <span>● 已保存</span>
+                    @* §2 底栏：保存完成「已保存」（B31b 去掉前面的圆点字符，状态色由样式给） *@
+                    <span class="saved">@ShellText.Saved</span>
                     break;
             }
         </div>

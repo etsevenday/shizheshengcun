@@ -265,6 +265,17 @@ public class B31bShellTests : TestBase
         Assert.That(css, Does.Contain(".pause-scrim {").And.Contain(".wasteland .cprog.float.docked, .pause-dock {"));
     }
 
+    /// <summary>P01a 地点角标「当前位置」（各档都显示，不再用样式补“· 当前”）；§2 底栏「已保存」不带圆点字符；Q331 移动中品牌行「起点 → 终点」。</summary>
+    [Test]
+    public void P01a_CornerFooterAndTravelBrand()
+    {
+        Assert.That(Web("Components", "LocationCard.razor"), Does.Contain("<em>@ShellText.PlaceTitle</em>").And.Not.Contain("<em>当前地点</em>"));
+        Assert.That(Web("wwwroot", "css", "shell.css"), Does.Contain(".mc-chip.name::after { content: none; }"));
+        var screen = Web("Components", "GameScreen.razor");
+        Assert.That(screen, Does.Contain("<span class=\"saved\">@ShellText.Saved</span>").And.Not.Contain("● 已保存"));
+        Assert.That(screen, Does.Contain("main?.Type == ActionType.Travel ? $\" → {e.LocName(main.TargetId)}\""));
+    }
+
     private static string Root()
     {
         var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);

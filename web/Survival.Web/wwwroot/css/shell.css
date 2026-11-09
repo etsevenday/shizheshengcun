@@ -214,3 +214,11 @@
 .cprog.docked .cp-adv, .pause-dock .cprog .cp-adv { font-size: var(--fs-body); }
 .cprog.docked .cp-exit-note, .pause-dock .cprog .cp-exit-note { max-width: 260px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .center-scroll.four.full-panel.docked-prog .panel-host { bottom: calc(var(--dock-h) + var(--sh-gap)); }
+
+/* ───── P01a 地点角标「当前位置」、底栏「已保存」 ───── */
+.mc-chip.name em { margin-left: 6px; white-space: nowrap; }
+@media (max-height: 800px) {
+  .mc-chip.name em { display: inline; font-size: var(--fs-aux); }
+  .mc-chip.name::after { content: none; }
+}
+.footer .save .saved::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 8px; background: var(--ink2-sage); vertical-align: middle; }
