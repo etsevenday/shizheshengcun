@@ -593,6 +593,20 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
+        /// 文档卡“查看”的全局拒绝原因（Q269 选 A，q269-q273-display-loot-adjudications.json documents.policy）：同 <see cref="TalkBlocked"/>
+        /// 的原因和优先级，只在原分支是主行动占用且处于暂停（没有子行动在推进）时改写“行动暂停中”；实际推进仍写“行动进行中”。
+        /// </summary>
+        private string? DocumentBlocked(GameState s)
+        {
+            var why = TalkBlocked(s);
+            if (why == "行动进行中" && s.Sub == null && s.Main?.Status == ActionStatus.Paused) return DocumentPausedReason;
+            return why;
+        }
+
+        /// <summary>主行动暂停时文档卡“查看”的禁用提示（Q269，合同 documents.pausedReason）。</summary>
+        public const string DocumentPausedReason = "行动暂停中";
+
+        /// <summary>
         /// 与 NPC 交谈（0 分钟，不扣物、不恢复、不改身体）。程望：首次播“营区路线”，写 visitor_met、camp_route_known（只此一次），
         /// 立即重判 QMAP01（先访过村庄的此刻就开边），之后播饱饱/主角的交谈后对白；再次交谈只播“再问路线”，不重发任何效果。
         /// </summary>
@@ -659,7 +673,7 @@ namespace Survival.Core.Engine
                 if (d.TaskId != null) status = TaskDone(s, d.TaskId) ? "已读过 · 可重读" : "可查看 · 不耗时";
                 else if (d.Fact != null && s.Progress.Flags.Contains(d.Fact)) status = "已识别 · 可重读";
                 else status = s.Progress.Flags.Contains(FactCampRouteKnown) ? "可识别 · 不耗时" : "字迹模糊 · 可查看";
-                list.Add(new DocumentCardView { Id = d.Id, Title = d.Title, Status = status, ReadBlocked = TalkBlocked(s) });
+                list.Add(new DocumentCardView { Id = d.Id, Title = d.Title, Status = status, ReadBlocked = DocumentBlocked(s) });
             }
             return list;
         }
@@ -677,7 +691,7 @@ namespace Survival.Core.Engine
             var d = Config.Prologue.Documents.FirstOrDefault(x => x.Id == docId);
             if (d == null) return ActionResult.Fail("没有这份文书");
             if (s.CurrentLocation != d.LocationId) return ActionResult.Fail($"要在{LocName(d.LocationId)}才能查看");
-            var why = TalkBlocked(s);
+            var why = DocumentBlocked(s);
             if (why != null) return ActionResult.Fail(why);
             if (d.Fact != null && !string.IsNullOrEmpty(d.UnknownDialogueSet) && !s.Progress.Flags.Contains(FactCampRouteKnown))
             {

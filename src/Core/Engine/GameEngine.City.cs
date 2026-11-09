@@ -866,7 +866,7 @@ namespace Survival.Core.Engine
                 {
                     Id = n.Id, Title = n.Title,
                     Status = knownElsewhere ? "已掌握 · 可查看" : done ? (n.KnowledgeId != null ? "已学会 · 可重读" : "已办理通行 · 可重读") : need ?? (n.Choices.Count > 0 ? "选择通行范围 · 不耗时" : "可查看 · 不耗时"),
-                    ReadBlocked = need ?? TalkBlocked(s),
+                    ReadBlocked = need ?? DocumentBlocked(s),
                     OwnBlocked = need,
                     Choices = done ? new List<CityChoiceView>() : n.Choices.Select(c => new CityChoiceView { Id = c.Id, Label = c.Label }).ToList(),
                 };
@@ -896,14 +896,14 @@ namespace Survival.Core.Engine
             if (s.CurrentLocation != n.LocationId) return ActionResult.Fail("不在这里");
             if (n.KnowledgeId != null && !s.Progress.Flags.Contains(n.GrantsFact) && KnowsKnowledge(s, n.KnowledgeId))
             {
-                if (TalkBlocked(s) is string busy) return ActionResult.Fail(busy);
+                if (DocumentBlocked(s) is string busy) return ActionResult.Fail(busy);
                 s.Progress.Flags.Add(n.GrantsFact);
                 var known = Config.Knowledge.FirstOrDefault(x => x.Id == n.KnowledgeId);
                 Emit(s, GameEventKind.Info, $"{n.Title}：已掌握{known?.Name ?? n.KnowledgeId}，不再重复学会（不发物、不给经验）。");
                 return ActionResult.Success();
             }
             if (NoticeNeed(s, n) is string need) return ActionResult.Fail(need);
-            var why = TalkBlocked(s);
+            var why = DocumentBlocked(s);
             if (why != null) return ActionResult.Fail(why);
             var f = s.Progress.Flags;
             if (f.Contains(n.GrantsFact))

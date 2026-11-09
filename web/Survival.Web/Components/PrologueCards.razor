@@ -88,10 +88,12 @@
                 var why = busy ? "行动进行中" : d.ReadBlocked;
                 var id = d.Id;
                 <ObjectCard @key="@("doc-" + id)" Id="@($"doc-{id}")" CssClass="@($"res-card doc-card{(d.Choices.Count > 0 ? " choice-card" : "")}{(focus == "doc:" + id ? " tut-lit" : "")}")" Title="@d.Title"
-                            Tooltip="@($"{d.Title}：{d.Status}。点卡片或“查看”阅读（不耗时，不移动、不揭开未知地点；可重读）")" OnClick="() => Read(id, why)">
+                            Tooltip="@(why != null ? $"{d.Title}：{d.Status}。" : $"{d.Title}：{d.Status}。点卡片或“查看”阅读（不耗时，不移动、不揭开未知地点；可重读）")" OnClick="() => Read(id, why)">
                     <Art>@Icons.Markup(id == "village_south_sign" ? "route" : "placeholder")</Art>
                     <ChildContent>
-                        @* Q259：状态行只写文书自身状态，全局原因在下面按钮的 disabled 和 title *@
+                        @* Q259：状态行只写文书自身状态，全局原因在下面按钮的 disabled 和 title。
+                           Q270 选 A：读不了（why 非空：缺前置、忙碌、未读对白等）时卡面悬停只写“{标题}：{状态}。”，阅读指引只在可读时写；
+                           Q269 选 A：主行动暂停时 why 由内核 ReadBlocked 给“行动暂停中”，壳在推进中（busy）仍写“行动进行中” *@
                         <div class="oc-line" title="@d.CardLine">@d.CardLine</div>
                     </ChildContent>
                     <Footer>
