@@ -3,7 +3,8 @@ window.survival = {
   saveGet: function (key) {
     try { return window.localStorage.getItem(key); } catch (e) { return null; }
   },
-  // 先写临时键再写正式键，正式键写入成功后删除临时键；失败返回错误文本。
+  // 先写临时键再写正式键，正式键写入成功后删除临时键；失败返回“异常类别名 + \u001f + 错误文本”
+  // （Q282：C# 按类别名识别配额用尽，如 QuotaExceededError；原始异常同时打到控制台留作开发诊断）。
   saveSet: function (key, value) {
     try {
       window.localStorage.setItem(key + '.tmp', value);
@@ -11,7 +12,9 @@ window.survival = {
       window.localStorage.removeItem(key + '.tmp');
       return '';
     } catch (e) {
-      return String(e && e.message ? e.message : e);
+      try { console.warn('[survival] 存档写入失败', key, e); } catch (e2) { }
+      var name = e && e.name ? String(e.name) : '';
+      return name + '\u001f' + String(e && e.message ? e.message : e);
     }
   },
   // 地点变化后地块两行的横滚容器（相邻地图子栏、第二行）复位到最左（渲染后可能还有一次布局，下一帧再复位一次）

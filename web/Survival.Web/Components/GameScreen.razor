@@ -160,7 +160,8 @@
             @switch (G.SaveState)
             {
                 case SaveStatus.Failed:
-                    <span>保存失败：@G.SaveError </span><button class="linkish" @onclick="G.RetrySave">重试</button>
+                    @* Q282：配额用尽时整句「存档失败：浏览器存储空间已满。」，其他错误仍为“保存失败：”+原始信息；都后接重试 *@
+                    <span>@G.SaveErrorText </span><button class="linkish" @onclick="G.RetrySave">重试</button>
                     break;
                 case SaveStatus.Saving:
                     <span>保存中…</span>

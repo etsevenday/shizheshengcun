@@ -75,7 +75,12 @@ public sealed class GameSession
     public string? Notice { get; set; }
 
     public SaveStatus SaveState { get; private set; }
+    /// <summary>最近一次存档写入失败的浏览器原始错误文本（开发诊断用；玩家看 <see cref="SaveErrorText"/>）。</summary>
     public string? SaveError { get; private set; }
+    /// <summary>最近一次失败是否浏览器存储配额用尽（Q282，按异常类别识别）。</summary>
+    public bool SaveErrorQuota { get; private set; }
+    /// <summary>底栏失败整句（后接“重试”）：配额用尽为「存档失败：浏览器存储空间已满。」，其他为原“保存失败：”+原始信息。</summary>
+    public string SaveErrorText => SaveWriteError.PlayerText(SaveErrorQuota, SaveError);
 
     public Selection Selected { get; private set; } = new();
 
@@ -1109,11 +1114,14 @@ public sealed class GameSession
             _store.Save(SaveSerializer.Serialize(State));
             SaveState = SaveStatus.Saved;
             SaveError = null;
+            SaveErrorQuota = false;
         }
         catch (Exception ex)
         {
+            // Q282：按浏览器存储异常类别识别配额用尽（saveSet 回传的类别名；JSInterop 直接抛出时看异常信息里的类别名）
             SaveState = SaveStatus.Failed;
             SaveError = ex.Message;
+            SaveErrorQuota = SaveWriteError.IsQuotaExceeded((ex as SaveWriteException)?.Category, ex.Message);
         }
     }
 
@@ -2493,6 +2501,7 @@ public sealed class GameSession
         {
             SaveState = SaveStatus.Saved;
             SaveError = null;
+            SaveErrorQuota = false;
             Panel = null;
             Notice = null;
         }
