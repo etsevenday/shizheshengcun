@@ -7,37 +7,43 @@
    停在底部时新句自动跟随，向上回看时保持位置并出现“回到最新”。不显示任何剩余句数；末句按钮为“结束对话”，明确结束才撤层解锁。
    对话本身不推进时间、不消耗物品、不发奖励（推进由内核 AckDialogue 按当前句 ID 去重，双击不会跳句）。
    B15a（Q156 选 B）：同行邀约的末句不显示“结束对话”，改为“暂不登记”“登记同行”两选项（内核 AnswerRecruit 同样按当前句 ID 去重）。 *@
+@* B39（N02 附录 §1「Q305–Q316 · B39 开工定稿」）：正文上方标题按真实组名→真实对象名→省略（Q307）；整组无对方发言时右侧留空、
+   读屏名用组名或「当前对白」（Q306）；非人物行不点亮头像（Q305）；控制条辅助位依次为等待行动状态句（Q310）与文书阅读脚注（Q313），
+   两者各占一位、可换行，正文独立滚动，继续/结束/招募选择始终可达。 *@
 @{
-    var d = G.State == null ? null : G.E.ActiveDialogue(G.S);
+    var v = G.State == null ? null : G.E.DialogueLayer(G.S);
 }
-@if (d != null && d.Lines.Count > 0)
+@if (v != null)
 {
-    var cur = d.Lines[^1];
-    var leftSpeaking = cur.Side == DialogueSide.Left;
-    var rightSpeaking = cur.Side == DialogueSide.Right;
-    var other = string.IsNullOrEmpty(d.Counterpart) ? "对方" : d.Counterpart;
-    var more = G.E.DialogueHasMore(G.S);
-    <div class="dlg-layer" role="dialog" aria-modal="true" aria-label="@($"与{other}的对话：读完后才能继续操作")">
+    var cur = v.Current;
+    var leftSpeaking = v.CurrentIsPerson && cur.Side == DialogueSide.Left;
+    var rightSpeaking = v.CurrentIsPerson && cur.Side == DialogueSide.Right;
+    var other = v.Counterpart;
+    var more = v.HasMore;
+    <div class="dlg-layer" role="dialog" aria-modal="true" aria-label="@v.AriaName">
         <div class="dlg-side left @(leftSpeaking ? "speaking" : "idle")">
             <img class="dlg-portrait" src="img/portraits/protagonist.svg" alt="主角（临时形象）" draggable="false" />
             <div class="dlg-name"><b>你</b>@if (leftSpeaking) {<em>发言中</em>}</div>
         </div>
         <div class="dlg-main">
+            @if (v.Title != null) { <div class="dlg-title">@v.Title</div> }
             <div class="dlg-stream" @ref="_stream" tabindex="0" aria-live="polite" aria-label="对话内容（可滚动回看）">
-                <DialogueLines Lines="d.Lines" CurrentOrder="cur.Order" />
+                <DialogueLines Lines="v.Session.Lines" CurrentOrder="cur.Order" />
             </div>
             <div class="dlg-ctrl">
                 <span class="dlg-latest-host"><button type="button" class="secondary dlg-latest" @onclick="Latest">回到最新 ↓</button></span>
-                @if (G.ProgressInfo() is { DialogueWaiting: true } act)
-                {
-                    @* 有行动在安全边界等待对话时，中央推进条并入这里显示（S14 §11.2：标“对话中，时间未推进”，暂隐条形动画，不叠放第二个可执行层） *@
-                    <span class="dlg-hint dlg-action" role="status"><b>@act.Label</b> · 对话中，时间未推进；读完后从原处继续</span>
-                }
-                else
-                {
-                    <span class="dlg-hint">对话不消耗时间 · 读完才能继续操作</span>
-                }
-                @if (!more && G.E.RecruitOfferPending(G.S) is string rq)
+                <div class="dlg-aux">
+                    @if (v.StatusLine != null)
+                    {
+                        @* Q310：有行动在安全边界等待对话时的状态句（中央推进条并入这里，暂隐条形动画，不叠放第二个可执行层） *@
+                        <span class="dlg-hint dlg-action" role="status">@v.StatusLine</span>
+                    }
+                    @if (v.Footnote != null)
+                    {
+                        <span class="dlg-hint dlg-foot" id="dlg-foot">@v.Footnote</span>
+                    }
+                </div>
+                @if (v.RecruitQuestId is string rq)
                 {
                     @* B15a（Q156 选 B）：同行邀约读完后，末句按钮换成两选项：登记同行（入名册候补）/暂不登记（以后可再谈），都是 0 分钟 *@
                     <button type="button" class="secondary dlg-next" title="暂不登记：结束对话，不登记也不拒招，以后可以再来交谈（0分钟）" @onclick="() => G.AnswerRecruit(rq, cur.LineId, false)">暂不登记</button>
@@ -45,13 +51,16 @@
                 }
                 else
                 {
-                    <button type="button" class="primary dlg-next" @onclick="() => Ack(cur.LineId)">@(more ? "继续" : "结束对话")</button>
+                    <button type="button" class="primary dlg-next" aria-describedby="@(v.Footnote != null ? "dlg-foot" : null)" @onclick="() => Ack(cur.LineId)">@(more ? "继续" : "结束对话")</button>
                 }
             </div>
         </div>
         <div class="dlg-side right @(rightSpeaking ? "speaking" : "idle")">
-            <img class="dlg-portrait" src="@(other == "饱饱" ? "img/portraits/baobao.svg" : "img/portraits/unknown.svg")" alt="@($"{other}（临时形象）")" draggable="false" />
-            <div class="dlg-name"><b>@other</b>@if (rightSpeaking) {<em>发言中</em>}</div>
+            @if (other.Length > 0)
+            {
+                <img class="dlg-portrait" src="@(other == "饱饱" ? "img/portraits/baobao.svg" : "img/portraits/unknown.svg")" alt="@($"{other}（临时形象）")" draggable="false" />
+                <div class="dlg-name"><b>@other</b>@if (rightSpeaking) {<em>发言中</em>}</div>
+            }
         </div>
     </div>
 }

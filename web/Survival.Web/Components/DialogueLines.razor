@@ -1,23 +1,29 @@
-@* 一次对话的台词流（S14 §10.2–10.4）：对话层与对话记录共用。每条保留自己的左右归属——主角（Left）气泡靠左、对方（Right）靠右，
-   叙述/场景说明（Narration 与台词附带的 Note）用中性说明样式，不伪装成某人发言；框内文字从左向右读。不显示任何剩余句数。 *@
+@* 一次对话的台词流（S14 §10.2–10.4）：对话层与对话记录共用。每条保留自己的左右归属——主角（Left）气泡靠左、对方（Right）靠右；
+   B39（N02 §2、附录 §1 Q305）：非人物行（旁白、文书、工作提示、结果、系统状态）按各自的中性样式呈现、沿原行序，不伪装成某人发言；
+   附注只有 noteKind=guide 的教学附注行首显示「操作提示」（Q305，历史里同样可回看，Q314）。旧快照缺类型时按原说话方、空发言人和原附注回落（Q316）。
+   框内文字从左向右读。不显示任何剩余句数。 *@
 @foreach (var l in Lines)
 {
     var now = l.Order == CurrentOrder;
-    @if (l.Side == DialogueSide.Narration)
+    var kind = DialogueKinds.Of(l);
+    @if (kind != DialogueKinds.Speech)
     {
-        @if (!string.IsNullOrEmpty(l.Text)) { <div class="dlg-narr @(now ? "now" : "")" role="note">@l.Text</div> }
+        @if (!string.IsNullOrEmpty(l.Text)) { <div class="dlg-narr k-@kind @(now ? "now" : "")" role="note">@l.Text</div> }
     }
     else
     {
         var left = l.Side == DialogueSide.Left;
+        var who = string.IsNullOrEmpty(l.Speaker) ? (left ? "你" : "") : l.Speaker;
         <div class="dlg-msg @(left ? "left" : "right") @(now ? "now" : "")">
-            <div class="dlg-who">@(string.IsNullOrEmpty(l.Speaker) ? (left ? "你" : "对方") : l.Speaker)</div>
+            @if (who.Length > 0) { <div class="dlg-who">@who</div> }
             <div class="dlg-bubble">@l.Text</div>
         </div>
     }
     @if (!string.IsNullOrEmpty(l.Note))
     {
-        <div class="dlg-narr @(now ? "now" : "")" role="note">@l.Note</div>
+        var nk = DialogueKinds.NoteOf(l);
+        var label = DialogueKinds.NoteLabel(l);
+        <div class="dlg-narr dlg-note @(nk.Length > 0 ? "k-" + nk : "") @(now ? "now" : "")" role="note">@if (label != null) {<span class="dlg-tag">@label</span>}@l.Note</div>
     }
 }
 

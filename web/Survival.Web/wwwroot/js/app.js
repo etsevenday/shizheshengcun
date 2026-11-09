@@ -193,6 +193,9 @@ window.survival = {
 // 人物对话层的对话流（S14 §10.3）：停在底部时新句追加后跟随到最新；向上回看时保持阅读位置，亮出不含句数的“回到最新”。
 // 只改滚动位置，不推进对白；“回到最新”按钮所在的容器类名由这里切换（Blazor 不管理这个类）。
 window.survivalDlg = (function () {
+  // B39（N02 附录 §1、DLG-A06，B26b/B38 遗留“1280×720 长句顶部被裁”）：新句出现时按句首锚定——新句整段放得下就停在底部，
+  // 放不下就让它的第一行贴住可视区上沿（不再滚到底把句首裁掉）。“正在跟读”= 已在底部，或最新一句的句首没有落到可视区下沿之下；
+  // 向上回看（最新句首在可视区下方）时保持位置并亮出“回到最新”。只滚动本流，不推进对白。
   function latestHost(el) {
     var layer = el && el.closest ? el.closest('.dlg-layer') : null;
     return layer ? layer.querySelector('.dlg-latest-host') : null;
@@ -202,27 +205,42 @@ window.survivalDlg = (function () {
     if (h) h.classList.toggle('show', !!on);
   }
   function bottom(el) { return el.scrollTop + el.clientHeight >= el.scrollHeight - 8; }
+  function nowTop(el) {
+    var n = el.querySelector('.now');
+    if (!n) return null;
+    return el.scrollTop + n.getBoundingClientRect().top - el.getBoundingClientRect().top;
+  }
+  function following(el) {
+    if (bottom(el)) return true;
+    var t = nowTop(el);
+    return t !== null && t - el.scrollTop <= el.clientHeight - 24;
+  }
+  function anchor(el) {
+    var max = Math.max(0, el.scrollHeight - el.clientHeight);
+    var t = nowTop(el);
+    el.scrollTop = t === null ? max : Math.min(max, Math.max(0, t - 6));
+  }
   return {
     sync: function (el, count) {
       if (!el) return;
       if (!el.__dlg) {
-        el.__dlg = { count: 0, atBottom: true };
+        el.__dlg = { count: 0, follow: true };
         el.addEventListener('scroll', function () {
-          el.__dlg.atBottom = bottom(el);
-          if (el.__dlg.atBottom) showLatest(el, false);
+          el.__dlg.follow = following(el);
+          if (el.__dlg.follow) showLatest(el, false);
         });
       }
       var st = el.__dlg;
-      // 新的一次对话（句数变少）或首次出现：从底部开始
-      if (count <= st.count || st.count === 0) { st.count = count; el.scrollTop = el.scrollHeight; st.atBottom = true; showLatest(el, false); return; }
+      // 新的一次对话（句数变少）或首次出现：从这一段的句首开始
+      if (count <= st.count || st.count === 0) { st.count = count; anchor(el); st.follow = true; showLatest(el, false); return; }
       st.count = count;
-      if (st.atBottom) { el.scrollTop = el.scrollHeight; showLatest(el, false); }
+      if (st.follow) { anchor(el); st.follow = true; showLatest(el, false); }
       else showLatest(el, true);
     },
     latest: function (el) {
       if (!el) return;
-      el.scrollTop = el.scrollHeight;
-      if (el.__dlg) el.__dlg.atBottom = true;
+      anchor(el);
+      if (el.__dlg) el.__dlg.follow = true;
       showLatest(el, false);
     }
   };
