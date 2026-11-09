@@ -321,7 +321,8 @@ button { transition-duration: var(--mo-hover); }
 /* ───── B31b 遗留：中央行动位窄条与一级面板 ───── */
 /* 窄条贴在面板覆盖区底边（①② 面板：② 底；①②③ 面板：③ 底；四轨面板：中部底），面板让出窄条高度，③④ 不被盖住；
    没开面板、只开着居中局部盘时贴中部底边 */
-.center-scroll.four.locked.docked-prog:not(.full-panel) .panel-host { bottom: calc(var(--dock-h) + var(--sh-gap)); }
+/* --dock-live 由 app.js 按窄条实际高度写在 section.center 上（取不到时用 --dock-h） */
+.center-scroll.four.locked.docked-prog .panel-host { bottom: var(--dock-live, var(--dock-h)); }
 .center-scroll.four.locked.docked-prog:not(.tall-panel, .full-panel) ~ :is(.cprog.docked, .pause-dock) { bottom: calc(50% + var(--sh-gap) / 2); }
 .center-scroll.four.locked.docked-prog.tall-panel ~ :is(.cprog.docked, .pause-dock) { bottom: calc(25% + var(--sh-gap) / 4); }
 .wasteland :is(.cprog.docked, .pause-dock) { max-height: var(--dock-h); overflow: hidden; }

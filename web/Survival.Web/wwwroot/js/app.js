@@ -494,9 +494,24 @@ window.survivalPop = (function () {
       for (var i = 0; i < live.length; i++) { if (!host.contains(live[i])) { done(); return; } }
     });
   }
+  // B31c（B31b 遗留）：中央行动位收成窄条时，把窄条实际高度写到中部 --dock-live，一级面板只让出这么高（不多留空、不盖③④）
+  var dockRo = window.ResizeObserver ? new ResizeObserver(syncDock) : null, dockEl = null;
+  function syncDock() {
+    var c = document.querySelector('section.center');
+    if (!c) return;
+    var bar = c.querySelector(':scope > .cprog.docked, :scope > .pause-dock');
+    if (bar !== dockEl) {
+      if (dockRo && dockEl) dockRo.unobserve(dockEl);
+      dockEl = bar;
+      if (dockRo && bar) dockRo.observe(bar);
+    }
+    var v = bar ? bar.offsetHeight + 'px' : '';
+    if (c.style.getPropertyValue('--dock-live') !== v) { if (v) c.style.setProperty('--dock-live', v); else c.style.removeProperty('--dock-live'); }
+  }
   function start() {
     if (!window.MutationObserver || !document.body) return;
     new MutationObserver(function (muts) {
+      syncDock();
       if (reduced()) return;
       for (var i = 0; i < muts.length; i++) {
         var m = muts[i];

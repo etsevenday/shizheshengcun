@@ -200,7 +200,8 @@ public class B31cShellTests : TestBase
     public void B31bLeftovers()
     {
         var css = Web("wwwroot", "css", "shell.css");
-        Assert.That(css, Does.Contain(".center-scroll.four.locked.docked-prog:not(.full-panel) .panel-host { bottom: calc(var(--dock-h) + var(--sh-gap)); }"));
+        Assert.That(css, Does.Contain(".center-scroll.four.locked.docked-prog .panel-host { bottom: var(--dock-live, var(--dock-h)); }"));
+        Assert.That(Web("wwwroot", "js", "app.js"), Does.Contain("c.style.setProperty('--dock-live', v)"), "面板只让出窄条实际高度");
         Assert.That(css, Does.Contain(":is(.cprog.docked, .pause-dock) { bottom: calc(50% + var(--sh-gap) / 2); }"));
         Assert.That(css, Does.Contain(":is(.cprog.docked, .pause-dock) { bottom: calc(25% + var(--sh-gap) / 4); }"));
         Assert.That(css, Does.Contain("display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; gap: 10px;"), "暂停弹窗整窗一个滚动区");
