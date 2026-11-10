@@ -372,3 +372,8 @@ button { transition-duration: var(--mo-hover); }
 .overflow-layer > .overflow-box > .ov-foot { order: 1; }
 .overflow-layer > .overflow-box > .ov-foot > .secondary { order: -1; flex: 0 1 190px; width: auto; min-height: 40px; }
 .overflow-layer > .overflow-box > .ov-foot > .primary { flex: 0 1 238px; width: auto; margin-left: auto; min-height: 40px; padding: 6px 12px; white-space: normal; }
+
+/* ═════ B31d：外壳收尾（逐字稿 §1.2 Q332—Q338） ═════ */
+
+/* Q333：死亡结算页的「菜单」盖在结算层（.end-back z 60，位于 .game 之外）之上；外层只借 .wasteland 的按钮与偏好样式，不画背景 */
+.wasteland.end-menu { position: fixed; inset: 0; z-index: 86; background: none; }

@@ -2,9 +2,11 @@
 @inject IJSRuntime JS
 
 @{
-    // B31b（逐字稿 §1.1 Q322）：强制对白锁期间只开放关闭菜单、阅读／动画偏好与反馈；其余入口按原锁禁用，悬停写原锁的说明
-    var locked = G.DialogueLocked;
-    var lockTip = locked ? "请先读完对话" : null;
+    // B31b（逐字稿 §1.1 Q322）：强制对白锁期间只开放关闭菜单、阅读／动画偏好与反馈；其余入口按原锁禁用，悬停写原锁的说明。
+    // B31d（§1.2 Q333 选 A）：死亡结算页打开的菜单同样只开放这几项（其余入口禁用，不加说明），关闭回到同一结算
+    var dead = G.S.Progress.Dead;
+    var locked = G.DialogueLocked || dead;
+    var lockTip = G.DialogueLocked && !dead ? "请先读完对话" : null;
 }
 @if (Battle)
 {

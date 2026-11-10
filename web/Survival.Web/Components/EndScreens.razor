@@ -25,7 +25,8 @@
 {
     var d = s.Progress.Death;
     var alive = d.Minute - e.Config.Time.StartAbsoluteMinute;
-    <div class="end-back" role="alertdialog" aria-label="@(d.Zombified ? "尸变结算" : "死亡结算")">
+    @* B31d（Q333）：结算菜单开着时结算层不可操作、不取得键盘焦点（菜单盖在上面，关闭后回到同一结算） *@
+    <div class="end-back" role="alertdialog" aria-label="@(d.Zombified ? "尸变结算" : "死亡结算")" inert="@(G.MenuOpen || G.DeathLogOpen)">
         <div class="end-card @(d.Zombified ? "zombified" : "")">
             <div class="eyebrow">第@(Clock.Day(d.Minute))日 @Clock.HHmm(d.Minute) · @e.LocName(d.LocationId)</div>
             <h2>@(d.Zombified ? "你已尸变" : "你没能活下来")</h2>
@@ -47,15 +48,18 @@
                 <button class="primary" @onclick="Restart">重新开始</button>
                 <button class="secondary" @onclick="ShowLog">查看记录</button>
                 <button class="secondary" @onclick="G.BackToTitle">返回标题</button>
+                @* B31d（逐字稿 §1.2 Q333 选 A）：结算页「菜单」，Esc 同效；菜单只开放阅读字体、动画速度与「反馈与留言」 *@
+                <button class="secondary" @ref="_menuBtn" title="菜单（Esc）" @onclick="() => G.SetMenu(true)">@ShellText.Menu</button>
             </div>
             <div class="under">原型不提供跨局继承，重新开始会完整重置世界与角色。</div>
         </div>
     </div>
-    @if (showLog) { <div class="end-back" style="z-index:70" @onclick="() => showLog = false"><div class="end-card" style="max-height:80vh;overflow:auto">@foreach (var l in Enumerable.Reverse(s.Log).Take(80)) {<div class="small"><span class="muted">@Clock.DayTime(l.Minute)</span> @l.Text</div>}</div></div> }
+    @if (G.DeathLogOpen) { <div class="end-back" style="z-index:70" inert="@G.MenuOpen" @onclick="() => G.DeathLogOpen = false"><div class="end-card" style="max-height:80vh;overflow:auto">@foreach (var l in Enumerable.Reverse(s.Log).Take(80)) {<div class="small"><span class="muted">@Clock.DayTime(l.Minute)</span> @l.Text</div>}</div></div> }
 }
 
 @code {
-    private bool showLog;
+    private ElementReference _menuBtn;
+    private bool _menuWasOpen;
 
     private void Restart()
     {
@@ -63,6 +67,16 @@
         G.NewGame();
     }
 
-    private void ShowLog() => showLog = true;
+    private void ShowLog() => G.DeathLogOpen = true;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // B31d（Q333「关闭返回同一结算」）：结算菜单关掉后键盘焦点回到结算页的「菜单」键
+        var open = G.State != null && G.S.Progress.Dead && G.MenuOpen;
+        if (_menuWasOpen && !open && G.State != null && G.S.Progress.Dead && !G.DeathLogOpen)
+        {
+            try { await _menuBtn.FocusAsync(); } catch (Exception) { /* 结算层已收起 */ }
+        }
+        _menuWasOpen = open;
+    }
 }

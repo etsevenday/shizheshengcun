@@ -12,7 +12,7 @@ namespace Survival.Core.Engine
         /// <summary>§2「顶栏从左到右」12 个按钮（Q292；不含反馈，Q322）。</summary>
         public static readonly IReadOnlyList<string> TopKeys = new[]
         {
-            "区域地图", "手工制作", "休息", "行动日志", "编队", "整备", "成长", "生存目标", "生存提示", "对话记录", "系统说明", "菜单",
+            "区域地图", "手工制作", "休息", "行动日志", "编队", "整备", "成长", "生存目标", "生存提示", "对话记录", "系统说明", Menu,
         };
 
         public const string Brand = "适者生存";
@@ -29,6 +29,8 @@ namespace Survival.Core.Engine
 
         // PXb 游戏菜单
         public const string GameMenu = "游戏菜单";
+        /// <summary>顶栏与死亡结算页的「菜单」键（§2 顶栏第 12 键；B31d Q333 结算页同字）。</summary>
+        public const string Menu = "菜单";
         public const string Feedback = "反馈与留言";
         public const string ContinueGame = "继续游戏";
         public const string SaveToTitle = "保存并返回标题";
@@ -80,15 +82,15 @@ namespace Survival.Core.Engine
     /// <summary>Esc 这一下该做什么（Q322「Esc」「菜单内」「返回」）。</summary>
     public enum ShellEscRoute
     {
-        /// <summary>不处理（已死亡由结算层接管；反馈窗口自己处理 Esc，关掉后回到游戏菜单）。</summary>
+        /// <summary>不处理（反馈窗口自己处理 Esc，关掉后回到游戏菜单）。</summary>
         Ignore,
-        /// <summary>收起已开的游戏菜单（常态、对白锁、行动推进、暂停）。</summary>
+        /// <summary>收起已开的游戏菜单（常态、对白锁、行动推进、暂停、死亡结算）。</summary>
         CloseMenu,
         /// <summary>收起已开的战斗菜单（战斗、敌踪、战斗中的对白）。</summary>
         CloseBattleMenu,
-        /// <summary>按原层级收起最上方可关闭的子层（交给原 Esc 栈逐级处理）。</summary>
+        /// <summary>按原层级收起最上方可关闭的子层（交给原 Esc 栈逐级处理；死亡结算时为结算页的「查看记录」层）。</summary>
         CloseLayer,
-        /// <summary>打开游戏菜单。</summary>
+        /// <summary>打开游戏菜单（死亡结算时为只开放阅读字体、动画速度与反馈的结算菜单，B31d Q333）。</summary>
         OpenMenu,
         /// <summary>打开战斗菜单（对白与战斗同时存在时按战斗情境，保留对白锁）。</summary>
         OpenBattleMenu,
@@ -97,6 +99,7 @@ namespace Survival.Core.Engine
     /// <summary>Esc 判定所需的界面状态（网页壳每次按键时现填）。</summary>
     public sealed class ShellEscInput
     {
+        /// <summary>角色已死亡、结算页接管（B31d Q333：Esc 同结算页「菜单」键）。</summary>
         public bool Dead { get; set; }
         /// <summary>反馈与留言窗口开着。</summary>
         public bool FeedbackOpen { get; set; }
@@ -113,12 +116,15 @@ namespace Survival.Core.Engine
     /// <summary>
     /// B31b Esc 分层（逐字稿 §1.1 Q322）：先收当前最上方可关闭的子层（已开的菜单本身也是一层）；没有可关闭子层时打开当前情境的游戏菜单——
     /// 战斗／敌踪、强制对白、行动推进和暂停均可。对白与战斗同时存在时按战斗情境。打开或关闭菜单不提交、确认、取消或恢复世界行动。
+    /// B31d（逐字稿 §1.2 Q333 选 A）：死亡结算页上 Esc 与「菜单」键同效，打开游戏菜单（只开放阅读字体、动画速度与反馈），已开时收起、回到同一结算；
+    /// 结算页自己的「查看记录」层开着时先收它（同上面“先收子层”）。
     /// </summary>
     public static class ShellEsc
     {
         public static ShellEscRoute Route(ShellEscInput i)
         {
-            if (i.Dead || i.FeedbackOpen) return ShellEscRoute.Ignore;
+            if (i.FeedbackOpen) return ShellEscRoute.Ignore;
+            if (i.Dead) return i.MenuOpen ? ShellEscRoute.CloseMenu : i.HasClosableLayer ? ShellEscRoute.CloseLayer : ShellEscRoute.OpenMenu;
             if (i.MenuOpen) return ShellEscRoute.CloseMenu;
             if (i.BattleMenuOpen) return ShellEscRoute.CloseBattleMenu;
             if (!i.DialogueLocked && i.HasClosableLayer) return ShellEscRoute.CloseLayer;
@@ -138,6 +144,7 @@ namespace Survival.Core.Engine
     /// <summary>
     /// 菜单入口在当前情境是否可用（Q322「菜单内」）：关闭菜单、阅读／动画偏好与反馈任何时候可用；强制对白锁期间其余入口
     /// （世界操作、存档退出、重开、开发入口、战斗内说明）仍禁用；其余入口再按各自原有条件判断（由调用方叠加）。
+    /// B31d（Q333 选 A）：死亡结算页打开的菜单同样只开放这几项（关闭回到同一结算）：调用方把 dialogueLocked 传「对白锁或已死亡」。
     /// </summary>
     public static class ShellMenu
     {

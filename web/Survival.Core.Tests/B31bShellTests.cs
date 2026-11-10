@@ -74,7 +74,8 @@ public class B31bShellTests : TestBase
         Assert.That(Esc(menu: true, dlg: true), Is.EqualTo(ShellEscRoute.CloseMenu));
         Assert.That(Esc(bmenu: true, battle: true, dlg: true), Is.EqualTo(ShellEscRoute.CloseBattleMenu));
         Assert.That(Esc(menu: true, fb: true), Is.EqualTo(ShellEscRoute.Ignore), "反馈关闭后回到游戏菜单，这一下不收菜单");
-        Assert.That(Esc(dead: true), Is.EqualTo(ShellEscRoute.Ignore));
+        // B31d（Q333 选 A）取代原断言「死亡时 Esc 不处理」：死亡结算页 Esc 同「菜单」键，打开只开放偏好与反馈的游戏菜单（见 B31dShellTests.Q333_A01_DeathMenu）
+        Assert.That(Esc(dead: true), Is.EqualTo(ShellEscRoute.OpenMenu));
     }
 
     /// <summary>B31a 遗留「战斗／敌踪 Esc 有时要按两次」：看不见的残留选中不算子层。</summary>

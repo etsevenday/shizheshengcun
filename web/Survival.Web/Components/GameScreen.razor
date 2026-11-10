@@ -135,11 +135,11 @@
         @* 旧档非法同类双武器整理先于超五卡整理（B3 H8）；两者都只在安全空闲出现 *@
         @if (G.DuplicateWeaponsPending && !G.MenuOpen) { <DuplicateWeaponOverlay /> }
         else if (G.OverflowPending && !G.MenuOpen) { <OverflowOverlay /> }
-        @if (G.MenuOpen && !battleUi) { <MenuOverlay /> }
+        @if (G.MenuOpen && !battleUi && !s.Progress.Dead) { <MenuOverlay /> }
         @if (G.Panel == "abort" && !battleUi) { <ExpeditionAbort /> }
         @if (G.Panel == "seal" && !battleUi) { <ExpeditionSeal /> }
         @if (G.Panel == "reset" && !battleUi) { <DungeonReset /> }
-        @if (G.BattleMenuOpen && battleUi && !G.BattleFullscreen) { <MenuOverlay Battle="true" /> }
+        @if (G.BattleMenuOpen && battleUi && !G.BattleFullscreen && !s.Progress.Dead) { <MenuOverlay Battle="true" /> }
         <StatusPop />
 
 
@@ -181,6 +181,12 @@
 
 <DropQuantity />
 <EndScreens />
+@if (G.MenuOpen && G.S.Progress.Dead)
+{
+    @* B31d（逐字稿 §1.2 Q333 选 A）：死亡结算页的「菜单」或 Esc 打开的游戏菜单——盖在结算层之上（结算层在 .game 之外），只开放阅读字体、动画速度与
+       「反馈与留言」，关闭回到同一结算。外层带 .wasteland 以沿用游戏菜单的按钮与偏好样式 *@
+    <div class="wasteland end-menu"><MenuOverlay /></div>
+}
 
 @code {
     private DotNetObjectReference<GameScreen>? _ref;
@@ -270,8 +276,10 @@
     [JSInvokable]
     public void OnKey(string key)
     {
-        if (G.State == null || G.S.Progress.Dead) return;
+        if (G.State == null) return;
         if (key == "Escape") { Escape(); return; }
+        // 死亡结算（B31d Q333）：只有 Esc（同结算页「菜单」键），其余快捷键无效
+        if (G.S.Progress.Dead) return;
         // 对话读完锁（Q10、S14 §10.1）与菜单打开时：快捷键全部无效，只有 Esc（开关菜单）
         if (G.DialogueLocked || G.MenuOpen || G.BattleMenuOpen) return;
         if (G.BattleFullscreen)
@@ -306,15 +314,24 @@
     private void Escape()
     {
         var full = G.BattleFullscreen;
+        var dead = G.S.Progress.Dead;
         var route = ShellEsc.Route(new ShellEscInput
         {
-            Dead = G.S.Progress.Dead,
+            Dead = dead,
             DialogueLocked = G.DialogueLocked,
             BattleUi = G.InBattleUi,
             MenuOpen = G.MenuOpen,
             BattleMenuOpen = G.BattleMenuOpen,
-            HasClosableLayer = full ? G.BattleHasEscLayer : G.InBattleUi ? EncounterLayer() : NormalLayer(),
+            HasClosableLayer = dead ? G.DeathLogOpen : full ? G.BattleHasEscLayer : G.InBattleUi ? EncounterLayer() : NormalLayer(),
         });
+        // B31d（Q333）：死亡结算页上 Esc 只在结算页这几层之间走：先收「查看记录」，再开／关结算菜单
+        if (dead)
+        {
+            if (route == ShellEscRoute.CloseLayer) { G.DeathLogOpen = false; StateHasChanged(); }
+            else if (route == ShellEscRoute.OpenMenu) G.SetMenu(true);
+            else if (route == ShellEscRoute.CloseMenu) G.SetMenu(false);
+            return;
+        }
         switch (route)
         {
             case ShellEscRoute.CloseMenu: G.SetMenu(false); break;

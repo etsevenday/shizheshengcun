@@ -44,6 +44,53 @@ public class B31dShellTests : TestBase
         Assert.That(menu, Does.Contain("aria-label=\"@menuTitle\"").And.Contain("<h2>@menuTitle</h2>"));
     }
 
+    // ───────────── Q333 死亡结算页菜单 ─────────────
+
+    private static ShellEscRoute Esc(bool dead = true, bool menu = false, bool layer = false, bool fb = false, bool battle = false, bool dlg = false) =>
+        ShellEsc.Route(new ShellEscInput { Dead = dead, MenuOpen = menu, HasClosableLayer = layer, FeedbackOpen = fb, BattleUi = battle, DialogueLocked = dlg });
+
+    /// <summary>
+    /// Q333-A01：死亡结算页 Esc 与「菜单」键同效——打开游戏菜单，已开时收起回到同一结算；「查看记录」层开着时先收它；反馈窗开着由窗口自己处理。
+    /// 战斗中死亡也开同一结算菜单（不开战斗菜单）。菜单只开放关闭、阅读字体、动画速度与「反馈与留言」。
+    /// </summary>
+    [Test]
+    public void Q333_A01_DeathMenu()
+    {
+        Assert.That(Esc(), Is.EqualTo(ShellEscRoute.OpenMenu));
+        Assert.That(Esc(battle: true, dlg: true), Is.EqualTo(ShellEscRoute.OpenMenu), "战斗或对白中死亡也开结算菜单");
+        Assert.That(Esc(menu: true), Is.EqualTo(ShellEscRoute.CloseMenu), "关闭回到同一结算");
+        Assert.That(Esc(layer: true), Is.EqualTo(ShellEscRoute.CloseLayer), "先收「查看记录」");
+        Assert.That(Esc(menu: true, fb: true), Is.EqualTo(ShellEscRoute.Ignore), "反馈窗自己处理 Esc，关掉回到菜单");
+        foreach (ShellMenuItem item in Enum.GetValues(typeof(ShellMenuItem)))
+        {
+            var open = item is ShellMenuItem.Continue or ShellMenuItem.ReadingFont or ShellMenuItem.AnimationSpeed or ShellMenuItem.Feedback;
+            Assert.That(ShellMenu.Enabled(item, true), Is.EqualTo(open), item.ToString());
+        }
+        Assert.That(ShellText.Menu, Is.EqualTo("菜单"));
+        Assert.That(ShellText.TopKeys[11], Is.EqualTo(ShellText.Menu));
+    }
+
+    /// <summary>Q333 壳层接线：结算页「菜单」键与 Esc 开同一菜单（盖在结算层之上），菜单内其余入口按「对白锁或已死亡」禁用；关闭后焦点回结算页「菜单」键。</summary>
+    [Test]
+    public void Q333_ShellWiring()
+    {
+        var end = Web("Components", "EndScreens.razor");
+        Assert.That(end, Does.Contain("@onclick=\"() => G.SetMenu(true)\">@ShellText.Menu</button>"));
+        Assert.That(end, Does.Contain("inert=\"@(G.MenuOpen || G.DeathLogOpen)\""), "菜单开着时结算层不可操作");
+        Assert.That(end, Does.Contain("await _menuBtn.FocusAsync();"));
+        Assert.That(end, Does.Not.Contain("openFeedback"), "反馈仍只从菜单进入（Q322）");
+        var screen = Web("Components", "GameScreen.razor");
+        Assert.That(screen, Does.Contain("@if (G.MenuOpen && G.S.Progress.Dead)"));
+        Assert.That(screen, Does.Contain("<div class=\"wasteland end-menu\"><MenuOverlay /></div>"));
+        Assert.That(screen, Does.Contain("@if (G.MenuOpen && !battleUi && !s.Progress.Dead) { <MenuOverlay /> }"));
+        Assert.That(screen, Does.Contain("HasClosableLayer = dead ? G.DeathLogOpen :"));
+        var onKey = screen.Substring(screen.IndexOf("public void OnKey(string key)"));
+        Assert.That(onKey.IndexOf("if (key == \"Escape\") { Escape(); return; }"), Is.LessThan(onKey.IndexOf("if (G.S.Progress.Dead) return;")), "死亡时只收 Esc");
+        var menu = Web("Components", "MenuOverlay.razor");
+        Assert.That(menu, Does.Contain("var locked = G.DialogueLocked || dead;"));
+        Assert.That(Block(Web("wwwroot", "css", "shell.css"), ".wasteland.end-menu {"), Does.Contain("z-index: 86"), "高于结算层 z 60");
+    }
+
     // ───────────── 工具 ─────────────
 
     private static string Block(string css, string head)

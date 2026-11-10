@@ -307,6 +307,9 @@ public sealed class GameSession
     /// </summary>
     public bool MenuOpen { get; private set; }
 
+    /// <summary>死亡结算页的「查看记录」层开着（B31d：结算页 Esc 先收这一层，再开菜单，Q322「先收子层」）。</summary>
+    public bool DeathLogOpen { get; set; }
+
     public void SetMenu(bool open)
     {
         if (open && State == null) return;
@@ -1192,6 +1195,7 @@ public sealed class GameSession
 
     private void ResetUi()
     {
+        DeathLogOpen = false;
         Recent.Clear();
         Toast = null;
         Highlights.Clear();
