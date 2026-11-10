@@ -65,6 +65,9 @@
             <div><span>种子</span><b>@G.S.Seed</b></div>
             <div><span>已推进时间段</span><b>@G.S.SegmentCount</b></div>
         </div>
+        @* B31d（§1.2 Q336 选 B）：原标题页底部「原型 · … · 存档版本N」与浏览器存档说明移到种子行下；版本值取实际构建与当前存档格式。
+           浏览器存档说明用 PXb 逐字「存档保存在当前浏览器。」（与原标题页「存档保存在本浏览器」同义，不重复显示两句） *@
+        <div class="tiny muted" data-version-line>@ShellText.VersionLine(G.AppBuild, GameState.CurrentSchema)</div>
         <div class="tiny muted">@ShellText.SaveNote</div>
         @if (G.S.Expedition != null || G.E.ExpeditionEnabled(G.E.DungeonAt(G.S.CurrentLocation)))
         {

@@ -307,6 +307,9 @@ public sealed class GameSession
     /// </summary>
     public bool MenuOpen { get; private set; }
 
+    /// <summary>实际构建（页面 app-build，网页壳首次渲染时读一次；B31d Q336 游戏菜单版本行用）。</summary>
+    public string AppBuild { get; set; } = "";
+
     /// <summary>死亡结算页的「查看记录」层开着（B31d：结算页 Esc 先收这一层，再开菜单，Q322「先收子层」）。</summary>
     public bool DeathLogOpen { get; set; }
 

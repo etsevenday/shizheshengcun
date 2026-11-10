@@ -141,6 +141,8 @@ window.survival = {
     });
   },
   openFeedback: function () { if (window.FeedbackWidget) FeedbackWidget.open(); },
+  // B31d（Q336）：实际构建（发布流程把 <meta name="app-build"> 写成「日期 · 提交短号」，本地为「本地开发版」）
+  appBuild: function () { var m = document.querySelector('meta[name="app-build"]'); return m && m.content ? String(m.content) : ''; },
   hookKeys: function (dotnet) {
     if (window.__survivalKeys) document.removeEventListener('keydown', window.__survivalKeys);
     window.__survivalKeys = function (ev) {

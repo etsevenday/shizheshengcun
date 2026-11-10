@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Survival.Core.Engine;
 using Survival.Core.State;
 
@@ -89,6 +90,30 @@ public class B31dShellTests : TestBase
         var menu = Web("Components", "MenuOverlay.razor");
         Assert.That(menu, Does.Contain("var locked = G.DialogueLocked || dead;"));
         Assert.That(Block(Web("wwwroot", "css", "shell.css"), ".wasteland.end-menu {"), Does.Contain("z-index: 86"), "高于结算层 z 60");
+    }
+
+    // ───────────── Q336 版本行 ─────────────
+
+    /// <summary>Q336-A01：普通游戏菜单种子行下显示「原型 · {实际构建} · 存档版本{当前存档格式}」与浏览器存档说明；战斗层菜单不显示；标题页不再有。</summary>
+    [Test]
+    public void Q336_A01_VersionLineInMenu()
+    {
+        Assert.That(ShellText.VersionLine("2026-11-10 · abc1234", GameState.CurrentSchema), Is.EqualTo($"原型 · 2026-11-10 · abc1234 · 存档版本{GameState.CurrentSchema}"));
+        Assert.That(ShellText.VersionLine("本地开发版", "44"), Is.EqualTo("原型 · 本地开发版 · 存档版本44"));
+        Assert.That(ShellText.VersionLine("", "44"), Is.EqualTo("原型 · 存档版本44"), "取不到构建时省略中段");
+        Assert.That(ShellText.VersionLine(null, "44"), Is.EqualTo("原型 · 存档版本44"));
+        var menu = Web("Components", "MenuOverlay.razor");
+        var seed = menu.IndexOf("<div><span>种子</span><b>@G.S.Seed</b></div>");
+        var line = menu.IndexOf("@ShellText.VersionLine(G.AppBuild, GameState.CurrentSchema)");
+        var note = menu.IndexOf("@ShellText.SaveNote");
+        Assert.That(seed, Is.GreaterThan(menu.IndexOf("return;")), "种子行在普通游戏菜单（战斗层菜单 return 之后）");
+        Assert.That(seed, Is.LessThan(line));
+        Assert.That(line, Is.LessThan(note), "版本行、存档说明紧接在种子行下");
+        Assert.That(Regex.Matches(menu, "VersionLine").Count, Is.EqualTo(1));
+        Assert.That(Web("wwwroot", "js", "app.js"), Does.Contain("document.querySelector('meta[name=\"app-build\"]')"));
+        Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("G.AppBuild = await JS.InvokeAsync<string>(\"survival.appBuild\");"));
+        Assert.That(Web("wwwroot", "index.html"), Does.Contain("<meta name=\"app-build\" content=\"本地开发版\" />"), "发布流程据此替换为实际构建");
+        Assert.That(Web("Components", "StartScreen.razor"), Does.Not.Contain("存档版本"), "标题页仍按 PXa 不显示");
     }
 
     // ───────────── 工具 ─────────────

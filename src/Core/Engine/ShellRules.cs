@@ -36,6 +36,13 @@ namespace Survival.Core.Engine
         public const string SaveToTitle = "保存并返回标题";
         public const string SaveNote = "存档保存在当前浏览器。";
 
+        /// <summary>
+        /// B31d（逐字稿 §1.2 Q336 选 B）：原标题页底部版本行移到普通游戏菜单种子行下，写法沿原「原型 · … · 存档版本N」，
+        /// 中间的版本值取实际构建（发布时写进页面 app-build 的「日期 · 提交短号」，本地为「本地开发版」），N 取当前存档格式。取不到构建时省略中段。
+        /// </summary>
+        public static string VersionLine(string? build, string schema) =>
+            string.IsNullOrWhiteSpace(build) ? $"原型 · 存档版本{schema}" : $"原型 · {build!.Trim()} · 存档版本{schema}";
+
         // P05g 战斗菜单
         public const string BattleMenu = "战斗菜单";
         public const string Help = "系统说明";

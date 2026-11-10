@@ -224,6 +224,8 @@
             await JS.InvokeVoidAsync("survival.hookKeys", _ref);
             _drag = DotNetObjectReference.Create(new DragController(G));
             await JS.InvokeVoidAsync("survivalDrag.init", _drag, G.E.Config.Ui.DragThresholdPx);
+            // B31d（Q336）：游戏菜单版本行的实际构建
+            try { G.AppBuild = await JS.InvokeAsync<string>("survival.appBuild"); } catch (JSException) { /* 旧缓存 app.js：版本行省略构建段 */ }
         }
         // 中部二级面板（地图/制作/休息/日志）打开、战斗或敌踪出现（含读档恢复）时，中部纵滚回顶，
         // 面板与覆盖层才能完整替换地块两行，不被之前的滚动位置切掉标题（试玩修复 G1、G2）
