@@ -1,0 +1,37 @@
+@inherits GameComponent
+
+@* B32b（逐字稿 §1.2 Q339）：右栏火堆层级路径「{火堆名} › 加工位{序号} › {锅名} › {内容}」。点前面的层级只查看（回到火堆详情或所在锅），
+   当前层不可点；实际操作由对应动作入口发起。 *@
+@if (Path != null && Path.Count > 0)
+{
+    <nav class="fire-crumbs" aria-label="层级路径">
+        @for (var i = 0; i < Path.Count; i++)
+        {
+            var c = Path[i];
+            var last = i == Path.Count - 1;
+            @if (i > 0) { <span class="fc-sep" aria-hidden="true">›</span> }
+            @if (last)
+            {
+                <b aria-current="location">@c.Label</b>
+            }
+            else
+            {
+                <button type="button" class="linkish" @onclick="() => Go(c)">@c.Label</button>
+            }
+        }
+    </nav>
+}
+
+@code {
+    [Parameter] public List<FireCrumb>? Path { get; set; }
+
+    private void Go(FireCrumb c)
+    {
+        if (c.Kind == "pot" && c.InstanceId is int id && G.E.FindItem(G.S, id) is ItemInstance pot)
+        {
+            G.Select(new Selection { Kind = SelectionKind.Tool, Id = pot.ItemId, Owner = pot.Owner, InstanceId = pot.InstanceId });
+            return;
+        }
+        G.SelectFire();
+    }
+}

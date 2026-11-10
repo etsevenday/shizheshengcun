@@ -122,6 +122,8 @@
             case SelectionKind.ItemGroup:
             case SelectionKind.Tool:
             case SelectionKind.PotLiquid:
+                @* B32b（Q339）：火堆里的锅、水或食材在右栏顶部给层级路径，可逐级点回所在锅与火堆详情 *@
+                @if (G.SelectedInFire is { } crumbs) { <FireCrumbs Path="crumbs" /> }
                 <ItemDetail />
                 break;
             case SelectionKind.Facility:

@@ -298,3 +298,35 @@
 @media (max-height: 800px) {
   .ocard.k2.has-act > .k2-art > .k2-tag { top: 4px; right: 4px; max-width: calc(100% - 8px); padding: 0 3px; }
 }
+
+/* ───── B32b 火堆／柴炉、晾制架、安全屋卡（逐字稿 §1.5 Q372）与火堆右栏（§1.2 Q339、P02a） ───── */
+/* 第二个角标（「加工位满」）排在第一个角标下面 */
+.ocard.k2 .k2-tag.k2-tag2 { top: calc(6px + 1.5em); color: #e7b46d; border-color: #8a6a3a; }
+.ocard.k2 .k2-tag.lit { color: #f2c06a; border-color: #a8692c; }
+.ocard.k2.k2-fire.lit { box-shadow: 0 0 0 1px #c9823a, 0 2px 14px #e8913f55; }
+.ocard.k2.k2-fire .k2-l2 .fuel-track { height: 4px; margin: 1px 4px 0; background: #00000066; }
+.ocard.k2.k2-fire .k2-l2 .fuel-track i { display: block; height: 100%; background: #c9823a; }
+/* 设施级入口多于一个时竖排（火堆：投入木材、点燃／熄灭、等待加工；安全屋：进入／出门、面板／柜子） */
+.ocard.k2:is(.k2-fire, .k2-sh) > .k2-act { flex-direction: column; justify-content: center; align-items: stretch; gap: 3px; }
+.ocard.k2:is(.k2-fire, .k2-sh) > .k2-act :is(button) { width: 100%; }
+.ocard.k2:is(.k2-fire, .k2-sh) > .k2-act small { font-size: var(--fs-aux, 14px); opacity: .85; max-width: 7em; overflow: hidden; text-overflow: ellipsis; }
+@media (max-height: 800px) {
+  .ocard.k2:is(.k2-fire, .k2-sh) > .k2-act { justify-content: flex-start; padding-top: 4px; }
+  .ocard.k2:is(.k2-fire, .k2-sh) > .k2-act small { display: none; }
+}
+
+/* 右栏层级路径「火堆 › 加工位n › 锅 › 内容」 */
+.fire-crumbs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; font-size: var(--fs-aux, 14px); color: var(--muted); }
+.fire-crumbs .linkish { padding: 0; min-height: 0; font-size: inherit; }
+.fire-crumbs b { color: var(--ink2-light, #f0e2c4); }
+.fire-crumbs .fc-sep { opacity: .7; }
+/* 右栏两个加工位：每位一行，标题「加工位n」+ 状态；锅行沿锅卡摘要（拖拽把手、取到随身、装水与食材落点），直烤与煅烧行沿原内容卡 */
+.fire-detail .fire-slots { display: flex; flex-direction: column; gap: 8px; }
+.fire-detail .fire-slot { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: #00000022; }
+.fire-detail .fire-slot.empty { border-style: dashed; }
+.fire-detail .fs-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; }
+.fire-detail .fs-head > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-aux, 14px); }
+.fire-detail .fire-slot > :is(.pot-card, .fc-food) { width: 100%; }
+.fire-detail .slot-charcoal { align-self: flex-start; }
+.wasteland .fire-detail .fire-slot.st-busy { box-shadow: inset 3px 0 0 var(--ink2-gold); }
+.fire-detail .fire-slot.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 1; }

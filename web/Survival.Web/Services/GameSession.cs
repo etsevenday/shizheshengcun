@@ -1384,6 +1384,23 @@ public sealed class GameSession
     /// 选中当前地点的火堆（v0.7 第 3.1 节：点火堆主图只选中火堆并刷新右栏，不再打开内容物层级菜单）。
     /// 从手工制作的“查看火堆”进入时一并收起二级面板，让第二行的火堆卡露出来。
     /// </summary>
+    /// <summary>
+    /// B32b（逐字稿 §1.2 Q339）：当前选中的是当前区火堆里的锅、锅里的水或食材、直烤食材时，返回右栏层级路径
+    /// 「{火堆名} › 加工位{序号} › {锅名} › {内容}」；否则 null。火堆卡据此作为选卡操作盘的来源。
+    /// </summary>
+    public List<FireCrumb>? SelectedInFire
+    {
+        get
+        {
+            if (State == null) return null;
+            var sel = Selected;
+            if (sel.Kind == SelectionKind.PotLiquid && sel.InstanceId is int pid)
+                return E.FindItem(S, pid) is ItemInstance pot ? E.FireCrumbs(S, pot, sel.Id) : null;
+            if (sel.Kind != SelectionKind.Tool || sel.InstanceId is not int id) return null;
+            return E.FindItem(S, id) is ItemInstance it ? E.FireCrumbs(S, it) : null;
+        }
+    }
+
     public void SelectFire()
     {
         if (State == null || !E.HasFireAt(S, S.Ground)) return;

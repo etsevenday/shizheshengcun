@@ -13,6 +13,7 @@
         <div class="k2-art">
             @Art
             @if (!string.IsNullOrEmpty(Badge)) { <span class="k2-tag @BadgeClass">@Badge</span> }
+            @if (!string.IsNullOrEmpty(Badge2)) { <span class="k2-tag k2-tag2">@Badge2</span> }
         </div>
         <div class="k2-info">
             <b class="k2-name" title="@Title">@Title</b>
@@ -48,6 +49,8 @@ else
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public string? Badge { get; set; }
     [Parameter] public string BadgeClass { get; set; } = "";
+    /// <summary>B32b（Q372）：第二个角标（火堆两个加工位都占用时「加工位满」），排在第一个角标下面。</summary>
+    [Parameter] public string? Badge2 { get; set; }
     [Parameter] public string CssClass { get; set; } = "";
     [Parameter] public bool Selected { get; set; }
     [Parameter] public bool Dashed { get; set; }

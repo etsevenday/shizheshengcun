@@ -1,119 +1,70 @@
 @inherits GameComponent
 
-@* 火堆卡（基础UI布局与操作修订案 v0.7 第 3.1 节）：不再有内容物层级菜单，内容直接嵌在卡内——
-   头部：火堆图、燃烧状态、燃料 n/上限与进度条（燃料区热区 fuel:，木材投料、打火器点火）；
-   两个加工位：锅位渲染共用 PotCard，直烤位渲染 FoodCard，空位保留 fireslot: 热区；
-   底部：投入木材、点燃/熄灭。第一个空加工位里有“煅烧木炭”（Q111：显式投料入口，点开卡旁浮窗写原料来源/空位/60有效分钟/燃料另计，确认才投入这一位；拖木仍是加燃料）。
-   点火堆主图或卡面空白只选中火堆（Facility）并刷新右栏；锅、水、食材各自阻止冒泡。
-   整张卡面是 fire: 落点（锅与生块根进空加工位，打火器点火，木材投料）。 *@
+@* 火堆／柴炉设施卡。B32b（逐字稿 §1.2 Q339 选 C、Q350，§1.5 Q362、Q372）：第二轨只放这一张卡，用重墨 V2 卡模板——
+   副标「燃料{当前}/{上限}分钟」，角标燃烧状态「燃烧中／熄灭／未点燃」，两个加工位都占用时另加「加工位满」；任一加工位实际受热时挂加工中。
+   卡上保留设施级入口：投入木材、点燃（打开点火盘）／熄灭、等待加工。点卡查看右栏火堆详情：两个加工位、锅及其水和食材从右栏进入（Q323 的局部例外）。
+   整张卡面仍是 fire: 落点（木材投料、打火器直接点火、锅和生块根进空加工位）。
+   选中火堆里的锅、水或食材时，本卡带 id="card-sel" 作为选卡操作盘的来源（原先锅卡嵌在火堆卡里，来源滚出或消失时照原规则收盘）。 *@
 @{
     var s = G.S;
     var e = G.E;
     var here = s.Ground;   // B17：当前所在区（外部或安全屋屋内）的火堆
     var fac = e.FacOf(s, here)!;
     var slots = e.FireSlots(s, here);
-    var state = fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃";
-    var maxFuel = e.FuelCapOf(fac);   // 折叠柴炉 60，固定火堆 240
+    var state = CardStates.FireStateText(fac);
+    var name = CardStates.FireName(fac);
     var fireId = GameEngine.FireIdOf(here);
     var selected = G.Selected.Kind == SelectionKind.Facility && G.Selected.Id == fireId;
+    var childSelected = G.SelectedInFire != null;
     // 火堆维护（投料、熄灭、点火）：空闲或主行动暂停时可做，移动途中与执行中不可（拖拽与容器案 8）
     var maintBlocked = G.Running || s.Sub != null || (s.Main != null && (s.Main.Status != ActionStatus.Paused || s.Main.Type == ActionType.Travel));
     var wood = e.AvailableCount(s, "wood", true);
     var room = e.MaxWoodForFire(fac);
     var hasContent = slots.Any(x => x != null);
-    var charcoal = G.CharcoalPreview();
-    var charcoalOpen = G.Pop is { Kind: "charcoal" };
-    var woodWhy = maintBlocked ? "行动进行中，暂不能维护火堆" : room < 1 ? $"至少需要{e.Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{maxFuel}分钟）" : wood < 1 ? "随身和当前地面没有木材" : null;
+    var full = slots.Count > 0 && slots.All(x => x != null);
+    var woodWhy = maintBlocked ? "行动进行中，暂不能维护火堆" : room < 1 ? $"至少需要{e.Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{e.FuelCapOf(fac)}分钟）" : wood < 1 ? "随身和当前地面没有木材" : null;
+    // Q368：成品落在加工位而右栏没在看这只火堆时，亮火堆卡一次
+    var fresh = !selected && !childSelected && G.Highlights.Any(h => h.StartsWith($"slot:fire:{here}:", StringComparison.Ordinal));
+    var tip = fac.StoveInstanceId.HasValue ? "折叠柴炉：收起请选中地面上的柴炉卡（先取空、熄火；剩余燃料要明确放弃）。点卡查看两个加工位"
+        : s.CurrentZone == GameState.SafehouseZone ? "安全屋屋内火堆（与外部火堆分开）。点卡查看两个加工位；木材、打火器、锅和生块根可拖到卡上"
+        : fac.FireBuilt ? "野外固定火堆（不能拾取或拆除，不挡遭遇）。点卡查看两个加工位；木材、打火器、锅和生块根可拖到卡上"
+        : "点卡查看两个加工位；木材、打火器、锅和生块根可拖到卡上";
 }
-<div class="ocard fire-card @(fac.FireLit ? "lit" : "") @(selected ? "selected" : "")" data-drop="@($"fire:{here}")" data-drop-level="card"
-     title="点开查看火堆。木材放燃料区，锅和生块根放空加工位。"
-     @onclick="SelectFire">
-    @* 四区同屏（S14 §1.3）：火堆卡改左右排布——左列燃料与按钮，右列两个加工位（锅、直烤），压缩插画与留白，不再纵向叠高 *@
-    <div class="fc-ctrl">
-    <div class="fc-head">
-        <div class="fc-fuel" data-drop="@($"fuel:{here}")" data-drop-level="hot" role="button" tabindex="0"
-             aria-label="@($"火堆，{state}，燃料{fac.FuelMinutes}分钟")" title="燃料区：拖入木材投料（每份+60分钟），拖入打火器点火；点击选中火堆"
-             @onclick="SelectFire" @onclick:stopPropagation="true" @onkeydown="Key">
-            <span class="fc-art">@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</span>
-            <span class="fc-info">
-                <span class="fc-title" title="@(fac.StoveInstanceId.HasValue ? "折叠柴炉：收起请选中地面上的柴炉卡（先取空、熄火；剩余燃料要明确放弃）" : null)"><b title="@(fac.StoveInstanceId.HasValue ? "折叠柴炉" : s.CurrentZone == GameState.SafehouseZone ? "安全屋屋内火堆（与外部火堆分开）" : fac.FireBuilt ? "野外固定火堆（不能拾取或拆除，不挡遭遇）" : "火堆")">@(fac.StoveInstanceId.HasValue ? "柴炉" : "火堆")</b><span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span>@if (slots.Count > 0 && slots.All(x => x != null)) {<span class="oc-badge full" title="@($"加工位已满（{slots.Count}/{slots.Count}）。先取出一项，才能再放锅、直烤或煅烧。")">加工位满</span>}</span>
-                <span class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(maxFuel)分钟</b></span>
-                <span class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, maxFuel))%"></i></span>
-            </span>
-        </div>
-    </div>
-    <div class="fc-foot" @onclick:stopPropagation="true">
-        <button type="button" class="fc-btn" disabled="@(woodWhy != null)" title="@(woodWhy ?? $"投入1木材，燃料+{e.Config.Fire.BurnMinutesPerWood}分钟，不耗时（可用{wood}）")" @onclick="AddFuel">
-            <span class="ir-icon">@Icons.Markup("wood")</span><span>投入木材<small>+@(e.Config.Fire.BurnMinutesPerWood)分 · 余@(wood)</small></span>
-        </button>
+<ObjectCard Ink2="true" Id="@(childSelected ? "card-sel" : "fire-card")" CssClass="@(fac.FireLit ? "k2-fire lit" : "k2-fire")" Title="@name"
+            Badge="@state" BadgeClass="@(fac.FireLit ? "lit" : "")" Badge2="@(full ? CardStates.FireSlotsFull : null)"
+            Selected="@(selected || childSelected)" Busy="@e.FireHeating(s, here)" Fresh="@fresh"
+            Sub="@CardStates.FireFuelSub(e, fac)" Tooltip="@tip" AriaLabel="@($"{name}，{state}，燃料{fac.FuelMinutes}分钟")"
+            DataDrop="@($"fire:{here}")" OnClick="G.SelectFire">
+    <Art>@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</Art>
+    <Line2><div class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, e.FuelCapOf(fac)))%"></i></div></Line2>
+    <Footer>
+        <button type="button" class="loc-btn res-btn fc-btn" disabled="@(woodWhy != null)" title="@(woodWhy ?? $"投入1木材，燃料+{e.Config.Fire.BurnMinutesPerWood}分钟，不耗时（可用{wood}）")"
+                @onclick="AddFuel" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>投入木材</strong><small>余@(wood)</small></button>
         @if (fac.FireLit)
         {
-            <button type="button" class="fc-btn plain" disabled="@maintBlocked" title="熄灭火堆，剩余燃料保留" @onclick="Extinguish">熄灭<small>保留燃料</small></button>
+            <button type="button" class="loc-btn res-btn fc-btn plain" disabled="@maintBlocked" title="熄灭火堆，剩余燃料保留"
+                    @onclick="Extinguish" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>熄灭</strong></button>
         }
         else
         {
-            <button type="button" id="fc-ignite" class="fc-btn ignite @(G.IgniteMenuOpen ? "on" : "")" aria-haspopup="menu" aria-expanded="@G.IgniteMenuOpen"
-                    title="打开点火工具菜单：点一把可用的打火器即开始点火" @onclick="G.ToggleIgniteMenu">点燃<small>选打火器</small></button>
+            <button type="button" id="fc-ignite" class="loc-btn res-btn fc-btn ignite @(G.IgniteMenuOpen ? "on" : "")" aria-haspopup="dialog" aria-expanded="@G.IgniteMenuOpen"
+                    title="打开点火盘：先选一把打火器，再点「点火」" @onclick="G.ToggleIgniteMenu" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>点燃</strong></button>
         }
-    </div>
-    @if (hasContent)
-    {
-        @* 等待加工（原“等待烹饪”，Q111 起含煅烧；S14 §11.3、S09 §7、S11 §9）：火堆里有内容时出现，绑定本火堆；悬停/聚焦在右栏预览目标、未纳入项原因、预计剩余、身体消耗与燃料提示；
-           点击直接开始，不另加确认；不可开始时禁用并在按钮上写明原因。不会自动点火、加木、补水或开第二个主行动。 *@
-        var plan = G.CookWaitPreview();
-        var cookWhy = plan.Ok ? null : plan.Reason;
-        <div class="fc-cook" @onclick:stopPropagation="true">
-            <button type="button" class="fc-btn cook" disabled="@(cookWhy != null || cooking)" title="@(cookWhy ?? "点击直接开始：等本火堆当前全部可加工内容完成；右侧显示预览")"
-                    @onmouseenter="HoverCook" @onfocus="HoverCook" @onmouseleave="Unhover" @onblur="Unhover" @onclick="StartCook">
-                <span>等待加工<small>@(cookWhy != null ? ShortReason(cookWhy) : plan.EstimatedMinutes is int m ? $"预计{Clock.Duration(m)} · {plan.Targets.Count}项" : "燃料不足，耗尽时停止")</small></span>
-            </button>
-        </div>
-    }
-    @* 点火工具菜单改为锚定浮窗，在 GameScreen 的浮窗层渲染（试玩修复 B1） *@
-    </div>
-    <div class="fc-slots">
-        @{ var firstEmpty = slots.FindIndex(x => x == null); }
-        @for (var k = 0; k < slots.Count; k++)
+        @if (hasContent)
         {
-            var it = slots[k];
-            if (it == null)
-            {
-                <div @key="@("empty" + k)" class="slot-empty" data-drop="@($"fireslot:{here}")" data-drop-level="hot" title="空加工位：拖入金属锅（最多1口）或生块根（每份占1位）；或点“煅烧木炭”投一批木材×4"
-                     @onclick:stopPropagation="true">
-                    @Icons.Markup("slot_empty")
-                    <span>空加工位@(k + 1)</span>
-                    @if (k == firstEmpty && charcoal.InputCount > 0)
-                    {
-                        @* Q111 煅烧木炭：只在第一个空位出现（投料进的就是这一位）；点开卡旁浮窗确认，按钮本身不投料 *@
-                        <button type="button" id="fc-charcoal" class="slot-charcoal @(charcoalOpen ? "on" : "")" aria-haspopup="dialog" aria-expanded="@charcoalOpen"
-                                title="@($"煅烧木炭：{G.E.CharcoalRuleText()}。点开看原料来源与燃料，确认后投料{(charcoal.Ok ? "" : "（现在不能：" + charcoal.Reason + "）")}")" @onclick="ToggleCharcoal">
-                            煅烧木炭<small>@(charcoal.InputCount)木→@(charcoal.OutputCount)炭</small>
-                        </button>
-                    }
-                </div>
-            }
-            else if (e.IsPot(it))
-            {
-                <div @key="it.InstanceId" class="fc-slot pot"><PotCard Pot="it" /></div>
-            }
-            else
-            {
-                @* 直烤位选中时加宽到与锅位相同，卡内操作条不挤成窄列（试玩修复 B2） *@
-                <div @key="it.InstanceId" class="fc-slot food @(G.Selected.Kind == SelectionKind.Tool && G.Selected.InstanceId == it.InstanceId ? "open" : "")"><FoodCard Item="it" Slot="@(k + 1)" /></div>
-            }
+            @* 等待加工（原“等待烹饪”，Q111 起含煅烧；S14 §11.3、S09 §7、S11 §9）：火堆里有内容时出现，绑定本火堆；悬停/聚焦在右栏预览；
+               点击直接开始，不另加确认；不可开始时禁用并在按钮上写明原因。不会自动点火、加木、补水或开第二个主行动。 *@
+            var plan = G.CookWaitPreview();
+            var cookWhy = plan.Ok ? null : plan.Reason;
+            <button type="button" class="loc-btn res-btn fc-btn cook" disabled="@(cookWhy != null || cooking)" title="@(cookWhy ?? "点击直接开始：等本火堆当前全部可加工内容完成；右侧显示预览")"
+                    @onmouseenter="HoverCook" @onfocus="HoverCook" @onmouseleave="Unhover" @onblur="Unhover" @onclick="StartCook" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                <strong>等待加工</strong><small>@(cookWhy != null ? ShortReason(cookWhy) : plan.EstimatedMinutes is int m ? $"预计{Clock.Duration(m)}" : "燃料耗尽时停止")</small>
+            </button>
         }
-    </div>
-</div>
+    </Footer>
+</ObjectCard>
 
 @code {
-
-    private void SelectFire() => G.SelectFire();
-
-    private void Key(KeyboardEventArgs ev)
-    {
-        if (ev.Key is "Enter" or " ") SelectFire();
-    }
-
     private static readonly ActionRequest CookReq = ActionRequest.WaitCook();
 
     /// <summary>按钮上只放原因主句（括号与冒号后的补充说明在悬停提示里看全文；B10b 试玩修复：1280 下“火堆未燃烧：请先点火”被截）。</summary>
@@ -127,12 +78,6 @@
     private bool cooking;
 
     private void HoverCook() => G.Hover(CookReq, "等待加工");
-
-    private void ToggleCharcoal()
-    {
-        if (G.Pop is { Kind: "charcoal" }) G.ClosePop();
-        else G.OpenPop("charcoal", G.S.Ground, "fc-charcoal");
-    }
     private void Unhover() => G.Hover(null);
 
     private async Task StartCook()
