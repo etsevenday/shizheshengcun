@@ -6,12 +6,12 @@
 @{
     var open = Station.Blocked == null;
 }
-<ObjectCard CssClass="fac-card public-station" Id="@($"ps-{Station.StationId}")" Title="@Station.Name" Badge="@(open ? "公共" : "未开放")" BadgeClass="@(open ? "built" : "unbuilt")" Dashed="@(!open)"
+<ObjectCard Ink2="true" CssClass="k2-fac public-station" Id="@($"ps-{Station.StationId}")" Title="@Station.Name" Badge="@(open ? "公共" : "未开放")" BadgeClass="@(open ? "built" : "unbuilt")" Dashed="@(!open)" Blocked="@(!open)"
             Tooltip="@(open ? $"{Station.Name}：公共设施，0额外费用；点击打开制作面板（{G.E.StationName(Station.StationId)}分类）。制作照常按配方材料、工时、知识与熟练门槛" : $"{Station.Name}未开放：{Station.Blocked}")" OnClick="Open">
     <Art>@Icons.Markup(Art(Station.StationId))</Art>
-    <ChildContent>
+    <SubContent>
         <div class="oc-line @(open ? "" : "warn-line")" title="@(Station.Blocked ?? "可用 · 0额外费用")">@(open ? "可用 · 0额外费用" : Station.Blocked)</div>
-    </ChildContent>
+    </SubContent>
 </ObjectCard>
 
 @code {

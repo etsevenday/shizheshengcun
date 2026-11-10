@@ -1,0 +1,189 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   B32a 重墨 V2 卡模板（开发计划 v1.0 B32a；逐字稿 §1.2 Q340、Q345；v0.9 06 §1—§4）
+   - 基准 194×155 CSS px（801—999 高），≤800 高按 0.8（155×124），≥1000 高按 1.2（233×186），与 Q325 三档同比例。
+   - 上部主图（右上角标），下部深色信息条：名称居中 + 一行副标；风险、对象自身原因、健康条在紧凑第二行。
+   - 主操作仍在卡上（Q37）：≤800 高在主图右侧，≥801 高在信息条右侧。
+   - 状态叠层沿 materials.css 的 --st-* 合成：危险 .st-danger、加工中 .st-busy、不可用 .dim；本文件只把不可用的斜线收进主图区。
+   - 放在 shell.css 之后加载；选择器写成 .wasteland .ocard.k2.k2（0,4,0）盖过 fourrows/materials 的通用卡规则。
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --k2-w: 155px;
+  --k2-h: 124px;
+  --k2-name: 15px;
+  --k2-bar-bg: #251c14;
+  --k2-bar-line: #725534;
+  --k2-sub: #b8a488;
+  --k2-danger: #ffb396;
+  --k2-tile: linear-gradient(180deg, #3a2c1f, #201911 85%);
+  --k2-paper: linear-gradient(180deg, #b19a73, #655137);
+  --k2-paper-bar: #41311f;
+}
+@media (min-height: 801px) { :root { --k2-w: 194px; --k2-h: 155px; --k2-name: 16px; } }
+@media (min-height: 1000px) { :root { --k2-w: 233px; --k2-h: 186px; --k2-name: 18px; } }
+
+/* ───── 卡框与网格 ───── */
+.wasteland .ocard.k2.k2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: var(--k2-w);
+  flex: 0 0 var(--k2-w);
+  height: var(--k2-h);
+  min-height: 0;
+  max-height: none;
+  padding: 0;
+  gap: 0;
+  color: var(--ink2-light, #e8d8b8);
+  background-color: #2b2118;
+  background-image: var(--k2-tile);
+  background-size: 100% 100%;
+  overflow: hidden;
+}
+.center-scroll.four .dg-cards > .ocard.k2,
+.center-scroll.four .map-adjacent > .ocard.k2 { align-self: flex-start; height: var(--k2-h); }
+
+.ocard.k2 > .k2-art {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.ocard.k2 > .k2-art > :is(svg, img) {
+  position: absolute;
+  inset: 6px 12px 3px;
+  width: calc(100% - 24px);
+  height: calc(100% - 9px);
+  max-width: none;
+  max-height: none;
+  transform: none;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 2px #0006);
+}
+.ocard.k2 > .k2-art > :is(.exp-art, .dir-art) {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: calc(var(--k2-h) * .32); line-height: 1; color: var(--k2-sub);
+}
+
+/* 右上角标（库存、敌对、未开通、品阶等） */
+.ocard.k2 .k2-tag {
+  position: absolute; top: 6px; right: 6px; z-index: 1;
+  max-width: calc(100% - 12px);
+  padding: 0 5px;
+  font-size: var(--fs-aux, 14px); line-height: 1.35;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: var(--ink2-light, #e8d8b8);
+  background: #1a140fcc;
+  border: 1px solid var(--k2-bar-line);
+  border-radius: 2px;
+}
+.ocard.k2 .k2-tag.new { color: var(--k2-danger); border-color: #9b4a3a; }
+.ocard.k2 .k2-tag.built { color: #b9cfa6; border-color: #5f7452; }
+.ocard.k2 .k2-tag.unbuilt { color: var(--k2-sub); }
+
+/* ───── 下部信息条 ───── */
+.ocard.k2 > .k2-info {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-width: 0;
+  display: flex; flex-direction: column; align-items: stretch; justify-content: center;
+  gap: 1px;
+  padding: 4px 6px 5px;
+  background: var(--k2-bar-bg);
+  border-top: 1px solid var(--k2-bar-line);
+  text-align: center;
+}
+.ocard.k2.has-act > .k2-info { grid-column: 1; }
+.ocard.k2 .k2-name {
+  display: block;
+  font-size: var(--k2-name); line-height: 1.25; font-weight: 700;
+  color: var(--ink2-light, #f0e2c4);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ocard.k2 .k2-sub {
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  min-width: 0;
+  font-size: var(--fs-aux, 14px); line-height: 1.25;
+  color: var(--k2-sub);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ocard.k2 .k2-sub > .k2-subtext { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ocard.k2 .k2-sub.danger,
+.ocard.k2.st-danger .k2-sub.hp { color: var(--k2-danger); }
+.ocard.k2 .k2-sub :is(svg, .acct-ico) { flex: 0 0 auto; width: 1.05em; height: 1.05em; }
+.ocard.k2 .k2-l2 {
+  display: flex; flex-direction: column; gap: 1px;
+  min-width: 0;
+  font-size: var(--fs-aux, 14px); line-height: 1.2;
+  color: var(--k2-sub);
+}
+.ocard.k2 .k2-l2 > * { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ocard.k2 .k2-l2 .warn-line { color: #e7b46d; }
+.ocard.k2 .k2-l2 .danger-line { color: var(--k2-danger); }
+.ocard.k2 .k2-l2 .track { height: 4px; margin: 1px 4px 0; background: #00000066; }
+.ocard.k2 .k2-l2 .track i { display: block; height: 100%; background: #ac5744; }
+
+/* ───── 主操作：≥801 高在信息条右侧 ───── */
+.ocard.k2 > .k2-act {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex; align-items: center;
+  padding: 4px 5px 5px 0;
+  background: var(--k2-bar-bg);
+  border-top: 1px solid var(--k2-bar-line);
+}
+.ocard.k2 > .k2-act :is(.loc-btn, .oc-btn, .res-btn, button) {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 0; min-height: 0;
+  margin: 0;
+  padding: 2px 6px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.ocard.k2 > .k2-act :is(strong, small) { font-size: var(--fs-aux, 14px); line-height: 1.15; }
+
+/* ≤800 高：主操作移到主图右侧，信息条占满整宽（Q37 低屏图右） */
+@media (max-height: 800px) {
+  .ocard.k2.has-act > .k2-art { grid-column: 1; }
+  .ocard.k2.has-act > .k2-info { grid-column: 1 / -1; }
+  .ocard.k2 > .k2-act {
+    grid-row: 1;
+    align-items: flex-end;
+    padding: 0 5px 4px 0;
+    background: none;
+    border-top: 0;
+  }
+  .ocard.k2 > .k2-art > :is(svg, img) { inset: 5px 6px 2px; width: calc(100% - 12px); height: calc(100% - 7px); }
+  .ocard.k2 > .k2-info { padding: 3px 5px 4px; }
+}
+
+/* ───── 状态叠层（Q345；v0.9 06 §4）───── */
+/* 不可用：斜线只盖主图区，主图降到 .43 透明度；信息条与原因照常可读 */
+.wasteland .ocard.k2.k2:is(.dim, .st-disabled) { background-image: var(--k2-tile); filter: none; opacity: 1; }
+.ocard.k2:is(.dim, .st-disabled) > .k2-art > :is(svg, img, .exp-art, .dir-art) { opacity: .43; }
+.ocard.k2:is(.dim, .st-disabled) > .k2-art::after {
+  content: ""; position: absolute; inset: 5px; pointer-events: none;
+  background: repeating-linear-gradient(135deg, transparent 0 6px, #17130f66 6px 8px);
+}
+.ocard.k2.dashed { border-style: dashed; }
+
+/* 物品卡用纸面底（a9b93f0 cardPaper） */
+.wasteland .ocard.k2.k2.k2-paper,
+.wasteland .ocard.k2.k2.k2-paper:is(.dim, .st-disabled) { background-image: var(--k2-paper); color: var(--ink2-light, #f0e2c4); }
+.ocard.k2.k2-paper > :is(.k2-info, .k2-act) { background: var(--k2-paper-bar); }
+@media (max-height: 800px) { .ocard.k2.k2-paper > .k2-act { background: none; } }
+
+/* 副标与第二行里沿用原 .oc-line 行（测试与悬停沿原接线）：单行省略、居中 */
+.ocard.k2 .k2-sub > .oc-line { flex: 0 1 auto; min-width: 0; display: block; font-size: inherit; line-height: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ocard.k2 .k2-sub .acct-ico { width: 1em; height: 1em; margin-right: 3px; vertical-align: -2px; }
+.ocard.k2 .k2-l2 > .oc-line { font-size: inherit; line-height: inherit; text-align: center; }
+.ocard.k2 .k2-l2 > .hp-line { display: flex; justify-content: center; gap: 4px; }
+.wasteland .ocard.k2 .k2-sub > .oc-line,
+.wasteland .ocard.k2 .k2-l2 > :is(.oc-line, .hp-line) { color: var(--k2-sub); }
+.wasteland .ocard.k2 .k2-sub.danger > .oc-line,
+.wasteland .ocard.k2 .k2-l2 > .danger-line { color: var(--k2-danger); }
+.wasteland .ocard.k2 .k2-l2 > .oc-line.warn-line,
+.wasteland .ocard.k2 .k2-sub > .oc-line.warn-line { color: #e7b46d; }

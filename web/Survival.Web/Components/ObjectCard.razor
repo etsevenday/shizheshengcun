@@ -1,5 +1,30 @@
 @* 统一卡框（卡片统一与设施烹饪 v0.4 · 01 案第 2 节）：地点、设施、资源与地面/随身物品共用同一圆角、描边、标题与图片区。
-   Wide 为左图右文（当前地图卡）；Dashed 为未建造；落点与拖拽键原样透传给 drag.js。 *@
+   Wide 为左图右文（当前地图卡）；Dashed 为未建造；落点与拖拽键原样透传给 drag.js。
+   B32a（逐字稿 §1.2 Q340、Q345；v0.9 06 §1—§4）：Ink2 为重墨 V2 卡模板——上部主图（右上角标），下部信息条「名称 + 一行副标」，
+   风险、对象自身原因、已有健康条放紧凑第二行（Line2），主操作（Footer）仍在卡上：屏高 ≤800 在主图右侧、≥801 在信息条右侧（Q37）。
+   状态叠层：Danger→危险、Busy→加工中、Dim→不可用（06 §4 独立叠层，不改卡片外尺寸）。 *@
+@if (Ink2)
+{
+    <div id="@Id" class="ocard k2 @CssClass @(Selected ? "selected" : "") @(Dashed ? "dashed" : "") @(Dim ? "dim" : "") @(Blocked ? "st-disabled" : "") @(Danger ? "st-danger" : "") @(Busy ? "st-busy" : "") @(Fresh ? "fresh" : "") @(Footer != null ? "has-act" : "")"
+         data-drop="@DataDrop" data-drop-level="@(DataDrop == null ? null : DropLevel)"
+         data-drag="@DataDrag" data-drag-from="@DragFrom" data-drag-title="@DragTitle" data-card="@DataCard"
+         role="button" tabindex="0" title="@Tooltip" aria-label="@(AriaLabel ?? Title)" aria-describedby="@DescribedBy"
+         @onclick="Click" @onkeydown="Key">
+        <div class="k2-art">
+            @Art
+            @if (!string.IsNullOrEmpty(Badge)) { <span class="k2-tag @BadgeClass">@Badge</span> }
+        </div>
+        <div class="k2-info">
+            <b class="k2-name" title="@Title">@Title</b>
+            @if (SubContent != null) { <div class="k2-sub @SubClass" title="@SubTitle">@SubContent</div> }
+            else if (!string.IsNullOrEmpty(Sub)) { <div class="k2-sub @SubClass" title="@(SubTitle ?? Sub)">@Sub</div> }
+            @if (Line2 != null) { <div class="k2-l2">@Line2</div> }
+        </div>
+        @if (Footer != null) { <div class="k2-act">@Footer</div> }
+    </div>
+}
+else
+{
 <div id="@Id" class="ocard @CssClass @(Selected ? "selected" : "") @(Dashed ? "dashed" : "") @(Dim ? "dim" : "") @(Wide ? "wide" : "") @(Fresh ? "fresh" : "")"
      data-drop="@DataDrop" data-drop-level="@(DataDrop == null ? null : DropLevel)"
      data-drag="@DataDrag" data-drag-from="@DragFrom" data-drag-title="@DragTitle" data-card="@DataCard"
@@ -15,6 +40,7 @@
     </div>
     @if (Footer != null) { <div class="oc-foot">@Footer</div> }
 </div>
+}
 
 @code {
     /// <summary>DOM id（就近操作浮窗的锚点，S14 §14.1）。</summary>
@@ -42,6 +68,24 @@
     [Parameter] public RenderFragment? Art { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Footer { get; set; }
+
+    // ───── B32a 重墨 V2 卡模板（Q340） ─────
+    /// <summary>用重墨 V2 卡模板（194×155 基准，三档按 Q325 比例）。</summary>
+    [Parameter] public bool Ink2 { get; set; }
+    /// <summary>名称下的一行副标（资源＝账短标·每次产量；敌踪＝健康数值；邻地＝方向·单程时间）。</summary>
+    [Parameter] public string? Sub { get; set; }
+    /// <summary>副标需要图标（四类账徽标、方位箭头）时用片段代替 Sub。</summary>
+    [Parameter] public RenderFragment? SubContent { get; set; }
+    [Parameter] public string? SubTitle { get; set; }
+    [Parameter] public string SubClass { get; set; } = "";
+    /// <summary>紧凑第二行：风险、对象自身原因、已有健康条。</summary>
+    [Parameter] public RenderFragment? Line2 { get; set; }
+    /// <summary>Q345 危险：敌对敌踪、腐败物品、耐久为 0 的工具。</summary>
+    [Parameter] public bool Danger { get; set; }
+    /// <summary>Q345 加工中：当前行动作用中的资源或设施、受热的锅或工位、晾制中的工位。</summary>
+    [Parameter] public bool Busy { get; set; }
+    /// <summary>Q345 不可用（对象自身阻断，Q252 资源自身原因）：与 Dim 同一叠层，单列参数方便与库存为 0 分开写。</summary>
+    [Parameter] public bool Blocked { get; set; }
 
     private Task Click() => OnClick.InvokeAsync();
 

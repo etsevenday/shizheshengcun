@@ -108,7 +108,12 @@
             case SelectionKind.Resource:
                 var r = e.Resource(sel.Id);
                 <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"已选中 · {r.Name}")" Title="@($"{e.GatherVerbNow(s, r)}{r.Name}")" Confirmable="false"
-                             Subtitle="工具与成本已计入本次预估。" />
+                             Subtitle="工具与成本已计入本次预估。">
+                    <Extra>
+                        @* B32a Q351：来源行「{资源所在地点名} · {资源账短标}」，地名与账短标取当前配置与现行资源显示口径 *@
+                        <div class="facts res-source"><div class="fact"><span>来源</span><strong>@CardStates.ResourceSource(e, r)</strong></div></div>
+                    </Extra>
+                </PreviewView>
                 break;
             case SelectionKind.ItemGroup:
             case SelectionKind.Tool:

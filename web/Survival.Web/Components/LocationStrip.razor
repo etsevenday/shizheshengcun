@@ -113,9 +113,8 @@
                     @if (tarp != null)
                     {
                         var packWhy = G.Running || s.Main != null ? "行动进行中" : e.CanStart(s, GameEngine.Pack(tarp));
-                        <ObjectCard @key="@("tarp")" CssClass="fac-card" Title="野营遮雨布" Badge="已铺开" BadgeClass="built" Tooltip="铺开期间在这里睡眠算遮蔽（至多4人）；不挡遭遇，没有安全屋休息加成">
+                        <ObjectCard Ink2="true" @key="@("tarp")" CssClass="k2-fac" Title="野营遮雨布" Badge="已铺开" BadgeClass="built" Sub="睡眠遮蔽 · 不挡遭遇" Tooltip="铺开期间在这里睡眠算遮蔽（至多4人）；不挡遭遇，没有安全屋休息加成">
                             <Art>@Icons.Markup("field_tarp")</Art>
-                            <ChildContent><div class="oc-line">睡眠遮蔽 · 不挡遭遇</div></ChildContent>
                             <Footer>
                                 <button type="button" class="loc-btn res-btn" disabled="@(packWhy != null)" title="@(packWhy ?? $"收起野营遮雨布（{e.Config.Safehouse.Camping.TarpPackMinutes}分钟）")"
                                         @onclick="() => PackTarp(tarp)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>收起 · @(e.Config.Safehouse.Camping.TarpPackMinutes)分</strong></button>
@@ -146,10 +145,12 @@
             <div class="desk-group expedition">
                 <div class="dg-title">远征</div>
                 <div class="dg-cards">
-                    <ObjectCard @key="@("exp-" + expHere.Id)" Id="expedition-abort" CssClass="enemy-card world exp-card" Title="@dname" Badge="@(cleared ? "已通关" : "安全点")" BadgeClass="new" Tooltip="@tipX">
+                    <ObjectCard Ink2="true" @key="@("exp-" + expHere.Id)" Id="expedition-abort" CssClass="k2-exp" Title="@dname" Badge="@(cleared ? "已通关" : "安全点")" BadgeClass="new" Tooltip="@tipX">
                         <Art><span class="exp-art" aria-hidden="true">⇱</span></Art>
-                        <ChildContent>
+                        <SubContent>
                             <div class="oc-line" title="@e.DungeonStatusLabel(s, expHere.DungeonId)">第@(expHere.Generation)代 · @e.DungeonStatusLabel(s, expHere.DungeonId)</div>
+                        </SubContent>
+                        <Line2>
                             @if (cleared)
                             {
                                 <div class="oc-line" title="@tipX">已通关：出口或原路离开都不扣惩罚</div>
@@ -158,7 +159,7 @@
                             {
                                 <div class="oc-line" title="@tipX">终止：撤出至少@(e.Config.DungeonExpedition.ExtractMinMinutes)分钟、扣属性</div>
                             }
-                        </ChildContent>
+                        </Line2>
                         <Footer>
                             @if (cleared)
                             {
@@ -182,12 +183,10 @@
             <div class="desk-group expedition">
                 <div class="dg-title">封存</div>
                 <div class="dg-cards">
-                    <ObjectCard @key="@("seal-" + sealHere.Id)" Id="expedition-seal" CssClass="enemy-card world exp-card" Title="封存战利品" Badge="@($"已封存{sealedN}")" BadgeClass="new" Tooltip="@tipS">
+                    <ObjectCard Ink2="true" @key="@("seal-" + sealHere.Id)" Id="expedition-seal" CssClass="k2-exp" Title="封存战利品" Badge="@($"已封存{sealedN}")" BadgeClass="new" Tooltip="@tipS">
                         <Art><span class="exp-art" aria-hidden="true">▣</span></Art>
-                        <ChildContent>
-                            <div class="oc-line" title="@tipS">可封存@(sealableN)堆 · 已封存@(sealedN)份</div>
-                            <div class="oc-line" title="@tipS">不占卡位，撤出后进父地点回收箱</div>
-                        </ChildContent>
+                        <SubContent><div class="oc-line" title="@tipS">可封存@(sealableN)堆 · 已封存@(sealedN)份</div></SubContent>
+                        <Line2><div class="oc-line" title="@tipS">不占卡位，撤出后进父地点回收箱</div></Line2>
                         <Footer>
                             <button type="button" class="loc-btn res-btn" disabled="@(s.Battle != null)" title="@tipS" @onclick="G.OpenSeal" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                                 <strong>整理封存…</strong>
@@ -210,11 +209,11 @@
                         var recN = e.RemainsItems(s, GameEngine.RecoveryBoxKey(did)).Sum(i => i.Count);
                         var relN = e.RemainsItems(s, GameEngine.RelicBoxKey(did)).Sum(i => i.Count);
                         var ready = e.DungeonResetReady(s, did);
-                        <ObjectCard @key="@("reset-" + did)" Id="@("dungeon-reset-" + did)" CssClass="enemy-card world exp-card" Title="@d.Name" Badge="@ShortStatus(status)" BadgeClass="@(ready ? "new" : "")" Tooltip="@($"{d.Name} · {GameEngine.DungeonStatusName(status)}：{resetText}")">
+                        <ObjectCard Ink2="true" @key="@("reset-" + did)" Id="@("dungeon-reset-" + did)" CssClass="k2-exp" Title="@d.Name" Badge="@ShortStatus(status)" BadgeClass="@(ready ? "new" : "")" Tooltip="@($"{d.Name} · {GameEngine.DungeonStatusName(status)}：{resetText}")">
                             <Art><span class="exp-art" aria-hidden="true">↻</span></Art>
-                            <ChildContent>
+                            <SubContent>
                                 <div class="oc-line" title="@resetText">第@(s.DungeonInstances[did].Generation)代 · @(ready ? "已可重置" : e.DungeonCleared(s, did) ? $"可重置于{Clock.DayTime(s.DungeonInstances[did].ResetEligibleAt ?? 0)}" : "未通关，不计时")</div>
-                            </ChildContent>
+                            </SubContent>
                             <Footer>
                                 <button type="button" class="loc-btn res-btn" disabled="@(busy)" title="@(busy ? "行动进行中" : "查看重置条件、会刷新与不重发的内容、旧实例遗留物清单；条件满足才能确认")"
                                         @onclick="() => G.OpenReset(did)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
@@ -225,11 +224,11 @@
                         @if (recN + relN > 0)
                         {
                             var tipB = "远征回收箱（成功撤出带回的封存战利品）与旧实例遗物认领箱（重置前迁出的旧实例遗留物）：无卡位上限、只能在这里取；在右栏人物页“队伍”块逐件取到随身（验五卡与负重）或放地面。";
-                            <ObjectCard @key="@("box-" + did)" Id="@("dungeon-box-" + did)" CssClass="enemy-card world exp-card" Title="回收箱" Badge="@($"{recN + relN}份")" BadgeClass="new" Tooltip="@tipB">
+                            <ObjectCard Ink2="true" @key="@("box-" + did)" Id="@("dungeon-box-" + did)" CssClass="k2-exp" Title="回收箱" Badge="@($"{recN + relN}份")" BadgeClass="new" Tooltip="@tipB">
                                 <Art><span class="exp-art" aria-hidden="true">▤</span></Art>
-                                <ChildContent>
+                                <SubContent>
                                     <div class="oc-line" title="@($"远征回收箱{recN}份 · 旧实例遗物认领箱{relN}份。{tipB}")">回收@(recN) · 遗物@(relN)</div>
-                                </ChildContent>
+                                </SubContent>
                                 <Footer>
                                     <button type="button" class="loc-btn res-btn" title="@tipB" @onclick="() => G.ShowDungeonBoxes(did)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                                         <strong>取出…</strong>
@@ -353,11 +352,14 @@
                     var why = busy ? (s.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中") : e.CanStart(s, req);   // 按钮的锁与悬停原因
                     var cardWhy = e.ResourceCardReason(s, req, busy);   // Q252：卡面第二行只写资源自身状态，全局状态不让主图消失
                     var noOutputLine = e.NoOutputYieldLine(r);   // Q254：没有确定产出的资源点
-                    <ObjectCard @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="res-card" Title="@r.Name" AriaLabel="@(noOutputLine == null ? null : $"{r.Name}：{noOutputLine}")" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
+                    @* B32a（Q340、Q345）：重墨 V2 卡模板——副标＝账短标 · 每次产量（日补写在悬停与右栏），第二行＝风险行与资源自身原因；
+                       库存为 0（Dim）与资源自身阻断（Blocked）为不可用，当前采集对象为加工中 *@
+                    <ObjectCard Ink2="true" @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="k2-res" Title="@r.Name" AriaLabel="@(noOutputLine == null ? null : $"{r.Name}：{noOutputLine}")" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
+                                Blocked="@(cardWhy != null)" Busy="@CardStates.BusyResource(s, nodeId)"
                                 Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
                                 DataDrop="@($"res:{nodeId}")" Tooltip="@(r.IsRecord ? "核心记录：点击查看领取预估" : r.IsCampaign ? "本局唯一领取：点击查看领取预估" : toolNames != null ? $"{(r.ToolBonus!.LockedSearch ? "锁闭储物点" : "资源点")}：点击查看采集预估；可用工具：{toolNames}（把它拖到这里指定使用）{(r.ToolBonus.LockedSearch ? "；" + e.ConditionalToolHint(r) : "")}" : "资源点：点击查看采集预估；这里没有可用工具，徒手进行")" OnClick="() => SelectResource(nodeId)">
                         <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
-                        <ChildContent>
+                        <SubContent>
                             @* M84：耗时只写在按钮上（“采集/搜集 + N分钟”），状态行不再重复，给名称和产出留位 *@
                             @if (r.IsRecord)
                             {
@@ -382,13 +384,17 @@
                             {
                                 var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null && !r.IsUnlimited ? r.ToolBonus.OutputMultiplier : 1) + e.PassiveGatherBonus(s, s.Player, r, r.Outputs.Keys.First());
                                 // B23（A10 §3）：卡面先写四类账短标（有限/每日补充/本实例/持续），确定产量写“每次”
-                                var perLine = $"{GameEngine.AccountLabel(r)} · 每次{per}{e.ItemName(r.Outputs.Keys.First())}{(r.Refills ? $" · 日补{r.DailyRefill}" : "")}";
-                                <div class="oc-line" title="@perLine"><AccountIcon Label="@GameEngine.AccountLabel(r)" />@perLine</div>
+                                // B32a Q340：卡面副标只写账短标与每次产量，日补放悬停（右栏照原显示）
+                                var perLine = $"{GameEngine.AccountLabel(r)} · 每次{per}{e.ItemName(r.Outputs.Keys.First())}";
+                                var perTip = perLine + (r.Refills ? $" · 日补{r.DailyRefill}" : "");
+                                <div class="oc-line" title="@perTip"><AccountIcon Label="@GameEngine.AccountLabel(r)" />@perLine</div>
                             }
+                        </SubContent>
+                        <Line2>
                             @if (r.Hazard != null) { var hz = $"{Ui.Pct(e.HazardChance(s, r))}{r.Hazard.Label} · 健康−{Ui.T(e.HazardLoss(s, r))}"; <div class="oc-line warn-line" title="@hz">@hz</div> }
                             @* Q28：按钮缩成“动词 + 时长”让出约70%图片区，不能开始的实际原因改写在卡面状态角标里，不隐藏 *@
                             @if (cardWhy != null) { <div class="oc-line warn-line res-why" title="@cardWhy">@cardWhy</div> }
-                        </ChildContent>
+                        </Line2>
                         <Footer>
                             @* 试玩修复 B5：与探索/清理同一按钮形态，悬停或聚焦即在右栏预测，离开恢复 *@
                             @{ var verb = e.GatherVerbNow(s, r); var title = $"{verb}{r.Name}"; }
