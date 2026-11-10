@@ -28,6 +28,8 @@
     var batchable = !rc.IsBuild && !rc.IsRepair && !rc.IsFixedWait && !rc.IsDrying;   // B16：固定等待每次只做1批；B22c 试玩修复 M470：晾制每位一批
     var batch = batchable ? Math.Max(1, G.CraftBatch) : 1;
     var stationRecipe = e.IsStationBatchRecipe(rc);   // B32e（Q380）：陶窑/固定净水台按「投料批数」连续投料、排队加工
+    var sb = stationRecipe ? e.StationBatchHere(s, rc.Station) : null;
+    var sbWait = stationRecipe ? e.StationWaitingHere(s, rc.Station) : new List<StationBatch>();
     var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot ? G.CraftPot : null, preferred, batch);
     if (rc.IsRepair) request.InstanceId = G.CraftTarget;
     if (GameEngine.IsFieldPatchRecipe(rc)) request.PatchInstanceId = G.CraftPatch;   // B22b（Q168）：选用的修补包，空为默认
@@ -109,7 +111,7 @@
                 }
                 else
                 {
-                    <div class="panel craft-mats">
+                    <div class="panel craft-mats@(stationRecipe ? " station-mats" : "")">
                         <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? (GameEngine.IsWildFireRecipe(rc) ? "野外建造" : "营地建造") : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
                         @* B10（A10 §9.1）：来源、工坊与门槛一次写全；不满足的标出原因（不是缺料） *@
                         <div class="craft-source" data-craft-source>
@@ -261,6 +263,30 @@
                             </div>
                         }
                         <div class="mat-scroll @(rc.AllInputs.Count == 0 && rc.Outputs.Count == 0 && rc.Catalysts.Count == 0 ? "mat-empty" : "")" data-wheel="y">
+                        @* B32e 试玩修复 M680：队列区放进原料滚动区顶部（原在滚动区外，1280×720 下把投料条挤出卡底被裁），投料条固定在卡底始终可见 *@
+                            @if (sb != null || sbWait.Count > 0)
+                            {
+                                <div class="station-queue" data-station-queue>
+                                    @if (sb != null)
+                                    {
+                                        var curId = sb.BatchId;
+                                        <div class="sq-row">
+                                            <span class="cg-facts"><b>加工中</b><small class="cg-xp" title="@e.StationBatchXpNote(s, sb)">@e.StationBatchXpNote(s, sb)</small><small class="cg-sum" title="@($"{sb.DoneMinutes}/{sb.RequiredMinutes}分钟 · 完成后放在{e.ZoneName(s, s.Ground)}地面")">@(sb.DoneMinutes)/@(sb.RequiredMinutes)分钟 · 完成后放在@(e.ZoneName(s, s.Ground))地面</small></span>
+                                            <button type="button" class="secondary cg-start" data-station-cancel title="只取消实际加工中的一批，释放该批全部未核销材料和燃料到本区地面，不退时间，没有产物和经验" disabled="@StationHeld" @onclick="(MouseEventArgs ev) => CancelStation(rc.Station, curId, ev)">取消当前批</button>
+                                        </div>
+                                    }
+                                    @if (sbWait.Count > 0)
+                                    {
+                                        var waitIds = sbWait.Select(w => w.BatchId).ToList();
+                                        <div class="sq-row">
+                                            <span class="cg-facts"><b>排队中@(sbWait.Count)批</b>
+                                                <ol class="sq-list">@foreach (var w in sbWait) { <li>@e.Recipe(w.RecipeId).Name</li> }</ol>
+                                            </span>
+                                            <button type="button" class="secondary cg-start" data-station-cancel-queue title="一次取消所有尚未开始的批，释放这些批的预留到本区地面，当前批继续" disabled="@StationHeld" @onclick="(MouseEventArgs ev) => CancelStationQueue(rc.Station, waitIds, ev)">取消排队（@(sbWait.Count)批）</button>
+                                        </div>
+                                    }
+                                </div>
+                            }
                         <div class="tiny muted">原料@(rc.Fuel.Count > 0 ? "与燃料" : "")</div>
                         <div class="mat-grid">
                         @foreach (var kv in rc.Fuel)
@@ -340,46 +366,21 @@
                             @* B17（A07 X1.4）：陶窑/固定净水台是被动批次：投料0分钟、不占行动，原料移到本区地面锁定，离开也继续。
                                B32e（Q380）：每座一个加工位＋等待队列（含加工中最多10批）；面板分列「加工中」「排队中{批数}批」（等待批按先后列配方），
                                「取消当前批」「取消排队（{批数}批）」各自绑定所见批次/等待名单，投料按钮「投料（{批数}批）」可在加工中继续加入队尾 *@
-                            var sb = e.StationBatchHere(s, rc.Station);
-                            var sbWait = e.StationWaitingHere(s, rc.Station);
                             var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc, batch);
-                            @if (sb != null || sbWait.Count > 0)
-                            {
-                                <div class="station-queue" data-station-queue>
-                                    @if (sb != null)
-                                    {
-                                        var curId = sb.BatchId;
-                                        <div class="sq-row">
-                                            <span class="cg-facts"><b>加工中</b><small class="cg-xp">@e.StationBatchXpNote(s, sb)</small><small class="cg-sum">@(sb.DoneMinutes)/@(sb.RequiredMinutes)分钟 · 完成后放在@(e.ZoneName(s, s.Ground))地面</small></span>
-                                            <button type="button" class="secondary cg-start" data-station-cancel title="只取消实际加工中的一批，释放该批全部未核销材料和燃料到本区地面，不退时间，没有产物和经验" @onclick="() => CancelStation(rc.Station, curId)">取消当前批</button>
-                                        </div>
-                                    }
-                                    @if (sbWait.Count > 0)
-                                    {
-                                        var waitIds = sbWait.Select(w => w.BatchId).ToList();
-                                        <div class="sq-row">
-                                            <span class="cg-facts"><b>排队中@(sbWait.Count)批</b>
-                                                <ol class="sq-list">@foreach (var w in sbWait) { <li>@e.Recipe(w.RecipeId).Name</li> }</ol>
-                                            </span>
-                                            <button type="button" class="secondary cg-start" data-station-cancel-queue title="一次取消所有尚未开始的批，释放这些批的预留到本区地面，当前批继续" @onclick="() => CancelStationQueue(rc.Station, waitIds)">取消排队（@(sbWait.Count)批）</button>
-                                        </div>
-                                    }
-                                </div>
-                            }
                             var loadKey = $"station-load:{s.Ground}:{rc.Station}:{s.NextActionId}:{batch}";
-                            <div class="craft-go">
+                            <div class="craft-go" data-station-go>
                                 <span class="cg-facts">
                                     @if (sbWhy == null)
                                     {
                                         @* B22d 试玩修复 M418：经验句放在说明前面单独一行，窄屏（≤1400）时说明压成一行省略、悬停看全文，经验句不被裁掉。
                                            B32e：经验按队列与预计完成日分日写；各新批预计完成时刻 = 当前时刻 + 加工中剩余 + 前面等待批 + 自身时长 *@
                                         var etas = "预计" + string.Join("、", e.StationNewFinishes(s, rc, batch).Select(Clock.DayTime)) + "完成";
-                                        <b>被动@(rc.BaseMinutes)分钟</b><small class="cg-xp">@e.StationBatchXpPreview(s, rc, batch)</small><small class="cg-sum cg-eta" title="@etas" data-station-eta>@etas</small><small class="cg-sum" title="@e.StationBatchSummary(rc)">@e.StationBatchSummary(rc)</small>
+                                        <b>被动@(rc.BaseMinutes)分钟</b><small class="cg-xp" title="@e.StationBatchXpPreview(s, rc, batch)">@e.StationBatchXpPreview(s, rc, batch)</small><small class="cg-sum cg-eta" title="@etas" data-station-eta>@etas</small><small class="cg-sum" title="@e.StationBatchSummary(rc)">@e.StationBatchSummary(rc)</small>
                                     }
                                     else { <small class="warn-text">@sbWhy</small> }
                                 </span>
-                                <button type="button" class="primary cg-start" disabled="@(sbWhy != null)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
-                                        @onclick="() => LoadStation(rc.Id, batch, loadKey)">投料（@(batch)批）</button>
+                                <button type="button" class="primary cg-start" disabled="@(sbWhy != null || StationHeld)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
+                                        @onclick="(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)">投料（@(batch)批）</button>
                             </div>
                         }
                         else
@@ -611,17 +612,47 @@ else
         return null;
     }
 
-    // B32e（Q380）：提交绑定所见的加工中批/等待名单，变了由内核回「队列已变化，请重新选择。」并刷新；请求号由所见状态决定，连点只生效一次
-    private void CancelStation(string stationId, int batchId) =>
-        G.EngineDo(() => G.E.CancelStationBatch(G.S, stationId, batchId, $"station-cancel:{batchId}"));
+    // B32e（Q380）：提交绑定所见的加工中批/等待名单，变了由内核回「队列已变化，请重新选择。」并刷新；请求号由渲染时所见状态决定。
+    // B32e 试玩修复 M680：连点「取消当前批」时第一下刷新出新的当前批，第二下落在新按钮上按新批号提交、连取消两批。
+    // 现在：同一次连击的后续点击（MouseEventArgs.Detail > 1）不提交；任一队列提交成功后三个按钮停用 StationHoldMs 再随重渲恢复。
+    private const int StationHoldMs = 600;
+    private DateTime _stationHoldUntil = DateTime.MinValue;
+    private bool StationHeld => DateTime.UtcNow < _stationHoldUntil;
 
-    private void CancelStationQueue(string stationId, List<int> waitIds) =>
-        G.EngineDo(() => G.E.CancelStationQueue(G.S, stationId, waitIds, $"station-cancel-queue:{string.Join(",", waitIds)}"));
+    /// <summary>这一下点击该不该提交：连击的第二下起、或刚提交过还在停用期内，都不提交。</summary>
+    private bool StationClickAccepted(MouseEventArgs ev) => ev.Detail <= 1 && !StationHeld;
+
+    private void HoldStation(ActionResult res)
+    {
+        if (!res.Ok) return;
+        _stationHoldUntil = DateTime.UtcNow.AddMilliseconds(StationHoldMs);
+        _ = ReleaseStationHold();
+    }
+
+    private async Task ReleaseStationHold()
+    {
+        await Task.Delay(StationHoldMs + 50);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void CancelStation(string stationId, int batchId, MouseEventArgs ev)
+    {
+        if (!StationClickAccepted(ev)) return;
+        HoldStation(G.EngineDo(() => G.E.CancelStationBatch(G.S, stationId, batchId, $"station-cancel:{batchId}")));
+    }
+
+    private void CancelStationQueue(string stationId, List<int> waitIds, MouseEventArgs ev)
+    {
+        if (!StationClickAccepted(ev)) return;
+        HoldStation(G.EngineDo(() => G.E.CancelStationQueue(G.S, stationId, waitIds, $"station-cancel-queue:{string.Join(",", waitIds)}")));
+    }
 
     /// <summary>投料：所选批数整次提交，成功后批数回到默认 1（失败保留所选，不自动缩批）。</summary>
-    private void LoadStation(string recipeId, int batches, string requestKey)
+    private void LoadStation(string recipeId, int batches, string requestKey, MouseEventArgs ev)
     {
+        if (!StationClickAccepted(ev)) return;
         var res = G.EngineDo(() => G.E.StartStationBatch(G.S, recipeId, requestKey, batches));
+        HoldStation(res);
         if (res.Ok && !res.Duplicate) SetBatch(1);
     }
 

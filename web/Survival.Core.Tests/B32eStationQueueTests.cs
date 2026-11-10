@@ -351,4 +351,31 @@ public class B32eStationQueueTests : TestBase
         Assert.That(razor, Does.Contain("CancelStationQueue(G.S, stationId, waitIds,"));
         Assert.That(razor, Does.Not.Contain("投料（被动）"));
     }
+
+    /// <summary>
+    /// 试玩修复 M680（Q380-A03 重复请求只生效一次）：连点「取消当前批」不再连取消两批——连击第二下起（Detail&gt;1）不提交，
+    /// 提交成功后三个队列按钮停用一段再随重渲恢复；请求号与所绑批次来自渲染时。另：队列区放进原料滚动区顶部、投料条留在卡底，矮屏整卡兜底可滚。
+    /// </summary>
+    [Test]
+    public void Q380_M680_ClickGuard_And_QueueInsideScroll()
+    {
+        var dir = TestContext.CurrentContext.TestDirectory;
+        while (dir != null && !File.Exists(Path.Combine(dir, "Survival.sln"))) dir = Path.GetDirectoryName(dir);
+        var razor = File.ReadAllText(Path.Combine(dir!, "Survival.Web", "Components", "CraftOverlay.razor"));
+        var css = File.ReadAllText(Path.Combine(dir!, "Survival.Web", "wwwroot", "css", "app.css"));
+        Assert.That(razor, Does.Contain("ev.Detail <= 1 && !StationHeld"), "连击第二下起不提交");
+        Assert.That(razor, Does.Contain("(MouseEventArgs ev) => CancelStation(rc.Station, curId, ev)"), "批号在渲染时绑定");
+        Assert.That(razor, Does.Contain("(MouseEventArgs ev) => CancelStationQueue(rc.Station, waitIds, ev)"));
+        Assert.That(razor, Does.Contain("(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)"));
+        Assert.That(razor.Split("disabled=\"@StationHeld\"").Length - 1, Is.EqualTo(2), "两个取消键提交后停用");
+        Assert.That(razor, Does.Contain("disabled=\"@(sbWhy != null || StationHeld)\""));
+        Assert.That(razor, Does.Contain("HoldStation(G.EngineDo(() => G.E.CancelStationBatch(G.S, stationId, batchId, $\"station-cancel:{batchId}\")))"));
+        var scroll = razor.IndexOf("<div class=\"mat-scroll", StringComparison.Ordinal);
+        var queue = razor.IndexOf("data-station-queue", StringComparison.Ordinal);
+        var mats = razor.IndexOf("原料@(rc.Fuel.Count > 0 ? \"与燃料\" : \"\")", StringComparison.Ordinal);
+        Assert.That(scroll < queue && queue < mats, Is.True, "队列区在原料滚动区顶部");
+        Assert.That(razor.IndexOf("data-station-go", StringComparison.Ordinal), Is.GreaterThan(mats), "投料条在滚动区外、卡底");
+        Assert.That(css, Does.Contain(".craft-side > .craft-mats.station-mats { overflow-y: auto; }"));
+        Assert.That(css, Does.Contain(".sq-row { display: flex; align-items: flex-start;"));
+    }
 }

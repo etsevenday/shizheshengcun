@@ -1223,11 +1223,21 @@ kbd { font-size: var(--fs-aux); }
 .craft-go .cg-start { flex: 0 0 auto; width: auto; min-width: 150px; padding: 8px 16px; font-size: var(--fs-body); }
 /* B22d 试玩修复 M418：陶窑/净水台投料说明在 1280 下最后一行（经验句）被裁——经验句前置，窄屏说明压一行 */
 @media (max-width: 1400px) { .cg-facts small.cg-sum { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
-/* B32e（Q380）：陶窑/净水台队列——「加工中」「排队中{批数}批」两行各带取消键，放在投料条上方；等待批按先后编号列配方 */
-.station-queue { margin: 10px -12px 0; padding: 6px 12px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
-.sq-row { display: flex; align-items: center; gap: 10px; }
+/* B32e（Q380）：陶窑/净水台队列——「加工中」「排队中{批数}批」两行各带取消键；等待批按先后编号列配方。
+   B32e 试玩修复 M680：队列区移进原料滚动区顶部（.mat-scroll 内），投料条留在卡底固定可见；取消键靠行顶；
+   队列各行小字一行省略、悬停看全文；等待批改为行内编号（1. 2. …，与原编号列表同字）换行排，限两行高内滚 */
+.station-queue { margin: 0 0 8px; padding: 0 0 6px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.sq-row { display: flex; align-items: flex-start; gap: 10px; }
+.sq-row .cg-facts small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sq-row .cg-start { flex: 0 0 auto; width: auto; min-width: 150px; padding: 6px 12px; font-size: var(--fs-body); }
-.sq-list { margin: 2px 0 0; padding-left: 1.8em; font-size: var(--fs-aux); color: var(--muted); max-height: 7.5em; overflow-y: auto; }
+.sq-list { list-style: none; counter-reset: sq; display: flex; flex-wrap: wrap; gap: 0 10px; margin: 2px 0 0; padding: 0;
+  font-size: var(--fs-aux); color: var(--muted); max-height: 2.8em; overflow-y: auto; }
+.sq-list li { counter-increment: sq; white-space: nowrap; }
+.sq-list li::before { content: counter(sq) ". "; }
+/* 矮屏（≤800 高）投料条的经验与预计完成各压一行（悬停看全文），给原料与队列滚动区留高 */
+@media (max-height: 800px) { .craft-side .craft-go[data-station-go] .cg-facts small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+/* 兜底：陶窑/净水台配方卡内容仍超高时整张卡可滚（原料滚动区先压到最小），不再被 overflow:hidden 裁掉 */
+.craft-side > .craft-mats.station-mats { overflow-y: auto; }
 
 /* 休息面板底部开始条（紧挨时长卡） */
 .rest-go { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; padding: 8px 14px 10px; border-top: 1px solid var(--line); background: #1f2721; }
