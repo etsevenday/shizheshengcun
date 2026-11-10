@@ -43,6 +43,17 @@ namespace Survival.Core.Engine
         /// <summary>Q343：加工位里正在煅烧的那一批，工序名写「煅烧木炭」。</summary>
         public const string CharcoalProcessTitle = "煅烧木炭";
 
+        // ───────────── P02b 锅详情 ─────────────
+
+        /// <summary>P02b：锅详情「水量」行「{水种} {当前}/{容量}毫升」；锅里没有水（没有水种）为 null，按 §2 通用规则省略该行。</summary>
+        public static string? PotWaterLine(GameEngine e, GameState s, ItemInstance pot)
+        {
+            var liquid = e.PotLiquid(s, pot.InstanceId);
+            if (liquid == null) return null;
+            var c = e.PotConfig(pot);
+            return $"{e.ItemName(liquid)} {e.PotUnits(s, pot.InstanceId) * c.UnitMl}/{c.CapacityMl}毫升";
+        }
+
         // ───────────── Q365 煅烧投料盘 ─────────────
 
         /// <summary>Q365：煅烧盘「耗时」行「投料0分钟 · 需{有效受热分钟}有效受热分钟」。</summary>

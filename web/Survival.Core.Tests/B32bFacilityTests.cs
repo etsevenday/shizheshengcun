@@ -191,6 +191,23 @@ public class B32bFacilityTests : TestBase
         Assert.That(E.FireSlotStatus(s, pot), Does.Not.Contain("煅烧木炭"));
     }
 
+    /// <summary>P02b：锅详情「水量」「{水种} {当前}/{容量}毫升」，没有水省略该行；行名「食材」「处理进度」。</summary>
+    [Test]
+    public void P02b_PotDetailLines()
+    {
+        var s = New();
+        var pot = E.CreateItems(s, "pot", 1, ItemInstance.Carried).Single();
+        Assert.That(CardStates.PotWaterLine(E, s, pot), Is.Null, "空锅没有水种，省略水量行");
+        var water = E.CreateItems(s, "clean_water", 1, ItemInstance.Carried).Single();
+        Ok(E.DoInstant(s, InstantRequest.FillPot(water.InstanceId, pot.InstanceId)));
+        var cap = E.PotConfig(pot).CapacityMl;
+        Assert.That(CardStates.PotWaterLine(E, s, pot), Is.EqualTo($"净水 {E.PotUnits(s, pot.InstanceId) * E.PotConfig(pot).UnitMl}/{cap}毫升"));
+        var d = Web("Components/ItemDetail.razor");
+        Assert.That(d, Does.Contain("<span>食材</span>"));
+        Assert.That(d, Does.Contain("<span>处理进度</span>"));
+        Assert.That(d, Does.Not.Contain("<span>食材位</span>"));
+    }
+
     // ───────────── Q369 安全屋休息条件 ─────────────
 
     /// <summary>Q369-A01：屋外先写当前区遮蔽或露天，再写屋内加成句；屋内沿现行屋内遮蔽与加成说明。</summary>

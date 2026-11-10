@@ -132,9 +132,10 @@ else
             var free = e.PotFreeWaterUnits(s, inst);
             <div class="pot-detail">
                 <div class="lines">
-                    <div><span>水量</span><b>@e.PotLabel(s, inst)</b></div>
-                    <div><span>食材位</span><b>@foods.Count/@pc.FoodSlots</b></div>
-                    <div><span>状态</span><b>@e.ContentStatus(s, inst)</b></div>
+                    @* B32b P02b：「水量」「{水种} {当前}/{容量}毫升」（没有水时省略该行）、「食材」、「处理进度」 *@
+                    @if (CardStates.PotWaterLine(e, s, inst) is string water) { <div><span>水量</span><b>@water</b></div> }
+                    <div><span>食材</span><b>@foods.Count/@pc.FoodSlots</b></div>
+                    <div><span>处理进度</span><b>@e.ContentStatus(s, inst)</b></div>
                     @if (e.CookXpLine(s, inst) is string pcx) { <div><span>净化经验</span><b>@pcx</b></div> }
                     @* B22a 试玩修复 M412：锅食谱每批一次的烹饪经验只在锅上写一处，锅内各份原料行不再重复 *@
                     @if (e.PotRecipeXpLine(s, inst) is string prx) { <div><span>烹饪经验</span><b>@prx</b></div> }
