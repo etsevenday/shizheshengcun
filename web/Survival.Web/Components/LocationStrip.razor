@@ -279,7 +279,7 @@
                         var note = e.EliteNote(s, c);
                         var panel = $"健康{Ui.N(ec.Hp)} · 甲{Ui.T(ec.Armor)} · 伤害{Ui.N(ec.DamageMin)}—{Ui.N(ec.DamageMax)} · 速度{Ui.Speed(ec.Speed)} · {ec.Ap}AP";
                         var fearE = e.FearNote(s, new[] { we ?? new WorldEnemy { EnemyId = ec.Id } }, GameEngine.FearApproach);
-                        <ObjectCard Ink2="true" @key="@("elite-" + cid)" Id="@($"elite-{cid}")" CssClass="k2-enemy elite" Title="@ec.Name" Badge="可选强敌" BadgeClass="new"
+                        <ObjectCard Ink2="true" Danger="true" @key="@("elite-" + cid)" Id="@($"elite-{cid}")" CssClass="k2-enemy elite" Title="@ec.Name" Badge="可选强敌" BadgeClass="new"
                                     Sub="@($"健康 {Ui.N(we?.Hp ?? ec.Hp)}/{Ui.N(ec.Hp)}")" SubClass="hp"
                                     Tooltip="@($"{note}；{panel}；只这一名敌人、不增援；不接也不影响行路、资源与主线；撤退保留它的伤势")">
                             <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
@@ -309,9 +309,10 @@
                         var ec = e.Enemy(w.EnemyId);
                         var wid = w.Id;
                         var open = G.Pop?.Kind == "approach" && G.Pop.Id == wid.ToString();
-                        @* B32a（Q340、Q345）：重墨 V2 卡模板——副标健康数值、第二行健康条，伤害与速度收进悬停（详情点卡看右栏）；敌对挂危险叠层 *@
+                        @* B32a（Q340、Q357、Q360）：重墨 V2 卡模板——副标健康数值、第二行健康条，伤害与速度收进悬停（详情点卡看右栏）；
+                           角标沿真实关系「敌对」「中立」；普通常驻敌踪不挂危险叠层，配置为精英的挂 *@
                         <ObjectCard Ink2="true" @key="@("we" + wid)" Id="@($"en-{wid}")" CssClass="k2-enemy" Title="@ec.Name" Badge="@(w.Hostile ? "敌对" : "中立")" BadgeClass="@(w.Hostile ? "new" : "")"
-                                    Danger="@w.Hostile" Sub="@($"健康 {Ui.N(w.Hp)}/{Ui.N(ec.Hp)}")" SubClass="hp"
+                                    Danger="@ec.Elite" Sub="@($"健康 {Ui.N(w.Hp)}/{Ui.N(ec.Hp)}")" SubClass="hp"
                                     Selected="@(sel.Kind == SelectionKind.Enemy && sel.InstanceId == wid)" Fresh="@G.Highlights.Contains($"enemy:{wid}")"
                                     Tooltip="@($"敌人：点击查看详情；点“接近”在卡旁预览并确认开战。伤害{Ui.N(ec.DamageMin)}—{Ui.N(ec.DamageMax)} · 速度{Ui.Speed(ec.Speed)}")" OnClick="() => SelectEnemy(wid)">
                             <Art>@Icons.Markup("enemy_" + ec.Id)</Art>

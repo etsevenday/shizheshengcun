@@ -57,14 +57,15 @@ public static class Ui
         return Fresh(i.ExpiresAt.Value - s.GameMinute);
     }
 
-    /// <summary>B32a（Q340）卡面副标的状态项：有保质写保质（含已腐败、受热保护），有耐久写耐久（0 写「已损坏」，不带弹仓），都没有返回 null（卡面改写数量）。</summary>
-    public static string? CardStatusLine(GameEngine e, GameState s, ItemInstance i)
+    /// <summary>B32a Q356 物品卡第二行：明确状态优先（已腐败、已损坏），其次实际保质/到期（含受热保护），再耐久（不带弹仓）；都没有返回 null（不出第二行）。</summary>
+    public static string? CardLine2(GameEngine e, GameState s, ItemInstance i) => CardStates.ItemLine2Of(e, s, i) switch
     {
-        if (i.ExpiresAt.HasValue) return FreshOf(e, s, i);
-        if (i.MaxDurability.HasValue && i.Durability.HasValue)
-            return i.Durability.Value <= 0 ? "已损坏" : $"耐久{GameEngine.DurabilityText(i)}";
-        return null;
-    }
+        ItemLine2.Spoiled => "已腐败",
+        ItemLine2.Broken => "已损坏",
+        ItemLine2.Expiry => FreshOf(e, s, i),
+        ItemLine2.Durability => $"耐久{GameEngine.DurabilityText(i)}",
+        _ => null,
+    };
 
     public static string ItemLine(GameEngine e, GameState s, ItemInstance i)
     {

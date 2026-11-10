@@ -35,11 +35,27 @@ namespace Survival.Core.Engine
         /// <summary>耐久为 0 的工具（有耐久上限且当前耐久 ≤0）。</summary>
         public static bool BrokenTool(ItemInstance i) => i.MaxDurability.HasValue && i.Durability.HasValue && i.Durability.Value <= 0;
 
+        // ───────────── Q356 物品卡副标与第二行 ─────────────
+
+        /// <summary>Q356：常规物品卡与独立工具卡副标固定为本卡实际数量；部分预留沿「×{总数}（预留{数量}）」。</summary>
+        public static string ItemQtyText(int total, int reserved) => reserved > 0 && reserved < total ? $"×{total}（预留{reserved}）" : $"×{total}";
+
+        /// <summary>Q356：物品卡第二行取哪一项——明确状态优先（已腐败、已损坏），其次实际保质/到期，再耐久；都没有不出第二行。</summary>
+        public static ItemLine2 ItemLine2Of(GameEngine e, GameState s, ItemInstance i) =>
+            e.IsSpoiled(s, i) ? ItemLine2.Spoiled
+            : BrokenTool(i) ? ItemLine2.Broken
+            : i.ExpiresAt.HasValue ? ItemLine2.Expiry
+            : i.MaxDurability.HasValue && i.Durability.HasValue ? ItemLine2.Durability
+            : ItemLine2.None;
+
         // ───────────── Q351 资源来源 ─────────────
 
         /// <summary>Q351：右栏资源详情「来源」行的值「{资源所在地点名} · {资源账短标}」。</summary>
         public static string ResourceSource(GameEngine e, ResourceConfig r) => $"{e.LocName(r.LocationId)} · {GameEngine.AccountLabel(r)}";
     }
+
+    /// <summary>Q356 物品卡第二行的内容类别。</summary>
+    public enum ItemLine2 { None, Spoiled, Broken, Expiry, Durability }
 
     public sealed partial class GameEngine
     {

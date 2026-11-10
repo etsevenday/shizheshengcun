@@ -92,24 +92,24 @@
                     var whole = head;
                     if (!stacked && reservedN > 0 && list.Count > 1) { whole = head.Clone(); whole.Count = total; }
                     var infoLine = (stacked ? (kb![0].Spoiled ? "已腐败" : Ui.ItemLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.ItemLine(e, s, whole)) + (!stacked && batches > 1 ? $" · {batches}批" : "");
-                    var qtyText = reservedN > 0 && reservedN < total ? $"×{total}（预留{reservedN}）" : $"×{total}";
-                    // B32a Q340：卡面副标按原信息优先级只写一项——有保质写保质（含已腐败），有耐久写耐久，否则写数量；
-                    // 副标不是数量时数量放主图右上角标；效果、重量与批次数在悬停与右栏
-                    var front = stacked ? kb![0].Stacks[0] : head;
-                    var statusSub = (stacked ? kb![0].Spoiled : allSpoiled) || front.ExpiresAt.HasValue || (front.MaxDurability.HasValue && front.Durability.HasValue);
-                    var subText = statusSub ? (stacked ? (kb![0].Spoiled ? "已腐败" : Ui.CardStatusLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.CardStatusLine(e, s, whole)) ?? qtyText : qtyText;
+                    var qtyText = CardStates.ItemQtyText(total, reservedN);
+                    // B32a Q356（取代 Q340 物品副标优先级）：副标固定写本卡实际数量（部分预留「×{总数}（预留{数量}）」），不再出主图数量角标；
+                    // 第二行先写已腐败、已损坏等明确状态，其次实际保质/到期，再耐久；效果、重量、批次数与完整信息在悬停、聚焦提示与右栏
                     var spoiledFront = stacked ? kb![0].Spoiled : allSpoiled;
+                    var line2 = spoiledFront ? "已腐败" : Ui.CardLine2(e, s, stacked ? head : whole);
+                    var line2Danger = line2 is "已腐败" or "已损坏";
                 }
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@
                 <div id="@(gSel ? "card-sel" : null)" data-tip="@($"{title} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drag-title="@title" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item k2i @(spoiledFront ? "st-danger" : "") @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
                      role="button" tabindex="0" @onclick="() => SelectSide(id, kb, split ? sideKb : null)" @onkeydown="ev => OnCardKey(ev, () => SelectSide(id, kb, split ? sideKb : null))" title="@(dr ? "本实例战利品：这次地牢里领到的奖励，可以封存；成功离开地牢后并回同名物品。" + e.Item(id).Desc : e.Item(id).Desc)">
                     @{ var qtyTip = stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null; }
-                    @* B32a（Q340）：重墨 V2 物品卡——上部主图（数量角标在右上），下部纸色信息条「名称 + 一行副标」，转移箭头在信息条右端 *@
-                    <div class="k2-art @(side != null ? "has-loot" : "")">@Icons.Markup(id)@if (statusSub) { <span class="k2-tag qty" title="@qtyTip">@qtyText</span> }@if (dr) { <span class="loot-badge" title="本实例战利品（可封存；离开地牢后并回同名物品）" aria-label="本实例战利品">战</span> }@if (side == GameEngine.IdentifiedCardSuffix) { <span class="loot-badge apr-badge" title="已鉴定（普通白色，融合无属性）" aria-label="已鉴定">鉴</span> }@if (side == GameEngine.TutorialCardSuffix) { <span class="loot-badge apr-badge" title="首战教学样本（未鉴定；不能交易，单独成卡）" aria-label="首战教学">教</span> }@if (side == GameEngine.TutorialIdentifiedCardSuffix) { <span class="loot-badge apr-badge" title="首战教学样本·已鉴定（看过免费说明；不能交易，单独成卡）" aria-label="首战教学，已鉴定">教鉴</span> }</div>
+                    @* B32a（Q340、Q356）：重墨 V2 物品卡——上部主图，下部纸色信息条「名称 + 数量副标 + 状态第二行」，转移箭头在信息条右端 *@
+                    <div class="k2-art @(side != null ? "has-loot" : "")">@Icons.Markup(id)@if (dr) { <span class="loot-badge" title="本实例战利品（可封存；离开地牢后并回同名物品）" aria-label="本实例战利品">战</span> }@if (side == GameEngine.IdentifiedCardSuffix) { <span class="loot-badge apr-badge" title="已鉴定（普通白色，融合无属性）" aria-label="已鉴定">鉴</span> }@if (side == GameEngine.TutorialCardSuffix) { <span class="loot-badge apr-badge" title="首战教学样本（未鉴定；不能交易，单独成卡）" aria-label="首战教学">教</span> }@if (side == GameEngine.TutorialIdentifiedCardSuffix) { <span class="loot-badge apr-badge" title="首战教学样本·已鉴定（看过免费说明；不能交易，单独成卡）" aria-label="首战教学，已鉴定">教鉴</span> }</div>
                     <div class="k2-info">
                         <div class="k2-name-row"><b class="k2-name" title="@(dr ? title + "（本实例战利品，可封存）" : title)">@title</b>@if (e.PatchGradeTag(id) is string pg) { <i class="qtag @e.PatchGradeClass(id)" title="@($"{title}：{pg}色品阶")">@pg</i> }</div>
-                        <div class="k2-sub @(spoiledFront ? "danger" : "") @(statusSub ? "" : "is-qty")" title="@(statusSub ? infoLine : qtyTip ?? infoLine)">@subText</div>
+                        <div class="k2-sub is-qty" title="@(qtyTip ?? infoLine)">@qtyText</div>
+                        @if (line2 != null) { <div class="k2-l2 @(line2Danger ? "danger" : "")" title="@infoLine">@line2</div> }
                     </div>
                     @if (span > 1) { <span class="slot-span" title="@($"同物品{batches}批/超过堆叠上限，占{span}张随身卡{(stacked ? $"；最前这一批×{kb![0].Count}" : "")}")">占@(span)格@(batches > 1 ? $"·{batches}批" : "")</span> }
                     <TransferArrow Owner="@Owner" ItemId="@id" InstanceId="@(side != null ? head.InstanceId : (int?)null)" Enabled="@(movable && !busy)" />
@@ -138,18 +138,18 @@
                 <div id="@(tSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(t.ItemId)} · {Ui.ItemLine(e, s, t)}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drag-title="@e.ItemName(t.ItemId)" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item k2i @(t.Quality is "green" or "blue" ? "q-" + t.Quality : "") @(broken || CardStates.BrokenTool(t) ? "broken st-danger" : "") @(spoiledT ? "spoiled st-danger" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
-                    @* B32a（Q340、Q345）：单件卡副标与成组卡同规则，保质 → 耐久 → 数量只写一项（耐久为 0 写「已损坏」、腐败写「已腐败」并挂危险叠层）；
-                       远程武器弹仓、重量、用途在悬停与右栏；已部署写原因 *@
+                    @* B32a（Q345、Q356）：独立工具/单件卡副标固定「×{数量}」；第二行先写已部署（自身阻断）、已腐败、已损坏（后两者挂危险叠层），
+                       其次保质/到期，再耐久；远程武器弹仓、重量、用途在悬停与右栏 *@
                     <div class="k2-art">@Icons.Markup(t.ItemId)</div>
                     @{
                         var deployed = e.IsDeployed(s, t);
                         var tLine = deployed ? "已部署 · 先收起才能拾取" : Ui.ItemLine(e, s, t);
-                        var tSubStatus = Ui.CardStatusLine(e, s, t);
-                        var tSub = deployed ? tLine : tSubStatus ?? $"×{t.Count}";
+                        var tLine2 = deployed ? tLine : Ui.CardLine2(e, s, t);
                     }
                     <div class="k2-info">
                         <div class="k2-name-row"><b class="k2-name" title="@e.ItemName(t.ItemId)">@e.ItemName(t.ItemId)</b>@if (t.Quality is "green" or "blue") { <i class="qtag q-@t.Quality" title="@($"{e.QualityName(t)}色品质：附加词条{t.Affixes?.Count ?? 0}条")">@e.QualityName(t)</i> }</div>
-                        <div class="k2-sub @(deployed ? "warn" : CardStates.BrokenTool(t) || spoiledT ? "danger" : "") @(!deployed && tSubStatus == null ? "is-qty" : "")" title="@tLine">@tSub</div>
+                        <div class="k2-sub is-qty" title="@tLine">@($"×{t.Count}")</div>
+                        @if (tLine2 != null) { <div class="k2-l2 @(deployed ? "warn" : tLine2 is "已腐败" or "已损坏" ? "danger" : "")" title="@tLine">@tLine2</div> }
                     </div>
                     <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy && !deployed)" Title="@(deployed ? "已部署 · 先收起才能拾取" : null)" />
                 </div>

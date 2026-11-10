@@ -269,6 +269,13 @@
 }
 .card.item.k2i .k2-sub.danger { color: var(--k2-danger); }
 .card.item.k2i .k2-sub.warn { color: #e7b46d; }
+/* Q356：物品卡第二行（明确状态 → 保质/到期 → 耐久），单行省略，完整内容在悬停与右栏 */
+.card.item.k2i .k2-l2 {
+  min-width: 0; font-size: var(--fs-aux, 14px); line-height: 1.25; color: #c9b593;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card.item.k2i .k2-l2.danger { color: var(--k2-danger); }
+.card.item.k2i .k2-l2.warn { color: #e7b46d; }
 .wasteland .center-scroll.four .row-scroll .card.item.k2i > .card-arrow {
   grid-row: 2; grid-column: 2; position: relative; right: auto; bottom: auto; align-self: center; justify-self: end;
   margin: 0 6px 0 2px; width: 30px; height: 30px; z-index: 1;

@@ -96,7 +96,7 @@ public class B32aCardTests : TestBase
     {
         var strip = Web("Components", "LocationStrip.razor");
         Assert.That(strip, Does.Contain("Dim=\"empty\"\n                                Blocked=\"@(cardWhy != null)\" Busy=\"@CardStates.BusyResource(s, nodeId)\"").Or.Contain("Dim=\"empty\"\r\n                                Blocked=\"@(cardWhy != null)\" Busy=\"@CardStates.BusyResource(s, nodeId)\""));
-        Assert.That(strip, Does.Contain("Danger=\"@w.Hostile\""));
+        Assert.That(strip, Does.Contain("Danger=\"@ec.Elite\""), "Q357 取代：普通常驻敌踪不挂危险，精英挂");
         Assert.That(Web("Components", "LocationCard.razor"), Does.Contain("Busy=\"@CardStates.BusyRoute(s, LocationId)\"").And.Contain("Badge=\"未开通\" BadgeClass=\"unbuilt\" Dim=\"true\""));
         var shelf = Web("Components", "ItemShelf.razor");
         Assert.That(shelf, Does.Contain("@(spoiledFront ? \"st-danger\" : \"\")").And.Contain("CardStates.BrokenTool(t) ? \"broken st-danger\""));
@@ -136,7 +136,7 @@ public class B32aCardTests : TestBase
         var loc = Web("Components", "LocationCard.razor");
         Assert.That(loc, Does.Contain("<span class=\"k2-subtext\">单程@(edge?.BaseMinutes ?? 0)分钟</span>").And.Contain("<span class=\"dir-mark\""));
         var shelf = Web("Components", "ItemShelf.razor");
-        Assert.That(shelf, Does.Contain("var statusSub = (stacked ? kb![0].Spoiled : allSpoiled) || front.ExpiresAt.HasValue || (front.MaxDurability.HasValue && front.Durability.HasValue);"));
+        Assert.That(shelf, Does.Contain("<div class=\"k2-sub is-qty\" title=\"@(qtyTip ?? infoLine)\">@qtyText</div>"), "Q356 取代：副标固定数量");
         Assert.That(shelf, Does.Not.Contain("#@"), "物品卡不显示内部编号");
     }
 
@@ -161,24 +161,13 @@ public class B32aCardTests : TestBase
 
     // ───────────── B32a 试玩修复（线上构建 c38c397） ─────────────
 
-    /// <summary>试玩 1、5：不可堆叠物品（尸体、滤水器、饰品、衣物、远程武器）走单件卡，副标同成组卡规则——保质 → 耐久 → 数量只写一项；
-    /// 腐败尸体挂危险叠层与腐败样式；远程武器副标只写耐久，弹仓在悬停与右栏。</summary>
+    /// <summary>试玩 1：不可堆叠物品（尸体等）走单件卡，腐败挂危险叠层与腐败样式。试玩 5 的副标取法已由 Q356 取代（见 Q356_A01）。</summary>
     [Test]
-    public void PlaytestFix_SingleItemCardSubAndSpoiled()
+    public void PlaytestFix_SingleItemCardSpoiled()
     {
         var shelf = Web("Components", "ItemShelf.razor");
         Assert.That(shelf, Does.Contain("var spoiledT = e.IsSpoiled(s, t);"));
         Assert.That(shelf, Does.Contain("@(spoiledT ? \"spoiled st-danger\" : \"\")"));
-        Assert.That(shelf, Does.Contain("var tSub = deployed ? tLine : tSubStatus ?? $\"×{t.Count}\";"));
-        Assert.That(shelf, Does.Contain("Ui.CardStatusLine(e, s, whole)) ?? qtyText : qtyText;"));
-        var ui = Web("Services", "Ui.cs");
-        var at = ui.IndexOf("public static string? CardStatusLine(", StringComparison.Ordinal);
-        Assert.That(at, Is.GreaterThan(0));
-        var body = ui.Substring(at, ui.IndexOf("public static string ItemLine(", at, StringComparison.Ordinal) - at);
-        Assert.That(body, Does.Not.Contain("LoadedAmmo"), "副标不带弹仓");
-        Assert.That(body, Does.Contain("return null;"), "无保质无耐久时卡面写数量");
-        Assert.That(Web("Components", "ItemDetail.razor"), Does.Contain("弹仓{inst.LoadedAmmo}/{wp.MagazineCapacity}"), "右栏原有弹仓显示");
-
         var carcass = Cfg.Items.First(i => i.Id == "carcass_wolf");
         Assert.That(carcass.IsStackable, Is.False, "尸体逐件成卡，走单件卡分支");
     }
@@ -239,6 +228,89 @@ public class B32aCardTests : TestBase
         var body = g.Substring(at, g.IndexOf("ResetBattleUi();", at, StringComparison.Ordinal) - at);
         foreach (var line in new[] { "Selected = new Selection();", "SelectedBatchKey = null;", "PendingAction = null;", "GivePending = null;", "FormationDraft = null;", "DetailTab = DetailTab.Character;", "Pop = null;", "FeedPending = null;", "PartyItemsOpen = null;" })
             Assert.That(body, Does.Contain(line), line);
+    }
+
+    // ───────────── Q356—Q360（逐字稿 §1.4） ─────────────
+
+    /// <summary>Q356-A01：堆叠食物、部分预留物品、独立耐久工具副标都是本卡数量；第二行已腐败/已损坏优先，其次保质，再耐久；不再出主图数量角标；复合锅卡不变。</summary>
+    [Test]
+    public void Q356_A01_ItemSubIsQuantity_Line2StatusFirst()
+    {
+        var s = New();
+        // 堆叠食物：副标数量，第二行保质；腐败后第二行「已腐败」
+        var berries = E.CreateItems(s, "berry", 3, "camp");
+        Assert.That(CardStates.ItemQtyText(berries.Sum(i => i.Count), 0), Is.EqualTo($"×{berries.Sum(i => i.Count)}"));
+        var b0 = berries.First();
+        Assert.That(b0.ExpiresAt, Is.Not.Null);
+        Assert.That(CardStates.ItemLine2Of(E, s, b0), Is.EqualTo(ItemLine2.Expiry));
+        b0.ExpiresAt = s.GameMinute;
+        Assert.That(CardStates.ItemLine2Of(E, s, b0), Is.EqualTo(ItemLine2.Spoiled), "已腐败优先于保质");
+        // 部分预留：沿「×{总数}（预留{数量}）」
+        Assert.That(CardStates.ItemQtyText(5, 2), Is.EqualTo("×5（预留2）"));
+        Assert.That(CardStates.ItemQtyText(2, 2), Is.EqualTo("×2"), "全部预留时只写总数（沿原格式）");
+        // 独立耐久工具：副标「×1」，第二行耐久；损坏后「已损坏」优先
+        var knife = E.CreateItems(s, "stone_knife", 1, "camp").Single();
+        Assert.That(Cfg.Items.First(i => i.Id == "stone_knife").IsStackable, Is.False, "独立工具卡");
+        Assert.That(knife.Count, Is.EqualTo(1));
+        Assert.That(CardStates.ItemLine2Of(E, s, knife), Is.EqualTo(ItemLine2.Durability));
+        knife.Durability = 0;
+        Assert.That(CardStates.ItemLine2Of(E, s, knife), Is.EqualTo(ItemLine2.Broken));
+        // 无保质无耐久：不出第二行
+        var filter = E.CreateItems(s, "water_filter", 1, "camp").Single();
+        Assert.That(CardStates.ItemLine2Of(E, s, filter), Is.EqualTo(ItemLine2.None));
+
+        var shelf = Web("Components", "ItemShelf.razor");
+        Assert.That(shelf, Does.Not.Contain("k2-tag qty"), "去掉重复的主图数量角标");
+        Assert.That(shelf, Does.Contain("<div class=\"k2-sub is-qty\" title=\"@tLine\">@($\"×{t.Count}\")</div>"), "独立工具卡副标「×1」");
+        Assert.That(shelf, Does.Contain("var tLine2 = deployed ? tLine : Ui.CardLine2(e, s, t);"), "自身阻断（已部署）排在第二行最前");
+        Assert.That(shelf, Does.Contain("var line2 = spoiledFront ? \"已腐败\" : Ui.CardLine2(e, s, stacked ? head : whole);"));
+        Assert.That(shelf, Does.Contain("<PotCard @key=\"@(\"t:\" + inst)\" Pot=\"t\" />"), "复合锅卡仍走锅卡（水量与食材）");
+        var ui = Web("Services", "Ui.cs");
+        var at = ui.IndexOf("public static string? CardLine2(", StringComparison.Ordinal);
+        var body = ui.Substring(at, ui.IndexOf("public static string ItemLine(", at, StringComparison.Ordinal) - at);
+        Assert.That(body, Does.Not.Contain("LoadedAmmo"), "第二行耐久不带弹仓");
+        Assert.That(Web("wwwroot", "css", "cards.css"), Does.Contain(".card.item.k2i .k2-l2 {"));
+    }
+
+    /// <summary>Q357-A01：普通常驻敌踪不挂危险；精英常驻敌踪与可选强敌挂；固定战与待处理敌踪覆盖层沿 Q345 挂危险。</summary>
+    [Test]
+    public void Q357_A01_DangerOnlyEliteAndFixed()
+    {
+        var strip = Web("Components", "LocationStrip.razor");
+        Assert.That(strip, Does.Contain("CssClass=\"k2-enemy\" Title=\"@ec.Name\" Badge=\"@(w.Hostile ? \"敌对\" : \"中立\")\""));
+        Assert.That(strip, Does.Contain("Danger=\"@ec.Elite\" Sub=\"@($\"健康 {Ui.N(w.Hp)}/{Ui.N(ec.Hp)}\")\""));
+        Assert.That(strip, Does.Not.Contain("Danger=\"@w.Hostile\""));
+        Assert.That(strip, Does.Contain("<ObjectCard Ink2=\"true\" Danger=\"true\" @key=\"@(\"elite-\" + cid)\""), "可选强敌挂危险");
+        Assert.That(strip, Does.Contain("<ObjectCard Ink2=\"true\" Danger=\"true\" @key=\"@(\"fixed-\" + here)\""), "固定战沿 Q345");
+        Assert.That(Web("Components", "BattleOverlay.razor"), Does.Contain("Danger=\"true\""), "待处理敌踪覆盖层沿 Q345");
+        Assert.That(Cfg.Enemies.Any(x => x.Elite) && Cfg.Enemies.Any(x => !x.Elite), Is.True, "配置里精英与普通敌人都有");
+    }
+
+    /// <summary>Q358-A01：固定战卡副标按锁定名单（fixedHere）顺序以「、」列敌人名称。</summary>
+    [Test]
+    public void Q358_A01_FixedBattleNamesInRosterOrder()
+    {
+        var strip = Web("Components", "LocationStrip.razor");
+        Assert.That(strip, Does.Contain("var names = string.Join(\"、\", fixedHere.Select(w => e.Enemy(w.EnemyId).Name));"));
+        Assert.That(strip, Does.Contain("<SubContent><div class=\"oc-line\" title=\"@names\">@names</div></SubContent>"));
+        Assert.That(strip, Does.Contain("全名单一起入场（从1号位起）"), "接战同一份名单");
+    }
+
+    /// <summary>Q359-A01：资源副标单行、原字号，超宽省略号；悬停写完整副标（含日补）。</summary>
+    [Test]
+    public void Q359_A01_ResourceSubEllipsis()
+    {
+        var css = Web("wwwroot", "css", "cards.css");
+        Assert.That(css, Does.Contain(".ocard.k2 .k2-sub > .oc-line { flex: 0 1 auto; min-width: 0; display: block; font-size: inherit; line-height: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }"));
+        Assert.That(Web("Components", "LocationStrip.razor"), Does.Contain("<div class=\"oc-line\" title=\"@perTip\"><AccountIcon Label=\"@GameEngine.AccountLabel(r)\" />@perLine</div>"));
+    }
+
+    /// <summary>Q360-A01：常驻敌踪角标沿真实关系「敌对」「中立」；待处理敌踪覆盖层「敌踪待处理」「留在原地」。</summary>
+    [Test]
+    public void Q360_A01_EnemyBadges()
+    {
+        Assert.That(Web("Components", "LocationStrip.razor"), Does.Contain("Badge=\"@(w.Hostile ? \"敌对\" : \"中立\")\""));
+        Assert.That(Web("Components", "BattleOverlay.razor"), Does.Contain("Badge=\"@(stays ? \"留在原地\" : \"敌踪待处理\")\""));
     }
 
     private static string Root()
