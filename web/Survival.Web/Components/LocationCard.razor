@@ -114,21 +114,23 @@ else if (LockReason != null)
     @* B22f2 试玩修复 M431：主目标下一段已知未开通（Q139 KnownBlocked）时内核焦点指向这张卡，与其他分支同一判断加 tut-lit *@
     var ldir = e.DirectionFromHere(s, LocationId);
     var lhint = GameEngine.DirectionHint(ldir);
-    <ObjectCard Id="@($"lock-{LocationId}")" CssClass="@($"loc-card neighbor locked{(G.TutorialFocus == "loc:" + LocationId ? " tut-lit" : "")}")" Title="@lc.Name" Badge="未开通" BadgeClass="unbuilt" Dim="true" Dashed="true"
-                AriaLabel="@($"{lc.Name}，路线未开通：{LockReason}")" Tooltip="@($"路线未开通：{LockReason}")">
+    @* B32a（Q340、Q345）：重墨 V2 卡模板——副标方向与单程时间，第二行未开通原因；未开通为不可用 *@
+    <ObjectCard Ink2="true" Id="@($"lock-{LocationId}")" CssClass="@($"k2-route locked{(G.TutorialFocus == "loc:" + LocationId ? " tut-lit" : "")}")" Title="@lc.Name" Badge="未开通" BadgeClass="unbuilt" Dim="true" Dashed="true"
+                AriaLabel="@($"{lc.Name}，{(ldir == MapDirection.None ? "" : lhint + "，")}单程{LockMinutes}分钟，路线未开通：{LockReason}")" Tooltip="@($"路线未开通：{LockReason}")"
+                SubTitle="@($"{(ldir == MapDirection.None ? "" : lhint + " · ")}单程{LockMinutes}分钟 · 未开通")">
         <Art>
             <div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div>
+        </Art>
+        <SubContent>
             @if (ldir != MapDirection.None)
             {
-                <span class="dir-badge" role="img" aria-label="@lhint" title="@($"{lhint}（方位图标，只作展示）")">
+                <span class="dir-mark" role="img" aria-label="@lhint" title="@($"{lhint}（方位图标，只作展示）")">
                     <svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(@(((int)ldir - 1) * 45)deg)"><path d="M12 2.5 19.5 11h-4.6v10.5H9.1V11H4.5Z" /></svg>
                 </span>
             }
-        </Art>
-        <ChildContent>
-            <div class="oc-line" title="@($"单程{LockMinutes}分钟")">单程@(LockMinutes)分钟 · 未开通</div>
-            <div class="oc-line warn-line lock-why" title="@LockReason">@LockReason</div>
-        </ChildContent>
+            <span class="k2-subtext">单程@(LockMinutes)分钟</span>
+        </SubContent>
+        <Line2><div class="oc-line warn-line lock-why" title="@LockReason">@LockReason</div></Line2>
     </ObjectCard>
 }
 else
@@ -140,24 +142,26 @@ else
     var dir = e.DirectionFromHere(s, LocationId);
     var dirHint = GameEngine.DirectionHint(dir);
     var open = G.Pop?.Kind == "travel" && G.Pop.Id == LocationId;
-    <ObjectCard Id="@AnchorId" CssClass="@($"loc-card neighbor{(G.TutorialFocus == "loc:" + LocationId ? " tut-lit" : "")}")" Title="@lc.Name" Badge="@(ls.Visited ? "已访问" : "待访问")" BadgeClass="@(ls.Visited ? "" : "new")"
-                Selected="selected" Fresh="@(edge != null && G.Highlights.Contains(edge.Id))"
+    @* B32a（Q340、Q345）：重墨 V2 卡模板——副标方向箭头与单程时间（室内/露天写在悬停），主操作「前往 ▸」仍在卡上；正在前往这里时为加工中 *@
+    <ObjectCard Ink2="true" Id="@AnchorId" CssClass="@($"k2-route{(G.TutorialFocus == "loc:" + LocationId ? " tut-lit" : "")}")" Title="@lc.Name" Badge="@(ls.Visited ? "已访问" : "待访问")" BadgeClass="@(ls.Visited ? "" : "new")"
+                Selected="selected" Fresh="@(edge != null && G.Highlights.Contains(edge.Id))" Busy="@CardStates.BusyRoute(s, LocationId)"
                 AriaLabel="@($"{lc.Name}，{(dir == MapDirection.None ? "" : dirHint + "，")}单程{edge?.BaseMinutes ?? 0}分钟")"
+                SubTitle="@($"{(dir == MapDirection.None ? "" : dirHint + " · ")}单程{edge?.BaseMinutes ?? 0}分钟 · {(lc.IsIndoor ? "室内" : "露天")}")"
                 Tooltip="相邻地点：点击在卡旁查看移动预估并确认出发" OnClick="OpenTravel">
         <Art>
             <div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div>
+        </Art>
+        <SubContent>
             @if (dir != MapDirection.None)
             {
-                @* 试玩修复 B10：点徽标不打开移动浮窗、不选中（阻止冒泡，无操作），S14 §16 *@
-                <span class="dir-badge" role="img" aria-label="@dirHint" title="@($"{dirHint}（方位图标，只作展示，点它不会移动；移动请点“前往”）")"
+                @* 试玩修复 B10：点方位图标不打开移动浮窗、不选中（阻止冒泡，无操作），S14 §16 *@
+                <span class="dir-mark" role="img" aria-label="@dirHint" title="@($"{dirHint}（方位图标，只作展示，点它不会移动；移动请点“前往”）")"
                       @onclick:stopPropagation="true" @onclick:preventDefault="true">
                     <svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(@(((int)dir - 1) * 45)deg)"><path d="M12 2.5 19.5 11h-4.6v10.5H9.1V11H4.5Z" /></svg>
                 </span>
             }
-        </Art>
-        <ChildContent>
-            <div class="oc-line" title="@($"单程{edge?.BaseMinutes ?? 0}分钟 · {(lc.IsIndoor ? "室内" : "露天")}")">单程@(edge?.BaseMinutes ?? 0)分钟 · @(lc.IsIndoor ? "室内" : "露天")</div>
-        </ChildContent>
+            <span class="k2-subtext">单程@(edge?.BaseMinutes ?? 0)分钟</span>
+        </SubContent>
         <Footer>
             <button type="button" class="oc-btn @(open ? "on" : "")" aria-expanded="@open" title="在卡旁预览并确认移动"
                     @onclick="OpenTravel" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">前往 ▸</button>

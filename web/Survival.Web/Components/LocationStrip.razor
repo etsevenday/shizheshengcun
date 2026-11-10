@@ -63,12 +63,12 @@
             var names = string.Join("、", all.Select(x => e.LocName(x.Target)));
             var why = lockGroups.Count == 1 ? lockGroups[0].Reason : $"需要的条件有{lockGroups.Count}种，点开按条件逐条查看";
             var open = G.Pop?.Kind == "lockstack";
-            <ObjectCard @key="@("lockstack")" Id="lockstack" CssClass="loc-card neighbor locked lock-stack" Title="@($"{all.Count}条路线未开通")" Badge="未开通" BadgeClass="unbuilt" Dim="true" Dashed="true"
+            @* B32a：叠卡同用重墨 V2 模板，副标路线名、第二行原因；未开通为不可用 *@
+            <ObjectCard Ink2="true" @key="@("lockstack")" Id="lockstack" CssClass="k2-route locked lock-stack" Title="@($"{all.Count}条路线未开通")" Badge="未开通" BadgeClass="unbuilt" Dim="true" Dashed="true"
                         AriaLabel="@($"{all.Count}条路线未开通：{names}；{why}")" Tooltip="@($"{names}；{why}")" OnClick="OpenStack">
-                <ChildContent>
-                    <div class="oc-line" title="@names">@names</div>
-                    <div class="oc-line warn-line lock-why" title="@why">@why</div>
-                </ChildContent>
+                <Art><span class="exp-art" aria-hidden="true">⋯</span></Art>
+                <SubContent><div class="oc-line" title="@names">@names</div></SubContent>
+                <Line2><div class="oc-line warn-line lock-why" title="@why">@why</div></Line2>
                 <Footer>
                     <button type="button" class="loc-btn res-btn @(open ? "on" : "")" aria-expanded="@open" title="在卡旁按条件逐条列出这些路线"
                             @onclick="OpenStack" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">

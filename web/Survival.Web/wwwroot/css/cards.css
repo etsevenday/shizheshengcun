@@ -192,3 +192,9 @@
 .battle-overlay.encounter .bt-cards { min-height: 0; align-items: flex-start; }
 .wasteland .battle-overlay.encounter .bt-cards > .ocard.k2.k2 { height: min(var(--k2-h), 100%); min-height: 0; }
 .battle-overlay.encounter .ocard.k2.stays { opacity: .55; filter: grayscale(.6); }
+
+/* ───── 路线卡（Q340）：场景图铺满主图区；副标方位箭头 + 单程时间 ───── */
+.ocard.k2 > .k2-art > .loc-art { position: absolute; inset: 0; width: auto; height: auto; min-height: 0; background-size: cover; background-position: center 60%; }
+.ocard.k2 .k2-sub .dir-mark { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; border-radius: 50%; border: 1px solid var(--k2-bar-line); background: #20271d; }
+.ocard.k2 .k2-sub .dir-mark svg { width: .8em; height: .8em; fill: #f0d9a0; }
+.center-scroll.four .map-adjacent > .ocard.k2 { width: var(--k2-w); }
