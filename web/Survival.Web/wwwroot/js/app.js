@@ -613,7 +613,8 @@ window.survivalFx = (function () {
     var from = last && Date.now() - last.t < 4000 ? last : null;
     last = null;
     var zone = document.querySelector('[data-drop="zone:' + owner + '"]');
-    var to = zone ? zone.querySelector('[data-card^="' + owner + '|' + itemId + '|"]') : null;
+    // 堆叠卡 data-card 为「owner|itemId」，实例卡为「owner|itemId|实例号」
+    var to = zone ? zone.querySelector('[data-card="' + owner + '|' + itemId + '"], [data-card^="' + owner + '|' + itemId + '|"]') : null;
     var tr = to ? to.getBoundingClientRect() : null;
     var fr = from ? from.rect : null;
     var toOk = visible(tr), fromOk = visible(fr);

@@ -1474,16 +1474,18 @@ public sealed class GameSession
     /// </summary>
     public async Task<ActionResult> StartAction(ActionRequest r, string? requestId = null)
     {
-        // B32b（Q341、Q371）：食饮记下开始前的数值，行动实际结束后描边真正变化的行（主角＝左栏「生存状况」各行，同行者＝成员行）
+        // B32b（Q341、Q371）：食饮记下开始前的数值；即时效果在开始那一刻结算，这时比一次，只取食饮本身改变的项
+        // （不含之后 5 分钟的自然消耗）；行动实际结束后描边这些行（主角＝左栏「生存状况」各行，同行者＝成员行）
         var feedTarget = State != null && CardStates.IsEatOrDrink(E, S, r) ? r.Feeding?.TargetActorId ?? GameState.PlayerId : null;
         var before = feedTarget != null && S.Actors.TryGetValue(feedTarget, out var fa) ? fa.Stats.Clone() : null;
         var res = BeginAction(r, requestId);
         if (res.Ok && !res.Duplicate)
         {
             var started = S.Main;
+            var changed = before != null && S.Actors.TryGetValue(feedTarget!, out var now) ? CardStates.ChangedStats(before, now.Stats) : null;
             await RunLoop();
-            if (before != null && State != null && (S.Main == null || !ReferenceEquals(S.Main, started)) && S.Actors.TryGetValue(feedTarget!, out var after))
-                MarkFed(feedTarget!, CardStates.ChangedStats(before, after.Stats));
+            if (changed != null && State != null && (S.Main == null || !ReferenceEquals(S.Main, started)))
+                MarkFed(feedTarget!, changed);
         }
         return res;
     }
