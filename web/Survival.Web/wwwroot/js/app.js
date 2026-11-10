@@ -331,6 +331,29 @@ window.survivalPop = (function () {
     var vis = R > L && B > T ? (R - L) * (B - T) / area : 0;
     return { left: L, top: T, right: R, bottom: B, vis: vis };
   }
+  // B32d（逐字稿 §1.5 Q378）：打开会覆盖来源卡的面板时按来源失效收盘。以实际面板覆盖范围判断——中部一级面板（.panel-host：地图、制作、
+  // 安全屋、整备……，随面板高低盖住①②、①—③或四行）与全屏确认层（.overflow-layer：终止远征、远征物资、重置地牢等）；来源卡在可见范围内
+  // 露在这些面板之外的部分不足四分之一（与滚出同一口径）即算被盖住。来源卡本身在该面板里的不算。返回盖住它的面板，没被盖住为 null。
+  var COVER_SEL = '.center-scroll.four .panel-host, .overflow-layer';
+  function coverOf(a, A) {
+    var covers = Array.prototype.filter.call(document.querySelectorAll(COVER_SEL), function (c) {
+      return !c.contains(a) && c.offsetWidth > 0 && c.offsetHeight > 0;
+    });
+    if (!covers.length || A.right <= A.left || A.bottom <= A.top) return null;
+    var rects = covers.map(function (c) { return c.getBoundingClientRect(); });
+    var n = 6, open = 0, hits = covers.map(function () { return 0; });
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var x = A.left + (A.right - A.left) * (i + 0.5) / n, y = A.top + (A.bottom - A.top) * (j + 0.5) / n, k;
+        for (k = 0; k < rects.length; k++) { var r = rects[k]; if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) break; }
+        if (k === rects.length) open++; else hits[k]++;
+      }
+    }
+    if (A.vis * open / (n * n) >= 0.25) return null;
+    var best = 0;
+    for (var m = 1; m < hits.length; m++) if (hits[m] > hits[best]) best = m;
+    return covers[best];
+  }
   function place() {
     if (!cur) return;
     var el = cur.el;
@@ -355,6 +378,15 @@ window.survivalPop = (function () {
       return;
     }
     cur.lostAt = 0;
+    // B32d（Q378）：来源卡被新开的面板盖住（渲染在背景也算不可用）→ 同样连续 250ms 才算，按来源失效收盘、焦点交给盖住它的面板
+    var cover = coverOf(a, A);
+    if (cover) {
+      var t = Date.now();
+      if (!cur.coveredAt) { cur.coveredAt = t; setTimeout(function () { if (cur) place(); }, 260); return; }
+      if (t - cur.coveredAt >= 250) covered(cover);
+      return;
+    }
+    cur.coveredAt = 0;
     // B31c（Q324）：局部操作盘统一在屏幕中央打开（上面已处理）；锚点仍用于“来源失效”判定：发起它的卡滚出或消失时照原规则收起
     if (centered) return;
     var W = window.innerWidth, H = window.innerHeight, m = 8, g = 8;
@@ -397,6 +429,25 @@ window.survivalPop = (function () {
     var d = cur && cur.dotnet;
     stop();
     if (d) { try { d.invokeMethodAsync('AnchorLost'); } catch (e) { } }
+  }
+  // B32d（Q378）：来源被面板盖住而收盘——只撤回本盘未提交的意图（.NET AnchorCovered：选卡盘保留选中，其余盘同各自 ×），不还焦点给触发控件，
+  // 焦点交给盖住来源的面板（焦点已在该面板里就不动）。关面板后玩家从仍合法的来源重新打开。
+  function covered(cover) {
+    var d = cur && cur.dotnet;
+    stop();
+    if (d) { try { d.invokeMethodAsync('AnchorCovered'); } catch (e) { } }
+    setTimeout(function () {
+      if (!cover || !cover.isConnected) return;
+      var ae = document.activeElement;
+      if (ae && ae !== document.body && cover.contains(ae)) return;
+      var list = cover.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      for (var i = 0; i < list.length; i++) {
+        var c = list[i];
+        if (c.disabled || (c.closest && c.closest('[inert]')) || !(c.offsetWidth || c.offsetHeight)) continue;
+        try { c.focus({ preventScroll: true }); } catch (e) { try { c.focus(); } catch (e2) { } }
+        if (document.activeElement === c) return;
+      }
+    }, 0);
   }
   function onMove() { if (cur && !cur.raf) cur.raf = requestAnimationFrame(function () { if (cur) { cur.raf = 0; place(); } }); }
   function stop() {

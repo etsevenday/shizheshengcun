@@ -278,7 +278,7 @@ namespace Survival.Core.Engine
             if (head.ReservedBy != null) return DropIntent.No("该物品已被预留");
             var fac = FacOf(s, loc)!;
             var room = MaxWoodForFire(fac);
-            if (room < 1) return DropIntent.No($"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{FuelCapOf(fac)}分钟）");
+            if (room < 1) return DropIntent.No(FuelRoomText(fac));
             var max = Math.Min(room, CardBatchCount(s, head));
             return Instant(DropVerb.AddFuel, $"投放1木材，燃料+{Config.Fire.BurnMinutesPerWood}分钟",
                 InstantRequest.AddFuel(1, head.InstanceId), max);
@@ -314,6 +314,9 @@ namespace Survival.Core.Engine
                     fuel.Label += "（作燃料；要煅烧木炭请点“煅烧木炭”）";
                     fuel.Instant.FuelViaSlot = true;
                 }
+                // Q377：燃料容量不足而拒绝时，在原拒绝原因后补说明与右栏空加工位的煅烧指引（保留原容量阻断信息）
+                else if (!fuel.Ok && CharcoalProcess is ProcessConfig cp && FacOf(s, loc) is FacilityState fac && fuel.Reason == FuelRoomText(fac))
+                    fuel = DropIntent.No($"{fuel.Reason}。{CharcoalFuelDragNote(cp)}");
                 return fuel;
             }
             var max = MaxPutInFire(s, head, out var why);

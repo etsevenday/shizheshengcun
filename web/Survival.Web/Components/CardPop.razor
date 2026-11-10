@@ -7,11 +7,12 @@
    另一个就近浮窗（移动、接近、点火工具菜单）打开时先让位，survivalPop 同一时刻只定位一个浮窗。 *@
 @* M120：菜单（含战斗菜单）打开时让位，浮窗不压在菜单遮罩之上 *@
 @* B31c：同一显示条件另有 GameSession.CardPopShown（中央行动位据此判断有没有居中局部盘），两处须一致 *@
+@* B32d（逐字稿 §1.5 Q378）：来源卡被新开的面板盖住时按来源失效收盘但保留选中（CardPopCovered）；玩家重新点来源卡（Select/PickBatch）再打开 *@
 @if (G.State != null && G.Pop == null && G.FeedPending == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending && !G.DuplicateWeaponsPending && !G.MenuOpen && !G.BattleMenuOpen
-     && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid)
+     && !G.CardPopCovered && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid)
 {
     var pot = PotOf();
-    <AnchorPop AnchorId="card-sel" Title="" Place="below,above,right,left" Bound=".center" CssClass="@(pot != null ? "card-pop pot" : "card-pop")" OnClose="G.ClearSelection">
+    <AnchorPop AnchorId="card-sel" Title="" Place="below,above,right,left" Bound=".center" CssClass="@(pot != null ? "card-pop pot" : "card-pop")" OnClose="G.ClearSelection" OnCovered="G.CoverCardPop">
         @* 锅（或锅里的水/食材）：先放所选对象的操作（主按钮固定在浮窗上部可见，M78），再展开锅的完整内容（内容多时在自己的区内滚动；M77-B2） *@
         @if (G.CityBrowsing)
         {

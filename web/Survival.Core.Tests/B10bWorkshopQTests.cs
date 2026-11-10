@@ -449,7 +449,7 @@ public class B10bWorkshopQTests : TestBase
         Ok(s, slot.Instant!);
         Assert.That(Fac(s).FuelMinutes, Is.EqualTo(60));
         Assert.That(Burns(s), Is.Empty, "没有变成煅烧");
-        Assert.That(s.Log.Last().Text, Does.Contain("已作为燃料添加；要煅烧木炭请点火堆卡“煅烧木炭”"));
+        Assert.That(s.Log.Last().Text, Does.Contain("已作为燃料添加。要煅烧木炭，请在右栏空加工位点「煅烧木炭」（每批木材×4）。"), "Q377 指引改到右栏空加工位");
         Ok(s, InstantRequest.AddFuel(1));
         Assert.That(s.Log.Last().Text, Does.Not.Contain("煅烧"));
     }

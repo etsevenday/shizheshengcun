@@ -407,7 +407,8 @@
         // B10 试玩修复 2/6：最上层先退——交接确认浮窗、面板开着时选中卡的操作浮窗，再到面板本身
         else if (G.FeedPending != null && G.Panel != "help") G.CancelFeed();
         else if (G.GivePending != null) G.CancelGive();
-        else if (G.Panel != null && G.Panel != "help" && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid) G.ClearSelection();
+        // B32d（Q378）：选卡盘已因来源被面板盖住收起时，Esc 直接退面板（焦点已交给面板），不先清选中
+        else if (G.Panel != null && G.Panel != "help" && !G.CardPopCovered && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid) G.ClearSelection();
         else if (G.Panel == "help") G.HelpBack();
         else if (G.Panel != null) G.OpenPanel(null);
         else if (G.CharPage != null && G.DetailTab == DetailTab.Character) G.OpenCharPage(null);

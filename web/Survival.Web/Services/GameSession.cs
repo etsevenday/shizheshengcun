@@ -408,7 +408,21 @@ public sealed class GameSession
 
     /// <summary>选卡操作盘（CardPop）是否显示：选中地面/随身物品、工具或锅内液体，且没有别的局部盘、整理窗、菜单或对白锁让它让位。</summary>
     public bool CardPopShown => State != null && Pop == null && FeedPending == null && !IgniteMenuOpen && !DialogueLocked && !OverflowPending && !DuplicateWeaponsPending
-        && !MenuOpen && !BattleMenuOpen && Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid;
+        && !MenuOpen && !BattleMenuOpen && !CardPopCovered && Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid;
+
+    /// <summary>
+    /// B32d（逐字稿 §1.5 Q378）：选卡操作盘的来源卡被新开的面板实际盖住（app.js survivalPop 按覆盖范围判断），已按来源失效收盘。
+    /// 只撤回本盘未提交的意图：选中对象、右栏与已提交结果都不动；玩家重新点仍合法的来源（<see cref="Select"/>、<see cref="PickBatch"/>）或清选中时复位。
+    /// </summary>
+    public bool CardPopCovered { get; private set; }
+
+    /// <summary>B32d（Q378）：来源卡被面板盖住时收起选卡操作盘，保留选中（不提交、不清选择）。</summary>
+    public void CoverCardPop()
+    {
+        if (!CardPopShown) return;
+        CardPopCovered = true;
+        Notify();
+    }
 
     /// <summary>
     /// B31c（Q324）：屏幕中央有局部操作盘（选卡操作、移动／接近／投炭／采集等就近盘、点火工具、食饮）开着。中央行动位此时与一级面板开着时一样
@@ -1303,6 +1317,7 @@ public sealed class GameSession
     {
         if (sel.Key != Selected.Key) { SelectedBatchKey = null; FeedPending = null; }
         Selected = sel;
+        CardPopCovered = false;   // B32d（Q378）：玩家重新点来源，操作盘照原条件再打开
         Pop = null;
         if (sel.Kind != SelectionKind.None) DetailTab = DetailTab.Object;
         Notice = null;
@@ -1352,6 +1367,7 @@ public sealed class GameSession
     {
         var sel = new Selection { Kind = SelectionKind.ItemGroup, Id = itemId, Owner = owner };
         if (sel.Key != Selected.Key) Select(sel);
+        CardPopCovered = false;   // B32d（Q378）：点同一张叠卡也算重新打开
         SelectedBatchKey = batchKey;
         Notify();
     }
@@ -1373,6 +1389,7 @@ public sealed class GameSession
     {
         DropCardFeed();
         Selected = new Selection();
+        CardPopCovered = false;
         DetailTab = DetailTab.Character;
     }
 
@@ -1381,6 +1398,7 @@ public sealed class GameSession
     {
         DropCardFeed();
         Selected = new Selection();
+        CardPopCovered = false;
         Pop = null;
         DetailTab = DetailTab.Character;
         Notify();

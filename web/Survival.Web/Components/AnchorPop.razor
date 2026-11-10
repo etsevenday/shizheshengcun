@@ -4,7 +4,8 @@
 @* 通用局部操作盘（S14 §14.1、§13.2；B31c 起按逐字稿 §1.1 Q324 统一在屏幕中央打开）：从对象卡/指令按钮发起，盘本身用新稿居中框
    （1600×900 基准 760×547，随 Q325 三档 608×438／912×656；放不下时限制在视口内、距屏边 ≥8），标题与动作固定，正文独立滚动。
    内容：对象/目标小图与真实名、归属与已选参数、必要成本/短风险、明确执行与取消。控件阻止冒泡，不点穿为卡片使用/选敌/拖拽；
-   Esc/× 只收起未提交浮窗，不提交、不取消已运行的行动；发起它的对象卡滚出或消失时收起（OnLost，沿原重验）。
+   Esc/× 只收起未提交浮窗，不提交、不取消已运行的行动；发起它的对象卡滚出或消失时收起（OnLost，沿原重验）；
+   B32d（Q378）起被新开的面板实际盖住也算来源失效（OnCovered，没给时同 OnClose），焦点交给该面板。
    B31d（逐字稿 §1.2 Q338 选 B）起盘是当前操作层：四轨上有遮罩（GameScreen .disk-scrim，点遮罩＝取消本盘），四轨 inert（不能点、拖、取得键盘焦点，
    由 survivalPop 在盘显示时加上）；×、Esc、遮罩、盘里的「取消」收盘后焦点回到仍存在的触发控件。居中位置由 CSS 决定。Place／Bound 只在旧锚定模式（Centered=false）下使用。 *@
 <div class="apop @(Centered ? "apop-c" : "") @CssClass" @ref="_el" data-anchor="@AnchorId" data-place="@Place" data-bound="@Bound" data-center="@(Centered ? "1" : null)" role="dialog" aria-label="@Title"
@@ -37,6 +38,11 @@
     [Parameter] public RenderFragment? Actions { get; set; }
     /// <summary>×、锚点消失或滚出可视区时调用（调用方收起浮窗）。</summary>
     [Parameter] public EventCallback OnClose { get; set; }
+    /// <summary>
+    /// B32d（逐字稿 §1.5 Q378）：来源卡被新开的面板盖住、按来源失效收盘时调用——只撤回本盘未提交的意图。没给时同 <see cref="OnClose"/>；
+    /// 选卡操作盘给的是“收盘但保留选中”（GameSession.CoverCardPop）。
+    /// </summary>
+    [Parameter] public EventCallback OnCovered { get; set; }
 
     private ElementReference _el;
     private DotNetObjectReference<AnchorPop>? _ref;
@@ -45,6 +51,9 @@
 
     [JSInvokable]
     public Task AnchorLost() => InvokeAsync(() => OnClose.InvokeAsync());
+
+    [JSInvokable]
+    public Task AnchorCovered() => InvokeAsync(() => OnCovered.HasDelegate ? OnCovered.InvokeAsync() : OnClose.InvokeAsync());
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

@@ -82,7 +82,7 @@ namespace Survival.Core.Engine
                     var fac = FacOf(s, here)!;
                     var room = MaxWoodForFire(fac);
                     if (room <= 0)
-                        return ActionResult.Fail($"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{FuelCapOf(fac)}分钟）");
+                        return ActionResult.Fail(FuelRoomText(fac));
                     if (r.Count < 1) return ActionResult.Fail("数量无效");
                     if (r.Count > room) return ActionResult.Fail($"火堆最多还能放{room}份木材（上限{FuelCapOf(fac)}分钟）", room);
                     List<ItemInstance> source;
@@ -109,7 +109,7 @@ namespace Survival.Core.Engine
                     fac.FuelMinutes += r.Count * Config.Fire.BurnMinutesPerWood;
                     Emit(s, GameEventKind.Info, $"投入{r.Count}木材，火堆燃料{fac.FuelMinutes}分钟。"
                         + (r.FuelViaSlot && CharcoalProcess is ProcessConfig cp
-                            ? $"已作为燃料添加；要煅烧木炭请点火堆卡“煅烧木炭”（每批{ItemName(cp.InputId)}×{cp.InputCount}）。" : ""));
+                            ? "已作为燃料添加。" + CharcoalSlotGuide(cp) : ""));
                     UpdateFlags(s);
                     return ActionResult.Success();
                 }

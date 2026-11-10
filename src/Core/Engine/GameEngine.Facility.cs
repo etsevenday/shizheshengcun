@@ -378,6 +378,18 @@ namespace Survival.Core.Engine
             return null;
         }
 
+        /// <summary>
+        /// Q377（逐字稿 §1.5）：煅烧指引——「要煅烧木炭，请在右栏空加工位点「煅烧木炭」（每批{原料}×{份数}）。」，原料与份数沿当前煅烧配方。
+        /// 拖木材加燃料成功的附加提示与燃料容量不足的拒绝原因共用。
+        /// </summary>
+        public string CharcoalSlotGuide(ProcessConfig cp) => $"要煅烧木炭，请在右栏空加工位点「煅烧木炭」（每批{ItemName(cp.InputId)}×{cp.InputCount}）。";
+
+        /// <summary>Q377：拖木材到火堆卡被拒时的说明「拖木材到火堆卡是添加燃料。」＋煅烧指引。</summary>
+        public string CharcoalFuelDragNote(ProcessConfig cp) => "拖木材到火堆卡是添加燃料。" + CharcoalSlotGuide(cp);
+
+        /// <summary>燃料空余容量不足一份木材时的原阻断句（拖入与「投入木材」共用）。</summary>
+        private string FuelRoomText(FacilityState fac) => $"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{FuelCapOf(fac)}分钟）";
+
         private string FireFullText(GameState s, string loc)
         {
             var n = Config.Fire.ProcessingSlots;
@@ -410,10 +422,10 @@ namespace Survival.Core.Engine
                 return 1;
             }
             if (IsLiquid(inst)) { reason = $"{cfg.Name}不能直接倒进火堆（不会产生净水，也不会灭火），请拖进锅里"; return 0; }
-            // Q111：拖木材到火堆仍是添加燃料；煅烧木炭走火堆卡的显式“煅烧木炭”投料（每批4份），不把同一拖动默默改成煅烧
+            // Q111：拖木材到火堆仍是添加燃料；煅烧木炭走右栏空加工位的显式「煅烧木炭」投料，不把同一拖动默默改成煅烧（指引句 Q377）
             if (CharcoalProcess is ProcessConfig cp && inst.ItemId == cp.InputId)
             {
-                reason = $"{cfg.Name}拖到火堆燃料区是添加燃料；要煅烧木炭请点火堆卡“煅烧木炭”（每批{cp.InputCount}份）";
+                reason = CharcoalFuelDragNote(cp);
                 return 0;
             }
             if (!CanRoast(inst.ItemId))
