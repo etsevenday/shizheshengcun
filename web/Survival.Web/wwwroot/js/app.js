@@ -275,6 +275,41 @@ window.survivalDlg = (function () {
 // 不留下脱离目标的可执行旧按钮。只改位置，不推进任何玩法。
 window.survivalPop = (function () {
   var cur = null;
+  // B31d（逐字稿 §1.2 Q338 选 B）：居中局部盘真正显示时，四轨（.center-scroll）加 inert——不能点、拖、取得键盘焦点；收盘时去掉。
+  // 只动自己加上的 inert（data-disk-inert 标记），Blazor 不管理这个属性。选卡盘没有操作内容时被样式隐藏（.card-pop:not(:has(.tbar))），不算显示。
+  function railsInert(on) {
+    var r = document.querySelector('.wasteland .center-scroll');
+    if (!r) return;
+    if (on) {
+      if (!r.hasAttribute('inert')) { r.setAttribute('inert', ''); r.setAttribute('data-disk-inert', '1'); }
+    } else if (r.getAttribute('data-disk-inert')) {
+      r.removeAttribute('inert'); r.removeAttribute('data-disk-inert');
+    }
+  }
+  // 点遮罩、Esc、× 或盘里的「取消」收盘后：焦点回到仍存在、可聚焦（不在 inert 里）的触发控件——先找发起它的对象卡／按钮，再找打开前最后点过的控件
+  var lastTrigger = null;
+  function noteTrigger(ev) {
+    var t = ev.target;
+    if (!t || !t.closest || t.closest('.apop, .pop-ghosts, .disk-scrim')) return;
+    var c = t.closest('button, [tabindex], a[href], input, select, textarea');
+    if (c) lastTrigger = c;
+  }
+  document.addEventListener('pointerdown', noteTrigger, true);
+  document.addEventListener('focusin', noteTrigger, true);
+  function restoreFocus(list) {
+    setTimeout(function () {
+      for (var i = 0; i < list.length; i++) {
+        var c = list[i];
+        if (!c || !c.isConnected || c.disabled || (c.closest && c.closest('[inert]')) || typeof c.focus !== 'function') continue;
+        try { c.focus({ preventScroll: true }); } catch (e) { try { c.focus(); } catch (e2) { } }
+        if (document.activeElement === c) return;
+      }
+    }, 0);
+  }
+  function onCancelClick(ev) {
+    var t = ev.target;
+    if (cur && t && t.closest && t.closest('.apop-x, .apop-cancel, [data-feed-cancel], [data-disk-cancel]')) cur.restore = true;
+  }
   function visibleRect(el) {
     var r = el.getBoundingClientRect();
     var L = r.left, T = r.top, R = r.right, B = r.bottom;
@@ -301,8 +336,10 @@ window.survivalPop = (function () {
       el.style.left = ''; el.style.top = '';
       el.style.visibility = 'visible';
       el.setAttribute('data-side', 'center');
+      railsInert(el.offsetWidth > 0 && el.offsetHeight > 0);
     }
     var a = cur.anchor ? document.getElementById(cur.anchor) : null;
+    if (a) cur.anchorEl = a;
     var A = a ? visibleRect(a) : null;
     // B21 试玩修复：页面重排（右栏内容变化引起的一闪滚动条等）会让锚点瞬间“看不见”；连续 250ms 仍看不见才算滚出，避免浮窗刚弹出就被收起
     if (!a || A.vis < 0.25) {
@@ -358,6 +395,8 @@ window.survivalPop = (function () {
   function onMove() { if (cur && !cur.raf) cur.raf = requestAnimationFrame(function () { if (cur) { cur.raf = 0; place(); } }); }
   function stop() {
     if (!cur) return;
+    railsInert(false);
+    if (cur.el) cur.el.removeEventListener('click', onCancelClick, true);
     window.removeEventListener('scroll', onMove, true);
     window.removeEventListener('resize', onMove);
     if (cur.ro) cur.ro.disconnect();
@@ -369,13 +408,21 @@ window.survivalPop = (function () {
       if (!el) return;
       if (cur && cur.el === el) { cur.anchor = anchorId; cur.dotnet = dotnet; place(); return; }
       stop();
-      cur = { el: el, anchor: anchorId, dotnet: dotnet, raf: 0, ro: null };
+      cur = { el: el, anchor: anchorId, dotnet: dotnet, raf: 0, ro: null, anchorEl: document.getElementById(anchorId), trigger: lastTrigger, restore: false };
+      el.addEventListener('click', onCancelClick, true);
       window.addEventListener('scroll', onMove, true);
       window.addEventListener('resize', onMove);
       if (window.ResizeObserver) { cur.ro = new ResizeObserver(onMove); cur.ro.observe(el); }
       place();
     },
-    detach: function (el) { if (cur && cur.el === el) stop(); },
+    detach: function (el) {
+      if (!cur || cur.el !== el) return;
+      var back = cur.restore ? [cur.anchorEl, cur.trigger] : null;
+      stop();
+      if (back) restoreFocus(back);
+    },
+    // B31d（Q338）：点遮罩或 Esc 撤回本盘前由 GameScreen 调用，收盘后把焦点还给触发控件
+    markCancel: function () { if (cur) cur.restore = true; },
     place: place
   };
 })();

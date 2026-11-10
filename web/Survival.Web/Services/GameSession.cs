@@ -311,7 +311,13 @@ public sealed class GameSession
     public string AppBuild { get; set; } = "";
 
     /// <summary>死亡结算页的「查看记录」层开着（B31d：结算页 Esc 先收这一层，再开菜单，Q322「先收子层」）。</summary>
-    public bool DeathLogOpen { get; set; }
+    public bool DeathLogOpen { get; private set; }
+
+    public void SetDeathLog(bool open)
+    {
+        DeathLogOpen = open;
+        Notify();
+    }
 
     public void SetMenu(bool open)
     {
@@ -408,6 +414,26 @@ public sealed class GameSession
     /// 收成中部底部窄条，不被居中盘挡住「退出行动」（排版处理，不改规则）。
     /// </summary>
     public bool LocalDiskOpen => State != null && !InBattleUi && (Pop != null || FeedPending != null || IgniteMenuOpen || CardPopShown);
+
+    /// <summary>
+    /// B31d（逐字稿 §1.2 Q338 选 B）：居中局部操作盘是当前操作层，四轨上加遮罩——遮罩后的四轨不能点、拖或取得键盘焦点（inert 由 app.js survivalPop
+    /// 在盘真正显示时加上、收盘时去掉）。菜单、对白锁、死亡结算与强制整理（超五卡、同类双武器）各有自己的层，此时不另加；食饮盘在说明打开时让位，
+    /// 不算开着。中央行动位（窄条）在遮罩之上，「退出行动」照原规则可用。悬停说明、页内常驻工作区（整备交接、制作工作区）、行动进度窗不是这类盘。
+    /// </summary>
+    public bool DiskMaskShown => LocalDiskOpen && !DialogueLocked && !MenuOpen && !BattleMenuOpen && !S.Progress.Dead && !OverflowPending && !DuplicateWeaponsPending
+        && (Pop != null || IgniteMenuOpen || (FeedPending != null && Panel != "help") || CardPopShown);
+
+    /// <summary>
+    /// B31d（Q338）：点遮罩或 Esc 只撤回本盘尚未提交的意图——与该盘自己的 ×／取消同一处理（就近盘收起、点火工具收起、食饮草稿清掉、选卡盘清选中），
+    /// 不提交、不取消已运行的行动。
+    /// </summary>
+    public void CancelLocalDisk()
+    {
+        if (Pop != null) { ClosePop(); return; }
+        if (IgniteMenuOpen) { Hover(null); CloseIgniteMenu(); return; }
+        if (FeedPending != null) { CancelFeed(); return; }
+        if (CardPopShown) ClearSelection();
+    }
 
     public void ToggleIgniteMenu()
     {

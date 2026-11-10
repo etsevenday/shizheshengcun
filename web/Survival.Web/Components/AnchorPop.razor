@@ -5,7 +5,8 @@
    （1600×900 基准 760×547，随 Q325 三档 608×438／912×656；放不下时限制在视口内、距屏边 ≥8），标题与动作固定，正文独立滚动。
    内容：对象/目标小图与真实名、归属与已选参数、必要成本/短风险、明确执行与取消。控件阻止冒泡，不点穿为卡片使用/选敌/拖拽；
    Esc/× 只收起未提交浮窗，不提交、不取消已运行的行动；发起它的对象卡滚出或消失时收起（OnLost，沿原重验）。
-   背后四轨不加遮罩、不改原交互（点别的卡照原规则换选中）；位置由 survivalPop 计算。Place／Bound 只在旧锚定模式（Centered=false）下使用。 *@
+   B31d（逐字稿 §1.2 Q338 选 B）起盘是当前操作层：四轨上有遮罩（GameScreen .disk-scrim，点遮罩＝取消本盘），四轨 inert（不能点、拖、取得键盘焦点，
+   由 survivalPop 在盘显示时加上）；×、Esc、遮罩、盘里的「取消」收盘后焦点回到仍存在的触发控件。居中位置由 CSS 决定。Place／Bound 只在旧锚定模式（Centered=false）下使用。 *@
 <div class="apop @(Centered ? "apop-c" : "") @CssClass" @ref="_el" data-anchor="@AnchorId" data-place="@Place" data-bound="@Bound" data-center="@(Centered ? "1" : null)" role="dialog" aria-label="@Title"
      @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true" @onmousedown:stopPropagation="true" @onwheel:stopPropagation="true">
     <div class="apop-head">

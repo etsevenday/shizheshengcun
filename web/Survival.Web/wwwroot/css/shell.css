@@ -233,7 +233,7 @@ fieldset.dev-box:disabled { opacity: .55; }
 /* ═════ B31c：局部盘居中（Q324）·公共动效（R114）·结果提示（Q330）·外壳遗留 ═════ */
 
 /* ───── Q324 局部操作盘：屏幕中央，新稿居中框 760×547（1600 基准；三档同 --pop-w/--pop-h），放不下时限制在视口内、距屏边 ≥8 ───── */
-/* 标题与动作固定，正文独立滚动；位置由 app.js survivalPop 按 data-center 居中。背后四轨不加遮罩、不改原交互。 */
+/* 标题与动作固定，正文独立滚动；位置由 app.js survivalPop 按 data-center 居中。B31d（Q338）起四轨上加遮罩，见文末 .disk-scrim。 */
 .wasteland .apop.apop-c {
   width: min(var(--pop-w), calc(100vw - 16px)); height: min(var(--pop-h), calc(100vh - 16px));
   max-width: none; max-height: none; overflow: hidden;
@@ -377,3 +377,12 @@ button { transition-duration: var(--mo-hover); }
 
 /* Q333：死亡结算页的「菜单」盖在结算层（.end-back z 60，位于 .game 之外）之上；外层只借 .wasteland 的按钮与偏好样式，不画背景 */
 .wasteland.end-menu { position: fixed; inset: 0; z-index: 86; background: none; }
+
+/* Q338：居中局部操作盘开着时四轨上的遮罩（盖在四轨与盖在四轨上的一级面板、对白层之上，中央行动位窄条 z 45 与盘 z 50 之下）；
+   点遮罩只撤回本盘。四轨本身的 inert 由 app.js survivalPop 加。页面里没有真正显示的居中盘时（如选卡盘没有操作内容被隐藏）遮罩不显示 */
+.wasteland .center > .disk-scrim {
+  position: absolute; inset: 0; z-index: 42;
+  background: color-mix(in srgb, var(--ink2-black) 42%, transparent);
+  animation: b31c-fade-in var(--mo-scrim) ease-out both;
+}
+.wasteland:not(:has(.apop.apop-c:not(.card-pop), .apop.card-pop.apop-c .tbar)) .center > .disk-scrim { display: none; }

@@ -85,6 +85,7 @@ public class B31dShellTests : TestBase
         Assert.That(screen, Does.Contain("<div class=\"wasteland end-menu\"><MenuOverlay /></div>"));
         Assert.That(screen, Does.Contain("@if (G.MenuOpen && !battleUi && !s.Progress.Dead) { <MenuOverlay /> }"));
         Assert.That(screen, Does.Contain("HasClosableLayer = dead ? G.DeathLogOpen :"));
+        Assert.That(screen, Does.Contain("if (route == ShellEscRoute.CloseLayer) G.SetDeathLog(false);"), "Esc 收「查看记录」要通知结算层重绘");
         var onKey = screen.Substring(screen.IndexOf("public void OnKey(string key)"));
         Assert.That(onKey.IndexOf("if (key == \"Escape\") { Escape(); return; }"), Is.LessThan(onKey.IndexOf("if (G.S.Progress.Dead) return;")), "死亡时只收 Esc");
         var menu = Web("Components", "MenuOverlay.razor");
@@ -190,6 +191,55 @@ public class B31dShellTests : TestBase
         Assert.That(clear, Is.GreaterThan(0));
         Assert.That(clear, Is.LessThan(body.IndexOf("Drain();")), "先清旧提示，再放本次结果");
         Assert.That(g, Does.Contain("E.AcceptQuest(S, questId, Guid.NewGuid().ToString(\"N\"))"), "任务条目接取（与交谈同效）带请求号，沿 Q330 标记清提示");
+    }
+
+    // ───────────── Q338 居中局部盘遮罩 ─────────────
+
+    /// <summary>
+    /// Q338-A01：居中局部盘开着时四轨上有遮罩、四轨 inert（不能点、拖、取得键盘焦点）；点遮罩与 Esc 只撤回本盘（同该盘 ×／取消），焦点回到仍存在的触发控件；
+    /// 窄条（「退出行动」）在遮罩之上；菜单、对白锁、死亡、强制整理时不另加；悬停、整备／制作页内工作区、行动进度窗不走这一层。
+    /// </summary>
+    [Test]
+    public void Q338_A01_DiskMask()
+    {
+        var g = Web("Services", "GameSession.cs");
+        Assert.That(g, Does.Contain("public bool DiskMaskShown => LocalDiskOpen && !DialogueLocked && !MenuOpen && !BattleMenuOpen && !S.Progress.Dead && !OverflowPending && !DuplicateWeaponsPending"));
+        Assert.That(g, Does.Contain("&& (Pop != null || IgniteMenuOpen || (FeedPending != null && Panel != \"help\") || CardPopShown);"), "食饮盘在说明打开时让位，不算开着");
+        var cancel = g.Substring(g.IndexOf("public void CancelLocalDisk()"));
+        cancel = cancel.Substring(0, cancel.IndexOf("\n    }"));
+        Assert.That(cancel, Does.Contain("if (Pop != null) { ClosePop(); return; }").And.Contain("CloseIgniteMenu();").And.Contain("CancelFeed();").And.Contain("ClearSelection();"),
+            "只撤回本盘意图：与各盘的 ×／取消相同，不提交");
+        Assert.That(cancel, Does.Not.Contain("Start").And.Not.Contain("Confirm"));
+
+        var screen = Web("Components", "GameScreen.razor");
+        Assert.That(screen, Does.Contain("<div class=\"disk-scrim\" aria-hidden=\"true\" @onclick=\"CancelDisk\"></div>"));
+        Assert.That(screen, Does.Contain("_diskMask = G.DiskMaskShown;"));
+        Assert.That(screen.IndexOf("<div class=\"disk-scrim\""), Is.LessThan(screen.IndexOf("<PauseLayer Docked=")), "遮罩在窄条之前（窄条 z 更高，在遮罩之上）");
+        var step = screen.Substring(screen.IndexOf("private void NormalStep()"));
+        Assert.That(step.IndexOf("else if (G.DiskMaskShown) CancelDisk();"), Is.LessThan(step.IndexOf("else if (G.Pop != null) G.ClosePop();")), "Esc 先撤回本盘");
+        Assert.That(step.IndexOf("if (G.PendingDrop != null) G.CancelDropQuantity();"), Is.LessThan(step.IndexOf("else if (G.DiskMaskShown) CancelDisk();")), "盘上再开的数量框先收");
+        Assert.That(screen, Does.Contain("ip.InvokeVoid(\"survivalPop.markCancel\");"));
+
+        var js = Web("wwwroot", "js", "app.js");
+        Assert.That(js, Does.Contain("railsInert(el.offsetWidth > 0 && el.offsetHeight > 0);"), "盘真正显示时四轨 inert");
+        Assert.That(js, Does.Contain("document.querySelector('.wasteland .center-scroll')"));
+        var stop = js.Substring(js.IndexOf("function stop() {"));
+        Assert.That(stop.Substring(0, stop.IndexOf("\n  }")), Does.Contain("railsInert(false);"), "收盘去掉 inert");
+        Assert.That(js, Does.Contain("var back = cur.restore ? [cur.anchorEl, cur.trigger] : null;"), "取消收盘后焦点回触发控件");
+        Assert.That(js, Does.Contain("t.closest('.apop-x, .apop-cancel, [data-feed-cancel], [data-disk-cancel]')"), "× 与盘里的取消同样还焦点");
+        Assert.That(js, Does.Contain("if (!a || A.vis < 0.25)"), "来源失效仍照原规则收起（不还焦点）");
+
+        var css = Web("wwwroot", "css", "shell.css");
+        var scrim = Block(css, ".wasteland .center > .disk-scrim {");
+        Assert.That(scrim, Does.Contain("position: absolute; inset: 0; z-index: 42;"));
+        Assert.That(Block(css, ".wasteland .cprog.float.docked, .pause-dock {"), Does.Contain("z-index: 45"), "窄条在遮罩之上");
+        Assert.That(css, Does.Contain(".wasteland:not(:has(.apop.apop-c:not(.card-pop), .apop.card-pop.apop-c .tbar)) .center > .disk-scrim { display: none; }"));
+        Assert.That(Block(css, ".wasteland .apop.apop-c > .apop-body {"), Does.Contain("overscroll-behavior: contain"), "盘内滚动独立");
+
+        // 不视为这类操作盘：整备交接盘、制作页工作区、悬停提示、行动进度窗不走 AnchorPop
+        Assert.That(Web("Components", "GearOverlay.razor"), Does.Not.Contain("<AnchorPop"));
+        Assert.That(Web("Components", "CraftOverlay.razor"), Does.Not.Contain("<AnchorPop"));
+        Assert.That(Web("Components", "CentralProgress.razor"), Does.Not.Contain("<AnchorPop"));
     }
 
     // ───────────── 工具 ─────────────

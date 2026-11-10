@@ -61,6 +61,8 @@
             var dockProgress = centerPanel && G.Panel != "citymap";
             // B31c（Q324）：没开面板、居中局部盘开着时同样收成窄条，居中盘不挡「退出行动」
             if (!centerPanel && G.LocalDiskOpen) dockProgress = true;
+            // B31d（Q338）：居中局部盘开着时四轨加遮罩（点遮罩＝取消本盘）；窄条在遮罩之上
+            _diskMask = G.DiskMaskShown;
         }
         @* 固定四行（S14 §18.1）：中部净高均分四份——①地图/场景 ②设施/资源 ③当前地面 ④随身；选卡、展开锅、悬停、开面板、对白、
            战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。对白/战斗/面板只占①②合并区域。 *@
@@ -102,6 +104,13 @@
                 <ItemShelf Owner="@s.Ground" Title="@(s.CurrentZone == GameState.SafehouseZone ? "屋内地面" : "当前地面")" Sub="@e.ZoneName(s, s.Ground)" />
                 <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
             </div>
+
+            @if (_diskMask)
+            {
+                @* B31d（逐字稿 §1.2 Q338 选 B）：遮罩盖住四轨（含盖在四轨上的一级面板），点遮罩只撤回本盘未提交的意图，焦点回到仍存在的触发控件；
+                   四轨的 inert（不能点、拖、取得键盘焦点）由 survivalPop 在盘真正显示时加上。中央行动位窄条在遮罩之上 *@
+                <div class="disk-scrim" aria-hidden="true" @onclick="CancelDisk"></div>
+            }
 
             @if (G.PauseLayerShown)
             {
@@ -196,6 +205,7 @@
     private string? _selKey;
 
     private bool _lockSeen;
+    private bool _diskMask;
     private ActionProgressInfo? _lastInfo;
     private ActionProgressInfo? _fadeInfo;
 
@@ -227,6 +237,8 @@
             // B31d（Q336）：游戏菜单版本行的实际构建
             try { G.AppBuild = await JS.InvokeAsync<string>("survival.appBuild"); } catch (JSException) { /* 旧缓存 app.js：版本行省略构建段 */ }
         }
+        // B31d（Q338）：Pop 失效在子组件渲染时被静默丢掉（ActionPops.Valid），遮罩这一帧已画出；与当前状态不符时再渲染一次
+        if (G.State != null && _diskMask != G.DiskMaskShown) StateHasChanged();
         // 中部二级面板（地图/制作/休息/日志）打开、战斗或敌踪出现（含读档恢复）时，中部纵滚回顶，
         // 面板与覆盖层才能完整替换地块两行，不被之前的滚动位置切掉标题（试玩修复 G1、G2）
         if (G.State != null)
@@ -329,7 +341,7 @@
         // B31d（Q333）：死亡结算页上 Esc 只在结算页这几层之间走：先收「查看记录」，再开／关结算菜单
         if (dead)
         {
-            if (route == ShellEscRoute.CloseLayer) { G.DeathLogOpen = false; StateHasChanged(); }
+            if (route == ShellEscRoute.CloseLayer) G.SetDeathLog(false);
             else if (route == ShellEscRoute.OpenMenu) G.SetMenu(true);
             else if (route == ShellEscRoute.CloseMenu) G.SetMenu(false);
             return;
@@ -374,6 +386,8 @@
     {
         if (G.PendingDrop != null) G.CancelDropQuantity();
         else if (G.StatusPinned != null) G.PinStatus(null);
+        // B31d（Q338）：居中局部盘是当前操作层，Esc 先撤回本盘（同点遮罩），焦点回到触发控件
+        else if (G.DiskMaskShown) CancelDisk();
         else if (G.Pop != null) G.ClosePop();
         // B24（A10-CITY §7）：鸟瞰里 Esc 先收固定说明/确认窗，再关鸟瞰；不撤销已发生的移动
         else if (G.Panel == "citymap" && G.CityPick != null) G.PickCity(null);
@@ -388,6 +402,14 @@
         else if (G.CharPage != null && G.DetailTab == DetailTab.Character) G.OpenCharPage(null);
         else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
         else if (G.FeedPending != null) G.CancelFeed();
+    }
+
+    /// <summary>B31d（Q338）：点遮罩或 Esc 撤回本盘——先告诉 survivalPop 这是取消（收盘后把焦点还给触发控件），再按该盘自己的取消处理。</summary>
+    private void CancelDisk()
+    {
+        try { if (JS is IJSInProcessRuntime ip) ip.InvokeVoid("survivalPop.markCancel"); }
+        catch (JSException) { /* 旧缓存 app.js：只收盘、不还焦点 */ }
+        G.CancelLocalDisk();
     }
 
     public override void Dispose()

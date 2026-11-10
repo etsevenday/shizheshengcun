@@ -54,7 +54,7 @@
             <div class="under">原型不提供跨局继承，重新开始会完整重置世界与角色。</div>
         </div>
     </div>
-    @if (G.DeathLogOpen) { <div class="end-back" style="z-index:70" inert="@G.MenuOpen" @onclick="() => G.DeathLogOpen = false"><div class="end-card" style="max-height:80vh;overflow:auto">@foreach (var l in Enumerable.Reverse(s.Log).Take(80)) {<div class="small"><span class="muted">@Clock.DayTime(l.Minute)</span> @l.Text</div>}</div></div> }
+    @if (G.DeathLogOpen) { <div class="end-back" style="z-index:70" inert="@G.MenuOpen" @onclick="() => G.SetDeathLog(false)"><div class="end-card" style="max-height:80vh;overflow:auto">@foreach (var l in Enumerable.Reverse(s.Log).Take(80)) {<div class="small"><span class="muted">@Clock.DayTime(l.Minute)</span> @l.Text</div>}</div></div> }
 }
 
 @code {
@@ -67,7 +67,7 @@
         G.NewGame();
     }
 
-    private void ShowLog() => G.DeathLogOpen = true;
+    private void ShowLog() => G.SetDeathLog(true);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
