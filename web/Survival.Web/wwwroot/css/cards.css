@@ -306,13 +306,51 @@
 .ocard.k2.k2-fire.lit { box-shadow: 0 0 0 1px #c9823a, 0 2px 14px #e8913f55; }
 .ocard.k2.k2-fire .k2-l2 .fuel-track { height: 4px; margin: 1px 4px 0; background: #00000066; }
 .ocard.k2.k2-fire .k2-l2 .fuel-track i { display: block; height: 100%; background: #c9823a; }
-/* 设施级入口多于一个时竖排（火堆：投入木材、点燃／熄灭、等待加工；安全屋：进入／出门、面板／柜子） */
-.ocard.k2:is(.k2-fire, .k2-sh) > .k2-act { flex-direction: column; justify-content: center; align-items: stretch; gap: 3px; }
-.ocard.k2:is(.k2-fire, .k2-sh) > .k2-act :is(button) { width: 100%; }
-.ocard.k2:is(.k2-fire, .k2-sh) > .k2-act small { font-size: var(--fs-aux, 14px); opacity: .85; max-width: 7em; overflow: hidden; text-overflow: ellipsis; }
+/* 设施级入口多于一个时竖排（安全屋：进入／出门、面板／柜子；火堆见下方 B32b.7） */
+.ocard.k2.k2-sh > .k2-act { flex-direction: column; justify-content: center; align-items: stretch; gap: 3px; }
+.ocard.k2.k2-sh > .k2-act :is(button) { width: 100%; }
+.ocard.k2.k2-sh > .k2-act small { font-size: var(--fs-aux, 14px); opacity: .85; max-width: 7em; overflow: hidden; text-overflow: ellipsis; }
 @media (max-height: 800px) {
-  .ocard.k2:is(.k2-fire, .k2-sh) > .k2-act { justify-content: flex-start; padding-top: 4px; }
-  .ocard.k2:is(.k2-fire, .k2-sh) > .k2-act small { display: none; }
+  .ocard.k2.k2-sh > .k2-act { justify-content: flex-start; padding-top: 4px; }
+  .ocard.k2.k2-sh > .k2-act small { display: none; }
+}
+
+/* B32b.7 试玩修复：火堆卡最多三个设施级入口（投入木材＋余n、点燃／熄灭、等待加工＋小字），信息条右侧只有一行信息条高，
+   原先三键被 .fc-btn 的 flex:1 1 0 压到 6px、互相叠住，按钮列还把信息条挤窄、副标被截。
+   改为三档都把按钮列放在主图右侧（同 ≤800 的低屏图右），信息条占满整宽，副标「燃料{当前}/{上限}分钟」完整；
+   按钮按内容定高、不再被压缩，小字单行、过长省略（全文在悬停）；两个角标在主图区上下排开不重叠。 */
+.wasteland .ocard.k2.k2.k2-fire { grid-template-columns: minmax(0, 1fr) auto; }
+.ocard.k2.k2-fire.has-act > .k2-art { grid-column: 1; }
+.ocard.k2.k2-fire.has-act > .k2-info { grid-column: 1 / -1; }
+.ocard.k2.k2-fire > .k2-act {
+  grid-column: 2; grid-row: 1;
+  flex-direction: column; justify-content: center; align-items: stretch; gap: 2px;
+  min-height: 0;
+  padding: 3px 5px 3px 0;
+  background: none; border-top: 0;
+}
+.ocard.k2.k2-fire > .k2-act > button { flex: none; width: auto; min-height: 0; padding: 1px 6px; gap: 0; }
+.ocard.k2.k2-fire > .k2-act > button > :is(strong, small) {
+  display: block; max-width: 100%;
+  line-height: 1.1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ocard.k2.k2-fire > .k2-act > button > small { font-size: var(--fs-aux, 14px); opacity: .85; }
+/* 「等待加工」的原因或预计时长限宽省略，给主图与角标留出宽度 */
+.ocard.k2.k2-fire > .k2-act > button.cook > small { max-width: 6em; }
+.ocard.k2 > .k2-art > .k2-tag.k2-tag2 { top: calc(6px + 1.5em + 2px); }
+/* 燃料条贴信息条底边，不另占一行高度，给主图右侧的按钮列多留几像素 */
+.ocard.k2.k2-fire > .k2-info { position: relative; padding-bottom: 8px; }
+.ocard.k2.k2-fire > .k2-info > .k2-l2 { position: absolute; left: 10px; right: 10px; bottom: 2px; }
+.ocard.k2.k2-fire .k2-l2 .fuel-track { margin: 0; }
+@media (max-height: 800px) {
+  .ocard.k2.k2-fire > .k2-info { padding-bottom: 7px; }
+  .ocard.k2.k2-fire .k2-l2 .fuel-track { height: 3px; }
+  .ocard.k2.k2-fire > .k2-act { gap: 1px; padding: 2px 4px 2px 0; }
+  .ocard.k2.k2-fire > .k2-act > button { padding: 0 5px; }
+  /* ≤800 高主图区只有约 76px：「等待加工」的小字沿 B32b 原做法收起（原因与预计时长在悬停与右栏预览），「余n」保留（Q376） */
+  .ocard.k2.k2-fire > .k2-act > button.cook > small { display: none; }
+  .ocard.k2.has-act > .k2-art > .k2-tag.k2-tag2 { top: calc(4px + 1.5em + 2px); }
 }
 
 /* 右栏层级路径「火堆 › 加工位n › 锅 › 内容」 */
@@ -326,6 +364,9 @@
 .fire-detail .fire-slot.empty { border-style: dashed; }
 .fire-detail .fs-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; }
 .fire-detail .fs-head > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-aux, 14px); }
+/* B32b.7 试玩修复：行名「加工位n」一行完整、不被长状态句压缩；状态句占余下宽度，过长时换行（右对齐） */
+.fire-detail .fs-head > b { flex: none; white-space: nowrap; }
+.fire-detail .fs-head > span { flex: 0 1 auto; white-space: normal; overflow-wrap: anywhere; text-align: right; }
 .fire-detail .fire-slot > :is(.pot-card, .fc-food) { width: 100%; }
 .fire-detail .slot-charcoal { align-self: flex-start; }
 .wasteland .fire-detail .fire-slot.st-busy { box-shadow: inset 3px 0 0 var(--ink2-gold); }

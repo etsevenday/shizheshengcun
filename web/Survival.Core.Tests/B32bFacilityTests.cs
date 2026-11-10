@@ -294,6 +294,22 @@ public class B32bFacilityTests : TestBase
         Assert.That(Web("Components/ObjectCard.razor"), Does.Contain("k2-tag2"));
     }
 
+    /// <summary>B32b.7 试玩修复（Q372、Q376）：火堆卡按钮列在主图右侧、按内容定高不被压缩，「余n」不收起；
+    /// 第二角标在 ≤800 高也排在第一个下面；右栏加工位行名不换行、不被压缩。</summary>
+    [Test]
+    public void B32b7_FireCardLayoutFix()
+    {
+        var css = Web("wwwroot/css/cards.css");
+        var act = css.IndexOf(".ocard.k2.k2-fire > .k2-act {", StringComparison.Ordinal);
+        Assert.That(act, Is.GreaterThan(0));
+        Assert.That(css.Substring(act, 80), Does.Contain("grid-column: 2; grid-row: 1;"), "按钮列在主图右侧");
+        Assert.That(css, Does.Contain(".ocard.k2.k2-fire > .k2-act > button { flex: none;"), "按钮不再按 flex:1 1 0 被压扁");
+        Assert.That(css, Does.Contain(".ocard.k2.k2-fire.has-act > .k2-info { grid-column: 1 / -1; }"), "信息条占满整宽，副标完整");
+        Assert.That(css, Does.Contain(".ocard.k2.has-act > .k2-art > .k2-tag.k2-tag2 { top: calc(4px + 1.5em + 2px); }"), "≤800 高两个角标不重叠");
+        Assert.That(css, Does.Not.Contain(".ocard.k2:is(.k2-fire, .k2-sh) > .k2-act small { display: none; }"), "「余n」在 ≤800 高也显示");
+        Assert.That(css, Does.Contain(".fire-detail .fs-head > b { flex: none; white-space: nowrap; }"));
+    }
+
     /// <summary>Q339、Q343：右栏火堆详情有层级路径、剩余燃料、两行加工位（空位是落点、第一处空位有煅烧木炭）；选中锅或食材时路径仍在。</summary>
     [Test]
     public void Q339_A02_FireDetailSlotsAndCrumbs()
