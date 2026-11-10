@@ -97,7 +97,7 @@
                     // 副标不是数量时数量放主图右上角标；效果、重量与批次数在悬停与右栏
                     var front = stacked ? kb![0].Stacks[0] : head;
                     var statusSub = (stacked ? kb![0].Spoiled : allSpoiled) || front.ExpiresAt.HasValue || (front.MaxDurability.HasValue && front.Durability.HasValue);
-                    var subText = statusSub ? (stacked ? (kb![0].Spoiled ? "已腐败" : Ui.ItemLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.ItemLine(e, s, whole)) : qtyText;
+                    var subText = statusSub ? (stacked ? (kb![0].Spoiled ? "已腐败" : Ui.CardStatusLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.CardStatusLine(e, s, whole)) ?? qtyText : qtyText;
                     var spoiledFront = stacked ? kb![0].Spoiled : allSpoiled;
                 }
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@
@@ -132,16 +132,24 @@
                     continue;
                 }
                 var tSel = sel.Kind == SelectionKind.Tool && sel.InstanceId == inst;
+                // B32a 试玩修复（Q345）：不可堆叠的有保质物品（各类尸体）腐败后同样挂危险叠层
+                var spoiledT = e.IsSpoiled(s, t);
                 <div @key="@("t:" + inst)" class="card-col @(tSel ? "open" : "")">
                 <div id="@(tSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(t.ItemId)} · {Ui.ItemLine(e, s, t)}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drag-title="@e.ItemName(t.ItemId)" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item k2i @(t.Quality is "green" or "blue" ? "q-" + t.Quality : "") @(broken || CardStates.BrokenTool(t) ? "broken st-danger" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
+                     class="card item k2i @(t.Quality is "green" or "blue" ? "q-" + t.Quality : "") @(broken || CardStates.BrokenTool(t) ? "broken st-danger" : "") @(spoiledT ? "spoiled st-danger" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
-                    @* B32a（Q340、Q345）：工具卡副标写耐久（耐久为 0 写「已损坏」并挂危险叠层），已部署写原因 *@
+                    @* B32a（Q340、Q345）：单件卡副标与成组卡同规则，保质 → 耐久 → 数量只写一项（耐久为 0 写「已损坏」、腐败写「已腐败」并挂危险叠层）；
+                       远程武器弹仓、重量、用途在悬停与右栏；已部署写原因 *@
                     <div class="k2-art">@Icons.Markup(t.ItemId)</div>
-                    @{ var deployed = e.IsDeployed(s, t); var tLine = deployed ? "已部署 · 先收起才能拾取" : Ui.ItemLine(e, s, t); }
+                    @{
+                        var deployed = e.IsDeployed(s, t);
+                        var tLine = deployed ? "已部署 · 先收起才能拾取" : Ui.ItemLine(e, s, t);
+                        var tSubStatus = Ui.CardStatusLine(e, s, t);
+                        var tSub = deployed ? tLine : tSubStatus ?? $"×{t.Count}";
+                    }
                     <div class="k2-info">
                         <div class="k2-name-row"><b class="k2-name" title="@e.ItemName(t.ItemId)">@e.ItemName(t.ItemId)</b>@if (t.Quality is "green" or "blue") { <i class="qtag q-@t.Quality" title="@($"{e.QualityName(t)}色品质：附加词条{t.Affixes?.Count ?? 0}条")">@e.QualityName(t)</i> }</div>
-                        <div class="k2-sub @(deployed ? "warn" : CardStates.BrokenTool(t) ? "danger" : "")" title="@tLine">@tLine</div>
+                        <div class="k2-sub @(deployed ? "warn" : CardStates.BrokenTool(t) || spoiledT ? "danger" : "") @(!deployed && tSubStatus == null ? "is-qty" : "")" title="@tLine">@tSub</div>
                     </div>
                     <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy && !deployed)" Title="@(deployed ? "已部署 · 先收起才能拾取" : null)" />
                 </div>

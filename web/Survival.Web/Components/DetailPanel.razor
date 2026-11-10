@@ -15,7 +15,11 @@
     var tab = G.DetailTab;
     // 悬停预测临时占用详情区时，页签高亮跟着内容走（显示的是对象预测，不是人物页）（试玩修复 L6）
     var battlePanel = G.InBattleUi && tab == DetailTab.Object && !(s.Encounter != null && G.HoverPreview != null);
-    var shownTab = !battlePanel && G.HoverPreview != null && G.Panel == null ? DetailTab.Object : tab;
+    // B32a 试玩修复（R61、Q351）：指着已选中资源卡自己的采集键时，悬停预测与选中预估是同一请求，右栏保持「已选中」与来源行，
+    // 不再换成「预测」（采到库存 0 后按钮变禁用、指针仍停在上面时，原来会一直停在预测）
+    var hover = sel.Kind == SelectionKind.Resource && G.HoverPreview is { Type: ActionType.Gather, ToolInstanceId: null, BareHands: false } hp && hp.TargetId == sel.Id
+        ? null : G.HoverPreview;
+    var shownTab = !battlePanel && hover != null && G.Panel == null ? DetailTab.Object : tab;
 }
 
 <aside class="panel detail" aria-label="@($"{ShellText.ObjectTab}与{ShellText.CharacterTab}")" inert="@G.DialogueLocked">
@@ -43,7 +47,7 @@
         @* 战斗与敌踪：指令预览 → 执行；选中目标详情（v0.5 §16） *@
         <BattlePanel />
     }
-    else if (G.HoverPreview != null && G.Panel == null)
+    else if (hover != null && G.Panel == null)
     {
         @* 指向或聚焦动作按钮、拖拽悬停时的临时预测；离开后回到原页签（统一卡片案第 3 节、v0.7 第 4.1 节） *@
         <PreviewView Request="G.HoverPreview" Eyebrow="@($"预测 · {e.LocName(s.CurrentLocation)}")" Title="@G.HoverTitle" Confirmable="false" />

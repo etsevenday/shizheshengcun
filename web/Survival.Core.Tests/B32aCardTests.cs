@@ -153,8 +153,54 @@ public class B32aCardTests : TestBase
         Assert.That(Clock.Duration(10), Is.EqualTo("10分钟"));
         Assert.That(Web("Components", "LocationStrip.razor"), Does.Contain("<strong>接近 ▸</strong>"));
         var css = Web("wwwroot", "css", "cards.css");
-        Assert.That(css, Does.Contain(".battle-overlay.encounter .bt-cards { min-height: 0;"));
-        Assert.That(css, Does.Contain(".wasteland .battle-overlay.encounter .bt-cards > .ocard.k2.k2 { height: min(var(--k2-h), 100%);"));
+        Assert.That(css, Does.Contain(".battle-overlay.encounter > .bt-cards { grid-area: cards; min-height: 0;"));
+        // B32a 试玩修复：敌人卡保持模板高度（不再按剩余高度压扁），说明行移到标题行，覆盖层过高时自身滚动
+        Assert.That(css, Does.Contain(".wasteland .battle-overlay.encounter .bt-cards > .ocard.k2.k2 { height: var(--k2-h); min-height: 0; flex: 0 0 var(--k2-w); }"));
+        Assert.That(css, Does.Contain("grid-template-areas: \"head log\" \"cards cards\" \"act act\";"));
+    }
+
+    // ───────────── B32a 试玩修复（线上构建 c38c397） ─────────────
+
+    /// <summary>试玩 1、5：不可堆叠物品（尸体、滤水器、饰品、衣物、远程武器）走单件卡，副标同成组卡规则——保质 → 耐久 → 数量只写一项；
+    /// 腐败尸体挂危险叠层与腐败样式；远程武器副标只写耐久，弹仓在悬停与右栏。</summary>
+    [Test]
+    public void PlaytestFix_SingleItemCardSubAndSpoiled()
+    {
+        var shelf = Web("Components", "ItemShelf.razor");
+        Assert.That(shelf, Does.Contain("var spoiledT = e.IsSpoiled(s, t);"));
+        Assert.That(shelf, Does.Contain("@(spoiledT ? \"spoiled st-danger\" : \"\")"));
+        Assert.That(shelf, Does.Contain("var tSub = deployed ? tLine : tSubStatus ?? $\"×{t.Count}\";"));
+        Assert.That(shelf, Does.Contain("Ui.CardStatusLine(e, s, whole)) ?? qtyText : qtyText;"));
+        var ui = Web("Services", "Ui.cs");
+        var at = ui.IndexOf("public static string? CardStatusLine(", StringComparison.Ordinal);
+        Assert.That(at, Is.GreaterThan(0));
+        var body = ui.Substring(at, ui.IndexOf("public static string ItemLine(", at, StringComparison.Ordinal) - at);
+        Assert.That(body, Does.Not.Contain("LoadedAmmo"), "副标不带弹仓");
+        Assert.That(body, Does.Contain("return null;"), "无保质无耐久时卡面写数量");
+        Assert.That(Web("Components", "ItemDetail.razor"), Does.Contain("弹仓{inst.LoadedAmmo}/{wp.MagazineCapacity}"), "右栏原有弹仓显示");
+
+        var carcass = Cfg.Items.First(i => i.Id == "carcass_wolf");
+        Assert.That(carcass.IsStackable, Is.False, "尸体逐件成卡，走单件卡分支");
+    }
+
+    /// <summary>试玩 3、6、7：随身卡也按模板尺寸；≤800 高③④区内边距留出 124 卡高；来源行占整行；≤800 有主操作的卡角标贴角收紧。</summary>
+    [Test]
+    public void PlaytestFix_SizesAndLayout()
+    {
+        var css = Web("wwwroot", "css", "cards.css");
+        Assert.That(css, Does.Contain(".card-col:not([style*=\"span\"]) > .card.item.k2i { width: min(var(--k2-w), 100%); }"));
+        Assert.That(css, Does.Contain(".center-scroll.four > .section:is(.ground, .carried) { padding-top: 6px; padding-bottom: 6px; }"));
+        Assert.That(css, Does.Contain(".facts.res-source { grid-template-columns: minmax(0, 1fr); }"));
+        Assert.That(css, Does.Contain(".ocard.k2.has-act > .k2-art > .k2-tag { top: 4px; right: 4px; max-width: calc(100% - 8px); padding: 0 3px; }"));
+    }
+
+    /// <summary>试玩 4（R61、Q351）：指着已选中资源卡自己的采集键（含采到库存 0 后变禁用）时右栏保持「已选中」与来源行。</summary>
+    [Test]
+    public void PlaytestFix_SelectedResourceIgnoresOwnHover()
+    {
+        var d = Web("Components", "DetailPanel.razor");
+        Assert.That(d, Does.Contain("var hover = sel.Kind == SelectionKind.Resource && G.HoverPreview is { Type: ActionType.Gather, ToolInstanceId: null, BareHands: false } hp && hp.TargetId == sel.Id"));
+        Assert.That(d, Does.Contain("else if (hover != null && G.Panel == null)"));
     }
 
     // ───────────── Q348 分组 ─────────────

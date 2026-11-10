@@ -188,9 +188,20 @@
 .wasteland .ocard.k2 .k2-l2 > .oc-line.warn-line,
 .wasteland .ocard.k2 .k2-sub > .oc-line.warn-line { color: #e7b46d; }
 
-/* ───── 发现敌踪覆盖层（Q342 过渡）：卡片不再撑出最小高度，1280×720 下不压住「接敌」「绕行」 ───── */
-.battle-overlay.encounter .bt-cards { min-height: 0; align-items: flex-start; }
-.wasteland .battle-overlay.encounter .bt-cards > .ocard.k2.k2 { height: min(var(--k2-h), 100%); min-height: 0; }
+/* ───── 发现敌踪覆盖层（Q342 过渡）：敌人卡保持模板尺寸、不被压扁，也不压住「接敌」「绕行」——
+   B32a 试玩修复：说明行移到标题行右侧（可折行），各行按内容定高；按钮说明折行多时覆盖层自身纵向滚动，而不是压缩卡片行 ───── */
+.wasteland .center-scroll.four .rows2-inner > .battle-overlay.encounter {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  grid-template-areas: "head log" "cards cards" "act act";
+  align-content: start;
+  overflow-x: hidden; overflow-y: auto;
+}
+.battle-overlay.encounter > .bt-head { grid-area: head; }
+.battle-overlay.encounter > .bt-cards { grid-area: cards; min-height: 0; align-items: flex-start; }
+.battle-overlay.encounter > .enc-actions { grid-area: act; }
+.wasteland .battle-overlay.encounter > .bt-log { grid-area: log; align-self: center; max-height: none; overflow: visible; border-top: 0; padding-top: 0; text-align: right; }
+.wasteland .battle-overlay.encounter .bt-cards > .ocard.k2.k2 { height: var(--k2-h); min-height: 0; flex: 0 0 var(--k2-w); }
 .battle-overlay.encounter .ocard.k2.stays { opacity: .55; filter: grayscale(.6); }
 
 /* ───── 路线卡（Q340）：场景图铺满主图区；副标方位箭头 + 单程时间 ───── */
@@ -219,7 +230,13 @@
   overflow: hidden;
 }
 .wasteland .center-scroll.four .section.ground .row-scroll .card.item.k2i { width: var(--k2-w); }
-.wasteland .center-scroll.four .section.carried .row-scroll.slots5 > .card-col > .card.item.k2i { height: 100%; }
+/* B32a 试玩修复：随身卡也按模板尺寸，不再随五等分卡位与行高伸缩（占多格的卡仍铺满所占卡位宽）；
+   ≤800 高时③④区上下内边距 9→6px，留出 124px 卡高 */
+.wasteland .center-scroll.four .section.carried .row-scroll.slots5 > .card-col > .card.item.k2i { height: min(var(--k2-h), 100%); }
+.wasteland .center-scroll.four .section.carried .row-scroll.slots5 > .card-col:not([style*="span"]) > .card.item.k2i { width: min(var(--k2-w), 100%); }
+@media (max-height: 800px) {
+  .center-scroll.four > .section:is(.ground, .carried) { padding-top: 6px; padding-bottom: 6px; }
+}
 .card.item.k2i > .k2-art {
   grid-area: art; position: relative; min-height: 0; min-width: 0; overflow: hidden;
 }
@@ -265,4 +282,12 @@
   .wasteland .center-scroll.four .row-scroll .card.item.k2i > .card-arrow { width: 26px; height: 26px; }
   .wasteland .center-scroll.four .row-scroll .card.item.k2i > .card-arrow::after { inset: -8px -8px -8px -8px; }
   .wasteland .center-scroll.four .row-scroll .card.item.k2i > .k2-info { padding: 3px 34px 4px 6px; }
+}
+
+/* B32a 试玩修复：右栏资源「来源」行占整行（facts 默认两列，1280 下只占半宽会折三四行） */
+.facts.res-source { grid-template-columns: minmax(0, 1fr); }
+
+/* B32a 试玩修复：≤800 高主操作在主图右，主图区变窄；角标内边距收紧、贴角 4px，未开通叠卡「未开通」等三字角标完整显示 */
+@media (max-height: 800px) {
+  .ocard.k2.has-act > .k2-art > .k2-tag { top: 4px; right: 4px; max-width: calc(100% - 8px); padding: 0 3px; }
 }

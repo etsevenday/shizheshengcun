@@ -57,6 +57,15 @@ public static class Ui
         return Fresh(i.ExpiresAt.Value - s.GameMinute);
     }
 
+    /// <summary>B32a（Q340）卡面副标的状态项：有保质写保质（含已腐败、受热保护），有耐久写耐久（0 写「已损坏」，不带弹仓），都没有返回 null（卡面改写数量）。</summary>
+    public static string? CardStatusLine(GameEngine e, GameState s, ItemInstance i)
+    {
+        if (i.ExpiresAt.HasValue) return FreshOf(e, s, i);
+        if (i.MaxDurability.HasValue && i.Durability.HasValue)
+            return i.Durability.Value <= 0 ? "已损坏" : $"耐久{GameEngine.DurabilityText(i)}";
+        return null;
+    }
+
     public static string ItemLine(GameEngine e, GameState s, ItemInstance i)
     {
         var cfg = e.Item(i.ItemId);
