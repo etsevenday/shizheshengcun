@@ -330,3 +330,8 @@
 .fire-detail .slot-charcoal { align-self: flex-start; }
 .wasteland .fire-detail .fire-slot.st-busy { box-shadow: inset 3px 0 0 var(--ink2-gold); }
 .fire-detail .fire-slot.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 1; }
+
+/* B32b 点火盘两步（Q344、Q366）：选中的那一把描金框；未选提示 */
+.ignite-menu .im-item.on { outline: 2px solid var(--ink2-gold, #d4a84a); outline-offset: -2px; background: #d4a84a1f; }
+.ignite-menu .im-detail { margin-top: 6px; }
+.ignite-menu .im-hint { color: var(--muted); padding: 2px 0; }

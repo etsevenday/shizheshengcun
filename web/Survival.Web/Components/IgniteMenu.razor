@@ -1,37 +1,41 @@
 @inherits GameComponent
 @inject IJSRuntime JS
 
-@* 点火工具选择菜单（基础UI布局与操作修订案 v0.7 第 4.2 节）：锚在火堆卡“点燃”按钮旁的浮窗（试玩修复 B1），不是二级面板、不禁拖。
-   列表来自内核 IgniteToolOptions（随身与当前地面的每把打火器：图标、名称#实例、来源、可用/不可用原因），不列其他地块的工具。
-   点一把可用工具即绑定该实例并开始点火（带新 requestId、组件级防连点），菜单关闭；即使只有一把也要点选，不自动选、不追加确认。
-   悬停工具时右栏显示对应预测；没有可用工具仍能打开，写“没有可用点火工具”及原因。Esc 或点菜单外只关闭。 *@
+@* 点火盘 P02e「选择点火工具」（B31c 起按 Q324 居中，B31d 起按 Q338 加四轨遮罩）。
+   B32b（逐字稿 §1.2 Q344 选 A、§1.5 Q366 选 A）改两步：打开时默认未选（只有一把也一样），未选写「请选择打火器。」；
+   每个选项写实际工具名，旁列真实来源与「耐久{当前}/{上限}」（不显示内部编号，选择绑定该把工具）；选中后列「火堆」「点火工具」「耐久」「耗时」、
+   磨损与点火后的燃料提示（数值按原预演），按「点火（{时长}）」才提交（带新 requestId、组件级防连点），盘收起。
+   条件变化时按原真实原因禁用并重验选定的那一把。悬停工具时右栏仍显示对应预测。没有可用工具仍能打开，写“没有可用点火工具”及原因。
+   直接把打火器拖到火堆仍走原直接点火，暂停层独立点火入口沿原规则。Esc、×、遮罩只收起。 *@
 @{
     var s = G.S;
     var e = G.E;
+    var fac = e.FacOf(s, s.Ground)!;
     var opts = e.IgniteToolOptions(s);
     var none = e.IgniteNoToolReason(s);
-    var first = opts.FirstOrDefault(o => o.Usable);
-    var p = first == null ? null : G.Preview(ActionRequest.Ignite(first.InstanceId));
+    var picked = _picked is int pid ? opts.FirstOrDefault(o => o.InstanceId == pid) : null;
+    var p = picked is { Usable: true } ? G.Preview(ActionRequest.Ignite(picked.InstanceId)) : null;
+    var minutes = p is { Ok: true } ? p.EstimatedMinutes : e.Config.Fire.IgniteMinutes;
+    var why = picked == null ? null : !picked.Usable ? picked.Reason : p is { Ok: false } ? p.Reason : null;
 }
-@* 试玩修复 B1：改为锚定在“点燃”按钮旁的操作浮窗（AnchorPop），不在火堆卡内展开撑高设施行；1280×720 下工具选项始终在屏内可点 *@
-<AnchorPop AnchorId="fc-ignite" Title="选择点火工具" Sub="@($"耗时{e.Config.Fire.IgniteMinutes}分钟 · 点一把即开始")" Place="below,above,right,left" CssClass="ignite" OnClose="Close">
+<AnchorPop AnchorId="fc-ignite" Title="选择点火工具" Place="below,above,right,left" CssClass="ignite" OnClose="Close">
     <Art>@Icons.Markup("fire_out")</Art>
     <ChildContent>
-        <div @ref="box" class="ignite-menu in-pop" role="menu" aria-label="选择点火工具">
-            <div class="im-list" data-wheel="y">
+        <div @ref="box" class="ignite-menu in-pop" aria-label="选择点火工具">
+            <div class="im-list" role="radiogroup" aria-label="点火工具" data-wheel="y">
                 @foreach (var o in opts)
                 {
                     var id = o.InstanceId;
                     var title = $"用{o.Name}点火";
-                    var disabled = !o.Usable || G.Running || starting;
-                    <button type="button" role="menuitem" class="im-item @(o.Usable ? "" : "off")" disabled="@disabled"
-                            title="@(o.Usable ? $"点击即用{o.Name}开始点火（{e.Config.Fire.IgniteMinutes}分钟）" : o.Reason)"
-                            @onmouseenter="() => HoverTool(id, title, o.Usable)" @onfocus="() => HoverTool(id, title, o.Usable)"
+                    var on = picked != null && picked.InstanceId == id;
+                    <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="im-item @(o.Usable ? "" : "off") @(on ? "on" : "")" disabled="@(G.Running || starting)"
+                            title="@(o.Usable ? $"选择这把{o.Name}" : o.Reason)"
+                            @onmouseenter="() => HoverTool(id, title)" @onfocus="() => HoverTool(id, title)"
                             @onmouseleave="Unhover" @onblur="Unhover" @onclick="() => Pick(id)">
                         <span class="ir-icon">@Icons.Markup(o.ItemId)</span>
                         <span class="im-text">
                             <b>@o.Name</b>
-                            <small>@o.Source@(o.MaxDurability.HasValue && o.Durability.HasValue ? $" · 耐久{Ui.N(o.Durability.Value)}/{Ui.N(o.MaxDurability.Value)}" : "") · @(o.Usable ? "可用" : o.Reason)</small>
+                            <small>@o.Source@(o.MaxDurability.HasValue && o.Durability.HasValue ? $" · 耐久{Ui.N(o.Durability.Value)}/{Ui.N(o.MaxDurability.Value)}" : "")@(o.Usable ? "" : " · " + o.Reason)</small>
                         </span>
                     </button>
                 }
@@ -40,28 +44,54 @@
                     <div class="im-none"><b>没有可用点火工具</b><span>@none</span></div>
                 }
             </div>
-            <div class="im-foot">
-                <div>成功点火磨损打火器@(Ui.T(e.LighterWear))。</div>
-                @if (p != null && p.Ok)
+            <div class="lines im-detail">
+                <div><span>火堆</span><b>@CardStates.IgniteFireLine(fac)</b></div>
+                @if (picked == null)
                 {
-                    <div>@(p.AutoWood ? $"燃料为0：将自动投入1份木材（+{e.Config.Fire.BurnMinutesPerWood}分钟），" : $"现有燃料{p.FuelBefore}分钟，")点火完成时剩@(p.FuelAtEnd)分钟</div>
-                    @if (p.DiesOutAtEnd) { <div class="warn-text">点火完成时燃料耗尽、火堆随即熄灭，建议先投入木材</div> }
+                    <div class="im-hint">@CardStates.IgnitePickHint</div>
+                }
+                else
+                {
+                    <div><span>点火工具</span><b>@picked.Name · @picked.Source</b></div>
+                    @if (picked.MaxDurability.HasValue && picked.Durability.HasValue)
+                    {
+                        <div><span>耐久</span><b>@Ui.N(picked.Durability.Value)/@Ui.N(picked.MaxDurability.Value)</b></div>
+                    }
+                    <div><span>耗时</span><b>@Clock.Duration(minutes)</b></div>
+                }
+            </div>
+            <div class="im-foot">
+                @if (picked != null)
+                {
+                    <div>成功点火磨损打火器@(Ui.T(e.LighterWear))。</div>
+                    @if (p != null && p.Ok)
+                    {
+                        <div>@(p.AutoWood ? $"燃料为0：将自动投入1份木材（+{e.Config.Fire.BurnMinutesPerWood}分钟），" : $"现有燃料{p.FuelBefore}分钟，")点火完成时剩@(p.FuelAtEnd)分钟</div>
+                        @if (p.DiesOutAtEnd) { <div class="warn-text">点火完成时燃料耗尽、火堆随即熄灭，建议先投入木材</div> }
+                    }
+                    @if (why != null) { <div class="warn-text">@why</div> }
                 }
             </div>
         </div>
     </ChildContent>
+    <Actions>
+        <button type="button" class="primary apop-go" disabled="@(picked == null || why != null || G.Running || starting)" @onclick="Go">@CardStates.IgniteButton(minutes)</button>
+        <button type="button" class="secondary apop-cancel" @onclick="Close">取消</button>
+    </Actions>
 </AnchorPop>
 
 @code {
     private ElementReference box;
     private DotNetObjectReference<IgniteMenu>? _ref;
     private bool starting;
+    /// <summary>Q344：玩家手动选中的那一把（实例号）；打开时为空，只有一把也不预选。</summary>
+    private int? _picked;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
         _ref = DotNetObjectReference.Create(this);
-        // 点菜单外（不含“点燃”按钮本身）只关闭菜单；不拦截那次点击，也不影响拖拽
+        // 点盘外（不含“点燃”按钮本身）只收起；不拦截那次点击，也不影响拖拽
         try { await JS.InvokeVoidAsync("survival.watchOutside", box, _ref, ".fc-btn.ignite, .apop.ignite"); }
         catch (JSException) { }
     }
@@ -75,13 +105,15 @@
         G.CloseIgniteMenu();
     }
 
-    private void HoverTool(int id, string title, bool usable) => G.Hover(ActionRequest.Ignite(id), title);
+    private void HoverTool(int id, string title) => G.Hover(ActionRequest.Ignite(id), title);
 
     private void Unhover() => G.Hover(null);
 
-    private async Task Pick(int id)
+    private void Pick(int id) => _picked = id;
+
+    private async Task Go()
     {
-        if (starting || G.Running) return;
+        if (starting || G.Running || _picked is not int id) return;
         starting = true;
         try
         {
