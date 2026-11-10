@@ -11,7 +11,8 @@
     var built = Kind == "workshops" ? builtWs.Count > 0 : Kind == "bed" ? fac.BedBuilt : fac.ShelterBuilt;
     var title = Kind == "workshops" ? "工坊" : Kind == "bed" ? "床垫" : "遮蔽棚";
     // B17 试玩修复 B1：陶窑/净水台不再单独占卡，加工进度写在工坊卡上（点卡进制作面板投料/取消）
-    var batches = Kind == "workshops" ? fac.StationBatches.Select(b => $"{e.StationName(b.StationId)}{b.DoneMinutes}/{b.RequiredMinutes}分").ToList() : new List<string>();
+    // B32e（Q380）：只写各座加工中的一批，排队批（进度 0）不在卡上逐条列出，队列在制作面板里看
+    var batches = Kind == "workshops" ? fac.StationBatches.Where(b => !b.Queued).Select(b => $"{e.StationName(b.StationId)}{b.DoneMinutes}/{b.RequiredMinutes}分").ToList() : new List<string>();
     var effect = Kind == "workshops" ? (batches.Count > 0 ? "加工中：" + string.Join("、", batches) : builtWs.Count == 0 ? $"{e.ZoneName(s, s.Ground)}还没有工坊" : $"已建{string.Join("、", builtWs)}") : Kind == "bed" ? "营地睡眠体力每小时额外+5" : "营地可遮蔽睡眠，休息额外恢复精神";
     var need = Kind == "workshops" ? "点击在“营地建造”里建" : Kind == "bed" && !fac.ShelterBuilt ? "需先建成遮蔽棚" : "点击查看建造条件";
     var badge = Kind == "workshops" ? $"已建{builtWs.Count}/{stations.Count}" : built ? "已建成" : "未建造";

@@ -1223,6 +1223,11 @@ kbd { font-size: var(--fs-aux); }
 .craft-go .cg-start { flex: 0 0 auto; width: auto; min-width: 150px; padding: 8px 16px; font-size: var(--fs-body); }
 /* B22d 试玩修复 M418：陶窑/净水台投料说明在 1280 下最后一行（经验句）被裁——经验句前置，窄屏说明压一行 */
 @media (max-width: 1400px) { .cg-facts small.cg-sum { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+/* B32e（Q380）：陶窑/净水台队列——「加工中」「排队中{批数}批」两行各带取消键，放在投料条上方；等待批按先后编号列配方 */
+.station-queue { margin: 10px -12px 0; padding: 6px 12px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.sq-row { display: flex; align-items: center; gap: 10px; }
+.sq-row .cg-start { flex: 0 0 auto; width: auto; min-width: 150px; padding: 6px 12px; font-size: var(--fs-body); }
+.sq-list { margin: 2px 0 0; padding-left: 1.8em; font-size: var(--fs-aux); color: var(--muted); max-height: 7.5em; overflow-y: auto; }
 
 /* 休息面板底部开始条（紧挨时长卡） */
 .rest-go { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; padding: 8px 14px 10px; border-top: 1px solid var(--line); background: #1f2721; }

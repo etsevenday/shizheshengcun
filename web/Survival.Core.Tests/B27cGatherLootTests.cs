@@ -200,7 +200,7 @@ public class B27cGatherLootTests : TestBase
         var s = AtNode("village");
         var m = As43(s);
         Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("44"));
+        Assert.That(int.Parse(GameState.CurrentSchema), Is.GreaterThanOrEqualTo(44), "B27c 为 44，B32e 起 45");
         Assert.That(m.Resources.Values.All(r => r.LootDraw == null), Is.True);
         Assert.That(m.Rng.State, Is.EqualTo(s.Rng.State), "迁移不抽随机");
         Assert.That(m.Log.Select(l => l.Text), Is.EqualTo(s.Log.Select(l => l.Text)), "迁移静默");

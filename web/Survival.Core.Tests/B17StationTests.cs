@@ -54,7 +54,8 @@ public class B17StationTests : TestBase
         Assert.That(s.GameMinute, Is.EqualTo(t0), "投料 0 分钟");
         Assert.That(s.Main, Is.Null, "不占行动");
         Assert.That(s.Items.Where(i => i.ItemId is "clay" or "charcoal").All(i => i.Owner == "camp" && i.ReservedBy != null), Is.True);
-        Assert.That(E.StartStationBatch(s, "ex_ceramic_shell").Reason, Does.Contain("每次只能一批"));
+        // B32e（Q380）：取代「每次只能一批」——工位忙时可加入队尾，这里只因原料已全部预留而拒绝
+        Assert.That(E.StartStationBatch(s, "ex_ceramic_shell").Reason, Does.Contain("缺少黏土"));
 
         // 离开营地：同一世界时钟继续；读档后只出一次
         var next = E.AdjacentUnlocked(s).First().Other("camp");

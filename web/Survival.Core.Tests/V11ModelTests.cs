@@ -19,7 +19,7 @@ public class V11ModelTests : TestBase
         Assert.That(note, Is.EqualTo("轮到你时可用行动点（AP）。先选技能，再查看亮起目标的右侧预测，点目标执行。自用或无目标技能请用旁边的确认按钮。用完行动点，或点「结束行动」，战斗就会继续。"),
             "N01 §3.1 首战操作附注原文");
         Assert.That(note, Does.Not.Contain("执行”"), "不再要求另点“执行”");
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("44"), "B27c 随机资源点掉落按点持久化（B27 为 43、B26a 为 42、B24 为 41、B23 为 40、B22k 为 39、B22c 为 38、B22b 为 37、B22h 为 36、B22g 为 35、B22 为 34、B21 为 33、B20 为 32、B19 为 31、B18 为 30、B17 为 29、B16 为 28、B15 为 27、B14 为 26、B13d 为 25、B13c 为 24、B13b 为 23、B13 为 22、B12 为 21、B11 为 20、B10a 为 19、B8c 为 18、B8b 为 17、B8a 为 16、B8 为 15、B7d 为 14、B7b 为 13、B6 为 12）");
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("45"), "B32e 陶窑与净水台多批排队（B27c 为 44、B27 为 43、B26a 为 42、B24 为 41、B23 为 40、B22k 为 39、B22c 为 38、B22b 为 37、B22h 为 36、B22g 为 35、B22 为 34、B21 为 33、B20 为 32、B19 为 31、B18 为 30、B17 为 29、B16 为 28、B15 为 27、B14 为 26、B13d 为 25、B13c 为 24、B13b 为 23、B13 为 22、B12 为 21、B11 为 20、B10a 为 19、B8c 为 18、B8b 为 17、B8a 为 16、B8 为 15、B7d 为 14、B7b 为 13、B6 为 12）");
     }
 
     [Test]

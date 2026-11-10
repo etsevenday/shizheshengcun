@@ -68,6 +68,7 @@ namespace Survival.Core.Save
         public const string Schema41 = "41";
         public const string Schema42 = "42";
         public const string Schema43 = "43";
+        public const string Schema44 = "44";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -126,6 +127,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema41) From41To42(s, config, notes);
             if (s.SchemaVersion == Schema42) From42To43(s, config);
             if (s.SchemaVersion == Schema43) From43To44(s, config);
+            if (s.SchemaVersion == Schema44) From44To45(s);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1331,7 +1333,37 @@ namespace Survival.Core.Save
                 }
                 rs.LootDraw = d;
             }
+            s.SchemaVersion = Schema44;
+        }
+
+        // ───────────────────────── 44 → 45 ─────────────────────────
+
+        /// <summary>
+        /// 陶窑与固定净水台多批排队（S08「2026-11-10 Q380」经验与存档，开发计划 B32e）：旧档每座最多一批，迁移后这一批就是加工中批
+        /// （Queued=false），已有进度、原料与燃料预留、经验快照原样接入，等待队列为空。万一同一座有多条（旧规则不允许），按原列表先后保留，
+        /// 第一条为加工中、其余转为排队（进度保持）。不改时间、不发产物与经验，静默。幂等。
+        /// </summary>
+        private static void From44To45(GameState s)
+        {
+            foreach (var loc in s.Locations.Values)
+            {
+                NormalizeStationQueue(loc.Facility);
+                if (loc.Safehouse != null) NormalizeStationQueue(loc.Safehouse.Interior);
+            }
             s.SchemaVersion = GameState.CurrentSchema;
+        }
+
+        private static void NormalizeStationQueue(FacilityState fac)
+        {
+            foreach (var g in fac.StationBatches.GroupBy(b => b.StationId))
+            {
+                var first = true;
+                foreach (var b in g)
+                {
+                    b.Queued = !first;
+                    first = false;
+                }
+            }
         }
 
         /// <summary>当前版本读档也补配置新增的地点与资源点状态，并按门槛契约重判一次（Q115，B13a）（幂等）。</summary>

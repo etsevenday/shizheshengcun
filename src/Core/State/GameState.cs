@@ -51,8 +51,9 @@ namespace Survival.Core.State
         /// "42" 起代班接续说明按身份一次的已示标记（CityState.SubstituteIntroShown）与服务结束被挡住后的待补播（CityState.SubstituteIntroDeferred，策划答复 Q235、Q243，开发计划 v0.9 B26a）。
         /// "43" 起蓝图来源改写：旧档已登记的五张蓝图写成永久知识（knowledge:id），旧在办登记资格存 CityState.LegacyRegistrationPending（策划答复 Q246、Q247，开发计划 v0.9 B27）。
         /// "44" 起随机资源点掉落按点持久化：资源点状态带可空的本局抽定记录 ResourceState.LootDraw（策划答复 Q271，开发计划 v0.9 B27c）。
+        /// "45" 起陶窑与固定净水台多批排队：被动批次带排队标记 StationBatch.Queued，同一座工坊的批次按列表先后为队列顺序（策划答复 Q380，开发计划 B32e）。
         /// </summary>
-        public const string CurrentSchema = "44";
+        public const string CurrentSchema = "45";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -411,7 +412,10 @@ namespace Survival.Core.State
         public List<FacilityProcess> Processes { get; set; } = new List<FacilityProcess>();
         /// <summary>最近完成的加工记录（进程号@完成段号），读档后据此不重复发放。</summary>
         public List<string> Completed { get; set; } = new List<string>();
-        /// <summary>本区固定工坊的被动批次（陶窑烧陶壳、固定净水台净水，A07 X1.4、S11 X4，B17）：每座每次一批，随世界时间推进。</summary>
+        /// <summary>
+        /// 本区固定工坊的被动批次（陶窑烧陶壳、固定净水台净水，A07 X1.4、S11 X4，B17）。Q380（B32e）起每座一个加工位＋等待队列：
+        /// 同一座（StationId）的批次按列表先后排队，第一条未排队（Queued=false）的是加工中，其余 Queued=true 按先后等待；含加工中最多 10 批。
+        /// </summary>
         public List<StationBatch> StationBatches { get; set; } = new List<StationBatch>();
         /// <summary>
         /// 本区晾制架的在用晾制位（Q170，B22c，存档 38）：每位一批，只记占用中的位（晾制中/已完成待取出/已腐败待清理），空位不记；
@@ -489,6 +493,11 @@ namespace Survival.Core.State
         /// B22d（Q174 选 B）：投料时快照的这一批完成经验（陶窑 6、净水台 3）。旧档在途批次没有这个字段，读出为 0：按原规则不给经验（passiveCraftXp.migration）。
         /// </summary>
         public int XpSnapshot { get; set; }
+        /// <summary>
+        /// Q380（B32e，存档 45）：true = 排队中（尚未开始，进度 0）；false = 加工中。同一座只有队首一批为 false，
+        /// 完成、失败或取消后由下一条排队批接上（从下一世界段开始计时，StartMinute 改为接上的时刻）。旧档缺这个字段读出 false，即原单批作为加工中续原进度。
+        /// </summary>
+        public bool Queued { get; set; }
 
         public StationBatch Clone()
         {

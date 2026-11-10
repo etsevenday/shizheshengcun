@@ -27,6 +27,7 @@
     var locks = e.RecipeLocks(s, rc);
     var batchable = !rc.IsBuild && !rc.IsRepair && !rc.IsFixedWait && !rc.IsDrying;   // B16：固定等待每次只做1批；B22c 试玩修复 M470：晾制每位一批
     var batch = batchable ? Math.Max(1, G.CraftBatch) : 1;
+    var stationRecipe = e.IsStationBatchRecipe(rc);   // B32e（Q380）：陶窑/固定净水台按「投料批数」连续投料、排队加工
     var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot ? G.CraftPot : null, preferred, batch);
     if (rc.IsRepair) request.InstanceId = G.CraftTarget;
     if (GameEngine.IsFieldPatchRecipe(rc)) request.PatchInstanceId = G.CraftPatch;   // B22b（Q168）：选用的修补包，空为默认
@@ -197,7 +198,19 @@
                                 @if (pots.Count == 0) { <div class="risk none">随身和当前地面没有锅。</div> }
                             </div>
                         }
-                        @if (batchable)
+                        @if (stationRecipe)
+                        {
+                            @* B32e（Q380，S08「2026-11-10 Q380」）：陶窑/固定净水台的数量字段是「投料批数」，默认1；上限 = min(10−未完成批数, 材料与燃料够的完整批数)。
+                               上限变小使所选批数无效时不自动缩批，原因写在下方投料按钮旁，由玩家重选 *@
+                            var stMax = e.StationBatchMaxNew(s, rc);
+                            <div class="batch-row" data-station-batches>
+                                <span class="tiny muted">投料批数</span>
+                                <button type="button" class="tbar-step" aria-label="减少批数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
+                                <b>@batch</b>
+                                <button type="button" class="tbar-step" aria-label="增加批数" disabled="@(batch >= stMax)" @onclick="() => SetBatch(batch + 1)">+</button>
+                            </div>
+                        }
+                        else if (batchable)
                         {
                             var enough = rc.AllInputs.Count == 0 ? 1 : rc.AllInputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value));
                             var maxBatch = Math.Max(1, enough);
@@ -324,28 +337,49 @@
                         }
                         else if (e.IsStationBatchRecipe(rc))
                         {
-                            @* B17（A07 X1.4）：陶窑/固定净水台是被动批次：投料0分钟、不占行动，原料移到本区地面锁定，离开也继续 *@
+                            @* B17（A07 X1.4）：陶窑/固定净水台是被动批次：投料0分钟、不占行动，原料移到本区地面锁定，离开也继续。
+                               B32e（Q380）：每座一个加工位＋等待队列（含加工中最多10批）；面板分列「加工中」「排队中{批数}批」（等待批按先后列配方），
+                               「取消当前批」「取消排队（{批数}批）」各自绑定所见批次/等待名单，投料按钮「投料（{批数}批）」可在加工中继续加入队尾 *@
                             var sb = e.StationBatchHere(s, rc.Station);
-                            var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc);
+                            var sbWait = e.StationWaitingHere(s, rc.Station);
+                            var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc, batch);
+                            @if (sb != null || sbWait.Count > 0)
+                            {
+                                <div class="station-queue" data-station-queue>
+                                    @if (sb != null)
+                                    {
+                                        var curId = sb.BatchId;
+                                        <div class="sq-row">
+                                            <span class="cg-facts"><b>加工中</b><small class="cg-xp">@e.StationBatchXpNote(s, sb)</small><small class="cg-sum">@(sb.DoneMinutes)/@(sb.RequiredMinutes)分钟 · 完成后放在@(e.ZoneName(s, s.Ground))地面</small></span>
+                                            <button type="button" class="secondary cg-start" data-station-cancel title="只取消实际加工中的一批，释放该批全部未核销材料和燃料到本区地面，不退时间，没有产物和经验" @onclick="() => CancelStation(rc.Station, curId)">取消当前批</button>
+                                        </div>
+                                    }
+                                    @if (sbWait.Count > 0)
+                                    {
+                                        var waitIds = sbWait.Select(w => w.BatchId).ToList();
+                                        <div class="sq-row">
+                                            <span class="cg-facts"><b>排队中@(sbWait.Count)批</b>
+                                                <ol class="sq-list">@foreach (var w in sbWait) { <li>@e.Recipe(w.RecipeId).Name</li> }</ol>
+                                            </span>
+                                            <button type="button" class="secondary cg-start" data-station-cancel-queue title="一次取消所有尚未开始的批，释放这些批的预留到本区地面，当前批继续" @onclick="() => CancelStationQueue(rc.Station, waitIds)">取消排队（@(sbWait.Count)批）</button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            var loadKey = $"station-load:{s.Ground}:{rc.Station}:{s.NextActionId}:{batch}";
                             <div class="craft-go">
                                 <span class="cg-facts">
-                                    @if (sb != null) { <b>加工中</b><small class="cg-xp">@e.StationBatchXpNote(s, sb)</small><small class="cg-sum">@(sb.DoneMinutes)/@(sb.RequiredMinutes)分钟 · 完成后放在@(e.ZoneName(s, s.Ground))地面</small> }
-                                    else if (sbWhy == null)
+                                    @if (sbWhy == null)
                                     {
-                                        @* B22d 试玩修复 M418：经验句放在说明前面单独一行，窄屏（≤1400）时说明压成一行省略、悬停看全文，经验句不被裁掉 *@
-                                        <b>被动@(rc.BaseMinutes)分钟</b><small class="cg-xp">@e.StationBatchXpPreview(s, rc)</small><small class="cg-sum" title="@e.StationBatchSummary(rc)">@e.StationBatchSummary(rc)</small>
+                                        @* B22d 试玩修复 M418：经验句放在说明前面单独一行，窄屏（≤1400）时说明压成一行省略、悬停看全文，经验句不被裁掉。
+                                           B32e：经验按队列与预计完成日分日写；各新批预计完成时刻 = 当前时刻 + 加工中剩余 + 前面等待批 + 自身时长 *@
+                                        var etas = "预计" + string.Join("、", e.StationNewFinishes(s, rc, batch).Select(Clock.DayTime)) + "完成";
+                                        <b>被动@(rc.BaseMinutes)分钟</b><small class="cg-xp">@e.StationBatchXpPreview(s, rc, batch)</small><small class="cg-sum cg-eta" title="@etas" data-station-eta>@etas</small><small class="cg-sum" title="@e.StationBatchSummary(rc)">@e.StationBatchSummary(rc)</small>
                                     }
                                     else { <small class="warn-text">@sbWhy</small> }
                                 </span>
-                                @if (sb != null)
-                                {
-                                    <button type="button" class="secondary cg-start" title="取消这一批：原料退回本区地面，已过时间不退，没有产物" @onclick="() => CancelStation(rc.Station)">取消这一批</button>
-                                }
-                                else
-                                {
-                                    <button type="button" class="primary cg-start" disabled="@(sbWhy != null)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc))"
-                                            @onclick="() => LoadStation(rc.Id)">投料（被动）</button>
-                                }
+                                <button type="button" class="primary cg-start" disabled="@(sbWhy != null)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
+                                        @onclick="() => LoadStation(rc.Id, batch, loadKey)">投料（@(batch)批）</button>
                             </div>
                         }
                         else
@@ -417,7 +451,7 @@ else if (proc != null)
 else
 {
     <PreviewView Request="request" Eyebrow="@($"手工制作 · {(rc.IsBuild ? "营地设施" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)"
-                 Confirmable="false" FootNote="@(rc.IsDrying ? "晾制在设施栏“晾制架”卡的面板里选空位投料；0分钟投料、不占行动，离开也继续" : e.IsStationBatchRecipe(rc) ? "在中间配方卡下方点“投料（被动）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
+                 Confirmable="false" FootNote="@(rc.IsDrying ? "晾制在设施栏“晾制架”卡的面板里选空位投料；0分钟投料、不占行动，离开也继续" : e.IsStationBatchRecipe(rc) ? $"在中间配方卡下方点“投料（{batch}批）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
 }
 
 @code {
@@ -577,9 +611,19 @@ else
         return null;
     }
 
-    private void CancelStation(string stationId) => G.EngineDo(() => G.E.CancelStationBatch(G.S, stationId));
+    // B32e（Q380）：提交绑定所见的加工中批/等待名单，变了由内核回「队列已变化，请重新选择。」并刷新；请求号由所见状态决定，连点只生效一次
+    private void CancelStation(string stationId, int batchId) =>
+        G.EngineDo(() => G.E.CancelStationBatch(G.S, stationId, batchId, $"station-cancel:{batchId}"));
 
-    private void LoadStation(string recipeId) => G.EngineDo(() => G.E.StartStationBatch(G.S, recipeId, Guid.NewGuid().ToString("N")));
+    private void CancelStationQueue(string stationId, List<int> waitIds) =>
+        G.EngineDo(() => G.E.CancelStationQueue(G.S, stationId, waitIds, $"station-cancel-queue:{string.Join(",", waitIds)}"));
+
+    /// <summary>投料：所选批数整次提交，成功后批数回到默认 1（失败保留所选，不自动缩批）。</summary>
+    private void LoadStation(string recipeId, int batches, string requestKey)
+    {
+        var res = G.EngineDo(() => G.E.StartStationBatch(G.S, recipeId, requestKey, batches));
+        if (res.Ok && !res.Duplicate) SetBatch(1);
+    }
 
     private static string StartLabel(RecipeConfig r) => r.IsBuild ? "开始建造" : GameEngine.IsFieldPatchRecipe(r) ? "开始修补" : r.IsRepair ? "开始维护" : "开始制作";
 

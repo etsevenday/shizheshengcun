@@ -335,6 +335,15 @@ namespace Survival.Core.Engine
             return $"开发：陶窑一批（黏土2、木炭1）与净水台两批（脏水8、过滤材料2）原料放在{ZoneName(s, s.Ground)}地面";
         }
 
+        /// <summary>开发（B32e Q380 试多批排队与 10 批上限）：陶窑与净水台各 11 批原料放当前地面。</summary>
+        public string DebugStationQueueInputs(GameState s)
+        {
+            foreach (var (id, n) in new[] { ("clay", 22), ("charcoal", 11), ("dirty_water", 44), ("filter_media", 11) }) CreateItems(s, id, n, s.Ground);
+            Normalize(s, s.Ground);
+            UpdateFlags(s);
+            return $"开发：陶窑11批（黏土22、木炭11）与净水台11批（脏水44、过滤材料11）原料放在{ZoneName(s, s.Ground)}地面";
+        }
+
         /// <summary>开发：野营遮雨布、折叠柴炉各一（当前地面）与木材2。</summary>
         public string DebugCampingKit(GameState s)
         {

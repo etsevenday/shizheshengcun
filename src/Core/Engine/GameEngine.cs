@@ -474,7 +474,7 @@ namespace Survival.Core.Engine
                     if (IsWildFireRecipe(rc)) { if (WildFireStartBlocked(s, rc) is string wild) return wild; }   // Q173（B22e）：地点、火源与材料一次列全
                     else if (rc.FacilityResult != null && BuildSiteBlocked(s, rc) is string site) return site;
                     if (StationBlocked(s, rc) is string station) return station;
-                    if (IsStationBatchRecipe(rc)) return StationBatchBlocked(s, rc) ?? $"{StationName(rc.Station)}是被动加工：在中间配方卡下方点“投料（被动）”开始（0分钟、不占行动）";
+                    if (IsStationBatchRecipe(rc)) return StationBatchBlocked(s, rc, Math.Max(1, r.BatchCount)) ?? $"{StationName(rc.Station)}是被动加工：在中间配方卡下方点“投料（{Math.Max(1, r.BatchCount)}批）”开始（0分钟、不占行动）";   // B32e Q380：按所选投料批数整次校验
                     if (rc.IsPassive) return $"{StationName(rc.Station)}的被动加工在后续版本开放";
                     if (rc.Requirement != null)
                     {

@@ -185,6 +185,7 @@
                     <button class="secondary" title="不扣材料、不花时间、不给经验" @onclick="() => DevDone(G.E.DebugBuildSafehouse(G.S))">直接建成本地安全屋</button>
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugStationKit(G.S))">陶窑/净水台材料（制造3级、学会陶工）</button>
                     <button class="secondary" title="B22d：试陶窑6+净水台3+3=每日12" @onclick="() => DevDone(G.E.DebugStationInputs(G.S))">陶窑1批＋净水台2批原料</button>
+                    <button class="secondary" title="B32e（Q380）：试多批排队、10批上限与「队列已满（10批）。」" @onclick="() => DevDone(G.E.DebugStationQueueInputs(G.S))">陶窑、净水台各11批原料</button>
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugCampingKit(G.S))">野营布＋折叠柴炉＋木材2</button>
                     <button class="secondary" title="临时露营许可点之一（野外勘测点），可部署野营布与柴炉" @onclick='() => DevDone(G.E.DebugMapTeleport(G.S, "w19_survey"))'>传送到露营许可点（w19）</button>
                 </div>
