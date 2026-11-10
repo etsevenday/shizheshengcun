@@ -93,7 +93,7 @@
                     if (!stacked && reservedN > 0 && list.Count > 1) { whole = head.Clone(); whole.Count = total; }
                     var infoLine = (stacked ? (kb![0].Spoiled ? "已腐败" : Ui.ItemLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.ItemLine(e, s, whole)) + (!stacked && batches > 1 ? $" · {batches}批" : "");
                     var qtyText = CardStates.ItemQtyText(total, reservedN);
-                    // B32a Q356（取代 Q340 物品副标优先级）：副标固定写本卡实际数量（部分预留「×{总数}（预留{数量}）」），不再出主图数量角标；
+                    // B32a Q356（取代 Q340 物品副标优先级）：副标固定写本卡实际数量（B32c Q361：部分或全部预留都写「×{总数}（预留{数量}）」），不再出主图数量角标；
                     // 第二行先写已腐败、已损坏等明确状态，其次实际保质/到期，再耐久；效果、重量、批次数与完整信息在悬停、聚焦提示与右栏
                     var spoiledFront = stacked ? kb![0].Spoiled : allSpoiled;
                     var line2 = spoiledFront ? "已腐败" : Ui.CardLine2(e, s, stacked ? head : whole);
@@ -138,7 +138,7 @@
                 <div id="@(tSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(t.ItemId)} · {Ui.ItemLine(e, s, t)}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drag-title="@e.ItemName(t.ItemId)" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item k2i @(t.Quality is "green" or "blue" ? "q-" + t.Quality : "") @(broken || CardStates.BrokenTool(t) ? "broken st-danger" : "") @(spoiledT ? "spoiled st-danger" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
-                    @* B32a（Q345、Q356）：独立工具/单件卡副标固定「×{数量}」；第二行先写已部署（自身阻断）、已腐败、已损坏（后两者挂危险叠层），
+                    @* B32a（Q345、Q356）：独立工具/单件卡副标固定「×{数量}」（B32c Q361：被预留时写「×1（预留1）」）；第二行先写已部署（自身阻断）、已腐败、已损坏（后两者挂危险叠层），
                        其次保质/到期，再耐久；远程武器弹仓、重量、用途在悬停与右栏 *@
                     <div class="k2-art">@Icons.Markup(t.ItemId)</div>
                     @{
@@ -148,7 +148,7 @@
                     }
                     <div class="k2-info">
                         <div class="k2-name-row"><b class="k2-name" title="@e.ItemName(t.ItemId)">@e.ItemName(t.ItemId)</b>@if (t.Quality is "green" or "blue") { <i class="qtag q-@t.Quality" title="@($"{e.QualityName(t)}色品质：附加词条{t.Affixes?.Count ?? 0}条")">@e.QualityName(t)</i> }</div>
-                        <div class="k2-sub is-qty" title="@tLine">@($"×{t.Count}")</div>
+                        <div class="k2-sub is-qty" title="@tLine">@CardStates.ItemQtyText(t.Count, t.ReservedBy != null ? t.Count : 0)</div>
                         @if (tLine2 != null) { <div class="k2-l2 @(deployed ? "warn" : tLine2 is "已腐败" or "已损坏" ? "danger" : "")" title="@tLine">@tLine2</div> }
                     </div>
                     <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy && !deployed)" Title="@(deployed ? "已部署 · 先收起才能拾取" : null)" />

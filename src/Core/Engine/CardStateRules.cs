@@ -37,8 +37,8 @@ namespace Survival.Core.Engine
 
         // ───────────── Q356 物品卡副标与第二行 ─────────────
 
-        /// <summary>Q356：常规物品卡与独立工具卡副标固定为本卡实际数量；部分预留沿「×{总数}（预留{数量}）」。</summary>
-        public static string ItemQtyText(int total, int reserved) => reserved > 0 && reserved < total ? $"×{total}（预留{reserved}）" : $"×{total}";
+        /// <summary>Q356：常规物品卡与独立工具卡副标固定为本卡实际数量；Q361：本卡实际预留数大于 0（部分或全部预留）写「×{总数}（预留{数量}）」。</summary>
+        public static string ItemQtyText(int total, int reserved) => reserved > 0 ? $"×{total}（预留{reserved}）" : $"×{total}";
 
         /// <summary>Q356：物品卡第二行取哪一项——明确状态优先（已腐败、已损坏），其次实际保质/到期，再耐久；都没有不出第二行。</summary>
         public static ItemLine2 ItemLine2Of(GameEngine e, GameState s, ItemInstance i) =>

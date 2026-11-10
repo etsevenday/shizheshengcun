@@ -232,6 +232,20 @@ public class B32aCardTests : TestBase
 
     // ───────────── Q356—Q360（逐字稿 §1.4） ─────────────
 
+    /// <summary>Q361-A01：未预留 8 份、预留其中 2 份、单件全部预留、整堆全部预留，副标依次「×8」「×8（预留2）」「×1（预留1）」「×8（预留8）」；释放预留后按实际数量刷新。</summary>
+    [Test]
+    public void Q361_A01_ReservedQtySub()
+    {
+        Assert.That(CardStates.ItemQtyText(8, 0), Is.EqualTo("×8"));
+        Assert.That(CardStates.ItemQtyText(8, 2), Is.EqualTo("×8（预留2）"));
+        Assert.That(CardStates.ItemQtyText(1, 1), Is.EqualTo("×1（预留1）"));
+        Assert.That(CardStates.ItemQtyText(8, 8), Is.EqualTo("×8（预留8）"));
+        Assert.That(CardStates.ItemQtyText(8, 0), Is.EqualTo("×8"), "释放预留后回到只写总数");
+        var shelf = Web("Components", "ItemShelf.razor");
+        Assert.That(shelf, Does.Contain("var reservedN = list.Where(i => i.ReservedBy != null).Sum(i => i.Count);"), "预留数按本卡实际预留份数现算");
+        Assert.That(shelf, Does.Contain("var qtyText = CardStates.ItemQtyText(total, reservedN);"));
+    }
+
     /// <summary>Q356-A01：堆叠食物、部分预留物品、独立耐久工具副标都是本卡数量；第二行已腐败/已损坏优先，其次保质，再耐久；不再出主图数量角标；复合锅卡不变。</summary>
     [Test]
     public void Q356_A01_ItemSubIsQuantity_Line2StatusFirst()
@@ -247,7 +261,7 @@ public class B32aCardTests : TestBase
         Assert.That(CardStates.ItemLine2Of(E, s, b0), Is.EqualTo(ItemLine2.Spoiled), "已腐败优先于保质");
         // 部分预留：沿「×{总数}（预留{数量}）」
         Assert.That(CardStates.ItemQtyText(5, 2), Is.EqualTo("×5（预留2）"));
-        Assert.That(CardStates.ItemQtyText(2, 2), Is.EqualTo("×2"), "全部预留时只写总数（沿原格式）");
+        Assert.That(CardStates.ItemQtyText(2, 2), Is.EqualTo("×2（预留2）"), "Q361：全部预留也写（预留N）");
         // 独立耐久工具：副标「×1」，第二行耐久；损坏后「已损坏」优先
         var knife = E.CreateItems(s, "stone_knife", 1, "camp").Single();
         Assert.That(Cfg.Items.First(i => i.Id == "stone_knife").IsStackable, Is.False, "独立工具卡");
@@ -261,7 +275,7 @@ public class B32aCardTests : TestBase
 
         var shelf = Web("Components", "ItemShelf.razor");
         Assert.That(shelf, Does.Not.Contain("k2-tag qty"), "去掉重复的主图数量角标");
-        Assert.That(shelf, Does.Contain("<div class=\"k2-sub is-qty\" title=\"@tLine\">@($\"×{t.Count}\")</div>"), "独立工具卡副标「×1」");
+        Assert.That(shelf, Does.Contain("<div class=\"k2-sub is-qty\" title=\"@tLine\">@CardStates.ItemQtyText(t.Count, t.ReservedBy != null ? t.Count : 0)</div>"), "独立工具卡副标「×1」，被预留时「×1（预留1）」");
         Assert.That(shelf, Does.Contain("var tLine2 = deployed ? tLine : Ui.CardLine2(e, s, t);"), "自身阻断（已部署）排在第二行最前");
         Assert.That(shelf, Does.Contain("var line2 = spoiledFront ? \"已腐败\" : Ui.CardLine2(e, s, stacked ? head : whole);"));
         Assert.That(shelf, Does.Contain("<PotCard @key=\"@(\"t:\" + inst)\" Pot=\"t\" />"), "复合锅卡仍走锅卡（水量与食材）");
