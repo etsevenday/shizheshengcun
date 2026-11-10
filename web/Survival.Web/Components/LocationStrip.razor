@@ -254,14 +254,14 @@
                         var fear = e.FearNote(s, fixedHere, GameEngine.FearApproach);
                         var lead = e.Enemy(fixedHere[0].EnemyId);
                         var tip = $"{names}：揭示时按容量C{st.Capacity}截定名单，之后不重编、不缩怪；固定战不会引来增援；可以离开" + (fixedCfg!.Guardian ? "；守卫胜利后本代守卫门打开" : fixedCfg.IsCampaign ? "；胜利前这里不能探索、清理或采集；胜利后通往营门的路线开通（单局一次）" : "；敌人还在时本房间不能探索、清理或采集");
-                        <ObjectCard @key="@("fixed-" + here)" Id="fixed-battle" CssClass="enemy-card world fixed" Title="@(fixedCfg.Guardian ? lead.Name : fixedCfg.IsCampaign ? "拦路的感染者" : "固定敌踪")"
+                        <ObjectCard Ink2="true" Danger="true" @key="@("fixed-" + here)" Id="fixed-battle" CssClass="k2-enemy fixed" Title="@(fixedCfg.Guardian ? lead.Name : fixedCfg.IsCampaign ? "拦路的感染者" : "固定敌踪")"
                                     Badge="@(fixedCfg.Guardian ? "守卫" : "固定")" BadgeClass="new" Tooltip="@tip">
                             <Art>@Icons.Markup("enemy_" + lead.Id)</Art>
-                            <ChildContent>
-                                <div class="oc-line" title="@names">@names</div>
+                            <SubContent><div class="oc-line" title="@names">@names</div></SubContent>
+                            <Line2>
                                 @if (e.FixedHurtNote(s, here) is string hurt) { <div class="oc-line" title="@hurt">@hurt</div> }
                                 else { <div class="oc-line" title="@tip">@($"{fixedHere.Count}只 · 名单已锁定 · 不增援")</div> }
-                            </ChildContent>
+                            </Line2>
                             <Footer>
                                 <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? $"全名单一起入场（从1号位起）；{fear}")"
                                         @onclick="() => G.EngageFixed()" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
@@ -279,18 +279,14 @@
                         var note = e.EliteNote(s, c);
                         var panel = $"健康{Ui.N(ec.Hp)} · 甲{Ui.T(ec.Armor)} · 伤害{Ui.N(ec.DamageMin)}—{Ui.N(ec.DamageMax)} · 速度{Ui.Speed(ec.Speed)} · {ec.Ap}AP";
                         var fearE = e.FearNote(s, new[] { we ?? new WorldEnemy { EnemyId = ec.Id } }, GameEngine.FearApproach);
-                        <ObjectCard @key="@("elite-" + cid)" Id="@($"elite-{cid}")" CssClass="enemy-card world elite" Title="@ec.Name" Badge="可选强敌" BadgeClass="new"
+                        <ObjectCard Ink2="true" @key="@("elite-" + cid)" Id="@($"elite-{cid}")" CssClass="k2-enemy elite" Title="@ec.Name" Badge="可选强敌" BadgeClass="new"
+                                    Sub="@($"健康 {Ui.N(we?.Hp ?? ec.Hp)}/{Ui.N(ec.Hp)}")" SubClass="hp"
                                     Tooltip="@($"{note}；{panel}；只这一名敌人、不增援；不接也不影响行路、资源与主线；撤退保留它的伤势")">
                             <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
-                            <ChildContent>
-                                @if (we != null)
-                                {
-                                    <div class="hp-line"><span>健康</span><b>@Ui.N(we.Hp)/@Ui.N(ec.Hp)</b></div>
-                                    <div class="track"><i style="width:@Ui.Bar(we.Hp, ec.Hp)%"></i></div>
-                                }
-                                else { <div class="oc-line" title="@panel">@panel</div> }
+                            <Line2>
+                                @if (we != null) { <div class="track"><i style="width:@Ui.Bar(we.Hp, ec.Hp)%"></i></div> }
                                 <div class="oc-line" title="@note">@note</div>
-                            </ChildContent>
+                            </Line2>
                             <Footer>
                                 <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "明确接战（单局一次）；" + fearE)"
                                         @onclick="() => G.EngageFixed(cid)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
@@ -313,15 +309,13 @@
                         var ec = e.Enemy(w.EnemyId);
                         var wid = w.Id;
                         var open = G.Pop?.Kind == "approach" && G.Pop.Id == wid.ToString();
-                        <ObjectCard @key="@("we" + wid)" Id="@($"en-{wid}")" CssClass="enemy-card world" Title="@ec.Name" Badge="@(w.Hostile ? "敌对" : "中立")" BadgeClass="@(w.Hostile ? "new" : "")"
+                        @* B32a（Q340、Q345）：重墨 V2 卡模板——副标健康数值、第二行健康条，伤害与速度收进悬停（详情点卡看右栏）；敌对挂危险叠层 *@
+                        <ObjectCard Ink2="true" @key="@("we" + wid)" Id="@($"en-{wid}")" CssClass="k2-enemy" Title="@ec.Name" Badge="@(w.Hostile ? "敌对" : "中立")" BadgeClass="@(w.Hostile ? "new" : "")"
+                                    Danger="@w.Hostile" Sub="@($"健康 {Ui.N(w.Hp)}/{Ui.N(ec.Hp)}")" SubClass="hp"
                                     Selected="@(sel.Kind == SelectionKind.Enemy && sel.InstanceId == wid)" Fresh="@G.Highlights.Contains($"enemy:{wid}")"
-                                    Tooltip="敌人：点击查看详情；点“接近”在卡旁预览并确认开战" OnClick="() => SelectEnemy(wid)">
+                                    Tooltip="@($"敌人：点击查看详情；点“接近”在卡旁预览并确认开战。伤害{Ui.N(ec.DamageMin)}—{Ui.N(ec.DamageMax)} · 速度{Ui.Speed(ec.Speed)}")" OnClick="() => SelectEnemy(wid)">
                             <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
-                            <ChildContent>
-                                <div class="hp-line"><span>健康</span><b>@Ui.N(w.Hp)/@Ui.N(ec.Hp)</b></div>
-                                <div class="track"><i style="width:@Ui.Bar(w.Hp, ec.Hp)%"></i></div>
-                                <div class="oc-line" title="@($"伤害{Ui.N(ec.DamageMin)}—{Ui.N(ec.DamageMax)} · 速度{Ui.Speed(ec.Speed)}")">伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax)) · 速度@(Ui.Speed(ec.Speed))</div>
-                            </ChildContent>
+                            <Line2><div class="track"><i style="width:@Ui.Bar(w.Hp, ec.Hp)%"></i></div></Line2>
                             <Footer>
                                 @* R05 §7、S14 §14.2：点“接近”只在卡旁打开对象/风险预览，点浮窗里的“接近并开战”才接敌 *@
                                 <button type="button" class="loc-btn res-btn @(open ? "on" : "")" disabled="@(busy)" aria-expanded="@open" title="@(busy ? "行动进行中" : "在卡旁预览风险并确认接近")"

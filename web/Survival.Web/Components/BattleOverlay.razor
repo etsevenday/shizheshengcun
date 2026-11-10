@@ -24,14 +24,13 @@
             {
                 var ec = e.Enemy(w.EnemyId);
                 var stays = !joinIds.Contains(w.Id);
-                <ObjectCard @key="w.Id" CssClass="@(stays ? "enemy-card stays" : "enemy-card")" Title="@ec.Name" Badge="@(stays ? "留在原地" : ec.FamilyName + (ec.Elite ? "·精英" : ""))" OnClick="() => {}">
+                @* B32a（Q340、Q342、Q345，P01c）：重墨 V2 卡模板——角标「敌踪待处理」（真实不参战者「留在原地」），副标健康数值、第二行健康条；
+                   族类、精英与护甲/闪避/速度/伤害/AP 收进悬停。敌踪为敌对，挂危险叠层 *@
+                var encTip = $"{ec.Name}（{ec.FamilyName}{(ec.Elite ? "·精英" : "")}）{(stays ? "：留在原地，不参与这次接敌" : "")} · 健康{Ui.N(w.Hp)}/{Ui.N(ec.Hp)} · 护甲{Ui.T(ec.Armor)} · 闪避{Ui.T(ec.Dodge)} · 速度{Ui.Speed(ec.Speed)} · 伤害{Ui.N(ec.DamageMin)}—{Ui.N(ec.DamageMax)} · {ec.Ap}AP";
+                <ObjectCard Ink2="true" @key="w.Id" CssClass="@(stays ? "k2-enemy stays" : "k2-enemy")" Title="@ec.Name" Badge="@(stays ? "留在原地" : "敌踪待处理")" BadgeClass="@(stays ? "" : "new")"
+                            Danger="true" Sub="@($"健康 {Ui.N(w.Hp)}/{Ui.N(ec.Hp)}")" SubClass="hp" Tooltip="@encTip" AriaLabel="@encTip" OnClick="() => {}">
                     <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
-                    <ChildContent>
-                        <div class="hp-line"><span>健康</span><b>@Ui.N(w.Hp)/@Ui.N(ec.Hp)</b></div>
-                        <div class="track"><i style="width:@Ui.Bar(w.Hp, ec.Hp)%"></i></div>
-                        <div class="oc-line">护甲@(Ui.T(ec.Armor)) · 闪避@(Ui.T(ec.Dodge)) · 速度@(Ui.Speed(ec.Speed))</div>
-                        <div class="oc-line">伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax)) · @(ec.Ap)AP</div>
-                    </ChildContent>
+                    <Line2><div class="track"><i style="width:@Ui.Bar(w.Hp, ec.Hp)%"></i></div></Line2>
                 </ObjectCard>
             }
         </div>
@@ -42,7 +41,7 @@
             <button type="button" class="enc-go" disabled="@(e.CanStart(s, ActionRequest.Bypass()) != null)"
                     @onmouseenter="() => G.Hover(BypassReq, BypassTitle)" @onfocus="() => G.Hover(BypassReq, BypassTitle)" @onmouseleave="() => G.Hover(null)" @onblur="() => G.Hover(null)"
                     @onclick="Bypass">
-                <strong>绕行 · @(cfg.Encounters.BypassMinutes)分钟</strong><small>按移动消耗；敌人仍在；@(Clock.Duration(cfg.Encounters.PostExitRandomEncounterGraceMinutes))内不再随机遇敌</small>
+                <strong>绕行（@Clock.Duration(cfg.Encounters.BypassMinutes)）</strong><small>按移动消耗；敌人仍在；@(Clock.Duration(cfg.Encounters.PostExitRandomEncounterGraceMinutes))内不再随机遇敌</small>
             </button>
         </div>
         <div class="bt-log muted">只会遇到这里已有的敌人，不会凭空出现新敌人。Esc 打开菜单，不能关掉这个选择。</div>

@@ -187,3 +187,8 @@
 .wasteland .ocard.k2 .k2-l2 > .danger-line { color: var(--k2-danger); }
 .wasteland .ocard.k2 .k2-l2 > .oc-line.warn-line,
 .wasteland .ocard.k2 .k2-sub > .oc-line.warn-line { color: #e7b46d; }
+
+/* ───── 发现敌踪覆盖层（Q342 过渡）：卡片不再撑出最小高度，1280×720 下不压住「接敌」「绕行」 ───── */
+.battle-overlay.encounter .bt-cards { min-height: 0; align-items: flex-start; }
+.wasteland .battle-overlay.encounter .bt-cards > .ocard.k2.k2 { height: min(var(--k2-h), 100%); min-height: 0; }
+.battle-overlay.encounter .ocard.k2.stays { opacity: .55; filter: grayscale(.6); }
