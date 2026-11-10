@@ -41,6 +41,9 @@ namespace Survival.Core.Engine
         /// <summary>empty / drying / done / spoiled。</summary>
         public string Status { get; set; } = "empty";
         public string? RecipeId { get; set; }
+        /// <summary>B32b P02c「配方」行：这一位的食谱名；空位为 null。</summary>
+        public string? RecipeName { get; set; }
+        /// <summary>B32b P02c：「工位{序号}」（原「第k位 · …」，状态、配方、原料与进度各占一行）。</summary>
         public string Title { get; set; } = "";
         public string Line { get; set; } = "";
         /// <summary>位内物品：“生肉#12×1（保质到第2日 06:00）”。</summary>
@@ -477,7 +480,7 @@ namespace Survival.Core.Engine
                     b.EndMinute = s.GameMinute;
                     b.XpNote = DryingXp(s, b);
                     var outText = string.Join("、", made.Select(i => $"{ItemName(i.ItemId)}×{i.Count}（{ExpiryNote(s, i)}）"));
-                    Emit(s, GameEventKind.FacilityDone, $"{ZoneName(s, place)}晾制架第{b.Slot + 1}位：{outText}晾好了，留在这一位，回到当地取出；{b.XpNote}。");
+                    Emit(s, GameEventKind.FacilityDone, $"{ZoneName(s, place)}晾制架第{b.Slot + 1}位：{outText}晾好了，留在这一位，回到当地取出；{b.XpNote}。", null, new[] { DryingSlotHighlight(place, b.Slot) });
                 }
             }
         }
@@ -559,7 +562,7 @@ namespace Survival.Core.Engine
                 var b = DryingSlotAt(s, place, k);
                 if (b == null)
                 {
-                    v.Title = $"第{k + 1}位 · 空";
+                    v.Title = CardStates.DryingSlotName(k);
                     v.Line = "可投一批果干或肉干";
                     list.Add(v);
                     continue;
@@ -568,6 +571,7 @@ namespace Survival.Core.Engine
                 var items = DryingContents(s, place, k);
                 v.Status = b.Status;
                 v.RecipeId = b.RecipeId;
+                v.RecipeName = rc.Name;
                 v.DoneMinutes = b.DoneMinutes;
                 v.RequiredMinutes = b.RequiredMinutes;
                 v.Contents = items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}（{ExpiryNote(s, i)}）").ToList();
@@ -578,7 +582,7 @@ namespace Survival.Core.Engine
                         var left = Math.Max(0, b.RequiredMinutes - b.DoneMinutes);
                         var finish = s.GameMinute + left;
                         v.RemainingMinutes = left;
-                        v.Title = $"第{k + 1}位 · {rc.Name} {b.DoneMinutes}/{b.RequiredMinutes}分钟";
+                        v.Title = CardStates.DryingSlotName(k);
                         var early = items.Where(i => i.ExpiresAt is int x && x <= finish).OrderBy(i => i.ExpiresAt).FirstOrDefault();
                         v.ShelfPaused = b.ShelfPaused || items.Any(i => i.ShelfPausedMinutes != null);
                         v.Line = $"还需{Clock.Duration(left)}，预计{Clock.DayTime(finish)}完成"
@@ -591,13 +595,13 @@ namespace Survival.Core.Engine
                         v.ToGroundBlocked = DryingCancelBlocked(s, k, false);
                         break;
                     case DryingSlot.Done:
-                        v.Title = $"第{k + 1}位 · {string.Join("、", items.Select(i => ItemName(i.ItemId)))}已晾好";
+                        v.Title = CardStates.DryingSlotName(k);
                         v.Line = $"{(b.EndMinute is int e ? Clock.DayTime(e) + "完成" : "已完成")}，留在这一位占位，取出后空出";
                         v.ToCarriedBlocked = DryingTakeBlocked(s, k, true);
                         v.ToGroundBlocked = DryingTakeBlocked(s, k, false);
                         break;
                     default:
-                        v.Title = $"第{k + 1}位 · 原料已腐败";
+                        v.Title = CardStates.DryingSlotName(k);
                         v.Line = $"{rc.Name}{(b.EndMinute is int m ? $"在{Clock.DayTime(m)}" : "")}停止，没有成品；清理即把原料原样取出（腐败的不能吃）";
                         v.ToCarriedBlocked = DryingTakeBlocked(s, k, true);
                         v.ToGroundBlocked = DryingTakeBlocked(s, k, false);

@@ -791,7 +791,10 @@ namespace Survival.Core.Engine
             fac.Processes.Remove(p);
             fac.Completed.Add($"{p.ProcessId}@{p.CompletionSerial}");
             if (fac.Completed.Count > 20) fac.Completed.RemoveRange(0, fac.Completed.Count - 20);
-            Emit(s, GameEventKind.FacilityDone, text, null, new[] { cfg.OutputId });
+            // B32b（逐字稿 §1.5 Q368）：成品留在加工位，高亮落到该加工位（右栏不可见时网页壳改亮火堆／柴炉卡），不再按成品物品名去亮随身/地面的同名卡
+            var top = t.InContainer ? ContainerOf(s, t) : t;
+            var slotK = top == null ? -1 : fac.ProcessingSlots.FindIndex(x => x == top.InstanceId);
+            Emit(s, GameEventKind.FacilityDone, text, null, slotK >= 0 ? new[] { FireSlotHighlight(loc, slotK) } : null);
         }
 
         /// <summary>

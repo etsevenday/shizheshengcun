@@ -9,7 +9,7 @@ namespace Survival.Core.Engine
     /// 开发计划 v1.0 B32a：主界面卡片的状态挂载与卡面口径（逐字稿 §1.2 Q340、Q345、Q349、Q351；v0.9 06 §1—§4）。
     /// 只读状态与配置，不改任何玩法；网页壳按这里的判定给卡挂「危险」「加工中」「不可用」叠层、写副标与来源行。
     /// </summary>
-    public static class CardStates
+    public static partial class CardStates
     {
         // ───────────── Q345 加工中：当前行动作用中的对象 ─────────────
 
