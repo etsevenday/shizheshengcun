@@ -85,5 +85,35 @@ namespace Survival.Core.Engine
 
         /// <summary>两次标记之间有没有新的有效提交。</summary>
         public static bool Committed(string? before, string after) => before != null && before != after;
+
+        /// <summary>
+        /// B31d（逐字稿 §1.2 Q337 选 C）：不带请求号的 0 分钟操作哪些算“有效提交”。成功完成的交谈、确认远行（「准备好了」）与
+        /// 「还没准备好」（远行准备里对来客说「先准备」）算提交，清掉当前提示（含危险、行动中止）；同效入口经同一内核方法受理的一并算
+        /// （交谈含序章来客、城市岗位与招募对象，都走 <see cref="GameEngine.TalkNpc"/>）。查看文书、路线日志与任务回顾仍是浏览，不清。
+        /// 失败或重复请求不清（沿 Q330）；成功动作自己带来新的关键提示时，先清旧的再显示新结果（同 <see cref="Pick"/>）。
+        /// </summary>
+        public static bool CommitsOnSuccess(ZeroMinuteOp op) =>
+            op == ZeroMinuteOp.Talk || op == ZeroMinuteOp.ConfirmJourney || op == ZeroMinuteOp.NotReady;
+
+        /// <summary>这次 0 分钟操作的结果要不要清掉当前提示：只有成功、非重复、且属于提交的那三类。</summary>
+        public static bool ClearsOn(ZeroMinuteOp op, ActionResult? res) =>
+            res != null && res.Ok && !res.Duplicate && CommitsOnSuccess(op);
+    }
+
+    /// <summary>B31d（Q337）：不带请求号的 0 分钟操作种类（网页壳调用时标明，交给 <see cref="ResultToast.ClearsOn"/> 判断）。</summary>
+    public enum ZeroMinuteOp
+    {
+        /// <summary>交谈（序章来客、城市岗位、招募对象）。</summary>
+        Talk,
+        /// <summary>远行准备「准备好了」（确认远行）。</summary>
+        ConfirmJourney,
+        /// <summary>远行准备「先准备」（还没准备好）。</summary>
+        NotReady,
+        /// <summary>查看文书、告示与路标。</summary>
+        ReadDocument,
+        /// <summary>路线日志（查看路线）。</summary>
+        RouteLog,
+        /// <summary>任务回顾（回看委托对白、外部医疗线索）。</summary>
+        ReviewQuest,
     }
 }

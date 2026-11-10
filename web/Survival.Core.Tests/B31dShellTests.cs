@@ -116,6 +116,82 @@ public class B31dShellTests : TestBase
         Assert.That(Web("Components", "StartScreen.razor"), Does.Not.Contain("存档版本"), "标题页仍按 PXa 不显示");
     }
 
+    // ───────────── Q337 0 分钟操作的有效提交 ─────────────
+
+    /// <summary>Q337-A01：六个 0 分钟入口——交谈、确认远行、「还没准备好」成功时算提交（清提示）；查看文书、路线日志、任务回顾是浏览（不清）；失败或重复不清。</summary>
+    [Test]
+    public void Q337_A01_ZeroMinuteCommits()
+    {
+        var ok = ActionResult.Success();
+        foreach (var op in new[] { ZeroMinuteOp.Talk, ZeroMinuteOp.ConfirmJourney, ZeroMinuteOp.NotReady })
+        {
+            Assert.That(ResultToast.CommitsOnSuccess(op), Is.True, op.ToString());
+            Assert.That(ResultToast.ClearsOn(op, ok), Is.True, op.ToString());
+            Assert.That(ResultToast.ClearsOn(op, ActionResult.Fail("x")), Is.False, op + " 失败不清");
+            Assert.That(ResultToast.ClearsOn(op, ActionResult.Repeated()), Is.False, op + " 重复不清");
+            Assert.That(ResultToast.ClearsOn(op, null), Is.False);
+        }
+        foreach (var op in new[] { ZeroMinuteOp.ReadDocument, ZeroMinuteOp.RouteLog, ZeroMinuteOp.ReviewQuest })
+        {
+            Assert.That(ResultToast.CommitsOnSuccess(op), Is.False, op.ToString());
+            Assert.That(ResultToast.ClearsOn(op, ok), Is.False, op + " 浏览不清");
+        }
+        Assert.That(Enum.GetValues(typeof(ZeroMinuteOp)).Length, Is.EqualTo(6), "对照六个 0 分钟入口");
+    }
+
+    /// <summary>
+    /// Q337 实际序章流程：交谈、确认远行、「还没准备好」成功时内核都不记请求号（所以原 Q330 的请求号标记清不到，要靠 ZeroMinuteOp 标明）；
+    /// 远行确认在得知路线前失败（失败不清）。
+    /// </summary>
+    [Test]
+    public void Q337_PrologueFlowResults()
+    {
+        var s = NewStory();
+        ReadDialogues(s);
+        E.DebugPrologue(s, "won");
+        ReadDialogues(s);
+        var before = ResultToast.CommitMark(s);
+        var early = E.ConfirmJourney(s);
+        Assert.That(early.Ok, Is.False, "得知营区路线前确认远行失败");
+        Assert.That(ResultToast.ClearsOn(ZeroMinuteOp.ConfirmJourney, early), Is.False, "失败不清");
+        Assert.That(E.OpenRouteLog(s).Ok, Is.False);
+        s.GameMinute = 6240;   // 第 5 日 08:00 来客登记（同 B13PrologueTests）
+        E.PrologueBoundary(s);
+        ReadDialogues(s);
+        var talk = E.TalkNpc(s, "npc_cheng_wang");
+        Assert.That(ResultToast.ClearsOn(ZeroMinuteOp.Talk, talk), Is.True, talk.Reason);
+        ReadDialogues(s);
+        var notReady = E.SayNotReady(s);
+        Assert.That(ResultToast.ClearsOn(ZeroMinuteOp.NotReady, notReady), Is.True, notReady.Reason);
+        ReadDialogues(s);
+        var log = E.OpenRouteLog(s);
+        Assert.That(log.Ok, Is.True);
+        Assert.That(ResultToast.ClearsOn(ZeroMinuteOp.RouteLog, log), Is.False, "路线日志是浏览");
+        ReadDialogues(s);
+        var confirm = E.ConfirmJourney(s);
+        Assert.That(ResultToast.ClearsOn(ZeroMinuteOp.ConfirmJourney, confirm), Is.True, confirm.Reason);
+        Assert.That(ResultToast.CommitMark(s), Is.EqualTo(before), "这些 0 分钟序章操作不记请求号，原 Q330 标记清不到，由 ZeroMinuteOp 标明");
+    }
+
+    /// <summary>Q337 壳层接线：六个入口各标明种类；成功且属于提交时先清提示再 Drain（新的关键结果照常显示）；带请求号的同效入口（任务条目「接取」）沿 Q330 标记。</summary>
+    [Test]
+    public void Q337_ShellWiring()
+    {
+        var g = Web("Services", "GameSession.cs");
+        Assert.That(g, Does.Contain("PrologueDo(() => E.TalkNpc(S, npcId), op: ZeroMinuteOp.Talk)"));
+        Assert.That(g, Does.Contain("PrologueDo(() => E.ConfirmJourney(S), closePanel: false, op: ZeroMinuteOp.ConfirmJourney)"));
+        Assert.That(g, Does.Contain("PrologueDo(() => E.SayNotReady(S), op: ZeroMinuteOp.NotReady)"));
+        Assert.That(g, Does.Contain("PrologueDo(() => E.ReadDocument(S, docId, choiceId), op: ZeroMinuteOp.ReadDocument)"));
+        Assert.That(g, Does.Contain("PrologueDo(() => E.OpenRouteLog(S), op: ZeroMinuteOp.RouteLog)"));
+        Assert.That(g, Does.Contain("PrologueDo(() => E.ReviewQuest(S, questId, note), op: ZeroMinuteOp.ReviewQuest)"));
+        var body = g.Substring(g.IndexOf("private ActionResult PrologueDo("));
+        body = body.Substring(0, body.IndexOf("Notify();"));
+        var clear = body.IndexOf("if (op is ZeroMinuteOp zop && ResultToast.ClearsOn(zop, res)) SetToast(null);");
+        Assert.That(clear, Is.GreaterThan(0));
+        Assert.That(clear, Is.LessThan(body.IndexOf("Drain();")), "先清旧提示，再放本次结果");
+        Assert.That(g, Does.Contain("E.AcceptQuest(S, questId, Guid.NewGuid().ToString(\"N\"))"), "任务条目接取（与交谈同效）带请求号，沿 Q330 标记清提示");
+    }
+
     // ───────────── 工具 ─────────────
 
     private static string Block(string css, string head)

@@ -703,7 +703,7 @@ public sealed class GameSession
     public string? TutorialFocus => State == null || S.Progress.Dead ? null : E.ObjectiveFocus(S);
 
     /// <summary>序章操作（交谈、查看文书、路线日志、远行确认）：0 分钟；成功后收起浏览面板让对白层可见，存档并刷新。</summary>
-    private ActionResult PrologueDo(Func<ActionResult> f, bool closePanel = true)
+    private ActionResult PrologueDo(Func<ActionResult> f, bool closePanel = true, ZeroMinuteOp? op = null)
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
         if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
@@ -712,6 +712,9 @@ public sealed class GameSession
         if (res.Ok)
         {
             if (closePanel && E.DialogueLocked(S)) { Panel = null; Pop = null; }
+            // B31d（Q337 选 C）：成功的交谈、确认远行、「还没准备好」算有效提交，先清当前提示（含关键提示），再由 Drain 放本次带来的新结果；
+            // 查看文书、路线日志、任务回顾是浏览，失败或重复不清
+            if (op is ZeroMinuteOp zop && ResultToast.ClearsOn(zop, res)) SetToast(null);
             Drain();
             Save();
         }
@@ -719,11 +722,11 @@ public sealed class GameSession
         return res;
     }
 
-    public ActionResult TalkNpc(string npcId) => PrologueDo(() => E.TalkNpc(S, npcId));
+    public ActionResult TalkNpc(string npcId) => PrologueDo(() => E.TalkNpc(S, npcId), op: ZeroMinuteOp.Talk);
 
     /// <summary>B17 安全屋/工坊批次等 0 分钟内核操作：失败写提示，成功存档并刷新（不收起面板）。</summary>
     public ActionResult EngineDo(Func<ActionResult> f) => PrologueDo(f, closePanel: false);
-    public ActionResult ReadDocument(string docId, string? choiceId = null) => PrologueDo(() => E.ReadDocument(S, docId, choiceId));
+    public ActionResult ReadDocument(string docId, string? choiceId = null) => PrologueDo(() => E.ReadDocument(S, docId, choiceId), op: ZeroMinuteOp.ReadDocument);
 
     // ───────────── 城市岗位事项（B14，A11 Q33 服务表） ─────────────
 
@@ -884,7 +887,7 @@ public sealed class GameSession
     }
 
     /// <summary>回看已完成委托的对白或 AC02 外部医疗线索（0 分钟，只回放）。</summary>
-    public ActionResult ReviewQuest(string questId, bool note = false) => PrologueDo(() => E.ReviewQuest(S, questId, note));
+    public ActionResult ReviewQuest(string questId, bool note = false) => PrologueDo(() => E.ReviewQuest(S, questId, note), op: ZeroMinuteOp.ReviewQuest);
 
     /// <summary>委托条目里的工作：0 分钟阅读当场完成；有工时的（核对物资账）开工为主行动后收起面板照常推进。</summary>
     public async Task<ActionResult> StartQuestWork(string questId)
@@ -904,9 +907,9 @@ public sealed class GameSession
         return res;
     }
 
-    public ActionResult OpenRouteLog() => PrologueDo(() => E.OpenRouteLog(S));
-    public ActionResult ConfirmJourney() => PrologueDo(() => E.ConfirmJourney(S), closePanel: false);
-    public ActionResult SayNotReady() => PrologueDo(() => E.SayNotReady(S));
+    public ActionResult OpenRouteLog() => PrologueDo(() => E.OpenRouteLog(S), op: ZeroMinuteOp.RouteLog);
+    public ActionResult ConfirmJourney() => PrologueDo(() => E.ConfirmJourney(S), closePanel: false, op: ZeroMinuteOp.ConfirmJourney);
+    public ActionResult SayNotReady() => PrologueDo(() => E.SayNotReady(S), op: ZeroMinuteOp.NotReady);
 
     /// <summary>系统提示“关闭这条”：只记已关闭，不完成任务，可在任务册回看。</summary>
     public void DismissHint(string taskId)
