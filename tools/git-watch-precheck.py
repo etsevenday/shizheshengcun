@@ -9,7 +9,8 @@
      不到 4 小时 → IDLE（上一轮还在跑；技能每进一个阶段就刷新心跳）
   2. git fetch origin；origin/main 等于 notifiedHead → IDLE（已通知过用户，等处理）
   3. lastSeen..origin/main 里作者不是 etsevenday 的提交为空，且队列（queue.batches）里没有 pending 批次 → IDLE；
-     有 waiting 批次（开工前问题已发给策划）时，没有策划新提交也 IDLE，pending 批次不开
+     有 waiting 批次（开工前问题已发给策划）时，没有策划新提交也 IDLE，pending 批次不开；
+     blocksQueue 为 false 的 waiting 批次（只答了一部分的 A 批）不挡 pending 批次
   4. 否则 WORK，附新提交列表、队列剩余批次与本地未推送/未提交情况，交给技能继续处理
 fetch 失败等异常一律 ERROR，hook 模式下不拦截，照常交给模型处理。
 
@@ -66,6 +67,8 @@ def check():
     pending = [b for b in batches if b.get("status") == "pending"]
     blocked = [b for b in batches if b.get("status") == "blocked"]
     waiting = [b for b in batches if b.get("status") == "waiting"]
+    # blocksQueue: false = 只答了一部分的 A 批，自己等答完，不挡别的批次（技能 §2.3 第 6 条）
+    blocking = [b for b in waiting if b.get("blocksQueue", True)]
 
     try:
         git("fetch", "origin", "--quiet", timeout=90)
@@ -80,8 +83,8 @@ def check():
                   f"{last}..origin/main")
         new = [l.split("\x1f") for l in log.splitlines() if l]
         theirs = [c for c in new if c[1] != OWN_AUTHOR]
-        if not theirs and waiting:
-            ids = "；".join(f"{b.get('id', '?')} {'、'.join(b.get('questions') or [])}" for b in waiting)
+        if not theirs and blocking:
+            ids = "；".join(f"{b.get('id', '?')} {'、'.join(b.get('questions') or [])}" for b in blocking)
             return "IDLE", f"等策划答复（{ids}），开发暂停（origin/main {head[:7]}）"
         if not theirs and not pending:
             if blocked:
