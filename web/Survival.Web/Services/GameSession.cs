@@ -1237,6 +1237,12 @@ public sealed class GameSession
         TaskDoneSeen = null;
         Notice = null;
         Selected = new Selection();
+        // B32a Q352：读档、新开、回标题后不复用上一局的临时选择——批次选择、待确认行动、转交与编队草稿一并清
+        SelectedBatchKey = null;
+        PendingAction = null;
+        GivePending = null;
+        FormationDraft = null;
+        FormationPick = null;
         DetailTab = DetailTab.Character;
         Panel = null;
         MenuOpen = false;
