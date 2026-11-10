@@ -121,6 +121,47 @@ public class B32dTests : TestBase
         Assert.That(screen, Does.Contain("else if (G.Panel != null && G.Panel != \"help\" && !G.CardPopCovered && G.Selected.Kind is"), "盘已收起时 Esc 退面板");
     }
 
+    // ───────────── Q390—Q392 B32d 实装后定稿 ─────────────
+
+    /// <summary>Q390-A01：游戏菜单（含战斗菜单）期间选卡操作盘只隐藏、不卸载（盘内数量、去向保留），关菜单后原样恢复；覆盖来源卡的面板仍按 Q378 收盘。</summary>
+    [Test]
+    public void Q390_A01_MenuHidesDiskKeepsState()
+    {
+        var cp = Web("Components", "CardPop.razor");
+        var cond = cp.Substring(cp.IndexOf("@if (G.State != null"));
+        cond = cond.Substring(0, cond.IndexOf("{"));
+        Assert.That(cond, Does.Not.Contain("!G.MenuOpen").And.Not.Contain("!G.BattleMenuOpen"), "菜单期间不卸载");
+        Assert.That(cond, Does.Contain("!G.CardPopCovered"), "面板覆盖仍收盘");
+        Assert.That(cp, Does.Contain("var menuHide = G.MenuOpen || G.BattleMenuOpen ? \" menu-hidden\" : \"\";"));
+        Assert.That(Web("wwwroot", "css", "shell.css"), Does.Contain(".wasteland .apop.card-pop.menu-hidden { display: none !important; }"));
+        Assert.That(Web("Services", "GameSession.cs"), Does.Contain("&& !MenuOpen && !BattleMenuOpen && !CardPopCovered && Selected.Kind is"), "菜单期间不算显示（不加遮罩）");
+        Assert.That(Web("wwwroot", "js", "app.js"), Does.Contain("if (document.querySelector('.menu-modal')) {"), "菜单期间按键不落到隐藏的操作条");
+    }
+
+    /// <summary>Q391-A01：木炭物品说明与系统说明两处入口指向右栏空加工位；煅烧条仍带实际配方规则。</summary>
+    [Test]
+    public void Q391_A01_CharcoalEntryTexts()
+    {
+        Assert.That(E.Item("charcoal").Desc, Is.EqualTo("锻炉燃料与材料。在右栏空加工位点「煅烧木炭」：木材×4→木炭×3，占1个加工位、需60有效受热分钟，火堆燃料另计。"));
+        var help = Web("Services", "HelpCatalog.cs");
+        Assert.That(help, Does.Contain("$\"在右栏空加工位点「煅烧木炭」，看清后点「确认投料」：{e.CharcoalRuleText()}。原料只取你随身和当前地面的木材，投料不耗时间；火堆熄灭时也能先投，点燃后才开始计热。\""));
+        Assert.That(help, Does.Contain("\"转移、食用、点火、等待加工这些直接操作不额外弹确认；在右栏空加工位点「煅烧木炭」，看清原料与燃料后点「确认投料」。\""));
+        Assert.That(help, Does.Not.Contain("火堆卡上点“煅烧木炭”").And.Not.Contain("火堆“煅烧木炭”在卡旁浮窗"));
+    }
+
+    /// <summary>Q392-A01：拖木材悬停在火堆卡上，松手前的加燃料提示带附句；松手仍是添加燃料。</summary>
+    [Test]
+    public void Q392_A01_FuelDropHint()
+    {
+        var s = WithGroundWood(2);
+        var drop = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse("fire:camp")!);
+        Assert.That(drop.Verb, Is.EqualTo(DropVerb.AddFuel));
+        Assert.That(drop.Label, Is.EqualTo($"投放1木材，燃料+{E.Config.Fire.BurnMinutesPerWood}分钟（作燃料；要煅烧木炭请在右栏空加工位点「煅烧木炭」）"));
+        Assert.That(E.DoInstant(s, drop.Instant!).Ok, Is.True);
+        Assert.That(Fac(s).FuelMinutes, Is.EqualTo(E.Config.Fire.BurnMinutesPerWood));
+        Assert.That(Fac(s).Processes.Where(p => p.RecipeId == "fire_charcoal"), Is.Empty, "没有变成煅烧");
+    }
+
     // ───────────── 工具 ─────────────
 
     private static string Root()

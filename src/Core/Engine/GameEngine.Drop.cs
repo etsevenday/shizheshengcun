@@ -307,11 +307,11 @@ namespace Survival.Core.Engine
             if (src.Kind == DropSourceKind.Card && IsLighter(head) && !head.InFacility) return IgniteFor(s, head);
             if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card && !head.InFacility)
             {
-                // Q111：木材落在火堆任何位置都是添加燃料；落在加工位/卡面时提示煅烧要走显式入口（不默默改成煅烧）
+                // Q111：木材落在火堆任何位置都是添加燃料；落在加工位/卡面时提示煅烧要走右栏空加工位的显式入口（不默默改成煅烧；附句 Q392）
                 var fuel = DropOnFuel(s, head, loc);
                 if (fuel.Ok && CharcoalProcess != null && fuel.Instant != null)
                 {
-                    fuel.Label += "（作燃料；要煅烧木炭请点“煅烧木炭”）";
+                    fuel.Label += "（作燃料；要煅烧木炭请在右栏空加工位点「煅烧木炭」）";
                     fuel.Instant.FuelViaSlot = true;
                 }
                 // Q377：燃料容量不足而拒绝时，在原拒绝原因后补说明与右栏空加工位的煅烧指引（保留原容量阻断信息）

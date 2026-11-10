@@ -431,7 +431,7 @@ public class B10bWorkshopQTests : TestBase
         Assert.That(legacy.Items.Any(i => i.ItemId == "battery"), Is.False, "不补电源/箱奖");
     }
 
-    /// <summary>B10b 试玩修复：木材拖到加工位/卡面仍是加燃料，提示与日志补“要煅烧木炭请点‘煅烧木炭’”；拖到燃料区不加这句。</summary>
+    /// <summary>B10b 试玩修复：木材拖到加工位/卡面仍是加燃料，提示与日志补煅烧指引（Q392 落点附句、Q377 日志改指右栏空加工位）；拖到燃料区不加这句。</summary>
     [Test]
     public void Fix_WoodOnSlot_IsFuel_WithCharcoalHint()
     {
@@ -440,7 +440,7 @@ public class B10bWorkshopQTests : TestBase
         {
             var i = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse(target)!);
             Assert.That(i.Verb, Is.EqualTo(DropVerb.AddFuel), target);
-            Assert.That(i.Label, Does.Contain("要煅烧木炭请点“煅烧木炭”"), target);
+            Assert.That(i.Label, Does.EndWith("（作燃料；要煅烧木炭请在右栏空加工位点「煅烧木炭」）"), target);
             Assert.That(i.Instant!.FuelViaSlot, Is.True);
         }
         var fuel = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse("fuel:camp")!);

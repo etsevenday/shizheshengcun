@@ -187,7 +187,9 @@ public class B31cShellTests : TestBase
     {
         var g = Web("Services", "GameSession.cs");
         Assert.That(g, Does.Contain("public bool LocalDiskOpen => State != null && !InBattleUi && (Pop != null || FeedPending != null || IgniteMenuOpen || CardPopShown);"));
-        Assert.That(Web("Components", "CardPop.razor"), Does.Contain("@if (G.State != null && G.Pop == null && G.FeedPending == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending && !G.DuplicateWeaponsPending && !G.MenuOpen && !G.BattleMenuOpen"));
+        // B32d（Q390）：菜单期间 CardPop 不卸载、只隐藏（menu-hidden），显示条件 CardPopShown 仍排除菜单期间
+        Assert.That(Web("Components", "CardPop.razor"), Does.Contain("@if (G.State != null && G.Pop == null && G.FeedPending == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending && !G.DuplicateWeaponsPending"));
+        Assert.That(Web("Components", "CardPop.razor"), Does.Contain("var menuHide = G.MenuOpen || G.BattleMenuOpen ? \" menu-hidden\" : \"\";"));
         Assert.That(g, Does.Contain("public bool CardPopShown => State != null && Pop == null && FeedPending == null && !IgniteMenuOpen && !DialogueLocked && !OverflowPending && !DuplicateWeaponsPending"),
             "CardPop 显示条件与 CardPopShown 一致");
         Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("if (!centerPanel && G.LocalDiskOpen) dockProgress = true;"));
