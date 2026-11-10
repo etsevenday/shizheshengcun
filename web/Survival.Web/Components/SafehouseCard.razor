@@ -38,13 +38,14 @@
         : reasons.Count == 0 ? $"可以建：{string.Join("、", e.SafehouseRecipe.Inputs.Select(kv => $"{e.ItemName(kv.Key)}{kv.Value}"))}，{e.SafehouseRecipe.BaseMinutes}分钟；点击打开营地建造"
         : "建安全屋还差：" + string.Join("；", reasons);
 }
-<ObjectCard CssClass="fac-card sh-card" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
-            Tooltip="@tip" OnClick="Open" AriaLabel="@($"{title}，{badge}：{line}")">
+@* B32b（逐字稿 §1.5 Q372）：重墨 V2 卡模板，副标沿当前屋内／屋外／施工／未建摘要，角标沿现行状态；进出与面板入口仍在卡上（Q347） *@
+<ObjectCard Ink2="true" CssClass="k2-fac k2-sh sh-card" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
+            Tooltip="@tip" OnClick="Open" AriaLabel="@($"{title}，{badge}：{line}")" SubTitle="@tip">
     <Art>@Icons.Markup("shelter")</Art>
-    <ChildContent>
+    <SubContent>
         @* N5：柜子重量段不拆行 *@
-        <div class="oc-line" title="@tip">@if (cab != null) {@lead<span class="nw">@cab</span>} else {@line@(!built && reasons.Count > 1 ? $"（另{reasons.Count - 1}条）" : "")}</div>
-    </ChildContent>
+        <div class="oc-line">@if (cab != null) {@lead<span class="nw">@cab</span>} else {@line@(!built && reasons.Count > 1 ? $"（另{reasons.Count - 1}条）" : "")}</div>
+    </SubContent>
     <Footer>
         @if (built)
         {

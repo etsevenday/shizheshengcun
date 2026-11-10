@@ -341,3 +341,7 @@
 .drying-panel .dry-slot .dry-line .muted { margin-right: 4px; }
 .wasteland .drying-panel .dry-slot.st-busy { box-shadow: inset 3px 0 0 var(--ink2-gold); }
 .drying-panel .dry-slot.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 1; }
+
+/* B32b 安全屋面板 P02d：当前位置与休息条件 */
+.safehouse-panel .sh-here { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.safehouse-panel .sh-rest-line { display: block; }
