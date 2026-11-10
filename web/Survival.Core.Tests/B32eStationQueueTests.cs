@@ -352,6 +352,68 @@ public class B32eStationQueueTests : TestBase
         Assert.That(razor, Does.Not.Contain("投料（被动）"));
     }
 
+    // ───────────── Q397—Q399（S08「Q397–Q399 · B32e 文案定稿」） ─────────────
+
+    /// <summary>Q397-A01：还有 2 个空位提交 3 批、提交 0 批、无等待批请求取消排队，分别显示定稿句；无空位与名单改变仍走 Q380 原提示。</summary>
+    [Test]
+    public void Q397_A01_FallbackTexts()
+    {
+        var s = Workshop();
+        var rc = Cfg.Recipes.Single(r => r.Id == Water);
+        WaterInputs(s, 11);
+        Ok(E.StartStationBatch(s, Water, "q397-8", 8));
+        Assert.That(E.StartStationBatch(s, Water, "q397-3", 3).Reason, Is.EqualTo("队列还可加入2批，请减少投料批数。"));
+        Assert.That(E.StartStationBatch(s, Water, "q397-0", 0).Reason, Is.EqualTo("投料批数必须是1或更大的整数。"));
+        Assert.That(E.StationBatchBlocked(s, rc, -1), Is.EqualTo("投料批数必须是1或更大的整数。"));
+        Ok(E.StartStationBatch(s, Water, "q397-2", 2));
+        Assert.That(E.StartStationBatch(s, Water, "q397-full", 0).Reason, Is.EqualTo("队列已满（10批）。"), "10 批满时沿用 Q380 句（校验顺序不变）");
+
+        // 只有加工中的一批（无等待批）时请求取消排队
+        var k = Workshop();
+        KilnInputs(k, 1);
+        Ok(E.StartStationBatch(k, Kiln, "k1"));
+        var none = E.CancelStationQueue(k, "kiln", null, "k-q");
+        Assert.That((none.Ok, none.Reason), Is.EqualTo((false, "当前区的陶窑没有可取消的排队批次。")));
+        var w = E.CancelStationQueue(k, "water_station", null, "w-q");
+        Assert.That(w.Reason, Is.EqualTo("当前区的固定净水台没有可取消的排队批次。"), "设施用实际设施名");
+        var changed = E.CancelStationQueue(k, "kiln", new[] { 999 }, "k-q2");
+        Assert.That(changed.Reason, Is.EqualTo(GameEngine.StationQueueChanged), "等待名单改变仍走 Q380 原提示");
+    }
+
+    /// <summary>Q398-A01：陶窑燃料分账块写「批数」（值为投料批数），固定净水台同字段同样；锻炉仍写「份数」。</summary>
+    [Test]
+    public void Q398_A01_FuelBlockBatchWord()
+    {
+        var dir = TestContext.CurrentContext.TestDirectory;
+        while (dir != null && !File.Exists(Path.Combine(dir, "Survival.sln"))) dir = Path.GetDirectoryName(dir);
+        var razor = File.ReadAllText(Path.Combine(dir!, "Survival.Web", "Components", "CraftOverlay.razor"));
+        Assert.That(razor, Does.Contain("<span>@(stationRecipe ? \"批数\" : \"份数\")<b>@batch</b></span>"));
+        Assert.That(razor, Does.Not.Contain("<span>份数<b>@batch</b></span>"));
+        Assert.That(E.IsStationBatchRecipe(Cfg.Recipes.Single(r => r.Id == Kiln)), Is.True, "陶窑配方走「批数」");
+        var forge = Cfg.Recipes.Where(r => r.Fuel.Count > 0 && r.Station == "forge").ToList();
+        Assert.That(forge, Is.Not.Empty);
+        Assert.That(forge.All(r => !E.IsStationBatchRecipe(r)), Is.True, "锻炉配方仍写「份数」");
+    }
+
+    /// <summary>Q399-A01：跨日多批的完成时刻按队列先后以「、」连成「预计…完成」一句；经验按完成日分别估算、同日合计、各日「；」分隔。</summary>
+    [Test]
+    public void Q399_A01_EtaAndXpFormat()
+    {
+        var s = Workshop();
+        var day = Clock.Day(s.GameMinute);
+        AdvanceTo(s, day * Clock.MinutesPerDay - 70);   // 当日 22:50
+        var rc = Cfg.Recipes.Single(r => r.Id == Kiln);
+        KilnInputs(s, 3);
+        var t = s.GameMinute;
+        Assert.That(E.StationEtaText(s, rc, 3),
+            Is.EqualTo($"预计{Clock.DayTime(t + 60)}、{Clock.DayTime(t + 120)}、{Clock.DayTime(t + 180)}完成"));
+        Assert.That(E.StationEtaText(s, rc, 2), Is.EqualTo($"预计第{day}日 23:50、第{day + 1}日 00:50完成"));
+        var xp = E.StationBatchXpPreview(s, rc, 3).Split('；');
+        Assert.That(xp.Length, Is.EqualTo(2), "两个完成日各一段");
+        Assert.That(xp[0], Does.StartWith("完成后制造经验+6（"), "当日一批");
+        Assert.That(xp[1], Does.StartWith("完成后制造经验+12（").And.EndWith($"按完成日第{day + 1}日额度"), "次日两批合计");
+    }
+
     /// <summary>
     /// 试玩修复 M680（Q380-A03 重复请求只生效一次）：连点「取消当前批」不再连取消两批——连击第二下起（Detail&gt;1）不提交，
     /// 提交成功后三个队列按钮停用一段再随重渲恢复；请求号与所绑批次来自渲染时。另：队列区放进原料滚动区顶部、投料条留在卡底，矮屏整卡兜底可滚。

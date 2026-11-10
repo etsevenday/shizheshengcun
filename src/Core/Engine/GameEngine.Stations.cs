@@ -73,9 +73,9 @@ namespace Survival.Core.Engine
             if (StationBlocked(s, rc) is string station) return station;
             var room = StationQueueRoom(s, rc.Station);
             if (room <= 0) return $"队列已满（{StationQueueCap}批）。";
-            // 开发假设 B32e-3：下面两句只在直接调用内核时出现（界面的批数上限已按余位封顶、最少 1 批），策划未给原句
-            if (batches < 1) return "投料批数须为正整数";
-            if (batches > room) return $"队列只剩{room}批空位（最多{StationQueueCap}批）";
+            // Q397（S08「Q397–Q399 · B32e 文案定稿」）：界面批数上限已按余位封顶、最少 1 批，这两句主要是兜底；校验顺序沿 Q380
+            if (batches < 1) return "投料批数必须是1或更大的整数。";
+            if (batches > room) return $"队列还可加入{room}批，请减少投料批数。";
             foreach (var kv in rc.AllInputs)
             {
                 var have = StationFreeCount(s, kv.Key);
@@ -112,6 +112,13 @@ namespace Survival.Core.Engine
             }
             return list;
         }
+
+        /// <summary>
+        /// Q399：新投各批的预计完成时刻，按队列先后用「、」连成一句，以「预计」开头、「完成」结尾（时刻沿用「第N日 HH:mm」），
+        /// 如「预计第2日 23:50、第3日 00:20完成」。
+        /// </summary>
+        public string StationEtaText(GameState s, RecipeConfig rc, int batches) =>
+            "预计" + string.Join("、", StationNewFinishes(s, rc, batches).Select(Clock.DayTime)) + "完成";
 
         /// <summary>这座工坊没有加工中批时，让最早的等候批进入加工中（进度从 0、下一世界段开始推进）。</summary>
         private void PromoteStationQueue(GameState s, FacilityState fac, string stationId)
@@ -330,7 +337,7 @@ namespace Survival.Core.Engine
             var fac = FacOf(s, place);
             var waiting = StationWaitingHere(s, stationId);
             if (expectWaiting != null && !waiting.Select(b => b.BatchId).SequenceEqual(expectWaiting)) return ActionResult.Fail(StationQueueChanged);
-            if (fac == null || waiting.Count == 0) return ActionResult.Fail($"{StationName(stationId)}没有排队中的批次（只能操作当前区的工坊）");
+            if (fac == null || waiting.Count == 0) return ActionResult.Fail($"当前区的{StationName(stationId)}没有可取消的排队批次。");   // Q397
             foreach (var b in waiting)
             {
                 fac.StationBatches.Remove(b);

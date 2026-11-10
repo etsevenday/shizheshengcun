@@ -247,7 +247,8 @@
                         {
                             @* Q112：锻炉每份配方另需木炭1；分列份数/成品/原料炭/燃料炭/总炭，原料与燃料按同一库存合计校验 *@
                             <div class="forge-fuel" data-forge-fuel>
-                                <span>份数<b>@batch</b></span>
+                                @* Q398：陶窑／固定净水台写「批数」（等于投料批数），锻炉仍写「份数」 *@
+                                <span>@(stationRecipe ? "批数" : "份数")<b>@batch</b></span>
                                 <span>成品<b>@string.Join("、", rc.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value * batch}"))</b></span>
                                 @foreach (var fid in rc.Fuel.Keys)
                                 {
@@ -374,7 +375,7 @@
                                     {
                                         @* B22d 试玩修复 M418：经验句放在说明前面单独一行，窄屏（≤1400）时说明压成一行省略、悬停看全文，经验句不被裁掉。
                                            B32e：经验按队列与预计完成日分日写；各新批预计完成时刻 = 当前时刻 + 加工中剩余 + 前面等待批 + 自身时长 *@
-                                        var etas = "预计" + string.Join("、", e.StationNewFinishes(s, rc, batch).Select(Clock.DayTime)) + "完成";
+                                        var etas = e.StationEtaText(s, rc, batch);   // Q399
                                         <b>被动@(rc.BaseMinutes)分钟</b><small class="cg-xp" title="@e.StationBatchXpPreview(s, rc, batch)">@e.StationBatchXpPreview(s, rc, batch)</small><small class="cg-sum cg-eta" title="@etas" data-station-eta>@etas</small><small class="cg-sum" title="@e.StationBatchSummary(rc)">@e.StationBatchSummary(rc)</small>
                                     }
                                     else { <small class="warn-text">@sbWhy</small> }
