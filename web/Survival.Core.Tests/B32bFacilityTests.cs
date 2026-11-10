@@ -210,4 +210,117 @@ public class B32bFacilityTests : TestBase
         Assert.That(CardStates.IsEatOrDrink(E, s, ActionRequest.UseInstance(knife.InstanceId)), Is.False);
         Assert.That(CardStates.IsEatOrDrink(E, s, ActionRequest.Explore()), Is.False);
     }
+
+    // ───────────── 网页壳接线（源码检查） ─────────────
+
+    private static string Web(string relative)
+    {
+        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "doc", "策划案"))) dir = dir.Parent;
+        Assert.That(dir, Is.Not.Null, "找不到仓库根目录");
+        return File.ReadAllText(Path.Combine(dir!.FullName, "web", "Survival.Web", relative));
+    }
+
+    /// <summary>Q339、Q350、Q362、Q372：火堆卡用新模板，副标燃料、角标状态与「加工位满」、受热挂加工中；卡上保留投入木材、点燃／熄灭、等待加工。</summary>
+    [Test]
+    public void Q372_A01_FireCardUsesInk2Template()
+    {
+        var c = Web("Components/FireCard.razor");
+        Assert.That(c, Does.Contain("Ink2=\"true\""));
+        Assert.That(c, Does.Contain("Badge2=\"@(full ? CardStates.FireSlotsFull : null)\""));
+        Assert.That(c, Does.Contain("Busy=\"@e.FireHeating(s, here)\""));
+        Assert.That(c, Does.Contain("CardStates.FireFuelSub(e, fac)"));
+        Assert.That(c, Does.Contain("id=\"fc-ignite\""));
+        Assert.That(c, Does.Contain("投入木材"));
+        Assert.That(c, Does.Contain("等待加工"));
+        Assert.That(c, Does.Not.Contain("<PotCard"), "锅从右栏火堆详情进入，不再嵌在火堆卡里");
+        Assert.That(Web("Components/ObjectCard.razor"), Does.Contain("k2-tag2"));
+    }
+
+    /// <summary>Q339、Q343：右栏火堆详情有层级路径、剩余燃料、两行加工位（空位是落点、第一处空位有煅烧木炭）；选中锅或食材时路径仍在。</summary>
+    [Test]
+    public void Q339_A02_FireDetailSlotsAndCrumbs()
+    {
+        var d = Web("Components/FireDetail.razor");
+        Assert.That(d, Does.Contain("<FireCrumbs"));
+        Assert.That(d, Does.Contain("剩余燃料"));
+        Assert.That(d, Does.Contain("data-drop=\"@($\"fireslot:{here}\")\""));
+        Assert.That(d, Does.Contain("CardStates.FireSlotName(k)"));
+        Assert.That(d, Does.Contain("e.FireSlotHeating(s, here, k)"));
+        Assert.That(d, Does.Contain("id=\"fc-charcoal\""));
+        Assert.That(d, Does.Contain("CardStates.CharcoalRuleTitle"));
+        Assert.That(Web("Components/DetailPanel.razor"), Does.Contain("G.SelectedInFire is { } crumbs"));
+    }
+
+    /// <summary>Q344、Q366：点火盘打开时不预选，未选写提示；按「点火（{时长}）」提交。</summary>
+    [Test]
+    public void Q366_A01_IgniteMenuTwoStep()
+    {
+        var m = Web("Components/IgniteMenu.razor");
+        Assert.That(m, Does.Contain("private int? _picked;"));
+        Assert.That(m, Does.Contain("CardStates.IgnitePickHint"));
+        Assert.That(m, Does.Contain("CardStates.IgniteButton(minutes)"));
+        Assert.That(m, Does.Contain("disabled=\"@(picked == null || why != null"));
+        Assert.That(CardStates.IgniteButton(5), Is.EqualTo("点火（5分钟）"));
+    }
+
+    /// <summary>Q365：煅烧盘逐行写投入木材、剩余燃料、工位、耗时，按钮固定「确认投料」，不能投时禁用。</summary>
+    [Test]
+    public void Q365_A02_CharcoalPopRows()
+    {
+        var p = Web("Components/ActionPops.razor");
+        Assert.That(p, Does.Contain("charcoal-lines"));
+        Assert.That(p, Does.Contain("确认投料"));
+        Assert.That(p, Does.Not.Contain("无法投料"));
+    }
+
+    /// <summary>Q346、Q363、Q364：晾制位「查看配方」只在空闲位；「收取」打开居中盘，取到随身／地面各自提交。</summary>
+    [Test]
+    public void Q364_A01_DryingViewRecipesAndHarvestPop()
+    {
+        var d = Web("Components/DryingOverlay.razor");
+        Assert.That(d, Does.Contain("查看配方"));
+        Assert.That(d, Does.Contain("G.OpenPop(\"harvest\""));
+        Assert.That(d, Does.Contain("CardStates.DryingSlotName("));
+        var p = Web("Components/ActionPops.razor");
+        Assert.That(p, Does.Contain("CardStates.HarvestToCarried"));
+        Assert.That(p, Does.Contain("CardStates.HarvestToGround"));
+        Assert.That(Web("Components/DryingRackCard.razor"), Does.Contain("Ink2=\"true\""));
+    }
+
+    /// <summary>Q347、Q369：安全屋面板关闭按钮「返回」，写当前位置、休息条件，带进入屋内／离开安全屋入口。</summary>
+    [Test]
+    public void Q369_A02_SafehousePanelHere()
+    {
+        var o = Web("Components/SafehouseOverlay.razor");
+        Assert.That(o, Does.Contain("返回"));
+        Assert.That(o, Does.Contain("当前位置"));
+        Assert.That(o, Does.Contain("休息条件"));
+        Assert.That(o, Does.Contain("进入屋内"));
+        Assert.That(o, Does.Contain("离开安全屋"));
+        Assert.That(o, Does.Contain("CardStates.SafehouseRestLines"));
+        Assert.That(Web("Components/SafehouseCard.razor"), Does.Contain("Ink2=\"true\""));
+    }
+
+    /// <summary>Q341、Q367、Q368、Q370、Q371：动效时长挂 --motion-k，新卡与工位只亮一次，中央窗 180ms，轨迹 220ms、换景 140/180ms，减少动效时跳过；食饮只描即时效果改变的行。</summary>
+    [Test]
+    public void Q341_A01_MotionWiring()
+    {
+        var css = Web("wwwroot/css/app.css");
+        Assert.That(css, Does.Contain(".card.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 1; }"));
+        Assert.That(css, Does.Contain("animation: cp-in calc(.18s * var(--motion-k)) ease-out; }"));
+        var shell = Web("wwwroot/css/shell.css");
+        Assert.That(shell, Does.Contain(".fx-swap"));
+        Assert.That(shell, Does.Contain(".fx-scene-old"));
+        Assert.That(shell, Does.Contain("@keyframes fx-lit"));
+        var js = Web("wwwroot/js/app.js");
+        Assert.That(js, Does.Contain("window.survivalFx"));
+        Assert.That(js, Does.Contain("duration: 220 * k()"));
+        Assert.That(js, Does.Contain("[data-card=\"' + owner + '|' + itemId + '\"]"), "堆叠卡也要能当轨迹去向");
+        Assert.That(js, Does.Contain("prefers-reduced-motion: reduce"));
+        var g = Web("Services/GameSession.cs");
+        Assert.That(g, Does.Contain("var changed = before != null && S.Actors.TryGetValue(feedTarget!, out var now) ? CardStates.ChangedStats(before, now.Stats) : null;"));
+        Assert.That(g, Does.Contain("QueueSwap("));
+        Assert.That(Web("Components/GameScreen.razor"), Does.Contain("survivalFx.sceneSync"));
+    }
 }
