@@ -46,7 +46,7 @@
             <button class="@(G.Panel == "tips" ? "on" : "")" disabled="@navOff" title="@NavTitle("当前求生建议", null)" @onclick='() => Toggle("tips")'>@ShellText.TopKeys[8]</button>
             <button class="@(G.Panel == "dialogs" ? "on" : "")" disabled="@navOff" title="@NavTitle("已经展示过的人物对话", null)" @onclick='() => Toggle("dialogs")'>@ShellText.TopKeys[9]</button>
             <button class="@(G.Panel == "help" ? "on" : "")" disabled="@navOff" title="@NavTitle("各系统通用规则说明", null)" @onclick='() => Toggle("help")'>@ShellText.TopKeys[10]</button>
-            <button class="@(G.MenuOpen || G.BattleMenuOpen ? "on" : "")" title="菜单（Esc）" @onclick="ToggleMenu">@ShellText.TopKeys[11]</button>
+            <button class="@(G.MenuOpen || G.BattleMenuOpen ? "on" : "")" data-menu-key title="菜单（Esc）" @onclick="ToggleMenu">@ShellText.TopKeys[11]</button>
         </nav>
     </header>
 

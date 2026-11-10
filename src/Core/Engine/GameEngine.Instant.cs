@@ -107,9 +107,8 @@ namespace Survival.Core.Engine
                         left -= take;
                     }
                     fac.FuelMinutes += r.Count * Config.Fire.BurnMinutesPerWood;
-                    Emit(s, GameEventKind.Info, $"投入{r.Count}木材，火堆燃料{fac.FuelMinutes}分钟。"
-                        + (r.FuelViaSlot && CharcoalProcess is ProcessConfig cp
-                            ? "已作为燃料添加。" + CharcoalSlotGuide(cp) : ""));
+                    // B32f（Q393）：按钮与拖放同一句，只说燃料（不再附 Q377 的煅烧指引）
+                    Emit(s, GameEventKind.Info, $"投入{r.Count}木材，火堆燃料{fac.FuelMinutes}分钟。");
                     UpdateFlags(s);
                     return ActionResult.Success();
                 }

@@ -320,6 +320,15 @@ public sealed class GameSession
         Notify();
     }
 
+    /// <summary>
+    /// B32f（逐字稿 §1.5 Q390、Q395）：游戏菜单（含战斗菜单）开着。此时选卡操作盘、就近操作盘、点火工具盘与食饮盘只隐藏（<see cref="MenuHideCss"/>）、
+    /// 不卸载，盘内所选与草稿保留，键盘焦点在菜单；关菜单后仍有效的原盘恢复显示并按当前状态重算，恢复不提交。
+    /// </summary>
+    public bool MenuHidesDisks => MenuOpen || BattleMenuOpen;
+
+    /// <summary>B32f（Q395）：局部盘在菜单期间追加的隐藏类（shell.css .apop.menu-hidden）。</summary>
+    public string MenuHideCss => MenuHidesDisks ? " menu-hidden" : "";
+
     public void SetMenu(bool open)
     {
         if (open && State == null) return;

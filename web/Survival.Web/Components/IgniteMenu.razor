@@ -6,7 +6,9 @@
    每个选项写实际工具名，旁列真实来源与「耐久{当前}/{上限}」（不显示内部编号，选择绑定该把工具）；选中后列「火堆」「点火工具」「耐久」「耗时」、
    磨损与点火后的燃料提示（数值按原预演），按「点火（{时长}）」才提交（带新 requestId、组件级防连点），盘收起。
    条件变化时按原真实原因禁用并重验选定的那一把。悬停工具时右栏仍显示对应预测。没有可用工具仍能打开，写“没有可用点火工具”及原因。
-   直接把打火器拖到火堆仍走原直接点火，暂停层独立点火入口沿原规则。Esc、×、遮罩只收起。 *@
+   直接把打火器拖到火堆仍走原直接点火，暂停层独立点火入口沿原规则。Esc、×、遮罩只收起。
+   B32f（逐字稿 §1.5 Q395，同 Q390）：游戏菜单打开期间只隐藏（menu-hidden）、不卸载，所选工具保留；点顶栏「菜单」与菜单里的点按不算点盘外；
+   关菜单后按当前状态重算预演与按钮可用性（所选那把失效时按原原因禁用），火堆已燃或不在时照原条件不显示；恢复不提交。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -18,7 +20,7 @@
     var minutes = p is { Ok: true } ? p.EstimatedMinutes : e.Config.Fire.IgniteMinutes;
     var why = picked == null ? null : !picked.Usable ? picked.Reason : p is { Ok: false } ? p.Reason : null;
 }
-<AnchorPop AnchorId="fc-ignite" Title="选择点火工具" Place="below,above,right,left" CssClass="ignite" OnClose="Close">
+<AnchorPop AnchorId="fc-ignite" Title="选择点火工具" Place="below,above,right,left" CssClass="@("ignite" + G.MenuHideCss)" OnClose="Close">
     <Art>@Icons.Markup("fire_out")</Art>
     <ChildContent>
         <div @ref="box" class="ignite-menu in-pop" aria-label="选择点火工具">
@@ -92,12 +94,17 @@
         if (!firstRender) return;
         _ref = DotNetObjectReference.Create(this);
         // 点盘外（不含“点燃”按钮本身）只收起；不拦截那次点击，也不影响拖拽
-        try { await JS.InvokeVoidAsync("survival.watchOutside", box, _ref, ".fc-btn.ignite, .apop.ignite"); }
+        try { await JS.InvokeVoidAsync("survival.watchOutside", box, _ref, ".fc-btn.ignite, .apop.ignite, [data-menu-key], .menu-scrim"); }
         catch (JSException) { }
     }
 
+    /// <summary>点盘外只收起；游戏菜单开着时（盘被隐藏）菜单里的点按不收盘（Q395）。</summary>
     [JSInvokable]
-    public void OutsideClick() => Close();
+    public void OutsideClick()
+    {
+        if (G.MenuHidesDisks) return;
+        Close();
+    }
 
     private void Close()
     {

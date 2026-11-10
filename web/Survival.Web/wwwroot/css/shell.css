@@ -232,8 +232,10 @@ fieldset.dev-box:disabled { opacity: .55; }
 
 /* ═════ B31c：局部盘居中（Q324）·公共动效（R114）·结果提示（Q330）·外壳遗留 ═════ */
 
-/* B32d（逐字稿 §1.5 Q390）：游戏菜单（含战斗菜单）打开期间选卡操作盘只隐藏、不卸载，保留盘内状态；关菜单后原样恢复 */
+/* B32d（逐字稿 §1.5 Q390）：游戏菜单（含战斗菜单）打开期间选卡操作盘只隐藏、不卸载，保留盘内状态；关菜单后原样恢复。
+   B32f（Q395）起就近操作盘、点火工具盘、食饮盘同一做法 */
 .wasteland .apop.card-pop.menu-hidden { display: none !important; }
+.wasteland .apop.menu-hidden { display: none !important; }
 /* ───── Q324 局部操作盘：屏幕中央，新稿居中框 760×547（1600 基准；三档同 --pop-w/--pop-h），放不下时限制在视口内、距屏边 ≥8 ───── */
 /* 标题与动作固定，正文独立滚动；位置由 app.js survivalPop 按 data-center 居中。B31d（Q338）起四轨上加遮罩，见文末 .disk-scrim。 */
 .wasteland .apop.apop-c {

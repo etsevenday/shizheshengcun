@@ -25,7 +25,7 @@ public class B32dTests : TestBase
 
     // ───────────── Q377 煅烧指引改到右栏空加工位 ─────────────
 
-    /// <summary>Q377-A01：拖木材到火堆卡加燃料成功，日志写原投入量与燃料数，后接「已作为燃料添加。」与右栏空加工位指引（份数沿配方）。</summary>
+    /// <summary>Q377-A01：拖木材到火堆卡加燃料成功，日志写原投入量与燃料数。B32f（Q393）起不再接「已作为燃料添加。」与煅烧指引（指引句本身仍按配方取份数）。</summary>
     [Test]
     public void Q377_A01_FuelSuccessGuide()
     {
@@ -36,11 +36,11 @@ public class B32dTests : TestBase
         Assert.That(drop.Verb, Is.EqualTo(DropVerb.AddFuel));
         var res = E.DoInstant(s, drop.Instant!);
         Assert.That(res.Ok, Is.True, res.Reason);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"投入1木材，火堆燃料{Fac(s).FuelMinutes}分钟。已作为燃料添加。" + Guide));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"投入1木材，火堆燃料{Fac(s).FuelMinutes}分钟。"), "Q393 取代 Q377 的附句");
         Assert.That(E.CharcoalSlotGuide(cp), Is.EqualTo(Guide));
     }
 
-    /// <summary>Q377-A01：燃料容量不足时，拖木材到火堆卡的原拒绝原因（容量阻断）后补说明与指引；投入木材按钮的原阻断句不变。</summary>
+    /// <summary>Q377-A01：燃料容量不足时拖木材到火堆卡的拒绝原因。B32f（Q393）起与「投入木材」按钮同为容量句，不再补说明与指引。</summary>
     [Test]
     public void Q377_A01_FuelFullGuide()
     {
@@ -49,10 +49,10 @@ public class B32dTests : TestBase
         var full = $"至少需要{E.Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{E.Config.Fire.MaxFuelMinutes}分钟）";
         var drop = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse("fire:camp")!);
         Assert.That(drop.Ok, Is.False);
-        Assert.That(drop.Reason, Is.EqualTo($"{full}。拖木材到火堆卡是添加燃料。" + Guide));
+        Assert.That(drop.Reason, Is.EqualTo(full), "Q393 取代 Q377 的附句");
         Assert.That(E.DoInstant(s, InstantRequest.AddFuel(1)).Reason, Is.EqualTo(full), "按钮入口沿原阻断句");
 
-        // 加工位判定里木材的拒绝原因同句（不再写“火堆燃料区”“点火堆卡”）
+        // 加工位判定里木材的拒绝原因（不是加燃料提示，Q393 不涉及；不再写“火堆燃料区”“点火堆卡”）
         var w = s.Items.First(i => i.ItemId == "wood" && i.Owner == "camp");
         Assert.That(E.MaxPutInFire(s, w, out var why), Is.EqualTo(0));
         Assert.That(why, Is.EqualTo("拖木材到火堆卡是添加燃料。" + Guide));
@@ -149,14 +149,14 @@ public class B32dTests : TestBase
         Assert.That(help, Does.Not.Contain("火堆卡上点“煅烧木炭”").And.Not.Contain("火堆“煅烧木炭”在卡旁浮窗"));
     }
 
-    /// <summary>Q392-A01：拖木材悬停在火堆卡上，松手前的加燃料提示带附句；松手仍是添加燃料。</summary>
+    /// <summary>Q392-A01：拖木材悬停在火堆卡上，松手仍是添加燃料。B32f（Q393）起落点提示只写燃料，不再带 Q392 附句。</summary>
     [Test]
     public void Q392_A01_FuelDropHint()
     {
         var s = WithGroundWood(2);
         var drop = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse("fire:camp")!);
         Assert.That(drop.Verb, Is.EqualTo(DropVerb.AddFuel));
-        Assert.That(drop.Label, Is.EqualTo($"投放1木材，燃料+{E.Config.Fire.BurnMinutesPerWood}分钟（作燃料；要煅烧木炭请在右栏空加工位点「煅烧木炭」）"));
+        Assert.That(drop.Label, Is.EqualTo($"投放1木材，燃料+{E.Config.Fire.BurnMinutesPerWood}分钟"), "Q393 取代 Q392 的附句");
         Assert.That(E.DoInstant(s, drop.Instant!).Ok, Is.True);
         Assert.That(Fac(s).FuelMinutes, Is.EqualTo(E.Config.Fire.BurnMinutesPerWood));
         Assert.That(Fac(s).Processes.Where(p => p.RecipeId == "fire_charcoal"), Is.Empty, "没有变成煅烧");

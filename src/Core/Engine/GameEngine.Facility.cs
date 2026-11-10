@@ -380,11 +380,11 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// Q377（逐字稿 §1.5）：煅烧指引——「要煅烧木炭，请在右栏空加工位点「煅烧木炭」（每批{原料}×{份数}）。」，原料与份数沿当前煅烧配方。
-        /// 拖木材加燃料成功的附加提示与燃料容量不足的拒绝原因共用。
+        /// B32f（Q393）起加燃料的落点预览、成功日志与容量拒绝不再附这句；只留在把木材当加工位物品放进火堆（PutInFire 内核兜底）的拒绝原因里。
         /// </summary>
         public string CharcoalSlotGuide(ProcessConfig cp) => $"要煅烧木炭，请在右栏空加工位点「煅烧木炭」（每批{ItemName(cp.InputId)}×{cp.InputCount}）。";
 
-        /// <summary>Q377：拖木材到火堆卡被拒时的说明「拖木材到火堆卡是添加燃料。」＋煅烧指引。</summary>
+        /// <summary>Q377：木材不能作为加工位物品放进火堆时的说明「拖木材到火堆卡是添加燃料。」＋煅烧指引（不用于加燃料提示，Q393）。</summary>
         public string CharcoalFuelDragNote(ProcessConfig cp) => "拖木材到火堆卡是添加燃料。" + CharcoalSlotGuide(cp);
 
         /// <summary>燃料空余容量不足一份木材时的原阻断句（拖入与「投入木材」共用）。</summary>

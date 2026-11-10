@@ -431,7 +431,7 @@ public class B10bWorkshopQTests : TestBase
         Assert.That(legacy.Items.Any(i => i.ItemId == "battery"), Is.False, "不补电源/箱奖");
     }
 
-    /// <summary>B10b 试玩修复：木材拖到加工位/卡面仍是加燃料，提示与日志补煅烧指引（Q392 落点附句、Q377 日志改指右栏空加工位）；拖到燃料区不加这句。</summary>
+    /// <summary>B10b 试玩修复：木材拖到加工位/卡面仍是加燃料。B32f（Q393）起提示与日志只说燃料，不再补煅烧指引（取代 Q377、Q392 附句）。</summary>
     [Test]
     public void Fix_WoodOnSlot_IsFuel_WithCharcoalHint()
     {
@@ -440,8 +440,7 @@ public class B10bWorkshopQTests : TestBase
         {
             var i = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse(target)!);
             Assert.That(i.Verb, Is.EqualTo(DropVerb.AddFuel), target);
-            Assert.That(i.Label, Does.EndWith("（作燃料；要煅烧木炭请在右栏空加工位点「煅烧木炭」）"), target);
-            Assert.That(i.Instant!.FuelViaSlot, Is.True);
+            Assert.That(i.Label, Is.EqualTo("投放1木材，燃料+60分钟"), target);
         }
         var fuel = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse("fuel:camp")!);
         Assert.That(fuel.Label, Does.Not.Contain("煅烧"));
@@ -449,7 +448,7 @@ public class B10bWorkshopQTests : TestBase
         Ok(s, slot.Instant!);
         Assert.That(Fac(s).FuelMinutes, Is.EqualTo(60));
         Assert.That(Burns(s), Is.Empty, "没有变成煅烧");
-        Assert.That(s.Log.Last().Text, Does.Contain("已作为燃料添加。要煅烧木炭，请在右栏空加工位点「煅烧木炭」（每批木材×4）。"), "Q377 指引改到右栏空加工位");
+        Assert.That(s.Log.Last().Text, Is.EqualTo("投入1木材，火堆燃料60分钟。"), "Q393：只说燃料");
         Ok(s, InstantRequest.AddFuel(1));
         Assert.That(s.Log.Last().Text, Does.Not.Contain("煅烧"));
     }

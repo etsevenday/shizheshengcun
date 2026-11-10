@@ -5,7 +5,9 @@
    approach：敌踪卡旁对象/风险预览，“接近并开战”才按 R05 接敌；gather：拖工具到资源卡后在卡旁确认开始；
    charcoal：火堆卡“煅烧木炭”旁的投料确认（Q111，S14 本轮章）：4木→3炭、原料来源、空位、60有效分钟、燃料另计与冷火55提示，“确认投料”才投（0分钟）。
    每次渲染都从内核现算预览；目标失效（不再相邻、敌人离开、预览被替换）时直接收起，不保留失效按钮。
-   点击执行再交给内核按真实 ID/所在地/占用重验（E.Start、E.Approach），执行中锁住按钮，重复点击不重复提交。 *@
+   点击执行再交给内核按真实 ID/所在地/占用重验（E.Start、E.Approach），执行中锁住按钮，重复点击不重复提交。
+   B32f（逐字稿 §1.5 Q395，同 Q390 物品操作盘）：游戏菜单（含战斗菜单）打开期间只隐藏（menu-hidden）、不卸载，盘内状态保留；
+   关菜单后仍有效的原盘恢复显示并按当前状态重算预览与按钮（每次渲染本来就现算）；目标失效照上面 Valid 收起；恢复不提交。 *@
 @if (G.State != null && G.Pop is GameSession.PopContext pop && !G.DialogueLocked && Valid(pop))
 {
     var s = G.S;
@@ -34,7 +36,7 @@
             var night = p.Ok && !e.IsDaylight(p.EstimatedEndMinute);
             var scene = ArtAssets.Scene(lc.Id, lc.Scene);
             @* B22f（Q202 ①，交开发方定）：远征入口浮窗限制在中部列里，不盖住右栏完整进入预告 *@
-            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"前往{lc.Name}")" CssClass="travel" Bound="@(expPv != null ? ".center" : null)"
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"前往{lc.Name}")" CssClass="@("travel" + G.MenuHideCss)" Bound="@(expPv != null ? ".center" : null)"
                        Sub="@($"{(dir == MapDirection.None ? "" : GameEngine.DirectionHint(dir) + " · ")}{(ls.Visited ? "已访问" : "待访问")} · 单程{p.BaseMinutes}分钟")" OnClose="G.ClosePop">
                 <Art><span class="apop-scene" style="background-image:url('@scene')"></span></Art>
                 <ChildContent>
@@ -89,7 +91,7 @@
             var why = e.CanApproach(s, wid);
             var weapon = e.CurrentWeapon(s, out var wi);
             var hit = e.OutOfBattleHit(s, ec);   // Q67：与战斗中同一公式（+8、疲劳一次×0.95）
-            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"接近{ec.Name}")" CssClass="approach"
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"接近{ec.Name}")" CssClass="@("approach" + G.MenuHideCss)"
                        Sub="@($"健康{Ui.N(w.Hp)}/{Ui.N(ec.Hp)} · {(w.Hostile ? "敌对" : "中立")} · 只与这一只交战")" OnClose="G.ClosePop">
                 <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
                 <ChildContent>
@@ -119,7 +121,7 @@
             @* B12（B11 遗留）：相邻栏未开通叠卡的逐条列表：按条件分组，原因写一次，每条写名称、方位、单程分钟；只看，不移动 *@
             var groups = e.AdjacentLockedGroups(s);
             var total = groups.Sum(g => g.Routes.Count);
-            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"{total}条路线未开通")" Sub="@(groups.Count == 1 ? "同一条件，满足后一起开通" : $"{groups.Count}种条件")" CssClass="lockstack" OnClose="G.ClosePop">
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"{total}条路线未开通")" Sub="@(groups.Count == 1 ? "同一条件，满足后一起开通" : $"{groups.Count}种条件")" CssClass="@("lockstack" + G.MenuHideCss)" OnClose="G.ClosePop">
                 <ChildContent>
                     @foreach (var (reason, routes) in groups)
                     {
@@ -144,7 +146,7 @@
             var info = G.CharcoalPreview();
             var shown = G.CharcoalShown();
             var shortFuel = info.FuelWoodShort > 0;
-            <AnchorPop AnchorId="@pop.AnchorId" Title="煅烧木炭" CssClass="charcoal" Place="above,below,right,left"
+            <AnchorPop AnchorId="@pop.AnchorId" Title="煅烧木炭" CssClass="@("charcoal" + G.MenuHideCss)" Place="above,below,right,left"
                        Sub="@($"{e.ItemName(info.InputId)}×{info.InputCount}→{e.ItemName(info.OutputId)}×{info.OutputCount} · 不耗时投料 · 不给经验")" OnClose="G.ClosePop">
                 <Art>@Icons.Markup("charcoal")</Art>
                 <ChildContent>
@@ -187,7 +189,7 @@
             var k = int.Parse(pop.Id);
             var v = e.DryingSlotViews(s).First(x => x.Slot == k);
             var dryBusy = G.Running || s.Sub != null || _go;
-            <AnchorPop AnchorId="@pop.AnchorId" Title="@CardStates.HarvestTitle" CssClass="harvest" Sub="@($"{v.Title} · {v.RecipeName}")" OnClose="G.ClosePop">
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@CardStates.HarvestTitle" CssClass="@("harvest" + G.MenuHideCss)" Sub="@($"{v.Title} · {v.RecipeName}")" OnClose="G.ClosePop">
                 <Art>@Icons.Markup(e.DryingContents(s, s.Ground, k).FirstOrDefault()?.ItemId ?? "dried_meat")</Art>
                 <ChildContent>
                     @foreach (var c in v.Contents) { <div class="apop-note">@c</div> }
@@ -206,7 +208,7 @@
             var req = G.PendingAction!;
             var p = G.Preview(req);
             var r = e.Resource(req.TargetId);
-            <AnchorPop AnchorId="@pop.AnchorId" Title="@G.PendingActionTitle" CssClass="gather" Sub="@($"{r.Name} · 拖入的工具")" OnClose="G.ClosePop">
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@G.PendingActionTitle" CssClass="@("gather" + G.MenuHideCss)" Sub="@($"{r.Name} · 拖入的工具")" OnClose="G.ClosePop">
                 <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
                 <ChildContent>
                     @if (p.Ok)
