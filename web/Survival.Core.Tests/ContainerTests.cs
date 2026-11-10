@@ -163,7 +163,7 @@ public class ContainerTests : TestBase
         E.DebugGive(s, "pot", 1, "camp");
         var other = s.Items.Last(i => i.ItemId == "pot");
         var r = E.DoInstant(s, InstantRequest.PutInFire(other.InstanceId));
-        Assert.That(r.Reason, Does.Contain($"火堆已有金属锅#{pot.InstanceId}"), "已有锅时提示当前锅实例与内容，不替换");
+        Assert.That(r.Reason, Does.Contain("火堆已有金属锅（"), "已有锅时提示当前锅实例与内容，不替换");
         Assert.That(r.Reason, Does.Contain("请先取下"));
         Ok(s, InstantRequest.TakeOut(pot.InstanceId, "camp"));
         Assert.That(pot.Owner, Is.EqualTo("camp"), "取下到当前地面");

@@ -272,7 +272,7 @@ public class FacilityProcessTests : TestBase
         Assert.That(E.ProcessOf(s, second)!.HeatDoneMinutes, Is.EqualTo(0), "等水的不受热");
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1), "不自动补水");
         Assert.That(E.DoInstant(s, InstantRequest.Decant(E.PotLiquids(s, pot.InstanceId).Single().InstanceId, "camp")).Reason,
-            Is.EqualTo($"500毫升供生块根#{first.InstanceId}加工，先取出该食材以停止加工"), "预留的水不能倒出");
+            Is.EqualTo($"500毫升供生块根加工，先取出该食材以停止加工"), "预留的水不能倒出");
         Assert.That(E.CanStart(s, ActionRequest.UseInstance(E.PotLiquids(s, pot.InstanceId).Single().InstanceId)), Does.StartWith("500毫升供生块根"), "也不能饮用");
         // 手动加同种净水：第二根从自己的0分钟开始，不重置第一根
         Ok(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId));

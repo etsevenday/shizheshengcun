@@ -1142,7 +1142,7 @@ public sealed class GameSession
             if (E.SubstituteIntroBoundary(S) && !migrate) Save();   // Q243 save：读回的待补播按当前地点、身份和锁重验
             ResetUi();
             foreach (var l in S.Log.TakeLast(8))
-                Recent.Add(new GameEvent { Minute = l.Minute, Text = l.Text, Kind = GameEventKind.Info });
+                Recent.Add(new GameEvent { Minute = l.Minute, Text = E.HideInstanceTags(l.Text), Kind = GameEventKind.Info });   // B32a Q349：旧存档记录回看隐藏物品编号
             if (migrate)
             {
                 Save();

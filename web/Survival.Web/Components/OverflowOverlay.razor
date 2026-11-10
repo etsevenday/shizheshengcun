@@ -26,7 +26,7 @@
                 <label class="ov-item @(on ? "on" : "")">
                     <input type="checkbox" checked="@on" @onchange="() => Toggle(id)" />
                     <span class="ov-ico">@Icons.Markup(it.ItemId)</span>
-                    <span class="ov-text"><b>@e.ItemName(it.ItemId)@(e.Item(it.ItemId).IsStackable && !e.IsPot(it) ? $"×{it.Count}" : $"#{id}")</b>
+                    <span class="ov-text"><b>@e.ItemName(it.ItemId)@(e.Item(it.ItemId).IsStackable && !e.IsPot(it) ? $"×{it.Count}" : $"")</b>
                         <small>@ItemMeta(it)</small></span>
                 </label>
             }

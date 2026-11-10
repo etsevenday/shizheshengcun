@@ -53,9 +53,9 @@
                 if (t == null) continue;
                 any = true;
                 var inner = s.Items.Where(i => i.Owner == ItemInstance.ContainerOwner(t.InstanceId)).ToList();
-                <div class="bsup-card @(inner.Count > 0 ? "has-inner" : "")" tabindex="0" title="@($"{e.ItemName(t.ItemId)}#{t.InstanceId}：{Ui.ItemLine(e, s, t)}")">
+                <div class="bsup-card @(inner.Count > 0 ? "has-inner" : "")" tabindex="0" title="@($"{e.ItemName(t.ItemId)}：{Ui.ItemLine(e, s, t)}")">
                     <span class="bsup-art" aria-hidden="true">@Icons.Markup(t.ItemId)</span>
-                    <span class="bsup-text"><b>@e.ItemName(t.ItemId)#@t.InstanceId</b><small>@Ui.ItemLine(e, s, t)</small>
+                    <span class="bsup-text"><b>@e.ItemName(t.ItemId)</b><small>@Ui.ItemLine(e, s, t)</small>
                         @if (inner.Count > 0)
                         {
                             <small class="bsup-inner">内有：@string.Join("、", inner.GroupBy(i => i.ItemId).Select(g => $"{e.ItemName(g.Key)}×{g.Sum(i => i.Count)}"))</small>

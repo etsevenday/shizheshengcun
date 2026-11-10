@@ -29,6 +29,13 @@ public class B22bTests : TestBase
     private static ActionRequest Req(ItemInstance target, ItemInstance? pack = null) =>
         new ActionRequest { Type = ActionType.Craft, TargetId = Repair, InstanceId = target.InstanceId, PatchInstanceId = pack?.InstanceId };
 
+    /// <summary>B32a Q349：预览文字不再带包编号，默认选中哪一包按引擎实际挑出的实例核对。</summary>
+    private ItemInstance? DefaultPack(GameState s, ItemInstance target)
+    {
+        E.FieldPatchBlocked(s, target.InstanceId, null, out _, out var pack, out _);
+        return pack;
+    }
+
     private GameState Fresh()
     {
         var s = New();
@@ -118,14 +125,14 @@ public class B22bTests : TestBase
         var p = E.Preview(s, Req(mach));
         Assert.That(p.Ok, Is.True, p.Reason);
         // 绿/蓝都能修满 100；蓝耗 10、绿耗 20 → 默认蓝
-        Assert.That(p.Notes, Has.Some.Contains($"#{blue.InstanceId}"));
+        Assert.That(DefaultPack(s, mach), Is.SameAs(blue), "Q349：预览不显示包编号，按实际选中的实例核对");
         Assert.That(p.Notes, Has.Some.Contains("恢复100"));
         Assert.That(p.ConfirmText, Is.EqualTo("开始修补"));
         // 只剩白包：可恢复 50，预览写“这次修不满”
         s.Items.Remove(blue);
         s.Items.Remove(green);
         p = E.Preview(s, Req(mach));
-        Assert.That(p.Notes, Has.Some.Contains($"#{white.InstanceId}"));
+        Assert.That(DefaultPack(s, mach), Is.SameAs(white));
         Assert.That(p.Notes, Has.Some.Contains("这次修不满"));
         Assert.That(p.BaseMinutes, Is.EqualTo(15));
         // 没有包
@@ -260,7 +267,7 @@ public class B22bTests : TestBase
         var ground = Pack(s, "field_patch");
         var p = E.Preview(s, Req(target));
         Assert.That(p.Ok, Is.True, p.Reason);
-        Assert.That(p.Notes, Has.Some.Contains($"#{ground.InstanceId}"), "默认改用当前地面的包");
+        Assert.That(DefaultPack(s, target), Is.SameAs(ground), "默认改用当前地面的包");
         // 随身只剩最后一包且会用完：不多出卡
         stack.Count = 1;
         stack.Durability = 3;
@@ -310,7 +317,7 @@ public class B22bTests : TestBase
         used.Durability = 50;
         used.Owner = s.Ground;
         var p = E.Preview(s, Req(mach));
-        Assert.That(p.Notes, Has.Some.Contains($"#{used.InstanceId}"), "同为恢复5耗1：先用已用过的包");
+        Assert.That(DefaultPack(s, mach), Is.SameAs(used), "同为恢复5耗1：先用已用过的包");
         Assert.That(E.FieldPatchPackNote(s, full, mach), Is.Null);
 
         s.Items.RemoveAll(i => i.IsCarried);

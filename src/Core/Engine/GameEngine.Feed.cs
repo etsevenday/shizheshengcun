@@ -46,9 +46,17 @@ namespace Survival.Core.Engine
 
         public static string Fill(string template, params (string field, string value)[] fields)
         {
+            template = HideInstanceFields(template);
             foreach (var (field, value) in fields) template = template.Replace("{" + field + "}", value);
             return template;
         }
+
+        /// <summary>
+        /// B32a（逐字稿 §1.2 Q349）：正式玩家界面隐藏物品内部编号，含批次与容器选择、预演和日志。合同逐字模板不改，填字时去掉内部号字段：
+        /// 「 · 批次#{实例号}」「 · 编号#{实例号}」整段省略（同名来源用出物人、截止段、份数区分），「#{锅号}」「#{壶号}」省略。
+        /// </summary>
+        public static string HideInstanceFields(string template) =>
+            template.Replace(" · 批次#{实例号}", "").Replace(" · 编号#{实例号}", "").Replace("#{锅号}", "").Replace("#{壶号}", "");
     }
 
     /// <summary>

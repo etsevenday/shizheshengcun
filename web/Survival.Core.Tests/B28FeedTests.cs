@@ -214,7 +214,7 @@ public class B28FeedTests : TestBase
         var minute = s.GameMinute;
         var cards = s.Items.Where(i => i.ItemId == "clean_water" && !i.InContainer).Sum(i => i.Count);
         Fed(s, Req(Lin, Me, water));
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"林昭饮用了净水×1（取自你的随身锅#{pot.InstanceId}）：水分+30。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"林昭饮用了净水×1（取自你的随身锅）：水分+30。"));
         Assert.That(s.Actors[Lin].Stats.Hydration, Is.EqualTo(80));
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1), "只扣这口锅 500 毫升");
         Assert.That(s.Items.Where(i => i.ItemId == "clean_water" && !i.InContainer).Sum(i => i.Count), Is.EqualTo(cards), "不生成临时水卡");
@@ -229,7 +229,7 @@ public class B28FeedTests : TestBase
         var (pot, _) = PotWater(s, Bag(Lin), "dirty_water", 1);
         var f = new FeedRequest { TargetActorId = Lin, SourceActorId = Lin, PotInstanceId = pot.InstanceId, WaterItemId = "dirty_water" };
         Fed(s, f);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"林昭饮用了脏水×1（取自林昭的随身锅#{pot.InstanceId}）：水分+30，出现腹泻（12小时）。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"林昭饮用了脏水×1（取自林昭的随身锅）：水分+30，出现腹泻（12小时）。"));
         Assert.That((E.FindItem(s, pot.InstanceId)?.Owner, E.PotUnits(s, pot.InstanceId)), Is.EqualTo((Bag(Lin), 0)), "空锅留原 owner");
         Assert.That(s.Actors[Lin].DiarrheaUntil, Is.Not.Null, "净水不因容器变种，脏水仍腹泻");
         Run(s);
@@ -265,7 +265,7 @@ public class B28FeedTests : TestBase
         var a = Give(s, "boiled_root", inPot);
         var b = Give(s, "boiled_root", inPot);
         Fed(s, new FeedRequest { TargetActorId = Tang, SourceActorId = Me, InstanceId = b.InstanceId, PotInstanceId = pot.InstanceId });
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"唐梨食用了水煮块根×1（取自你的随身锅#{pot.InstanceId}）：饱食+23，水分+5，精神+3。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"唐梨食用了水煮块根×1（取自你的随身锅）：饱食+23，水分+5，精神+3。"));
         Assert.That(E.FindItem(s, b.InstanceId), Is.Null);
         Assert.That(E.FindItem(s, a.InstanceId), Is.Not.Null, "同锅另一份不动");
         Assert.That(E.FindItem(s, pot.InstanceId)!.Owner, Is.EqualTo(ItemInstance.Carried));

@@ -153,7 +153,7 @@ public class DropResolverTests : TestBase
         Assert.That(i.StartsAction, Is.True);
         Assert.That(i.Action!.InstanceId, Is.EqualTo(lighter.InstanceId));
         Assert.That(i.Label, Is.EqualTo("松开后开始点火·5分钟"));
-        Assert.That(E.Preview(s, i.Action).Notes, Does.Contain($"使用打火器#{lighter.InstanceId}（随身），成功点火磨损1（耐久{GameEngine.DurabilityText(lighter)}）"), "v0.6：打火器开始磨损");
+        Assert.That(E.Preview(s, i.Action).Notes, Does.Contain($"使用打火器（随身），成功点火磨损1（耐久{GameEngine.DurabilityText(lighter)}）"), "v0.6：打火器开始磨损");
         Assert.That(s.Sub ?? s.Main, Is.Null, "解析本身不开始，松手才提交");
         Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "fuel:camp").Verb, Is.EqualTo(DropVerb.Ignite), "燃料区也属于火堆");
         Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "potslot:camp").Verb, Is.EqualTo(DropVerb.Ignite), "锅位也属于火堆");
@@ -365,7 +365,7 @@ public class DropResolverTests : TestBase
         var other = s.Items.Last(x => x.ItemId == "pot");
         var no = R(s, Card($"camp|pot|{other.InstanceId}"), "fire:camp");
         Assert.That(no.Ok, Is.False);
-        Assert.That(no.Reason, Does.Contain($"火堆已有金属锅#{Pot(s).InstanceId}"));
+        Assert.That(no.Reason, Does.Contain("火堆已有金属锅（"));
     }
 
     [Test]

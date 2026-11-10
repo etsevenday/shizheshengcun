@@ -117,7 +117,7 @@
                     if (src == null) continue;
                     var fmax = e.MaxFillCanteen(s, src, cInst, out var fwhy);
                     var srcId = src.InstanceId;
-                    <button type="button" class="tbar-go alt" disabled="@(fwhy != null || moveBusy)" title="@(fwhy ?? $"从{(src.IsCarried ? "随身" : "地面")}{e.ItemName(wid)}#{srcId}装入1份（500毫升），不耗时")"
+                    <button type="button" class="tbar-go alt" disabled="@(fwhy != null || moveBusy)" title="@(fwhy ?? $"从{(src.IsCarried ? "随身" : "地面")}{e.ItemName(wid)}装入1份（500毫升），不耗时")"
                             @onclick="() => G.Instant(InstantRequest.FillCanteen(srcId, cid, 1))">装入@(e.ItemName(wid))500</button>
                 }
                 @foreach (var zone in new[] { ItemInstance.Carried, s.Ground })
@@ -152,7 +152,7 @@
                     <button type="button" class="ca-use fuse" disabled="@(fwhy != null || using_)" title="@(fwhy ?? "饱饱吞噬融合这1份，确认后立即结算，之后5分钟不可取消")"
                             @onmouseenter="() => G.Hover(freq, FuseTitle)" @onmouseleave="() => G.Hover(null)"
                             @onclick="() => Fuse(freq)">吞噬融合1份·@(e.Config.ActiveSubstance.Fusion.Minutes)分钟</button>
-                    <span class="ca-use-note">@e.SubstanceLabel(it)#@it.InstanceId（×@it.Count）→ @e.FusionOutcomeText(s, it) · 来源：@GameEngine.SampleSourceText(it) · @e.AppraisalStateText(it)</span>
+                    <span class="ca-use-note">@e.SubstanceLabel(it)（×@it.Count）→ @e.FusionOutcomeText(s, it) · 来源：@GameEngine.SampleSourceText(it) · @e.AppraisalStateText(it)</span>
                 </div>
                 @if (fwhy != null) { <div class="ca-note bad">吞噬融合：@fwhy</div> }
             }
@@ -225,7 +225,7 @@
                     {
                         var cur = e.WornItem(s, GameState.PlayerId, slot);
                         var (eg, ec) = e.EquipOutcome(s, GameState.PlayerId, wInst, slot, false);
-                        var tip = why ?? $"{(fromGround ? "从地面直接" : "")}装备到{EquipSlots.Name(slot)}{(cur == null ? "" : $"，换下{e.ItemName(cur.ItemId)}#{cur.InstanceId}回到随身")} · 装备后本人{Ui.Kg(eg)}公斤 · 随身{ec}/{e.MaxRootCards}张 · 不耗时";
+                        var tip = why ?? $"{(fromGround ? "从地面直接" : "")}装备到{EquipSlots.Name(slot)}{(cur == null ? "" : $"，换下{e.ItemName(cur.ItemId)}回到随身")} · 装备后本人{Ui.Kg(eg)}公斤 · 随身{ec}/{e.MaxRootCards}张 · 不耗时";
                         <button type="button" class="tbar-go alt" disabled="@(why != null)" title="@tip" @onclick="() => G.Equip(wid, slot)">装备到@(EquipSlots.Name(slot))</button>
                     }
                 </div>
@@ -239,14 +239,14 @@
                 {
                     var cur = e.WornItem(s, GameState.PlayerId, slot);
                     var (eg, ec) = e.EquipOutcome(s, GameState.PlayerId, wInst, slot, false);
-                    <div class="ca-note @(eg > e.Config.Carry.SoftGrams ? "warn" : "")">@(EquipSlots.Name(slot))：装备后本人@(Ui.Kg(eg))公斤 · 随身@(ec)/@(e.MaxRootCards)张@(cur != null ? $" · 换下{e.ItemName(cur.ItemId)}#{cur.InstanceId}回随身" : "") · 不耗时</div>
+                    <div class="ca-note @(eg > e.Config.Carry.SoftGrams ? "warn" : "")">@(EquipSlots.Name(slot))：装备后本人@(Ui.Kg(eg))公斤 · 随身@(ec)/@(e.MaxRootCards)张@(cur != null ? $" · 换下{e.ItemName(cur.ItemId)}回随身" : "") · 不耗时</div>
                 }
                 @foreach (var (slot, why) in choices.Where(c => c.reason != null))
                 {
                     var cur = e.WornItem(s, GameState.PlayerId, slot);
                     if (cur == null || e.EquipBlocked(s, GameState.PlayerId, wid, slot, oldToGround: true) != null) continue;
                     var (gg, gc) = e.EquipOutcome(s, GameState.PlayerId, wInst, slot, true);
-                    var curName = $"{e.ItemName(cur.ItemId)}#{cur.InstanceId}";
+                    var curName = $"{e.ItemName(cur.ItemId)}";
                     <div class="tbar-row equip-to">
                         <button type="button" class="tbar-go alt wrap" title="@($"装备到{EquipSlots.Name(slot)}，换下的{curName}放到{e.ZoneName(s, s.Ground)}地面 · 装备后本人{Ui.Kg(gg)}公斤 · 随身{gc}/{e.MaxRootCards}张 · 不耗时")"
                                 @onclick="() => G.Equip(wid, slot, true)">装备到@(EquipSlots.Name(slot))·旧件@(e.ItemName(cur.ItemId))放当前地面</button>
@@ -441,17 +441,17 @@
                 var water = pot == null ? null : e.PotLiquids(s, pot.InstanceId).FirstOrDefault(w => w.ItemId == sel.Id);
                 if (pot == null || water == null || !Here(pot)) return null;
                 return new Model($"liq:{pot.InstanceId}:{water.ItemId}", water.ItemId, water.ItemId, e.ItemName(water.ItemId),
-                    $"{e.WherePath(s, pot)}／{e.ItemName(pot.ItemId)}#{pot.InstanceId}", water.Count, Mode.Decant)
+                    $"{e.WherePath(s, pot)}／{e.ItemName(pot.ItemId)}", water.Count, Mode.Decant)
                 { Instance = water, PotInstance = pot, UseId = UseOf(water), Owner = water.Owner };
             }
             case SelectionKind.Tool when sel.InstanceId is int id:
             {
                 var it = e.FindItem(s, id);
                 if (it == null || !Here(it)) return null;
-                var name = $"{e.ItemName(it.ItemId)}#{it.InstanceId}";
+                var name = $"{e.ItemName(it.ItemId)}";
                 // 设施里的一批（Q111 煅烧的木材×4 / 成品木炭×3）整批取出：份数照实显示
                 if (it.InFacility || (it.InContainer && !e.IsLiquid(it)))
-                    return new Model($"take:{id}", it.ItemId, it.ItemId, it.Count > 1 ? $"{e.ItemName(it.ItemId)}×{it.Count}#{it.InstanceId}" : name, e.WherePath(s, it), it.Count, Mode.TakeOut)
+                    return new Model($"take:{id}", it.ItemId, it.ItemId, it.Count > 1 ? $"{e.ItemName(it.ItemId)}×{it.Count}" : name, e.WherePath(s, it), it.Count, Mode.TakeOut)
                     { Instance = it, UseId = UseOf(it), Owner = it.Owner };
                 if (it.Owner != ItemInstance.Carried && it.Owner != here) return null;
                 var toCarried = it.Owner != ItemInstance.Carried;

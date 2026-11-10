@@ -60,7 +60,7 @@ public class B3aGroundEquipTests : BattleTestBase
         Assert.That(E.CarriedGrams(s), Is.EqualTo(18500));
         Assert.That(knife.Durability, Is.EqualTo(dur), "不重抽");
         Assert.That(s.GameMinute, Is.EqualTo(minute), "0 分钟");
-        Assert.That(s.Log.Last().Text, Does.Contain("地面装备石刀#"));
+        Assert.That(s.Log.Last().Text, Does.Contain("地面装备石刀到").And.Not.Contain("#"));
     }
 
     [Test]

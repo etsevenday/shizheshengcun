@@ -212,7 +212,7 @@ namespace Survival.Core.Engine
                 var why = TakeOutBlocked(s, head, zone);
                 if (why != null) return DropIntent.No(why);
                 var to = zone == ItemInstance.Carried ? "随身" : "地面";
-                var what = IsPot(head) ? $"{name}#{head.InstanceId}（含内容{Fmt.Kg(ItemGrams(s, head))}）" : $"1份{name}#{head.InstanceId}";
+                var what = IsPot(head) ? $"{name}（含内容{Fmt.Kg(ItemGrams(s, head))}）" : $"1份{name}";
                 var verb = zone == ItemInstance.Carried ? "拾取" : IsPot(head) ? "取下" : "取出";
                 return Instant(DropVerb.TakeOut, $"{verb}{what}到{to}", InstantRequest.TakeOut(head.InstanceId, zone));
             }
@@ -324,7 +324,7 @@ namespace Survival.Core.Engine
                 var dirty = PotLiquid(s, head.InstanceId) == "dirty_water";
                 var food = PotFood(s, head.InstanceId).Count;
                 var hint = dirty ? "，燃烧时自动烧水" : food > 0 ? $"，锅内食材{food}份{(PotLiquid(s, head.InstanceId) == null ? "（缺水，不加工）" : "")}" : "";
-                return Instant(DropVerb.PutInFire, $"把{name}#{head.InstanceId}放进火堆加工位{hint}", InstantRequest.PutInFire(head.InstanceId));
+                return Instant(DropVerb.PutInFire, $"把{name}放进火堆加工位{hint}", InstantRequest.PutInFire(head.InstanceId));
             }
             var p = FireFoodProcess(head.ItemId)!;
             return Instant(DropVerb.PutInFire, $"放1份{name}进火堆加工位直接{p.Name}（{p.HeatMinutes}分钟）",
@@ -370,7 +370,7 @@ namespace Survival.Core.Engine
         {
             var max = MaxPutFood(s, head, pot, out var why);
             if (why != null) return DropIntent.No(why);
-            return Instant(DropVerb.PutFood, $"放进{ItemName(pot.ItemId)}#{pot.InstanceId}食材区（{PotFoodHint(s, pot)}）",
+            return Instant(DropVerb.PutFood, $"放进{ItemName(pot.ItemId)}食材区（{PotFoodHint(s, pot)}）",
                 InstantRequest.PutFoodInPot(head.InstanceId, pot.InstanceId), max);
         }
 

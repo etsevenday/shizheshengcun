@@ -137,7 +137,7 @@
                                     var why = e.FieldPatchBlocked(s, tid, null, out _, out _, out _);
                                     <button type="button" class="repair-pick @(G.CraftTarget == tid ? "on" : "") @(why != null ? "missing" : "")" title="@(why ?? "选择这件")" @onclick="() => PickTarget(tid)">
                                         <span class="ir-icon">@Icons.Markup(t.ItemId)</span>
-                                        <span><b>@e.ItemName(t.ItemId)#@tid（@e.QualityName(t)）</b><small>@e.WherePath(s, t) · 耐久@(GameEngine.DurabilityText(t))@(why != null ? $" · {why}" : "")</small></span>
+                                        <span><b>@e.ItemName(t.ItemId)（@e.QualityName(t)）</b><small>@e.WherePath(s, t) · 耐久@(GameEngine.DurabilityText(t))@(why != null ? $" · {why}" : "")</small></span>
                                     </button>
                                 }
                                 @if (cands.Count == 0) { <div class="risk none">随身、穿戴中和当前地面都没有可修补的武器、工具或防具。</div> }
@@ -156,7 +156,7 @@
                                     <button type="button" class="repair-pick @(G.CraftPatch == pid ? "on" : "") @(pblock ? "missing" : pnote != null ? "warn" : "")" disabled="@pblock"
                                             title="@(pnote ?? (G.CraftPatch == pid ? "再点一次取消指定，改回默认" : "指定用这一包"))" @onclick="() => PickPatch(pid)">
                                         <span class="ir-icon">@Icons.Markup(pk.ItemId)</span>
-                                        <span><b>@e.ItemName(pk.ItemId)#@pid@(pk.Count > 1 ? $"×{pk.Count}" : "")</b><small>@e.WherePath(s, pk) · 剩余@(e.PatchRemaining(pk))/@(e.PatchMax(pk))@qText@(pnote != null ? $" · {pnote}" : "")</small></span>
+                                        <span><b>@e.ItemName(pk.ItemId)@(pk.Count > 1 ? $"×{pk.Count}" : "")</b><small>@e.WherePath(s, pk) · 剩余@(e.PatchRemaining(pk))/@(e.PatchMax(pk))@qText@(pnote != null ? $" · {pnote}" : "")</small></span>
                                     </button>
                                 }
                                 @if (packs.Count == 0) { <div class="risk none">随身和当前地面都没有可用的野外修补包（工作台“远行基础做法”可做白/绿/蓝三品阶）。</div> }
@@ -174,7 +174,7 @@
                                     var why = e.RepairBlocked(s, tid, out _, rc);
                                     <button type="button" class="repair-pick @(G.CraftTarget == tid ? "on" : "") @(why != null ? "missing" : "")" title="@(why ?? "选择这件工具")" @onclick="() => PickTarget(tid)">
                                         <span class="ir-icon">@Icons.Markup(t.ItemId)</span>
-                                        <span><b>@e.ItemName(t.ItemId)#@tid</b><small>@e.WherePath(s, t) · 耐久@(GameEngine.DurabilityText(t))@(why != null ? $" · {why}" : "")</small></span>
+                                        <span><b>@e.ItemName(t.ItemId)</b><small>@e.WherePath(s, t) · 耐久@(GameEngine.DurabilityText(t))@(why != null ? $" · {why}" : "")</small></span>
                                     </button>
                                 }
                                 @if (cands.Count == 0) { <div class="risk none">@(rc.RepairFilter != null ? "随身、穿戴中和当前地面都没有可小修的非枪金属武器或工具。" : "随身、穿戴中和当前地面都没有带耐久的工具或装备。")</div> }
@@ -191,7 +191,7 @@
                                     var why = e.ExplicitPotBlocked(s, pid, out _);
                                     <button type="button" class="repair-pick @(G.CraftPot == pid ? "on" : "") @(why != null ? "missing" : "")" title="@(why ?? "指定这口锅")" @onclick="() => PickPot(pid)">
                                         <span class="ir-icon">@Icons.Markup(pot.ItemId)</span>
-                                        <span><b>@e.ItemName(pot.ItemId)#@pid</b><small>@e.WherePath(s, pot) · @e.PotLabel(s, pot)@(why != null ? $" · {why}" : "")</small></span>
+                                        <span><b>@e.ItemName(pot.ItemId)</b><small>@e.WherePath(s, pot) · @e.PotLabel(s, pot)@(why != null ? $" · {why}" : "")</small></span>
                                     </button>
                                 }
                                 @if (pots.Count == 0) { <div class="risk none">随身和当前地面没有锅。</div> }
@@ -293,7 +293,7 @@
                         {
                             var cfg = e.Config.Items.First(i => i.ToolTag == tag);
                             var tool = e.AccessibleTool(s, tag);
-                            <ItemRow Icon="@cfg.Id" Name="@(tool == null ? cfg.Name : $"{cfg.Name}#{tool.InstanceId}")" Qty="催化工具" Missing="@(tool == null)"
+                            <ItemRow Icon="@cfg.Id" Name="@(tool == null ? cfg.Name : $"{cfg.Name}")" Qty="催化工具" Missing="@(tool == null)"
                                      Status="@(tool == null ? "缺少：需随身或在当前地面" : $"{(tool.IsCarried ? "随身" : "地面")} · 不消耗")" />
                         }
                         <div class="tiny muted" style="margin-top:8px">产物</div>

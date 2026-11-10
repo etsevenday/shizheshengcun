@@ -102,7 +102,7 @@ namespace Survival.Core.Engine
                 {
                     ProcessId = pid,
                     TargetInstanceId = p?.TargetInstanceId ?? 0,
-                    Label = t == null ? pid : $"{ItemName(t.ItemId)}#{t.InstanceId} · {Process(p!.RecipeId).Name}",
+                    Label = t == null ? pid : $"{ItemName(t.ItemId)} · {Process(p!.RecipeId).Name}",
                     EtaMinutes = real.TryGetValue(pid, out var m) ? m : (int?)null,
                     Done = p == null,
                 };
@@ -130,7 +130,7 @@ namespace Survival.Core.Engine
                     else if (pid == null) why = x.InContainer && PotConfig(ContainerOf(c, x)!).StoreOnlyFoodIds.Contains(x.ItemId) ? "只存放，不再加工" : "已是成品，不需要加工";
                     else if (idealFail.TryGetValue(pid, out var f)) why = f;
                     else why = "本次无法完成加工";
-                    plan.Excluded.Add(new CookExcludedInfo { InstanceId = x.InstanceId, Label = $"{ItemName(x.ItemId)}#{x.InstanceId}", Reason = why });
+                    plan.Excluded.Add(new CookExcludedInfo { InstanceId = x.InstanceId, Label = $"{ItemName(x.ItemId)}", Reason = why });
                 }
             }
         }
@@ -267,7 +267,7 @@ namespace Survival.Core.Engine
             {
                 var p = fac.Processes.First(x => x.ProcessId == pid);
                 var t = FindItem(s, p.TargetInstanceId);
-                if (t != null && IsSpoiled(s, t)) { StopCookWait(s, a, $"{ItemName(t.ItemId)}#{t.InstanceId}已腐败"); return true; }
+                if (t != null && IsSpoiled(s, t)) { StopCookWait(s, a, $"{ItemName(t.ItemId)}已腐败"); return true; }
             }
             if (!FireHot(s, loc))
             {

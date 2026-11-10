@@ -97,7 +97,7 @@ namespace Survival.Core.Engine
                 return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能维护随身或当前地面的工具";
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件工具正被使用";
             if (rc != null && !RepairFilterOk(rc, target.ItemId)) return $"{rc.Name}只修有金属制作或拆解依据的武器、工具或防具，{cfg.Name}不能用它修（枪械、锅、打火器和木石布皮制品不修）";
-            if (target.Durability.Value >= target.MaxDurability.Value - 1e-9) return $"{cfg.Name}#{target.InstanceId}耐久已满";
+            if (target.Durability.Value >= target.MaxDurability.Value - 1e-9) return $"{cfg.Name}耐久已满";
             if (IsPot(target) && PotContents(s, target.InstanceId).Count > 0 && RepairRecipe?.RequireEmptyDetachedPotWhenTargetIsPot == true)
                 return "锅须先取下并清空才能维护";
             return null;
@@ -230,7 +230,7 @@ namespace Survival.Core.Engine
                 Emit(s, GameEventKind.ActionCompleted, "要拆解的装备已不在，没有产出。");
                 return true;
             }
-            var name = $"{ItemName(t.ItemId)}#{t.InstanceId}（{QualityName(t)}）";
+            var name = $"{ItemName(t.ItemId)}（{QualityName(t)}）";
             s.Items.Remove(t);
             foreach (var (oid, n) in yield) CreateItems(s, oid, n, here);
             // 语序（B7b 试玩修复）：产物 → 放置地点 → 回收专家说明 → 经验
@@ -258,7 +258,7 @@ namespace Survival.Core.Engine
             if (t?.Durability == null || t.MaxDurability == null) return "目标工具已不在，未恢复耐久";
             var before = t.Durability.Value;
             t.Durability = Math.Min(t.MaxDurability.Value, before + t.MaxDurability.Value * RepairFraction(s, rc));
-            return $"{ItemName(t.ItemId)}#{t.InstanceId}耐久{Fmt.N(before)}→{Fmt.N(t.Durability.Value)}/{Fmt.N(t.MaxDurability.Value)}";
+            return $"{ItemName(t.ItemId)}耐久{Fmt.N(before)}→{Fmt.N(t.Durability.Value)}/{Fmt.N(t.MaxDurability.Value)}";
         }
     }
 }

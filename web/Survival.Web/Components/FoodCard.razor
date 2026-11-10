@@ -5,7 +5,7 @@
 @{
     var s = G.S;
     var e = G.E;
-    var name = Item.Count > 1 ? $"{e.ItemName(Item.ItemId)}×{Item.Count}#{Item.InstanceId}" : $"{e.ItemName(Item.ItemId)}#{Item.InstanceId}";
+    var name = Item.Count > 1 ? $"{e.ItemName(Item.ItemId)}×{Item.Count}" : $"{e.ItemName(Item.ItemId)}";
     var proc = e.ProcessOf(s, Item);
     var spoiled = e.IsSpoiled(s, Item);
     var key = $"{Item.Owner}|{Item.ItemId}|{Item.InstanceId}";

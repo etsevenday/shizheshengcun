@@ -81,7 +81,7 @@ public sealed class DragController
         if (intent.Ok && intent.StartsAction && intent.Action != null)
         {
             var lighter = G.S.Items.FirstOrDefault(i => i.InstanceId == intent.Action.InstanceId);
-            G.Hover(intent.Action, lighter == null ? "点燃火堆" : $"用{G.E.ItemName(lighter.ItemId)}#{lighter.InstanceId}点火");
+            G.Hover(intent.Action, lighter == null ? "点燃火堆" : $"用{G.E.ItemName(lighter.ItemId)}点火");
         }
         else G.Hover(null);
     }

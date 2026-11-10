@@ -43,7 +43,7 @@
             }
             else
             {
-                <ItemRow Icon="@it.ItemId" Name="@(it.Count > 1 ? $"{e.ItemName(it.ItemId)}×{it.Count}#{it.InstanceId}" : $"{e.ItemName(it.ItemId)}#{it.InstanceId}")" Qty="@($"加工位{k + 1}")"
+                <ItemRow Icon="@it.ItemId" Name="@(it.Count > 1 ? $"{e.ItemName(it.ItemId)}×{it.Count}" : $"{e.ItemName(it.ItemId)}")" Qty="@($"加工位{k + 1}")"
                          Status="@(e.IsPot(it) ? $"{e.PotLabel(s, it)} · 食材{e.PotFood(s, it.InstanceId).Count}/{e.PotConfig(it).FoodSlots} · {e.ContentStatus(s, it)}" : e.ContentStatus(s, it))" />
             }
         }

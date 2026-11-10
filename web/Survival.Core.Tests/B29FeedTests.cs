@@ -187,9 +187,9 @@ public class B29FeedTests : TestBase
         var rows = E.FeedClassRows(s, Lin, "clean_water");
         Assert.That(rows.Select(r => r.Kind), Is.EqualTo(new[] { FeedSourceKind.Water, FeedSourceKind.PotWater, FeedSourceKind.Canteen }));
         Assert.That(rows.Select(r => r.PortionText), Is.EqualTo(new[] { "净水500毫升", "净水500毫升", "净水250毫升" }));
-        Assert.That(rows[0].Text, Is.EqualTo($"你的随身物品 · 净水1000毫升（2份，每份500毫升） · 编号#{card.InstanceId}"));
-        Assert.That(rows[1].Text, Is.EqualTo($"你的随身锅#{pot.InstanceId} · 净水1000毫升（2份，每份500毫升）"));
-        Assert.That(rows[2].Text, Is.EqualTo($"{E.ActorDisplayName(s, Lin)}的随身{E.ItemName("ration_canteen")}#{canteen.InstanceId} · 净水750/2000毫升（3次，每次250毫升）"));
+        Assert.That(rows[0].Text, Is.EqualTo($"你的随身物品 · 净水1000毫升（2份，每份500毫升）"));
+        Assert.That(rows[1].Text, Is.EqualTo($"你的随身锅 · 净水1000毫升（2份，每份500毫升）"));
+        Assert.That(rows[2].Text, Is.EqualTo($"{E.ActorDisplayName(s, Lin)}的随身{E.ItemName("ration_canteen")} · 净水750/2000毫升（3次，每次250毫升）"));
         Assert.That(rows.Any(r => r.InstanceId == empty.InstanceId || r.InstanceId == dirty.InstanceId), Is.False, "空壶不假定水种，脏水不混入");
         Assert.That(E.FeedClassRows(s, Lin, "dirty_water").Single().InstanceId, Is.EqualTo(dirty.InstanceId));
     }
@@ -223,7 +223,7 @@ public class B29FeedTests : TestBase
         Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId));
         s.Locations["camp"].Facility.Processes.Add(new FacilityProcess { RecipeId = "boil_root", TargetInstanceId = 99999, PotInstanceId = pot.InstanceId, ReservedWaterMl = 250 });
         var row = E.FeedClassRows(s, Lin, "clean_water").Single();
-        Assert.That(row.Text, Is.EqualTo($"你的随身锅#{pot.InstanceId} · 净水500毫升（0份，每份500毫升）"));
+        Assert.That(row.Text, Is.EqualTo($"你的随身锅 · 净水500毫升（0份，每份500毫升）"));
         Assert.That(row.Blocked, Is.EqualTo("锅内净水不足500毫升，无法饮用1份。"));
     }
 
@@ -341,7 +341,7 @@ public class B29FeedTests : TestBase
         var v = Pick(s, Open(s, food), Lin);
         var name = E.ActorDisplayName(s, Lin);
         var to = Clock.DayTime(food.ExpiresAt.Value);
-        Assert.That(v.Selected!.Text, Is.EqualTo($"你的随身物品 · {E.ItemName("berry")}×3 · 批次#{food.InstanceId} · 到期：{to}"));
+        Assert.That(v.Selected!.Text, Is.EqualTo($"你的随身物品 · {E.ItemName("berry")}×3 · 到期：{to}"));
         Assert.That(v.EffectLines, Is.EqualTo(new[]
         {
             $"目标：{name}", "出物人：你", $"本次用量：{E.ItemName("berry")}×1", $"当前余量：{E.ItemName("berry")}×3", $"到期：{to}", "预计耗时：5分钟",

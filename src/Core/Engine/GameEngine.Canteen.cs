@@ -84,7 +84,7 @@ namespace Survival.Core.Engine
             if (water.Count <= 0) s.Items.Remove(water);
             canteen.LiquidId = id;
             canteen.LiquidMl += r.Count * unit;
-            Emit(s, GameEventKind.Info, $"把{from}{ItemName(id)}{r.Count * unit}毫升装进{ItemName(canteen.ItemId)}#{canteen.InstanceId}（{CanteenLabel(canteen)}）。");
+            Emit(s, GameEventKind.Info, $"把{from}{ItemName(id)}{r.Count * unit}毫升装进{ItemName(canteen.ItemId)}（{CanteenLabel(canteen)}）。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -139,7 +139,7 @@ namespace Survival.Core.Engine
             if (canteen.LiquidMl <= 0) { canteen.LiquidMl = 0; canteen.LiquidId = null; }
             CreateItems(s, id, r.Count, zone);
             var to = zone == ItemInstance.Carried ? "随身" : $"{LocName(zone)}地面";
-            Emit(s, GameEventKind.Info, $"从{ItemName(canteen.ItemId)}#{canteen.InstanceId}倒出{ItemName(id)}{r.Count * unit}毫升到{to}（剩{CanteenLabel(canteen)}）。");
+            Emit(s, GameEventKind.Info, $"从{ItemName(canteen.ItemId)}倒出{ItemName(id)}{r.Count * unit}毫升到{to}（剩{CanteenLabel(canteen)}）。");
             UpdateFlags(s);
             return ActionResult.Success();
         }

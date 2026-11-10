@@ -50,7 +50,7 @@ else
             @* 工具、锅等单件实例与卡下操作条同样写“名称#实例”；可自用物品的摘要用内核的“饱食+35”写法，与卡片、操作条一致（试玩修复 B9） *@
             @if (!cfg.IsStackable || sel.Kind == SelectionKind.Tool && sel.InstanceId.HasValue && !potLiquid)
             {
-                <h2>@cfg.Name#@inst.InstanceId@if (cfg.IsEquipment) { <small class="qtag q-@(inst.Quality ?? "white")">@e.QualityName(inst)</small> }</h2>
+                <h2>@cfg.Name@if (cfg.IsEquipment) { <small class="qtag q-@(inst.Quality ?? "white")">@e.QualityName(inst)</small> }</h2>
             }
             else
             {
@@ -150,7 +150,7 @@ else
                 }
                 @foreach (var f in foods)
                 {
-                    <ItemRow Icon="@f.ItemId" Name="@($"{e.ItemName(f.ItemId)}#{f.InstanceId}")" Qty="×1" Status="@($"{e.ContentStatus(s, f)}{(e.CookXpLine(s, f) is string fcx ? " · " + fcx : "")}")" />
+                    <ItemRow Icon="@f.ItemId" Name="@($"{e.ItemName(f.ItemId)}")" Qty="×1" Status="@($"{e.ContentStatus(s, f)}{(e.CookXpLine(s, f) is string fcx ? " · " + fcx : "")}")" />
                 }
                 @if (inst.InFacility)
                 {

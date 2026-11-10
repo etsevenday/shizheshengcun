@@ -65,8 +65,8 @@ public class B22kTests : TestBase
         var pv = E.DryingPreview(s, "dry_berries");
         Assert.That(pv.Ok, Is.True, pv.Reason);
         Assert.That(pv.Sources, Has.Count.EqualTo(2));
-        Assert.That(pv.Sources[0], Does.StartWith($"地面野果#{g300.InstanceId}×1（保质到{Clock.DayTime(t0 + 300)}）"));
-        Assert.That(pv.Sources[1], Does.StartWith($"随身野果#{c500.InstanceId}×1（保质到{Clock.DayTime(t0 + 500)}）"), "同截止随身优先");
+        Assert.That(pv.Sources[0], Does.StartWith($"地面野果×1（保质到{Clock.DayTime(t0 + 300)}）"));
+        Assert.That(pv.Sources[1], Does.StartWith($"随身野果×1（保质到{Clock.DayTime(t0 + 500)}）"), "同截止随身优先");
         Assert.That(pv.Warnings, Is.Empty, "选中的都能撑到完成");
         Assert.That((pv.Slot, pv.Minutes, pv.FinishMinute), Is.EqualTo((0, 120, finish)), "预览写位号与时间");
         Assert.That(pv.XpText, Does.Contain("经验+12"));
@@ -82,9 +82,9 @@ public class B22kTests : TestBase
         // 只剩会在完成前腐败的那份与一份能撑到的：临期果干红字但可确认
         var pv2 = E.DryingPreview(s, "dry_berries");
         Assert.That(pv2.Ok, Is.True);
-        Assert.That(pv2.Sources[0], Does.Contain($"#{g500.InstanceId}"), "能撑到完成的先取");
-        Assert.That(pv2.Sources[1], Does.Contain($"#{early.InstanceId}"));
-        Assert.That(pv2.Warnings.Single(), Does.Contain($"野果#{early.InstanceId}").And.Contain("会在完成前腐败，届时停止且没有成品"));
+        Assert.That(pv2.Sources[0], Does.StartWith($"地面野果×1（保质到{Clock.DayTime(t0 + 500)}）"), "能撑到完成的先取");
+        Assert.That(pv2.Sources[1], Does.StartWith($"随身野果×1（保质到{Clock.DayTime(t0 + 60)}）"));
+        Assert.That(pv2.Warnings.Single(), Does.Contain($"野果（保质到{Clock.DayTime(t0 + 60)}").And.Contain("会在完成前腐败，届时停止且没有成品"));
         Assert.That(pv2.PausesShelf, Is.False);
         Ok(E.StartDrying(s, "dry_berries", null, null, pv2.SourceKey));
         Assert.That(E.DryingSlotViews(s)[1].Line, Does.Contain("会在完成前腐败"));
@@ -106,7 +106,7 @@ public class B22kTests : TestBase
         Assert.That(pm.Warnings, Is.Empty, "肉干不显示制作中会腐败");
         Assert.That(pm.PausesShelf, Is.True);
         Assert.That(pm.Note, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("到期即腐败"));
-        Assert.That(pm.Sources[0], Is.EqualTo($"随身生肉#{meat.InstanceId}×1（保质到{Clock.DayTime(t0 + 30)}）"), "预览仍写原截止");
+        Assert.That(pm.Sources[0], Is.EqualTo($"随身生肉×1（保质到{Clock.DayTime(t0 + 30)}）"), "预览仍写原截止");
         Ok(E.StartDrying(s, "dry_meat", null, null, pm.SourceKey));
         Assert.That(s.Log.Last().Text, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("会在完成前腐败"));
         var v = E.DryingSlotViews(s)[2];
@@ -132,7 +132,7 @@ public class B22kTests : TestBase
 
         // 1) 预览选中的生肉在确认前失效（被预留）→ 拒绝，不悄悄换成地面那份
         var pv = E.DryingPreview(s, "dry_meat");
-        Assert.That(pv.Sources[0], Does.Contain($"#{a.InstanceId}"));
+        Assert.That(pv.Sources[0], Does.StartWith($"随身生肉×1（保质到{Clock.DayTime(t0 + 600)}）"));
         a.ReservedBy = 77;
         var r = E.StartDrying(s, "dry_meat", null, "req-a", pv.SourceKey);
         Assert.That(r.Ok, Is.False);
@@ -141,16 +141,16 @@ public class B22kTests : TestBase
         Assert.That((b.Owner, salt.Owner), Is.EqualTo((s.Ground, s.Ground)), "没取料");
         var pv2 = E.DryingPreview(s, "dry_meat");
         Assert.That(pv2.SourceKey, Is.Not.EqualTo(pv.SourceKey), "预览已更新");
-        Assert.That(pv2.Sources[0], Does.Contain($"#{b.InstanceId}"));
+        Assert.That(pv2.Sources[0], Does.StartWith($"地面生肉×1（保质到{Clock.DayTime(t0 + 900)}）"));
 
         // 2) 来源变了（同一实例从随身放到地面）也要再确认
         a.ReservedBy = null;
         var pv3 = E.DryingPreview(s, "dry_meat");
-        Assert.That(pv3.Sources[0], Does.StartWith($"随身生肉#{a.InstanceId}"));
+        Assert.That(pv3.Sources[0], Does.StartWith($"随身生肉×1（保质到{Clock.DayTime(t0 + 600)}）"));
         a.Owner = s.Ground;
         Assert.That(E.StartDrying(s, "dry_meat", null, null, pv3.SourceKey).Reason, Is.EqualTo(GameEngine.DryingPreviewChanged));
         var pv4 = E.DryingPreview(s, "dry_meat");
-        Assert.That(pv4.Sources[0], Does.StartWith($"地面生肉#{a.InstanceId}"));
+        Assert.That(pv4.Sources[0], Does.StartWith($"地面生肉×1（保质到{Clock.DayTime(t0 + 600)}）"));
 
         // 3) 按更新后的预览确认才投；同一请求号重复只投一批
         Ok(E.StartDrying(s, "dry_meat", null, "req-b", pv4.SourceKey));

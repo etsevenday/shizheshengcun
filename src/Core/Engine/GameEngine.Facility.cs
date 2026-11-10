@@ -136,12 +136,12 @@ namespace Survival.Core.Engine
                 .OrderByDescending(p => FindItem(s, p.TargetInstanceId)?.PlacedOrder ?? 0).FirstOrDefault();
             if (rec == null) return "这份水已被加工预留";
             var t = FindItem(s, rec.TargetInstanceId);
-            return $"{rec.ReservedWaterMl}毫升供{(t == null ? "食材" : ItemName(t.ItemId))}#{rec.TargetInstanceId}加工，先取出该食材以停止加工";
+            return $"{rec.ReservedWaterMl}毫升供{(t == null ? "食材" : ItemName(t.ItemId))}加工，先取出该食材以停止加工";
         }
 
         /// <summary>“金属锅#7（净水100%·1000/1000毫升，食材1/2）”。</summary>
         public string PotDesc(GameState s, ItemInstance pot) =>
-            $"{ItemName(pot.ItemId)}#{pot.InstanceId}（{PotLabel(s, pot)}，食材{PotFood(s, pot.InstanceId).Count}/{PotConfig(pot).FoodSlots}）";
+            $"{ItemName(pot.ItemId)}（{PotLabel(s, pot)}，食材{PotFood(s, pot.InstanceId).Count}/{PotConfig(pot).FoodSlots}）";
 
         /// <summary>“临时营地／火堆／金属锅#7”：设施与锅里的物品写清所在，不只写“当前地面”。</summary>
         public string WherePath(GameState s, ItemInstance i)
@@ -151,7 +151,7 @@ namespace Survival.Core.Engine
             if (ItemInstance.TryContainerId(i.Owner, out _))
             {
                 var pot = ContainerOf(s, i);
-                return pot == null ? "锅里" : $"{WherePath(s, pot)}／{ItemName(pot.ItemId)}#{pot.InstanceId}";
+                return pot == null ? "锅里" : $"{WherePath(s, pot)}／{ItemName(pot.ItemId)}";
             }
             if (ItemInstance.TryFacilityId(i.Owner, out var fid))
             {
@@ -237,7 +237,7 @@ namespace Survival.Core.Engine
             var p = ProcessOf(s, inst);
             if (p == null) return null;
             var cfg = Process(p.RecipeId);
-            var text = $"{ItemName(inst.ItemId)}#{inst.InstanceId}的{cfg.Name}随之终止";
+            var text = $"{ItemName(inst.ItemId)}的{cfg.Name}随之终止";
             if (p.HeatDoneMinutes > 0) text += $"（已受热{p.HeatDoneMinutes}分钟作废{(p.HeatProtected ? "，烹饪保护解除" : "")}）";
             if (p.ReservedWaterMl > 0) text += $"，释放预留{ItemName(cfg.RequiredLiquid ?? "clean_water")}{p.ReservedWaterMl}毫升";
             return text + "；已耗燃料不退，不再产出成品";
@@ -381,7 +381,7 @@ namespace Survival.Core.Engine
         private string FireFullText(GameState s, string loc)
         {
             var n = Config.Fire.ProcessingSlots;
-            var names = string.Join("、", FireContents(s, loc).Select(i => IsPot(i) ? $"{ItemName(i.ItemId)}#{i.InstanceId}" : $"{ItemName(i.ItemId)}#{i.InstanceId}"));
+            var names = string.Join("、", FireContents(s, loc).Select(i => IsPot(i) ? $"{ItemName(i.ItemId)}" : $"{ItemName(i.ItemId)}"));
             return $"火堆加工位已满（{n}/{n}：{names}），请先取出";
         }
 
@@ -521,7 +521,7 @@ namespace Survival.Core.Engine
             var owner = ItemInstance.ContainerOwner(pot.InstanceId);
             for (var k = 0; k < r.Count; k++) MoveOne(s, food, owner);
             SyncFacilities(s);
-            Emit(s, GameEventKind.Info, $"把{r.Count}份{name}放进{ItemName(pot.ItemId)}#{pot.InstanceId}（{WherePath(s, pot)}）。");
+            Emit(s, GameEventKind.Info, $"把{r.Count}份{name}放进{ItemName(pot.ItemId)}（{WherePath(s, pot)}）。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -571,8 +571,8 @@ namespace Survival.Core.Engine
             // Q16：成功取出即解除保护；原保质期已过的食材取出后立即按原 expiresAt 判腐败（失败的取出在上面已整次拒绝，什么都不变）
             var lost = touched.Where(p => p.HeatProtected).Select(p => FindItem(s, p.TargetInstanceId))
                 .Where(t => t != null && t.ExpiresAt.HasValue && t.ExpiresAt.Value <= s.GameMinute)
-                .Select(t => $"{ItemName(t!.ItemId)}#{t.InstanceId}").ToList();
-            var name = IsPot(inst) || inst.Count <= 1 ? $"{ItemName(inst.ItemId)}#{inst.InstanceId}" : $"{ItemName(inst.ItemId)}×{inst.Count}#{inst.InstanceId}";
+                .Select(t => $"{ItemName(t!.ItemId)}").ToList();
+            var name = IsPot(inst) || inst.Count <= 1 ? $"{ItemName(inst.ItemId)}" : $"{ItemName(inst.ItemId)}×{inst.Count}";
             // B16 试玩修复 M351：取出锅食谱的食材/辅料或取下锅时，日志写明整份作废与辅料退回
             var abandon = PotRecipeAbandonText(s, touched);
             if (abandon != null) reset = false;
@@ -600,13 +600,13 @@ namespace Survival.Core.Engine
             foreach (var p in touched.Where(p => p.HeatDoneMinutes > 0).OrderBy(p => p.TargetInstanceId))
             {
                 var t = FindItem(s, p.TargetInstanceId);
-                var name = t == null ? "" : $"{ItemName(t.ItemId)}#{t.InstanceId}";
+                var name = t == null ? "" : $"{ItemName(t.ItemId)}";
                 c.Resets.Add($"{name}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}分钟");
             }
             foreach (var p in touched.Where(p => p.HeatProtected).OrderBy(p => p.TargetInstanceId))
             {
                 var t = FindItem(s, p.TargetInstanceId);
-                if (t != null && PastExpiryButProtected(s, t)) c.Spoils.Add($"{ItemName(t.ItemId)}#{t.InstanceId}");
+                if (t != null && PastExpiryButProtected(s, t)) c.Spoils.Add($"{ItemName(t.ItemId)}");
             }
             c.CarriedGramsAfter = CarriedGrams(s) + (PlaceOf(s, inst) == ItemInstance.Carried ? 0 : c.Grams);
             c.RootCardsAfter = RootCardsAfter(s, inst, inst.Count, null, 0);
@@ -621,7 +621,7 @@ namespace Survival.Core.Engine
             if (PotRecipeAbandonText(s, touched) is string ab)
             {
                 var others = touched.Where(p => !Process(p.RecipeId).IsPotRecipe && p.HeatDoneMinutes > 0)
-                    .Select(p => FindItem(s, p.TargetInstanceId) is ItemInstance t ? $"{ItemName(t.ItemId)}#{t.InstanceId}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}分钟" : "").Where(x => x != "").ToList();
+                    .Select(p => FindItem(s, p.TargetInstanceId) is ItemInstance t ? $"{ItemName(t.ItemId)}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}分钟" : "").Where(x => x != "").ToList();
                 c.Text = $"取出后{ab}" + (IsPot(inst) ? "" : "，锅里其余食材留在锅里") + (others.Count > 0 ? $"；{string.Join("、", others)}清零" : "");
             }
             if (c.Spoils.Count > 0) c.Text += $"；{string.Join("、", c.Spoils)}已过原保质期，取出即解除烹饪保护并立即腐败";
@@ -644,7 +644,7 @@ namespace Survival.Core.Engine
                     {
                         InstanceId = i.InstanceId,
                         ItemId = i.ItemId,
-                        Name = $"{ItemName(i.ItemId)}#{i.InstanceId}",
+                        Name = $"{ItemName(i.ItemId)}",
                         Source = i.IsCarried ? "随身" : "当前地面",
                         Usable = why == null,
                         Reason = why,
@@ -755,14 +755,14 @@ namespace Survival.Core.Engine
                 }
                 Normalize(s, ItemInstance.ContainerOwner(t.InstanceId));
                 s.Progress.Flags.Add("boiled");
-                text = $"{ZoneName(s, loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
+                text = $"{ZoneName(s, loc)}火堆：{ItemName(t.ItemId)}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
                 if (CookWaterXp(s, p, ml) is string wx) text = text.TrimEnd('。') + $"（{wx}）。";
             }
             else if (cfg.IsSlotBatch)
             {
                 // Q111：完成原子消费这批4木材、同位生成3木炭（同一实例原地转化，不另生成、不进包、不装燃料），0 经验；
                 // 进程移除并记完成回执（进程号@段号），读档/重试不会再出一次或返原料
-                var before = $"{ItemName(t.ItemId)}×{t.Count}#{t.InstanceId}";
+                var before = $"{ItemName(t.ItemId)}×{t.Count}";
                 t.ItemId = cfg.OutputId;
                 t.Count = cfg.OutputCount;
                 t.ExpiresAt = null;
@@ -781,8 +781,8 @@ namespace Survival.Core.Engine
                 // 第2日目标“完成一次块根烹饪”与七日检查“完成食物加工”都来自 v0.2（当时只有块根）：只认块根烤制/水煮，烤肉煮肉不算（试玩修复 L7）
                 if (cfg.InputId == RootItemId) s.Progress.Flags.Add("cooked");
                 text = pot != null
-                    ? $"{ZoneName(s, loc)}火堆：{input}#{t.InstanceId}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}#{pot.InstanceId}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升{potWorn}）。"
-                    : $"{ZoneName(s, loc)}火堆：{input}#{t.InstanceId}已烤成{outCfg.Name}，留在火堆加工位。";
+                    ? $"{ZoneName(s, loc)}火堆：{input}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升{potWorn}）。"
+                    : $"{ZoneName(s, loc)}火堆：{input}已烤成{outCfg.Name}，留在火堆加工位。";
                 if (CookFoodXp(s, p, cfg, t.Count) is string fx) text = text.TrimEnd('。') + $"（{fx}）。";
             }
             p.Status = ProcessStatus.Done;

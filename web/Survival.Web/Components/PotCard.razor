@@ -11,7 +11,7 @@
     var e = G.E;
     var c = e.PotConfig(Pot);
     var key = $"{Pot.Owner}|{Pot.ItemId}|{Pot.InstanceId}";
-    var name = $"{e.ItemName(Pot.ItemId)}#{Pot.InstanceId}";
+    var name = $"{e.ItemName(Pot.ItemId)}";
     var where = e.WherePath(s, Pot);
     var units = e.PotUnits(s, Pot.InstanceId);
     var liquid = e.PotLiquid(s, Pot.InstanceId);
@@ -47,7 +47,7 @@
              @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, SelectPot)" @onkeydown:stopPropagation="true">
             <span class="pc-icon">@Icons.Markup(Pot.ItemId)</span>
             @* 卡面窄：名称不带实例号，实例号与重量放第二行（M78：1280 随身行锅名被截成“金…”）；火堆加工位里也写单锅重量（含锅内，M95：Q35“≥801 照常显示”） *@
-            <span class="pc-title"><b>@e.ItemName(Pot.ItemId)</b><small>#@Pot.InstanceId · @(Ui.Kg(e.ItemGrams(s, Pot)))公斤</small></span>
+            <span class="pc-title"><b>@e.ItemName(Pot.ItemId)</b><small>@(Ui.Kg(e.ItemGrams(s, Pot)))公斤</small></span>
             @if (Pot.InFacility)
             {
                 <button type="button" class="row-arrow" aria-label="@($"把整口{name}取到随身")" title="取到随身：整锅连同水与食材（不打开操作窗；点标题可选目的地）"
@@ -70,7 +70,7 @@
             <span class="pc-sum-label">食材@(foods.Count)/@(c.FoodSlots)</span>
             @foreach (var (f, fp) in foodHeat)
             {
-                <span class="pc-sum-food @(e.IsSpoiled(s, f) ? "spoiled" : "")" title="@($"{e.ItemName(f.ItemId)}#{f.InstanceId}：{e.ContentStatus(s, f)}{(e.CookXpLine(s, f) is string cx ? " · " + cx : "")}")">@Icons.Markup(f.ItemId)@if (fp != null) {<i style="width:@(Math.Min(100, fp.HeatDoneMinutes * 100 / Math.Max(1, fp.RequiredHeatMinutes)))%"></i>}</span>
+                <span class="pc-sum-food @(e.IsSpoiled(s, f) ? "spoiled" : "")" title="@($"{e.ItemName(f.ItemId)}：{e.ContentStatus(s, f)}{(e.CookXpLine(s, f) is string cx ? " · " + cx : "")}")">@Icons.Markup(f.ItemId)@if (fp != null) {<i style="width:@(Math.Min(100, fp.HeatDoneMinutes * 100 / Math.Max(1, fp.RequiredHeatMinutes)))%"></i>}</span>
             }
         </div>
     </div>
@@ -134,7 +134,7 @@ else
             var fsel = sel.Kind == SelectionKind.Tool && sel.InstanceId == fid;
             var p = e.ProcessOf(s, f);
             var spoiled = e.IsSpoiled(s, f);
-            var fname = $"{e.ItemName(f.ItemId)}#{fid}";
+            var fname = $"{e.ItemName(f.ItemId)}";
             <div class="pc-row food @(fsel ? "selected" : "") @(spoiled ? "spoiled" : "")" role="button" tabindex="0"
                  title="@($"{fname} · {where}／{name}：{e.ContentStatus(s, f)}{(e.CookXpLine(s, f) is string cx ? " · " + cx : "")}")"
                  @onclick="() => SelectFood(f)" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, () => SelectFood(f))" @onkeydown:stopPropagation="true">

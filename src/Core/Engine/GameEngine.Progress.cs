@@ -82,7 +82,7 @@ namespace Survival.Core.Engine
                 AnalyzeCook(s, a.TargetId, open, plan);
                 info.CookTargets = a.CookTargets.Select((pid, k) => plan.Targets.FirstOrDefault(t => t.ProcessId == pid)
                     ?? new CookTargetInfo { ProcessId = pid, TargetInstanceId = k < a.CookTargetItems.Count ? a.CookTargetItems[k] : 0, Done = true,
-                                            Label = k < a.CookTargetItems.Count && FindItem(s, a.CookTargetItems[k]) is ItemInstance t ? $"{ItemName(t.ItemId)}#{t.InstanceId}" : pid })
+                                            Label = k < a.CookTargetItems.Count && FindItem(s, a.CookTargetItems[k]) is ItemInstance t ? $"{ItemName(t.ItemId)}" : pid })
                     .Select(t => { if (a.CookDone.Contains(t.ProcessId)) { t.Done = true; t.EtaMinutes = 0; } return t; }).ToList();
                 info.Estimated = true;
                 info.RemainingMinutes = open.Count == 0 ? 0 : plan.EstimatedMinutes;

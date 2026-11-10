@@ -141,9 +141,9 @@
                 </div>
                 <div class="bc-gear" aria-label="战斗装备">
                     @{ var armor = e.WornItem(s, GameEngine.MeId(s), EquipSlots.Armor); var trinket = e.WornItem(s, GameEngine.MeId(s), EquipSlots.CombatAccessory); }
-                    <span class="bc-gear-slot" title="@(wi == null ? "本页：拳" : $"本页武器：{w.Name}#{wi.InstanceId}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
-                    <span class="bc-gear-slot @(armor == null ? "none" : "")" title="@(armor == null ? "防具：空" : $"防具：{e.ItemName(armor.ItemId)}#{armor.InstanceId}{(armor.Durability != null ? $"，耐久{GameEngine.DurabilityText(armor)}" : "")}")">@if (armor != null) { @Icons.Markup(armor.ItemId) } else { <i class="bdg">甲</i> }</span>
-                    <span class="bc-gear-slot @(trinket == null ? "none" : "")" title="@(trinket == null ? "战斗饰品：空" : $"战斗饰品：{e.ItemName(trinket.ItemId)}#{trinket.InstanceId}")">@if (trinket != null) { @Icons.Markup(trinket.ItemId) } else { <i class="bdg">饰</i> }</span>
+                    <span class="bc-gear-slot" title="@(wi == null ? "本页：拳" : $"本页武器：{w.Name}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
+                    <span class="bc-gear-slot @(armor == null ? "none" : "")" title="@(armor == null ? "防具：空" : $"防具：{e.ItemName(armor.ItemId)}{(armor.Durability != null ? $"，耐久{GameEngine.DurabilityText(armor)}" : "")}")">@if (armor != null) { @Icons.Markup(armor.ItemId) } else { <i class="bdg">甲</i> }</span>
+                    <span class="bc-gear-slot @(trinket == null ? "none" : "")" title="@(trinket == null ? "战斗饰品：空" : $"战斗饰品：{e.ItemName(trinket.ItemId)}")">@if (trinket != null) { @Icons.Markup(trinket.ItemId) } else { <i class="bdg">饰</i> }</span>
                     <button type="button" class="secondary bc-gear-btn" @onclick='() => G.OpenBattleDrawer("equip")' title="只读查看七个装备槽（战斗中不能换装或换入第三把武器）">装备</button>
                 </div>
             </div>
@@ -165,7 +165,7 @@
                             pi == null ? "空槽·拳" : null,
                         }.Where(x => x != null));
                         <button type="button" role="tab" class="bc-tab @(onPage ? "on" : "")" aria-selected="@onPage" data-page="@(page)"
-                                title="@($"{slotName}：{(pi == null ? "空槽（拳）" : $"{pw.Name}#{pi.InstanceId}")}{(sub != "" ? "，" + sub : "")} · 切页0AP，只换可选技能，取消已选目标")"
+                                title="@($"{slotName}：{(pi == null ? "空槽（拳）" : $"{pw.Name}")}{(sub != "" ? "，" + sub : "")} · 切页0AP，只换可选技能，取消已选目标")"
                                 @onclick="() => G.SelectWeaponPage(page)">
                             <span class="bc-tab-art" aria-hidden="true">@Icons.Markup(pi?.ItemId ?? "fists")</span>
                             <span class="bc-tab-text"><b>@(page == 1 ? "Ⅰ" : "Ⅱ") @(pi == null ? "拳" : pw.Name)</b><small class="@(warn != null ? "warn" : "")">@sub</small></span>
@@ -391,7 +391,7 @@
             <div class="anc-art">
                 <img src="img/portraits/protagonist.svg" alt="" draggable="false" />
                 @{ WeaponConfig cw; ItemInstance? cwi; using (e.FocusOn(s, id)) cw = e.CurrentWeapon(s, out cwi); }
-                <span class="anc-weapon" title="@(cwi == null ? "当前页：拳" : $"当前页：{cw.Name}#{cwi.InstanceId}")">@Icons.Markup(cwi?.ItemId ?? "fists")</span>
+                <span class="anc-weapon" title="@(cwi == null ? "当前页：拳" : $"当前页：{cw.Name}")">@Icons.Markup(cwi?.ItemId ?? "fists")</span>
                 @if (targetable) { <span class="anc-aim" aria-hidden="true">⌖</span> }
                 @if (pairMark != null) { <span class="anc-pair bdg" aria-label="@($"整队已选{pairMark}")">@pairMark</span> }
             </div>

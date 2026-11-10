@@ -29,7 +29,7 @@
                     <label class="dup-keep">
                         <input type="radio" name="dup-keep" checked="@on" @onchange="() => Keep(id)" />
                         <span class="ov-ico">@Icons.Markup(it.ItemId)</span>
-                        <span class="ov-text"><b>@e.ItemName(it.ItemId)#@id</b>
+                        <span class="ov-text"><b>@e.ItemName(it.ItemId)</b>
                             <small>@EquipSlots.Name(slot) · @Ui.ItemLine(e, s, it) · @Ui.Kg(e.ItemGrams(s, it))公斤</small></span>
                     </label>
                     @if (keep != null && !on)

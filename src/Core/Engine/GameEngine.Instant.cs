@@ -231,7 +231,7 @@ namespace Survival.Core.Engine
             if (dirtyRestart)
             {
                 ProcessOf(s, pot)!.HeatDoneMinutes = 0;
-                Emit(s, GameEventKind.Info, $"{ItemName(pot.ItemId)}#{pot.InstanceId}追加{ItemName(water.ItemId)}，整锅净化进度清零。");
+                Emit(s, GameEventKind.Info, $"{ItemName(pot.ItemId)}追加{ItemName(water.ItemId)}，整锅净化进度清零。");
             }
             SyncFacilities(s);
             UpdateFlags(s);

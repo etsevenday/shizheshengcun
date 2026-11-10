@@ -1159,7 +1159,7 @@ namespace Survival.Core.Engine
                         var to = WeaponOnPage(s, page, out var tw);
                         var st = WeaponStats(s, tw);
                         var pageName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page) ?? EquipSlots.Weapon1);
-                        var toName = to == null ? "空槽（拳）" : $"{tw.Name}#{to.InstanceId}";
+                        var toName = to == null ? "空槽（拳）" : $"{tw.Name}";
                         p.Title = $"切换到{pageName}页：{toName}";
                         p.Notes.Add($"{toName}：{SkillName(tw.SkillId)}{st.Level}级，伤害{Fmt.N(st.DamageMin)}—{Fmt.N(st.DamageMax)}，命中能力{Fmt.N(st.Accuracy)}，可打敌方{PosList(to == null && SkillNode(UnarmedBasic) is SkillNodeConfig un ? SkillTargetPositions(s, un, tw) : TargetPositionsOf(tw))}{(to?.Durability != null ? $"，耐久{DurabilityText(to)}" : "")}{(tw.UsesMagazine && to != null ? $"，弹仓{to.LoadedAmmo}/{tw.MagazineCapacity}" : "")}");
                         p.Notes.Add("切页0AP、不耗体力，只换本次可选技能组；两把武器开战时已锁定，不能从随身换入第三把");

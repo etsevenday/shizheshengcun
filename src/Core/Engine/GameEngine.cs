@@ -532,9 +532,9 @@ namespace Survival.Core.Engine
                     plan.BaseWork = rc.BaseMinutes * batch;
                     plan.FixedWait = rc.IsFixedWait;
                     if (rc.IsFixedWait) { plan.Label = $"{rc.Name}（固定等待{Clock.Duration(rc.BaseMinutes)}）"; return null; }
-                    plan.Label = rc.IsBuild ? rc.Name : plan.Patch != null ? $"{rc.Name}{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
-                        : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
-                        : rc.IsSalvage ? $"拆解{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
+                    plan.Label = rc.IsBuild ? rc.Name : plan.Patch != null ? $"{rc.Name}{ItemName(plan.Tool!.ItemId)}"
+                        : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}"
+                        : rc.IsSalvage ? $"拆解{ItemName(plan.Tool!.ItemId)}"
                         : batch > 1 ? $"制作{rc.Name}×{batch}份" : $"制作{rc.Name}";
                     return null;
                 }

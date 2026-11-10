@@ -95,7 +95,7 @@ public class PlaytestFixV05Tests : BattleTestBase
         Ready(s);
         var axe = E.CreateItems(s, "hatchet", 1, ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon2)).Single();
         var p = E.PreviewCommand(s, BattleCommand.Of("switch_weapon", null, 2));
-        Assert.That(p.Title, Does.Contain($"武器Ⅱ页：简易斧#{axe.InstanceId}"));
+        Assert.That(p.Title, Does.Contain($"武器Ⅱ页：简易斧"));
         Assert.That(p.Ap, Is.EqualTo(0));
         var st = E.WeaponStats(s, E.Weapon("hatchet")!);
         Assert.That(p.Notes[0], Does.Contain($"伤害{Fmt.N(st.DamageMin)}—{Fmt.N(st.DamageMax)}").And.Contain($"命中能力{Fmt.N(st.Accuracy)}"));

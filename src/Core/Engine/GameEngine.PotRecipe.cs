@@ -94,7 +94,7 @@ namespace Survival.Core.Engine
             o.Note = $"需{pc.HeatMinutes}有效受热分钟，火堆燃料按世界时间另扣、不吃熟练加速；熄火保留进度；取出食材或取下锅即作废（辅料退回地面）；"
                      + PotRecipeXpPreview(s, pc, pot);
             var src = PotRecipeSources(s, pc.FoodInputs.Concat(pc.AuxInputs).ToDictionary(k => k.Key, k => k.Value));
-            o.Sources = src.Select(x => $"{(x.inst.IsCarried ? "随身" : "地面")}{ItemName(x.inst.ItemId)}#{x.inst.InstanceId}×{x.take}").ToList();
+            o.Sources = src.Select(x => $"{(x.inst.IsCarried ? "随身" : "地面")}{ItemName(x.inst.ItemId)}×{x.take}").ToList();
             o.Reason = PotRecipeBlocked(s, pc, rc, pot);
             o.Ok = o.Reason == null;
             return o;
@@ -172,7 +172,7 @@ namespace Survival.Core.Engine
                 AuxInstanceIds = aux,
             });
             SyncFacility(s, here);
-            Emit(s, GameEventKind.Info, $"在{ItemName(pot.ItemId)}#{pot.InstanceId}里开做{rc.Name}：投入{string.Join("、", taken)}，预留锅里{ItemName(pc.RequiredLiquid ?? "clean_water")}{pc.WaterCostMl}毫升；"
+            Emit(s, GameEventKind.Info, $"在{ItemName(pot.ItemId)}里开做{rc.Name}：投入{string.Join("、", taken)}，预留锅里{ItemName(pc.RequiredLiquid ?? "clean_water")}{pc.WaterCostMl}毫升；"
                                         + $"需{pc.HeatMinutes}有效受热分钟，完成得{ItemName(pc.OutputId)}×{pc.OutputCount}，留在锅里。");
             UpdateFlags(s);
             return ActionResult.Success();
@@ -227,7 +227,7 @@ namespace Survival.Core.Engine
             foreach (var i in used) s.Items.Remove(i);
             ConsumeWater(s, pot, pc.RequiredLiquid!, pc.WaterCostMl);
             CreateItems(s, pc.OutputId, pc.OutputCount, ItemInstance.ContainerOwner(pot.InstanceId));
-            var text = $"{LocName(loc)}火堆：{ItemName(pot.ItemId)}#{pot.InstanceId}里的{usedText}已做成{ItemName(pc.OutputId)}×{pc.OutputCount}，留在锅里"
+            var text = $"{LocName(loc)}火堆：{ItemName(pot.ItemId)}里的{usedText}已做成{ItemName(pc.OutputId)}×{pc.OutputCount}，留在锅里"
                        + $"（{ItemName(pc.RequiredLiquid!)}−{pc.WaterCostMl}毫升）。";
             if (CookFoodXp(s, p, pc, 1) is string fx) text = text.TrimEnd('。') + $"（{fx}）。";
             return text;

@@ -59,7 +59,7 @@ public class B10dCharcoalSourceTests : TestBase
         var info = E.CharcoalLoadPreview(a);
         Assert.That(info.Ok, Is.True, info.Reason);
         Assert.That(Picks(info), Is.EqualTo(new[] { (aw.InstanceId, 4, true) }));
-        Assert.That(info.Sources, Is.EqualTo(new[] { $"随身木材#{aw.InstanceId}×4" }));
+        Assert.That(info.Sources, Is.EqualTo(new[] { $"随身木材×4" }));
         Assert.That(info.Plan.Location, Is.EqualTo("camp"));
         Assert.That(Confirm(a, info.Plan).Ok, Is.True);
         Assert.That((Wood(a, ItemInstance.Carried), Wood(a, "camp"), Wood(a, Fire)), Is.EqualTo((2, 5, 4)));
@@ -70,7 +70,7 @@ public class B10dCharcoalSourceTests : TestBase
         var bg = Pile(b, "camp");
         info = E.CharcoalLoadPreview(b);
         Assert.That(Picks(info), Is.EqualTo(new[] { (bc.InstanceId, 2, true), (bg.InstanceId, 2, false) }));
-        Assert.That(info.Sources, Is.EqualTo(new[] { $"随身木材#{bc.InstanceId}×2", $"地面木材#{bg.InstanceId}×2" }));
+        Assert.That(info.Sources, Is.EqualTo(new[] { $"随身木材×2", $"地面木材×2" }));
         Assert.That(Confirm(b, info.Plan).Ok, Is.True);
         Assert.That((Wood(b, ItemInstance.Carried), Wood(b, "camp"), Wood(b, Fire)), Is.EqualTo((0, 1, 4)));
 
@@ -125,7 +125,7 @@ public class B10dCharcoalSourceTests : TestBase
             Assert.That(info.Plan.Picks.Sum(p => p.Take), Is.EqualTo(4));
             Assert.That(info.Sources, Has.Count.EqualTo(info.Plan.Picks.Count));
             for (var i = 0; i < info.Sources.Count; i++)
-                Assert.That(info.Sources[i], Does.Contain($"#{info.Plan.Picks[i].InstanceId}×{info.Plan.Picks[i].Take}"));
+                Assert.That(info.Sources[i], Does.EndWith($"木材×{info.Plan.Picks[i].Take}").And.Not.Contain("#"));
         }
         // 只构造请求（浮窗打开/取消/Esc 都不提交）也不改状态
         _ = InstantRequest.LoadCharcoal(first!.Plan);
@@ -144,7 +144,7 @@ public class B10dCharcoalSourceTests : TestBase
         var carried = Pile(s, ItemInstance.Carried);
         var plan = E.CharcoalLoadPreview(s).Plan;
         Assert.That(E.DoInstant(s, InstantRequest.Drop(carried.InstanceId, 2)).Ok, Is.True);
-        AssertRejectedUnchanged(s, plan, $"随身木材#{carried.InstanceId}已不可用");
+        AssertRejectedUnchanged(s, plan, "随身木材已不可用");
         Assert.That(Wood(s, "camp"), Is.EqualTo(7));
         var fresh = E.CharcoalLoadPreview(s);
         Assert.That(fresh.Plan.SameAs(plan), Is.False);
@@ -156,7 +156,7 @@ public class B10dCharcoalSourceTests : TestBase
         var tc = Pile(t, ItemInstance.Carried);
         plan = E.CharcoalLoadPreview(t).Plan;
         tc.ReservedBy = 7;
-        AssertRejectedUnchanged(t, plan, $"随身木材#{tc.InstanceId}已不可用");
+        AssertRejectedUnchanged(t, plan, "随身木材已不可用");
         Assert.That(Wood(t, "camp"), Is.EqualTo(4), "地面那堆原位没动");
         tc.ReservedBy = null;
         Assert.That(Confirm(t, plan).Ok, Is.True, "原来源恢复且明细一致时可确认");
@@ -176,7 +176,7 @@ public class B10dCharcoalSourceTests : TestBase
         var vg = Pile(v, "camp");
         plan = E.CharcoalLoadPreview(v).Plan;
         E.CreateItems(v, "wood", 4, ItemInstance.Carried);
-        AssertRejectedUnchanged(v, plan, "现在会取：随身木材#");
+        AssertRejectedUnchanged(v, plan, "现在会取：随身木材×");
         Assert.That((vg.Count, vg.Owner), Is.EqualTo((4, "camp")));
         Assert.That(Confirm(v, E.CharcoalLoadPreview(v).Plan).Ok, Is.True);
         Assert.That((Wood(v, ItemInstance.Carried), Wood(v, "camp")), Is.EqualTo((0, 4)), "重新确认后按随身优先取随身 4");

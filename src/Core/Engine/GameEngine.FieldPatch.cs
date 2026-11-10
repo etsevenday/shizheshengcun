@@ -49,7 +49,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>“野外修补包（白）#12 剩余80/100”。</summary>
-        public string PatchText(ItemInstance pack) => $"{ItemName(pack.ItemId)}#{pack.InstanceId}（剩余{PatchRemaining(pack)}/{PatchMax(pack)}）";
+        public string PatchText(ItemInstance pack) => $"{ItemName(pack.ItemId)}（剩余{PatchRemaining(pack)}/{PatchMax(pack)}）";
 
         /// <summary>装备品质序号 e（equipmentRanks：white 0、green 1、blue 2；旧档没记品质按白，开发假设 B22b-5）；未知品质为 null（拒绝修补）。</summary>
         public static int? EquipmentRank(string? quality) => quality switch
@@ -158,8 +158,8 @@ namespace Survival.Core.Engine
             if (e == null) return $"{cfg.Name}的品质不明，不能修补";
             var d = target.Durability.Value;
             var m = target.MaxDurability.Value;
-            if (d >= m - 1e-9) return $"{cfg.Name}#{target.InstanceId}耐久已满";
-            if (Math.Floor((m - d) * 10 + 1e-6) < 1) return $"{cfg.Name}#{target.InstanceId}缺损不足0.1，无需修补";
+            if (d >= m - 1e-9) return $"{cfg.Name}耐久已满";
+            if (Math.Floor((m - d) * 10 + 1e-6) < 1) return $"{cfg.Name}缺损不足0.1，无需修补";
 
             if (patchId.HasValue)
             {
@@ -222,8 +222,8 @@ namespace Survival.Core.Engine
             var m = target.MaxDurability ?? 0;
             var r = q.restoreTenths / 10.0;
             var after = Math.Min(m, d + r);
-            notes.Add($"选用{ItemName(pack.ItemId)}#{pack.InstanceId}：剩余耐久{u}/{max}，本次消耗{q.cost}→{u - q.cost}/{max}" + (u - q.cost <= 0 ? "（用完销毁）" : pack.Count > 1 ? "（从这堆拆出一包使用）" : ""));
-            notes.Add($"{ItemName(target.ItemId)}#{target.InstanceId}（{QualityName(target)}）耐久{Fmt.N(d)}/{Fmt.N(m)}→{Fmt.N(after)}/{Fmt.N(m)}，恢复{Fmt.T(r)}"
+            notes.Add($"选用{ItemName(pack.ItemId)}：剩余耐久{u}/{max}，本次消耗{q.cost}→{u - q.cost}/{max}" + (u - q.cost <= 0 ? "（用完销毁）" : pack.Count > 1 ? "（从这堆拆出一包使用）" : ""));
+            notes.Add($"{ItemName(target.ItemId)}（{QualityName(target)}）耐久{Fmt.N(d)}/{Fmt.N(m)}→{Fmt.N(after)}/{Fmt.N(m)}，恢复{Fmt.T(r)}"
                       + (after < m - 1e-9 ? "（这次修不满）" : "（修满）"));
             notes.Add("一次只用一包，不自动接着用下一包；不吃维修效果加成；不改品质、词条与最大耐久；取消不消耗包、已过时间不退");
             return notes;
@@ -265,7 +265,7 @@ namespace Survival.Core.Engine
             if (t?.Durability == null || t.MaxDurability == null) return (false, "要修补的物品已不在，修补包未消耗，没有经验");
             if (pack == null || !IsFieldPatch(pack)) return (false, "选用的修补包已不在，目标未修补，没有经验");
             var q = FieldPatchQuote(t, pack);
-            if (q.restoreTenths < 1) return (false, $"{ItemName(t.ItemId)}#{t.InstanceId}已无需修补，修补包未消耗，没有经验");
+            if (q.restoreTenths < 1) return (false, $"{ItemName(t.ItemId)}已无需修补，修补包未消耗，没有经验");
             var u = PatchRemaining(pack);
             var max = PatchMax(pack);
             var one = pack;
@@ -293,7 +293,7 @@ namespace Survival.Core.Engine
                 one.MaxDurability = max;
                 packText = $"{ItemName(pack.ItemId)}耐久{u}→{left}/{max}";
             }
-            return (true, $"{ItemName(t.ItemId)}#{t.InstanceId}耐久{Fmt.N(before)}→{Fmt.N(t.Durability.Value)}/{Fmt.N(t.MaxDurability.Value)}（恢复{Fmt.T(q.restoreTenths / 10.0)}），{packText}");
+            return (true, $"{ItemName(t.ItemId)}耐久{Fmt.N(before)}→{Fmt.N(t.Durability.Value)}/{Fmt.N(t.MaxDurability.Value)}（恢复{Fmt.T(q.restoreTenths / 10.0)}），{packText}");
         }
     }
 }

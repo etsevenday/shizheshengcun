@@ -142,7 +142,7 @@ namespace Survival.Core.Engine
                     var q = af.Processes.FirstOrDefault(x => x.ProcessId == p.ProcessId);
                     if (q == null || q.HeatDoneMinutes == p.HeatDoneMinutes) continue;
                     var t = FindItem(before, p.TargetInstanceId);
-                    var name = t == null ? "" : $"{ItemName(t.ItemId)}#{t.InstanceId}";
+                    var name = t == null ? "" : $"{ItemName(t.ItemId)}";
                     list.Add($"{name}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}→{q.HeatDoneMinutes}/{q.RequiredHeatMinutes}分钟");
                 }
                 if (bf.FuelMinutes != af.FuelMinutes)
@@ -317,7 +317,7 @@ namespace Survival.Core.Engine
                         p.XpGains.Add(XpText(s, Crafting, Config.Progression.Dismantle.Xp));
                     }
                     else if (rc.IsRepair && !IsFieldPatchRecipe(rc) && plan?.Tool is ItemInstance rt && rt.Durability is double d0 && rt.MaxDurability is double dm)   // B22b：现场修补的说明行在 plan.Notes
-                        p.Notes.Add($"{ItemName(rt.ItemId)}#{rt.InstanceId}耐久{Fmt.N(d0)}→{Fmt.N(Math.Min(dm, d0 + dm * RepairFraction(s, rc)))}/{Fmt.N(dm)}：恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");
+                        p.Notes.Add($"{ItemName(rt.ItemId)}耐久{Fmt.N(d0)}→{Fmt.N(Math.Min(dm, d0 + dm * RepairFraction(s, rc)))}/{Fmt.N(dm)}：恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");
                     // Q112（S14 本轮章）：锻炉配方分列份数、成品、原料炭/燃料炭/总炭；预览只读不预留
                     if (!rc.IsSalvage && RecipeFuelSummary(rc, batch) is string fuelNote) p.Notes.Add(fuelNote);
                     if (stationBatch) p.XpGains.Add(StationBatchXpPreview(s, rc));   // B22d Q174
@@ -352,7 +352,7 @@ namespace Survival.Core.Engine
                     var tool = plan?.Tool ?? ButcherTool(s, c);
                     if (tool != null)
                     {
-                        p.ToolName = $"{ItemName(tool.ItemId)}#{tool.InstanceId}";
+                        p.ToolName = $"{ItemName(tool.ItemId)}";
                         p.ToolDurabilityBefore = tool.Durability;
                         p.ToolMaxDurability = tool.MaxDurability;
                         if (tool.Durability.HasValue) p.ToolDurabilityAfter = Math.Max(0, tool.Durability.Value - c.ToolWearOnSuccess);
@@ -405,7 +405,7 @@ namespace Survival.Core.Engine
                     p.ConfirmText = $"吞噬融合·{fc.Minutes}分钟";
                     if (plan?.UseItem != null)
                     {
-                        p.Notes.Add($"饱饱吞噬融合1份{SubstanceLabel(plan.UseItem)}#{plan.UseItem.InstanceId}（{WherePath(s, plan.UseItem)}）");
+                        p.Notes.Add($"饱饱吞噬融合1份{SubstanceLabel(plan.UseItem)}（{WherePath(s, plan.UseItem)}）");
                         p.Notes.Add($"结果：{FusionOutcomeText(s, plan.UseItem)}");
                     }
                     p.Notes.Add($"确认后立即消耗并结算，之后固定{fc.Minutes}分钟按等待消耗、额外体力0，期间不能取消或做别的事");
@@ -420,7 +420,7 @@ namespace Survival.Core.Engine
                     {
                         p.LighterInstanceId = plan.Lighter.InstanceId;
                         p.LighterPlace = plan.Lighter.IsCarried ? "随身" : "当前地面";
-                        p.Notes.Add($"使用{ItemName(plan.Lighter.ItemId)}#{plan.Lighter.InstanceId}（{p.LighterPlace}），成功点火磨损{Fmt.T(LighterWear)}（耐久{DurabilityText(plan.Lighter)}）");
+                        p.Notes.Add($"使用{ItemName(plan.Lighter.ItemId)}（{p.LighterPlace}），成功点火磨损{Fmt.T(LighterWear)}（耐久{DurabilityText(plan.Lighter)}）");
                     }
                     if (plan != null && plan.IgniteConsumesWood) p.Notes.Add($"将消耗1木材，提供{Config.Fire.BurnMinutesPerWood}分钟燃料");
                     p.Notes.Add($"点火过程也消耗{Config.Fire.IgniteMinutes}分钟燃料");

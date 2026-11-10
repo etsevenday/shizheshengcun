@@ -213,7 +213,7 @@ namespace Survival.Core.Engine
         /// 果干原料到期时刻不晚于完成时刻的警告（B22c 试玩修复 M470：到期＝完成也算）。Q214 选 A 定的红字“会在完成前腐败，届时停止且没有成品”，括号里写保质与完成时刻。
         /// </summary>
         private string DryingSpoilWarning(ItemInstance i, int expires, int finish) =>
-            $"{ItemName(i.ItemId)}#{i.InstanceId}（保质到{Clock.DayTime(expires)}，完成{Clock.DayTime(finish)}）会在完成前腐败，届时停止且没有成品";
+            $"{ItemName(i.ItemId)}（保质到{Clock.DayTime(expires)}，完成{Clock.DayTime(finish)}）会在完成前腐败，届时停止且没有成品";
 
         private string InputText(RecipeConfig rc) => string.Join("＋", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"));
 
@@ -249,7 +249,7 @@ namespace Survival.Core.Engine
                 var src = DryingSources(s, rc, finish);
                 foreach (var (inst, take) in src)
                 {
-                    o.Sources.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}#{inst.InstanceId}×{take}（{ExpiryNote(s, inst)}）");
+                    o.Sources.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}×{take}（{ExpiryNote(s, inst)}）");
                     if (!pause && inst.ExpiresAt is int x && x <= finish) o.Warnings.Add(DryingSpoilWarning(inst, x, finish));
                 }
                 o.SourceKey = SourceKeyOf(k, src);
@@ -570,7 +570,7 @@ namespace Survival.Core.Engine
                 v.RecipeId = b.RecipeId;
                 v.DoneMinutes = b.DoneMinutes;
                 v.RequiredMinutes = b.RequiredMinutes;
-                v.Contents = items.Select(i => $"{ItemName(i.ItemId)}#{i.InstanceId}×{i.Count}（{ExpiryNote(s, i)}）").ToList();
+                v.Contents = items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}（{ExpiryNote(s, i)}）").ToList();
                 v.XpText = DryingXpNote(s, b);
                 switch (b.Status)
                 {

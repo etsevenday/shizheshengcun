@@ -79,7 +79,7 @@ public class UiRevisionV07Tests : TestBase
         // 事先显示后果：会清零的加工与拾取后重量
         var c = E.TakeOutConsequenceOf(s, pot);
         Assert.That(c.Resets, Has.Count.EqualTo(2));
-        Assert.That(c.Text, Does.StartWith("取出后生块根#").And.Contain("水煮受热10分钟").And.EndWith("清零"));
+        Assert.That(c.Text, Does.StartWith("取出后生块根水煮").And.Contain("水煮受热10分钟").And.EndWith("清零"));
         Assert.That(c.Grams, Is.EqualTo(1000 + 1000 + 600));
 
         // 随身已接近 30 公斤：整锅拾取整次拒绝，进度不提前清空
@@ -114,7 +114,7 @@ public class UiRevisionV07Tests : TestBase
         Assert.That(fill.Ok && fill.Verb == DropVerb.FillPot && fill.Instant!.TargetInstanceId == pot.InstanceId, Is.True, fill.Reason);
         var food = E.ResolveDrop(s, root, DropTarget.Parse($"potfood:{pot.InstanceId}")!);
         Assert.That(food.Ok && food.Verb == DropVerb.PutFood, Is.True, food.Reason);
-        Assert.That(food.Label, Does.Contain($"金属锅#{pot.InstanceId}"));
+        Assert.That(food.Label, Does.Contain("金属锅"));
 
         Ok(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2));
         Ok(s, InstantRequest.PutFoodInPot(First(s, "raw_root", "camp").InstanceId, pot.InstanceId, 2));
@@ -141,7 +141,7 @@ public class UiRevisionV07Tests : TestBase
         var w = E.PotLiquids(s, pot.InstanceId).Single();
         Assert.That(E.PotFreeWaterUnits(s, w), Is.EqualTo(0), "唯一一份净水被水煮预留");
         var why = E.CanStart(s, ActionRequest.UseInstance(w.InstanceId));
-        Assert.That(why, Does.StartWith("500毫升供生块根#").And.EndWith("先取出该食材以停止加工"));
+        Assert.That(why, Does.StartWith("500毫升供生块根加工").And.EndWith("先取出该食材以停止加工"));
         Assert.That(E.DoInstant(s, InstantRequest.Decant(w.InstanceId, ItemInstance.Carried)).Ok, Is.False, "预留的水不能转移");
         WaitMinutes(s, 10);
         Assert.That(E.TakeOutBlocked(s, pot, ItemInstance.Carried), Is.Null, "空闲时可以取下加工中的锅");
@@ -176,7 +176,7 @@ public class UiRevisionV07Tests : TestBase
         var s = New();
         var opts = E.IgniteToolOptions(s);
         Assert.That(opts, Has.Count.EqualTo(1));
-        Assert.That((opts[0].Name, opts[0].Source, opts[0].Usable), Is.EqualTo(($"打火器#{opts[0].InstanceId}", "随身", true)));
+        Assert.That((opts[0].Name, opts[0].Source, opts[0].Usable), Is.EqualTo(("打火器", "随身", true)));
         Assert.That(E.CanStart(s, ActionRequest.Ignite()), Is.EqualTo("请选择要使用的打火器"), "只有一把也不自动选择");
         Assert.That(E.IgniteNoToolReason(s), Is.Null);
 

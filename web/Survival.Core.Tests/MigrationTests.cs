@@ -155,7 +155,7 @@ public class MigrationTests : TestBase
         Assert.That(fac.ProcessingSlots, Is.EqualTo(new int?[] { 1, null }));
         Assert.That(s.Layout["camp"], Does.Not.Contain("camp|pot|1"), "去掉原区域卡片顺序");
         Assert.That(E.OrderedCards(s, "camp").Any(k => k.Contains("|pot|")), Is.False);
-        Assert.That(notes.First(), Does.Contain("金属锅#1"));
+        Assert.That(notes.First(), Does.Contain("金属锅").And.Not.Contain("#"), "B32a Q349：迁移说明不写物品编号");
         AssertIdempotent(s);
         // 迁移后按新规则：点火后自动烧水
         s.Locations["camp"].Facility.FireLit = true;

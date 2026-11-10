@@ -261,7 +261,7 @@ namespace Survival.Core.Save
                     pot.PlacedOrder = s.NextProcessSeq++;
                     fac.ProcessingSlots[k++] = id;
                     if (s.Layout.TryGetValue(oldOwner, out var order)) order.RemoveAll(key => key.EndsWith($"|{pot.ItemId}|{id}"));
-                    notes.Add($"金属锅#{id}原先架在{l.Name}火堆上，现在归火堆所有，在地点栏的火堆卡里查看");
+                    notes.Add($"金属锅原先架在{l.Name}火堆上，现在归火堆所有，在地点栏的火堆卡里查看");
                 }
 
                 foreach (var act in new[] { s.Sub, s.Main }.Where(x => IsOldBoil(x) && x!.SourceLocation == l.Id).ToList())
@@ -287,7 +287,7 @@ namespace Survival.Core.Save
                         });
                     }
                     ClearAction(s, act);
-                    notes.Add($"进行中的烧水已转为火堆自动加工：金属锅#{potId}留在{l.Name}火堆里，已烧{Math.Floor(act.WorkDone)}分钟计入；角色行动已释放，不补水");
+                    notes.Add($"进行中的烧水已转为火堆自动加工：金属锅留在{l.Name}火堆里，已烧{Math.Floor(act.WorkDone)}分钟计入；角色行动已释放，不补水");
                 }
                 fac.AttachedPotId = null;
             }
@@ -348,13 +348,13 @@ namespace Survival.Core.Save
                     var ratio = Math.Max(0, Math.Min(1, it.Durability.Value / legacy));
                     it.MaxDurability = max;
                     it.Durability = max * ratio;
-                    gear.Add($"{cfg.Name}#{it.InstanceId} 成色{Engine.Fmt.Pct(ratio)}→耐久{Engine.Fmt.N(it.Durability.Value)}/{Engine.Fmt.N(max)}");
+                    gear.Add($"{cfg.Name} 成色{Engine.Fmt.Pct(ratio)}→耐久{Engine.Fmt.N(it.Durability.Value)}/{Engine.Fmt.N(max)}");
                 }
                 else
                 {
                     it.MaxDurability = max;
                     it.Durability = max;
-                    gear.Add($"{cfg.Name}#{it.InstanceId} 满耐久{Engine.Fmt.N(max)}");
+                    gear.Add($"{cfg.Name} 满耐久{Engine.Fmt.N(max)}");
                 }
             }
             if (gear.Count > 0) notes.Add("装备改为随机最大耐久并保持原成色：" + string.Join("；", gear));
@@ -408,7 +408,7 @@ namespace Survival.Core.Save
                 if (it.Durability == null && it.MaxDurability == null) continue;
                 it.Durability = null;
                 it.MaxDurability = null;
-                cleared.Add($"金属锅#{it.InstanceId}");
+                cleared.Add($"金属锅");
             }
             if (cleared.Count > 0) notes.Add($"金属锅改为没有耐久（{string.Join("、", cleared)}）：内容、水与加工进度原样保留，不再磨损、不需要维护");
             foreach (var act in new[] { s.Sub, s.Main }.Where(a => a != null && a.Type == ActionType.Repair && a.ToolInstanceId is int id && potIds.Contains(id)).ToList())
@@ -543,12 +543,12 @@ namespace Survival.Core.Save
             {
                 weapon.Owner = ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon1);
                 weapon.PlacedOrder = null;
-                var note = $"原来的当前武器{wcfg.Name}#{weapon.InstanceId}迁到武器Ⅰ（穿戴中不再占随身卡位，重量照计）；武器Ⅱ与其他穿戴槽为空";
+                var note = $"原来的当前武器{wcfg.Name}迁到武器Ⅰ（穿戴中不再占随身卡位，重量照计）；武器Ⅱ与其他穿戴槽为空";
                 notes.Add(note);
                 s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
             }
             else if (legacyId.HasValue)
-                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"旧存档记录的当前武器#{legacyId}已不在随身，装备槽保持为空。" });
+                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"旧存档记录的当前武器已不在随身，装备槽保持为空。" });
             if (s.Battle != null)
             {
                 s.Battle.ActiveWeaponSlot = 1;

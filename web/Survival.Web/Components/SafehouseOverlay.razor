@@ -36,7 +36,7 @@
                             var id = it.InstanceId;
                             var n = it.Count;
                             var maxC = e.MaxTakeFromCabinet(s, it, ItemInstance.Carried, out var whyC);
-                            <ItemRow Icon="@it.ItemId" Name="@($"{e.ItemName(it.ItemId)}#{id}")" Qty="@($"×{n}")" Status="@($"{Ui.Kg(e.ItemGrams(s, it))}公斤{ExpiryText(it)}")">
+                            <ItemRow Icon="@it.ItemId" Name="@($"{e.ItemName(it.ItemId)}")" Qty="@($"×{n}")" Status="@($"{Ui.Kg(e.ItemGrams(s, it))}公斤{ExpiryText(it)}")">
                                 <button type="button" class="linkish" disabled="@(blocked != null || maxC < 1)" title="@(whyC ?? $"取{n}份到随身（0分钟）")" @onclick="() => Take(id, n, ItemInstance.Carried)">到随身</button>
                                 <button type="button" class="linkish" disabled="@(blocked != null)" title="@($"取{n}份到屋内地面（0分钟）")" @onclick="() => Take(id, n, G.S.Ground)">到地面</button>
                             </ItemRow>
@@ -50,7 +50,7 @@
                             var id = it.InstanceId;
                             var n = it.Count;
                             var max = e.MaxStoreInCabinet(s, it, out var why);
-                            <ItemRow Icon="@it.ItemId" Name="@($"{e.ItemName(it.ItemId)}#{id}")" Qty="@($"×{n}")" Status="@($"{(it.IsCarried ? "随身" : "屋内地面")} · {Ui.Kg(e.ItemGrams(s, it))}公斤")">
+                            <ItemRow Icon="@it.ItemId" Name="@($"{e.ItemName(it.ItemId)}")" Qty="@($"×{n}")" Status="@($"{(it.IsCarried ? "随身" : "屋内地面")} · {Ui.Kg(e.ItemGrams(s, it))}公斤")">
                                 <button type="button" class="linkish" disabled="@(max < n)" title="@(why ?? (max < n ? $"柜子只放得下{max}份" : $"{n}份放进柜子（0分钟）"))" @onclick="() => Store(id, n)">放进柜子</button>
                             </ItemRow>
                         }

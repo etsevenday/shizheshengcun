@@ -118,7 +118,7 @@ namespace Survival.Core.Engine
             info.FreeSlots = FireFreeSlots(s, here);
             var sources = CharcoalSources(s, cp);
             info.WoodAvailable = UsableBatches(s, cp.InputId, true).Where(w => !IsLocked(s, w)).Sum(w => w.Count);
-            info.Sources = sources.Select(x => $"{(x.inst.IsCarried ? "随身" : "地面")}{ItemName(x.inst.ItemId)}#{x.inst.InstanceId}×{x.take}").ToList();
+            info.Sources = sources.Select(x => $"{(x.inst.IsCarried ? "随身" : "地面")}{ItemName(x.inst.ItemId)}×{x.take}").ToList();
             info.Plan = new CharcoalPlan
             {
                 Location = here,
@@ -173,7 +173,7 @@ namespace Survival.Core.Engine
             var usable = new HashSet<int>(UsableBatches(s, cp.InputId, true).Where(w => !IsLocked(s, w)).Select(w => w.InstanceId));
             foreach (var p in plan.Picks)
             {
-                var label = $"{(p.Carried ? "随身" : "地面")}{ItemName(cp.InputId)}#{p.InstanceId}";
+                var label = $"{(p.Carried ? "随身" : "地面")}{ItemName(cp.InputId)}";
                 var w = FindItem(s, p.InstanceId);
                 var placeOk = w != null && (p.Carried ? w.IsCarried : w.Owner == plan.Location);
                 if (w == null || w.ItemId != cp.InputId || !placeOk || !usable.Contains(w.InstanceId))

@@ -8,7 +8,7 @@
     <div class="log-list">
         @foreach (var l in Enumerable.Reverse(G.S.Log))
         {
-            <div><span class="t">@Clock.DayTime(l.Minute)</span><span class="@Cls(l.Kind)">@l.Text</span></div>
+            <div><span class="t">@Clock.DayTime(l.Minute)</span><span class="@Cls(l.Kind)">@G.E.HideInstanceTags(l.Text)</span></div>
         }
     </div>
 </div>
