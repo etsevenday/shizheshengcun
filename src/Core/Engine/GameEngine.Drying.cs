@@ -188,7 +188,7 @@ namespace Survival.Core.Engine
             else
             {
                 if (slot < 0 || slot >= n) return "没有这个晾制位";
-                if (DryingSlotAt(s, s.Ground, slot.Value) is DryingSlot used) return $"第{slot + 1}位正在用（{DryingStatusWord(used)}），请选空位";
+                if (DryingSlotAt(s, s.Ground, slot.Value) is DryingSlot used) return $"工位{slot + 1}正在用（{DryingStatusWord(used)}），请选空位";
             }
             foreach (var kv in rc.Inputs)
             {
@@ -317,7 +317,7 @@ namespace Survival.Core.Engine
             fac.DryingSlots.Add(slotRec);
             RememberRequest(s, requestId);
             // B22c 试玩修复 M470：日志经验按这一位自身（self）算，不把刚投的这一位当成“先完成的晾制位”；原料会在完成前到期时日志也写警告
-            Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架第{k + 1}位开始{rc.Name}：投入{string.Join("、", taken)}；被动{Clock.Duration(rc.BaseMinutes)}，"
+            Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架工位{k + 1}开始{rc.Name}：投入{string.Join("、", taken)}；被动{Clock.Duration(rc.BaseMinutes)}，"
                                         + $"预计{Clock.DayTime(finish)}完成（不占行动，离开也继续）；{DryingXpNote(s, slotRec)}"
                                         + (pause ? "；" + DryingShelfPauseText : "")
                                         + string.Concat(warns.Select(w => "；" + w)) + "。");
@@ -358,7 +358,7 @@ namespace Survival.Core.Engine
         {
             if (DryingIdleBlocked(s) is string idle) return idle;
             var b = DryingSlotAt(s, s.Ground, slot);
-            if (b == null) return $"第{slot + 1}位是空的";
+            if (b == null) return $"工位{slot + 1}是空的";
             if (b.Status == DryingSlot.Done) return "已经晾好了：请取出成品";
             if (b.Status == DryingSlot.Spoiled) return "原料已腐败：只能清理（取出腐败原料），不能退回原料";
             var items = DryingContents(s, s.Ground, slot);
@@ -371,7 +371,7 @@ namespace Survival.Core.Engine
         {
             if (DryingIdleBlocked(s) is string idle) return idle;
             var b = DryingSlotAt(s, s.Ground, slot);
-            if (b == null) return $"第{slot + 1}位是空的";
+            if (b == null) return $"工位{slot + 1}是空的";
             if (b.Status == DryingSlot.Drying) return "还在晾制：可以取消（退回原料）";
             return DryingMoveBlocked(s, DryingContents(s, s.Ground, slot), toCarried);
         }
@@ -418,7 +418,7 @@ namespace Survival.Core.Engine
             var resume = paused.Count > 0
                 ? $"{what}退回{DestName(s, toCarried)}，" + string.Join("、", paused.Select(i => $"{ItemName(i.ItemId)}恢复投料时的剩余保质（保质到{Clock.DayTime(i.ExpiresAt ?? s.GameMinute)}）"))
                 : $"{what}按原保质退回{DestName(s, toCarried)}";
-            Emit(s, GameEventKind.ActionCancelled, $"已取消{ZoneName(s, place)}晾制架第{slot + 1}位的{_recipes[b.RecipeId].Name}（已晾{b.DoneMinutes}分钟，不退时间）："
+            Emit(s, GameEventKind.ActionCancelled, $"已取消{ZoneName(s, place)}晾制架工位{slot + 1}的{_recipes[b.RecipeId].Name}（已晾{b.DoneMinutes}分钟，不退时间）："
                                                    + $"{resume}，没有成品，不给经验。");
             UpdateFlags(s);
             return ActionResult.Success();
@@ -441,8 +441,8 @@ namespace Survival.Core.Engine
             MoveDryingOut(s, items, toCarried ? ItemInstance.Carried : place);
             RememberRequest(s, requestId);
             Emit(s, GameEventKind.Info, spoiled
-                ? $"清理{ZoneName(s, place)}晾制架第{slot + 1}位：{what}取到{DestName(s, toCarried)}（腐败的不能吃，按腐败物处理），这一位空出。"
-                : $"从{ZoneName(s, place)}晾制架第{slot + 1}位取出{what}到{DestName(s, toCarried)}，这一位空出。");
+                ? $"清理{ZoneName(s, place)}晾制架工位{slot + 1}：{what}取到{DestName(s, toCarried)}（腐败的不能吃，按腐败物处理），这一位空出。"
+                : $"从{ZoneName(s, place)}晾制架工位{slot + 1}取出{what}到{DestName(s, toCarried)}，这一位空出。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -465,7 +465,7 @@ namespace Survival.Core.Engine
                     {
                         b.Status = DryingSlot.Spoiled;
                         b.EndMinute = s.GameMinute;
-                        Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架第{b.Slot + 1}位："
+                        Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架工位{b.Slot + 1}："
                                                     + (bad != null ? $"{ItemName(bad.ItemId)}已腐败" : "原料不全")
                                                     + $"，{rc.Name}停止，没有成品、不给经验；原料留在这一位，回到当地清理。");
                         continue;
@@ -480,7 +480,7 @@ namespace Survival.Core.Engine
                     b.EndMinute = s.GameMinute;
                     b.XpNote = DryingXp(s, b);
                     var outText = string.Join("、", made.Select(i => $"{ItemName(i.ItemId)}×{i.Count}（{ExpiryNote(s, i)}）"));
-                    Emit(s, GameEventKind.FacilityDone, $"{ZoneName(s, place)}晾制架第{b.Slot + 1}位：{outText}晾好了，留在这一位，回到当地取出；{b.XpNote}。", null, new[] { DryingSlotHighlight(place, b.Slot) });
+                    Emit(s, GameEventKind.FacilityDone, $"{ZoneName(s, place)}晾制架工位{b.Slot + 1}：{outText}晾好了，留在这一位，回到当地取出；{b.XpNote}。", null, new[] { DryingSlotHighlight(place, b.Slot) });
                 }
             }
         }

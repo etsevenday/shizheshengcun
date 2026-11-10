@@ -74,6 +74,29 @@ public class B32bFacilityTests : TestBase
         Assert.That(CardStates.DryingStatusText(DryingSlot.Spoiled), Is.EqualTo("原料已腐败"));
     }
 
+    /// <summary>Q374-A01：新晾制日志与拒绝原因引用工位时写「工位{序号}」，序号与面板一致。</summary>
+    [Test]
+    public void Q374_A01_DryingLogAndReasonsSayWorkstation()
+    {
+        var s = New();
+        s.GameMinute = At(2, 8, 0);
+        s.Skills["cooking"].Level = 5;
+        s.Items.RemoveAll(i => i.Owner == s.Ground || i.Owner == ItemInstance.Carried);
+        E.CreateItems(s, "wood", 4, s.Ground);
+        E.CreateItems(s, "rope", 2, s.Ground);
+        Start(s, Craft("build_drying_rack"));
+        Run(s);
+        E.CreateItems(s, "berry", 4, s.Ground);
+        Ok(E.StartDrying(s, "dry_berries", 0));
+        Assert.That(s.Log.Last().Text, Does.Contain("晾制架工位1开始"));
+        var rc = Cfg.Recipes.First(r => r.Id == "dry_berries");
+        Assert.That(E.DryingBlocked(s, rc, 0), Does.StartWith("工位1正在用"));
+        Assert.That(E.DryingCancelBlocked(s, 1, false), Is.EqualTo("工位2是空的"));
+        Assert.That(E.DryingTakeBlocked(s, 1, false), Is.EqualTo("工位2是空的"));
+        Ok(E.CancelDrying(s, 0, false));
+        Assert.That(s.Log.Last().Text, Does.Contain("晾制架工位1的").And.Not.Contain("第1位"));
+    }
+
     // ───────────── Q368 高亮落点 ─────────────
 
     /// <summary>Q368：火堆成品高亮落到所在加工位，不再按成品物品名去亮随身/地面同名卡；晾好高亮该晾制位。</summary>
