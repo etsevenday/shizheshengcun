@@ -12,7 +12,7 @@
 {
     @* 战斗菜单（P05g；开发计划 v0.5 假设 10、B9 A10 §6.3）：阅读字体、动画速度、系统说明、反馈与留言、保存并返回标题、返回战斗；不含脱战，
        Esc 不能关掉战斗免费脱战（菜单已开时 Esc 回战场）。敌踪选择中同用这一层（B31a 开发假设 8）；B31d（Q334 选 B）：敌踪尚未接战时标题为「游戏菜单」，
-       实际战斗仍为「战斗菜单」，标题与可访问名称同一句（ShellText.BattleUiMenuTitle）；底部关闭键沿现行。 *@
+       实际战斗仍为「战斗菜单」，标题与可访问名称同一句（ShellText.BattleUiMenuTitle）；B31e（§1.3 Q353 选 A）：敌踪尚未接战时底部关闭键写「继续游戏」，只收起菜单回敌踪选择。 *@
     var inBattle = G.S.Battle != null;
     var menuTitle = ShellText.BattleUiMenuTitle(inBattle);
     <div class="menu-scrim" role="presentation">
@@ -46,7 +46,7 @@
             </div>
             <div class="mm-foot">
                 <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked))" title="@lockTip" @onclick="ToTitle">@ShellText.SaveToTitle</button>
-                <button class="primary" @ref="_first" @onclick="() => G.ToggleBattleMenu(false)">@(inBattle ? ShellText.BackToBattle : "继续")</button>
+                <button class="primary" @ref="_first" @onclick="() => G.ToggleBattleMenu(false)">@(inBattle ? ShellText.BackToBattle : ShellText.ContinueGame)</button>
             </div>
         </div>
     </div>
@@ -454,7 +454,8 @@
     </div>
     <div class="mm-foot">
         <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked))" title="@lockTip" @onclick="ToTitle">@ShellText.SaveToTitle</button>
-        <button class="primary" @ref="_first" @onclick="Close">@ShellText.ContinueGame</button>
+        @* B31e（§1.3 Q353 选 A）：死亡结算页打开的菜单底部写「返回结算」，只收起菜单回到同一结算 *@
+        <button class="primary" @ref="_first" @onclick="Close">@(dead ? ShellText.BackToSettlement : ShellText.ContinueGame)</button>
     </div>
 </div>
 </div>

@@ -45,6 +45,17 @@ public class B31dShellTests : TestBase
         Assert.That(menu, Does.Contain("aria-label=\"@menuTitle\"").And.Contain("<h2>@menuTitle</h2>"));
     }
 
+    /// <summary>Q353-A01（逐字稿 §1.3）：敌踪尚未接战的游戏菜单底部关闭键写「继续游戏」，实际战斗仍「返回战斗」；死亡结算菜单底部写「返回结算」，常态仍「继续游戏」。都只收起菜单。</summary>
+    [Test]
+    public void Q353_A01_MenuCloseLabels()
+    {
+        Assert.That(ShellText.BackToSettlement, Is.EqualTo("返回结算"));
+        var menu = Web("Components", "MenuOverlay.razor");
+        Assert.That(menu, Does.Contain("<button class=\"primary\" @ref=\"_first\" @onclick=\"() => G.ToggleBattleMenu(false)\">@(inBattle ? ShellText.BackToBattle : ShellText.ContinueGame)</button>"));
+        Assert.That(menu, Does.Contain("<button class=\"primary\" @ref=\"_first\" @onclick=\"Close\">@(dead ? ShellText.BackToSettlement : ShellText.ContinueGame)</button>"));
+        Assert.That(menu, Does.Not.Contain(": \"继续\")"));
+    }
+
     // ───────────── Q333 死亡结算页菜单 ─────────────
 
     private static ShellEscRoute Esc(bool dead = true, bool menu = false, bool layer = false, bool fb = false, bool battle = false, bool dlg = false) =>

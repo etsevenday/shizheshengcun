@@ -47,6 +47,8 @@ namespace Survival.Core.Engine
         public const string BattleMenu = "战斗菜单";
         public const string Help = "系统说明";
         public const string BackToBattle = "返回战斗";
+        /// <summary>B31e（逐字稿 §1.3 Q353 选 A）：死亡结算页打开的游戏菜单底部关闭键；只收起菜单、回到同一结算。</summary>
+        public const string BackToSettlement = "返回结算";
 
         /// <summary>
         /// B31d（逐字稿 §1.2 Q334 选 B）：战斗层菜单的标题与可访问名称——实际战斗中为「战斗菜单」，敌踪尚未接战时为「游戏菜单」。
