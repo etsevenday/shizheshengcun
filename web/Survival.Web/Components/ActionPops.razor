@@ -148,10 +148,15 @@
                        Sub="@($"{e.ItemName(info.InputId)}×{info.InputCount}→{e.ItemName(info.OutputId)}×{info.OutputCount} · 不耗时投料 · 不给经验")" OnClose="G.ClosePop">
                 <Art>@Icons.Markup("charcoal")</Art>
                 <ChildContent>
-                    <div class="apop-facts">
-                        <span title="原料只取你随身与当前地面未预留的木材（随身优先），不取队友或别处的"><span class="pf-weapon" aria-hidden="true">@Icons.Markup("wood")</span>原料@(e.ItemName(info.InputId))@(info.InputCount)份（可用@(info.WoodAvailable)）</span>
-                        <span title="每批占火堆2个加工位中的1位；可与1口锅或另一批并存"><i class="pf-ico">▣</i>占1个加工位（空@(info.FreeSlots)/@(info.Slots)）</span>
-                        <span title="只在火堆燃烧且本段有完整5分钟燃料时计热；不受熟练度或装备加速"><i class="pf-ico">⏱</i>需@(info.HeatMinutes)有效受热分钟</span>
+                    @* B32b（逐字稿 §1.5 Q365、P02f）：「投入木材」「剩余燃料」「工位」「耗时」逐行，按木炭操作预演取实际来源、数量、工位与燃料 *@
+                    <div class="lines charcoal-lines">
+                        <div title="原料只取你随身与当前地面未预留的木材（随身优先），不取队友或别处的"><span>投入木材</span><b>@(e.ItemName(info.InputId))×@(info.InputCount)（可用@(info.WoodAvailable)）</b></div>
+                        <div><span>剩余燃料</span><b>@(info.FuelMinutes)分钟</b></div>
+                        @if (CardStates.CharcoalSlotText(e, s) is string slotText)
+                        {
+                            <div title="每批占火堆2个加工位中的1位；可与1口锅或另一批并存"><span>工位</span><b>@slotText</b></div>
+                        }
+                        <div title="只在火堆燃烧且本段有完整5分钟燃料时计热；不受熟练度或装备加速"><span>耗时</span><b>@CardStates.CharcoalTimeText(info)</b></div>
                     </div>
                     @if (shown.Sources.Count > 0 && info.Ok)
                     {
@@ -168,7 +173,8 @@
                     @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
                 </ChildContent>
                 <Actions>
-                    <button type="button" class="primary apop-go" disabled="@(!info.Ok || busy)" @onclick="LoadCharcoal">@(info.Ok ? "确认投料" : "无法投料")</button>
+                    @* Q365：主按钮始终写「确认投料」，当前受阻时禁用，原因在盘内 *@
+                    <button type="button" class="primary apop-go" disabled="@(!info.Ok || busy)" @onclick="LoadCharcoal">确认投料</button>
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消</button>
                 </Actions>
             </AnchorPop>
