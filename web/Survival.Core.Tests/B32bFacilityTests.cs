@@ -174,6 +174,23 @@ public class B32bFacilityTests : TestBase
         Assert.That(CardStates.IgnitePickHint, Is.EqualTo("请选择打火器。"));
     }
 
+    /// <summary>Q343-A01：右栏加工位里正在煅烧的一批，工序名写「煅烧木炭」，后接原受热进度句；锅行沿原水量、食材与状态。</summary>
+    [Test]
+    public void Q343_A01_CharcoalSlotStatusNamesProcess()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "wood");
+        E.CreateItems(s, "wood", 4, ItemInstance.Carried);
+        Ok(E.DoInstant(s, InstantRequest.LoadCharcoal()));
+        var batch = E.FireContents(s, "camp").Single();
+        Assert.That(E.FireSlotStatus(s, batch), Is.EqualTo("煅烧木炭 · 火堆未燃烧 · 煅烧暂停 0/60分钟"));
+
+        var pot = E.CreateItems(s, "pot", 1, ItemInstance.Carried).Single();
+        Ok(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)));
+        Assert.That(E.FireSlotStatus(s, pot), Does.StartWith(E.PotLabel(s, pot) + " · 食材0/"));
+        Assert.That(E.FireSlotStatus(s, pot), Does.Not.Contain("煅烧木炭"));
+    }
+
     // ───────────── Q369 安全屋休息条件 ─────────────
 
     /// <summary>Q369-A01：屋外先写当前区遮蔽或露天，再写屋内加成句；屋内沿现行屋内遮蔽与加成说明。</summary>

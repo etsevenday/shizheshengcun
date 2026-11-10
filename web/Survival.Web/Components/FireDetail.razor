@@ -81,13 +81,8 @@
 </div>
 
 @code {
-    /// <summary>加工位行的状态短句（沿原右栏火堆详情：锅为水量、食材数与加工状态，其余为加工状态）。</summary>
-    private string SlotState(ItemInstance it)
-    {
-        var s = G.S;
-        var e = G.E;
-        return e.IsPot(it) ? $"{e.PotLabel(s, it)} · 食材{e.PotFood(s, it.InstanceId).Count}/{e.PotConfig(it).FoodSlots} · {e.ContentStatus(s, it)}" : e.ContentStatus(s, it);
-    }
+    /// <summary>加工位行的状态短句（内核 FireSlotStatus：锅为水量、食材数与加工状态，其余为加工状态；煅烧批写「煅烧木炭 · 」，Q343）。</summary>
+    private string SlotState(ItemInstance it) => G.E.FireSlotStatus(G.S, it);
 
     private void ToggleCharcoal()
     {

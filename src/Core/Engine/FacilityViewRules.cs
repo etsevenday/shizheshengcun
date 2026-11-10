@@ -40,6 +40,9 @@ namespace Survival.Core.Engine
         /// <summary>P02a、Q343：右栏煅烧规则行标题。</summary>
         public const string CharcoalRuleTitle = "木炭工位";
 
+        /// <summary>Q343：加工位里正在煅烧的那一批，工序名写「煅烧木炭」。</summary>
+        public const string CharcoalProcessTitle = "煅烧木炭";
+
         // ───────────── Q365 煅烧投料盘 ─────────────
 
         /// <summary>Q365：煅烧盘「耗时」行「投料0分钟 · 需{有效受热分钟}有效受热分钟」。</summary>
@@ -147,6 +150,18 @@ namespace Survival.Core.Engine
 
         /// <summary>Q362：晾制架卡加工中——任一位晾制中。</summary>
         public bool DryingBusy(GameState s) => (FacOf(s, s.Ground)?.DryingSlots ?? new List<DryingSlot>()).Any(b => b.Status == DryingSlot.Drying);
+
+        /// <summary>
+        /// P02a、Q339、Q343：右栏加工位行的状态短句——锅为「{水量} · 食材{n}/{位数} · {加工状态}」，其余为加工状态；
+        /// 正在煅烧的一批前加工序名「煅烧木炭 · 」（Q343「煅烧中的工序写『煅烧木炭』」），状态沿原受热进度句。
+        /// </summary>
+        public string FireSlotStatus(GameState s, ItemInstance it)
+        {
+            if (IsPot(it)) return $"{PotLabel(s, it)} · 食材{PotFood(s, it.InstanceId).Count}/{PotConfig(it).FoodSlots} · {ContentStatus(s, it)}";
+            var st = ContentStatus(s, it);
+            var p = ProcessOf(s, it);
+            return p != null && Process(p.RecipeId).IsSlotBatch ? $"{CardStates.CharcoalProcessTitle} · {st}" : st;
+        }
 
         // ───────────── Q339 右栏层级路径 ─────────────
 
