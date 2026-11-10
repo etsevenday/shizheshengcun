@@ -39,6 +39,11 @@ namespace Survival.Core.Engine
         public const string Help = "系统说明";
         public const string BackToBattle = "返回战斗";
 
+        /// <summary>
+        /// B31d（逐字稿 §1.2 Q334 选 B）：战斗层菜单的标题与可访问名称——实际战斗中为「战斗菜单」，敌踪尚未接战时为「游戏菜单」。
+        /// </summary>
+        public static string BattleUiMenuTitle(bool inBattle) => inBattle ? BattleMenu : GameMenu;
+
         // PXa 标题页、PXm 覆盖确认
         public const string NewGame = "新游戏";
         public const string HowToPlay = "玩法说明";

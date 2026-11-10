@@ -9,12 +9,14 @@
 @if (Battle)
 {
     @* 战斗菜单（P05g；开发计划 v0.5 假设 10、B9 A10 §6.3）：阅读字体、动画速度、系统说明、反馈与留言、保存并返回标题、返回战斗；不含脱战，
-       Esc 不能关掉战斗免费脱战（菜单已开时 Esc 回战场）。敌踪选择中同用这一层（B31a 开发假设 8），标题与关闭键沿现行。 *@
+       Esc 不能关掉战斗免费脱战（菜单已开时 Esc 回战场）。敌踪选择中同用这一层（B31a 开发假设 8）；B31d（Q334 选 B）：敌踪尚未接战时标题为「游戏菜单」，
+       实际战斗仍为「战斗菜单」，标题与可访问名称同一句（ShellText.BattleUiMenuTitle）；底部关闭键沿现行。 *@
     var inBattle = G.S.Battle != null;
+    var menuTitle = ShellText.BattleUiMenuTitle(inBattle);
     <div class="menu-scrim" role="presentation">
-        <div class="menu-modal overlay" role="dialog" aria-modal="true" aria-label="@(inBattle ? ShellText.BattleMenu : "菜单 · 敌踪选择中")">
+        <div class="menu-modal overlay" role="dialog" aria-modal="true" aria-label="@menuTitle">
             <div class="overlay-head mm-head">
-                <h2>@(inBattle ? ShellText.BattleMenu : "菜单 · 敌踪选择中")</h2>
+                <h2>@menuTitle</h2>
             </div>
             <div class="mm-body" data-wheel="y">
                 @if (inBattle)
