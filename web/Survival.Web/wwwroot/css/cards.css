@@ -198,3 +198,71 @@
 .ocard.k2 .k2-sub .dir-mark { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; border-radius: 50%; border: 1px solid var(--k2-bar-line); background: #20271d; }
 .ocard.k2 .k2-sub .dir-mark svg { width: .8em; height: .8em; fill: #f0d9a0; }
 .center-scroll.four .map-adjacent > .ocard.k2 { width: var(--k2-w); }
+
+/* ───── 物品卡（Q340 物品模板；R58 热区）：沿用 .card.item（拖放、选中、腐败、预留等原接线），内部改为
+   上部主图 + 纸色信息条「名称 + 一行副标」，数量不作副标时在主图右上角标；转移箭头在信息条右端，热区仍 ≥40px ───── */
+.wasteland .center-scroll.four .row-scroll .card.item.k2i {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: "art art" "info info";
+  column-gap: 0;
+  padding: 0;
+  aspect-ratio: auto;
+  min-width: 0;
+  max-width: none;
+  height: min(var(--k2-h), 100%);
+  align-self: flex-start;
+  background-image: var(--k2-paper);
+  background-size: 100% 100%;
+  color: #f0e2c4;
+  overflow: hidden;
+}
+.wasteland .center-scroll.four .section.ground .row-scroll .card.item.k2i { width: var(--k2-w); }
+.wasteland .center-scroll.four .section.carried .row-scroll.slots5 > .card-col > .card.item.k2i { height: 100%; }
+.card.item.k2i > .k2-art {
+  grid-area: art; position: relative; min-height: 0; min-width: 0; overflow: hidden;
+}
+.card.item.k2i > .k2-art > :is(svg, img) {
+  position: absolute; inset: 6px 12px 3px; width: calc(100% - 24px); height: calc(100% - 9px);
+  max-width: none; max-height: none; transform: none; clip-path: none; object-fit: contain;
+  filter: drop-shadow(0 3px 2px #0005);
+}
+.card.item.k2i > .k2-art > .k2-tag.qty {
+  position: absolute; top: 6px; right: 6px; z-index: 2;
+  padding: 0 5px; font-size: var(--fs-aux, 14px); line-height: 1.35; white-space: nowrap;
+  color: #f0e2c4; background: #2a1f15d9; border: 1px solid #725534; border-radius: 2px;
+}
+.card.item.k2i > .k2-info {
+  grid-area: info; min-width: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: 1px;
+  padding: 4px 4px 5px 8px;
+  background: var(--k2-paper-bar); border-top: 1px solid #725534;
+  text-align: center;
+}
+.card.item.k2i .k2-name-row { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 0; }
+.card.item.k2i .k2-name {
+  min-width: 0; font-size: var(--k2-name); line-height: 1.25; font-weight: 700; color: #f0e2c4;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card.item.k2i .k2-name-row .qtag { flex: 0 0 auto; position: static; }
+.card.item.k2i .k2-sub {
+  min-width: 0; font-size: var(--fs-aux, 14px); line-height: 1.25; color: #c9b593;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card.item.k2i .k2-sub.danger { color: var(--k2-danger); }
+.card.item.k2i .k2-sub.warn { color: #e7b46d; }
+.wasteland .center-scroll.four .row-scroll .card.item.k2i > .card-arrow {
+  grid-row: 2; grid-column: 2; position: relative; right: auto; bottom: auto; align-self: center; justify-self: end;
+  margin: 0 6px 0 2px; width: 30px; height: 30px; z-index: 1;
+}
+.wasteland .center-scroll.four .row-scroll .card.item.k2i > .card-arrow::after { inset: -6px -6px -6px -6px; }
+.card.item.k2i > :is(.k2-info, .card-arrow) { position: relative; }
+.wasteland .center-scroll.four .row-scroll .card.item.k2i { background-color: #8a7552; }
+.wasteland .center-scroll.four .row-scroll .card.item.k2i:has(> .card-arrow) > .k2-info { padding-right: 40px; padding-left: 8px; }
+.wasteland .center-scroll.four .row-scroll .card.item.k2i .slot-span { top: 6px; left: 6px; }
+@media (max-height: 800px) {
+  .wasteland .center-scroll.four .row-scroll .card.item.k2i > .card-arrow { width: 26px; height: 26px; }
+  .wasteland .center-scroll.four .row-scroll .card.item.k2i > .card-arrow::after { inset: -8px -8px -8px -8px; }
+  .wasteland .center-scroll.four .row-scroll .card.item.k2i > .k2-info { padding: 3px 34px 4px 6px; }
+}
