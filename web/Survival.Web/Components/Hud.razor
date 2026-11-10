@@ -32,7 +32,7 @@
             var zero = v <= 0;
             var cls = zero || (id == StatId.Health && below) ? "critical" : below ? "warning" : "";
             var statId = id;
-            <button class="vital @cls" data-stat="@key" @onclick="() => OpenStat(statId)" title="@($"在右栏查看{GameEngine.StatName(id)}说明")">
+            <button class="vital @cls @(G.FedStats.Contains(id) ? "fed" : "")" data-stat="@key" @onclick="() => OpenStat(statId)" title="@($"在右栏查看{GameEngine.StatName(id)}说明")">
                 <VitalIcon Stat="@key" />
                 <div class="vital-label">
                     <span>@ShellText.LeftStatName(id)</span>

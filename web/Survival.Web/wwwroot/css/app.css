@@ -256,7 +256,7 @@ kbd { font-family: inherit; font-size: var(--fs-aux); color: var(--muted); margi
 .card { position: relative; flex: 0 0 auto; background: var(--paper); color: var(--ink); border: 2px solid transparent; border-radius: 5px; display: flex; flex-direction: column; overflow: hidden; text-align: left; padding: 0; }
 .card:hover { border-color: #e9d9ad; }
 .card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911; }
-.card.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 2; }
+.card.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 1; }  /* B32b Q341、Q368：新卡或工位高亮一次 */
 @keyframes fresh { 0% { box-shadow: 0 0 0 0 #e8cf8f; } 50% { box-shadow: 0 0 0 5px #e8cf8f66; } 100% { box-shadow: 0 0 0 0 #e8cf8f00; } }
 .card.dim { opacity: .55; filter: grayscale(.5); }
 .card .ctitle { padding: 8px 9px 6px; font-size: var(--fs-body); font-weight: 600; border-bottom: 1px solid #88856a66; display: flex; justify-content: space-between; gap: 6px; }
@@ -527,7 +527,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .ocard { position: relative; flex: 0 0 auto; width: var(--card-w); min-height: 0; background: var(--paper); color: var(--ink); border: 2px solid transparent; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px #0005; }
 .ocard:hover { border-color: #e9d9ad; }
 .ocard.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911, 0 2px 8px #0005; }
-.ocard.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 2; }
+.ocard.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 1; }
 .ocard.dim { opacity: .6; filter: grayscale(.45); }
 .ocard.dashed { background: #d1c5a8cc; border: 2px dashed #7d7656; }
 .ocard.dashed .oc-art { opacity: .55; filter: grayscale(.6); }
@@ -1100,7 +1100,7 @@ kbd { font-size: var(--fs-aux); }
 
 /* ───────────── 中央时间推进条与等待烹饪（S14 §11；开发计划 M63） ───────────── */
 .cprog { width: min(600px, 94%); display: flex; flex-direction: column; gap: 6px; padding: 10px 14px; background: #141d17; border: 1px solid var(--accent);
-  border-radius: 8px; box-shadow: 0 10px 30px #000b; animation: cp-in calc(.15s * var(--motion-k)) ease-out; }
+  border-radius: 8px; box-shadow: 0 10px 30px #000b; animation: cp-in calc(.18s * var(--motion-k)) ease-out; }  /* B32b Q341：耗时行动中央窗入场 180ms */
 .cprog.float { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; }
 /* 对话等待时中央条并入对话层底栏（DialogueLayer .dlg-action），不在中部另叠一层 */
 .cprog.inflow { margin: 0 auto; }

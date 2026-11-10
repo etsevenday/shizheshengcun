@@ -101,7 +101,7 @@
                 }
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@
                 <div id="@(gSel ? "card-sel" : null)" data-tip="@($"{title} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drag-title="@title" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item k2i @(spoiledFront ? "st-danger" : "") @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
+                     class="card item k2i @(spoiledFront ? "st-danger" : "") @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
                      role="button" tabindex="0" @onclick="() => SelectSide(id, kb, split ? sideKb : null)" @onkeydown="ev => OnCardKey(ev, () => SelectSide(id, kb, split ? sideKb : null))" title="@(dr ? "本实例战利品：这次地牢里领到的奖励，可以封存；成功离开地牢后并回同名物品。" + e.Item(id).Desc : e.Item(id).Desc)">
                     @{ var qtyTip = stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null; }
                     @* B32a（Q340、Q356）：重墨 V2 物品卡——上部主图，下部纸色信息条「名称 + 数量副标 + 状态第二行」，转移箭头在信息条右端 *@
@@ -136,7 +136,7 @@
                 var spoiledT = e.IsSpoiled(s, t);
                 <div @key="@("t:" + inst)" class="card-col @(tSel ? "open" : "")">
                 <div id="@(tSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(t.ItemId)} · {Ui.ItemLine(e, s, t)}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drag-title="@e.ItemName(t.ItemId)" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item k2i @(t.Quality is "green" or "blue" ? "q-" + t.Quality : "") @(broken || CardStates.BrokenTool(t) ? "broken st-danger" : "") @(spoiledT ? "spoiled st-danger" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
+                     class="card item k2i @(t.Quality is "green" or "blue" ? "q-" + t.Quality : "") @(broken || CardStates.BrokenTool(t) ? "broken st-danger" : "") @(spoiledT ? "spoiled st-danger" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
                     @* B32a（Q345、Q356）：独立工具/单件卡副标固定「×{数量}」；第二行先写已部署（自身阻断）、已腐败、已损坏（后两者挂危险叠层），
                        其次保质/到期，再耐久；远程武器弹仓、重量、用途在悬停与右栏 *@

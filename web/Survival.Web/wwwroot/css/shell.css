@@ -386,3 +386,17 @@ button { transition-duration: var(--mo-hover); }
   animation: b31c-fade-in var(--mo-scrim) ease-out both;
 }
 .wasteland:not(:has(.apop.apop-c:not(.card-pop), .apop.card-pop.apop-c .tbar)) .center > .disk-scrim { display: none; }
+
+/* ───── B32b 行动反馈（逐字稿 §1.2 Q341，§1.5 Q367、Q368、Q370、Q371） ───── */
+/* 即时转移轨迹的影子（app.js survivalFx.swap），不接收输入 */
+.fx-swap { position: fixed; z-index: 96; pointer-events: none; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--ink2-gold, #d4a84a); border-radius: 4px; background: #1a140fcc; box-shadow: 0 4px 12px #0008; }
+.fx-swap > :is(svg, img) { width: 80%; height: 80%; }
+/* 地点或场景切换时旧地景的影子（survivalFx.sceneSync） */
+.fx-scene-old { position: fixed; z-index: 30; pointer-events: none; background-size: cover; background-position: center 60%; background-repeat: no-repeat; border-radius: 6px; }
+/* 来源或目标描一次框（转移的可见端、主角食饮变化的生存状况行、同行者成员行） */
+@keyframes fx-lit { 0%, 35% { outline-color: var(--ink2-gold, #d4a84a); box-shadow: 0 0 0 2px #d4a84a55; } 100% { outline-color: transparent; box-shadow: none; } }
+.fx-lit, .wasteland :is(.vital, .party-row).fed { outline: 2px solid transparent; outline-offset: -1px; animation: fx-lit calc(1.6s * var(--motion-k)) ease-out 1; }
+@media (prefers-reduced-motion: reduce) {
+  .fx-lit, .wasteland :is(.vital, .party-row).fed { animation: none; outline-color: var(--ink2-gold, #d4a84a); }
+}

@@ -581,3 +581,82 @@ window.survivalPop = (function () {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
+
+// ───── B32b 即时操作与场景反馈（逐字稿 §1.2 Q341，§1.5 Q367、Q368、Q370）─────
+// 时长随 Q321 动画速度（--motion-k）；系统减少动态效果时不做位移与淡变，直接显示结果（目标只静态描一次框）。
+window.survivalFx = (function () {
+  var last = null;          // 最近一次按下的物品卡：{ el, rect, art, t }
+  var scene = null;         // 上一次绘制的当前地景：{ serial, bg, filter }
+  function k() {
+    var v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--motion-k'));
+    return isFinite(v) && v > 0 ? v : 1;
+  }
+  function reduced() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function visible(r) { return r && r.width > 0 && r.height > 0 && r.bottom > 0 && r.right > 0 && r.top < window.innerHeight && r.left < window.innerWidth; }
+  function note(el) {
+    if (!el) return;
+    var card = el.closest ? el.closest('[data-card]') : null;
+    if (!card) return;
+    var art = card.querySelector('.k2-art svg, .k2-art img, .pc-icon svg, .pc-ico svg, svg, img');
+    last = { el: card, rect: card.getBoundingClientRect(), art: art ? art.outerHTML : '', t: Date.now() };
+  }
+  document.addEventListener('pointerdown', function (ev) { if (ev.target && ev.target.closest) note(ev.target); }, true);
+  function lit(el) {
+    if (!el) return;
+    el.classList.remove('fx-lit');
+    void el.offsetWidth;
+    el.classList.add('fx-lit');
+    setTimeout(function () { el.classList.remove('fx-lit'); }, 1700 * k());
+  }
+  // Q367：成功的拾取、放下与拖拽转移，播一次来源→去向轨迹（180–250ms 基准，取 220ms）；只有一端可见时亮可见的那端；两端都看不见时只留原结果提示
+  function swap(owner, itemId) {
+    var from = last && Date.now() - last.t < 4000 ? last : null;
+    last = null;
+    var zone = document.querySelector('[data-drop="zone:' + owner + '"]');
+    var to = zone ? zone.querySelector('[data-card^="' + owner + '|' + itemId + '|"]') : null;
+    var tr = to ? to.getBoundingClientRect() : null;
+    var fr = from ? from.rect : null;
+    var toOk = visible(tr), fromOk = visible(fr);
+    if (!toOk) {
+      if (from && from.el && from.el.isConnected && visible(from.el.getBoundingClientRect())) lit(from.el);
+      return;
+    }
+    if (!fromOk || reduced() || !document.body.animate) { lit(to); return; }
+    var g = document.createElement('div');
+    g.className = 'fx-swap';
+    g.innerHTML = from.art;
+    var w = Math.min(64, fr.width), h = Math.min(64, fr.height);
+    g.style.width = w + 'px'; g.style.height = h + 'px';
+    g.style.left = (fr.left + fr.width / 2 - w / 2) + 'px'; g.style.top = (fr.top + fr.height / 2 - h / 2) + 'px';
+    document.body.appendChild(g);
+    var dx = (tr.left + tr.width / 2) - (fr.left + fr.width / 2), dy = (tr.top + tr.height / 2) - (fr.top + fr.height / 2);
+    var a = g.animate([{ transform: 'translate(0,0)', opacity: 0.95 }, { transform: 'translate(' + dx + 'px,' + dy + 'px)', opacity: 0.6 }],
+      { duration: 220 * k(), easing: 'cubic-bezier(.2,.7,.3,1)' });
+    a.onfinish = a.oncancel = function () { g.remove(); lit(to); };
+  }
+  // Q370：所在地点或场景实际切换（serial 变化）时，旧地景 140ms 淡出、新地景随后 180ms 淡入；同一 serial 只记下当前地景
+  function sceneSync(serial) {
+    var art = document.querySelector('.map-card .mc-art');
+    if (!art) return;
+    var cur = { serial: serial, bg: art.style.backgroundImage, filter: art.style.filter };
+    var prev = scene;
+    scene = cur;
+    if (!prev || prev.serial === serial || reduced()) return;
+    // 旧景影子挂在 body 上、按地景卡位置固定（不插进 Blazor 管理的节点），不接收输入
+    var r = art.getBoundingClientRect();
+    if (!visible(r)) return;
+    var old = document.createElement('div');
+    old.className = 'fx-scene-old';
+    old.style.backgroundImage = prev.bg;
+    old.style.filter = prev.filter;
+    old.style.left = r.left + 'px'; old.style.top = r.top + 'px'; old.style.width = r.width + 'px'; old.style.height = r.height + 'px';
+    old.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(old);
+    var out = 140 * k(), inn = 180 * k();
+    if (old.animate) {
+      old.animate([{ opacity: 1 }, { opacity: 0 }], { duration: out, easing: 'ease-in', fill: 'forwards' }).onfinish = function () { old.remove(); };
+      art.animate([{ opacity: 0 }, { opacity: 0, offset: out / (out + inn) }, { opacity: 1 }], { duration: out + inn, easing: 'ease-out' });
+    } else old.remove();
+  }
+  return { note: note, swap: swap, lit: lit, sceneSync: sceneSync };
+})();

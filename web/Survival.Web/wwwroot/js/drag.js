@@ -212,6 +212,8 @@ window.survivalDrag = (function () {
     }
     if (!h.r.ok) { flash(h.r.reason || '暂不支持此组合', ev.clientX, ev.clientY); cleanup(); return; }
     var shift = ev.shiftKey;
+    // B32b（Q367）：松手时记下被拖的卡作为轨迹起点（成功转移后由 survivalFx 播来源→去向）
+    if (window.survivalFx && st.el) survivalFx.note(st.el);
     cleanup();
     net.invokeMethodAsync('DragDrop', src, h.key, h.index || 0, shift).then(function (json) {
       var r = JSON.parse(json || '{}');

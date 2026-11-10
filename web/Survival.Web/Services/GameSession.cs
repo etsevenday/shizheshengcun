@@ -119,6 +119,7 @@ public sealed class GameSession
     /// <summary>B31c（Q330）：上次看到的有效提交标记（<see cref="ResultToast.CommitMark"/>），变了就清掉正在显示的结果提示。</summary>
     private string? _commitMark;
     public HashSet<string> Highlights { get; } = new();
+    private int _litSeq;
     /// <summary>保持的高亮（B18 试玩修复 M372：换物产物落地后描边保持到离开该处地面或下一批新高亮）。</summary>
     public HashSet<string> HeldHighlights { get; } = new();
     /// <summary>保持高亮所属的地面 owner（GameState.Ground）。</summary>
@@ -1233,6 +1234,11 @@ public sealed class GameSession
         Highlights.Clear();
         HeldHighlights.Clear();
         HeldHighlightAt = null;
+        // B32b：读档、新开、回标题不算场景切换、不播上一局的轨迹与描边
+        _sceneKey = State == null ? null : $"{S.CurrentLocation}|{S.CurrentZone}";
+        PendingSwap = null;
+        FedStats.Clear();
+        FedActor = null;
         SevenDayPending = false;
         TaskDoneSeen = null;
         Notice = null;
@@ -1468,9 +1474,71 @@ public sealed class GameSession
     /// </summary>
     public async Task<ActionResult> StartAction(ActionRequest r, string? requestId = null)
     {
+        // B32b（Q341、Q371）：食饮记下开始前的数值，行动实际结束后描边真正变化的行（主角＝左栏「生存状况」各行，同行者＝成员行）
+        var feedTarget = State != null && CardStates.IsEatOrDrink(E, S, r) ? r.Feeding?.TargetActorId ?? GameState.PlayerId : null;
+        var before = feedTarget != null && S.Actors.TryGetValue(feedTarget, out var fa) ? fa.Stats.Clone() : null;
         var res = BeginAction(r, requestId);
-        if (res.Ok && !res.Duplicate) await RunLoop();
+        if (res.Ok && !res.Duplicate)
+        {
+            var started = S.Main;
+            await RunLoop();
+            if (before != null && State != null && (S.Main == null || !ReferenceEquals(S.Main, started)) && S.Actors.TryGetValue(feedTarget!, out var after))
+                MarkFed(feedTarget!, CardStates.ChangedStats(before, after.Stats));
+        }
         return res;
+    }
+
+    // ───────────── B32b 即时操作与结果反馈（逐字稿 §1.2 Q341，§1.5 Q367、Q368、Q370、Q371） ─────────────
+
+    /// <summary>Q371：主角食饮后左栏要描边的数值行（只含实际变化的项）；同行者食饮时为空，改描 <see cref="FedActor"/> 的成员行。</summary>
+    public HashSet<StatId> FedStats { get; } = new();
+    /// <summary>Q341：这次食饮的同行者（成员行描边）；主角为 null。</summary>
+    public string? FedActor { get; private set; }
+    private int _fedSeq;
+
+    private void MarkFed(string actorId, List<StatId> changed)
+    {
+        FedStats.Clear();
+        FedActor = null;
+        if (changed.Count == 0) return;
+        if (actorId == GameState.PlayerId) foreach (var id in changed) FedStats.Add(id);
+        else FedActor = actorId;
+        var seq = ++_fedSeq;
+        _ = ClearAfter(() => seq == _fedSeq, () => { FedStats.Clear(); FedActor = null; });
+        Notify();
+    }
+
+    /// <summary>描边与高亮只播一次：动画时长（1.6 秒 × 动画速度）过后撤掉标记，之后重绘、切页回来都不再重播。</summary>
+    private async Task ClearAfter(Func<bool> still, Action clear)
+    {
+        try { await Task.Delay((int)(1700 * UiPresentationPrefs.Multiplier(Presentation.Speed))); } catch { return; }
+        if (!still()) return;
+        clear();
+        Notify();
+    }
+
+    /// <summary>Q367：成功的拾取、放下与拖拽转移（同一事务只记一次），界面绘制后由 GameScreen 交给 survivalFx 播来源→去向轨迹。</summary>
+    public (string Owner, string ItemId)? PendingSwap { get; private set; }
+
+    private void QueueSwap(string owner, string itemId) => PendingSwap = (owner, itemId);
+
+    /// <summary>取走待播的轨迹（只播一次）。</summary>
+    public (string Owner, string ItemId)? TakeSwap()
+    {
+        var p = PendingSwap;
+        PendingSwap = null;
+        return p;
+    }
+
+    /// <summary>Q370：实际所在地点或场景（安全屋屋内／外部）每切换一次加一；网页据此让旧地景淡出、新地景淡入。读档、新局不算切换。</summary>
+    public int SceneSerial { get; private set; }
+    private string? _sceneKey;
+
+    private void TrackScene()
+    {
+        var key = State == null ? null : $"{S.CurrentLocation}|{S.CurrentZone}";
+        if (key != null && _sceneKey != null && key != _sceneKey) SceneSerial++;
+        _sceneKey = key;
     }
 
     /// <summary>同步部分：校验、开始、存档；不等待行动推进（拖拽松手后立即返回结果给 drag.js）。</summary>
@@ -1533,10 +1601,12 @@ public sealed class GameSession
         if (string.IsNullOrEmpty(r.RequestId)) r.RequestId = Guid.NewGuid().ToString("N");
         if (CityBrowsing) return CityReadOnlyFail();
         if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
+        var movedId = r.Kind is InstantKind.Pickup or InstantKind.Drop ? E.FindItem(S, r.InstanceId)?.ItemId : null;
         var res = E.DoInstant(S, r);
         Notice = res.Ok ? null : res.Reason;
         if (res.Ok)
         {
+            if (movedId != null && !res.Duplicate) QueueSwap(r.Kind == InstantKind.Pickup ? ItemInstance.Carried : S.Ground, movedId);
             Drain();
             ReconcileSelection();
             Save();
@@ -1577,6 +1647,7 @@ public sealed class GameSession
         }
         // 整批转移的请求号记在最后，拆成几堆时也只生效一次
         if (last.Ok) GameEngine.RememberRequest(S, requestId);
+        if (last.Ok && count - left > 0) QueueSwap(toCarried ? ItemInstance.Carried : S.Ground, itemId);
         Notice = last.Ok ? null : last.Reason;
         Drain();
         ReconcileSelection();
@@ -1977,7 +2048,9 @@ public sealed class GameSession
             HeldHighlights.Clear();
             HeldHighlightAt = null;
         }
+        TrackScene();
         var batch = new List<GameEvent>();
+        var lit = false;
         foreach (var ev in E.DrainEvents(S))
         {
             if (string.IsNullOrEmpty(ev.Text)) continue;
@@ -1988,6 +2061,7 @@ public sealed class GameSession
             if (ev.Kind == GameEventKind.SevenDay) SevenDayPending = true;
             if (ev.HighlightIds.Count > 0)
             {
+                lit = true;
                 Highlights.Clear();
                 foreach (var id in ev.HighlightIds) Highlights.Add(id);
                 HeldHighlights.Clear();
@@ -2000,6 +2074,12 @@ public sealed class GameSession
             }
         }
         if (Recent.Count > 60) Recent.RemoveRange(0, Recent.Count - 60);
+        if (lit)
+        {
+            // Q368：新卡、工位高亮一次——动画播完撤掉这批（保持描边的换物产物另有 HeldHighlights，不受影响）
+            var seq = ++_litSeq;
+            _ = ClearAfter(() => seq == _litSeq, () => { foreach (var id in Highlights.Where(h => !HeldHighlights.Contains(h)).ToList()) Highlights.Remove(id); });
+        }
         SetToast(ResultToast.Pick(Toast, batch));
     }
 
