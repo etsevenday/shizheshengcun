@@ -335,3 +335,9 @@
 .ignite-menu .im-item.on { outline: 2px solid var(--ink2-gold, #d4a84a); outline-offset: -2px; background: #d4a84a1f; }
 .ignite-menu .im-detail { margin-top: 6px; }
 .ignite-menu .im-hint { color: var(--muted); padding: 2px 0; }
+
+/* B32b 晾制位（P02c、Q362、Q368）：标题行「工位n」+ 状态字，晾制中挂加工中，晾好亮一次 */
+.drying-panel .dry-slot .sh-row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.drying-panel .dry-slot .dry-line .muted { margin-right: 4px; }
+.wasteland .drying-panel .dry-slot.st-busy { box-shadow: inset 3px 0 0 var(--ink2-gold); }
+.drying-panel .dry-slot.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 1; }

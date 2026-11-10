@@ -180,6 +180,27 @@
             </AnchorPop>
             break;
         }
+        case "harvest":
+        {
+            @* B32b（逐字稿 §1.2 Q346、§1.5 Q364）：晾制成品「收取」居中盘。两键各自按原去向校验直接提交，不另加确认；
+               容量或其他校验失败时在盘内写实际原因、盘不关，可改选另一合法去向；成功后收盘并刷新该位。取消、×、遮罩、Esc 按 Q338 只收起。 *@
+            var k = int.Parse(pop.Id);
+            var v = e.DryingSlotViews(s).First(x => x.Slot == k);
+            var dryBusy = G.Running || s.Sub != null || _go;
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@CardStates.HarvestTitle" CssClass="harvest" Sub="@($"{v.Title} · {v.RecipeName}")" OnClose="G.ClosePop">
+                <Art>@Icons.Markup(e.DryingContents(s, s.Ground, k).FirstOrDefault()?.ItemId ?? "dried_meat")</Art>
+                <ChildContent>
+                    @foreach (var c in v.Contents) { <div class="apop-note">@c</div> }
+                    @if (_harvestFail != null && _tried) { <div class="apop-risk">@_harvestFail</div> }
+                </ChildContent>
+                <Actions>
+                    <button type="button" class="primary apop-go" disabled="@dryBusy" @onclick="() => Harvest(k, true)">@CardStates.HarvestToCarried</button>
+                    <button type="button" class="secondary apop-go" disabled="@dryBusy" @onclick="() => Harvest(k, false)">@CardStates.HarvestToGround</button>
+                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消</button>
+                </Actions>
+            </AnchorPop>
+            break;
+        }
         case "gather":
         {
             var req = G.PendingAction!;
@@ -225,7 +246,7 @@
     /// <summary>浮窗目标仍然有效：相邻路线仍可走、敌人仍在本地可见、拖拽预览仍是当前选择。失效时不通知界面地收起。</summary>
     private bool Valid(GameSession.PopContext pop)
     {
-        if (!ReferenceEquals(pop, _seen)) { _seen = pop; _tried = false; }
+        if (!ReferenceEquals(pop, _seen)) { _seen = pop; _tried = false; _harvestFail = null; }
         var s = G.S;
         var e = G.E;
         var ok = pop.Kind switch
@@ -235,6 +256,7 @@
             "approach" => s.Battle == null && s.Encounter == null && int.TryParse(pop.Id, out var wid) && e.VisibleEnemiesAt(s, s.CurrentLocation).Any(w => w.Id == wid),
             "charcoal" => s.Battle == null && s.Encounter == null && G.Panel == null && pop.Id == s.Ground && e.HasFireAt(s, s.Ground),
             "lockstack" => s.Battle == null && G.Panel == null && e.AdjacentLockedGroups(s).Any(g => g.Routes.Count >= 3),
+            "harvest" => s.Battle == null && G.Panel == "drying" && e.DryingRackHere(s) && int.TryParse(pop.Id, out var hk) && e.DryingSlotAt(s, s.Ground, hk)?.Status == DryingSlot.Done,
             "gather" => G.Selected.Kind == SelectionKind.Action && G.PendingAction != null && G.PendingAction.Type == ActionType.Gather && G.PendingAction.TargetId == pop.Id,
             _ => true,
         };
@@ -277,6 +299,23 @@
             var res = G.ConfirmCharcoal();
             // B10b 试玩修复：投料后收起浮窗并清掉选中（被取走一部分的木材堆不再弹操作窗盖住火堆）
             if (res.Ok) G.ClearSelection();
+        }
+        finally { _go = false; }
+    }
+
+    /// <summary>Q364：本盘上一次提交被拒的实际原因（换盘时清掉）。</summary>
+    private string? _harvestFail;
+
+    private void Harvest(int slot, bool toCarried)
+    {
+        if (_go) return;
+        _go = true;
+        _tried = true;
+        try
+        {
+            var r = G.EngineDo(() => G.E.TakeDrying(G.S, slot, toCarried, Guid.NewGuid().ToString("N")));
+            _harvestFail = r.Ok ? null : r.Reason;
+            if (r.Ok) G.ClosePop();
         }
         finally { _go = false; }
     }

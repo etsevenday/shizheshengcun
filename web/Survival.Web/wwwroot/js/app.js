@@ -86,6 +86,12 @@ window.survival = {
     var r = el.getBoundingClientRect();
     return [r.left, r.top, r.right, r.bottom];
   },
+  // B32b（Q363）：晾制「查看配方」把食谱区滚到可见（只定位，不改选择以外的状态）
+  scrollIntoView: function (el) {
+    if (!el || !el.scrollIntoView) return;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' }); } catch (e) { el.scrollIntoView(); }
+  },
   // B22 试玩修复 M408：滚到某元素（居中）并短暂高亮（回收箱卡“取出…”跳到人物页的回收箱块）
   scrollFlash: function (id) {
     var el = document.getElementById(id);

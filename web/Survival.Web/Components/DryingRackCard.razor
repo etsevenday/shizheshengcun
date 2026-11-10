@@ -9,12 +9,16 @@
     var line = string.Join(" · ", parts);
     var tip = $"晾制架（{e.ZoneName(s, s.Ground)}）：{e.DryingSlotCount}个独立晾制位，每位一批果干或肉干，被动晾制、不占行动，离开也继续；点击打开晾制架面板";
 }
-<ObjectCard CssClass="fac-card dry-card" Id="drying-rack" Title="晾制架" Badge="@($"{e.DryingSlotCount}位")" BadgeClass="built" Tooltip="@tip" OnClick="Open" AriaLabel="@($"晾制架：{line}")">
+@* B32b（逐字稿 §1.5 Q372、Q362、Q368）：重墨 V2 卡模板，副标沿现行工位统计「晾制中／待取／腐败／空」，角标沿现行工位数；
+   有晾制中的位时挂加工中；晾好的工位在面板外时亮本卡一次 *@
+<ObjectCard Ink2="true" CssClass="k2-fac dry-card" Id="drying-rack" Title="晾制架" Badge="@($"{e.DryingSlotCount}位")" BadgeClass="built"
+            Busy="@e.DryingBusy(s)" Fresh="@(G.Panel != "drying" && G.Highlights.Any(h => h.StartsWith($"slot:dry:{s.Ground}:", StringComparison.Ordinal)))"
+            Tooltip="@tip" OnClick="Open" AriaLabel="@($"晾制架：{line}")" SubTitle="@line">
     <Art>@Icons.Markup("dried_meat")</Art>
-    <ChildContent>
-        @* B22c 试玩修复 M470：每段不拆行（1600 宽“空0”的 0 曾被单独折到下一行） *@
-        <div class="oc-line" title="@tip">@for (var i = 0; i < parts.Count; i++) {@(i > 0 ? " · " : "")<span class="nw">@parts[i]</span>}</div>
-    </ChildContent>
+    <SubContent>
+        @* B22c 试玩修复 M470：每段不拆行 *@
+        <div class="oc-line">@for (var i = 0; i < parts.Count; i++) {@(i > 0 ? " · " : "")<span class="nw">@parts[i]</span>}</div>
+    </SubContent>
 </ObjectCard>
 
 @code {
