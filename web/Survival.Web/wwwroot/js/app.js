@@ -612,6 +612,10 @@ window.survivalFx = (function () {
   function swap(owner, itemId) {
     var from = last && Date.now() - last.t < 4000 ? last : null;
     last = null;
+    // 结果由各卡架组件各自重绘，GameScreen 的渲染后回调可能先于卡架到达；等这一轮重绘都落到 DOM 再找去向卡
+    setTimeout(function () { play(owner, itemId, from); }, 30);
+  }
+  function play(owner, itemId, from) {
     var zone = document.querySelector('[data-drop="zone:' + owner + '"]');
     // 堆叠卡 data-card 为「owner|itemId」，实例卡为「owner|itemId|实例号」
     var to = zone ? zone.querySelector('[data-card="' + owner + '|' + itemId + '"], [data-card^="' + owner + '|' + itemId + '|"]') : null;

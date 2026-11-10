@@ -316,11 +316,13 @@ public class B32bFacilityTests : TestBase
         var js = Web("wwwroot/js/app.js");
         Assert.That(js, Does.Contain("window.survivalFx"));
         Assert.That(js, Does.Contain("duration: 220 * k()"));
+        Assert.That(js, Does.Contain("setTimeout(function () { play(owner, itemId, from); }, 30);"), "等卡架重绘落到 DOM 再找去向卡");
         Assert.That(js, Does.Contain("[data-card=\"' + owner + '|' + itemId + '\"]"), "堆叠卡也要能当轨迹去向");
         Assert.That(js, Does.Contain("prefers-reduced-motion: reduce"));
         var g = Web("Services/GameSession.cs");
         Assert.That(g, Does.Contain("var changed = before != null && S.Actors.TryGetValue(feedTarget!, out var now) ? CardStates.ChangedStats(before, now.Stats) : null;"));
         Assert.That(g, Does.Contain("QueueSwap("));
+        Assert.That(g, Does.Contain("MergeSwapHighlight();"), "Q368：轨迹与新卡高亮落到同一目标时只亮一次");
         Assert.That(Web("Components/GameScreen.razor"), Does.Contain("survivalFx.sceneSync"));
     }
 }

@@ -1524,6 +1524,16 @@ public sealed class GameSession
 
     private void QueueSwap(string owner, string itemId) => PendingSwap = (owner, itemId);
 
+    /// <summary>
+    /// Q368：轨迹与「新卡高亮一次」落到同一目标时合并为一次反馈——有待播轨迹时，撤掉同一物品的普通高亮，
+    /// 只由轨迹落点（或只有一端可见时的那一端）亮一次；保持描边的换物产物（HeldHighlights）不动。须在 Drain 之后调用。
+    /// </summary>
+    private void MergeSwapHighlight()
+    {
+        if (PendingSwap is not { } p || HeldHighlights.Contains(p.ItemId)) return;
+        Highlights.Remove(p.ItemId);
+    }
+
     /// <summary>取走待播的轨迹（只播一次）。</summary>
     public (string Owner, string ItemId)? TakeSwap()
     {
@@ -1610,6 +1620,7 @@ public sealed class GameSession
         {
             if (movedId != null && !res.Duplicate) QueueSwap(r.Kind == InstantKind.Pickup ? ItemInstance.Carried : S.Ground, movedId);
             Drain();
+            MergeSwapHighlight();
             ReconcileSelection();
             Save();
         }
@@ -1652,6 +1663,7 @@ public sealed class GameSession
         if (last.Ok && count - left > 0) QueueSwap(toCarried ? ItemInstance.Carried : S.Ground, itemId);
         Notice = last.Ok ? null : last.Reason;
         Drain();
+        MergeSwapHighlight();
         ReconcileSelection();
         Save();
         Notify();
