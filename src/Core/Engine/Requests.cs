@@ -357,7 +357,7 @@ namespace Survival.Core.Engine
     {
         public int InstanceId { get; set; }
         public string ItemId { get; set; } = "";
-        /// <summary>“打火器#3”。</summary>
+        /// <summary>“打火器”（B32a Q349：不带物品内部编号，同名靠来源与耐久区分）。</summary>
         public string Name { get; set; } = "";
         /// <summary>“随身”或“当前地面”。</summary>
         public string Source { get; set; } = "";
