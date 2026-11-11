@@ -59,6 +59,43 @@ public abstract class B41aTestBase : BattleTestBase
         s.WorldEnemies.Clear();
     }
 
+    /// <summary>做完一次清理并让开工时锁定的随机遭遇判定值必中（roll=0）或必不中（roll=1）。</summary>
+    protected void ClearField(GameState s, double roll = 0)
+    {
+        var ls = s.Locations[s.CurrentLocation];
+        ls.ClearCharges = Math.Max(1, ls.ClearCharges);
+        Start(s, ActionRequest.Clear());
+        s.Main!.EncounterRoll = roll;
+        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
+    }
+
+    /// <summary>把本场敌人逐个判死并结算胜利。</summary>
+    protected void WinBattle(GameState s)
+    {
+        var kill = typeof(GameEngine).GetMethod("KillEnemy", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        var check = typeof(GameEngine).GetMethod("CheckVictory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        foreach (var e in s.Battle!.Enemies.Where(e => e.Alive).ToList()) kill.Invoke(E, new object[] { s, e });
+        check.Invoke(E, new object[] { s });
+        Assert.That(s.Battle, Is.Null);
+    }
+
+    /// <summary>判死本场一名敌人（不结算胜利）。</summary>
+    protected void KillInBattle(GameState s, int index)
+    {
+        var kill = typeof(GameEngine).GetMethod("KillEnemy", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        kill.Invoke(E, new object[] { s, s.Battle!.Enemies.Single(e => e.Index == index) });
+    }
+
+    /// <summary>强制撤退成功。</summary>
+    protected void RetreatOk(GameState s)
+    {
+        PlayerFirst(s);
+        E.BattleStep(s);
+        Force(s, Below(0.0001));
+        Assert.That(Cmd(s, "retreat").Ok, Is.True);
+        Assert.That(s.Battle, Is.Null);
+    }
+
     /// <summary>把状态写成上一版（schema 45）的旧档 JSON：版本号改回 45，去掉 46 才有的字段。</summary>
     protected static string AsSchema45(GameState s)
     {

@@ -109,6 +109,7 @@ namespace Survival.Core.Engine
 
         public string? CanEngageFixed(GameState s)
         {
+            if (CardsV2(s)) return CanApproachCard(s, FixedCardKey(s.CurrentLocation));   // B41a：新版敌踪走卡的主动接近
             var why = EngageBlocked(s);
             if (why != null) return why;
             if (FixedEnemiesAt(s, s.CurrentLocation).Count == 0) return "这里没有固定战";
@@ -132,6 +133,7 @@ namespace Survival.Core.Engine
         /// <summary>明确接战本地固定战：揭示时锁定的全名单一起入场（从 1 号位紧凑排位），受惊按主动接近；本场禁增援（EC04）。</summary>
         public ActionResult EngageFixed(GameState s, string? requestId = null)
         {
+            if (CardsV2(s)) return ApproachCard(s, FixedCardKey(s.CurrentLocation), requestId);   // B41a：旧入口转到卡的主动接近
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             var why = CanEngageFixed(s);
             if (why != null) return ActionResult.Fail(why);

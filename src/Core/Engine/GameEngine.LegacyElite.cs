@@ -41,6 +41,7 @@ namespace Survival.Core.Engine
 
         public string? CanEngageElite(GameState s, string id)
         {
+            if (CardsV2(s)) return CanApproachCard(s, EliteCardKey(id));   // B41a：新版敌踪走卡的主动接近
             var c = EliteConfig(id);
             if (c == null) return "没有这项挑战";
             var why = EngageBlocked(s);
@@ -57,23 +58,31 @@ namespace Survival.Core.Engine
         /// </summary>
         public ActionResult EngageElite(GameState s, string id, string? requestId = null)
         {
+            if (CardsV2(s)) return ApproachCard(s, EliteCardKey(id), requestId);   // B41a：旧入口转到卡的主动接近
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             var why = CanEngageElite(s, id);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
             var c = EliteConfig(id)!;
-            var st = EliteState(s, id);
-            var w = EliteEnemy(s, id);
-            if (w == null)
-            {
-                w = AddWorldEnemy(s, c.EnemyId, c.NodeId);
-                w.FixedOf = ElitePrefix + id;
-                st.WorldId = w.Id;
-                st.AcceptedMinute = s.GameMinute;
-                st.RewardWon ??= c.RewardChance >= 1 || s.Rng.NextDouble() < c.RewardChance;
-            }
+            var w = EnsureEliteEnemy(s, c);
             StartBattle(s, new List<WorldEnemy> { w }, false, "可选强敌挑战", FearApproach, fixedKey: ElitePrefix + id);
             return ActionResult.Success();
+        }
+
+        /// <summary>
+        /// 这处挑战的唯一世界敌人：第一次实际处理时才建，并锁定特殊掉落抽签（只抽这一次，撤退／读档／重复处理不重抽）；之后都用同一只。
+        /// </summary>
+        private WorldEnemy EnsureEliteEnemy(GameState s, LegacyEliteConfig c)
+        {
+            var st = EliteState(s, c.Id);
+            var w = EliteEnemy(s, c.Id);
+            if (w != null) return w;
+            w = AddWorldEnemy(s, c.EnemyId, c.NodeId);
+            w.FixedOf = ElitePrefix + c.Id;
+            st.WorldId = w.Id;
+            st.AcceptedMinute = s.GameMinute;
+            st.RewardWon ??= c.RewardChance >= 1 || s.Rng.NextDouble() < c.RewardChance;
+            return w;
         }
 
         /// <summary>挑战敌人死亡时锁定的掉落：只用首次接战时锁定的特殊掉落计划（替代该敌原附加掉落，不另抽）。不是挑战敌人为 null。</summary>

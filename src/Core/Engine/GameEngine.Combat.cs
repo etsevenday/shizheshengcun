@@ -305,6 +305,7 @@ namespace Survival.Core.Engine
         /// <summary>主动接近当前地块的可见敌人（v0.6 §15）：不受随机接敌保护期限制。</summary>
         public string? CanApproach(GameState s, int worldEnemyId)
         {
+            if (CardsV2(s)) return CanApproachCard(s, SingleCardKey(worldEnemyId));   // B41a：新版敌踪走卡的主动接近
             if (s.Progress.Dead) return "角色已死亡";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (!Config.CombatEnabled || !Config.Encounters.ActiveContactEnabled) return "战斗未启用";
@@ -323,6 +324,7 @@ namespace Survival.Core.Engine
 
         public ActionResult Approach(GameState s, int worldEnemyId, string? requestId = null)
         {
+            if (CardsV2(s)) return ApproachCard(s, SingleCardKey(worldEnemyId), requestId);   // B41a：旧入口转到卡的主动接近
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             var why = CanApproach(s, worldEnemyId);
             if (why != null) return ActionResult.Fail(why);
@@ -340,7 +342,8 @@ namespace Survival.Core.Engine
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
             if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
-            if (s.Encounter == null) return ActionResult.Fail("当前没有敌踪");
+            // B41a：新版敌踪没有“待处理敌踪”，旧「接敌」入口不再可用（沿用原拒绝句）
+            if (s.Encounter == null || CardsV2(s)) return ActionResult.Fail("当前没有敌踪");
             var group = EncounterGroup(s);
             RememberRequest(s, requestId);
             if (group.Count == 0)
@@ -379,12 +382,13 @@ namespace Survival.Core.Engine
         public const string FearEncounter = "encounter";
         public const string FearTutorial = "tutorial";
 
-        private void StartBattle(GameState s, List<WorldEnemy> group, bool surprise, string source, string context, bool tutorial = false, string? fixedKey = null)
+        private void StartBattle(GameState s, List<WorldEnemy> group, bool surprise, string source, string context, bool tutorial = false, string? fixedKey = null, string? cardKey = null)
         {
             var b = new BattleState
             {
                 BattleId = s.NextBattleId++,
                 FixedKey = fixedKey,
+                CardKey = cardKey,
                 LocationId = s.CurrentLocation,
                 StartMinute = s.GameMinute,
                 Surprise = surprise,
