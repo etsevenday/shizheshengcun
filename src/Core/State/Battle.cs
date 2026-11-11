@@ -40,6 +40,11 @@ namespace Survival.Core.State
         public string? FixedOf { get; set; }
         /// <summary>B20：地牢固定战敌人所属的实例代号（换代时旧代固定敌移除）；其余为 0。</summary>
         public int Generation { get; set; }
+        /// <summary>
+        /// B41a：所属随机组卡的 ID（EnemyCardsState.Groups）；不在组里为 null。组员不另出可交战单卡、不巡游、不被噪声征用、不进新组
+        /// （R05「Q417–Q419」）。动物（family=animal）永远为 null（R05「B41a Q436 动物单卡」）。
+        /// </summary>
+        public int? GroupId { get; set; }
 
         public WorldEnemy Clone()
         {
@@ -281,6 +286,11 @@ namespace Survival.Core.State
         /// </summary>
         public RetreatOriginSnapshot? WorldRetreat { get; set; }
         public string EncounterId { get; set; } = "";
+        /// <summary>
+        /// B41a：本场所属的新版敌踪卡键（"we:&lt;世界敌人ID&gt;" 单卡／"group:&lt;组ID&gt;" 随机组卡／"fixed:&lt;节点&gt;" 固定战／"elite:&lt;挑战ID&gt;" 可选强敌）。
+        /// 旧版流程开的战斗与上线前已开始的旧战斗为 null（按旧快照打完）。
+        /// </summary>
+        public string? CardKey { get; set; }
         public string LocationId { get; set; } = "";
         public int Round { get; set; } = 1;
         public int StartMinute { get; set; }

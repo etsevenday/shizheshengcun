@@ -81,6 +81,7 @@ namespace Survival.Core.Save
         public const string Schema42 = "42";
         public const string Schema43 = "43";
         public const string Schema44 = "44";
+        public const string Schema45 = "45";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -140,7 +141,9 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema42) From42To43(s, config);
             if (s.SchemaVersion == Schema43) From43To44(s, config);
             if (s.SchemaVersion == Schema44) From44To45(s);
+            if (s.SchemaVersion == Schema45) From45To46(s);
             RejudgeGates(s, config);
+            AdoptEnemyCards(s, config);
             return notes;
         }
 
@@ -1381,7 +1384,32 @@ namespace Survival.Core.Save
                 NormalizeStationQueue(loc.Facility);
                 if (loc.Safehouse != null) NormalizeStationQueue(loc.Safehouse.Interior);
             }
+            s.SchemaVersion = Schema45;
+        }
+
+        // ───────────────────────── 45 → 46 ─────────────────────────
+
+        /// <summary>
+        /// 新版敌踪卡模型的存档结构（R05 文首「Q342 新版敌踪、潜行和躲避定稿」「Q425 旧档与持久化」，开发记录 B41a）：只补空结构——
+        /// 组卡表为空、采纳标记 0、世界敌人不属于任何组、进行中的战斗没有卡键（按旧快照打完）。不改敌人、行动、保护期，不抽随机，静默。幂等。
+        /// 旧待处理名单转组卡、在办绕行取消等规则性的转换不在这里：由 <see cref="AdoptEnemyCards"/> 在开关 encounters.enemyCardsV2 打开后做一次。
+        /// </summary>
+        private static void From45To46(GameState s)
+        {
+            s.EnemyCards ??= new EnemyCardsState();
             s.SchemaVersion = GameState.CurrentSchema;
+        }
+
+        /// <summary>
+        /// 读档时采纳新版敌踪卡模型（开关关着或已采纳过都不做任何事，幂等）：链尾与“已是当前版本”的读档（EnsureStates）都调用——开关在 B41f 才打开，
+        /// 那时线上存档早已是 46，采纳发生在打开后的第一次读档。规则见 Engine.GameEngine.AdoptEnemyCards。
+        /// </summary>
+        public static void AdoptEnemyCards(GameState s, GameConfig config)
+        {
+            if (!config.Encounters.EnemyCardsV2) return;
+            s.EnemyCards ??= new EnemyCardsState();
+            if (s.EnemyCards.ModelVersion >= Engine.GameEngine.EnemyCardsModelV2) return;
+            new Engine.GameEngine(config).AdoptEnemyCards(s);
         }
 
         private static void NormalizeStationQueue(FacilityState fac)
@@ -1403,6 +1431,7 @@ namespace Survival.Core.Save
             EnsureLocationStates(s, config);
             EnsureResourceStates(s, config);
             RejudgeGates(s, config);
+            AdoptEnemyCards(s, config);   // B41a：开关打开后的第一次读档采纳新版敌踪卡模型（关着或已采纳不做事）
         }
 
         /// <summary>

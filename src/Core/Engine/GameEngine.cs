@@ -240,6 +240,8 @@ namespace Survival.Core.Engine
                 };
             }
 
+            // B41a：开关开着的新局直接是新版敌踪卡模型；关着时 0（旧版流程）
+            s.EnemyCards.ModelVersion = Config.Encounters.EnemyCardsV2 ? EnemyCardsModelV2 : 0;
             Visit(s, s.CurrentLocation);
             InitSkills(s);
             InitWorldEnemies(s);

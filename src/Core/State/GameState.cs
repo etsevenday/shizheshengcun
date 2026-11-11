@@ -52,8 +52,10 @@ namespace Survival.Core.State
         /// "43" 起蓝图来源改写：旧档已登记的五张蓝图写成永久知识（knowledge:id），旧在办登记资格存 CityState.LegacyRegistrationPending（策划答复 Q246、Q247，开发计划 v0.9 B27）。
         /// "44" 起随机资源点掉落按点持久化：资源点状态带可空的本局抽定记录 ResourceState.LootDraw（策划答复 Q271，开发计划 v0.9 B27c）。
         /// "45" 起陶窑与固定净水台多批排队：被动批次带排队标记 StationBatch.Queued，同一座工坊的批次按列表先后为队列顺序（策划答复 Q380，开发计划 B32e）。
+        /// "46" 起新版敌踪卡模型：随机组卡与采纳标记 GameState.EnemyCards、世界敌人所属组 WorldEnemy.GroupId、战斗所属卡 BattleState.CardKey
+        /// （R05 文首 Q342 定稿与 Q425、Q436—Q438，开发记录 B41a；开关 encounters.enemyCardsV2 关着时只补空结构）。
         /// </summary>
-        public const string CurrentSchema = "45";
+        public const string CurrentSchema = "46";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -222,6 +224,8 @@ namespace Survival.Core.State
         public int EncounterGraceUntil { get; set; }
         /// <summary>探索/清理完成后待玩家选择“接敌/绕行”的敌踪；没有为 null。</summary>
         public PendingEncounter? Encounter { get; set; }
+        /// <summary>B41a 新版敌踪卡模型（随机组卡、是否已采纳新版）；旧档读入为空结构、ModelVersion 0。</summary>
+        public EnemyCardsState EnemyCards { get; set; } = new EnemyCardsState();
         /// <summary>进行中的战斗（v0.5 §17）；没有为 null。</summary>
         public BattleState? Battle { get; set; }
         public int NextBattleId { get; set; } = 1;
@@ -279,6 +283,7 @@ namespace Survival.Core.State
             c.RecentRequestIds = new List<string>(RecentRequestIds);
             c.WorldEnemies = WorldEnemies.Select(x => x.Clone()).ToList();
             c.Encounter = Encounter?.Clone();
+            c.EnemyCards = EnemyCards.Clone();
             c.Battle = Battle?.Clone();
             c.Traits = Traits.Select(x => x.Clone()).ToList();
             c.Story = Story.Clone();
