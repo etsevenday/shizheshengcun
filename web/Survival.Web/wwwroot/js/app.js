@@ -733,7 +733,20 @@ window.survivalFx = (function () {
   function fly(toSel) {
     var from = marked && Date.now() - marked.t < 4000 ? marked : null;
     marked = null;
-    setTimeout(function () { playTo(toSel ? document.querySelector(toSel) : null, from); }, 30);
+    setTimeout(function () {
+      var to = toSel ? document.querySelector(toSel) : null;
+      // 试玩修复 P2：去向卡被整备页等上层盖住（不在视口外，但看不见）也算不可见，只亮可见端
+      if (to && covered(to)) to = null;
+      playTo(to, from);
+    }, 30);
+  }
+  // 元素中心点最上层不是它自己（或它的子元素）时视为被盖住
+  function covered(el) {
+    var r = el.getBoundingClientRect();
+    if (!visible(r)) return false;
+    var x = Math.min(Math.max(r.left + r.width / 2, 0), window.innerWidth - 1), y = Math.min(Math.max(r.top + r.height / 2, 0), window.innerHeight - 1);
+    var hit = document.elementFromPoint(x, y);
+    return !!hit && hit !== el && !el.contains(hit);
   }
   function playTo(to, from) {
     var tr = to ? to.getBoundingClientRect() : null;
@@ -782,7 +795,7 @@ window.survivalFx = (function () {
   }
   // B33（Q435）：主界面快捷装备——右栏装备槽行可见才亮一次，看不见只留原结果提示
   function litIfVisible(sel) {
-    setTimeout(function () { var el = sel ? document.querySelector(sel) : null; if (el && visible(el.getBoundingClientRect())) lit(el); }, 30);
+    setTimeout(function () { var el = sel ? document.querySelector(sel) : null; if (el && visible(el.getBoundingClientRect()) && !covered(el)) lit(el); }, 30);
   }
   return { note: note, swap: swap, lit: lit, sceneSync: sceneSync, mark: mark, fly: fly, litIfVisible: litIfVisible };
 })();

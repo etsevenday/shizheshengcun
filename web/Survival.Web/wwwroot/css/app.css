@@ -1450,8 +1450,16 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .gear-slot { cursor: pointer; }
 .gear-slot.target { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .gear-slot.peek { border-color: #93815e; }
-.g3-side { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 8px; overflow: hidden; }
-.g3-sources { display: flex; flex-direction: column; gap: 4px; }
+.g3-side { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 8px; overflow: hidden; }
+.g3-sources { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-height: 0; }
+/* 试玩修复 P1：比较／交接盘打开时右栏让给工作区，来源列表收起只留所选来源卡；工作区头尾固定、中间滚动 */
+.g3-side.working { grid-template-rows: auto minmax(0, 1fr); }
+.g3-side.working .g3-sources { overflow: visible; }
+.g3-side.working .g3-work { overflow: hidden; }
+.g3-side.working .g3-work > .g3-compare, .g3-side.working .g3-work > .g3-give { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
+.g3-wbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 2px; }
+.g3-wfoot { flex: 0 0 auto; display: flex; flex-direction: column; gap: 3px; border-top: 1px solid var(--line); padding-top: 4px; }
+.g3-wfoot .g3-give-entry { display: inline-flex; }
 .g3-group { display: flex; flex-direction: column; gap: 2px; }
 .g3-group.ground { max-height: 22vh; overflow-y: auto; }
 .g3-gh { font-size: var(--fs-aux); color: var(--muted); }

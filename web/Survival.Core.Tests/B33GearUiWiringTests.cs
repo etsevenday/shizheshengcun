@@ -87,4 +87,44 @@ public class B33GearUiWiringTests
         Assert.That(js, Does.Contain("function mark(sel)").And.Contain("function fly(toSel)").And.Contain("function litIfVisible(sel)"));
         Assert.That(js, Does.Contain("if (!fromOk || reduced() || !document.body.animate) { lit(to); return; }"), "减少动态效果只静态描框");
     }
+
+    /// <summary>试玩修复 P1：比较／交接盘打开时右栏让给工作区（来源列表收起只留所选来源卡），标题与「返回」在滚动区外，结果与确认固定在底部。</summary>
+    [Test]
+    public void PlayFix_P1_WorkspaceTakesRightColumn()
+    {
+        var g = Web("Components/GearOverlay.razor");
+        Assert.That(g, Does.Contain("var working = src != null && (G.GivePending != null || G.GearSlot != null);"));
+        Assert.That(g, Does.Contain("@if (working && src != null)").And.Contain("@SourceCard(src, src.Owner == carriedOwner)"));
+        foreach (var file in new[] { "Components/GearCompare.razor", "Components/GearGive.razor" })
+        {
+            var c = Web(file);
+            var head = c.IndexOf("class=\"g3-whead\"", StringComparison.Ordinal);
+            var body = c.IndexOf("class=\"g3-wbody\"", StringComparison.Ordinal);
+            var foot = c.IndexOf("class=\"g3-wfoot\"", StringComparison.Ordinal);
+            Assert.That(head, Is.GreaterThan(0), file);
+            Assert.That(body, Is.GreaterThan(head), file + "：标题与返回在滚动区之前");
+            Assert.That(foot, Is.GreaterThan(body), file + "：结果与确认在滚动区之后");
+        }
+        var confirmEquip = Web("Components/GearCompare.razor");
+        Assert.That(confirmEquip.IndexOf("GearPanelCopy.ConfirmEquip", StringComparison.Ordinal), Is.GreaterThan(confirmEquip.IndexOf("class=\"g3-wfoot\"", StringComparison.Ordinal)));
+        Assert.That(confirmEquip.IndexOf("GearPanelCopy.CardsAfter", StringComparison.Ordinal), Is.GreaterThan(confirmEquip.IndexOf("class=\"g3-wfoot\"", StringComparison.Ordinal)));
+        var css = Web("wwwroot/css/app.css");
+        Assert.That(css, Does.Contain(".g3-side.working { grid-template-rows: auto minmax(0, 1fr); }"));
+        Assert.That(css, Does.Contain(".g3-wbody { flex: 1 1 auto; min-height: 0; overflow-y: auto;"));
+    }
+
+    /// <summary>试玩修复 P2：整备开着但看的是别的队员时，右栏快捷卸下的去向卡被整备页盖住，只亮起点；轨迹去向被上层盖住也按不可见处理。</summary>
+    [Test]
+    public void PlayFix_P2_QuickUnequipHiddenTarget()
+    {
+        var s = Web("Services/GameSession.Gear.cs");
+        Assert.That(s, Does.Contain("QueueFly(QuickUnequipFlyTarget(it, toGround));"));
+        Assert.That(s, Does.Contain("if (Panel != \"gear\") return ShelfCardSelector("));
+        Assert.That(s, Does.Contain("return GearActorId == GameState.PlayerId ? $\"[data-gear-src=\\\"{it.InstanceId}\\\"]\" : FlyNoTarget;"));
+        Assert.That(s, Does.Contain("public const string FlyNoTarget = \"\";"));
+        var js = Web("wwwroot/js/app.js");
+        Assert.That(js, Does.Contain("if (to && covered(to)) to = null;"));
+        Assert.That(js, Does.Contain("function covered(el)").And.Contain("document.elementFromPoint(x, y)"));
+        Assert.That(js, Does.Contain("var to = toSel ? document.querySelector(toSel) : null;"), "空选择器即无去向，只亮起点");
+    }
 }

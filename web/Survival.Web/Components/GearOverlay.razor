@@ -15,6 +15,7 @@
     var ground = s.Items.Where(i => i.Owner == s.Ground && e.IsWearable(i.ItemId)).OrderBy(i => i.InstanceId).ToList();
     var src = G.GearSource;
     var name = e.ActorDisplayName(s, me);
+    var working = src != null && (G.GivePending != null || G.GearSlot != null);
 }
 
 <div class="sub-panel gear-panel gear3" role="dialog" aria-label="@GearPanelCopy.Title">
@@ -83,44 +84,38 @@
             }
         </section>
 
-        <section class="g3-col g3-side" aria-label="@GearPanelCopy.Sources">
-            <div class="g3-sources">
-                <div class="eyebrow">@GearPanelCopy.Sources</div>
-                <div class="g3-group" aria-label="@GearPanelCopy.OwnCarried">
-                    <div class="g3-gh">@GearPanelCopy.OwnCarried</div>
-                    @if (carried.Count == 0) { <div class="muted tiny">@GearPanelCopy.CarriedEmpty</div> }
-                    @foreach (var it in carried)
-                    {
-                        var inst = it;
-                        <div class="gear-card g3-card @(src?.InstanceId == inst.InstanceId ? "on" : "")" role="button" tabindex="0" data-item="@inst.ItemId"
-                             id="@($"feed-src-{inst.InstanceId}")" data-gear-src="@inst.InstanceId" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
-                             @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
-                            <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
-                            @if (e.FeedEntry(s, inst.InstanceId) is { } fe)
-                            {
-                                @* B29（Q263）：整备的通用物品卡复用食饮入口，不替代队伍面板的展开 *@
-                                var feedWhy = G.Running ? "行动进行中" : fe.Blocked;
-                                <span class="gs-btns">
-                                    <button type="button" class="eq-btn" data-feed-entry disabled="@(feedWhy != null)" title="@(feedWhy ?? fe.Title)" @onclick='() => G.OpenFeed(fe, $"feed-src-{inst.InstanceId}")' @onclick:stopPropagation="true">@fe.Title</button>
-                                </span>
-                            }
-                        </div>
-                    }
+        @* 试玩修复 P1：比较、交接盘打开时右栏让给工作区——来源列表收起，只留所选来源卡（起点轨迹仍从它出发、可再拖到槽）；
+           工作区标题与「返回」固定在上、最终结果与确认固定在下，中间比较内容独立滚动。非装备工作区与空态只占自身高度，来源列表在上方滚动。 *@
+        <section class="g3-col g3-side @(working ? "working" : "")" aria-label="@GearPanelCopy.Sources">
+            @if (working && src != null)
+            {
+                <div class="g3-sources g3-picked">
+                    <div class="g3-gh">@(src.Owner == carriedOwner ? GearPanelCopy.OwnCarried : GearPanelCopy.CurrentGround)</div>
+                    @SourceCard(src, src.Owner == carriedOwner)
                 </div>
-                <div class="g3-group ground" aria-label="@GearPanelCopy.CurrentGround">
-                    <div class="g3-gh">@GearPanelCopy.CurrentGround</div>
-                    @if (ground.Count == 0) { <div class="muted tiny">@GearPanelCopy.GroundEmpty</div> }
-                    @foreach (var it in ground)
-                    {
-                        var inst = it;
-                        <div class="gear-card g3-card @(src?.InstanceId == inst.InstanceId ? "on" : "")" role="button" tabindex="0" data-ground-item="@inst.ItemId"
-                             data-gear-src="@inst.InstanceId" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
-                             @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
-                            <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>@Stat(inst)</small></span>
-                        </div>
-                    }
+            }
+            else
+            {
+                <div class="g3-sources">
+                    <div class="eyebrow">@GearPanelCopy.Sources</div>
+                    <div class="g3-group" aria-label="@GearPanelCopy.OwnCarried">
+                        <div class="g3-gh">@GearPanelCopy.OwnCarried</div>
+                        @if (carried.Count == 0) { <div class="muted tiny">@GearPanelCopy.CarriedEmpty</div> }
+                        @foreach (var it in carried)
+                        {
+                            @SourceCard(it, true)
+                        }
+                    </div>
+                    <div class="g3-group ground" aria-label="@GearPanelCopy.CurrentGround">
+                        <div class="g3-gh">@GearPanelCopy.CurrentGround</div>
+                        @if (ground.Count == 0) { <div class="muted tiny">@GearPanelCopy.GroundEmpty</div> }
+                        @foreach (var it in ground)
+                        {
+                            @SourceCard(it, false)
+                        }
+                    </div>
                 </div>
-            </div>
+            }
             <div class="g3-work" aria-live="polite">
                 @if (src != null && G.GivePending != null)
                 {
@@ -166,6 +161,38 @@
         try { if (JS is IJSInProcessRuntime ip) ip.InvokeVoid("survivalFx.mark", selector); }
         catch (JSException) { /* 旧缓存 app.js：只少了轨迹，结果照常 */ }
     }
+
+    /// <summary>右侧来源卡：本人随身（带已有食饮入口）或当前地面可穿装备；可点开比较／工作区，可拖到槽。</summary>
+    private RenderFragment SourceCard(ItemInstance inst, bool carriedCard) => __builder =>
+    {
+        var e = G.E;
+        var s = G.S;
+        var on = G.GearSource?.InstanceId == inst.InstanceId;
+        if (carriedCard)
+        {
+            <div class="gear-card g3-card @(on ? "on" : "")" role="button" tabindex="0" data-item="@inst.ItemId"
+                 id="@($"feed-src-{inst.InstanceId}")" data-gear-src="@inst.InstanceId" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
+                 @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
+                <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
+                @if (e.FeedEntry(s, inst.InstanceId) is { } fe)
+                {
+                    @* B29（Q263）：整备的通用物品卡复用食饮入口，不替代队伍面板的展开 *@
+                    var feedWhy = G.Running ? "行动进行中" : fe.Blocked;
+                    <span class="gs-btns">
+                        <button type="button" class="eq-btn" data-feed-entry disabled="@(feedWhy != null)" title="@(feedWhy ?? fe.Title)" @onclick='() => G.OpenFeed(fe, $"feed-src-{inst.InstanceId}")' @onclick:stopPropagation="true">@fe.Title</button>
+                    </span>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="gear-card g3-card @(on ? "on" : "")" role="button" tabindex="0" data-ground-item="@inst.ItemId"
+                 data-gear-src="@inst.InstanceId" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
+                 @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
+                <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>@Stat(inst)</small></span>
+            </div>
+        }
+    };
 
     private string Stat(ItemInstance it)
     {

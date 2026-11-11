@@ -26,7 +26,10 @@ const os = require('node:os');
 const url = process.argv[2] || 'https://etsevenday.github.io/shizheshengcun/?dev=1';
 const out = path.resolve(process.argv[3] || 'doc/验收/多角色七槽五卡 v1.3');
 const PORT = Number(process.env.PLAYTEST_PORT || 9337);
-const SAVE_KEY = 'survival.save.v1';
+// B40 起存档是 v2 多槽：每槽一个信封（头部字段 + State 快照 + State 的 FNV-1a 64 位校验和）；本脚本只用「每5分钟自动存档」槽
+const SAVE_PREFIX = 'survival.save.';
+const AUTO5_KEY = 'survival.save.v2.auto5';
+const OWNER_KEY = 'survival.save.v2.owner';
 const SIZES = (process.env.SIZES || '1280x720,1600x900').split(',').map(s => s.split('x').map(Number));
 const CHROMES = [process.env.CHROME, 'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', '/usr/bin/google-chrome', '/usr/bin/chromium'].filter(Boolean);
@@ -93,22 +96,61 @@ async function waitFor(expr, ms = 60000) {
   return false;
 }
 /** 写入存档（null=清空）后打开游戏并“继续”/“新游戏”。keepPrefs：保留界面偏好（折叠记忆测试用）。 */
-async function loadState(state) {
-  await send('Page.navigate', { url: new URL('icon-192.png', url).href }); await sleep(800);
-  if (state) await ev(`localStorage.setItem(${JSON.stringify(SAVE_KEY)}, ${JSON.stringify(typeof state === 'string' ? state : JSON.stringify(state))})`);
-  else await ev(`localStorage.removeItem(${JSON.stringify(SAVE_KEY)})`);
-  await send('Page.navigate', { url }); await sleep(800);
+/** 与 SaveSlots.Checksum 相同：按 UTF-16 码元先低字节后高字节做 FNV-1a 64 位，16 位小写十六进制。 */
+function checksum(text) {
+  const M = (1n << 64n) - 1n, P = 1099511628211n;
+  let h = 14695981039346656037n;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    h ^= BigInt(c & 0xFF); h = (h * P) & M;
+    h ^= BigInt(c >> 8); h = (h * P) & M;
+  }
+  return h.toString(16).padStart(16, '0');
+}
+/** 把局内快照包成「每5分钟自动存档」槽信封（新版本号、当前时刻、重算校验和；摘要沿用原槽的）。 */
+function auto5Envelope(stateJson, prevEnvJson) {
+  let prev = {};
+  try { prev = prevEnvJson ? JSON.parse(prevEnvJson) : {}; } catch { prev = {}; }
+  const env = { Format: 'slot1', Slot: AUTO5_KEY, Rev: 'v13' + Date.now().toString(16) + Math.random().toString(16).slice(2, 10), SavedAtMs: Date.now(),
+    Schema: String(JSON.parse(stateJson).SchemaVersion ?? prev.Schema ?? '') };
+  if (prev.Summary) env.Summary = prev.Summary;
+  env.Checksum = checksum(stateJson);
+  env.State = stateJson;
+  return JSON.stringify(env);
+}
+async function enterFromTitle(cont) {
   if (!await waitFor(`!!document.querySelector('.title-screen') || !!document.querySelector('.game')`, 90000)) throw new Error('页面加载超时');
-  if (state) await clickText('继续'); else await clickText('新游戏');
+  if (cont) {
+    // 「继续游戏」打开存档选择（默认选中第一份可读存档），再「读取存档」
+    await clickText('继续游戏');
+    if (!await waitFor(`!!document.querySelector('.save-picker')`, 10000)) throw new Error('没打开存档选择');
+    await clickText('读取存档');
+  } else await clickText('新游戏');
   if (!await waitFor(`!!document.querySelector('.game .center-scroll')`, 30000)) throw new Error('没进入主界面');
   await ev(`document.fonts.ready.then(() => true)`); await sleep(600);
 }
+/** 写入存档（null=清空全部存档键，开新局）后打开游戏：有存档时「继续游戏」→「读取存档」，否则「新游戏」。 */
+async function loadState(state) {
+  await send('Page.navigate', { url: new URL('icon-192.png', url).href }); await sleep(800);
+  if (state) {
+    const json = typeof state === 'string' ? state : JSON.stringify(state);
+    const prev = await ev(`localStorage.getItem(${JSON.stringify(AUTO5_KEY)})`);
+    await ev(`localStorage.setItem(${JSON.stringify(AUTO5_KEY)}, ${JSON.stringify(auto5Envelope(json, prev))}); localStorage.removeItem(${JSON.stringify(OWNER_KEY)})`);
+  } else {
+    await ev(`(() => { for (const k of Object.keys(localStorage)) if (k.startsWith(${JSON.stringify(SAVE_PREFIX)})) localStorage.removeItem(k); return true; })()`);
+  }
+  await send('Page.navigate', { url }); await sleep(800);
+  await enterFromTitle(!!state);
+}
+/** 菜单「保存并返回标题」：把当前进度写进每5分钟自动存档槽。 */
+async function saveToTitle() {
+  if (!await ev(`!!document.querySelector('.menu-modal')`)) await key('Escape');
+  if (!await clickText('保存并返回标题')) throw new Error('没找到「保存并返回标题」');
+  if (!await waitFor(`!!document.querySelector('.title-screen')`, 15000)) throw new Error('保存后没回到标题');
+}
 async function reloadContinue() {
   await send('Page.reload', { ignoreCache: true }); await sleep(800);
-  if (!await waitFor(`!!document.querySelector('.title-screen') || !!document.querySelector('.game')`, 90000)) throw new Error('页面加载超时');
-  await clickText('继续');
-  if (!await waitFor(`!!document.querySelector('.game .center-scroll')`, 30000)) throw new Error('没进入主界面');
-  await sleep(600);
+  await enterFromTitle(true);
 }
 async function readDialogues(max = 40) {
   for (let i = 0; i < max; i++) {
@@ -117,7 +159,11 @@ async function readDialogues(max = 40) {
   }
   return !await ev(`!!document.querySelector('.dlg-layer')`);
 }
-const savedJson = () => ev(`localStorage.getItem(${JSON.stringify(SAVE_KEY)})`);
+/** 每5分钟自动存档槽里的局内快照（State）；没有时 null。 */
+const savedJson = async () => {
+  const raw = await ev(`localStorage.getItem(${JSON.stringify(AUTO5_KEY)})`);
+  return raw ? JSON.parse(raw).State : null;
+};
 
 // ───────────── 测试存档：在新局（schema 9）存档上改出随身武器、穿戴与旧档 ─────────────
 const ITEM_BASE = { ExpiresAt: null, LoadedAmmo: 0, LoadedAmmoId: null, ReservedBy: null, PlacedOrder: null, Source: null,
@@ -191,7 +237,9 @@ const fileSafe = name => name.replace(/[\\/:*?"<>|\s×]+/g, '_');
       size0 = `${w}x${h}`;
       // 新局基础存档（读完开场对白）
       await loadState(null); await readDialogues();
+      await saveToTitle();
       const base = await savedJson();
+      if (!base) throw new Error('每5分钟自动存档槽里没有存档');
       try {
         if (steps.includes('equip')) {
           const { json } = stage(base, { items: [['stone_knife', 'carried'], ['kitchen_knife', 'carried'], ['wooden_spear', 'carried']] });

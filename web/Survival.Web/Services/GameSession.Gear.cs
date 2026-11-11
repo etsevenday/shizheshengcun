@@ -257,9 +257,22 @@ public sealed partial class GameSession
     {
         var it = State == null ? null : E.WornItem(S, GameState.PlayerId, slot);
         var res = Unequip(slot, toGround);
-        if (res.Ok && it != null) QueueFly(Panel == "gear" && GearActorId == GameState.PlayerId ? $"[data-gear-src=\"{it.InstanceId}\"]" : ShelfCardSelector(toGround ? S.Ground : ItemInstance.Carried, it.ItemId));
+        if (res.Ok && it != null) QueueFly(QuickUnequipFlyTarget(it, toGround));
         return res;
     }
+
+    /// <summary>
+    /// 右栏快捷卸下的去向卡（试玩修复 P2）：整备没开时是主界面随身／地面那张卡；整备开着且正看主角时是整备右侧那张真实来源卡；
+    /// 整备开着但正看别的队员时，去向卡被整备页盖住、页内也没有它，按 Q367 只亮可见端（起点槽行），不飞向被遮住的卡。
+    /// </summary>
+    private string QuickUnequipFlyTarget(ItemInstance it, bool toGround)
+    {
+        if (Panel != "gear") return ShelfCardSelector(toGround ? S.Ground : ItemInstance.Carried, it.ItemId);
+        return GearActorId == GameState.PlayerId ? $"[data-gear-src=\"{it.InstanceId}\"]" : FlyNoTarget;
+    }
+
+    /// <summary>去向不可见：survivalFx.fly 收到空选择器只亮起点。</summary>
+    public const string FlyNoTarget = "";
 
     /// <summary>主界面卡架里某物品的真实卡（堆叠卡「owner|itemId」，实例卡「owner|itemId|实例号」）。</summary>
     private static string ShelfCardSelector(string owner, string itemId) =>

@@ -20,6 +20,8 @@
             <h3>@GearPanelCopy.GiveTitle</h3>
             <button type="button" class="secondary" @onclick="G.GearBack">@GearPanelCopy.Back</button>
         </div>
+        @* 试玩修复 P1：标题与「返回」固定在上，双方预演、原因与确认固定在下，中间来源／接收人／数量独立滚动 *@
+        <div class="g3-wbody">
         <div class="g3-src-name"><span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span><b>@e.InstanceName(it)</b></div>
         <div class="g3-row"><span>@GearPanelCopy.Sources</span><b>@GearPanelCopy.OwnCarried</b></div>
         <div class="g3-row" role="radiogroup" aria-label="@GearPanelCopy.Receiver"><span>@GearPanelCopy.Receiver</span>
@@ -40,6 +42,8 @@
                 </span>
             </div>
         }
+        </div>
+        <div class="g3-wfoot">
         @if (p.HasOutcome)
         {
             var toName = g.To == null ? null : e.ActorDisplayName(s, g.To);
@@ -52,6 +56,7 @@
         @if (p.Blocked != null) { <div class="warn-text g3-why">@p.Blocked</div> }
         <div class="g3-actions">
             <button type="button" class="primary" disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmGive</button>
+        </div>
         </div>
     </div>
 }
