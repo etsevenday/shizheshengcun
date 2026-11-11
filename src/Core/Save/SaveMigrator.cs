@@ -11,10 +11,22 @@ namespace Survival.Core.Save
     {
         public IReadOnlyList<string> Conflicts { get; }
 
+        /// <summary>
+        /// 玩家看的冲突明细（S01「B40 Q403–Q411 第二轮定稿」Q403 第二张表）：按现有检查顺序，每句已带句末标点、相同句已去重；
+        /// 不带内部实例编号。空表示没有可确认的具体明细（用 Q403 的通用冲突句）。
+        /// </summary>
+        public IReadOnlyList<string> PlayerReasons { get; }
+
         public SaveMigrationConflictException(IReadOnlyList<string> conflicts)
+            : this(conflicts, Array.Empty<string>())
+        {
+        }
+
+        public SaveMigrationConflictException(IReadOnlyList<string> conflicts, IReadOnlyList<string> playerReasons)
             : base(string.Join("；", conflicts))
         {
             Conflicts = conflicts;
+            PlayerReasons = playerReasons;
         }
     }
 
@@ -200,8 +212,14 @@ namespace Survival.Core.Save
         {
             if (s.SchemaVersion != Schema3) return;
             var conflicts = new List<string>();
+            var player = new List<string>();   // Q403：同一检查点的玩家句（不带实例编号）
             foreach (var g in s.Items.GroupBy(i => i.InstanceId).Where(g => g.Count() > 1))
+            {
                 conflicts.Add($"物品#{g.Key}在存档里出现{g.Count()}次（同一物品多处归属）");
+                var ids = g.Select(i => i.ItemId).Distinct().ToList();
+                var name = ids.Count == 1 ? config.Items.FirstOrDefault(i => i.Id == ids[0])?.Name : null;
+                player.Add($"{(string.IsNullOrEmpty(name) ? "同一件物品" : name)}在存档中重复记录了{g.Count()}次，归属不一致。");
+            }
             var potIds = PotIds(s, config);
             var claimed = new Dictionary<int, string>();
             foreach (var l in config.Locations.Where(l => l.HasFire))
@@ -211,24 +229,37 @@ namespace Survival.Core.Save
                 var attached = fac.AttachedPotId is int a && potIds.Contains(a) && s.Items.First(i => i.InstanceId == a).Owner == l.Id ? a : (int?)null;
                 foreach (var act in new[] { s.Main, s.Sub }.Where(x => IsOldBoil(x) && x!.SourceLocation == l.Id))
                 {
-                    if (act!.PotInstanceId is not int b) { conflicts.Add("进行中的烧水没有记录所用的锅"); continue; }
+                    if (act!.PotInstanceId is not int b) { conflicts.Add("进行中的烧水没有记录所用的锅"); player.Add("进行中的烧水缺少用锅记录。"); continue; }
                     var pot = s.Items.FirstOrDefault(i => i.InstanceId == b);
-                    if (pot == null) { conflicts.Add($"进行中的烧水所用金属锅#{b}已不在存档里"); continue; }
+                    if (pot == null) { conflicts.Add($"进行中的烧水所用金属锅#{b}已不在存档里"); player.Add("进行中的烧水所用的金属锅已不在存档中。"); continue; }
                     if (!(pot.Owner == ItemInstance.Carried || pot.Owner == l.Id))
+                    {
                         conflicts.Add($"进行中的烧水所用金属锅#{b}不在{l.Name}，无法放进原火堆");
+                        player.Add("进行中的烧水所用的金属锅不在原火堆所在地点。");
+                    }
                     if (attached.HasValue && attached.Value != b)
+                    {
                         conflicts.Add($"{l.Name}火堆锅位上是金属锅#{attached}，而进行中的烧水用的是金属锅#{b}，不能凭默认顺序挑一把");
+                        player.Add("原火堆上的金属锅与进行中的烧水所用的锅不同，无法确定使用哪一口锅。");
+                    }
                 }
                 var pots = PotsForFire(s, l.Id, potIds);
                 if (pots.Count > config.Fire.MaxPots || pots.Count > config.Fire.ProcessingSlots)
+                {
                     conflicts.Add($"{l.Name}火堆最多容纳{config.Fire.MaxPots}口锅，旧档需要放入{pots.Count}口");
+                    player.Add($"原火堆最多容纳{config.Fire.MaxPots}口锅，旧存档需要放入{pots.Count}口。");
+                }
                 foreach (var p in pots)
                 {
-                    if (claimed.TryGetValue(p, out var other)) conflicts.Add($"金属锅#{p}同时关联{other}与{l.Name}的火堆");
+                    if (claimed.TryGetValue(p, out var other))
+                    {
+                        conflicts.Add($"金属锅#{p}同时关联{other}与{l.Name}的火堆");
+                        player.Add("同一口金属锅同时关联了两处火堆。");
+                    }
                     else claimed[p] = l.Name;
                 }
             }
-            if (conflicts.Count > 0) throw new SaveMigrationConflictException(conflicts.Distinct().ToList());
+            if (conflicts.Count > 0) throw new SaveMigrationConflictException(conflicts.Distinct().ToList(), player.Distinct().ToList());
         }
 
         /// <summary>

@@ -1,13 +1,12 @@
 using Microsoft.JSInterop;
+using Survival.Core.Save;
 
 namespace Survival.Web.Services;
 
 /// <summary>浏览器存储写入失败：Category 为浏览器异常类别名（如 QuotaExceededError），Message 为浏览器原始错误文本。</summary>
-public sealed class SaveWriteException : Exception
+public sealed class SaveWriteException : SaveStorageWriteException
 {
-    public string Category { get; }
-
-    public SaveWriteException(string category, string message) : base(message) => Category = category;
+    public SaveWriteException(string category, string message) : base(category, message) { }
 
     /// <summary>解析 survival.saveSet 的失败返回（“类别名\u001f错误文本”；没有分隔符时整段作错误文本）。</summary>
     public static SaveWriteException FromJs(string err)
@@ -57,4 +56,32 @@ public sealed class SaveStore
 
     /// <summary>B31a：把阅读字体（pixel/clear）与动画倍率落到页面。</summary>
     public void ApplyPresentation(string font, double motionK) => _js.InvokeVoid("survival.applyPresentation", font, motionK);
+}
+
+/// <summary>
+/// B40 多存档的浏览器存储（S01 Q335：各槽独立持久化键、原子替换）。读失败与“没有这个键”分开回报（Q403「浏览器暂时无法读取存档」），
+/// 写入为单键 setItem（要么旧值、要么新值），失败按 Q282 带浏览器异常类别名抛出。
+/// </summary>
+public sealed class BrowserSaveStorage : ISaveStorage
+{
+    private readonly IJSInProcessRuntime _js;
+
+    public BrowserSaveStorage(IJSRuntime js) => _js = (IJSInProcessRuntime)js;
+
+    /// <summary>survival.slotGet 返回：“0”没有、“1”+值、“2”+错误文本。</summary>
+    public string? Get(string key)
+    {
+        var r = _js.Invoke<string?>("survival.slotGet", key);
+        if (string.IsNullOrEmpty(r) || r[0] == '0') return null;
+        if (r[0] == '1') return r[1..];
+        throw new SaveStorageReadException(r[1..]);
+    }
+
+    public void Set(string key, string value)
+    {
+        var err = _js.Invoke<string>("survival.slotSet", key, value);
+        if (!string.IsNullOrEmpty(err)) throw SaveWriteException.FromJs(err);
+    }
+
+    public void Remove(string key) => _js.InvokeVoid("survival.saveRemove", key);
 }

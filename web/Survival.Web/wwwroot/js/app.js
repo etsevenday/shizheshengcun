@@ -17,6 +17,27 @@ window.survival = {
       return name + '\u001f' + String(e && e.message ? e.message : e);
     }
   },
+  // B40 多存档（S01 Q335）：每个槽一个独立键，单次 setItem 原子替换。slotGet 区分“没有”与“读不出”（Q403）：
+  // 返回 '0' 没有、'1'+值、'2'+错误文本；slotSet 失败回传“异常类别名 + \u001f + 错误文本”（Q282 同 saveSet）。
+  slotGet: function (key) {
+    try {
+      var v = window.localStorage.getItem(key);
+      return v === null ? '0' : '1' + v;
+    } catch (e) {
+      try { console.warn('[survival] 存档读取失败', key, e); } catch (e2) { }
+      return '2' + String(e && e.message ? e.message : e);
+    }
+  },
+  slotSet: function (key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+      return '';
+    } catch (e) {
+      try { console.warn('[survival] 存档写入失败', key, e); } catch (e2) { }
+      var name = e && e.name ? String(e.name) : '';
+      return name + '\u001f' + String(e && e.message ? e.message : e);
+    }
+  },
   // 地点变化后地块两行的横滚容器（相邻地图子栏、第二行）复位到最左（渲染后可能还有一次布局，下一帧再复位一次）
   resetDesk: function () {
     var go = function () {
