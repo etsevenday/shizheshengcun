@@ -289,6 +289,7 @@ namespace Survival.Core.Engine
             var fresh = s.Progress.Flags.Add(Config.Safehouse.RegisteredFact);
             if (fresh) RefreshGates(s);
             s.WorldEnemies.RemoveAll(w => w.LocationId == locationId && !w.Engaged);
+            PruneEnemyCards(s);
             if (s.Skills.TryGetValue(Crafting, out var cr) && cr.Level < 1) cr.Level = 1;
             UpdateFlags(s);
             return text + $"；探索度{s.Locations[locationId].Progress}%、已记营区登记、清掉当地敌踪：{(SafehouseSiteReasons(s, locationId).FirstOrDefault() ?? "可以建安全屋")}。";

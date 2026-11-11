@@ -102,6 +102,8 @@ namespace Survival.Core.Engine
             if (en.SafeLocations.Contains(loc)) return 0;
             if (_locs.TryGetValue(loc, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior)) return 0;
             if (s.GameMinute < s.EncounterGraceUntil) return 0;
+            // B41a（R05 Q417）：同地已有未隐藏的存续随机组卡时，探索／清理不再形成新组
+            if (CardsV2(s) && VisibleGroupCardAt(s, loc) != null) return 0;
             var key = type == ActionType.Explore ? "explore" : type == ActionType.Clear ? "clear" : "";
             double risk;
             var nodePct = lc == null ? null : type == ActionType.Explore ? lc.EncounterBaseExplorePercent : type == ActionType.Clear ? lc.EncounterBaseClearPercent : null;
@@ -117,6 +119,7 @@ namespace Survival.Core.Engine
         public string EncounterNote(GameState s, string loc, ActionType type)
         {
             var en = Config.Encounters;
+            if (CardsV2(s)) return GroupCardPreviewNote(s, loc, type);
             if (TutorialGateOpen(s)) return "首战（农野荒地的游荡尸）胜利前不会随机遇敌";
             if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay) return $"第{en.NoRandomBeforeDay}日起完成后才可能遇到本地敌人（今天不会）";
             if (en.SafeLocations.Contains(loc)) return "营地是安全区，不会遇敌";
@@ -201,6 +204,8 @@ namespace Survival.Core.Engine
             foreach (var w in s.WorldEnemies.OrderBy(w => w.Id).ToList())
             {
                 if (w.Engaged || Hidden(s, w) || w.FixedOf != null) continue;
+                // B41a（R05 Q417）：随机组卡成员不自行巡游，也不抽巡游随机数
+                if (w.GroupId != null) continue;
                 // B20：人口区的敌人只在同区物理相邻、有空位的节点间巡游（不跨区、不进城市/地牢）
                 if (PopRegionOf(w.LocationId) != null)
                 {
@@ -248,6 +253,8 @@ namespace Survival.Core.Engine
             var loc = s.CurrentLocation;
             var p = EncounterChance(s, loc, a.Type);
             if (p <= 0 || a.EncounterRoll >= p) return;
+            // B41a：新版敌踪不产生“待处理敌踪”，改为形成一张随机组卡（不阻断其他操作）
+            if (CardsV2(s)) { FormRandomGroupCard(s, a, loc); return; }
             var group = LocalHostiles(s, loc).Take(Config.Encounters.GroupMax).ToList();
             if (group.Count == 0) return;
             s.Encounter = new PendingEncounter

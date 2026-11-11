@@ -329,7 +329,8 @@ namespace Survival.Core.Engine
             if (s.Encounter != null && r.Type != ActionType.Bypass) return "发现敌踪：请先选择接敌或绕行";
             if (r.Type == ActionType.Bypass)
             {
-                if (s.Encounter == null) return "当前没有需要绕行的敌踪";
+                // B41a：新版敌踪下线绕行入口（不会再有待处理敌踪；沿用原拒绝句）
+                if (s.Encounter == null || CardsV2(s)) return "当前没有需要绕行的敌踪";
                 plan.Planned = Config.Encounters.BypassMinutes;
                 plan.Label = "绕行敌踪";
                 plan.TargetId = s.Encounter.LocationId;

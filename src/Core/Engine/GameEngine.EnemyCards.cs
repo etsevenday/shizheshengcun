@@ -151,6 +151,53 @@ namespace Survival.Core.Engine
             return alive.Count == 0 ? "" : $"{_enemies[alive[0].EnemyId].Name}等{alive.Count}只";
         }
 
+        /// <summary>某地未隐藏的存续随机组卡（至少一名成员还活着、未隐藏）；没有为 null。</summary>
+        public EnemyGroupCard? VisibleGroupCardAt(GameState s, string loc) =>
+            s.EnemyCards.Groups.Where(g => g.LocationId == loc).OrderBy(g => g.Id)
+                .FirstOrDefault(g => GroupMembers(s, g).Any(w => !Hidden(s, w)));
+
+        /// <summary>
+        /// 新随机组卡的候选（R05 Q417、Q436）：当地未交战、未隐藏的敌对敌人里，先排除动物和已在组里的，按最早出现取至多 groupMax 只，
+        /// 再按当时队伍容量 C 截取；超容量者保留独立单卡。没有非动物合法候选时为空（不用动物补位、不重抽）。
+        /// </summary>
+        public List<WorldEnemy> GroupCardCandidates(GameState s, string loc) =>
+            LocalHostiles(s, loc).Where(w => w.GroupId == null && !IsAnimal(w.EnemyId))
+                .Take(Config.Encounters.GroupMax).Take(BattleCapacity(s)).ToList();
+
+        /// <summary>形成随机组卡的日志（逐字稿「结果、取消与队长回退」）：「发现敌踪：{敌踪名}。」。</summary>
+        public static string GroupCardFoundText(string title) => $"发现敌踪：{title}。";
+
+        /// <summary>
+        /// 探索／清理完成、原结果已提交、概率判定已命中后形成随机组卡（R05 Q417）：按成组时容量锁名单，成员挂到组上（原单卡不再另出）；
+        /// 不阻断其他操作、不设“待处理敌踪”。没有合法候选就不形成组卡。
+        /// </summary>
+        private void FormRandomGroupCard(GameState s, ActionState a, string loc)
+        {
+            var members = GroupCardCandidates(s, loc);
+            if (members.Count == 0) return;
+            var g = AddGroupCard(s, loc, members, a.Type == ActionType.Explore ? "explore" : "clear", s.GameMinute);
+            Emit(s, GameEventKind.Encounter, GroupCardFoundText(GroupCardTitle(s, g)), null, members.Select(w => $"enemy:{w.Id}"));
+        }
+
+        /// <summary>
+        /// 探索／清理预览里的随机组卡说明（逐字稿「系统说明与旧句替换」预览各句，Q438）。几种“不会形成”的情况沿旧版预览的判断顺序取一条：
+        /// 首战未胜 → 未到开放日 → 安全区 → 地牢／城市与公共地点 → 旧档历史全地点保护 → 当前已有组卡 → 普通风险行。
+        /// </summary>
+        public string GroupCardPreviewNote(GameState s, string loc, ActionType type)
+        {
+            var en = Config.Encounters;
+            if (TutorialGateOpen(s)) return "首战胜利前不会形成随机遭遇组卡。";
+            if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay) return $"从第{en.NoRandomBeforeDay}日起，探索或清理后才可能发现随机组卡。";
+            if (en.SafeLocations.Contains(loc)) return "安全区不会形成随机遭遇组卡。";
+            if (_locs.TryGetValue(loc, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior))
+                return lc.IsDungeon ? "地牢房间按固定敌踪处理。" : "城市与公共地点不会形成随机遭遇组卡。";
+            // Q438：历史保护沿原截止，时长 = 原截止 − 当前世界时刻；到期不再显示
+            if (s.GameMinute < s.EncounterGraceUntil) return $"旧存档接敌保护剩余{Clock.Duration(s.EncounterGraceUntil - s.GameMinute)}。";
+            if (VisibleGroupCardAt(s, loc) != null) return "当前已有一组敌踪，本次探索或清理不会形成新组卡。";
+            var p = EncounterChance(s, loc, type);
+            return $"完成后发现敌踪概率{Fmt.Pct(p)}（本地敌对{LocalHostiles(s, loc).Count}/上限{LocalCapOf(loc)}）。";
+        }
+
         /// <summary>
         /// 世界敌人被移除（死亡、清场）后修剪组卡：名单里已不存在的成员删去，成员全灭的组卡移除，指向已不存在的组的 GroupId 清掉。
         /// 标题变化、成员伤亡不改变组身份。

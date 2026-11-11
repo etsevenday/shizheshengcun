@@ -1425,6 +1425,7 @@ namespace Survival.Core.Engine
             else if (cfg.ExtraDrop is EnemyDropConfig xd && (xd.Chance >= 1 || s.Rng.NextDouble() < xd.Chance))
                 b.Loot.Add(new BattleLoot { WorldId = e.WorldId, ItemId = xd.ItemId, Count = xd.Count });
             s.WorldEnemies.RemoveAll(w => w.Id == e.WorldId);
+            PruneEnemyCards(s);   // B41a：组卡成员死亡从名单删去，全灭即移除组卡
             DeathSplash(s, b, e, cfg);
         }
 
@@ -1563,7 +1564,8 @@ namespace Survival.Core.Engine
             var at = ReinforceSlot(b);
             if (at <= 0) return;
             b.ReinforcementUsed = true;
-            var cand = s.WorldEnemies.Where(w => w.LocationId == b.LocationId && !w.Engaged && !Hidden(s, w) && w.FixedOf == null
+            // B41a（R05 Q417）：随机组卡成员不被噪声征用
+            var cand = s.WorldEnemies.Where(w => w.LocationId == b.LocationId && !w.Engaged && !Hidden(s, w) && w.FixedOf == null && w.GroupId == null
                                                  && _enemies[w.EnemyId].Family == Config.Noise.ExistingEnemyFamilyFilter)
                 .OrderBy(w => w.Id).FirstOrDefault();
             if (cand == null)
