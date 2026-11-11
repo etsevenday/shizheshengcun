@@ -1,0 +1,72 @@
+@inherits GameComponent
+
+@* B33（Q435-2、Q450、Q459、Q462）：整备页内点来源卡或已穿戴装备时，右栏临时覆盖的只读整备详情。主角与同行者统一只读：
+   真实位置、名称品质、说明／效果原句、重量、耐久成色、装备各行、保质、只读批次及锅内容；不显示按主角自用计算的
+   「即时效果」「5分钟后」「耗时」预估，不提供批次点选和操作页脚。不改主界面真正选中、不计 PRO01、不触发引导。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var it = Item;
+    var cfg = e.Item(it.ItemId);
+}
+
+<div class="detail-scroll gear-peek" data-gear-peek="@it.InstanceId">
+    <div class="op-head">
+        <div class="eyebrow">@e.GearPlaceText(s, it)</div>
+        <h2>@e.InstanceName(it)@if (cfg.IsEquipment) { <small class="qtag q-@(it.Quality ?? "white")">@e.QualityName(it)</small> }@if (it.Count > 1) { <small class="muted"> ×@it.Count</small> }</h2>
+        <p>@(cfg.Use != null && !cfg.Use.IsMedicine ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc)</p>
+    </div>
+    <div class="detail-icon">@Icons.Markup(cfg.Id)</div>
+    <div class="lines">
+        <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div>
+        <div><span>合计重量</span><b>@Ui.Kg(e.ItemGrams(s, it))公斤@(e.IsPot(it) ? "（含锅内）" : "")</b></div>
+        @if (it.MaxDurability.HasValue && it.Durability.HasValue)
+        {
+            <div><span>耐久</span><b class="@(it.Durability <= 0 ? "danger-text" : "")">@(it.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(it))</b></div>
+            <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(it))</b></div>
+        }
+        @if (e.Weapon(cfg.Id) is WeaponConfig { CanAttack: true } wp)
+        {
+            <div><span>武器</span><b>@(wp.SkillId == "" ? "（无对应熟练度）" : e.SkillName(wp.SkillId)) · 伤害@(Ui.N(wp.DamageMin))—@(Ui.N(wp.DamageMax)) · 命中能力@(Ui.T(wp.AccuracyRating)) · 暴击能力@(Ui.T(wp.CritRatingBase))</b></div>
+            <div><span>攻击范围</span><b>@($"我方{GameEngine.PosList(GameEngine.OwnPositionsOf(wp))}→敌方{GameEngine.PosList(GameEngine.TargetPositionsOf(wp))}")</b></div>
+        }
+        @foreach (var (label, value) in e.EquipDetailLines(s, it))
+        {
+            <div class="@(label == "品质" ? "q-" + (it.Quality ?? "white") : "")"><span>@label</span><b>@value</b></div>
+        }
+        @if (cfg.ShelfLifeMinutes.HasValue)
+        {
+            <div><span>保质期</span><b>@(cfg.ShelfLifeMinutes / 60)小时</b></div>
+        }
+        @if (it.ExpiresAt.HasValue)
+        {
+            @* 只读批次：这一份的到期，不提供点选 *@
+            <div><span>批次</span><b>×@it.Count@(it.ReservedBy != null ? " · 预留" : "") · @(e.IsHeatProtected(s, it) ? Ui.FreshOf(e, s, it) : Ui.Fresh(it.ExpiresAt.Value - s.GameMinute))</b></div>
+        }
+    </div>
+    @if (e.IsPot(it))
+    {
+        var pc = e.PotConfig(it);
+        var liquids = e.PotLiquids(s, it.InstanceId);
+        var foods = e.PotFood(s, it.InstanceId);
+        <div class="pot-detail">
+            <div class="lines">
+                @if (CardStates.PotWaterLine(e, s, it) is string water) { <div><span>水量</span><b>@water</b></div> }
+                <div><span>食材</span><b>@foods.Count/@pc.FoodSlots</b></div>
+                <div><span>处理进度</span><b>@e.ContentStatus(s, it)</b></div>
+            </div>
+            @foreach (var c in liquids)
+            {
+                <ItemRow Icon="@c.ItemId" Name="@e.ItemName(c.ItemId)" Qty="@($"×{c.Count}")" Status="@($"{c.Count * pc.UnitMl}毫升")" />
+            }
+            @foreach (var f in foods)
+            {
+                <ItemRow Icon="@f.ItemId" Name="@e.ItemName(f.ItemId)" Qty="×1" Status="@e.ContentStatus(s, f)" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ItemInstance Item { get; set; } = default!;
+}

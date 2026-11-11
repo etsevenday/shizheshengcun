@@ -20,7 +20,9 @@ public class B29FeedUiWiringTests
         Assert.That(card, Does.Contain("m.UseId ?? (m.Instance is ItemInstance fi && e.IsCanteen(fi)"), "普通卡、锅水走 UseId，水壶走实例");
         Assert.That(card, Does.Contain("e.FeedEntry(s, feedId)"));
         Assert.That(Web("Components/PartyPanel.razor"), Does.Contain("G.TogglePartyItems(id)").And.Contain("e.CompanionCarried(s, id)").And.Contain("G.OpenFeed(fe, anchor, id)"));
-        Assert.That(Web("Components/GearOverlay.razor"), Does.Contain("e.FeedEntry(s, inst.InstanceId)").And.Contain("G.DropFeed();"));
+        Assert.That(Web("Components/GearOverlay.razor"), Does.Contain("e.FeedEntry(s, inst.InstanceId)"));
+        // B33（Q429、Q453-5）：整备切人清掉上一人的食饮意图（页内状态移到 GameSession.Gear）
+        Assert.That(Web("Services/GameSession.Gear.cs"), Does.Contain("DropFeed();"));
     }
 
     [Test]
@@ -28,7 +30,7 @@ public class B29FeedUiWiringTests
     {
         var screen = Web("Components/GameScreen.razor");
         Assert.That(screen, Does.Contain("<FeedPop />"));
-        Assert.That(screen.IndexOf("G.CancelFeed()"), Is.LessThan(screen.IndexOf("G.CancelGive()")), "Esc 先收食饮盘");
+        Assert.That(screen.IndexOf("G.CancelFeed()"), Is.LessThan(screen.IndexOf("G.GearBack()")), "Esc 先收食饮盘");
         Assert.That(Web("Components/CardPop.razor"), Does.Contain("G.FeedPending == null"));
     }
 

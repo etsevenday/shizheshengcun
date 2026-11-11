@@ -250,6 +250,8 @@
             try
             {
                 if (sw is { } x) await JS.InvokeVoidAsync("survivalFx.swap", x.Owner, x.ItemId);
+                // B33（Q435）：整备更换、交接、卸下与右栏快捷卸下的成功轨迹（起点在提交前已 mark）
+                if (G.TakeFly() is string fly) await JS.InvokeVoidAsync("survivalFx.fly", fly);
                 await JS.InvokeVoidAsync("survivalFx.sceneSync", G.SceneSerial);
             }
             catch (JSException) { /* 旧缓存 app.js：只少了表现，结果照常 */ }
@@ -403,7 +405,7 @@
 
     /// <summary>常态可关闭的子层，每次只退一级：数量框 → 状态浮层 → 就近操作浮窗（只收起、不提交） → 鸟瞰说明/鸟瞰 → 点火工具菜单 → 食饮与交接浮窗 → 面板里的选中 → 系统说明逐层 → 面板 → 人物二级页 → 清选中。</summary>
     private bool NormalLayer() =>
-        G.PendingDrop != null || G.StatusPinned != null || G.Pop != null || G.Panel != null || G.IgniteMenuOpen || G.FeedPending != null || G.GivePending != null
+        G.PendingDrop != null || G.StatusPinned != null || G.Pop != null || G.Panel != null || G.IgniteMenuOpen || G.FeedPending != null || G.GearHasSubLayer
         || (G.CharPage != null && G.DetailTab == DetailTab.Character) || G.Selected.Kind != SelectionKind.None;
 
     private void NormalStep()
@@ -419,7 +421,8 @@
         else if (G.IgniteMenuOpen) { G.Hover(null); G.CloseIgniteMenu(); }
         // B10 试玩修复 2/6：最上层先退——交接确认浮窗、面板开着时选中卡的操作浮窗，再到面板本身
         else if (G.FeedPending != null && G.Panel != "help") G.CancelFeed();
-        else if (G.GivePending != null) G.CancelGive();
+        // B33（Q453-8、Q460）：整备交接盘→比较／来源工作区→空态逐层退回，空态时下一步才关整备
+        else if (G.GearHasSubLayer) G.GearBack();
         // B32d（Q378）：选卡盘已因来源被面板盖住收起时，Esc 直接退面板（焦点已交给面板），不先清选中
         else if (G.Panel != null && G.Panel != "help" && !G.CardPopCovered && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid) G.ClearSelection();
         else if (G.Panel == "help") G.HelpBack();

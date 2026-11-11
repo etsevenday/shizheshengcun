@@ -719,6 +719,23 @@ window.survivalFx = (function () {
     var zone = document.querySelector('[data-drop="zone:' + owner + '"]');
     // 堆叠卡 data-card 为「owner|itemId」，实例卡为「owner|itemId|实例号」
     var to = zone ? zone.querySelector('[data-card="' + owner + '|' + itemId + '"], [data-card^="' + owner + '|' + itemId + '|"]') : null;
+    playTo(to, from);
+  }
+  // B33（Q435、Q453-7）：整备的更换、交接、卸下与右栏快捷卸下——提交前由页面记下起点（mark），成功后播起点→去向一次；
+  // 同 Q367：只有一端可见时亮可见的那端，两端都看不见只留原结果提示，减少动态效果时只静态描一次框
+  var marked = null;
+  function mark(sel) {
+    var el = sel ? document.querySelector(sel) : null;
+    if (!el) { marked = null; return; }
+    var art = el.querySelector('.eq-ico svg, .eq-ico img, svg, img');
+    marked = { el: el, rect: el.getBoundingClientRect(), art: art ? art.outerHTML : '', t: Date.now() };
+  }
+  function fly(toSel) {
+    var from = marked && Date.now() - marked.t < 4000 ? marked : null;
+    marked = null;
+    setTimeout(function () { playTo(toSel ? document.querySelector(toSel) : null, from); }, 30);
+  }
+  function playTo(to, from) {
     var tr = to ? to.getBoundingClientRect() : null;
     var fr = from ? from.rect : null;
     var toOk = visible(tr), fromOk = visible(fr);
@@ -763,5 +780,5 @@ window.survivalFx = (function () {
       art.animate([{ opacity: 0 }, { opacity: 0, offset: out / (out + inn) }, { opacity: 1 }], { duration: out + inn, easing: 'ease-out' });
     } else old.remove();
   }
-  return { note: note, swap: swap, lit: lit, sceneSync: sceneSync };
+  return { note: note, swap: swap, lit: lit, sceneSync: sceneSync, mark: mark, fly: fly };
 })();

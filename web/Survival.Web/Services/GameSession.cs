@@ -33,7 +33,7 @@ public enum DetailTab { Object, Character }
 /// 网页壳的会话：持有配置、引擎与当前状态，驱动 5 分钟段循环并在每段之间做进度动画。
 /// 所有规则判断都交给内核，这里只负责调度、存档与界面状态。
 /// </summary>
-public sealed class GameSession
+public sealed partial class GameSession
 {
     private readonly HttpClient _http;
     private readonly SaveStore _store;
@@ -1252,6 +1252,7 @@ public sealed class GameSession
         SyncCommitMark();
         ResetOnLocationChange();
         ReconcileFeed();
+        ReconcileGear();
         OnDialogueOnset();
         CityOverviewTick();
         CloseStaleFormation();
@@ -3147,33 +3148,6 @@ public sealed class GameSession
         if (InBattleUi || DialogueLocked || targets.Count == 0 || left) FeedPending = null;
     }
 
-    /// <summary>待确认的交接（A10 §7.2：先在短浮窗列双方最终重量/卡数，确认再提交；Esc/取消退出）。</summary>
-    public GiveDraft? GivePending { get; set; }
-
-    public void AskGive(string fromId, string toId, int instanceId, int count)
-    {
-        GivePending = new GiveDraft(fromId, toId, instanceId, count);
-        Notify();
-    }
-
-    public void CancelGive()
-    {
-        GivePending = null;
-        Notify();
-    }
-
-    public ActionResult ConfirmGive()
-    {
-        var d = GivePending;
-        GivePending = null;
-        if (d == null) return ActionResult.Fail("没有待确认的交接");
-        return GiveTo(d.From, d.To, d.InstanceId, d.Count);
-    }
-
-    /// <summary>队员交接（A10 §7.2）：0 时间、原子，双方卡数/重量由内核一次校验。</summary>
-    public ActionResult GiveTo(string fromId, string toId, int instanceId, int count) =>
-        Commit(E.Give(S, fromId, toId, instanceId, count, Guid.NewGuid().ToString("N")));
-
     /// <summary>旧档非法同类双武器：已在安全空闲，弹整理窗（先于超五卡整理，B3 H8）。</summary>
     public bool DuplicateWeaponsPending => State != null && E.DuplicateWeaponsIllegal(S) && E.OverflowResolvable(S);
 
@@ -3380,5 +3354,3 @@ public sealed class GameSession
     }
 }
 
-/// <summary>一次待确认的队员交接（B10 试玩修复 2）。</summary>
-public sealed record GiveDraft(string From, string To, int InstanceId, int Count);

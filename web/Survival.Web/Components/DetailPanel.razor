@@ -19,7 +19,9 @@
     // 不再换成「预测」（采到库存 0 后按钮变禁用、指针仍停在上面时，原来会一直停在预测）
     var hover = sel.Kind == SelectionKind.Resource && G.HoverPreview is { Type: ActionType.Gather, ToolInstanceId: null, BareHands: false } hp && hp.TargetId == sel.Id
         ? null : G.HoverPreview;
-    var shownTab = !battlePanel && hover != null && G.Panel == null ? DetailTab.Object : tab;
+    // B33（Q450）：整备页内点来源卡或已穿戴装备，只读整备详情临时覆盖右栏（不改真正选中与页签记忆）；关闭或切人即恢复
+    var gearPeek = battlePanel || G.BattleFullscreen ? null : G.GearPeekItem;
+    var shownTab = gearPeek != null || (!battlePanel && hover != null && G.Panel == null) ? DetailTab.Object : tab;
 }
 
 <aside class="panel detail" aria-label="@($"{ShellText.ObjectTab}与{ShellText.CharacterTab}")" inert="@G.DialogueLocked">
@@ -51,6 +53,10 @@
     {
         @* 指向或聚焦动作按钮、拖拽悬停时的临时预测；离开后回到原页签（统一卡片案第 3 节、v0.7 第 4.1 节） *@
         <PreviewView Request="G.HoverPreview" Eyebrow="@($"预测 · {e.LocName(s.CurrentLocation)}")" Title="@G.HoverTitle" Confirmable="false" />
+    }
+    else if (gearPeek != null)
+    {
+        <GearPeekDetail Item="gearPeek" />
     }
     else if (tab == DetailTab.Character)
     {

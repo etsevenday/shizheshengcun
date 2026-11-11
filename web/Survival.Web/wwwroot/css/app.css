@@ -1427,9 +1427,57 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .gear-member { display: flex; flex-direction: column; align-items: flex-start; padding: 4px 10px; border: 1px solid var(--line); border-radius: 4px; background: #1f2721; color: inherit; }
 .gear-member.on { border-color: var(--accent); background: #2c3427; }
 .gear-member small { color: var(--muted); font-size: var(--fs-aux); }
-.gear-cap { margin-left: auto; }
-.gear-body { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, 1fr); gap: 10px; min-height: 0; overflow: hidden; }
-.gear-col { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-height: 0; padding-right: 2px; }
+/* B33 整备三栏（P03a，Q429、Q433）：左队员、中立绘与七槽、右来源列表与工作区；无底部托盘。人物图最先缩小，七槽与本人随身组同屏 */
+.g3-body { display: grid; grid-template-columns: minmax(150px, .7fr) minmax(0, 1.15fr) minmax(0, 1.5fr); gap: 10px; min-height: 0; overflow: hidden; }
+.g3-col { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-height: 0; padding-right: 2px; }
+.g3-cap { float: right; color: var(--muted); }
+.g3-member-list { display: flex; flex-direction: column; gap: 4px; }
+.g3-member { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: #1f2721; color: inherit; text-align: left; width: 100%; }
+.g3-member.on { border-color: var(--accent); background: #2c3427; }
+.g3-face { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 4px; background: #11160f; }
+.g3-mtext { display: flex; flex-direction: column; min-width: 0; }
+.g3-mtext small { color: var(--muted); font-size: var(--fs-aux); }
+.g3-figure { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.g3-figure img { height: clamp(48px, 12vh, 120px); width: auto; }
+.g3-summary { display: flex; justify-content: center; gap: 14px; font-size: var(--fs-aux); }
+.g3-slots { display: flex; flex-direction: column; gap: 3px; }
+.gear-slot { cursor: pointer; }
+.gear-slot.target { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.gear-slot.peek { border-color: #93815e; }
+.g3-side { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 8px; overflow: hidden; }
+.g3-sources { display: flex; flex-direction: column; gap: 4px; }
+.g3-group { display: flex; flex-direction: column; gap: 2px; }
+.g3-group.ground { max-height: 22vh; overflow-y: auto; }
+.g3-gh { font-size: var(--fs-aux); color: var(--muted); }
+.g3-card { cursor: grab; padding: 1px 6px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.g3-card .gs-item { flex-wrap: nowrap; }
+.g3-card .gs-item b { white-space: nowrap; }
+.g3-card .gs-item small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.g3-card .gs-item .eq-ico svg { width: 20px; height: 20px; }
+.g3-card .gs-btns { grid-column: auto; }
+.g3-card.on { border-color: var(--accent); background: #2c3427; }
+.g3-work { border-top: 1px solid var(--line); padding-top: 6px; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
+.g3-whead { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.g3-whead h3 { margin: 0; font-size: var(--fs-body); }
+.g3-whead button, .g3-actions button { width: auto; min-width: 0; padding: 3px 14px; }
+.g3-row { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; font-size: var(--fs-aux); }
+.g3-row > span:first-child { color: var(--muted); min-width: 6em; }
+.g3-slot-pick, .g3-dest-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.g3-slot-pick .eq-btn.on { background: #3d4a3a; }
+.g3-dest-opts label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.g3-table { width: 100%; border-collapse: collapse; font-size: var(--fs-aux); table-layout: fixed; }
+.g3-table caption { text-align: left; color: var(--muted); font-size: var(--fs-aux); }
+.g3-table th, .g3-table td { border-top: 1px solid var(--line); padding: 2px 4px; vertical-align: top; text-align: left; overflow-wrap: anywhere; }
+.g3-table thead th { color: var(--muted); font-weight: normal; }
+.g3-table tbody th { color: var(--muted); font-weight: normal; width: 5.5em; }
+.g3-table .g3-names td { font-weight: 600; }
+.g3-effects { display: flex; flex-direction: column; gap: 3px; font-size: var(--fs-aux); }
+.g3-eg { display: flex; flex-direction: column; gap: 1px; }
+.g3-why { font-size: var(--fs-aux); }
+.g3-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.g3-src-name { display: flex; align-items: center; gap: 6px; }
+.g3-src-name .eq-ico svg { width: 24px; height: 24px; }
+.g3-empty { font-size: var(--fs-aux); }
 .gear-slot, .gear-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: #1b221c; }
 .gear-card { grid-template-columns: minmax(0, 1fr); }
 .gear-slot.empty { opacity: .75; border-style: dashed; }
@@ -1481,9 +1529,6 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .gear-panel .eq-btn:hover:not(:disabled, .gate-off) { background: #3d4a3a; }
 .gear-panel .eq-btn.alt { border-color: var(--warn); }
 .gear-panel .eq-btn:is(:disabled, .gate-off) { background: transparent; color: #7d8578; border: 1px dashed var(--line); cursor: not-allowed; }
-.give-confirm { margin: 0 12px 6px; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 6px; background: #26301f; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
-.give-confirm > b { flex-basis: 100%; }
-.give-confirm .btn-row { margin-left: auto; display: flex; gap: 8px; }
 .craft-mats .batch-row { margin: 0 0 4px; }
 .craft-mats .batch-row .tbar-step { width: 32px; min-height: 30px; }
 /* Q112 锻炉分账：份数/成品/原料炭/燃料炭/总炭/现有缺少，一行换行排 */
@@ -1491,7 +1536,6 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .forge-fuel b { margin-left: 3px; }
 .mat-grid { grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); }
 .mat-grid .irow.mat-row { padding-top: 3px; padding-bottom: 3px; }
-.give-confirm .btn-row button { white-space: nowrap; width: auto; min-width: 0; padding: 4px 14px; }
 
 /* B13 序章任务框（A10-TUTOR §3；试玩修复 M269 从地图卡内移到右栏页签下方）：占布局、不浮在卡上；1 主目标 + 下一步 + 建议/任务册/远行准备 + 至多一条系统提示 */
 .task-box { flex: 0 0 auto; border: 1px solid #93815e; border-radius: 4px; padding: 5px 8px 6px; background: #0d1714; font-size: var(--fs-aux); line-height: 1.4; color: #e6e1cf; }

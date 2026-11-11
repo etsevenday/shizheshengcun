@@ -1,8 +1,10 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
-@* B10 整备面板（A10 §7.1/§7.2）：顶部同行队员头像（每人重量与五卡），左为当前角色七槽，中为他的随身五卡（装备到××、交给队友），
-   右为当前地面可穿的装备。换装/交接都走内核同一校验（最终状态一次校验，失败原样），0 时间；查看其他成员不转移物品。
-   覆盖①②两行，③当前地面、④主角随身保持可见。 *@
+@* B33 整备（P03a，《重墨 V2 开工裁定与界面逐字稿》B33 Q429—Q435、第二轮 Q448—Q453、Q458—Q462；05 P03；INK2-09、UX2-A05—A07）：
+   三栏——左队员、中立绘与现有七槽、右「来源」列表（本人随身全部根卡最多5张含非装备，当前地面只列可穿装备）及操作工作区；不设底部托盘。
+   点来源卡：可穿的打开同槽比较（P03b），非装备只显示名称与「交给…」；拖候选到槽等同点选并明确选该槽。比较、拖入、切槽都只读预演，
+   只有「确认更换」「确认交接」与槽上一键卸下提交。页内点选只临时覆盖右栏只读详情（Q450），不改主界面选中。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -11,143 +13,129 @@
     var carriedOwner = ItemInstance.CarriedOwner(me);
     var carried = s.Items.Where(i => i.Owner == carriedOwner).OrderBy(i => i.InstanceId).ToList();
     var ground = s.Items.Where(i => i.Owner == s.Ground && e.IsWearable(i.ItemId)).OrderBy(i => i.InstanceId).ToList();
-    var timing = e.EquipTimingBlocked(s, me);
+    var src = G.GearSource;
+    var name = e.ActorDisplayName(s, me);
 }
 
-<div class="sub-panel gear-panel" role="dialog" aria-label="整备">
+<div class="sub-panel gear-panel gear3" role="dialog" aria-label="@GearPanelCopy.Title">
     <div class="sub-head">
-        <div>
-            <h2>整备</h2>
-            <span class="sub" title="七槽穿戴不占五张物资卡，重量计入本人；交接只在同行队员之间、安全空闲时进行，双方卡数与重量一次校验">七槽装备 · 随身五卡 · 队员交接（不花时间）ⓘ</span>
-        </div>
-        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+        <div><h2>@GearPanelCopy.Title</h2></div>
+        <button class="secondary" @onclick="Close">@GearPanelCopy.Close<kbd>Esc</kbd></button>
     </div>
-    <div class="gear-members" role="tablist" aria-label="同行队员">
-        @foreach (var id in members)
-        {
-            var aid = id;
-            var kg = e.CarriedGramsOf(s, aid);
-            <button type="button" role="tab" aria-selected="@(aid == me)" class="gear-member @(aid == me ? "on" : "")" data-actor="@aid" @onclick="() => PickActor(aid)">
-                <b>@e.ActorDisplayName(s, aid)</b>
-                <small>@Ui.KgText(kg) · @(e.RootCardCountOf(s, aid))/@(e.MaxRootCards)张</small>
-            </button>
-        }
-        <span class="tiny muted gear-cap">同行@(members.Count) / 容量@(e.PartyCapacity(s))</span>
-    </div>
-    @if (G.GivePending is { } gd && s.Items.FirstOrDefault(i => i.InstanceId == gd.InstanceId) is { } gi)
-    {
-        @* A10 §7.2：双方头像间短浮窗列最终重量/卡数，确认再一次提交；Esc/取消退出 *@
-        var gwhy = e.GiveBlocked(s, gd.From, gd.To, gd.InstanceId, gd.Count);
-        var (fc, tc, fg, tg) = e.GiveOutcome(s, gd.From, gd.To, gi, Math.Min(gd.Count, gi.Count));
-        <div class="give-confirm" role="dialog" aria-label="确认交接" data-give-confirm>
-            <b>把@(e.InstanceName(gi))×@gd.Count 从@(e.ActorDisplayName(s, gd.From))交给@(e.ActorDisplayName(s, gd.To))？</b>
-            <span>交接后 @e.ActorDisplayName(s, gd.From)：@(fc)/@(e.MaxRootCards)张 · @Ui.KgText(fg)</span>
-            <span>交接后 @e.ActorDisplayName(s, gd.To)：@(tc)/@(e.MaxRootCards)张 · @Ui.KgText(tg)</span>
-            @if (gwhy != null) { <span class="warn-text">@gwhy</span> }
-            <span class="btn-row">
-                <button type="button" class="primary" disabled="@(gwhy != null)" @onclick="() => G.ConfirmGive()">确认交接</button>
-                <button type="button" class="secondary" @onclick="G.CancelGive">取消<kbd>Esc</kbd></button>
-            </span>
-        </div>
-    }
-    <div class="sub-body gear-body" data-wheel="y">
-        <section class="gear-col" aria-label="七槽装备">
-            <div class="eyebrow">@e.ActorDisplayName(s, me) · 七槽</div>
-            @foreach (var slot in EquipSlots.All)
-            {
-                var sl = slot;
-                var it = e.WornItem(s, me, sl);
-                <div class="gear-slot @(it == null ? "empty" : "")" data-slot="@sl">
-                    <span class="gs-name">@EquipSlots.Name(sl)</span>
-                    @if (it == null)
-                    {
-                        <span class="muted">空</span>
-                    }
-                    else
-                    {
-                        var why = e.UnequipBlocked(s, me, sl, false);
-                        var gwhy = e.UnequipBlocked(s, me, sl, true);
-                        <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span><b class="q-@(it.Quality ?? "white")">@e.ItemName(it.ItemId)</b><small>@Stat(it)</small></span>
-                        <span class="gs-btns">
-                            <button type="button" class="eq-btn" disabled="@(why != null)" title="@(why ?? "卸下，放回随身（占一张物资卡）")" @onclick="() => G.UnequipFor(me, sl, false)">卸下</button>
-                            @if (why != null && gwhy == null)
-                            {
-                                <button type="button" class="eq-btn alt" @onclick="() => G.UnequipFor(me, sl, true)">放当前地面</button>
-                            }
-                        </span>
-                        @if (why != null && gwhy != null) { <small class="warn-text gs-why">@why</small> }
-                    }
-                </div>
-            }
+    <div class="sub-body g3-body" data-wheel="y">
+        <section class="g3-col g3-members" aria-label="@GearPanelCopy.Members">
+            <div class="eyebrow">@GearPanelCopy.Members <span class="g3-cap">@GearPanelCopy.PartyHead(members.Count, e.PartyCapacity(s))</span></div>
+            <div role="tablist" aria-label="@GearPanelCopy.Members" class="g3-member-list">
+                @foreach (var id in members)
+                {
+                    var aid = id;
+                    <button type="button" role="tab" aria-selected="@(aid == me)" class="g3-member @(aid == me ? "on" : "")" data-actor="@aid" data-gear-member="@aid" @onclick="() => G.GearPickActor(aid)">
+                        <img class="g3-face" src="@Face(aid)" alt="" draggable="false" />
+                        <span class="g3-mtext"><b>@e.ActorDisplayName(s, aid)</b><small>@GearPanelCopy.MemberLine(e.CarriedGramsOf(s, aid), e.RootCardCountOf(s, aid), e.MaxRootCards)</small></span>
+                    </button>
+                }
+            </div>
+        </section>
+
+        <section class="g3-col g3-figure-col" aria-label="@GearPanelCopy.Slots">
+            <div class="g3-figure">
+                <img src="@Face(me)" alt="" draggable="false" />
+                <b>@name</b>
+            </div>
+            <div class="g3-summary">
+                <span>@GearPanelCopy.SummaryCards(e.RootCardCountOf(s, me), e.MaxRootCards)</span>
+                <span>@GearPanelCopy.SummaryWeight(e.CarriedGramsOf(s, me))</span>
+            </div>
+            <div class="eyebrow">@GearPanelCopy.Slots</div>
+            <div class="g3-slots">
+                @foreach (var slot in EquipSlots.All)
+                {
+                    var sl = slot;
+                    var it = e.WornItem(s, me, sl);
+                    var target = src != null && G.GearSlot == sl && G.GivePending == null;
+                    <div class="gear-slot @(it == null ? "empty" : "") @(target ? "target" : "") @(it != null && G.GearPeekId == it.InstanceId ? "peek" : "")"
+                         data-slot="@sl" data-gear-slot="@sl" data-drop="@($"gearslot:{sl}")" data-drop-level="hot" @onclick="() => G.GearClickSlot(sl)">
+                        <span class="gs-name">@EquipSlots.Name(sl)</span>
+                        @if (it == null)
+                        {
+                            <span class="muted">空</span>
+                        }
+                        else
+                        {
+                            var why = e.UnequipBlocked(s, me, sl, false);
+                            var gwhy = e.UnequipBlocked(s, me, sl, true);
+                            <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span><b class="q-@(it.Quality ?? "white")">@e.ItemName(it.ItemId)</b><small>@Stat(it)</small></span>
+                            <span class="gs-btns">
+                                <button type="button" class="eq-btn" disabled="@(why != null)" title="@why" @onclick="() => Unequip(sl, false)" @onclick:stopPropagation="true">卸下</button>
+                                @if (why != null && gwhy == null)
+                                {
+                                    <button type="button" class="eq-btn alt" @onclick="() => Unequip(sl, true)" @onclick:stopPropagation="true">放当前地面</button>
+                                }
+                            </span>
+                            @if (why != null && gwhy != null) { <small class="warn-text gs-why">@why</small> }
+                        }
+                    </div>
+                }
+            </div>
             @foreach (var line in e.EquipSummaryLines(s, me))
             {
                 <div class="tiny muted">@line</div>
             }
         </section>
 
-        <section class="gear-col" aria-label="随身五卡">
-            <div class="eyebrow">@e.ActorDisplayName(s, me) · 随身 @(e.RootCardCountOf(s, me))/@(e.MaxRootCards)张 · @Ui.KgText(e.CarriedGramsOf(s, me))</div>
-            @if (carried.Count == 0) { <div class="muted tiny">随身没有物品</div> }
-            @foreach (var it in carried)
-            {
-                var inst = it;
-                <div class="gear-card" data-item="@inst.ItemId" id="@($"feed-src-{inst.InstanceId}")">
-                    <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
-                    <span class="gs-btns">
-                        @if (e.FeedEntry(s, inst.InstanceId) is { } fe)
-                        {
-                            @* B29（Q263）：整备的通用物品卡复用入口，不替代队伍面板的展开 *@
-                            var feedWhy = G.Running ? "行动进行中" : fe.Blocked;
-                            <button type="button" class="eq-btn" data-feed-entry disabled="@(feedWhy != null)" title="@(feedWhy ?? fe.Title)" @onclick='() => G.OpenFeed(fe, $"feed-src-{inst.InstanceId}")'>@fe.Title</button>
-                        }
-                        @foreach (var (slot, reason) in e.EquipChoices(s, me, inst.InstanceId))
-                        {
-                            var sl = slot;
-                            <button type="button" class="eq-btn" disabled="@(reason != null)" title="@(reason ?? $"装备到{EquipSlots.Name(sl)}")" @onclick="() => G.EquipFor(me, inst.InstanceId, sl)">装备到@(EquipSlots.Name(sl))</button>
-                        }
-                        @foreach (var to in members.Where(x => x != me))
-                        {
-                            var tid = to;
-                            var n = inst.Count;
-                            var gw = e.GiveBlocked(s, me, tid, inst.InstanceId, n);
-                            var g1 = n > 1 ? e.GiveBlocked(s, me, tid, inst.InstanceId, 1) : gw;
-                            <button type="button" class="eq-btn give" disabled="@(gw != null)" title="@(gw ?? GiveTip(me, tid, inst, n))" @onclick="() => G.AskGive(me, tid, inst.InstanceId, n)">交给@(e.ActorDisplayName(s, tid))@(n > 1 ? $"×{n}" : "")</button>
-                            @if (n > 1)
-                            {
-                                <button type="button" class="eq-btn give alt" disabled="@(g1 != null)" title="@(g1 ?? GiveTip(me, tid, inst, 1))" @onclick="() => G.AskGive(me, tid, inst.InstanceId, 1)">×1</button>
-                            }
-                        }
-                    </span>
-                    @* B10 试玩修复 5：被拒原因按接收人分别写；整批不行但 1 份可以的，写整批的原因 *@
-                    @foreach (var to in members.Where(x => x != me))
+        <section class="g3-col g3-side" aria-label="@GearPanelCopy.Sources">
+            <div class="g3-sources">
+                <div class="eyebrow">@GearPanelCopy.Sources</div>
+                <div class="g3-group" aria-label="@GearPanelCopy.OwnCarried">
+                    <div class="g3-gh">@GearPanelCopy.OwnCarried</div>
+                    @if (carried.Count == 0) { <div class="muted tiny">@GearPanelCopy.CarriedEmpty</div> }
+                    @foreach (var it in carried)
                     {
-                        var why = e.GiveBlocked(s, me, to, inst.InstanceId, inst.Count);
-                        if (why != null) { <small class="muted gs-why">交给@(e.ActorDisplayName(s, to))：@why</small> }
+                        var inst = it;
+                        <div class="gear-card g3-card @(src?.InstanceId == inst.InstanceId ? "on" : "")" role="button" tabindex="0" data-item="@inst.ItemId"
+                             id="@($"feed-src-{inst.InstanceId}")" data-gear-src="@inst.InstanceId" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
+                             @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
+                            <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
+                            @if (e.FeedEntry(s, inst.InstanceId) is { } fe)
+                            {
+                                @* B29（Q263）：整备的通用物品卡复用食饮入口，不替代队伍面板的展开 *@
+                                var feedWhy = G.Running ? "行动进行中" : fe.Blocked;
+                                <span class="gs-btns">
+                                    <button type="button" class="eq-btn" data-feed-entry disabled="@(feedWhy != null)" title="@(feedWhy ?? fe.Title)" @onclick='() => G.OpenFeed(fe, $"feed-src-{inst.InstanceId}")' @onclick:stopPropagation="true">@fe.Title</button>
+                                </span>
+                            }
+                        </div>
                     }
                 </div>
-            }
-            @if (members.Count == 1) { <div class="tiny muted">只有你一人同行：队友加入后可在这里互相递物品、换装</div> }
-        </section>
-
-        <section class="gear-col" aria-label="当前地面的装备">
-            <div class="eyebrow">@e.ZoneName(s, s.Ground)地面 · 可穿装备 @ground.Count</div>
-            @if (timing != null) { <div class="warn-text tiny">@timing</div> }
-            @if (ground.Count == 0) { <div class="muted tiny">当前地面没有可穿的装备</div> }
-            @foreach (var it in ground)
-            {
-                var inst = it;
-                <div class="gear-card" data-ground-item="@inst.ItemId">
-                    <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>@Stat(inst)</small></span>
-                    <span class="gs-btns">
-                        @foreach (var (slot, reason) in e.EquipChoices(s, me, inst.InstanceId))
-                        {
-                            var sl = slot;
-                            <button type="button" class="eq-btn" disabled="@(reason != null)" title="@(reason ?? $"{e.ActorDisplayName(s, me)}直接从地面装备到{EquipSlots.Name(sl)}")" @onclick="() => G.EquipFor(me, inst.InstanceId, sl)">@(e.ActorDisplayName(s, me))装备到@(EquipSlots.Name(sl))</button>
-                        }
-                    </span>
-                    @if (e.EquipmentSource(inst.ItemId) is { } src) { <small class="muted gs-why">来源：@src.Text</small> }
+                <div class="g3-group ground" aria-label="@GearPanelCopy.CurrentGround">
+                    <div class="g3-gh">@GearPanelCopy.CurrentGround</div>
+                    @if (ground.Count == 0) { <div class="muted tiny">@GearPanelCopy.GroundEmpty</div> }
+                    @foreach (var it in ground)
+                    {
+                        var inst = it;
+                        <div class="gear-card g3-card @(src?.InstanceId == inst.InstanceId ? "on" : "")" role="button" tabindex="0" data-ground-item="@inst.ItemId"
+                             data-gear-src="@inst.InstanceId" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
+                             @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
+                            <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>@Stat(inst)</small></span>
+                        </div>
+                    }
                 </div>
-            }
+            </div>
+            <div class="g3-work" aria-live="polite">
+                @if (src != null && G.GearSlot != null)
+                {
+                    <GearCompare />
+                }
+                else if (src != null)
+                {
+                    @* Q448：非装备来源工作区只显示物品名与「交给…」，不出现装备空态句 *@
+                    <div class="g3-src-name"><span class="eq-ico" aria-hidden="true">@Icons.Markup(src.ItemId)</span><b>@e.InstanceName(src)</b></div>
+                }
+                else
+                {
+                    <div class="muted g3-empty">@GearPanelCopy.EmptyWork</div>
+                }
+            </div>
         </section>
     </div>
 </div>
@@ -155,12 +143,23 @@
 @code {
     private void Close() => G.OpenPanel(null);
 
-    private void PickActor(string id)
+    private static string Face(string actorId) => actorId == GameState.PlayerId ? "img/portraits/protagonist.svg" : "img/portraits/unknown.svg";
+
+    private void Key(KeyboardEventArgs ev, int id)
     {
-        G.GivePending = null;
-        G.DropFeed();
-        G.GearActor = id;
-        G.Notify();
+        if (ev.Key is "Enter" or " ") G.GearPickSource(id);
+    }
+
+    private void Unequip(string slot, bool toGround)
+    {
+        Mark($"[data-gear-slot=\"{slot}\"]");
+        G.GearUnequip(slot, toGround);
+    }
+
+    private void Mark(string selector)
+    {
+        try { if (JS is IJSInProcessRuntime ip) ip.InvokeVoid("survivalFx.mark", selector); }
+        catch (JSException) { /* 旧缓存 app.js：只少了轨迹，结果照常 */ }
     }
 
     private string Stat(ItemInstance it)
@@ -170,12 +169,5 @@
         if (it.MaxDurability.HasValue) parts.Add("耐久" + GameEngine.DurabilityText(it));
         parts.Add(Ui.KgText(e.ItemGrams(G.S, it)));
         return string.Join(" · ", parts);
-    }
-
-    private string GiveTip(string from, string to, ItemInstance it, int n)
-    {
-        var e = G.E;
-        var (fc, tc, fg, tg) = e.GiveOutcome(G.S, from, to, it, n);
-        return $"交给{e.ActorDisplayName(G.S, to)}：交接后{e.ActorDisplayName(G.S, from)} {fc}/{e.MaxRootCards}张、{Ui.KgText(fg)}；{e.ActorDisplayName(G.S, to)} {tc}/{e.MaxRootCards}张、{Ui.KgText(tg)}（不花时间）";
     }
 }

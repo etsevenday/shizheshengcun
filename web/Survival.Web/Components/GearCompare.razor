@@ -1,0 +1,104 @@
+@inherits GameComponent
+@inject IJSRuntime JS
+
+@* B33 P03b 同槽比较（Q430、Q431、Q434、Q452、Q458、Q461）：两件装备逐件说明（沿对象详情原句与生效注记，缺项「—」，空槽「空槽」），
+   下列真实预演中变化的全身合计（组名「战斗」「求生」各一次，组后原说明各一次）；旧物去向只列实际合法的「本人随身」「当前地面」，
+   两处合法默认本人随身，只剩地面时须明确点选；「确认更换」才一次原子提交。点击、拖入、切槽、返回都不改装备。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var p = G.GearComparePreview();
+}
+@if (p != null)
+{
+    var cand = p.Candidate;
+    var weapons = e.SlotsFor(cand.ItemId).Where(EquipSlots.IsWeaponSlot).ToList();
+    <div class="g3-compare" data-gear-compare>
+        <div class="g3-whead">
+            <h3>@GearPanelCopy.CompareTitle</h3>
+            <button type="button" class="secondary" @onclick="G.GearBack">@GearPanelCopy.Back</button>
+        </div>
+        <div class="g3-row"><span>@GearPanelCopy.SlotLabel</span>
+            @if (weapons.Count > 1)
+            {
+                <span class="g3-slot-pick" role="radiogroup" aria-label="@GearPanelCopy.SlotLabel">
+                    @foreach (var w in weapons)
+                    {
+                        var ws = w;
+                        <button type="button" role="radio" aria-checked="@(p.Slot == ws)" class="eq-btn @(p.Slot == ws ? "on" : "")" @onclick="() => G.GearClickSlot(ws)">@EquipSlots.Name(ws)</button>
+                    }
+                </span>
+            }
+            else
+            {
+                <b>@EquipSlots.Name(p.Slot)</b>
+            }
+        </div>
+        <table class="g3-table" aria-label="@GearPanelCopy.CompareCaption">
+            <caption>@GearPanelCopy.CompareCaption</caption>
+            <thead><tr><th></th><th>@GearPanelCopy.CurrentGear</th><th>@GearPanelCopy.CandidateGear</th></tr></thead>
+            <tbody>
+                <tr class="g3-names"><th></th>
+                    <td>@(p.Old == null ? GearPanelCopy.EmptySlot : e.ItemName(p.Old.ItemId))</td>
+                    <td>@e.ItemName(cand.ItemId)</td></tr>
+                @foreach (var r in p.Rows)
+                {
+                    <tr><th>@r.Label</th><td>@r.Current</td><td>@r.Candidate</td></tr>
+                }
+                <tr><th>@GearPanelCopy.Sources</th><td></td><td>@p.Source</td></tr>
+            </tbody>
+        </table>
+        @if (p.CombatChanges.Count > 0 || p.SurvivalChanges.Count > 0 || p.PausedChange != null)
+        {
+            <div class="g3-effects">
+                <div class="eyebrow">@GearPanelCopy.Effects</div>
+                @if (p.CombatChanges.Count > 0)
+                {
+                    <div class="g3-eg"><b>@GearPanelCopy.CombatGroup</b>
+                        @foreach (var line in p.CombatChanges) { <div>@line</div> }
+                        @foreach (var note in p.CombatNotes) { <div class="tiny muted">@note</div> }
+                    </div>
+                }
+                @if (p.SurvivalChanges.Count > 0)
+                {
+                    <div class="g3-eg"><b>@GearPanelCopy.SurvivalGroup</b>
+                        @foreach (var line in p.SurvivalChanges) { <div>@line</div> }
+                        @foreach (var note in p.SurvivalNotes) { <div class="tiny muted">@note</div> }
+                    </div>
+                }
+                @if (p.PausedChange != null) { <div class="g3-eg">@p.PausedChange</div> }
+            </div>
+        }
+        @if (p.Old != null && (p.CanToCarried || p.CanToGround))
+        {
+            <div class="g3-row g3-dest" role="radiogroup" aria-label="@GearPanelCopy.OldGoesTo"><span>@GearPanelCopy.OldGoesTo</span>
+                <span class="g3-dest-opts">
+                    @if (p.CanToCarried)
+                    {
+                        <label><input type="radio" name="g3-old-dest" checked="@(p.OldToGround == false)" @onchange="() => G.GearSetOldDest(false)" />@GearPanelCopy.OwnCarried</label>
+                    }
+                    @if (p.CanToGround)
+                    {
+                        <label><input type="radio" name="g3-old-dest" checked="@(p.OldToGround == true)" @onchange="() => G.GearSetOldDest(true)" />@GearPanelCopy.CurrentGround</label>
+                    }
+                </span>
+            </div>
+        }
+        <div class="g3-row"><span>@GearPanelCopy.CardsAfter</span><b class="@(p.CardsAfter > e.MaxRootCards ? "warn-text" : "")">@GearPanelCopy.Cards(p.CardsAfter, e.MaxRootCards)</b></div>
+        <div class="g3-row"><span>@GearPanelCopy.WeightAfter</span><b>@Ui.KgText(p.GramsAfter)</b></div>
+        @if (p.Blocked != null) { <div class="warn-text g3-why">@p.Blocked</div> }
+        <div class="g3-actions">
+            <button type="button" class="primary" disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmEquip</button>
+        </div>
+    </div>
+}
+
+@code {
+    private void Confirm()
+    {
+        if (G.GearSource is not ItemInstance src) return;
+        try { if (JS is IJSInProcessRuntime ip) ip.InvokeVoid("survivalFx.mark", $"[data-gear-src=\"{src.InstanceId}\"]"); }
+        catch (JSException) { /* 旧缓存 app.js：只少了轨迹 */ }
+        G.GearConfirmEquip();
+    }
+}
