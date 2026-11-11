@@ -248,6 +248,13 @@
             }
             catch (JSException) { /* 旧缓存 app.js：只少了表现，结果照常 */ }
         }
+        // B32g（逐字稿 §1.5 Q401 选 C）：新开的一级浏览／工具面板已收起原物品操作盘；盘卸下、遮罩解除后焦点交给新面板第一个可用控件
+        if (G.PanelFocusPending)
+        {
+            G.PanelFocusPending = false;
+            try { await JS.InvokeVoidAsync("survivalPop.focusPanel"); }
+            catch (JSException) { /* 旧缓存 app.js：焦点留在原处，收盘结果照常 */ }
+        }
         // B31d（Q338）：Pop 失效在子组件渲染时被静默丢掉（ActionPops.Valid），遮罩这一帧已画出；与当前状态不符时再渲染一次
         if (G.State != null && _diskMask != G.DiskMaskShown) StateHasChanged();
         // 中部二级面板（地图/制作/休息/日志）打开、战斗或敌踪出现（含读档恢复）时，中部纵滚回顶，

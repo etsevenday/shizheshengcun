@@ -245,6 +245,8 @@ public sealed class GameSession
     public void OpenHelp(string? topic = null, string? entry = null)
     {
         if (InBattleUi || DialogueLocked) return;
+        // B32g（Q401）：系统说明也是一级浏览面板，从别处直接定位打开时同样先收起正显示的物品操作盘（食饮盘的说明另有返回规则，盘不在显示，不受影响）
+        if (Panel != "help" && CardPopShown) CollapseCardPopForPanel(true);
         _helpReturn = Panel is "help" ? _helpReturn : Panel;
         _helpDirect = topic != null;
         _helpReturnStatus = null;
@@ -434,6 +436,22 @@ public sealed class GameSession
     }
 
     /// <summary>
+    /// B32g（逐字稿 §1.5 Q401 选 C，取代 Q394 保留原盘）：打开新的一级浏览／工具面板（地图、日志、手工制作、整备、成长、安全屋……、系统说明）时，
+    /// 不论面板是否盖住来源卡，一律按 Q378 收起原物品操作盘——只撤回盘内未提交的草稿，选中对象、右栏与已提交结果都不动（同 <see cref="CoverCardPop"/>）。
+    /// 盘原本真正显示着（有遮罩）时记 <see cref="PanelFocusPending"/>，渲染后由 GameScreen 把焦点交给新面板第一个可用控件。
+    /// 关面板后玩家从仍有效的来源（<see cref="Select"/>、<see cref="PickBatch"/>）重新打开。游戏菜单不走这里（Q390／Q395 只隐藏并恢复）。
+    /// </summary>
+    private void CollapseCardPopForPanel(bool shown)
+    {
+        if (State == null || CardPopCovered || Selected.Kind is not (SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid)) return;
+        CardPopCovered = true;
+        if (shown) PanelFocusPending = true;
+    }
+
+    /// <summary>B32g（Q401）：新面板打开时收起了正显示的物品操作盘，待渲染后把焦点交给新面板第一个可用控件（GameScreen 读一次即清）。</summary>
+    public bool PanelFocusPending { get; set; }
+
+    /// <summary>
     /// B31c（Q324）：屏幕中央有局部操作盘（选卡操作、移动／接近／投炭／采集等就近盘、点火工具、食饮）开着。中央行动位此时与一级面板开着时一样
     /// 收成中部底部窄条，不被居中盘挡住「退出行动」（排版处理，不改规则）。
     /// </summary>
@@ -554,6 +572,8 @@ public sealed class GameSession
         // B23：查来源时关掉地图（关闭按钮、Esc）回制作面板并恢复原选择；切到别的面板就结束这次查询
         if (SourceItem != null && Panel == "map" && panel == null) { ReturnFromSources(); return; }
         if (panel != "map") { SourceItem = null; _craftReturn = null; }
+        // B32g（逐字稿 §1.5 Q401 选 C）：打开新的一级浏览／工具面板时一律收起原物品操作盘（不论是否盖住来源卡），保留选中与右栏；焦点随后交给新面板
+        if (panel != null) CollapseCardPopForPanel(CardPopShown);
         // B24（A10-CITY §3/§7）：主城鸟瞰打开时记住右栏页签，关闭后原样恢复（不自动展开人物板块、不改折叠偏好）
         var leavingCity = Panel == "citymap" && panel != "citymap";
         if (panel == "citymap" && Panel != "citymap") { _cityTabBefore = DetailTab; CityPick = State != null ? E.CityDefaultPick(S, CityTarget) : null; CityHover = null; NewCityRequest(); }

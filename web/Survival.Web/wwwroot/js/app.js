@@ -480,6 +480,28 @@ window.survivalPop = (function () {
     },
     // B31d（Q338）：点遮罩或 Esc 撤回本盘前由 GameScreen 调用，收盘后把焦点还给触发控件
     markCancel: function () { if (cur) cur.restore = true; },
+    // B32g（逐字稿 §1.5 Q401 选 C）：打开新的一级浏览／工具面板时 .NET 已一律收起物品操作盘（不论是否盖住来源）；等盘卸下、四轨遮罩（inert）解除后，
+    // 焦点交给新面板（.panel-host；全屏确认层 .overflow-layer）第一个可用控件。焦点已在该面板里就不动；盘仍在（未卸下）时逐帧再等，最多约 20 帧。
+    focusPanel: function () {
+      var tries = 0;
+      function go() {
+        if (document.querySelector('.wasteland .center-scroll[data-disk-inert]')) { if (++tries < 20) requestAnimationFrame(go); return; }
+        var hosts = Array.prototype.filter.call(document.querySelectorAll(COVER_SEL), function (c) { return c.offsetWidth > 0 && c.offsetHeight > 0 && !(c.closest && c.closest('[inert]')); });
+        var ae = document.activeElement;
+        for (var h = 0; h < hosts.length; h++) if (ae && ae !== document.body && hosts[h].contains(ae)) return;
+        for (var k = 0; k < hosts.length; k++) {
+          var list = hosts[k].querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+          for (var i = 0; i < list.length; i++) {
+            var c = list[i];
+            if (c.disabled || (c.closest && c.closest('[inert]')) || !(c.offsetWidth || c.offsetHeight)) continue;
+            try { c.focus({ preventScroll: true }); } catch (e) { try { c.focus(); } catch (e2) { } }
+            if (document.activeElement === c) return;
+          }
+        }
+        if (!hosts.length && ++tries < 20) requestAnimationFrame(go);
+      }
+      setTimeout(go, 0);
+    },
     place: place
   };
 })();

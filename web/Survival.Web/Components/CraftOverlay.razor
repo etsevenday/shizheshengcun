@@ -293,11 +293,12 @@
                         @foreach (var kv in rc.Fuel)
                         {
                             @* Q112（A05/A07/S08 本轮章）：锻炉每份配方另需木炭1作燃料（N份扣N），与原料一起预留、完成一次核销；原料里也有木炭时合计校验 *@
+                            @* B32g（S08 Q400）：陶窑／固定净水台燃料行计算部分写「每批{单批燃料数量}×{投料批数}批」，锻炉仍「每份配方{n}×{份数}份」 *@
                             var fneed = kv.Value * batch;
                             var fall = rc.AllInputs[kv.Key] * batch;
                             var fhave = e.AvailableCount(s, kv.Key, true);
                             <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"燃料{fneed}")" Missing="@(fhave < fall)" CssClass="mat-row"
-                                     Status="@($"每份配方{kv.Value}×{batch}份 · 现有{fhave}{(fall != fneed ? $"（连同原料共需{fall}）" : "")}{(fhave < fall ? $" · 缺少{fall - fhave}" : "")}")" />
+                                     Status="@($"{(stationRecipe ? $"每批{kv.Value}×{batch}批" : $"每份配方{kv.Value}×{batch}份")} · 现有{fhave}{(fall != fneed ? $"（连同原料共需{fall}）" : "")}{(fhave < fall ? $" · 缺少{fall - fhave}" : "")}")" />
                         }
                         @foreach (var kv in rc.Inputs)
                         {
