@@ -3,9 +3,15 @@ name: 测试并发布到 GitHub Pages
 on:
   push:
     branches: [main]
-    # 网站不含策划案；只改 doc/策划案 的推送（策划经 Codex 上传）不构建，免得策划案先于实现时发失败邮件
+    # 网站只由 src/、web/、data/ 构建。只改文档、协作说明、技能、工具脚本的推送不构建：
+    # 策划案先于实现时不发失败邮件；开发方的纯文档提交（待确认问题、开发记录）也不用每次重发一遍网站。
+    # 一次推送里只要有一个文件不在下面这些路径里，照常构建。
     paths-ignore:
-      - 'doc/策划案/**'
+      - 'doc/**'
+      - 'AGENTS.md'
+      - 'README.md'
+      - '.claude/**'
+      - 'tools/**'
   workflow_dispatch:
 
 permissions:
@@ -61,7 +67,15 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.retry.outputs.page_url || steps.deployment.outputs.page_url }}
     steps:
+      # Pages 发布偶尔卡住（2026-11-09、11-10 共 6 次，都是等满 10 分钟超时后失败，要人手动重发）。
+      # 正常发布只要几秒：第一次只等 3 分钟，不成自动再发一次
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+        with:
+          timeout: 180000
+      - id: retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
