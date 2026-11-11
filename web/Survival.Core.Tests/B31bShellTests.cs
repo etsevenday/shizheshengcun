@@ -1,3 +1,4 @@
+using Survival.Core.Save;
 using System.Text.RegularExpressions;
 using Survival.Core.Engine;
 using Survival.Core.State;
@@ -38,8 +39,9 @@ public class B31bShellTests : TestBase
         Assert.That(ShellText.SaveNote, Is.EqualTo("存档保存在当前浏览器。"));
         Assert.That(ShellText.BattleMenu, Is.EqualTo("战斗菜单"));
         Assert.That(ShellText.BackToBattle, Is.EqualTo("返回战斗"));
-        Assert.That(ShellText.OverwriteNote, Is.EqualTo("已有存档。开始新游戏会覆盖它，无法恢复。"));
-        Assert.That(ShellText.OverwriteConfirm, Is.EqualTo("覆盖并开始"));
+        // B40（S01 Q335）：PXm 覆盖确认由新游戏确认取代
+        Assert.That(SaveSlots.NewGameConfirmText, Is.EqualTo("开始新游戏会覆盖每5分钟自动存档。每日自动存档会在新局下次跨过06:00时更新，手动存档会保留。"));
+        Assert.That(SaveSlots.NewGameConfirmButton, Is.EqualTo("开始新游戏"));
         Assert.That(ShellText.ActionRunning, Is.EqualTo("行动进行中"));
         Assert.That(ShellText.ActionPaused, Is.EqualTo("行动暂停中"));
         Assert.That(ShellText.ResumeAction, Is.EqualTo("继续行动"));
@@ -205,7 +207,7 @@ public class B31bShellTests : TestBase
     {
         var t = Web("Components", "StartScreen.razor");
         Assert.That(t, Does.Contain("ShellText.ContinueGame").And.Contain("ShellText.NewGame").And.Contain("ShellText.HowToPlay"));
-        Assert.That(t, Does.Contain("ShellText.OverwriteNote").And.Contain("ShellText.OverwriteConfirm"));
+        Assert.That(t, Does.Contain("@SaveSlots.NewGameConfirmText").And.Contain("@SaveSlots.NewGameConfirmButton"), "B40 Q335 新游戏确认");
         Assert.That(t, Does.Contain("<PresentationSettings FontOnly=\"true\" />"));
     }
 
@@ -273,7 +275,7 @@ public class B31bShellTests : TestBase
         Assert.That(Web("Components", "LocationCard.razor"), Does.Contain("<em>@ShellText.PlaceTitle</em>").And.Not.Contain("<em>当前地点</em>"));
         Assert.That(Web("wwwroot", "css", "shell.css"), Does.Contain(".mc-chip.name::after { content: none; }"));
         var screen = Web("Components", "GameScreen.razor");
-        Assert.That(screen, Does.Contain("<span class=\"saved\">@ShellText.Saved</span>").And.Not.Contain("● 已保存"));
+        Assert.That(screen, Does.Contain("<span class=\"saved\">@(Survival.Core.Save.SaveSlots.SavedPrefix + G.LocalTime(savedMs, false))</span>").And.Not.Contain("● 已保存"), "B40 Q406：「已保存 {时:分}」");
         Assert.That(screen, Does.Contain("main?.Type == ActionType.Travel ? $\" → {e.LocName(main.TargetId)}\""));
     }
 

@@ -202,12 +202,8 @@ public static class HelpCatalog
                 new HelpEntry
                 {
                     Id = "save", Title = "保存与继续", Icon = "placeholder",
-                    Paragraphs = (e, s) => new[]
-                    {
-                        "游戏只有一个存档，在本浏览器里自动保存：每完成一段时间、每次转移或使用物品、每条战斗指令之后都会保存，页脚显示“已保存”。",
-                        "关闭页面或返回标题不会丢失进度，下次点“继续”从原处接着玩，进行中的行动、战斗和未读完的对话都会恢复。保存失败时页脚会提示，可以点“重试”。",
-                        "开始新游戏会覆盖旧存档，覆盖前会再确认一次。",
-                    },
+                    // B40（S01 Q388）：三段正式说明，逐字取 SaveSlots.HelpParagraphs
+                    Paragraphs = (e, s) => Survival.Core.Save.SaveSlots.HelpParagraphs,
                 },
             },
         },

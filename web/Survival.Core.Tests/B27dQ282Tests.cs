@@ -9,13 +9,15 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B27dQ282Tests
 {
-    private static string Web(string relative)
+    private static string Root()
     {
         var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
         while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "doc", "策划案"))) dir = dir.Parent;
         Assert.That(dir, Is.Not.Null, "找不到仓库根目录");
-        return File.ReadAllText(Path.Combine(dir!.FullName, "web", "Survival.Web", relative));
+        return dir!.FullName;
     }
+
+    private static string Web(string relative) => File.ReadAllText(Path.Combine(Root(), "web", "Survival.Web", relative));
 
     // ───────────── Q282 浏览器存储配额用尽 ─────────────
 
@@ -45,19 +47,20 @@ public class B27dQ282Tests
         Assert.That(SaveWriteError.PlayerText(false, "The operation is insecure."), Is.EqualTo("保存失败：The operation is insecure."));
     }
 
-    /// <summary>接线：saveSet 回传类别名；Save 失败按类别标记，成功才清错误；底栏用整句并后接原重试（重试走原 Save）。</summary>
+    /// <summary>接线（B40 起按槽）：slotSet 回传类别名；写失败按类别判配额，失败句前标槽名；底栏每个失败槽后接「重试」，重试写原槽（S01 Q387 / Q406）。</summary>
     [Test]
     public void Q282_Wiring_FooterAndRetry()
     {
         var js = Web("wwwroot/js/app.js");
         Assert.That(js, Does.Contain("e.name").And.Contain("console.warn"), "回传异常类别；原始异常留控制台诊断");
         Assert.That(Web("Services/SaveStore.cs"), Does.Contain("throw SaveWriteException.FromJs(err)"));
+        var coord = File.ReadAllText(Path.Combine(Root(), "src", "Core", "Save", "SaveCoordinator.cs"));
+        Assert.That(coord, Does.Contain("SaveWriteError.IsQuotaExceeded(ex.Category, ex.Message)"), "按浏览器异常类别识别配额");
         var g = Web("Services/GameSession.cs");
-        Assert.That(g, Does.Contain("SaveErrorQuota = SaveWriteError.IsQuotaExceeded((ex as SaveWriteException)?.Category, ex.Message);"));
-        var retry = g.Substring(g.IndexOf("public void RetrySave()"), 80);
-        Assert.That(retry, Does.Contain("Save();"), "重试沿原存档流程");
+        var retry = g.Substring(g.IndexOf("public void RetrySlot(SaveSlotKind kind)"), 200);
+        Assert.That(retry, Does.Contain("Saves.Retry(kind, NowMs);"), "重试写原槽与对应快照");
         var screen = Web("Components/GameScreen.razor");
-        Assert.That(screen, Does.Contain("<span>@G.SaveErrorText </span><button class=\"linkish\" @onclick=\"G.RetrySave\">重试</button>"));
-        Assert.That(screen, Does.Not.Contain("保存失败：@G.SaveError"));
+        Assert.That(screen, Does.Contain("<span>@f.Text </span><button class=\"linkish\" disabled=\"@(sv!.RetryBlockedText != null)\" title=\"@sv.RetryBlockedText\" @onclick=\"() => G.RetrySlot(kind)\">@Survival.Core.Save.SaveSlots.RetryButton</button>"));
+        Assert.That(screen, Does.Not.Contain("保存失败：@G.SaveError").And.Not.Contain("G.RetrySave"));
     }
 }

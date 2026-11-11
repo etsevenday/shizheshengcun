@@ -8,7 +8,7 @@ public sealed class SaveWriteException : SaveStorageWriteException
 {
     public SaveWriteException(string category, string message) : base(category, message) { }
 
-    /// <summary>解析 survival.saveSet 的失败返回（“类别名\u001f错误文本”；没有分隔符时整段作错误文本）。</summary>
+    /// <summary>解析 survival.slotSet 的失败返回（“类别名\u001f错误文本”；没有分隔符时整段作错误文本）。</summary>
     public static SaveWriteException FromJs(string err)
     {
         var i = err.IndexOf('\u001f');
@@ -16,39 +16,18 @@ public sealed class SaveWriteException : SaveStorageWriteException
     }
 }
 
-/// <summary>浏览器 localStorage 单槽存档。</summary>
+/// <summary>浏览器偏好（不进存档）与 B40 多存档的页面接口（离开确认、本地时刻格式）。存档读写见 <see cref="BrowserSaveStorage"/>。</summary>
 public sealed class SaveStore
 {
-    public const string Key = "survival.save.v1";
-    /// <summary>升级旧存档前的原文备份，只保留一份。</summary>
-    public const string BackupKey = "survival.save.v1.bak";
     private readonly IJSInProcessRuntime _js;
 
     public SaveStore(IJSRuntime js) => _js = (IJSInProcessRuntime)js;
 
-    public string? Load() => _js.Invoke<string?>("survival.saveGet", Key);
+    /// <summary>Q388：本页有尚未成功保存的已提交进度时，浏览器关闭、刷新或离开请求原生确认。</summary>
+    public void SetUnsaved(bool unsaved) => _js.InvokeVoid("survival.setUnsaved", unsaved);
 
-    public bool HasSave => !string.IsNullOrEmpty(Load());
-
-    /// <summary>写入存档；失败时抛出带浏览器异常类别与错误信息的 <see cref="SaveWriteException"/>。</summary>
-    public void Save(string json)
-    {
-        var err = _js.Invoke<string>("survival.saveSet", Key, json);
-        if (!string.IsNullOrEmpty(err)) throw SaveWriteException.FromJs(err);
-    }
-
-    /// <summary>覆盖旧版存档前，把原文写到备份键。</summary>
-    public void Backup(string json)
-    {
-        var err = _js.Invoke<string>("survival.saveSet", BackupKey, json);
-        if (!string.IsNullOrEmpty(err)) throw SaveWriteException.FromJs(err);
-    }
-
-    public void Clear()
-    {
-        _js.InvokeVoid("survival.saveRemove", Key);
-        _js.InvokeVoid("survival.saveRemove", BackupKey);
-    }
+    /// <summary>Q406：按浏览器本地格式显示到分钟（withDate 为年月日加时分，否则只有时分）。</summary>
+    public string FormatLocal(long utcMs, bool withDate) => _js.Invoke<string>("survival.fmtLocal", (double)utcMs, withDate);
 
     public string? GetPref(string key) => _js.Invoke<string?>("survival.prefGet", key);
 

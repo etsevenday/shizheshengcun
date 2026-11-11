@@ -1,24 +1,7 @@
-// 适者生存网页壳的少量浏览器接口：本地单槽存档与快捷键转发。
+// 适者生存网页壳的少量浏览器接口：本地多存档（B40）与快捷键转发。
 window.survival = {
-  saveGet: function (key) {
-    try { return window.localStorage.getItem(key); } catch (e) { return null; }
-  },
-  // 先写临时键再写正式键，正式键写入成功后删除临时键；失败返回“异常类别名 + \u001f + 错误文本”
-  // （Q282：C# 按类别名识别配额用尽，如 QuotaExceededError；原始异常同时打到控制台留作开发诊断）。
-  saveSet: function (key, value) {
-    try {
-      window.localStorage.setItem(key + '.tmp', value);
-      window.localStorage.setItem(key, value);
-      window.localStorage.removeItem(key + '.tmp');
-      return '';
-    } catch (e) {
-      try { console.warn('[survival] 存档写入失败', key, e); } catch (e2) { }
-      var name = e && e.name ? String(e.name) : '';
-      return name + '\u001f' + String(e && e.message ? e.message : e);
-    }
-  },
   // B40 多存档（S01 Q335）：每个槽一个独立键，单次 setItem 原子替换。slotGet 区分“没有”与“读不出”（Q403）：
-  // 返回 '0' 没有、'1'+值、'2'+错误文本；slotSet 失败回传“异常类别名 + \u001f + 错误文本”（Q282 同 saveSet）。
+  // 返回 '0' 没有、'1'+值、'2'+错误文本；slotSet 失败回传“异常类别名 + \u001f + 错误文本”（Q282：C# 按类别名识别配额用尽，原始异常同时打到控制台）。
   slotGet: function (key) {
     try {
       var v = window.localStorage.getItem(key);
@@ -135,6 +118,29 @@ window.survival = {
   },
   prefSet: function (key, value) {
     try { window.localStorage.setItem('survival.pref.' + key, value); } catch (e) { }
+  },
+  // B40 多存档页面接口：storage 事件（另一页面写了存档键，Q381 重新确认写权限）、每秒一次的现实计时（Q335 / Q408），
+  // 有未保存进度时浏览器关闭／刷新／离开请求原生确认（Q388：只调 preventDefault，文字由浏览器决定，离开时不追加写入）。
+  initSaves: function (bridge) {
+    window.addEventListener('storage', function (ev) {
+      if (!ev.key || ev.key.indexOf('survival.save.v2.') === 0) bridge.invokeMethodAsync('OnStorage');
+    });
+    setInterval(function () { bridge.invokeMethodAsync('OnTimer'); }, 1000);
+    window.addEventListener('beforeunload', function (ev) {
+      if (!window.__survivalUnsaved) return;
+      ev.preventDefault();
+      ev.returnValue = '';
+    });
+  },
+  setUnsaved: function (u) { window.__survivalUnsaved = !!u; },
+  // Q406：存档时刻按浏览器本地格式到分钟（卡面与菜单带年月日，底栏只有时分）
+  fmtLocal: function (ms, withDate) {
+    var d = new Date(ms);
+    try {
+      return withDate
+        ? d.toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+        : d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return d.toString(); }
   },
   saveRemove: function (key) {
     try { window.localStorage.removeItem(key); window.localStorage.removeItem(key + '.tmp'); } catch (e) { }

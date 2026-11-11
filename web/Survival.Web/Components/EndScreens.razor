@@ -1,5 +1,6 @@
 @inherits GameComponent
 @inject IJSRuntime JS
+@using Survival.Core.Save
 
 @{
     var s = G.S;
@@ -44,6 +45,25 @@
             <ul class="checklist">
                 @foreach (var c in exitConds) { <li class="@(c.Ok ? "done" : "")">@c.Label</li> }
             </ul>
+            @* B40（S01 Q382 / Q409-4）：终局快照写失败时在结算卡内显示带槽名的实际失败句及「重试」；返回标题或确认重开后作废 *@
+            @if (G.Saves?.TerminalFailure is { } tf)
+            {
+                <div class="save-fail end-save-fail" role="alert">
+                    <span>@tf.Text </span>
+                    <button class="linkish" disabled="@(G.Saves.RetryBlockedText != null)" title="@G.Saves.RetryBlockedText" @onclick="G.RetryTerminal">@SaveSlots.RetryButton</button>
+                </div>
+            }
+            @if (confirmRestart)
+            {
+                @* Q335 / Q386：终局重开与标题新游戏共用确认；取消保留结算卡及重试（Q409-4） *@
+                <div class="confirm-box">
+                    @SaveSlots.NewGameConfirmText
+                    <div class="row">
+                        <button class="secondary danger" @onclick="DoRestart">@SaveSlots.NewGameConfirmButton</button>
+                        <button class="secondary" @onclick="() => confirmRestart = false">@SaveSlots.BackButton</button>
+                    </div>
+                </div>
+            }
             <div class="btn-row">
                 <button class="primary" @onclick="Restart">重新开始</button>
                 <button class="secondary" @onclick="ShowLog">查看记录</button>
@@ -61,9 +81,18 @@
     private ElementReference _menuBtn;
     private bool _menuWasOpen;
 
+    private bool confirmRestart;
+
     private void Restart()
     {
-        G.ClearSave();
+        // Q335「终局重开走同一确认」/ Q409-2：每5分钟槽已有数据（含不可读）时先确认
+        if (G.NewGameNeedsConfirm(false)) confirmRestart = true;
+        else DoRestart();
+    }
+
+    private void DoRestart()
+    {
+        confirmRestart = false;
         G.NewGame();
     }
 

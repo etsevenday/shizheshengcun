@@ -25,7 +25,7 @@ namespace Survival.Core.Engine
         public const string BodyTitle = "身体状态";
         public const string Weight = "负重";
         public const string Carried = "随身物品";
-        public const string Saved = "已保存";
+        // 底栏「已保存 {时:分}」改由 SaveSlots.SavedPrefix（B40，S01 Q406）
 
         // PXb 游戏菜单
         public const string GameMenu = "游戏菜单";
@@ -55,12 +55,10 @@ namespace Survival.Core.Engine
         /// </summary>
         public static string BattleUiMenuTitle(bool inBattle) => inBattle ? BattleMenu : GameMenu;
 
-        // PXa 标题页、PXm 覆盖确认
+        // PXa 标题页（PXm 覆盖确认由 S01 Q335 新游戏确认取代，文字在 SaveSlots）
         public const string NewGame = "新游戏";
         public const string HowToPlay = "玩法说明";
         public const string ReadingFont = "阅读字体";
-        public const string OverwriteNote = "已有存档。开始新游戏会覆盖它，无法恢复。";
-        public const string OverwriteConfirm = "覆盖并开始";
         public const string Back = "返回";
 
         // PXn 行动进行中、PXe 行动暂停中（Q320）

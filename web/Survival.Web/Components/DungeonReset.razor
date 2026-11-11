@@ -47,7 +47,8 @@
             </div>
             <div class="ov-foot">
                 <button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">取消</button>
-                <button type="button" class="primary" disabled="@(p.Reason != null || G.Running)" title="@(p.Reason ?? "确认后立即迁出遗留物并建立新一代")" @onclick="G.ConfirmReset">确认重置</button>
+                @* B40（S01 Q381）：没有写权限时确认重置禁用，原因同底栏 *@
+                <button type="button" class="primary" disabled="@(p.Reason != null || G.Running || G.Saves?.WriteBlockedText != null)" title="@(p.Reason ?? G.Saves?.WriteBlockedText ?? "确认后立即迁出遗留物并建立新一代")" @onclick="G.ConfirmReset">确认重置</button>
             </div>
             @if (p.Reason != null)
             {

@@ -1,0 +1,119 @@
+@inherits GameComponent
+@using Survival.Core.Save
+
+@* B40（S01 Q335 / Q385 / Q405 / Q406）：游戏菜单的「手动存档」子页。已有手动档按成功保存时间从新到旧整条可点（键盘聚焦、回车／空格激活），
+   点击只进入覆盖确认（「覆盖这份手动存档？」+ 同选档卡的摘要 +「确认覆盖」「取消」）；未满时「新建手动存档」，满时「手动存档已满。请选择一份覆盖。」。
+   成功「已保存到手动存档。」；失败只在本子页显示带槽名的失败句与「重试」，离开子页即清除。写前由内核重验写权限、安全空闲与目标槽版本。 *@
+@{
+    var sv = G.Saves!;
+    var why = sv.ManualBlockedText(G.S);
+    var confirmEntry = confirmKey == null ? null : list.FirstOrDefault(e => e.Key == confirmKey);
+}
+<div class="menu-scrim" role="presentation">
+<div class="menu-modal overlay menu-top manual-save" role="dialog" aria-modal="true" aria-label="@SaveSlots.ManualPageTitle">
+    <div class="overlay-head mm-head">
+        <h2>@SaveSlots.ManualPageTitle</h2>
+    </div>
+    <div class="mm-body menu-scroll" data-wheel="y">
+        @if (why != null)
+        {
+            <div class="tiny muted">@why</div>
+        }
+        @if (sv.ManualFailure is { } fail)
+        {
+            <div class="save-fail" role="alert">
+                <span>@fail.Text </span>
+                <button class="linkish" @onclick="Retry">@SaveSlots.RetryButton</button>
+            </div>
+        }
+        else if (status != null)
+        {
+            <div class="tiny" role="status">@status</div>
+        }
+        @if (confirmEntry != null)
+        {
+            <div class="confirm-box">
+                @SaveSlots.OverwriteConfirmTitle
+                <div class="slot-card static"><SaveSlotCard Entry="confirmEntry" /></div>
+                <div class="row">
+                    <button class="secondary danger" disabled="@(why != null)" title="@why" @onclick="ConfirmOverwrite">@SaveSlots.OverwriteConfirmButton</button>
+                    <button class="secondary" @onclick="() => confirmKey = null">@SaveSlots.CancelButton</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            @if (sv.ManualFull)
+            {
+                <div class="tiny muted">@SaveSlots.ManualFullText</div>
+            }
+            else
+            {
+                <button class="secondary" disabled="@(why != null)" title="@why" @onclick="CreateNew">@SaveSlots.ManualNewButton</button>
+            }
+            <div class="slot-list">
+                @foreach (var en in list)
+                {
+                    var entry = en;
+                    <button type="button" class="slot-card @(entry.Readable ? "" : "unreadable")" @onclick="() => AskOverwrite(entry)">
+                        <SaveSlotCard Entry="entry" />
+                    </button>
+                }
+            </div>
+        }
+    </div>
+    <div class="mm-foot">
+        <button class="primary" @ref="_back" @onclick="OnBack">@SaveSlots.BackButton</button>
+    </div>
+</div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnBack { get; set; }
+
+    private List<SaveSlotEntry> list = new();
+    private string? confirmKey;
+    private string? status;
+    private ElementReference _back;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Refresh();
+    }
+
+    // 列表只在打开与每次写入后重读（菜单开着时世界仍可能推进，避免每次重绘都整读十个槽）
+    private void Refresh() => list = G.Saves?.ManualSlots() ?? new();
+
+    private void AskOverwrite(SaveSlotEntry e)
+    {
+        status = null;
+        confirmKey = e.Key;
+    }
+
+    private void CreateNew() => Apply(G.SaveManual(null));
+
+    private void ConfirmOverwrite()
+    {
+        var key = confirmKey;
+        confirmKey = null;
+        Apply(G.SaveManual(key));
+    }
+
+    private void Retry() => Apply(G.RetryManual());
+
+    private void Apply(SaveWriteOutcome r)
+    {
+        // 成功写定稿句；失败句由 ManualFailure 显示；被阻断时显示内核给的实际原因（与入口禁用原因同表）
+        status = r.Ok ? SaveSlots.ManualSavedText : r.BlockedText;
+        Refresh();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try { await _back.FocusAsync(); } catch (Exception) { /* 已关闭 */ }
+        }
+    }
+}

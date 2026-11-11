@@ -152,6 +152,21 @@ namespace Survival.Core.Save
         public const string SavedPrefix = "已保存 ";
         public const string RetryButton = "重试";
 
+        /// <summary>Q388 系统说明「保存与继续」三段（逐字）。</summary>
+        public static readonly string[] HelpParagraphs =
+        {
+            "游戏每隔 5 个现实分钟更新一次「每5分钟」自动存档。游戏内时间经过每天 06:00 时，更新「每日06:00」自动存档。安全空闲时可以从游戏菜单打开「手动存档」，最多保存 10 份。",
+            "关闭或刷新页面会丢失尚未保存的进度。想保留当前进度，请在可以保存时选择「保存并返回标题」。保存失败时，可按提示重试。",
+            "在标题页选择「继续游戏」，再选一份存档。行动、战斗和对白会恢复到这份存档记录的状态。开始新游戏会覆盖「每5分钟」自动存档，保留手动存档。「每日06:00」自动存档会等新局下次经过 06:00 时更新。",
+        };
+
+        /// <summary>Q388 战斗菜单说明句。</summary>
+        public const string BattleMenuNote = "要离开战斗，请在指令条选择「撤退」。选择「保存并返回标题」会保留当前战斗进度，下次读取这份存档时可以继续战斗。";
+        /// <summary>Q388 撤出中的游戏菜单说明句。</summary>
+        public const string ExtractMenuNote = "正在撤出，将一直走到外部入口，途中无法取消。选择「保存并返回标题」后，读取这份存档时会从剩余路程接着走。";
+        /// <summary>Q388 敌踪待处理的游戏菜单说明句。</summary>
+        public const string EncounterMenuNote = "请在敌踪界面选择「接敌」或「绕行」。选择「保存并返回标题」后，读取这份存档时仍须处理这次敌踪。";
+
         /// <summary>Q410 导入档首次读取的升级提示。</summary>
         public static string UpgradeNotice(string currentSchema) => $"旧存档已升级到版本{currentSchema}。";
 

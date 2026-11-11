@@ -1,0 +1,12 @@
+@inherits GameComponent
+@using Survival.Core.Save
+
+@* B40（S01 Q387）：「保存并返回标题」这次写入失败（或因无写权限没有执行）时留在当前菜单，显示带槽名的实际失败句；
+   写入失败后接「重试」（再按一次保存并返回标题），没有写权限时重试禁用、原因同底栏（Q408-4）。 *@
+@if (G.ExitSaveProblem is { } why)
+{
+    <div class="save-fail exit-save-fail" role="alert">
+        <span>@why </span>
+        <button class="linkish" disabled="@(G.Saves?.WriteBlockedText != null)" title="@G.Saves?.WriteBlockedText" @onclick="G.SaveAndExit">@SaveSlots.RetryButton</button>
+    </div>
+}

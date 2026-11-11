@@ -1,90 +1,132 @@
 @inherits GameComponent
+@using Survival.Core.Save
 
 @* 标题页（PXa；逐字稿 §1.1 Q322）：保留标题、新游戏、继续游戏、玩法说明与阅读字体；反馈只在游戏菜单里，简介段移除。
-   继续入口依实际存档；有存档时选新游戏先给 PXm 的覆盖确认。 *@
+   B40（S01 Q335 / Q384 / Q409 / Q411）：「继续游戏」始终可点，打开「存档选择」；每5分钟自动存档有数据（含不可读）时新游戏先确认。
+   旧单槽导入在页面打开时静默进行，标题页不再预告升级（Q383）。 *@
 <div class="title-screen">
-    <div class="title-card">
-        <h1>@ShellText.Brand</h1>
-        <div class="actions">
-            <button class="primary" @onclick="OnNew">@ShellText.NewGame</button>
-            <button class="secondary" disabled="@(!hasSave)" @onclick="OnContinue">@ShellText.ContinueGame</button>
-            <button class="secondary @(showHelp ? "on" : "")" aria-expanded="@(showHelp ? "true" : "false")" @onclick="() => showHelp = !showHelp">@ShellText.HowToPlay</button>
-        </div>
+    @if (!picking)
+    {
+        <div class="title-card">
+            <h1>@ShellText.Brand</h1>
+            <div class="actions">
+                <button class="primary" @onclick="OnNew">@ShellText.NewGame</button>
+                <button class="secondary" @onclick="OpenPicker">@ShellText.ContinueGame</button>
+                <button class="secondary @(showHelp ? "on" : "")" aria-expanded="@(showHelp ? "true" : "false")" @onclick="() => showHelp = !showHelp">@ShellText.HowToPlay</button>
+            </div>
 
-        @if (confirmOverwrite)
-        {
-            <div class="confirm-box">
-                @ShellText.OverwriteNote
-                <div class="row">
-                    <button class="secondary danger" @onclick="StartNew">@ShellText.OverwriteConfirm</button>
-                    <button class="secondary" @onclick="() => confirmOverwrite = false">@ShellText.Back</button>
+            @if (confirmNew)
+            {
+                <div class="confirm-box">
+                    @SaveSlots.NewGameConfirmText
+                    <div class="row">
+                        <button class="secondary danger" @onclick="StartNew">@SaveSlots.NewGameConfirmButton</button>
+                        <button class="secondary" @onclick="() => confirmNew = false">@SaveSlots.BackButton</button>
+                    </div>
                 </div>
+            }
+            @if (showHelp)
+            {
+                <div class="confirm-box small">
+                    · 浏览、查看地图、整理物品都不推进时间；只有确认行动才会流逝。<br />
+                    · 每5分钟结算一次饥饿、口渴、体力、睡意和精神。<br />
+                    · 探索推进地块调查，并有机会取得零散物资；清理每地有次数、随世界时间恢复；产物先放在地面，需要自己拾取。<br />
+                    · 卡片可以拖动：整理顺序、拾取放下、木材拖到火堆、水拖进锅；按住 Shift 松手可选数量。<br />
+                    · 脏水装进金属锅、放进燃烧的营地火堆自动烧开；生块根放进火堆加工位烤熟，或放进有净水的锅里水煮。加工随世界时间自动进行，不额外占角色主行动。<br />
+                    · 快捷键：M 地图，C 手工制作，R 休息，L 行动日志，Esc 关闭当前面板。
+                </div>
+            }
+            @* PXa「阅读字体」：与游戏菜单同一份浏览器偏好（Q295），标题页只给阅读字体 *@
+            <div class="title-pref"><PresentationSettings FontOnly="true" /></div>
+        </div>
+    }
+    else
+    {
+        @* Q335 / Q384 / Q404：「存档选择」——自动区（每5分钟、每日06:00、旧版存档最后）、手动区（从新到旧），只列已有档；
+           点选条目只预览，「读取存档」直接加载，「返回」回标题（Q411）。不可读档列在所属分区并禁用读取。 *@
+        <div class="title-card save-picker" role="dialog" aria-label="@SaveSlots.PickerTitle">
+            <h2>@SaveSlots.PickerTitle</h2>
+            <div class="picker-scroll">
+                @if (!view.HasReadable)
+                {
+                    <p class="muted">@SaveSlots.EmptyText</p>
+                }
+                @foreach (var (title, list) in new[] { (SaveSlots.AutoSection, view.Auto), (SaveSlots.ManualSection, view.Manual) })
+                {
+                    if (list.Count == 0) continue;
+                    <div class="eyebrow">@title</div>
+                    <div class="slot-list">
+                        @foreach (var en in list)
+                        {
+                            var entry = en;
+                            <button type="button" class="slot-card @(selected == entry.Key ? "on" : "") @(entry.Readable ? "" : "unreadable")"
+                                    aria-pressed="@(selected == entry.Key ? "true" : "false")" @onclick="() => Pick(entry)">
+                                <SaveSlotCard Entry="entry" />
+                            </button>
+                        }
+                    </div>
+                }
             </div>
-        }
-        @if (error != null)
-        {
-            <div class="confirm-box">@error</div>
-        }
-        else if (upgradeFrom != null)
-        {
-            @* 试玩修复 B8：旧版本存档在开始界面就预告升级，与冲突档提示同一位置 *@
-            <div class="confirm-box">存档将从版本@(upgradeFrom == "0.2-proto-1" ? "0.2-proto-1（首版）" : upgradeFrom)升级到@(GameState.CurrentSchema)，原档会另存备份；点“@ShellText.ContinueGame”后在右栏说明升级内容。</div>
-        }
-        @if (showHelp)
-        {
-            <div class="confirm-box small">
-                · 浏览、查看地图、整理物品都不推进时间；只有确认行动才会流逝。<br />
-                · 每5分钟结算一次饥饿、口渴、体力、睡意和精神。<br />
-                · 探索推进地块调查，并有机会取得零散物资；清理每地有次数、随世界时间恢复；产物先放在地面，需要自己拾取。<br />
-                · 卡片可以拖动：整理顺序、拾取放下、木材拖到火堆、水拖进锅；按住 Shift 松手可选数量。<br />
-                · 脏水装进金属锅、放进燃烧的营地火堆自动烧开；生块根放进火堆加工位烤熟，或放进有净水的锅里水煮。加工随世界时间自动进行，不额外占角色主行动。<br />
-                · 快捷键：M 地图，C 手工制作，R 休息，L 行动日志，Esc 关闭当前面板。
+            @if (loadError != null)
+            {
+                <div class="confirm-box">@loadError</div>
+            }
+            <div class="row picker-foot">
+                <button class="primary" disabled="@(!CanLoad)" @onclick="Load">@SaveSlots.LoadButton</button>
+                <button class="secondary" @onclick="ClosePicker">@SaveSlots.BackButton</button>
             </div>
-        }
-        @* PXa「阅读字体」：与游戏菜单同一份浏览器偏好（Q295），标题页只给阅读字体 *@
-        <div class="title-pref"><PresentationSettings FontOnly="true" /></div>
-    </div>
+        </div>
+    }
 </div>
 
 @code {
-    private bool hasSave;
-    private bool confirmOverwrite;
+    private bool confirmNew;
     private bool showHelp;
-    private string? error;
-    private string? upgradeFrom;
+    private bool picking;
+    private SaveCatalogView view = new();
+    private string? selected;
+    private string? loadError;
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        hasSave = G.HasSave;
-        if (hasSave)
-        {
-            var problem = G.SaveProblem();
-            if (problem != null)
-            {
-                hasSave = false;
-                error = problem;
-            }
-            else upgradeFrom = G.SaveUpgradeFrom();
-        }
-    }
+    private bool CanLoad => selected != null && view.All.Any(e => e.Key == selected && e.Readable);
 
     private void OnNew()
     {
-        error = null;
-        if (G.HasSave) confirmOverwrite = true;
+        // Q335 / Q409-2：每5分钟自动存档已有数据（含不可读）时先确认；终局重开走同一确认
+        if (G.NewGameNeedsConfirm(false)) confirmNew = true;
         else StartNew();
     }
 
     private void StartNew()
     {
-        confirmOverwrite = false;
+        confirmNew = false;
         G.NewGame();
     }
 
-    private void OnContinue()
+    private void OpenPicker()
     {
-        error = G.Continue();
-        if (error != null) hasSave = false;
+        confirmNew = false;
+        view = G.SaveList();
+        selected = view.All.FirstOrDefault(e => e.Readable)?.Key;
+        loadError = null;
+        picking = true;
+    }
+
+    private void Pick(SaveSlotEntry e)
+    {
+        selected = e.Key;
+        loadError = null;
+    }
+
+    private void Load()
+    {
+        if (selected == null) return;
+        loadError = G.LoadSlot(selected);
+        if (loadError != null) view = G.SaveList();
+    }
+
+    private void ClosePicker()
+    {
+        picking = false;
+        loadError = null;
     }
 }

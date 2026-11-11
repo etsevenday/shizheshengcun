@@ -1,5 +1,6 @@
 @inherits GameComponent
 @inject IJSRuntime JS
+@using Survival.Core.Save
 
 @{
     // B31b（逐字稿 §1.1 Q322）：强制对白锁期间只开放关闭菜单、阅读／动画偏好与反馈；其余入口按原锁禁用，悬停写原锁的说明。
@@ -23,7 +24,8 @@
             <div class="mm-body" data-wheel="y">
                 @if (inBattle)
                 {
-                    <div class="tiny muted">战斗中不能通过菜单脱战；撤退请用指令条的“撤退”。每条指令与敌方行动后都已自动保存。</div>
+                    @* B40（S01 Q388）：战斗菜单正式说明句 *@
+                    <div class="tiny muted">@SaveSlots.BattleMenuNote</div>
                     @if (G.S.Expedition != null)
                     {
                         @* B21（R03 D5）：战斗中菜单的“终止远征”只解释，必须先普通撤退 *@
@@ -33,7 +35,8 @@
                 }
                 else
                 {
-                    <div class="tiny muted">发现敌踪后要先在中间选择“接敌”或“绕行”，菜单不能跳过这个选择；返回标题后再继续仍停在这里。</div>
+                    @* B40（S01 Q388）：敌踪待处理的游戏菜单正式说明句 *@
+                    <div class="tiny muted">@SaveSlots.EncounterMenuNote</div>
                 }
                 @* B31a（Q295、Q321）：阅读字体与动画速度，与常态菜单同一偏好；战斗与敌踪选择中都可调，只改呈现 *@
                 <PresentationSettings />
@@ -44,12 +47,18 @@
                 }
                 <button class="secondary" @onclick="Feedback">@ShellText.Feedback</button>
             </div>
+            <ExitSaveStatus />
             <div class="mm-foot">
-                <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked))" title="@lockTip" @onclick="ToTitle">@ShellText.SaveToTitle</button>
+                <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked) || G.Saves?.WriteBlockedText != null)" title="@(lockTip ?? G.Saves?.WriteBlockedText)" @onclick="ToTitle">@ShellText.SaveToTitle</button>
                 <button class="primary" @ref="_first" @onclick="() => G.ToggleBattleMenu(false)">@(inBattle ? ShellText.BackToBattle : ShellText.ContinueGame)</button>
             </div>
         </div>
     </div>
+    return;
+}
+@if (manualPage && !dead)
+{
+    <ManualSavePage OnBack="LeaveManual" />
     return;
 }
 @* 游戏菜单（PXb；Q322）：盖在当前画面上的居中一层，关闭后回到原场景；对白锁、行动推进和暂停中也可打开，不提交、取消或恢复世界行动 *@
@@ -69,13 +78,32 @@
            浏览器存档说明用 PXb 逐字「存档保存在当前浏览器。」（与原标题页「存档保存在本浏览器」同义，不重复显示两句） *@
         <div class="tiny muted" data-version-line>@ShellText.VersionLine(G.AppBuild, GameState.CurrentSchema)</div>
         <div class="tiny muted">@ShellText.SaveNote</div>
+        @if (G.Saves is { } sv)
+        {
+            @* B40（S01 Q387）：「存档保存在当前浏览器。」下三行——每5分钟、每日06:00、最新一份手动档的本地日期时刻；
+               未写入「尚未保存」、时刻缺失「保存时间未记录」；浏览器读不出这个槽时时刻部分留空（文字待策划定，02 Q413） *@
+            <div class="tiny muted save-times">
+                <div>@(SaveSlots.MenuAuto5Prefix + G.SlotTimeText(sv.Auto5Time()))</div>
+                <div>@(SaveSlots.MenuDailyPrefix + G.SlotTimeText(sv.DailyTime()))</div>
+                <div>@(SaveSlots.MenuManualPrefix + G.SlotTimeText(sv.LatestManualTime()))</div>
+            </div>
+            @if (!dead)
+            {
+                @* Q385 / Q408-3 / Q411：普通游戏菜单的「手动存档」入口；不可用时显示第一条命中的实际原因（写权限优先）。
+                   战斗、敌踪（战斗层菜单）与死亡结算菜单不提供入口。 *@
+                var manualWhy = sv.ManualBlockedText(G.S);
+                <button class="secondary" disabled="@(manualWhy != null)" title="@manualWhy" @onclick="OpenManual">@SaveSlots.ManualPageTitle</button>
+                @if (manualWhy != null) { <div class="tiny muted">@manualWhy</div> }
+            }
+        }
         @if (G.S.Expedition != null || G.E.ExpeditionEnabled(G.E.DungeonAt(G.S.CurrentLocation)))
         {
             @* B21（R03 D5、A10 §7）：非战斗时从菜单发起终止远征（先看同一预估，可取消）；撤出中只说明不可取消 *@
             var abortWhy = G.E.CanAbortExpedition(G.S);
             if (G.S.Expedition?.IsExtracting == true)
             {
-                <div class="tiny muted">正在撤出（不可取消）：会一直走到外部入口；关闭页面或返回标题后再继续，从剩余时间接着走。</div>
+                @* B40（S01 Q388）：撤出中的游戏菜单正式说明句 *@
+                <div class="tiny muted">@SaveSlots.ExtractMenuNote</div>
             }
             else
             {
@@ -86,15 +114,16 @@
         <button class="secondary" @onclick="Feedback">@ShellText.Feedback</button>
         @if (!confirmNew)
         {
-            <button class="secondary danger" disabled="@(!ShellMenu.Enabled(ShellMenuItem.Restart, locked))" title="@lockTip" @onclick="() => confirmNew = true">重新开始…</button>
+            <button class="secondary danger" disabled="@(!ShellMenu.Enabled(ShellMenuItem.Restart, locked))" title="@lockTip" @onclick="() => confirmNew = true">@SaveSlots.RestartMenuButton</button>
         }
         else
         {
+            @* B40（S01 Q386 / Q409-3）：局中「重新开始…」无论每5分钟槽是否为空都确认，与标题新游戏共用文案与「开始新游戏」「返回」 *@
             <div class="confirm-box">
-                重新开始会清除当前存档，无法恢复。
+                @SaveSlots.NewGameConfirmText
                 <div class="row">
-                    <button class="secondary danger" disabled="@locked" @onclick="Restart">确认重新开始</button>
-                    <button class="secondary" @onclick="() => confirmNew = false">取消</button>
+                    <button class="secondary danger" disabled="@locked" @onclick="Restart">@SaveSlots.NewGameConfirmButton</button>
+                    <button class="secondary" @onclick="() => confirmNew = false">@SaveSlots.BackButton</button>
                 </div>
             </div>
         }
@@ -453,8 +482,9 @@
         }
         <div class="tiny muted">快捷键：M 地图 · C 手工制作 · R 休息 · L 日志 · Esc 关闭当前面板。Esc 不会取消进行中的行动。</div>
     </div>
+    <ExitSaveStatus />
     <div class="mm-foot">
-        <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked))" title="@lockTip" @onclick="ToTitle">@ShellText.SaveToTitle</button>
+        <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked) || G.Saves?.WriteBlockedText != null)" title="@(lockTip ?? G.Saves?.WriteBlockedText)" @onclick="ToTitle">@ShellText.SaveToTitle</button>
         @* B31e（§1.3 Q353 选 A）：死亡结算页打开的菜单底部写「返回结算」，只收起菜单回到同一结算 *@
         <button class="primary" @ref="_first" @onclick="Close">@(dead ? ShellText.BackToSettlement : ShellText.ContinueGame)</button>
     </div>
@@ -535,6 +565,9 @@
     {
         base.OnInitialized();
         _locAtOpen = G.State != null ? G.S.CurrentLocation : null;
+        // Q387 / Q406：上一次菜单里「保存并返回标题」的失败提示与手动存档子页的失败只留在原画面，重新打开菜单时不带出来
+        G.ExitSaveProblem = null;
+        G.LeaveManualPage();
     }
 
     private void DevDone(string text)
@@ -544,7 +577,7 @@
         // 试玩修复 M269 P8：先把内核事件（来客 Notice 等）送进结果提示，开发说明另写在 Notice，两条都能看到
         G.FlushEvents();
         G.Notice = text;
-        G.Save();
+        G.Commit();
         G.SetMenu(false);
     }
 
@@ -630,19 +663,35 @@
 
     private async Task Feedback() => await JS.InvokeVoidAsync("survival.openFeedback");
 
-    private void ToTitle()
-    {
-        G.Save();
-        G.BackToTitle();
-    }
+    /// <summary>「保存并返回标题」（Q335 / Q387）：写每5分钟槽成功才回标题，失败留在菜单显示带槽名的失败句与「重试」。</summary>
+    private void ToTitle() => G.SaveAndExit();
 
     private void Restart()
     {
-        G.ClearSave();
+        // Q386：只写新局初始快照到每5分钟槽；手动槽与每日槽不动
         G.NewGame();
     }
 
-    private void Close() => G.SetMenu(false);
+    private void Close()
+    {
+        G.ExitSaveProblem = null;
+        G.SetMenu(false);
+    }
+
+    private bool manualPage;
+
+    private void OpenManual()
+    {
+        G.LeaveManualPage();
+        manualPage = true;
+    }
+
+    /// <summary>手动存档子页「返回」回到游戏菜单（Q405）；离开时清除该次失败与重试（Q406）。</summary>
+    private void LeaveManual()
+    {
+        G.LeaveManualPage();
+        manualPage = false;
+    }
 
     /// <summary>终止远征确认窗（PXd）：先收菜单再开确认窗。</summary>
     private void OpenAbort()

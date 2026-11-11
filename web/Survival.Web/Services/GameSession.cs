@@ -24,8 +24,6 @@ public sealed class Selection
     public string Key => $"{Kind}:{Id}:{Owner}:{InstanceId}";
 }
 
-public enum SaveStatus { None, Saving, Saved, Failed }
-
 /// <summary>右栏页签（v0.7 第 6.1 节）：对象信息 / 人物。只在会话内，不进存档、不持久化。</summary>
 public enum DetailTab { Object, Character }
 
@@ -39,11 +37,181 @@ public sealed class GameSession
 {
     private readonly HttpClient _http;
     private readonly SaveStore _store;
+    private readonly BrowserSaveStorage _slots;
 
-    public GameSession(HttpClient http, SaveStore store)
+    public GameSession(HttpClient http, SaveStore store, BrowserSaveStorage slots)
     {
         _http = http;
         _store = store;
+        _slots = slots;
+    }
+
+    // ───────────── B40 多存档（S01 Q335、Q381—Q389、Q403—Q411） ─────────────
+
+    /// <summary>Q381：本页令牌（每次加载页面新生成），最近一次成功进入本局的页面持有写权限。</summary>
+    public string PageToken { get; } = Guid.NewGuid().ToString("N");
+
+    /// <summary>多存档写入调度与写权限（内核 <see cref="SaveCoordinator"/>）。配置载入后才有。</summary>
+    public SaveCoordinator? Saves { get; private set; }
+
+    /// <summary>Q383：打开页面时旧单槽导入的结果（失败时提供「旧版存档」卡）。</summary>
+    public LegacyImportResult? LegacyImport { get; private set; }
+
+    private static long NowMs => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    /// <summary>上一次已提交状态的快照校验和（Q388：只有存档相关状态实际变化才算一次提交）；null 表示未知。</summary>
+    private string? _commitSum;
+    private bool _unsavedFlag;
+
+    /// <summary>选档页列表（Q335 / Q384 / Q404）。</summary>
+    public SaveCatalogView SaveList()
+    {
+        try { return SaveCatalog.List(_slots, Config!, LegacyImport); }
+        catch (Exception) { return new SaveCatalogView(); }
+    }
+
+    /// <summary>
+    /// 一次已提交的存档相关状态变化（取代原单槽 Save()）：快照与上次提交相同就不算（打开菜单、查看说明、草稿不计）；
+    /// 变化了交给协调器（跨 06:00、终局、未保存标记），并在本边界执行已到期的写入。
+    /// </summary>
+    public void Commit()
+    {
+        if (State == null || Saves == null) return;
+        var sum = SaveSlots.Checksum(SaveSerializer.Serialize(State));
+        if (sum != _commitSum)
+        {
+            _commitSum = sum;
+            Saves.Commit(State, NowMs);
+        }
+        else Saves.Pump(State, NowMs);
+        SyncUnsaved();
+    }
+
+    /// <summary>跳过动画时每个世界段的提交：时间已推进，必算一次提交（不逐段序列化比较）；跨 06:00 的那一段由此记下。</summary>
+    private void CommitSegment()
+    {
+        if (State == null || Saves == null) return;
+        _commitSum = null;
+        Saves.Commit(State, NowMs);
+        SyncUnsaved();
+    }
+
+    private void ResetCommitBaseline() => _commitSum = State == null ? null : SaveSlots.Checksum(SaveSerializer.Serialize(State));
+
+    /// <summary>Q388：把未保存标记交给页面的原生离开确认（只在变化时调用浏览器）。</summary>
+    private void SyncUnsaved()
+    {
+        var u = Saves?.HasUnsavedProgress == true;
+        if (u == _unsavedFlag) return;
+        _unsavedFlag = u;
+        try { _store.SetUnsaved(u); } catch (Exception) { /* 页面接口不可用时只少离开确认 */ }
+    }
+
+    /// <summary>现实计时器（页面每秒一次）：到期记待写；不在推进与战斗动画中时就是空闲边界，立即写。</summary>
+    public void OnSaveTimer()
+    {
+        if (Saves == null || State == null) return;
+        if (!Saves.Tick(Saves.SessionId, NowMs) || Running || BattleBusy) return;
+        Saves.Pump(State, NowMs);
+        SyncUnsaved();
+        Notify();
+    }
+
+    /// <summary>另一页面改了存档存储（storage 事件）：重新确认写权限（Q381）。</summary>
+    public void OnSaveStorageChanged()
+    {
+        if (Saves == null || !Saves.InSession) return;
+        var before = Saves.Permission;
+        if (Saves.CheckPermission() != before) Notify();
+    }
+
+    /// <summary>底栏「在此页面继续保存」（Q381 / Q408）。</summary>
+    public void ReclaimSaves()
+    {
+        if (Saves == null || State == null) return;
+        Saves.Reclaim(NowMs);
+        if (!Running && !BattleBusy) Saves.Pump(State, NowMs);
+        SyncUnsaved();
+        Notify();
+    }
+
+    /// <summary>底栏某自动槽的「重试」（写原槽与对应快照）。</summary>
+    public void RetrySlot(SaveSlotKind kind)
+    {
+        if (Saves == null) return;
+        Saves.Retry(kind, NowMs);
+        SyncUnsaved();
+        Notify();
+    }
+
+    /// <summary>结算卡内终局快照的「重试」（Q409-4）。</summary>
+    public void RetryTerminal()
+    {
+        if (Saves == null) return;
+        Saves.RetryTerminal(NowMs);
+        SyncUnsaved();
+        Notify();
+    }
+
+    /// <summary>「保存并返回标题」这次没有执行或写失败时的提示（留在当前画面，Q387）；成功或关菜单时清掉。</summary>
+    public string? ExitSaveProblem { get; set; }
+
+    /// <summary>「保存并返回标题」（Q335 / Q387）：写每5分钟槽成功才回标题；失败留在当前画面并显示失败。</summary>
+    public void SaveAndExit()
+    {
+        if (State == null || Saves == null) return;
+        var r = Saves.SaveAndExit(State, NowMs);
+        if (r.Ok)
+        {
+            ExitSaveProblem = null;
+            BackToTitle();
+            return;
+        }
+        ExitSaveProblem = r.Failure?.Text ?? r.BlockedText;
+        SyncUnsaved();
+        Notify();
+    }
+
+    /// <summary>手动存档子页：新建（key 为 null）或覆盖（Q385 / Q405）。</summary>
+    public SaveWriteOutcome SaveManual(string? key)
+    {
+        var r = Saves!.SaveManual(S, key, NowMs);
+        SyncUnsaved();
+        Notify();
+        return r;
+    }
+
+    /// <summary>手动存档子页的「重试」。</summary>
+    public SaveWriteOutcome RetryManual()
+    {
+        var r = Saves!.RetryManual(S, NowMs);
+        SyncUnsaved();
+        Notify();
+        return r;
+    }
+
+    /// <summary>离开手动存档子页（Q406：清除该次失败与重试）。</summary>
+    public void LeaveManualPage() => Saves?.ClearManualFailure();
+
+    /// <summary>新游戏前要不要确认（Q335 / Q386 / Q409）。</summary>
+    public bool NewGameNeedsConfirm(bool midGame) => Saves?.NewGameNeedsConfirm(midGame) ?? midGame;
+
+    /// <summary>浏览器本地格式的时刻（Q406：卡面与菜单到分钟，底栏只显时分）。</summary>
+    public string LocalTime(long ms, bool withDate)
+    {
+        try { return _store.FormatLocal(ms, withDate); }
+        catch (Exception)
+        {
+            var d = DateTimeOffset.FromUnixTimeMilliseconds(ms).ToLocalTime();
+            return withDate ? d.ToString("yyyy-MM-dd HH:mm") : d.ToString("HH:mm");
+        }
+    }
+
+    /// <summary>Q387 菜单三行的时刻文字：未写入「尚未保存」、时刻缺失「保存时间未记录」；浏览器读不出时只留空（文字待策划定，Q413）。</summary>
+    public string SlotTimeText(SlotTime t)
+    {
+        if (!t.Exists) return t.ReadFailed ? "" : SaveSlots.NotSavedYet;
+        return t.SavedAtMs is long ms ? LocalTime(ms, true) : SaveSlots.TimeNotRecorded;
     }
 
     public GameConfig? Config { get; private set; }
@@ -150,14 +318,6 @@ public sealed class GameSession
     {
         if (_busyNotice.Observe(_notice, State)) _notice = null;
     }
-
-    public SaveStatus SaveState { get; private set; }
-    /// <summary>最近一次存档写入失败的浏览器原始错误文本（开发诊断用；玩家看 <see cref="SaveErrorText"/>）。</summary>
-    public string? SaveError { get; private set; }
-    /// <summary>最近一次失败是否浏览器存储配额用尽（Q282，按异常类别识别）。</summary>
-    public bool SaveErrorQuota { get; private set; }
-    /// <summary>底栏失败整句（后接“重试”）：配额用尽为「存档失败：浏览器存储空间已满。」，其他为原“保存失败：”+原始信息。</summary>
-    public string SaveErrorText => SaveWriteError.PlayerText(SaveErrorQuota, SaveError);
 
     public Selection Selected { get; private set; } = new();
 
@@ -641,7 +801,7 @@ public sealed class GameSession
     {
         // 试玩修复 M503：鸟瞰浏览中点第四行的卡只看详情，不给引导——否则饱饱对白会清掉已选建筑（CityOverviewTick 对白期间收起未提交的确认）
         if (State == null || S.Progress.Dead || CityBrowsing) return;
-        if (E.GuideContext(S, ctx, id, owner)) { Drain(); Save(); }
+        if (E.GuideContext(S, ctx, id, owner)) { Drain(); Commit(); }
     }
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
@@ -717,7 +877,7 @@ public sealed class GameSession
         ClearHoverNow();
         OpenPanel(null);
         Drain();
-        Save();
+        Commit();
         Notify();
         await RunLoop();
         if (State == null) return;
@@ -755,7 +915,7 @@ public sealed class GameSession
         CityHover = null;
         NewCityRequest();
         Panel = "citymap";
-        Save();
+        Commit();
     }
 
     public static bool IsTopPanel(string? panel) =>
@@ -786,7 +946,7 @@ public sealed class GameSession
             // 查看文书、路线日志、任务回顾是浏览，失败或重复不清
             if (op is ZeroMinuteOp zop && ResultToast.ClearsOn(zop, res)) SetToast(null);
             Drain();
-            Save();
+            Commit();
         }
         Notify();
         return res;
@@ -828,12 +988,12 @@ public sealed class GameSession
         // B18：在鉴定所安全时打开面板 = 当日首次安全访问的兜底（到达时通常已锁定）；锁定后存档，之后开关窗都只读存档里的表
         if (State != null && E.CityNpc(npcId)?.ServiceIds.Any(E.IsAppraisalService) == true && E.QuoteSnapshot(S, Clock.Day(S.GameMinute)) == null
             && E.EnsureAppraisalQuotes(S) != null)
-            Save();
+            Commit();
         // B19：在收容所打开面板 = 安全访问的兜底（旧档首次实到在这里开放）；同周期只读存档里的候选，换批时生成当前这一批
         if (State != null && E.CityNpc(npcId)?.ServiceIds.Any(E.IsRecruitService) == true)
         {
             var opened = E.TryOpenShelterRecruitment(S);
-            if (opened | E.EnsureRecruitCycle(S)) { Drain(); Save(); }
+            if (opened | E.EnsureRecruitCycle(S)) { Drain(); Commit(); }
         }
         OpenPanel("city");
     }
@@ -892,7 +1052,7 @@ public sealed class GameSession
             if (S.Main != null || E.DialogueLocked(S)) { Panel = null; Pop = null; }
             Drain();
             ReconcileSelection();
-            Save();
+            Commit();
         }
         Notify();
         if (res.Ok && !res.Duplicate && S.Main != null) await RunLoop();
@@ -914,7 +1074,7 @@ public sealed class GameSession
         {
             if (S.Main != null || E.DialogueLocked(S)) { Panel = null; Pop = null; }
             Drain();
-            Save();
+            Commit();
             if (opensCraft)
             {
                 // Q141：打开工坊入口时切到当地第一个已开放的公共站分类；没有已开放的就留在手工
@@ -950,7 +1110,7 @@ public sealed class GameSession
         var res = E.AnswerRecruit(S, questId, lineId, register);
         Notice = res.Ok || res.Duplicate ? null : res.Reason;
         Drain();
-        Save();
+        Commit();
         Notify();
         if (E.DialogueLocked(S) || S.Progress.Dead) return;
         if (S.Sub != null || (S.Main != null && S.Main.Status == ActionStatus.Running)) _ = RunLoop();
@@ -970,7 +1130,7 @@ public sealed class GameSession
         {
             if (S.Main != null || E.DialogueLocked(S)) { Panel = null; Pop = null; }
             Drain();
-            Save();
+            Commit();
         }
         Notify();
         if (res.Ok && !res.Duplicate && S.Main != null) await RunLoop();
@@ -986,7 +1146,7 @@ public sealed class GameSession
     {
         if (State == null) return;
         E.DismissHint(S, taskId);
-        Save();
+        Commit();
         Notify();
     }
 
@@ -995,7 +1155,7 @@ public sealed class GameSession
     {
         if (State == null) return;
         E.SetHintsPaused(S, paused);
-        Save();
+        Commit();
         Notify();
     }
 
@@ -1075,6 +1235,10 @@ public sealed class GameSession
             var json = await reader.ReadToEndAsync();
             Config = ConfigLoader.FromJson(json);
             Engine = new GameEngine(Config);
+            Saves = new SaveCoordinator(_slots, Engine, PageToken);
+            // Q383：打开游戏页面时静默尝试导入旧单槽（失败保留旧键，选档页给「旧版存档」卡）
+            try { LegacyImport = LegacySaveImport.Run(_slots, Config, Engine.SaveSummaryOf, Engine.SaveLocationName, () => Guid.NewGuid().ToString("N")); }
+            catch (Exception) { LegacyImport = null; }
             Icons.RegisterCategories(Config);   // B4 新物品/装备缺正式图时按分类占位（同一 ID 全局一张）
         }
         catch (Exception ex)
@@ -1083,13 +1247,12 @@ public sealed class GameSession
         }
     }
 
-    public bool HasSave
-    {
-        get { try { return _store.HasSave; } catch { return false; } }
-    }
+    /// <summary>浏览器里有任何存档卡（反馈上下文用）。</summary>
+    public bool HasSave => Config != null && SaveList().All.Any();
 
     public void Notify()
     {
+        SyncUnsaved();
         SyncCommitMark();
         ResetOnLocationChange();
         ReconcileFeed();
@@ -1159,111 +1322,69 @@ public sealed class GameSession
 
     // ───────────── 开局与存档 ─────────────
 
+    /// <summary>
+    /// 明确开始新局（Q335 / Q386）：旧会话的计时与待写作废，新局初始快照只写「每5分钟」自动存档（失败留待底栏重试，Q409-3）。
+    /// 是否先确认由调用方按 <see cref="NewGameNeedsConfirm"/> 决定。
+    /// </summary>
     public void NewGame()
     {
         var seed = (uint)(DateTime.UtcNow.Ticks & 0xFFFFFFFF);
         State = E.NewGame(seed);
         ResetUi();
         Recent.Add(new GameEvent { Kind = GameEventKind.Info, Minute = S.GameMinute, Text = S.Log.LastOrDefault()?.Text ?? "" });
-        Save();
+        ResetCommitBaseline();
+        Saves?.StartNewGame(S, NowMs);
         Notify();
     }
 
-    /// <summary>读取单槽存档。版本不兼容时返回错误文本。</summary>
-    public string? Continue()
+    /// <summary>
+    /// 选档页「读取存档」（Q335 / Q384 / Q411）：直接加载所选完整快照（不写回任何槽），以它为已保存基线；失败返回完整原因句。
+    /// 导入档首次成功读取且确有升级时右栏提示一次（Q410）。
+    /// </summary>
+    public string? LoadSlot(string key)
     {
+        SlotLoad r;
+        try { r = SaveCatalog.Load(_slots, key, Config!); }
+        catch (Exception) { return SaveSlots.UnreadablePrefix + SaveProblems.Corrupt; }
+        if (!r.Ok) return r.ProblemText;
+        State = r.State;
+        bool changed;
         try
         {
-            var json = _store.Load();
-            if (string.IsNullOrEmpty(json)) return "没有存档";
-            // 旧版存档（0.2-proto-1、3）先备份原文，再迁移到当前版本并覆盖保存；迁移冲突时不覆盖原档（设施与烹饪 00 案第 6 节）
-            var migrate = SaveSerializer.NeedsMigration(json);
-            if (migrate) _store.Backup(json);
-            State = SaveSerializer.Deserialize(json, Config, out var notes);
             E.SyncFacilities(S);
+            ResetCommitBaseline();
             // Q89（B8b）：地图导入 v3 营区/收容所节点后一次迁址（没有这两个节点时什么也不做；迁过的不再迁）
-            if (E.MigrateServiceLocations(S) && !migrate) Save();
-            if (E.SubstituteIntroBoundary(S) && !migrate) Save();   // Q243 save：读回的待补播按当前地点、身份和锁重验
-            ResetUi();
-            foreach (var l in S.Log.TakeLast(8))
-                Recent.Add(new GameEvent { Minute = l.Minute, Text = E.HideInstanceTags(l.Text), Kind = GameEventKind.Info });   // B32a Q349：旧存档记录回看隐藏物品编号
-            if (migrate)
-            {
-                Save();
-                if (SaveSerializer.AnnouncesUpgrade(json)) Notice = $"旧存档已升级到版本{GameState.CurrentSchema}，原档已备份" + (notes.Count > 0 ? "：" + string.Join("；", notes) : "") + "。";
-            }
-            Notify();
-            // 行动动画每 5 分钟段都会存档，播放中刷新页面时存档里的主行动仍是“运行中”；
-            // 读档后要接着推进，否则界面停在“进行中”却没有跳过/取消按钮，也开不了别的行动
-            var active = S.Sub ?? S.Main;
-            if (active != null && !S.Progress.Dead && !(S.Sub == null && S.Main!.Status == ActionStatus.Paused))
-                _ = RunLoop();
-            // 战斗中途读档：恢复覆盖层与队列游标，敌方未行动完的从游标继续（不会重复行动）
-            if (S.Battle != null && !S.Progress.Dead && !E.AwaitingPlayer(S)) _ = BattleLoop();
-            else if (S.Battle != null) { AutoTarget(); DetailTab = DetailTab.Object; }
-            return null;
+            changed = E.MigrateServiceLocations(S);
+            changed |= E.SubstituteIntroBoundary(S);   // Q243 save：读回的待补播按当前地点、身份和锁重验
         }
-        catch (SaveMigrationConflictException ex)
+        catch (Exception)
         {
             State = null;
-            return ConflictText(ex);
+            return SaveSlots.UnreadablePrefix + SaveProblems.Corrupt;
         }
-        catch (SaveVersionException ex)
-        {
-            return ex.Message + "，请开始新游戏。";
-        }
-        catch (Exception ex)
-        {
-            return "存档损坏：" + ex.Message;
-        }
-    }
-
-    private static string ConflictText(SaveMigrationConflictException ex) =>
-        $"旧存档无法自动升级到版本{GameState.CurrentSchema}：{ex.Message}。原存档没有改动，并已另存一份备份；请开始新游戏。";
-
-    /// <summary>现有存档是旧版、继续时会升级：返回它的版本号（开始界面预告），否则为 null。</summary>
-    public string? SaveUpgradeFrom()
-    {
-        try
-        {
-            var json = _store.Load();
-            if (string.IsNullOrEmpty(json) || !SaveSerializer.AnnouncesUpgrade(json)) return null;
-            return SaveSerializer.SchemaVersionOf(json);
-        }
-        catch { return null; }
-    }
-
-    /// <summary>检查现有存档能否读取；不能时返回原因（用于禁用“继续”）。</summary>
-    public string? SaveProblem()
-    {
-        try
-        {
-            var json = _store.Load();
-            if (string.IsNullOrEmpty(json)) return "没有存档";
-            try
-            {
-                SaveSerializer.Deserialize(json, Config);
-            }
-            catch (SaveMigrationConflictException ex)
-            {
-                // 冲突档：原档不覆盖，备份照常写一份，开始界面只允许新游戏
-                try { _store.Backup(json); } catch { /* 备份失败不影响提示 */ }
-                return ConflictText(ex);
-            }
-            return null;
-        }
-        catch (SaveVersionException ex) { return ex.Message + "，请开始新游戏。"; }
-        catch (Exception ex) { return "存档损坏：" + ex.Message; }
-    }
-
-    public void ClearSave()
-    {
-        _store.Clear();
+        ResetUi();
+        foreach (var l in S.Log.TakeLast(8))
+            Recent.Add(new GameEvent { Minute = l.Minute, Text = E.HideInstanceTags(l.Text), Kind = GameEventKind.Info });   // B32a Q349：旧存档记录回看隐藏物品编号
+        Saves?.StartLoaded(S, NowMs);
+        if (changed) Commit();
+        if (r.UpgradeNotice != null) Notice = r.UpgradeNotice;
         Notify();
+        // 读档后接着推进：存档里的主行动仍是“运行中”时要接着推进，否则界面停在“进行中”却没有跳过/取消按钮
+        var active = S.Sub ?? S.Main;
+        if (active != null && !S.Progress.Dead && !(S.Sub == null && S.Main!.Status == ActionStatus.Paused))
+            _ = RunLoop();
+        // 战斗中途读档：恢复覆盖层与队列游标，敌方未行动完的从游标继续（不会重复行动）
+        if (S.Battle != null && !S.Progress.Dead && !E.AwaitingPlayer(S)) _ = BattleLoop();
+        else if (S.Battle != null) { AutoTarget(); DetailTab = DetailTab.Object; }
+        return null;
     }
 
+    /// <summary>回标题（结算页「返回标题」不写盘；「保存并返回标题」成功后也走这里）：结束本会话，其余未执行的写入与失败提示清除。</summary>
     public void BackToTitle()
     {
+        Saves?.EndSession();
+        ExitSaveProblem = null;
+        _commitSum = null;
         State = null;
         ResetUi();
         Notify();
@@ -1314,32 +1435,6 @@ public sealed class GameSession
         BattleBusy = false;
     }
 
-    public void Save()
-    {
-        if (State == null) return;
-        try
-        {
-            SaveState = SaveStatus.Saving;
-            _store.Save(SaveSerializer.Serialize(State));
-            SaveState = SaveStatus.Saved;
-            SaveError = null;
-            SaveErrorQuota = false;
-        }
-        catch (Exception ex)
-        {
-            // Q282：按浏览器存储异常类别识别配额用尽（saveSet 回传的类别名；JSInterop 直接抛出时看异常信息里的类别名）
-            SaveState = SaveStatus.Failed;
-            SaveError = ex.Message;
-            SaveErrorQuota = SaveWriteError.IsQuotaExceeded((ex as SaveWriteException)?.Category, ex.Message);
-        }
-    }
-
-    public void RetrySave()
-    {
-        Save();
-        Notify();
-    }
-
     // ───────────── 选择 ─────────────
 
     public void Select(Selection sel)
@@ -1358,7 +1453,7 @@ public sealed class GameSession
         if (State != null && !CityBrowsing && (sel.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid) && !GameEngine.TaskDone(S, "PRO01"))
         {
             E.NoteObjectInspected(S);
-            if (GameEngine.TaskDone(S, "PRO01")) { Drain(); Save(); }
+            if (GameEngine.TaskDone(S, "PRO01")) { Drain(); Commit(); }
         }
         // B13d（Q128）：选中卡片是操作前引导的上下文（物资、火堆、资源点、地点；同次选卡可接着给 PRO01 之后的一项）
         if (State != null)
@@ -1631,7 +1726,7 @@ public sealed class GameSession
             PendingAction = null;
         }
         Drain();
-        Save();
+        Commit();
         Notify();
         return res;
     }
@@ -1648,7 +1743,7 @@ public sealed class GameSession
         {
             Drain();
             ReconcileSelection();
-            Save();
+            Commit();
         }
         Notify();
         return res;
@@ -1669,7 +1764,7 @@ public sealed class GameSession
             Drain();
             MergeSwapHighlight();
             ReconcileSelection();
-            Save();
+            Commit();
         }
         Notify();
         return res;
@@ -1712,7 +1807,7 @@ public sealed class GameSession
         Drain();
         MergeSwapHighlight();
         ReconcileSelection();
-        Save();
+        Commit();
         Notify();
         return last;
     }
@@ -1883,7 +1978,7 @@ public sealed class GameSession
         {
             Drain();
             ReconcileSelection();
-            Save();
+            Commit();
         }
         Notify();
     }
@@ -1964,7 +2059,7 @@ public sealed class GameSession
             Notify();
             return;
         }
-        Save();
+        Commit();
         Notify();
         await RunLoop();
     }
@@ -2004,11 +2099,15 @@ public sealed class GameSession
                 segs++;
                 if (!_skip)
                 {
-                    Save();
+                    Commit();
                     Notify();
                 }
-                // 跳过动画时每 4 段刷新一次中央条（剩余时间是游戏分钟，由内核按真实状态给出）
-                else if (segs % 4 == 0) Notify();
+                else
+                {
+                    CommitSegment();   // B40：跳过动画时也逐段提交（跨 06:00 的那一段写每日档、终局立即写）
+                    // 跳过动画时每 4 段刷新一次中央条（剩余时间是游戏分钟，由内核按真实状态给出）
+                    if (segs % 4 == 0) Notify();
+                }
                 if (r.Status is SegmentStatus.Paused or SegmentStatus.Dead or SegmentStatus.Idle or SegmentStatus.Dialogue) break;
                 if (S.Main == null && S.Sub == null) break;
                 // 任何速度都给“退出”留出响应机会（S01 §9、S14 §11.2）：跳过动画时每段也让出线程，不一次同步把未来整段时间算完
@@ -2021,7 +2120,7 @@ public sealed class GameSession
             _skip = false;
             // 到达新地点后旧右栏选中（含随身卡）与只依附它的临时状态由 Notify 里的 ResetOnLocationChange 统一清（Q281）
             if (State != null) ReconcileSelection();
-            Save();
+            Commit();
             Notify();
         }
         // 移动完成后由剧情首战直接进入战斗（S15 §5）：清掉地块上的选择与旧提示，接上战斗流程
@@ -2046,7 +2145,7 @@ public sealed class GameSession
         if (State == null) return;
         E.AckDialogue(S, id);
         Drain();
-        Save();
+        Commit();
         Notify();
         if (E.DialogueLocked(S) || S.Progress.Dead) return;
         if (S.Battle != null)
@@ -2215,7 +2314,7 @@ public sealed class GameSession
     public void DebugFill()
     {
         E.DebugFillGround(S);
-        Save();
+        Commit();
         Notify();
     }
 
@@ -2653,7 +2752,7 @@ public sealed class GameSession
             }
             if (State != null && S.Battle == null) OnBattleEnded();
             Drain();
-            Save();
+            Commit();
             Notify();
         }
         finally
@@ -2677,7 +2776,7 @@ public sealed class GameSession
         Selected = new Selection();
         DetailTab = DetailTab.Object;
         Drain();
-        Save();
+        Commit();
         Notify();
         await BattleLoop();
     }
@@ -2700,7 +2799,7 @@ public sealed class GameSession
             ClearHoverNow();
         }
         Drain();
-        Save();
+        Commit();
         Notify();
         if (res.Ok) await BattleLoop();
     }
@@ -2722,7 +2821,7 @@ public sealed class GameSession
             ClearHoverNow();
         }
         Drain();
-        Save();
+        Commit();
         Notify();
         if (res.Ok) await BattleLoop();
     }
@@ -2758,7 +2857,7 @@ public sealed class GameSession
             DetailTab = DetailTab.Character;
         }
         Drain();
-        Save();
+        Commit();
         Notify();
         if (res.Ok && !res.Duplicate) await RunLoop();
     }
@@ -2770,7 +2869,7 @@ public sealed class GameSession
         Notice = E.DebugExpedition(S, kind, dungeonId);
         Drain();
         ReconcileSelection();
-        Save();
+        Commit();
         Panel = null;   // 与其他开发按钮一样执行后收起菜单
         Notify();
     }
@@ -2793,7 +2892,7 @@ public sealed class GameSession
         Notice = r.Ok ? null : r.Reason;
         Drain();
         ReconcileSelection();
-        Save();
+        Commit();
         Notify();
     }
 
@@ -2805,7 +2904,7 @@ public sealed class GameSession
         Notice = r.Ok ? null : r.Reason;
         Drain();
         ReconcileSelection();
-        Save();
+        Commit();
         Notify();
     }
 
@@ -2834,18 +2933,13 @@ public sealed class GameSession
         if (State == null || Running || ResetDungeonId == null) return;
         var fail = DevFailNextResetSave;
         DevFailNextResetSave = false;
-        var r = E.ResetDungeonAtomic(S, ResetDungeonId, _resetRequestId ??= Guid.NewGuid().ToString("N"), st =>
-        {
-            if (fail) return false;
-            _store.Save(SaveSerializer.Serialize(st));
-            return true;
-        }, out var next);
+        // Q389：地牢重置在事务提交时同步写「每5分钟」自动存档，写失败（含无写权限）按原事务回滚
+        var r = E.ResetDungeonAtomic(S, ResetDungeonId, _resetRequestId ??= Guid.NewGuid().ToString("N"),
+            st => !fail && Saves != null && Saves.PersistReset(st, NowMs), out var next);
         State = next;
         if (r.Ok && !r.Duplicate)
         {
-            SaveState = SaveStatus.Saved;
-            SaveError = null;
-            SaveErrorQuota = false;
+            ResetCommitBaseline();   // 已随事务写盘，记为已保存
             Panel = null;
             Notice = null;
         }
@@ -2883,7 +2977,7 @@ public sealed class GameSession
         };
         Drain();
         ReconcileSelection();
-        Save();
+        Commit();
         Panel = null;
         Notify();
     }
@@ -2905,7 +2999,7 @@ public sealed class GameSession
                 // B9 遗留 1：敌人这一步结算完游标已经往后走，展示停顿期间按“刚出手的那一只”点名
                 BattleShownActor = r.Kind == BattleStepKind.EnemyActed && at > 0 ? at : null;
                 Drain();
-                Save();
+                Commit();
                 Notify();
                 if (r.Kind is BattleStepKind.None or BattleStepKind.Ended or BattleStepKind.Dialogue) break;
                 if (r.Kind is BattleStepKind.EnemyActed or BattleStepKind.RoundEnded)
@@ -2917,7 +3011,7 @@ public sealed class GameSession
             BattleBusy = false;
             if (State != null && S.Battle == null) OnBattleEnded();
             else AutoTarget();
-            Save();
+            Commit();
             Notify();
         }
     }
@@ -3240,7 +3334,7 @@ public sealed class GameSession
         if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
         var res = E.StartEscortRegistration(S, Guid.NewGuid().ToString("N"));
         Notice = res.Ok ? null : res.Reason;
-        if (res.Ok) { Drain(); Save(); }
+        if (res.Ok) { Drain(); Commit(); }
         Notify();
         if (res.Ok && !res.Duplicate) await RunLoop();
         return res;
@@ -3252,7 +3346,7 @@ public sealed class GameSession
         if (State == null) return;
         Notice = act(S);
         Drain();
-        Save();
+        Commit();
         Notify();
     }
 
@@ -3263,7 +3357,7 @@ public sealed class GameSession
         {
             Drain();
             ReconcileSelection();
-            Save();
+            Commit();
         }
         Notify();
         return res;
@@ -3284,7 +3378,7 @@ public sealed class GameSession
             BattleItem = null;
             BattleHover = null;
             ClearPairDraft();
-            Save();
+            Commit();
         }
         Notify();
     }

@@ -168,20 +168,26 @@
         @{ var last = G.Recent.LastOrDefault(); }
         <div class="event" title="@last?.Text">@if (last != null) {<b>@Clock.HHmm(last.Minute)</b>@last.Text}</div>
         <div>@(G.Running ? "时间流逝中…" : "浏览与整理不推进时间")</div>
-        <div class="save @(G.SaveState == SaveStatus.Failed ? "failed" : "")">
-            @switch (G.SaveState)
+        @* B40（S01 Q335 / Q387 / Q406 / Q408）：底栏保存状态——写权限提示与「在此页面继续保存」最先；自动档失败按槽各一行失败句加「重试」
+           （没有写权限时重试禁用、悬停给原因）；否则写「已保存 {时:分}」（最近一次任何存档成功写入的浏览器本地时刻）；还没写过时留空。 *@
+        @{ var sv = G.Saves; var autoFails = sv?.AutoFailures ?? (IReadOnlyList<Survival.Core.Save.SaveFailure>)Array.Empty<Survival.Core.Save.SaveFailure>(); }
+        <div class="save @(autoFails.Count > 0 || sv?.PermissionNotice != null ? "failed" : "")">
+            @if (sv?.PermissionNotice != null)
             {
-                case SaveStatus.Failed:
-                    @* Q282：配额用尽时整句「存档失败：浏览器存储空间已满。」，其他错误仍为“保存失败：”+原始信息；都后接重试 *@
-                    <span>@G.SaveErrorText </span><button class="linkish" @onclick="G.RetrySave">重试</button>
-                    break;
-                case SaveStatus.Saving:
-                    <span>保存中…</span>
-                    break;
-                case SaveStatus.Saved:
-                    @* §2 底栏：保存完成「已保存」（B31b 去掉前面的圆点字符，状态色由样式给） *@
-                    <span class="saved">@ShellText.Saved</span>
-                    break;
+                <span>@sv.PermissionNotice </span>
+                @if (sv.CanReclaim)
+                {
+                    <button class="linkish" @onclick="G.ReclaimSaves">@Survival.Core.Save.SaveSlots.ReclaimButton</button>
+                }
+            }
+            @foreach (var f in autoFails)
+            {
+                var kind = f.Kind;
+                <span class="save-fail"><span>@f.Text </span><button class="linkish" disabled="@(sv!.RetryBlockedText != null)" title="@sv.RetryBlockedText" @onclick="() => G.RetrySlot(kind)">@Survival.Core.Save.SaveSlots.RetryButton</button></span>
+            }
+            @if (sv?.PermissionNotice == null && autoFails.Count == 0 && sv?.LastSavedAtMs is long savedMs)
+            {
+                <span class="saved">@(Survival.Core.Save.SaveSlots.SavedPrefix + G.LocalTime(savedMs, false))</span>
             }
         </div>
     </footer>

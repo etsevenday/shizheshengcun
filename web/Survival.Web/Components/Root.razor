@@ -27,12 +27,16 @@ else
     }
 
     private DotNetObjectReference<FeedbackBridge>? _feedback;
+    private DotNetObjectReference<SaveBridge>? _saves;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
         _feedback = DotNetObjectReference.Create(new FeedbackBridge(G));
         await JS.InvokeVoidAsync("survival.initFeedback", _feedback);
+        // B40：多存档的现实计时、另一页面写入（storage 事件）与未保存进度的原生离开确认
+        _saves = DotNetObjectReference.Create(new SaveBridge(G));
+        await JS.InvokeVoidAsync("survival.initSaves", _saves);
     }
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
@@ -43,5 +47,6 @@ else
     {
         G.Changed -= OnChanged;
         _feedback?.Dispose();
+        _saves?.Dispose();
     }
 }

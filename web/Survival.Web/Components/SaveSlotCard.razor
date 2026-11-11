@@ -1,0 +1,33 @@
+@inherits GameComponent
+@using Survival.Core.Save
+
+@* B40：存档卡内容（Q335 / Q384 / Q404 / Q405 / Q407）：类型；不可读时类型下一行写原因；现实保存日期时刻（浏览器本地格式到分钟，
+   旧档无可靠时间写「保存时间未记录」，读不出时省略）、「第{世界日}日 · {时刻}」、地点、已结束附「本局已结束」。读不出的字段省略。
+   选档页、手动存档子页与覆盖确认的摘要共用。 *@
+<span class="slot-type">@Entry.TypeText</span>
+@if (Entry.ProblemText != null)
+{
+    <span class="slot-problem">@Entry.ProblemText</span>
+}
+<span class="slot-meta">
+    @if (Entry.SavedAtKnown)
+    {
+        <span>@(Entry.SavedAtMs is long ms ? G.LocalTime(ms, true) : SaveSlots.TimeNotRecorded)</span>
+    }
+    @if (Entry.DayTimeText != null)
+    {
+        <span>@Entry.DayTimeText</span>
+    }
+    @if (Entry.Location != null)
+    {
+        <span>@Entry.Location</span>
+    }
+    @if (Entry.Ended)
+    {
+        <span class="slot-ended">@SaveSlots.EndedText</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired] public SaveSlotEntry Entry { get; set; } = null!;
+}
