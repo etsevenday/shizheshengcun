@@ -48,7 +48,7 @@ public class B41aMigrationTests : B41aTestBase
         var s = WithEncounter(3, "shambler", "wolf", "crawler");
         var rng = RngOf(s);
         var log = s.Log.Count;
-        var t = SaveSerializer.Deserialize(AsSchema45(s), Cfg);
+        var t = SaveSerializer.Deserialize(AsSchema45(s), CfgOff);
         Assert.That(t.SchemaVersion, Is.EqualTo("46"));
         Assert.That(t.EnemyCards.ModelVersion, Is.EqualTo(0));
         Assert.That(t.EnemyCards.Groups, Is.Empty);
@@ -61,13 +61,13 @@ public class B41aMigrationTests : B41aTestBase
         // 在办绕行也原样
         Assert.That(Off.Start(s, ActionRequest.Bypass()).Ok, Is.True);
         Off.Advance(s);
-        var u = SaveSerializer.Deserialize(AsSchema45(s), Cfg);
+        var u = SaveSerializer.Deserialize(AsSchema45(s), CfgOff);
         Assert.That(u.Main?.Type, Is.EqualTo(ActionType.Bypass));
         Assert.That(u.Main!.ElapsedMinutes, Is.EqualTo(5));
 
         // 幂等：再存再读不变
         var once = SaveSerializer.Serialize(u);
-        Assert.That(SaveSerializer.Serialize(SaveSerializer.Deserialize(once, Cfg)), Is.EqualTo(once));
+        Assert.That(SaveSerializer.Serialize(SaveSerializer.Deserialize(once, CfgOff)), Is.EqualTo(once));
     }
 
     [Test]
@@ -195,7 +195,7 @@ public class B41aMigrationTests : B41aTestBase
     {
         // 开关关着时已经升到 46 的档（线上实际情况）：B41f 打开开关后的第一次读档才采纳
         var s = WithEncounter(3, "shambler", "crawler");
-        var v46 = SaveSerializer.Serialize(SaveSerializer.Deserialize(AsSchema45(s), Cfg));
+        var v46 = SaveSerializer.Serialize(SaveSerializer.Deserialize(AsSchema45(s), CfgOff));
         var t = SaveSerializer.Deserialize(v46, CfgV2);
         Assert.That(t.Encounter, Is.Null);
         Assert.That(t.EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2));

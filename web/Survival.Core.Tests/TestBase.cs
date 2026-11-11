@@ -6,8 +6,21 @@ namespace Survival.Core.Tests;
 
 public abstract class TestBase
 {
-    protected static readonly GameConfig Cfg =
-        ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
+    protected static readonly GameConfig Cfg = LoadConfig();
+
+    /// <summary>
+    /// 读发布配置。enemyCardsV2 为 null 时按文件原值；环境变量 SURVIVAL_ENEMY_CARDS_V2=1 时把新版敌踪开关改成开
+    /// （B41a：用来在“开关开”的配置下跑全量、列出要在翻开关那批处理的旧用例，平时不设）。
+    /// </summary>
+    protected static GameConfig LoadConfig(bool? enemyCardsV2 = null)
+    {
+        var json = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json"));
+        var v2 = enemyCardsV2 ?? (Environment.GetEnvironmentVariable("SURVIVAL_ENEMY_CARDS_V2") == "1" ? true : (bool?)null);
+        if (v2 == null) return ConfigLoader.FromJson(json);
+        var raw = Newtonsoft.Json.Linq.JObject.Parse(json);
+        raw["encounters"]!["enemyCardsV2"] = v2.Value;
+        return ConfigLoader.FromJson(raw.ToString());
+    }
 
     protected GameEngine E = null!;
 

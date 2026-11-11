@@ -13,14 +13,10 @@ namespace Survival.Core.Tests;
 public abstract class B41aTestBase : BattleTestBase
 {
     /// <summary>发布配置把 encounters.enemyCardsV2 改成 true（其余原样）。</summary>
-    protected static readonly GameConfig CfgV2 = LoadV2();
+    protected static readonly GameConfig CfgV2 = LoadConfig(true);
 
-    private static GameConfig LoadV2()
-    {
-        var raw = JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
-        raw["encounters"]!["enemyCardsV2"] = true;
-        return ConfigLoader.FromJson(raw.ToString());
-    }
+    /// <summary>开关明确关着的配置（不受 SURVIVAL_ENEMY_CARDS_V2 影响）。</summary>
+    protected static readonly GameConfig CfgOff = LoadConfig(false);
 
     /// <summary>开关关着的引擎（E 在本基类里是开关开着的）。</summary>
     protected GameEngine Off = null!;
@@ -28,7 +24,7 @@ public abstract class B41aTestBase : BattleTestBase
     [SetUp]
     public void V2SetUp()
     {
-        Off = new GameEngine(Cfg);
+        Off = new GameEngine(CfgOff);
         E = new GameEngine(CfgV2);
     }
 

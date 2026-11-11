@@ -1530,7 +1530,9 @@ namespace Survival.Core.Engine
                 ma.Stats.Add(StatId.Morale, -ml);
                 mateLoss.Add($"{ActorDisplayName(s, id)}精神−{Fmt.N(ml)}");
             }
-            s.EncounterGraceUntil = s.GameMinute + Config.Encounters.PostExitRandomEncounterGraceMinutes;
+            // B41a（R05 Q416）：新版敌踪下胜利、撤退都不再新增全地点保护（同卡撤退保护在 B41b）；旧档已生效的历史保护原值不动。
+            // 组卡成员的 HP 已随世界实例回写，幸存者仍属原组（GroupId 不变），全灭的组在 KillEnemy 时已移除
+            if (!CardsV2(s)) s.EncounterGraceUntil = s.GameMinute + Config.Encounters.PostExitRandomEncounterGraceMinutes;
             var head = outcome == "victory" ? "战斗胜利" : "撤退成功";
             // 撤退：只有场上确有倒下敌人的掉落/尸体时才写“放弃”（试玩修复 L3）
             var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品")

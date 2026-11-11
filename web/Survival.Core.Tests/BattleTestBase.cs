@@ -7,7 +7,7 @@ namespace Survival.Core.Tests;
 public abstract class BattleTestBase : TestBase
 {
     /// <summary>
-    /// 在农野荒地（第2日白天、冻结刷新巡游、清掉原有敌人）放下指定敌人并以敌踪方式入战。
+    /// 在农野荒地（第2日白天、冻结刷新巡游、清掉原有敌人）放下指定敌人并按旧版“接敌”口径直接入战（DebugStartBattle）。
     /// B6/B7 的旧用例按“单场最多 3 敌”写，Q62 起容量 C 来自真实解锁事实：这里先记下营区登记与一种关键记录（C3）再入战；
     /// 要测新局 C1 的用 <see cref="FightC1"/>。
     /// </summary>
@@ -34,8 +34,8 @@ public abstract class BattleTestBase : TestBase
         s.PatrolNextCheck = int.MaxValue;
         s.WorldEnemies.Clear();
         var ids = enemyIds.Select(id => E.DebugSpawnEnemy(s, id, "field").Id).ToList();
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = ids, Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.Engage(s).Ok, Is.True);
+        // B41a：改用测试入口直接开战（与原“摆待处理敌踪再接敌”同一条开战调用：战报“遭遇”、受惊系数 1.0），新旧敌踪流程下都能用
+        Assert.That(E.DebugStartBattle(s, ids, GameEngine.FearEncounter), Is.True);
         Assert.That(s.Battle, Is.Not.Null);
         return s;
     }

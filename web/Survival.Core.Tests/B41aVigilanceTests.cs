@@ -76,7 +76,9 @@ public class B41aVigilanceTests : TestBase
     [Test]
     public void Switch_DefaultsOff()
     {
-        Assert.That(Cfg.Encounters.EnemyCardsV2, Is.False, "B41a—B41e 挂在关着的开关后面，B41f 才打开");
+        Assert.That((bool)Raw()["encounters"]!["enemyCardsV2"]!, Is.False, "B41a—B41e 挂在关着的开关后面，B41f 才打开");
+        Assert.That(LoadConfig(false).Encounters.EnemyCardsV2, Is.False);
+        Assert.That(LoadConfig(true).Encounters.EnemyCardsV2, Is.True);
     }
 
     private static JObject Raw() => JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));

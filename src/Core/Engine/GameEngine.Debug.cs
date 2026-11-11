@@ -101,10 +101,36 @@ namespace Survival.Core.Engine
         public bool DebugForceEncounter(GameState s)
         {
             if (InCombatFlow(s) || s.Main != null || s.Sub != null) return false;
+            // B41a：新版敌踪下直接形成一张随机组卡（同正式规则：排除动物、按容量锁名单、已有可见组不再成组）
+            if (CardsV2(s))
+            {
+                if (VisibleGroupCardAt(s, s.CurrentLocation) != null) return false;
+                var members = GroupCardCandidates(s, s.CurrentLocation);
+                if (members.Count == 0) return false;
+                var g = AddGroupCard(s, s.CurrentLocation, members, "explore", s.GameMinute);
+                Emit(s, GameEventKind.Encounter, "（调试）" + GroupCardFoundText(GroupCardTitle(s, g)), null, members.Select(w => $"enemy:{w.Id}"));
+                return true;
+            }
             var group = LocalHostiles(s, s.CurrentLocation).Take(Config.Encounters.GroupMax).ToList();
             if (group.Count == 0) return false;
             s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = group.Select(w => w.Id).ToList(), Source = "explore", Minute = s.GameMinute };
             Emit(s, GameEventKind.Encounter, "（调试）发现敌踪。");
+            return true;
+        }
+
+        /// <summary>
+        /// 测试与调试：不经敌踪流程，直接用指定的世界敌人开一场普通战斗（按给定顺序截前 C 个入场）。context 取
+        /// <see cref="FearEncounter"/>（旧版“接敌”口径：战报写“遭遇”、受惊系数 1.0）或 <see cref="FearApproach"/>（主动接近 0.5）。
+        /// 不属于任何敌踪卡（CardKey 为空）。已在战斗、主角已死或没有可入战的敌人时返回 false。
+        /// </summary>
+        public bool DebugStartBattle(GameState s, IEnumerable<int> worldEnemyIds, string context = FearEncounter)
+        {
+            if (s.Battle != null || s.Progress.Dead) return false;
+            var group = worldEnemyIds.Select(id => FindWorldEnemy(s, id)).Where(w => w != null && !w.Engaged && w.LocationId == s.CurrentLocation).Select(w => w!).ToList();
+            if (group.Count == 0) return false;
+            s.Encounter = null;
+            var encounter = context != FearApproach;
+            StartBattle(s, group, encounter, encounter ? "遭遇" : "主动接近", context);
             return true;
         }
 
