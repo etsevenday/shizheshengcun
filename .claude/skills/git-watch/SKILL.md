@@ -16,7 +16,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 - 仓库 `E:\Workspace\shizheshengcun`，远端 `etsevenday/shizheshengcun`，分支 `main`。本方 git 作者 `etsevenday`；策划 GitHub 账号 `dotpad1994`（仓库协作者）。
 - `/design-dev` 第 0 节全部约定照旧（数值只来自策划案、不自补；只 add 自己改的路径；不强推；不碰留言板相关文件；压缩包不入库；代理不传 `model`、不用 Fable）。
 - 无人值守：不用 `AskUserQuestion`、`EnterPlanMode`/`ExitPlanMode`、`start_session`；开发与试玩一律用 `Agent`（`general-purpose`，不传 `model`，传 `effort: "high"`：用户 2026-10-27 要求定时任务用 Opus 5.5 高）。**所有代理都一样**（2026-10-28 用户补充）：`/design-dev` 第 2 步的两个分析代理、需求提炼、文档同步等也用 `general-purpose` + 不传 `model` + `effort: "high"`，不用 `Explore`/`Plan` 类型（它们有自己的默认模型和强度）；只读的在 brief 里写明"只读，不改文件"。
-- 待确认问题的**唯一存放处**：`doc/策划案/系统策划总册 v1.0/00 总则/02 开发方待确认问题.md`（路径固定，不新建别的问题文件）。
+- 待确认问题的**唯一存放处**：`doc/策划案/系统策划总册 v1.0/00 总则/02 开发方待确认问题.md`（路径固定，不新建别的问题文件）。已结案的问题整节搬到了同目录的 `02a 开发方待确认问题归档.md`（2026-11-11 起，`tools/archive-questions.py` 搬的，原文不改）：**新问题的编号 = 两份文件里最大的 Q 号 + 1**，不重用归档里的号；查旧结论先在 02 找，找不到到 02a 搜 `## Qn `，不整份读；新问题、策划答复、处理结果都只写在 02。归档由用户或交互会话执行，自动轮次不跑归档脚本。
 - 状态文件 `.git/claude-git-watch.json`（在 .git 里，不会入库；改它一律"读出 → 改字段 → 整个写回"，别的字段原样保留）：
 
   ```json
