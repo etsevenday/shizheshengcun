@@ -20,6 +20,18 @@ public sealed class DragController
     {
         _requestId = Guid.NewGuid().ToString("N");
         var map = new Dictionary<string, object>();
+        // B33（Q431-2、Q453-6）：整备来源卡只能拖到七槽——相容槽等同点选候选并明确选该槽（只打开比较），不相容槽给原装卸判定原因；其余落点不响应
+        if (GearDrag(sourceKey) is int gid)
+        {
+            if (G.State == null || G.E.FindItem(G.S, gid) is not { } git) return "{}";
+            foreach (var key in targetKeys.Where(k => k.StartsWith(GearSlotKey)))
+            {
+                var slot = key.Substring(GearSlotKey.Length);
+                var ok = G.E.SlotsFor(git.ItemId).Contains(slot);
+                map[key] = new { ok, kind = ok ? "preview" : "no", label = "", reason = ok ? "" : G.E.EquipBlocked(G.S, G.GearActorId, gid, slot) ?? GameEngine.Unsupported, fall = false, qty = false };
+            }
+            return JsonConvert.SerializeObject(map);
+        }
         var src = DropSource.Parse(sourceKey);
         if (G.State == null || src == null) return "{}";
         // B24（S07 中枢联动归档 1）：主城鸟瞰浏览中第四行只看，不起拖、不成为建筑/NPC 投料热区
@@ -51,6 +63,12 @@ public sealed class DragController
     {
         if (G.State == null) return Result(false, "没有进行中的游戏");
         if (G.CityBrowsing) return Result(false, GameSession.CityReadOnlyText);
+        if (GearDrag(sourceKey) is int gid)
+        {
+            if (!targetKey.StartsWith(GearSlotKey)) return Result(false, GameEngine.Unsupported);
+            var r = G.GearDropToSlot(gid, targetKey.Substring(GearSlotKey.Length));
+            return Result(r.Ok, r.Reason);
+        }
         var src = DropSource.Parse(sourceKey);
         var dst = DropTarget.Parse(targetKey, index);
         if (src == null || dst == null) return Result(false, GameEngine.Unsupported);
@@ -85,6 +103,13 @@ public sealed class DragController
         }
         else G.Hover(null);
     }
+
+    /// <summary>整备来源卡的拖拽键「gear:{实例号}」与七槽落点键「gearslot:{槽}」（B33）。</summary>
+    public const string GearSrcKey = "gear:";
+    public const string GearSlotKey = "gearslot:";
+
+    private static int? GearDrag(string sourceKey) =>
+        sourceKey.StartsWith(GearSrcKey) && int.TryParse(sourceKey.Substring(GearSrcKey.Length), out var id) ? id : null;
 
     private static string Result(bool ok, string reason) => JsonConvert.SerializeObject(new { ok, reason });
 }
