@@ -285,6 +285,9 @@ const fileSafe = name => name.replace(/[\\/:*?"<>|\s×]+/g, '_');
           await ev(`(() => { const r = document.querySelectorAll('.overflow-layer input[name=dup-keep]'); r[0] && r[0].click(); return r.length; })()`); await sleep(300);
           const dis0 = (await buttonState('确认整理'))?.disabled;
           await ev(`(() => { const r = [...document.querySelectorAll('.overflow-layer .dup-dest input')]; r[0] && r[0].click(); return r.length; })()`); await sleep(300);
+          // B33 P03d（Q434）：精简——无长说明，可确认时底部不写「可以确认」；区标题「选择保留的武器」「另一件放到」
+          const dupText = await ev(`document.querySelector('.overflow-layer').innerText`);
+          await check('B33 整理窗精简：无「可以确认」与长说明，有两区标题', !dupText.includes('可以确认') && !dupText.includes('每人同类型最多装备1件') && dupText.includes('选择保留的武器') && dupText.includes('另一件放到'), { dupText });
           await clickText('确认整理');
           const closed = !await ev(`!!document.querySelector('.overflow-layer')`);
           const names = await carriedNames();

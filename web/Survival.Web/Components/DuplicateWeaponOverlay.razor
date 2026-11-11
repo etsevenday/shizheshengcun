@@ -10,15 +10,16 @@
     var dup = e.DuplicateKindWeapons(s);
     var keep = _keep is int k && dup.Any(i => i.InstanceId == k) ? _keep : null;
     var others = dup.Where(i => i.InstanceId != keep).ToList();
-    var why = keep == null ? "先选要保留的一把" : e.ResolveDuplicateWeaponsBlocked(s, GameState.PlayerId, keep.Value, _dest);
-    var kind = dup.Count > 0 ? WeaponKinds.Name(e.WeaponKindOf(dup[0].ItemId)) : "";
+    var why = keep == null ? GearPanelCopy.DupPickKeep : e.ResolveDuplicateWeaponsBlocked(s, GameState.PlayerId, keep.Value, _dest);
 }
+@* B33 P03d（Q434）：精简——区标题「选择保留的武器」「另一件放到」，删长说明；底部只在受阻时写原原因，可确认时不写「可以确认」；
+   仍无取消键，须完成整理才能退出（关闭或 Esc 都不能绕过）。 *@
 <div class="overflow-layer" role="dialog" aria-modal="true" aria-label="整理同类型武器">
     <div class="panel overflow-box">
         <div class="ov-head">
-            <h2>整理同类型武器</h2>
-            <span class="muted">两个武器槽里装着同类型（@(kind)）武器：每人同类型最多装备1件。选一把留在原槽，其余的明确选择放回随身或放到@(e.ZoneName(s, s.Ground))地面，不会丢失或重抽属性。</span>
+            <h2>@GearPanelCopy.DupTitle</h2>
         </div>
+        <div class="eyebrow dup-sec">@GearPanelCopy.DupKeep</div>
         <div class="ov-list" data-wheel="y">
             @foreach (var it in dup)
             {
@@ -35,17 +36,18 @@
                     @if (keep != null && !on)
                     {
                         var toGround = _dest.TryGetValue(id, out var g) ? g : (bool?)null;
-                        <span class="dup-dest" role="radiogroup" aria-label="@($"{e.ItemName(it.ItemId)}的去向")">
-                            <label><input type="radio" name="@($"dup-dest-{id}")" checked="@(toGround == false)" @onchange="() => Dest(id, false)" />放回随身</label>
-                            <label><input type="radio" name="@($"dup-dest-{id}")" checked="@(toGround == true)" @onchange="() => Dest(id, true)" />放当前地面</label>
+                        <span class="dup-dest" role="radiogroup" aria-label="@GearPanelCopy.DupOther">
+                            <span class="dup-sec">@GearPanelCopy.DupOther</span>
+                            <label><input type="radio" name="@($"dup-dest-{id}")" checked="@(toGround == false)" @onchange="() => Dest(id, false)" />@GearPanelCopy.DupToCarried</label>
+                            <label><input type="radio" name="@($"dup-dest-{id}")" checked="@(toGround == true)" @onchange="() => Dest(id, true)" />@GearPanelCopy.DupToGround</label>
                         </span>
                     }
                 </div>
             }
         </div>
         <div class="ov-foot">
-            <span class="@(why != null ? "danger-text" : "")">@(why ?? "可以确认")</span>
-            <button type="button" class="primary" disabled="@(why != null || _busy)" @onclick="Confirm">确认整理</button>
+            @if (why != null) { <span class="danger-text">@why</span> } else { <span></span> }
+            <button type="button" class="primary" disabled="@(why != null || _busy)" @onclick="Confirm">@GearPanelCopy.DupConfirm</button>
         </div>
         @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
     </div>
