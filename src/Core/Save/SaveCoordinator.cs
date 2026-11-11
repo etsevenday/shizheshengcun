@@ -60,7 +60,7 @@ namespace Survival.Core.Save
     {
         public bool Exists { get; internal set; }
         public long? SavedAtMs { get; internal set; }
-        /// <summary>浏览器读不出该槽（不知道有没有档）。策划案未给这种情况的菜单文字，网页壳待定（见开发计划 B40 未做与待确认）。</summary>
+        /// <summary>浏览器读不出该槽（不知道有没有档）。菜单行按 Q413 写「尚未保存」（见 <see cref="SaveSlots.MenuTimeText"/>）。</summary>
         public bool ReadFailed { get; internal set; }
     }
 

@@ -81,7 +81,7 @@
         @if (G.Saves is { } sv)
         {
             @* B40（S01 Q387）：「存档保存在当前浏览器。」下三行——每5分钟、每日06:00、最新一份手动档的本地日期时刻；
-               未写入「尚未保存」、时刻缺失「保存时间未记录」；浏览器读不出这个槽时时刻部分留空（文字待策划定，02 Q413） *@
+               未写入「尚未保存」、时刻缺失「保存时间未记录」；浏览器读不出这个槽时也写「尚未保存」（Q413 选 B；选档页仍按 Q403 显示读取失败原因） *@
             <div class="tiny muted save-times">
                 <div>@(SaveSlots.MenuAuto5Prefix + G.SlotTimeText(sv.Auto5Time()))</div>
                 <div>@(SaveSlots.MenuDailyPrefix + G.SlotTimeText(sv.DailyTime()))</div>

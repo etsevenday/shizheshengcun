@@ -722,7 +722,47 @@ public class B40aSaveSlotsTests : TestBase
         var rf = new MemStorage { ReadFailOn = k => k == SaveSlots.DailyKey };
         rf.D = st.D;
         var c2 = new SaveCoordinator(rf, E, "Z");
-        Assert.That(c2.DailyTime().ReadFailed, Is.True, "读不出单独标出（文字待定）");
+        Assert.That(c2.DailyTime().ReadFailed, Is.True, "读不出单独标出");
+    }
+
+    /// <summary>
+    /// Q413-A01：读某槽时浏览器抛错，菜单对应行显示「尚未保存」，选档页仍显示该槽读取失败原因；
+    /// 正常已有档仍显示保存时刻，已有快照仅缺时刻时仍写「保存时间未记录」。
+    /// </summary>
+    [Test]
+    public void Q413_A01_ReadFailedRowSaysNotSavedYet()
+    {
+        static string Fmt(long ms) => "T" + ms;
+        var st = new MemStorage();
+        var c = Page(st, "A");
+        var s = New();
+        c.StartNewGame(s, T0);
+        st.D[SaveSlots.DailyKey] = "{broken";
+        Assert.That(SaveSlots.MenuTimeText(c.Auto5Time(), Fmt), Is.EqualTo(Fmt(T0)), "正常已有档显示保存时刻");
+        Assert.That(SaveSlots.MenuTimeText(c.DailyTime(), Fmt), Is.EqualTo("保存时间未记录"), "已有快照缺时刻");
+        Assert.That(SaveSlots.MenuTimeText(c.LatestManualTime(), Fmt), Is.EqualTo("尚未保存"), "未写入");
+
+        var firstManual = SaveSlots.ManualKeys().First();
+        var rf = new MemStorage { D = st.D, ReadFailOn = k => k == SaveSlots.DailyKey || k == firstManual };
+        var c2 = new SaveCoordinator(rf, E, "Z");
+        Assert.That(c2.DailyTime().ReadFailed, Is.True);
+        Assert.That(SaveSlots.MenuTimeText(c2.DailyTime(), Fmt), Is.EqualTo("尚未保存"), "每日槽读不出：尚未保存");
+        Assert.That(c2.LatestManualTime().ReadFailed, Is.True);
+        Assert.That(SaveSlots.MenuTimeText(c2.LatestManualTime(), Fmt), Is.EqualTo("尚未保存"), "手动槽读不出且无其他手动档：尚未保存");
+        Assert.That(SaveSlots.MenuTimeText(c2.Auto5Time(), Fmt), Is.EqualTo(Fmt(T0)), "其他槽不受影响");
+
+        // 选档页同一个槽仍按 Q403 显示真实读取失败原因
+        var view = SaveCatalog.List(rf, Cfg, null);
+        var daily = view.Auto.Single(e => e.Key == SaveSlots.DailyKey);
+        Assert.That(daily.Readable, Is.False);
+        Assert.That(daily.Problem, Is.EqualTo(SaveProblemKind.ReadFailed));
+        Assert.That(daily.ProblemText, Is.EqualTo(SaveSlots.UnreadablePrefix + SaveProblems.ReadFailed));
+        Assert.That(daily.ProblemText, Does.Not.Contain("尚未保存"));
+
+        // 有一份可读手动档、另一份读不出时，手动行仍显示可读那份的时刻
+        Assert.That(c.SaveManual(s, SaveSlots.ManualKeys().ElementAt(1), T0 + 7 * Sec).Ok, Is.True);
+        var c3 = new SaveCoordinator(rf, E, "Y");
+        Assert.That(SaveSlots.MenuTimeText(c3.LatestManualTime(), Fmt), Is.EqualTo(Fmt(T0 + 7 * Sec)));
     }
 
     // ───────────── Q386 / Q387 / Q388 / Q389 / Q407 / Q409 ─────────────

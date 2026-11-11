@@ -428,3 +428,17 @@ button { transition-duration: var(--mo-hover); }
 .end-save-fail { margin: 8px 0; }
 .footer .save .save-fail { margin-left: 8px; }
 .footer .save .save-fail:first-child { margin-left: 0; }
+
+/* B40 收尾（M694，1280×720 档排版）：
+   1) 游戏菜单（含手动存档子页，.menu-top；战斗菜单不变）在 438px 基准高里，「手动存档」落在正文折叠线以下、被底部按钮挡住。
+      本档把弹窗放高到 552px（不超过视口减 16px），正文行距 12→8px，使「手动存档」及其不可用原因不滚动即可见；1600/1920 档不变。
+   2) 终局卡点「重新开始」后确认框嵌在卡内，卡高约 746px 超出 720 视口。本档收紧卡内边距与行距、确认框不再额外上边距，
+      并以视口减 16px 为上限、超出时卡内滚动（失败句与「重试」也同时出现时仍不出屏）。 */
+@media (max-height: 800px) {
+  .menu-modal.overlay.menu-top { height: min(552px, calc(100vh - 16px)); }
+  .menu-modal.menu-top .mm-body { gap: 8px; }
+  .end-card { padding: 18px 30px; gap: 8px; max-height: calc(100vh - 16px); overflow-y: auto; overscroll-behavior: contain; }
+  .end-card .confirm-box { margin-top: 0; padding: 10px 14px; }
+  .end-card .confirm-box .row { margin-top: 8px; }
+  .end-card .checklist { line-height: 1.8; }
+}

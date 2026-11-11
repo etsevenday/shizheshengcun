@@ -117,7 +117,7 @@ public class B40bSaveShellTests
         Assert.That(note, Is.LessThan(a));
         Assert.That(a, Is.LessThan(d));
         Assert.That(d, Is.LessThan(m));
-        Assert.That(g, Does.Contain("if (!t.Exists) return t.ReadFailed ? \"\" : SaveSlots.NotSavedYet;"), "读不出的槽时刻留空（Q413 待定）");
+        Assert.That(g, Does.Contain("public string SlotTimeText(SlotTime t) => SaveSlots.MenuTimeText(t, ms => LocalTime(ms, true));"), "菜单三行走内核同一规则（Q413）");
     }
 
     // ───────────── Q385 / Q405 / Q406 手动存档 ─────────────
@@ -147,6 +147,7 @@ public class B40bSaveShellTests
         Assert.That(page, Does.Contain("<SaveSlotCard Entry=\"confirmEntry\" />"), "覆盖确认带同卡摘要");
         Assert.That(page, Does.Contain("@SaveSlots.ManualFullText").And.Contain("@SaveSlots.ManualNewButton"));
         Assert.That(page, Does.Contain("status = r.Ok ? SaveSlots.ManualSavedText : r.BlockedText;"));
+        Assert.That(page, Does.Contain("else if (status != null && status != why)"), "被拒句与顶部失权句相同时只显示一行（B40 收尾）");
         Assert.That(page, Does.Contain("@if (sv.ManualFailure is { } fail)").And.Contain("@onclick=\"Retry\">@SaveSlots.RetryButton</button>"));
         Assert.That(page, Does.Contain("@onclick=\"OnBack\">@SaveSlots.BackButton</button>"));
         var menu = Web("Components", "MenuOverlay.razor");

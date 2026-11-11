@@ -26,8 +26,9 @@
                 <button class="linkish" @onclick="Retry">@SaveSlots.RetryButton</button>
             </div>
         }
-        else if (status != null)
+        else if (status != null && status != why)
         {
+            @* B40 收尾：被阻断时写入结果与顶部的不可用原因（失权句等）是同一句，只显示一行 *@
             <div class="tiny" role="status">@status</div>
         }
         @if (confirmEntry != null)

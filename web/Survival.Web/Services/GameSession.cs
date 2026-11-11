@@ -207,12 +207,8 @@ public sealed class GameSession
         }
     }
 
-    /// <summary>Q387 菜单三行的时刻文字：未写入「尚未保存」、时刻缺失「保存时间未记录」；浏览器读不出时只留空（文字待策划定，Q413）。</summary>
-    public string SlotTimeText(SlotTime t)
-    {
-        if (!t.Exists) return t.ReadFailed ? "" : SaveSlots.NotSavedYet;
-        return t.SavedAtMs is long ms ? LocalTime(ms, true) : SaveSlots.TimeNotRecorded;
-    }
+    /// <summary>Q387 / Q413 菜单三行的时刻文字：未写入或浏览器读不出「尚未保存」、时刻缺失「保存时间未记录」（规则在内核 SaveSlots.MenuTimeText）。</summary>
+    public string SlotTimeText(SlotTime t) => SaveSlots.MenuTimeText(t, ms => LocalTime(ms, true));
 
     public GameConfig? Config { get; private set; }
     public GameEngine? Engine { get; private set; }

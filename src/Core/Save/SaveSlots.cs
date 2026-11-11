@@ -123,6 +123,16 @@ namespace Survival.Core.Save
         public const string MenuDailyPrefix = "每日06:00：";
         public const string MenuManualPrefix = "手动：";
 
+        /// <summary>
+        /// Q387 / Q413 菜单三行的时刻值：未写入「尚未保存」；已有快照缺时刻「保存时间未记录」；
+        /// 浏览器读不出这个槽（不知道有没有档）也写「尚未保存」（Q413 选 B；选档页仍按 Q403 显示真实读取失败原因）。
+        /// </summary>
+        public static string MenuTimeText(SlotTime t, Func<long, string> formatLocal)
+        {
+            if (!t.Exists) return NotSavedYet;
+            return t.SavedAtMs is long ms ? formatLocal(ms) : TimeNotRecorded;
+        }
+
         /// <summary>Q384 / Q403 不可读档原因前缀。</summary>
         public const string UnreadablePrefix = "这份存档无法读取：";
         /// <summary>Q383 / Q403 旧单槽导入失败原因前缀。</summary>
