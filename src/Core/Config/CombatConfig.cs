@@ -491,11 +491,28 @@ namespace Survival.Core.Config
         /// <summary>流窜枪手：本场弹药计划总数与弹仓容量（打空后弱近战或前移）。</summary>
         public int AmmoTotal { get; set; }
         public int Magazine { get; set; }
+        /// <summary>
+        /// B41a 公开警惕等级（R05「Q423 警惕逐项定稿」，1–10 级）：按本次遭遇来源取列。发布配置 42 种全有（缺种或越界是配置错误，ConfigLoader 校验）。
+        /// </summary>
+        public EnemyVigilanceConfig? Vigilance { get; set; }
 
+        [JsonIgnore] public bool IsAnimal => Family == "animal";
         [JsonIgnore] public bool IsZombie => Family == "zombie";
         [JsonIgnore] public bool IsHuman => Family == "human";
         [JsonIgnore] public string FamilyName => Family switch { "zombie" => "丧尸", "animal" => "动物", "human" => "敌对人类", _ => Family };
         [JsonIgnore] public bool NeutralUntilAttacked => Behavior == "neutral_until_attacked";
+    }
+
+    /// <summary>
+    /// B41a 敌种警惕等级四列（R05 Q423 表）：普通常驻／固定战成员（含守卫战随从）／守卫本体／可选强敌。表中已是取高后的值
+    /// （固定战成员≥3、守卫本体≥5、可选强敌≥6），内核直接取列、不再取高。
+    /// </summary>
+    public sealed class EnemyVigilanceConfig
+    {
+        public int Resident { get; set; }
+        public int FixedMember { get; set; }
+        public int GuardianBody { get; set; }
+        public int OptionalElite { get; set; }
     }
 
     public sealed class EnemyIntentsConfig
@@ -806,6 +823,11 @@ namespace Survival.Core.Config
         public bool BypassLeavesWorldEnemiesAlive { get; set; }
         public bool DefeatRemovesOnlyKilledWorldIds { get; set; }
         public bool CombatSurvivorsKeepHpAndXpCountersOnWorldId { get; set; }
+        /// <summary>
+        /// B41 新版敌踪总开关（R05 文首「Q342 新版敌踪、潜行和躲避定稿」）：B41a—B41e 的内核与界面先做在关着的开关后面，B41f 全部做完后一次打开。
+        /// 关：旧版接敌／绕行流程原样；开：且存档已采纳新版卡模型（EnemyCardsState.ModelVersion）时走新分支。
+        /// </summary>
+        public bool EnemyCardsV2 { get; set; }
     }
 
     public sealed class ZombieLootConfig
@@ -1162,6 +1184,8 @@ namespace Survival.Core.Config
         public string LocationId { get; set; } = "";
         public string EnemyId { get; set; } = "";
         public bool NoReinforcement { get; set; }
+        /// <summary>B41a 教学首战游荡尸的警惕特例（R05 Q423：“教学首战的游荡尸特例为 1”）。</summary>
+        public int Vigilance { get; set; }
     }
 
     public sealed class DialogueConfig

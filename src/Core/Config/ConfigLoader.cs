@@ -597,6 +597,16 @@ namespace Survival.Core.Config
                 if (en.FearChance < 0 || en.FearChance > 1) e.Add($"敌人 {en.Id} 基础惊吓概率须在0—1");
                 if (en.FearValue < 0) e.Add($"敌人 {en.Id} 惊吓值不能为负");
             }
+            // B41a（R05 Q423）：每个敌种四列警惕都在 1–10；固定战成员≥3、守卫本体≥5、可选强敌≥6；缺种或越界是配置错误
+            foreach (var en in c.Enemies)
+            {
+                if (en.Vigilance is not EnemyVigilanceConfig vg) { e.Add($"敌人 {en.Id} 缺少警惕等级"); continue; }
+                foreach (var (label, v, floor) in new[] { ("普通常驻", vg.Resident, 1), ("固定战成员", vg.FixedMember, 3), ("守卫本体", vg.GuardianBody, 5), ("可选强敌", vg.OptionalElite, 6) })
+                {
+                    if (v < 1 || v > 10) e.Add($"敌人 {en.Id} 的{label}警惕等级须在 1—10");
+                    else if (v < floor) e.Add($"敌人 {en.Id} 的{label}警惕等级不能低于 {floor}");
+                }
+            }
             foreach (var k in we.RarityOpenAbsoluteMinute.Keys)
                 if (!we.RarityWeights.ContainsKey(k)) e.Add($"开放时间的层级 {k} 未知");
             var sub = c.ActiveSubstance;
@@ -607,6 +617,7 @@ namespace Survival.Core.Config
             var tb = c.Story.TutorialBattle;
             if (!string.IsNullOrEmpty(tb.EnemyId) && !enemies.ContainsKey(tb.EnemyId)) e.Add($"首战敌人 {tb.EnemyId} 不存在");
             if (!string.IsNullOrEmpty(tb.LocationId) && !locs.Contains(tb.LocationId)) e.Add($"首战地点 {tb.LocationId} 不存在");
+            if (!string.IsNullOrEmpty(tb.EnemyId) && (tb.Vigilance < 1 || tb.Vigilance > 10)) e.Add("首战敌人的警惕等级须在 1—10");
             Dup(c.Story.Dialogues, d => d.Id, "对白", e);
             if (c.Infection.ProgressPerHour.Count == 0) e.Add("缺少病毒进展速率");
 

@@ -22396,6 +22396,12 @@
             "bitePct": 20
           }
         ]
+      },
+      "vigilance": {
+        "resident": 1,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22432,6 +22438,12 @@
             "control": "slow"
           }
         ]
+      },
+      "vigilance": {
+        "resident": 2,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22468,6 +22480,12 @@
             "control": "stagger"
           }
         ]
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22503,6 +22521,12 @@
             "bitePct": 20
           }
         ]
+      },
+      "vigilance": {
+        "resident": 2,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22543,6 +22567,12 @@
             "bitePct": 20
           }
         ]
+      },
+      "vigilance": {
+        "resident": 3,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22585,6 +22615,12 @@
             "targetSlots": "12"
           }
         ]
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22620,6 +22656,12 @@
             "bleedPct": 25
           }
         ]
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22655,6 +22697,12 @@
             "bleedPct": 25
           }
         ]
+      },
+      "vigilance": {
+        "resident": 5,
+        "fixedMember": 5,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22693,6 +22741,12 @@
             "factor": 1.5
           }
         ]
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22727,6 +22781,12 @@
             "verb": "顶撞"
           }
         ]
+      },
+      "vigilance": {
+        "resident": 5,
+        "fixedMember": 5,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22767,6 +22827,12 @@
         "itemId": "scrap",
         "count": 1,
         "chance": 0.2
+      },
+      "vigilance": {
+        "resident": 1,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22808,7 +22874,13 @@
         "count": 1,
         "chance": 0.25
       },
-      "staggerImmuneOnce": true
+      "staggerImmuneOnce": true,
+      "vigilance": {
+        "resident": 2,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
+      }
     },
     {
       "id": "z_spitter",
@@ -22856,6 +22928,12 @@
         "itemId": "plastic",
         "count": 1,
         "chance": 0.25
+      },
+      "vigilance": {
+        "resident": 3,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22907,6 +22985,12 @@
         "itemId": "fastener",
         "count": 1,
         "chance": 0.3
+      },
+      "vigilance": {
+        "resident": 2,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22947,6 +23031,12 @@
         "itemId": "cloth",
         "count": 1,
         "chance": 0.25
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -22993,6 +23083,12 @@
         "itemId": "cloth",
         "count": 1,
         "chance": 0.3
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23035,6 +23131,12 @@
         "itemId": "steel",
         "count": 1,
         "chance": 0.4
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23081,6 +23183,12 @@
         "itemId": "rope",
         "count": 1,
         "chance": 0.3
+      },
+      "vigilance": {
+        "resident": 3,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23122,7 +23230,13 @@
         "count": 1,
         "chance": 0.25
       },
-      "deathSplash": 0.3
+      "deathSplash": 0.3,
+      "vigilance": {
+        "resident": 2,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
+      }
     },
     {
       "id": "z_nurse",
@@ -23162,6 +23276,12 @@
         "itemId": "medical_gauze",
         "count": 1,
         "chance": 0.3
+      },
+      "vigilance": {
+        "resident": 3,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23203,6 +23323,12 @@
         "itemId": "parts",
         "count": 1,
         "chance": 0.3
+      },
+      "vigilance": {
+        "resident": 3,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23250,6 +23376,12 @@
         "itemId": "wire",
         "count": 1,
         "chance": 0.3
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23297,6 +23429,12 @@
         "itemId": "precision_parts",
         "count": 1,
         "chance": 1.0
+      },
+      "vigilance": {
+        "resident": 6,
+        "fixedMember": 6,
+        "guardianBody": 6,
+        "optionalElite": 6
       }
     },
     {
@@ -23344,6 +23482,12 @@
         "itemId": "medical_gauze",
         "count": 2,
         "chance": 1.0
+      },
+      "vigilance": {
+        "resident": 7,
+        "fixedMember": 7,
+        "guardianBody": 7,
+        "optionalElite": 7
       }
     },
     {
@@ -23391,6 +23535,12 @@
         "itemId": "electronics",
         "count": 1,
         "chance": 1.0
+      },
+      "vigilance": {
+        "resident": 6,
+        "fixedMember": 6,
+        "guardianBody": 6,
+        "optionalElite": 6
       }
     },
     {
@@ -23441,6 +23591,12 @@
         "itemId": "precision_parts",
         "count": 2,
         "chance": 1.0
+      },
+      "vigilance": {
+        "resident": 7,
+        "fixedMember": 7,
+        "guardianBody": 7,
+        "optionalElite": 7
       }
     },
     {
@@ -23487,6 +23643,12 @@
         "itemId": "cloth",
         "count": 1,
         "chance": 1.0
+      },
+      "vigilance": {
+        "resident": 5,
+        "fixedMember": 5,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23536,7 +23698,13 @@
         "chance": 1.0
       },
       "ammoTotal": 6,
-      "magazine": 2
+      "magazine": 2,
+      "vigilance": {
+        "resident": 6,
+        "fixedMember": 6,
+        "guardianBody": 6,
+        "optionalElite": 6
+      }
     },
     {
       "id": "wild_dog_leader",
@@ -23578,6 +23746,12 @@
             "bleedPct": 25
           }
         ]
+      },
+      "vigilance": {
+        "resident": 6,
+        "fixedMember": 6,
+        "guardianBody": 6,
+        "optionalElite": 6
       }
     },
     {
@@ -23616,6 +23790,12 @@
             "factor": 1.4
           }
         ]
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23659,6 +23839,12 @@
             "targetSlots": "12"
           }
         ]
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23695,6 +23881,12 @@
             "control": "stagger"
           }
         ]
+      },
+      "vigilance": {
+        "resident": 3,
+        "fixedMember": 3,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23736,6 +23928,12 @@
             "bitePct": 20
           }
         ]
+      },
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
       }
     },
     {
@@ -23776,7 +23974,13 @@
           }
         ]
       },
-      "protectLapseNoTarget": true
+      "protectLapseNoTarget": true,
+      "vigilance": {
+        "resident": 4,
+        "fixedMember": 4,
+        "guardianBody": 5,
+        "optionalElite": 6
+      }
     },
     {
       "id": "ec_boss_crypt",
@@ -23820,6 +24024,12 @@
             "bitePct": 0
           }
         ]
+      },
+      "vigilance": {
+        "resident": 6,
+        "fixedMember": 6,
+        "guardianBody": 6,
+        "optionalElite": 6
       }
     },
     {
@@ -23865,6 +24075,12 @@
             "verb": "格挡"
           }
         ]
+      },
+      "vigilance": {
+        "resident": 7,
+        "fixedMember": 7,
+        "guardianBody": 7,
+        "optionalElite": 7
       }
     },
     {
@@ -23909,7 +24125,13 @@
           }
         ]
       },
-      "protectLapseNoTarget": true
+      "protectLapseNoTarget": true,
+      "vigilance": {
+        "resident": 7,
+        "fixedMember": 7,
+        "guardianBody": 7,
+        "optionalElite": 7
+      }
     },
     {
       "id": "ec_boss_relay",
@@ -23955,6 +24177,12 @@
             "verb": "防御"
           }
         ]
+      },
+      "vigilance": {
+        "resident": 7,
+        "fixedMember": 7,
+        "guardianBody": 7,
+        "optionalElite": 7
       }
     },
     {
@@ -24001,7 +24229,13 @@
           }
         ]
       },
-      "protectLapseNoTarget": true
+      "protectLapseNoTarget": true,
+      "vigilance": {
+        "resident": 6,
+        "fixedMember": 6,
+        "guardianBody": 6,
+        "optionalElite": 6
+      }
     },
     {
       "id": "ec_boss_mine",
@@ -24047,6 +24281,12 @@
             "bitePct": 0
           }
         ]
+      },
+      "vigilance": {
+        "resident": 6,
+        "fixedMember": 6,
+        "guardianBody": 6,
+        "optionalElite": 6
       }
     },
     {
@@ -24094,7 +24334,13 @@
           }
         ]
       },
-      "protectLapseNoTarget": true
+      "protectLapseNoTarget": true,
+      "vigilance": {
+        "resident": 7,
+        "fixedMember": 7,
+        "guardianBody": 7,
+        "optionalElite": 7
+      }
     },
     {
       "id": "ec_boss_cold",
@@ -24142,6 +24388,12 @@
             "bitePct": 0
           }
         ]
+      },
+      "vigilance": {
+        "resident": 7,
+        "fixedMember": 7,
+        "guardianBody": 7,
+        "optionalElite": 7
       }
     }
   ],
@@ -24338,7 +24590,8 @@
     "groupSelection": "oldest_local_hostile_then_nearest_existing_hostiles_max3",
     "bypassLeavesWorldEnemiesAlive": true,
     "defeatRemovesOnlyKilledWorldIds": true,
-    "combatSurvivorsKeepHpAndXpCountersOnWorldId": true
+    "combatSurvivorsKeepHpAndXpCountersOnWorldId": true,
+    "enemyCardsV2": false
   },
   "zombieLoot": {
     "rollAtFirstEnemyDeath": true,
@@ -25685,7 +25938,8 @@
       "fromLocationId": "camp",
       "locationId": "field",
       "enemyId": "shambler",
-      "noReinforcement": true
+      "noReinforcement": true,
+      "vigilance": 1
     },
     "dialogues": [
       {
