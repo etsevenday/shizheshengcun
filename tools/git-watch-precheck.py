@@ -6,13 +6,16 @@
 
 检查顺序与 git-watch 技能 §1 一致（只读，不加锁、不改状态文件）：
   1. 状态文件 .git/claude-git-watch.json 里 runningSince 非空、且心跳（heartbeat，缺省用 runningSince）
-     不到 1.5 小时 → IDLE（上一轮还在跑；技能每进一个阶段就刷新心跳）
+     不到 1.5 小时 → IDLE（上一轮还在跑；技能每进一个阶段就刷新心跳）；
+     但锁里记了 sessionId、而那个会话的记录文件（主会话和子代理的 jsonl）已 45 分钟没写入，
+     就当上一轮已卡住（撞用量上限等），不等心跳过期（2026-11-11 起：后台心跳脚本会在会话停住后照样续锁）
   2. git fetch origin；origin/main 等于 notifiedHead → IDLE（已通知过用户，等处理）
   3. lastSeen..origin/main 里作者不是 etsevenday 的提交为空，且队列（queue.batches）里没有可开工的 pending 批次 → IDLE；
      waiting 批次（开工前问题已发给策划）只挡排在它后面的 pending 批次；pending 批次写了 dependsOn 的，
      只看它列出的批次做完没有（2026-11-11 起；此前是有 waiting 批次就整个队列暂停）；
      blocksQueue 为 false 的 waiting 批次（只答了一部分的 A 批）不挡 pending 批次；
-     minor 批次（次要问题攒批）满足开批条件时算 pending（技能 §2.3 第 8 条）
+     minor 批次（次要问题攒批）满足开批条件时算 pending（技能 §2.3 第 8 条）；
+     锁已失效却还有 running 批次（上一轮中途停下）也算 WORK，交技能接手
   4. 否则 WORK，附新提交列表、队列剩余批次与本地未推送/未提交情况，交给技能继续处理
 fetch 失败等异常一律 ERROR，hook 模式下不拦截，照常交给模型处理。
 
@@ -32,6 +35,8 @@ LOG = ROOT / ".git" / "claude-git-watch.log"
 MARKER = "[git-watch-scheduled]"
 OWN_AUTHOR = "etsevenday"
 LOCK_HOURS = 1.5  # 心跳超过这么久没刷新，才当上一轮已经死掉（2026-11-11 由 4 改，B40 那轮卡住白等 3 小时）
+TRANSCRIPT_IDLE_MINUTES = 45  # 上一轮会话记录这么久没写入，就当它已卡住（心跳脚本照样续锁也不算数）
+PROJECTS = Path.home() / ".claude" / "projects"
 MINOR_COUNT = 8  # 次要攒批：已答满这么多条就开批
 MINOR_DAYS = 2   # 或最早一条答复等了这么多天
 
@@ -49,6 +54,22 @@ def hours_since(stamp):
     if t.tzinfo is None:
         t = t.astimezone()
     return (datetime.now(timezone.utc) - t).total_seconds() / 3600
+
+
+def transcript_idle_minutes(session_id):
+    """会话记录（主会话 jsonl 及其目录下子代理记录等）最后一次写入距今多少分钟；找不到返回 None。"""
+    if not session_id:
+        return None
+    files = []
+    for main in PROJECTS.glob(f"*/{session_id}.jsonl"):
+        files.append(main)
+        sub = main.with_suffix("")
+        if sub.is_dir():
+            files += [f for f in sub.rglob("*") if f.is_file()]
+    if not files:
+        return None
+    latest = max(f.stat().st_mtime for f in files)
+    return (datetime.now().timestamp() - latest) / 60
 
 
 def minor_ready(batch, idle):
@@ -89,14 +110,21 @@ def check():
     except (OSError, ValueError) as e:
         return "ERROR", f"状态文件读不了：{e}"
 
+    notes = []
     since = state.get("runningSince")
     if since:
         beat = state.get("heartbeat") or since
         try:
-            if hours_since(beat) < LOCK_HOURS:
-                return "IDLE", f"上一轮还在跑（runId {state.get('runId')}，心跳 {beat}）"
+            alive = hours_since(beat) < LOCK_HOURS
         except ValueError:
-            pass  # 时间写坏了按无锁处理，交给技能
+            alive = False  # 时间写坏了按无锁处理，交给技能
+        idle = transcript_idle_minutes(state.get("sessionId"))
+        if alive and idle is not None and idle >= TRANSCRIPT_IDLE_MINUTES:
+            alive = False
+            notes.append(f"上一轮 {state.get('runId')} 心跳 {beat} 还新，但会话 {state.get('sessionId')} "
+                         f"的记录已 {idle:.0f} 分钟没写入，当作已卡住，本轮接手（技能 §1 换自己的 runId 占锁）。")
+        if alive:
+            return "IDLE", f"上一轮还在跑（runId {state.get('runId')}，心跳 {beat}）"
 
     batches = (state.get("queue") or {}).get("batches") or []
     pending = [b for b in batches if b.get("status") == "pending"]
@@ -128,10 +156,10 @@ def check():
                   f"{last}..origin/main")
         new = [l.split("\x1f") for l in log.splitlines() if l]
         theirs = [c for c in new if c[1] != OWN_AUTHOR]
-        if not theirs and blocking and not ready:
+        if not theirs and blocking and not ready and not running:
             ids = "；".join(f"{b.get('id', '?')} {'、'.join(b.get('questions') or [])}" for b in blocking)
             return "IDLE", f"等策划答复（{ids}），开发暂停（origin/main {head[:7]}）"
-        if not theirs and not ready:
+        if not theirs and not ready and not running:
             if stuck:
                 ids = "、".join(b.get("id", "?") for b in stuck)
                 return "IDLE", f"无新提交，{ids} 在等它依赖的批次（origin/main {head[:7]}）"
@@ -146,7 +174,10 @@ def check():
     except (RuntimeError, subprocess.TimeoutExpired, OSError) as e:
         return "ERROR", str(e)
 
-    lines = []
+    lines = notes[:]
+    if running:
+        lines.append("上一轮中途停下的批次（按技能 §1 第 2 步看 commits 判断做到哪）："
+                     + "、".join(b.get("id", "?") for b in running))
     if ready:
         lines.append(f"队列还有 {len(ready)} 批可开工（本轮只做第一批）：")
         lines += [f"  {b.get('id', '?')} {b.get('title', '')}" for b in ready]

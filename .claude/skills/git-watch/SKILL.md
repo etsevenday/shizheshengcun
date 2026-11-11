@@ -25,6 +25,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
     "runId": "<本轮编号，加锁时生成，如 2026-10-30T19:05:00+08:00-a3f9>",
     "runningSince": "<ISO 时间或 null>",
     "heartbeat": "<最近一次心跳的 ISO 时间或 null>",
+    "sessionId": "<本轮会话 id 或 null，加锁时写，预检和心跳脚本据此看会话还在不在动>",
     "notifiedHead": "<上次因受阻而通知用户时的 origin/main 提交>",
     "queue": {
       "source": ["<被拆的策划提交短号>"],
@@ -53,10 +54,11 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 ## 1 加锁与检测（没事就安静退出）
 
 0. **预检**（省 token）：定时任务提示词带 `[git-watch-scheduled]` 标记，本机 `.claude/settings.local.json` 的 UserPromptSubmit hook 会先跑 `python tools/git-watch-precheck.py --hook`：结论为 IDLE（锁未过期 / origin/main 已通知过 / 无新提交）时直接拦下提示词，模型不启动；WORK 或 ERROR 时把预检结论作为附加上下文放进来。上下文里已有 WORK 结论 → 下面第 2 步的 fetch 和列提交可以省掉，直接用它；没有（hook 没生效、手动触发）→ 先跑一次 `python tools/git-watch-precheck.py`，首行是 IDLE 就回一句结论结束，不用往下读。每次 hook 结论记在 `.git/claude-git-watch.log`。预检只读、不加锁，WORK 时仍从第 1 条开始加锁。
-1. **加锁（心跳锁）**：读状态文件。`runningSince` 非空、且 `heartbeat`（缺省看 `runningSince`）距今不到 1.5 小时（2026-11-11 由 4 小时改：B40 那轮 11:55 卡住，白等到 15:11 才能接手） → 上一轮还在跑，直接结束，不通知、不动状态文件。否则生成本轮 `runId`（当前 ISO 时间 + 4 位随机），把 `runId`、`runningSince`、`heartbeat` 写进去，记住自己的 `runId`。
+1. **加锁（心跳锁）**：读状态文件。`runningSince` 非空、且 `heartbeat`（缺省看 `runningSince`）距今不到 1.5 小时（2026-11-11 由 4 小时改：B40 那轮 11:55 卡住，白等到 15:11 才能接手） → 上一轮还在跑，直接结束，不通知、不动状态文件。预检判定上一轮已卡住的（会话记录 45 分钟没写入，见下）照常接手。否则生成本轮 `runId`（当前 ISO 时间 + 4 位随机），把 `runId`、`runningSince`、`heartbeat`、`sessionId` 写进去，记住自己的 `runId` 和 `sessionId`。`sessionId` 取本会话 scratchpad 路径里 `scratchpad` 上一级的目录名（形如 `f1b23ed9-c065-44c9-82e3-d2766b3f87bd`，对应 `~/.claude/projects/<项目>/<sessionId>.jsonl`）。
+   - **会话卡住的判定**（2026-11-11 起）：后台心跳进程不随会话停下（B33 那轮 18:35 撞用量上限，心跳循环照样续锁到 20:33，后面每次预检都以为还在跑）。所以预检除了看心跳，还看 `sessionId` 对应的会话记录（主会话 jsonl 和 `<sessionId>/` 下子代理记录）最后写入时间：超过 45 分钟没动就当已卡住、交下一轮接手。正常干活时代理每条消息都会写记录，单条命令也别让它 45 分钟没输出。
    - **心跳**：每进入一个阶段都刷新 `heartbeat` = 当前时间：拆分完成、每起一个代理之前和它返回之后、每次提交前、推送前、等部署前、每轮试玩/修复前。刷新时先读出 `runId`：**不是自己的** → 说明锁已被别的轮次接手（本轮卡太久），立即停手：不提交、不推送、不改队列，`PushNotification`"git-watch 本轮 <runId> 锁被接手，已停下"，结束。
    - **清锁**：本轮无论怎么结束都要清锁，但**只清自己的**：读出状态文件，`runId` 等于自己的才把 `runId`/`runningSince`/`heartbeat` 置 null；不是自己的就不碰。
-   - 单个代理别一口气塞太多活：一批的开发量控制在一个代理 1–2 小时内（第 2 节分批时就按这个量切）。**代理跑着的时候也要续心跳**：起代理（开发、试玩、分析）后，同时开一个后台 Bash 循环，每 20 分钟刷新一次 `heartbeat`，读到 `runId` 不是自己的就退出；代理返回后用 TaskStop 停掉。这样两次心跳之间不会超过 1.5 小时。
+   - 单个代理别一口气塞太多活：一批的开发量控制在一个代理 1–2 小时内（第 2 节分批时就按这个量切）。**代理跑着的时候也要续心跳**：起代理（开发、试玩、分析）后，同时后台跑 `python tools/git-watch-heartbeat.py <runId> <sessionId>`（Bash `run_in_background`），它每 20 分钟刷新一次 `heartbeat`，`runId` 不是自己的或本会话记录 45 分钟没写入就自己退出；代理返回后用 TaskStop 停掉。不要再在 scratchpad 里临时写心跳循环。阶段间的单次刷新也可以用它加 `--once`。这样两次心跳之间不会超过 1.5 小时。
 2. `git fetch origin`。看两样：
    - 新提交：`git log --format='%h %an %ad %s' <lastSeen>..origin/main`，只看作者不是 `etsevenday` 的。**不要用 `HEAD..origin/main`**：别的会话可能已把策划提交拉进本地 HEAD，那样会漏掉。
    - 队列：`queue.batches` 里有没有可开工的 `pending`（按第 0 节 `dependsOn` 判断，预检结论里已分好；上一轮留下的 `running` 说明那轮中途死了：看它的 `commits` 与 origin/main 判断做到哪，没推上去的改回 `pending` 重做，已推上去的按第 4.1 节从试玩接着做）。
