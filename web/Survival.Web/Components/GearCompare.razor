@@ -25,7 +25,7 @@
                     @foreach (var w in weapons)
                     {
                         var ws = w;
-                        <button type="button" role="radio" aria-checked="@(p.Slot == ws)" class="eq-btn @(p.Slot == ws ? "on" : "")" @onclick="() => G.GearClickSlot(ws)">@EquipSlots.Name(ws)</button>
+                        <button type="button" role="radio" aria-checked="@(p.Slot == ws ? "true" : "false")" class="eq-btn @(p.Slot == ws ? "on" : "")" @onclick="() => G.GearClickSlot(ws)">@EquipSlots.Name(ws)</button>
                     }
                 </span>
             }
@@ -90,6 +90,8 @@
         <div class="g3-actions">
             <button type="button" class="primary" disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmEquip</button>
         </div>
+        @* Q448：本人随身装备的比较底部同时提供「交给…」，不要求先返回 *@
+        <GearGiveEntry />
     </div>
 }
 

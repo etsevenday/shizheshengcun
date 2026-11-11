@@ -1438,7 +1438,13 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .g3-mtext { display: flex; flex-direction: column; min-width: 0; }
 .g3-mtext small { color: var(--muted); font-size: var(--fs-aux); }
 .g3-figure { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.g3-figure img { height: clamp(48px, 12vh, 120px); width: auto; }
+.g3-figure img { height: clamp(40px, 9vh, 110px); width: auto; }
+.g3-slots .gear-slot { grid-template-columns: 56px minmax(0, 1fr) auto; min-height: 30px; }
+.g3-slots .gear-slot .gs-item { flex-wrap: nowrap; min-width: 0; }
+.g3-slots .gear-slot .gs-item b { white-space: nowrap; }
+.g3-slots .gear-slot .gs-item small { flex-basis: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.g3-slots .gear-slot .gs-item .eq-ico svg { width: 20px; height: 20px; }
+.g3-slots .gear-slot .gs-btns { flex-wrap: nowrap; }
 .g3-summary { display: flex; justify-content: center; gap: 14px; font-size: var(--fs-aux); }
 .g3-slots { display: flex; flex-direction: column; gap: 3px; }
 .gear-slot { cursor: pointer; }
@@ -1478,6 +1484,9 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .g3-src-name { display: flex; align-items: center; gap: 6px; }
 .g3-src-name .eq-ico svg { width: 24px; height: 24px; }
 .g3-empty { font-size: var(--fs-aux); }
+.g3-qty { display: inline-flex; gap: 6px; align-items: center; }
+.g3-qty input { width: 5em; }
+.g3-give-entry small { font-size: var(--fs-aux); }
 .gear-slot, .gear-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: #1b221c; }
 .gear-card { grid-template-columns: minmax(0, 1fr); }
 .gear-slot.empty { opacity: .75; border-style: dashed; }

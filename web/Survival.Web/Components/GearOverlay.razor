@@ -122,7 +122,11 @@
                 </div>
             </div>
             <div class="g3-work" aria-live="polite">
-                @if (src != null && G.GearSlot != null)
+                @if (src != null && G.GivePending != null)
+                {
+                    <GearGive />
+                }
+                else if (src != null && G.GearSlot != null)
                 {
                     <GearCompare />
                 }
@@ -130,6 +134,7 @@
                 {
                     @* Q448：非装备来源工作区只显示物品名与「交给…」，不出现装备空态句 *@
                     <div class="g3-src-name"><span class="eq-ico" aria-hidden="true">@Icons.Markup(src.ItemId)</span><b>@e.InstanceName(src)</b></div>
+                    <GearGiveEntry />
                 }
                 else
                 {

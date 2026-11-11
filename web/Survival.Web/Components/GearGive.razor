@@ -1,0 +1,73 @@
+@inherits GameComponent
+@inject IJSRuntime JS
+
+@* B33 P03c 交接盘（Q432、Q449、Q451、Q453-4、Q460）：「来源：本人随身」、接收人新开盘无选择（不自动选第一人）、数量默认整堆可改（只有1份省略），
+   双方卡位／负重取本次所选数量的最终真实预演，未选接收人只显示出物人一侧；满包超重者可选看结果但确认禁用；容器有真实子物品才加追加句。
+   「确认交接」前重验，成功播来源卡→接收人行一次；「返回」／Esc 退回进入前的比较或来源工作区。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var g = G.GivePending;
+    var p = G.GearGivePreview();
+    var from = G.GearActorId;
+}
+@if (g != null && p != null && p.Item is ItemInstance it)
+{
+    var fromName = e.ActorDisplayName(s, from);
+    var receivers = e.GiveReceivers(s, from);
+    <div class="g3-give" data-gear-give>
+        <div class="g3-whead">
+            <h3>@GearPanelCopy.GiveTitle</h3>
+            <button type="button" class="secondary" @onclick="G.GearBack">@GearPanelCopy.Back</button>
+        </div>
+        <div class="g3-src-name"><span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span><b>@e.InstanceName(it)</b></div>
+        <div class="g3-row"><span>@GearPanelCopy.Sources</span><b>@GearPanelCopy.OwnCarried</b></div>
+        <div class="g3-row" role="radiogroup" aria-label="@GearPanelCopy.Receiver"><span>@GearPanelCopy.Receiver</span>
+            <span class="g3-dest-opts">
+                @foreach (var r in receivers)
+                {
+                    var rid = r;
+                    <label><input type="radio" name="g3-give-to" checked="@(g.To == rid)" @onchange="() => G.GearGivePick(rid)" />@e.ActorDisplayName(s, rid)</label>
+                }
+            </span>
+        </div>
+        @if (p.ShowQuantity)
+        {
+            <div class="g3-row"><span>@GearPanelCopy.Quantity</span>
+                <span class="g3-qty">
+                    <input type="number" min="1" max="@p.Max" value="@g.Count" aria-label="@GearPanelCopy.Quantity" @onchange="SetCount" />
+                    <button type="button" class="eq-btn" disabled="@(g.Count == p.Max)" @onclick="() => G.GearGiveCount(p.Max)">@GearPanelCopy.Max</button>
+                </span>
+            </div>
+        }
+        @if (p.HasOutcome)
+        {
+            var toName = g.To == null ? null : e.ActorDisplayName(s, g.To);
+            <div class="g3-row"><span>@GearPanelCopy.GiveCardsAfter</span>
+                <b>@GearPanelCopy.GiveCardsSide(fromName, p.FromCards, e.MaxRootCards)@(toName != null ? GearPanelCopy.SideJoin + GearPanelCopy.GiveCardsSide(toName, p.ToCards, e.MaxRootCards) : "")</b></div>
+            <div class="g3-row"><span>@GearPanelCopy.GiveWeightAfter</span>
+                <b>@GearPanelCopy.GiveWeightSide(fromName, p.FromGrams)@(toName != null ? GearPanelCopy.SideJoin + GearPanelCopy.GiveWeightSide(toName, p.ToGrams) : "")</b></div>
+        }
+        @if (p.ContainerNote) { <div class="tiny muted">@GearPanelCopy.ContainerNote</div> }
+        @if (p.Blocked != null) { <div class="warn-text g3-why">@p.Blocked</div> }
+        <div class="g3-actions">
+            <button type="button" class="primary" disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmGive</button>
+        </div>
+    </div>
+}
+
+@code {
+    private void SetCount(ChangeEventArgs ev)
+    {
+        if (int.TryParse(ev.Value?.ToString(), out var n)) G.GearGiveCount(n);
+        else G.GearGiveCount(0);
+    }
+
+    private void Confirm()
+    {
+        if (G.GivePending is not { } g) return;
+        try { if (JS is IJSInProcessRuntime ip) ip.InvokeVoid("survivalFx.mark", $"[data-gear-src=\"{g.InstanceId}\"]"); }
+        catch (JSException) { /* 旧缓存 app.js：只少了轨迹 */ }
+        G.GearConfirmGive();
+    }
+}

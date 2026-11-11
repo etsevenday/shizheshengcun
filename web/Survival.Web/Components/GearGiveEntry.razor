@@ -1,0 +1,18 @@
+@inherits GameComponent
+
+@* B33（Q432、Q448、Q449）：本人随身来源的「交给…」入口。没有其他合法同行者时隐藏；行动、预留、占用等使任何接收人都不能接物时
+   入口置灰，按钮旁直接写与接收人无关的第一条真实原因（不只靠悬停，触屏与读屏也能看到）。地面候选不给入口。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var src = G.GearSource;
+    var me = G.GearActorId;
+}
+@if (src != null && src.Owner == ItemInstance.CarriedOwner(me) && e.GiveReceivers(s, me).Count > 0)
+{
+    var why = e.GiveEntryBlocked(s, me, src.InstanceId);
+    <div class="g3-actions g3-give-entry">
+        <button type="button" class="eq-btn give" disabled="@(why != null)" aria-describedby="@(why != null ? "g3-give-why" : null)" @onclick="G.GearOpenGive">@GearPanelCopy.GiveEntry</button>
+        @if (why != null) { <small id="g3-give-why" class="warn-text">@why</small> }
+    </div>
+}
