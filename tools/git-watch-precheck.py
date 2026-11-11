@@ -6,7 +6,7 @@
 
 检查顺序与 git-watch 技能 §1 一致（只读，不加锁、不改状态文件）：
   1. 状态文件 .git/claude-git-watch.json 里 runningSince 非空、且心跳（heartbeat，缺省用 runningSince）
-     不到 4 小时 → IDLE（上一轮还在跑；技能每进一个阶段就刷新心跳）
+     不到 1.5 小时 → IDLE（上一轮还在跑；技能每进一个阶段就刷新心跳）
   2. git fetch origin；origin/main 等于 notifiedHead → IDLE（已通知过用户，等处理）
   3. lastSeen..origin/main 里作者不是 etsevenday 的提交为空，且队列（queue.batches）里没有 pending 批次 → IDLE；
      有 waiting 批次（开工前问题已发给策划）时，没有策划新提交也 IDLE，pending 批次不开；
@@ -30,7 +30,7 @@ STATE = ROOT / ".git" / "claude-git-watch.json"
 LOG = ROOT / ".git" / "claude-git-watch.log"
 MARKER = "[git-watch-scheduled]"
 OWN_AUTHOR = "etsevenday"
-LOCK_HOURS = 4  # 心跳超过这么久没刷新，才当上一轮已经死掉
+LOCK_HOURS = 1.5  # 心跳超过这么久没刷新，才当上一轮已经死掉（2026-11-11 由 4 改，B40 那轮卡住白等 3 小时）
 MINOR_COUNT = 8  # 次要攒批：已答满这么多条就开批
 MINOR_DAYS = 2   # 或最早一条答复等了这么多天
 
