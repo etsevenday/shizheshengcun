@@ -192,19 +192,13 @@ namespace Survival.Core.Engine
         /// </summary>
         public string? GiveBlocked(GameState s, string fromId, string toId, int instanceId, int count)
         {
-            if (s.Progress.Dead) return "角色已死亡";
-            if (DialogueLocked(s)) return DialogueLockedReason;
-            if (s.Battle != null) return "战斗中不能交接物品";
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
-            if (s.Main != null || s.Sub != null) return "行动进行中，不能交接物品";
+            var t = GiveTimingBlocked(s);
+            if (t != null) return t;
             if (fromId == toId) return "不能交给自己";
-            if (!s.Party.Contains(fromId) || !s.Party.Contains(toId)) return "只能在同行的队员之间交接（候补不在身边）";
-            var it = FindItem(s, instanceId);
-            if (it == null) return "物品已不在";
-            if (it.Owner != ItemInstance.CarriedOwner(fromId))
-                return it.IsWornBy(fromId) ? "穿戴中：先卸下再交给队友" : $"只能交出{ActorDisplayName(s, fromId)}随身的物品";
-            if (it.ReservedBy != null) return "该物品已被预留";
-            if (IsLocked(s, it)) return "行动占用：该物品正被当前行动使用";
+            if (!s.Party.Contains(fromId) || !s.Party.Contains(toId)) return GiveNotPartyText;
+            var src = GiveSourceBlocked(s, fromId, instanceId);
+            if (src != null) return src;
+            var it = FindItem(s, instanceId)!;
             if (count <= 0 || count > it.Count) return "数量无效";
             var after = RootCardsAfterOf(s, toId, it, count, null, 0);
             if (!RootCardsAllowOf(s, toId, after))
@@ -213,6 +207,31 @@ namespace Survival.Core.Engine
             var total = CarriedGramsOf(s, toId) + grams;
             var hard = Config.Carry.HardGrams;
             if (total > hard) return $"{ActorDisplayName(s, toId)}会携带{Fmt.N(total / 1000.0)}公斤，超过{hard / 1000}公斤";
+            return null;
+        }
+
+        private const string GiveNotPartyText = "只能在同行的队员之间交接（候补不在身边）";
+
+        /// <summary>交接的时机（GiveBlocked 前段，B33 拆出供入口整体受阻判定复用，原因与顺序不变）。</summary>
+        private string? GiveTimingBlocked(GameState s)
+        {
+            if (s.Progress.Dead) return "角色已死亡";
+            if (DialogueLocked(s)) return DialogueLockedReason;
+            if (s.Battle != null) return "战斗中不能交接物品";
+            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
+            if (s.Main != null || s.Sub != null) return "行动进行中，不能交接物品";
+            return null;
+        }
+
+        /// <summary>交接的来源物品（GiveBlocked 中段，B33 拆出）：仍在、是出物人随身、未预留、未被行动占用。</summary>
+        private string? GiveSourceBlocked(GameState s, string fromId, int instanceId)
+        {
+            var it = FindItem(s, instanceId);
+            if (it == null) return "物品已不在";
+            if (it.Owner != ItemInstance.CarriedOwner(fromId))
+                return it.IsWornBy(fromId) ? "穿戴中：先卸下再交给队友" : $"只能交出{ActorDisplayName(s, fromId)}随身的物品";
+            if (it.ReservedBy != null) return "该物品已被预留";
+            if (IsLocked(s, it)) return "行动占用：该物品正被当前行动使用";
             return null;
         }
 
