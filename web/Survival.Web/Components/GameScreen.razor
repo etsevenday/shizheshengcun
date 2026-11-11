@@ -252,6 +252,7 @@
                 if (sw is { } x) await JS.InvokeVoidAsync("survivalFx.swap", x.Owner, x.ItemId);
                 // B33（Q435）：整备更换、交接、卸下与右栏快捷卸下的成功轨迹（起点在提交前已 mark）
                 if (G.TakeFly() is string fly) await JS.InvokeVoidAsync("survivalFx.fly", fly);
+                if (G.TakeLit() is string lit) await JS.InvokeVoidAsync("survivalFx.litIfVisible", lit);
                 await JS.InvokeVoidAsync("survivalFx.sceneSync", G.SceneSerial);
             }
             catch (JSException) { /* 旧缓存 app.js：只少了表现，结果照常 */ }

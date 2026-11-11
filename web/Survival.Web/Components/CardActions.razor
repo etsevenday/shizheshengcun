@@ -226,7 +226,7 @@
                         var cur = e.WornItem(s, GameState.PlayerId, slot);
                         var (eg, ec) = e.EquipOutcome(s, GameState.PlayerId, wInst, slot, false);
                         var tip = why ?? $"{(fromGround ? "从地面直接" : "")}装备到{EquipSlots.Name(slot)}{(cur == null ? "" : $"，换下{e.ItemName(cur.ItemId)}回到随身")} · 装备后本人{Ui.Kg(eg)}公斤 · 随身{ec}/{e.MaxRootCards}张 · 不耗时";
-                        <button type="button" class="tbar-go alt" disabled="@(why != null)" title="@tip" @onclick="() => G.Equip(wid, slot)">装备到@(EquipSlots.Name(slot))</button>
+                        <button type="button" class="tbar-go alt" disabled="@(why != null)" title="@tip" @onclick="() => G.QuickEquip(wid, slot)">装备到@(EquipSlots.Name(slot))</button>
                     }
                 </div>
                 @* 禁用原因紧跟在按钮行下面（B3a 试玩修复 4：原先排在旧件放地按钮之后，1280×720 要滚动才看到） *@
@@ -249,7 +249,7 @@
                     var curName = $"{e.ItemName(cur.ItemId)}";
                     <div class="tbar-row equip-to">
                         <button type="button" class="tbar-go alt wrap" title="@($"装备到{EquipSlots.Name(slot)}，换下的{curName}放到{e.ZoneName(s, s.Ground)}地面 · 装备后本人{Ui.Kg(gg)}公斤 · 随身{gc}/{e.MaxRootCards}张 · 不耗时")"
-                                @onclick="() => G.Equip(wid, slot, true)">装备到@(EquipSlots.Name(slot))·旧件@(e.ItemName(cur.ItemId))放当前地面</button>
+                                @onclick="() => G.QuickEquip(wid, slot, true)">装备到@(EquipSlots.Name(slot))·旧件@(e.ItemName(cur.ItemId))放当前地面</button>
                     </div>
                     <div class="ca-note @(gg > e.Config.Carry.SoftGrams ? "warn" : "")">@(EquipSlots.Name(slot))：@(curName)放到@(e.ZoneName(s, s.Ground))地面，装备后本人@(Ui.Kg(gg))公斤 · 随身@(gc)/@(e.MaxRootCards)张 · 不耗时；不选就是取消</div>
                 }

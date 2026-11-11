@@ -248,4 +248,38 @@ public sealed partial class GameSession
         PendingFly = null;
         return f;
     }
+
+    /// <summary>
+    /// 右栏人物页快捷卸下（Q453-7）：沿原一键入口与条件；成功播槽→实际去向卡一次——整备开着时落在整备右侧真实卡，
+    /// 否则落在主界面随身或当前地面那一行的真实卡。
+    /// </summary>
+    public ActionResult QuickUnequip(string slot, bool toGround)
+    {
+        var it = State == null ? null : E.WornItem(S, GameState.PlayerId, slot);
+        var res = Unequip(slot, toGround);
+        if (res.Ok && it != null) QueueFly(Panel == "gear" && GearActorId == GameState.PlayerId ? $"[data-gear-src=\"{it.InstanceId}\"]" : ShelfCardSelector(toGround ? S.Ground : ItemInstance.Carried, it.ItemId));
+        return res;
+    }
+
+    /// <summary>主界面卡架里某物品的真实卡（堆叠卡「owner|itemId」，实例卡「owner|itemId|实例号」）。</summary>
+    private static string ShelfCardSelector(string owner, string itemId) =>
+        $"[data-drop=\"zone:{owner}\"] [data-card=\"{owner}|{itemId}\"], [data-drop=\"zone:{owner}\"] [data-card^=\"{owner}|{itemId}|\"]";
+
+    /// <summary>主界面卡片快捷装备（Q435）：沿原入口；成功时右栏装备槽可见就高亮对应槽行一次，否则只留原结果提示。</summary>
+    public ActionResult QuickEquip(int instanceId, string slot, bool oldToGround = false)
+    {
+        var res = Equip(instanceId, slot, oldToGround);
+        if (res.Ok) PendingLit = $".detail .equip-row[data-slot=\"{slot}\"]";
+        return res;
+    }
+
+    /// <summary>待高亮一次的目标（只在可见时亮，GameScreen 绘制后交给 survivalFx.litIfVisible）。</summary>
+    public string? PendingLit { get; private set; }
+
+    public string? TakeLit()
+    {
+        var l = PendingLit;
+        PendingLit = null;
+        return l;
+    }
 }

@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @* 右栏“人物”一级页（S14 §18.2 取代 §12.1 属性简表、S12 §7）：常态只放熟练度、词条两块，各自展开/收起；基础属性数值只在左栏，
    点左栏属性在右栏原位打开二级说明页（AttrDetail），Esc 返回一级。异常状态列表已移到左栏属性下方的图标（S14 §12.2）；携带重量/负重规则板块已删除
@@ -75,7 +76,7 @@ else
                                     @if (s.Battle == null)
                                     {
                                         <span class="eq-btns">
-                                            <button type="button" class="eq-btn" disabled="@(why != null)" title="@(why ?? $"卸下{name}，放回随身（占一张物资卡）")" @onclick="() => G.Unequip(slot, false)">卸下</button>
+                                            <button type="button" class="eq-btn" disabled="@(why != null)" title="@(why ?? $"卸下{name}，放回随身（占一张物资卡）")" @onclick="() => QuickUnequip(slot, false)">卸下</button>
                                             @if (it.MaxDurability.HasValue && e.RepairRecipe is RecipeConfig rrc)
                                             {
                                                 @* M120：穿戴中的装备直接在装备区维修（与卡下“维修”同一请求、预测与禁用原因） *@
@@ -101,7 +102,7 @@ else
                                             }
                                             @if (why != null && groundWhy == null)
                                             {
-                                                <button type="button" class="eq-btn alt" title="@($"把{name}放到{e.ZoneName(s, s.Ground)}地面")" @onclick="() => G.Unequip(slot, true)">放当前地面</button>
+                                                <button type="button" class="eq-btn alt" title="@($"把{name}放到{e.ZoneName(s, s.Ground)}地面")" @onclick="() => QuickUnequip(slot, true)">放当前地面</button>
                                             }
                                         </span>
                                     }
@@ -184,6 +185,14 @@ else
 }
 
 @code {
+    /// <summary>B33（Q453-7）：快捷卸下前记下槽行作为轨迹起点，成功后播槽→实际去向卡一次。</summary>
+    private void QuickUnequip(string slot, bool toGround)
+    {
+        try { if (JS is IJSInProcessRuntime ip) ip.InvokeVoid("survivalFx.mark", $".detail .equip-row[data-slot=\"{slot}\"]"); }
+        catch (JSException) { /* 旧缓存 app.js：只少了轨迹 */ }
+        G.QuickUnequip(slot, toGround);
+    }
+
     /// <summary>一门熟练度的 5 个专属技能（悬停提示）：“1级 斩击：伤害×1.00（已解锁）”。</summary>
     private string SkillNodesTip(SkillView sk) =>
         string.Join("\n", sk.Nodes.Select(n => $"{n.Level}级 {n.Name}：{n.Text}（{(sk.Level >= n.Level ? (n.IsSurvival ? G.E.PassiveStatus(G.S.Player, n) : G.E.SkillExecOf(n.Id) is { NeedsAllies: true } ? "已解锁，需要队友（多人战斗中使用）" : "已解锁，装上这一类武器后在该武器页使用") : "未解锁")}）"));

@@ -780,5 +780,9 @@ window.survivalFx = (function () {
       art.animate([{ opacity: 0 }, { opacity: 0, offset: out / (out + inn) }, { opacity: 1 }], { duration: out + inn, easing: 'ease-out' });
     } else old.remove();
   }
-  return { note: note, swap: swap, lit: lit, sceneSync: sceneSync, mark: mark, fly: fly };
+  // B33（Q435）：主界面快捷装备——右栏装备槽行可见才亮一次，看不见只留原结果提示
+  function litIfVisible(sel) {
+    setTimeout(function () { var el = sel ? document.querySelector(sel) : null; if (el && visible(el.getBoundingClientRect())) lit(el); }, 30);
+  }
+  return { note: note, swap: swap, lit: lit, sceneSync: sceneSync, mark: mark, fly: fly, litIfVisible: litIfVisible };
 })();
