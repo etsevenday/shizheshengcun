@@ -31,7 +31,8 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
       "head": "<拆分时的 origin/main 提交>",
       "issue": "<本队列开的待策划确认 issue 号或 null>",
       "batches": [
-        {"id": "B1", "title": "<主题>", "items": ["R1", "R2"], "kind": "A|B|C|D", "status": "pending|running|waiting|held|done|blocked", "commits": ["<短号>"], "questions": ["Q29"], "note": "<受阻原因或遗留问题>"}
+        {"id": "B1", "title": "<主题>", "items": ["R1", "R2"], "kind": "A|B|C|D", "status": "pending|running|waiting|held|minor|done|blocked", "commits": ["<短号>"], "questions": ["Q29"], "note": "<受阻原因或遗留问题>"},
+        {"id": "BM1", "title": "次要问题合并", "kind": "A", "status": "minor", "items": ["R150"], "questions": ["Q412", "Q413"], "answered": {"Q412": "2026-11-11"}, "note": ""}
       ]
     },
     "pendingPlaytest": ["<已上线但还没浏览器试玩的提交短号>"]
@@ -40,6 +41,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
   `waiting` = 开工前发现缺口、问题已推给策划、整批没开发，`questions` 里是在等的 Q（第 3.0 节）。队列里有 `waiting` 批次时**不开任何别的批次**，直到策划推来新提交。例外：`blocksQueue: false` 的 `waiting` 批次（只答了一部分的 A 批，第 2.3 节第 6 条）不挡别的批次。不管哪种，**同一组问题没全答完都不开工**。
   `held` = 用户挂起（2026-11-09 起；首例是 UI 重做 B31—B37，等用户评估策划补的效果图和图素）：不开工，也不挡别的批次，预检不算它待处理；`note` 写挂起原因和恢复条件。策划答复它的 Q 或推来它的素材都**不自动恢复**，只有用户在场明确说开工才改回 `pending`。
+  `minor` = 次要问题攒批（2026-11-11 用户定，第 2.3 节第 8 条）：队列里最多一个，编号 `BM1`、`BM2`……；`questions` 是攒着的全部次要 Q（含未答的），`answered` 记已答的 Q 和策划答复提交的日期，`items` 是已答 Q 拆成的 R。不开工、不挡别的批次；满足开批条件时改成 `pending` 排最前，之后再出的次要 Q 进下一个 `BM`。
   `queue`、`pendingPlaytest` 可缺省。需求清单全文写在 `.git/claude-git-watch-queue.md`（第 2 节；每轮是新会话，scratchpad 不跨轮保留，所以放 .git 里）。队列全部 `done` 后把 `queue` 删掉、清单文件改名为 `.git/claude-git-watch-queue.<日期>.done.md` 留档。
 - 凡是"通知用户、停下"的情况，同时把 `notifiedHead` 记为当前 origin/main；下一轮 origin/main 仍是这个提交就安静结束、不再重复通知，等用户处理或策划再推新提交。本轮成功推送后把 `notifiedHead` 清回 null。
 - 用户手动触发（在场）时预检报"已通知过用户"或"批次受阻"：先把受阻原因讲给用户，用户说继续再清 `notifiedHead`、把受阻批次改回 `pending` 往下走。
@@ -54,6 +56,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 2. `git fetch origin`。看两样：
    - 新提交：`git log --format='%h %an %ad %s' <lastSeen>..origin/main`，只看作者不是 `etsevenday` 的。**不要用 `HEAD..origin/main`**：别的会话可能已把策划提交拉进本地 HEAD，那样会漏掉。
    - 队列：`queue.batches` 里有没有 `pending`（上一轮留下的 `running` 说明那轮中途死了：看它的 `commits` 与 origin/main 判断做到哪，没推上去的改回 `pending` 重做，已推上去的按第 4.1 节从试玩接着做）。
+   - 次要攒批：有 `minor` 批次、且满足第 2.3 节第 8 条的开批条件 → 改成 `pending` 排最前，当作有 pending 批次。
    两样都没有 → 清锁，结束，不通知、不汇报。有 `waiting` 批次而没有策划新提交 → 同样清锁结束（还在等答复，pending 批次也不开）。
 3. 本地有正在进行的工作就不碰：`git log origin/main..HEAD` 有未推送提交，或 `git status --porcelain` 里有已跟踪文件被改（未跟踪文件如 `doc/策划案.7z` 不算）→ 说明别的会话正在干活。`PushNotification`："git 有策划新提交/待处理批次 <短号或批次号>，但本地有未推送/未提交的工作，没自动处理"，清锁，结束（`lastSeen`、队列都不更新；照第 0 节记 `notifiedHead`，别的会话推送后 origin/main 变了自然会接着做）。
 4. 有新提交 → 第 2 节拆分（并入队列）；没有新提交、只有 pending 批次 → 跳过拆分，直接取队列第一个 `pending` 批次进第 3 节。
@@ -89,6 +92,13 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
    - **答的是 `waiting` 批次在等的 Q**：答复并进那一批（拆成 R 写进 `items`）。这组全答完 → 那批改回 `pending` 排最前，开发 brief 里写明每条结论；还有没答的 → 批次保持 `waiting`，`note` 写"已答 Qa、Qb，还差 Qc"，在 issue 下评论一句"已收到 Qa、Qb 的答复，还差 Qc，答完后开工"，本轮拆完就结束（`lastSeen` 照常前移，下次策划再推才会醒）。
    - **答的是不在 `waiting` 批次里的 Q**（试玩后、开发中提的问题）：同样按组看。全答完 → 照常开 A 批；还有没答的 → 已答的先并成一个 A 批，`status: "waiting"`、`blocksQueue: false`（不挡别的批次），`questions` 记整组 Q，`note` 与 issue 评论同上；等这组答完再改回 `pending`。
    - 策划的新提交一条都没答到 `waiting` 批次的 Q → 照常拆分入队，但 `blocksQueue` 不为 false 的 `waiting` 批次仍挡在前面，本轮拆完就结束。
+   - 答的是次要 Q（在 `minor` 批次的 `questions` 里）→ 不按上面开 A 批，按第 8 条记进攒批。
+8. **次要问题攒够再一起修**（2026-11-11 用户定；此前 B32b—B32g 每轮试玩冒出几条文案小问题，各开一批，连做了五个小批次）。
+   - **算次要**：只涉及文案措辞、焦点、提示位置、显示细节，不改规则、数值、存档，不修玩家照常能玩。待确认文档里该 Q 标题末尾写"（次要）"，开发方提问时就按这个标准定。**不算次要、照旧处理**：线上 bug（照修，不问）；和已定规则冲突、不定就没法继续的（如 Q401 的 Q394 与 Q338 打架）；开工前核对出的规则、数值、存档缺口。
+   - **平时**：次要 Q 照常写进待确认文档、随提交推给策划、issue 评论；同时记进 `minor` 批次的 `questions`（没有就新建，`status: "minor"`）。不为它开批次、不让任何批次 `waiting` 等它。策划答了 → 拆成 R 并进 `items`，`answered` 记 Q 与答复提交日期；同一节的其他 Q 还没答完的照第 6 条先不算已答。
+   - **开批条件（任一满足）**：① `answered` 满 8 条；② 队列里没有别的 `pending`/`running` 批次，也没有挡队列的 `waiting` 批次（`held` 不算），且 `answered` 至少 1 条；③ `answered` 里最早的日期距今满 2 天。满足 → `minor` 改 `pending` 排最前，只做已答的 R，没答的次要 Q 移进新的 `minor` 批次接着攒。
+   - **顺带修**：取一个主要批次开工时（第 3 节），看攒批里已答的 R 有没有和它改同一块界面或同一个文件的，有就挪进这一批一起做（从 `minor` 的 `items`、`answered` 删掉），不受上面条件限制。
+   - 本条取代第 6 条里"答的是不在 `waiting` 批次里的 Q → 照常开 A 批"对次要 Q 的适用；主要 Q 照旧。
 7. **属于 `held` 批次的新需求**（答复它的 Q、修订它的内容、补它要的素材）：并进那一批或新开一个 `held` 批次，状态保持 `held`，不开发；别的需求照常拆分入队。拆完 `PushNotification` 一行告诉用户"<批次> 的答复/素材已到，等你评估"（不记 `notifiedHead`，免得挡住别的批次；`lastSeen` 已前移，不会重复通知）；本轮有别的 `pending` 批次就照常接着做。
 
 ### 2.4 写队列
@@ -112,7 +122,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 ## 3 做一批（一轮只做一批）
 
-取队列第一个 `pending` 批次（`held` 批次跳过，排在它后面的 `pending` 照常做），状态改成 `running`、刷新心跳。只做这一批包含的 R：读 `.git/claude-git-watch-queue.md` 里这些 R 的出处，按它们的类别走下面 3.1–3.4（一批里有几类就几种都走）。给开发/试玩/文档代理的 brief 里写清"本批只做 R…；同一提交里的其他需求属于后续批次，不要顺手做"。
+取队列第一个 `pending` 批次（`held`、`minor` 批次跳过，排在它后面的 `pending` 照常做），状态改成 `running`、刷新心跳；按第 2.3 节第 8 条看攒批里有没有可顺带修的 R。只做这一批包含的 R：读 `.git/claude-git-watch-queue.md` 里这些 R 的出处，按它们的类别走下面 3.1–3.4（一批里有几类就几种都走）。给开发/试玩/文档代理的 brief 里写清"本批只做 R…；同一提交里的其他需求属于后续批次，不要顺手做"。
 
 - 开发前先走 3.0 开工前核对；有缺口就整批挂起，不往下走。
 - 文档同步（`/design-dev` 第 6 步）只给本批做过的需求补【实现同步】与修改记录；后续批次的条目还没实现，不写【实现同步】、不当作偏差。
@@ -134,7 +144,8 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
    - 正文标 `【交开发方定】` 的照它写的做、标"待定"的跳过不做，都不问；已答复的 Q 或策划案其他处**写明了**结论的不问（要靠推测才得出的算缺口）。
    - 队列清单里拆分时写的"开发假设"不算数，开工前按这个标准重审一遍。
    - 分析代理的 brief 里把上面的标准原样写进去，要它列出"不问就得开发方自己定"的全部地方；不要写"不问就没法开发""阻塞缺口""别硬凑问题"这类说法。
-2. **有缺口 → 整批不开发**：
+   - 次要缺口（第 2.3 节第 8 条的标准）不挡本批：那部分不做，写成问题标"（次要）"、进攒批；只有次要缺口时本批照常开工。
+2. **有缺口（不含次要的） → 整批不开发**：
    - 按第 4 节格式把缺口写进待确认文档（"游戏现状"写现在游戏里实际怎样，还没有的写"未实现，等策划答复"；仍写 A/B 选项和开发方建议，但**不实现**）。一轮最多约 8 条，按影响开发的程度排。
    - 只提交这份文档：说明 `M<n> 文档：<批次> 开工前待确认 Qx–Qy`，末尾照第 5 节写"待策划确认"段和"批次"行；按第 5 节推送（只改文档，跳过 build/test，不试玩）。
    - 第 6 节开 issue 或在已有 issue 下评论，正文注明"本批开发已暂停，等答复后继续"。
@@ -179,7 +190,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 流程（改了玩法或界面时）：
 1. 开发代理完成、测试全绿、文档同步 → 按第 5 节推送，等 GitHub Pages 构建成功（线上页脚"构建 <日期> · <短号>"显示本次提交号才算部署到位）。
 2. 起**试玩代理**（Agent，general-purpose，不传 model，effort high），只用 Bash 跑 `node tools/playtest/cdp.mjs`（零依赖无头 Chrome，不需要任何人点确认；用法见文件头注释：`start / open / find / clicktext / click / drag / wheel / key / eval / text / shot / errs / size / stop`），对 `https://etsevenday.github.io/shizheshengcun/?dev=1` 试玩。brief 照 `/design-dev` 第 4 步写（改了什么、规则在哪、必走路线、三档分辨率 `size 1280 720` / `1600 900` / `1920 1080`、报告格式），截图存 scratchpad 后用 Read 看。告诉它：每条 Bash 只写一条 `node tools/playtest/cdp.mjs <命令> …`（在仓库根目录、相对路径、不用变量、不和别的命令用 `;`/`&&` 串起来），这样才匹配本机 settings.local.json 的放行规则、定时回合里不弹确认；每步操作后用 `text`/`find`/`eval` 读界面确认结果；`clicktext` 报"被遮挡/禁用"要记下；结束 `stop`。这个无头浏览器有独立的配置目录，不会碰用户自己浏览器里的存档。
-3. 分类试玩结果（`/design-dev` 第 5 步）：bug 交同一个开发代理修（一次提交 `M<n> 试玩修复：…`、测试全绿、开发计划加"试玩修复"一节），推送，等部署，再 `SendMessage` 给同一个试玩代理在线上复验 + 快速回归。最多两轮；两轮仍不过 → 把剩余问题写进开发计划与提交说明，`PushNotification` 告诉用户哪些还没修好（线上已是最新提交，不回滚）。体验问题写成待确认问题。
+3. 分类试玩结果（`/design-dev` 第 5 步）：bug 交同一个开发代理修（一次提交 `M<n> 试玩修复：…`、测试全绿、开发计划加"试玩修复"一节），推送，等部署，再 `SendMessage` 给同一个试玩代理在线上复验 + 快速回归。最多两轮；两轮仍不过 → 把剩余问题写进开发计划与提交说明，`PushNotification` 告诉用户哪些还没修好（线上已是最新提交，不回滚）。体验问题写成待确认问题；属于次要的标"（次要）"进攒批（第 2.3 节第 8 条），不为它另开批次。
 4. 待确认文档里相关 Q 的"处理结果"写"已上线，线上无头浏览器试玩复验通过"（或列出仍未修好的）。
 5. 万一 `cdp.mjs` 也跑不起来（找不到 Chrome、网络不通）→ 状态文件记 `"pendingPlaytest": ["<提交短号>", …]`（追加），`PushNotification` 写明"已上线、未试玩"；下次用户在场的会话（手动 `/git-watch` 或用户说"试玩一下"）开头先看它，非空就补试玩、修、推，然后清空。
 

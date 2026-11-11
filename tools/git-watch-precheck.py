@@ -10,7 +10,8 @@
   2. git fetch origin；origin/main 等于 notifiedHead → IDLE（已通知过用户，等处理）
   3. lastSeen..origin/main 里作者不是 etsevenday 的提交为空，且队列（queue.batches）里没有 pending 批次 → IDLE；
      有 waiting 批次（开工前问题已发给策划）时，没有策划新提交也 IDLE，pending 批次不开；
-     blocksQueue 为 false 的 waiting 批次（只答了一部分的 A 批）不挡 pending 批次
+     blocksQueue 为 false 的 waiting 批次（只答了一部分的 A 批）不挡 pending 批次；
+     minor 批次（次要问题攒批）满足开批条件时算 pending（技能 §2.3 第 8 条）
   4. 否则 WORK，附新提交列表、队列剩余批次与本地未推送/未提交情况，交给技能继续处理
 fetch 失败等异常一律 ERROR，hook 模式下不拦截，照常交给模型处理。
 
@@ -30,6 +31,8 @@ LOG = ROOT / ".git" / "claude-git-watch.log"
 MARKER = "[git-watch-scheduled]"
 OWN_AUTHOR = "etsevenday"
 LOCK_HOURS = 4  # 心跳超过这么久没刷新，才当上一轮已经死掉
+MINOR_COUNT = 8  # 次要攒批：已答满这么多条就开批
+MINOR_DAYS = 2   # 或最早一条答复等了这么多天
 
 
 def git(*args, timeout=60):
@@ -45,6 +48,24 @@ def hours_since(stamp):
     if t.tzinfo is None:
         t = t.astimezone()
     return (datetime.now(timezone.utc) - t).total_seconds() / 3600
+
+
+def minor_ready(batch, idle):
+    """次要攒批是否该开批，返回原因或空串（技能 §2.3 第 8 条）。"""
+    answered = batch.get("answered") or {}
+    if not answered:
+        return ""
+    if len(answered) >= MINOR_COUNT:
+        return f"已答 {len(answered)} 条"
+    if idle:
+        return "队列已空"
+    try:
+        oldest = min(datetime.fromisoformat(d).replace(tzinfo=None) for d in answered.values())
+    except ValueError:
+        return "答复日期写坏了，交技能核对"
+    if (datetime.now() - oldest).days >= MINOR_DAYS:
+        return f"最早答复 {oldest:%m-%d} 已满 {MINOR_DAYS} 天"
+    return ""
 
 
 def check():
@@ -69,6 +90,13 @@ def check():
     waiting = [b for b in batches if b.get("status") == "waiting"]
     # blocksQueue: false = 只答了一部分的 A 批，自己等答完，不挡别的批次（技能 §2.3 第 6 条）
     blocking = [b for b in waiting if b.get("blocksQueue", True)]
+    running = [b for b in batches if b.get("status") == "running"]
+    for b in batches:
+        if b.get("status") != "minor":
+            continue
+        why = minor_ready(b, idle=not (pending or running or blocking))
+        if why:
+            pending.insert(0, {**b, "title": f"{b.get('title', '')}（攒批开批：{why}，改 pending 排最前）"})
 
     try:
         git("fetch", "origin", "--quiet", timeout=90)
