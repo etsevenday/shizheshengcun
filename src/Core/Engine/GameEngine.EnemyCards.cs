@@ -219,6 +219,7 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 探索／清理预览里的随机组卡说明（逐字稿「系统说明与旧句替换」预览各句，Q438）。几种“不会形成”的情况沿旧版预览的判断顺序取一条：
         /// 首战未胜 → 未到开放日 → 安全区 → 地牢／城市与公共地点 → 旧档历史全地点保护 → 当前已有组卡 → 普通风险行。
+        /// 历史保护与已有组卡同时成立只写历史保护句，到期后才写已有组卡句（R05 Q455 定稿）；预览不改组卡与保护。
         /// </summary>
         public string GroupCardPreviewNote(GameState s, string loc, ActionType type)
         {
@@ -246,8 +247,10 @@ namespace Survival.Core.Engine
         public static string EliteCardKey(string challengeId) => ElitePrefix + challengeId;
 
         /// <summary>
-        /// 按卡键取卡（不看玩家在哪、卡是否隐藏或交战，这些由视图字段给出）。卡已失效（敌人已死、组已散、固定战已胜、不是独立卡）为 null；
+        /// 按卡键取卡（不看玩家在哪、卡是否隐藏或交战，这些由视图字段给出）。卡已失效（敌人已死、组已散、固定战未揭示或已胜、不是独立卡）为 null；
         /// 可选强敌的告示还没出现或本局已挑战成功时也为 null，并经 gone 给出现有的关卡原句。
+        /// R05 Q457：这些 null 就是“没有这张卡”——卡视图不出、界面不留入口；gone 只作过期请求的内核兜底原因，不为显示它造卡或对白。
+        /// 已成立未完成的可选挑战没有敌人实例也是合法卡（Q419）。本方法只读，不创建挑战记录或敌人。
         /// </summary>
         public EnemyCardView? FindEnemyCard(GameState s, string cardKey, out string? gone)
         {
@@ -359,7 +362,10 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 「主动接近」的拒绝原因：逐字稿「新操作的禁用与拒绝」表自上而下取第一条实际原因（只取与主动接近有关的行）。可以接近为 null。
-        /// 普通敌踪在场本身不拒绝任何操作；可选强敌的告示没出现／已挑战成功沿现有关卡原句。
+        /// 普通敌踪在场本身不拒绝任何操作；可选强敌的告示没出现／已挑战成功沿现有关卡原句（只作内核兜底，R05 Q457）。
+        /// R05 Q456 定稿：卡已失效或在别的地点 →「这处敌踪已不在这里。」（先于区域判断，异地卡不当成本地跨区卡）；
+        /// 卡在本地、玩家在安全屋屋内 →「只能处理当前地点、当前区域可见的敌踪。」；隐藏、交战、门控沿原对应原因。
+        /// 提交时（<see cref="ApproachCard"/>）重验一次，过期请求不执行、不扣费、不抽签、不生成敌人或对白、不改选别的敌人。
         /// </summary>
         public string? CanApproachCard(GameState s, string cardKey)
         {
