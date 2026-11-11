@@ -8,8 +8,9 @@
   1. 状态文件 .git/claude-git-watch.json 里 runningSince 非空、且心跳（heartbeat，缺省用 runningSince）
      不到 1.5 小时 → IDLE（上一轮还在跑；技能每进一个阶段就刷新心跳）
   2. git fetch origin；origin/main 等于 notifiedHead → IDLE（已通知过用户，等处理）
-  3. lastSeen..origin/main 里作者不是 etsevenday 的提交为空，且队列（queue.batches）里没有 pending 批次 → IDLE；
-     有 waiting 批次（开工前问题已发给策划）时，没有策划新提交也 IDLE，pending 批次不开；
+  3. lastSeen..origin/main 里作者不是 etsevenday 的提交为空，且队列（queue.batches）里没有可开工的 pending 批次 → IDLE；
+     waiting 批次（开工前问题已发给策划）只挡排在它后面的 pending 批次；pending 批次写了 dependsOn 的，
+     只看它列出的批次做完没有（2026-11-11 起；此前是有 waiting 批次就整个队列暂停）；
      blocksQueue 为 false 的 waiting 批次（只答了一部分的 A 批）不挡 pending 批次；
      minor 批次（次要问题攒批）满足开批条件时算 pending（技能 §2.3 第 8 条）
   4. 否则 WORK，附新提交列表、队列剩余批次与本地未推送/未提交情况，交给技能继续处理
@@ -68,6 +69,19 @@ def minor_ready(batch, idle):
     return ""
 
 
+def can_start(batch, index, batches):
+    """pending 批次现在能不能开工（技能 §0 dependsOn）。
+
+    没写 dependsOn：排在它前面的批次里有挡队列的 waiting 就不能开（保守，等同"依赖前面所有批次"）。
+    写了 dependsOn（可为空数组）：只要列出的批次都已完成（done 的批次已移出状态文件）就能开。
+    """
+    deps = batch.get("dependsOn")
+    if deps is None:
+        return not any(b.get("status") == "waiting" and b.get("blocksQueue", True)
+                       for b in batches[:index])
+    return not any(b.get("id") in deps and b.get("status") != "done" for b in batches)
+
+
 def check():
     """返回 (状态, 说明)，状态为 IDLE / WORK / ERROR。"""
     try:
@@ -91,12 +105,15 @@ def check():
     # blocksQueue: false = 只答了一部分的 A 批，自己等答完，不挡别的批次（技能 §2.3 第 6 条）
     blocking = [b for b in waiting if b.get("blocksQueue", True)]
     running = [b for b in batches if b.get("status") == "running"]
+    # 等待中的批次只挡排在它后面的批次；写了 dependsOn 的批次只看它列出的批次（技能 §0）
+    ready = [b for i, b in enumerate(batches) if b.get("status") == "pending" and can_start(b, i, batches)]
+    stuck = [b for b in pending if b not in ready]
     for b in batches:
         if b.get("status") != "minor":
             continue
         why = minor_ready(b, idle=not (pending or running or blocking))
-        if why:
-            pending.insert(0, {**b, "title": f"{b.get('title', '')}（攒批开批：{why}，改 pending 排最前）"})
+        if why and not blocking:  # 攒批不写依赖，有挡队列的等待批次就不开
+            ready.insert(0, {**b, "title": f"{b.get('title', '')}（攒批开批：{why}，改 pending 排最前）"})
 
     try:
         git("fetch", "origin", "--quiet", timeout=90)
@@ -111,10 +128,13 @@ def check():
                   f"{last}..origin/main")
         new = [l.split("\x1f") for l in log.splitlines() if l]
         theirs = [c for c in new if c[1] != OWN_AUTHOR]
-        if not theirs and blocking:
+        if not theirs and blocking and not ready:
             ids = "；".join(f"{b.get('id', '?')} {'、'.join(b.get('questions') or [])}" for b in blocking)
             return "IDLE", f"等策划答复（{ids}），开发暂停（origin/main {head[:7]}）"
-        if not theirs and not pending:
+        if not theirs and not ready:
+            if stuck:
+                ids = "、".join(b.get("id", "?") for b in stuck)
+                return "IDLE", f"无新提交，{ids} 在等它依赖的批次（origin/main {head[:7]}）"
             if blocked:
                 ids = "、".join(b.get("id", "?") for b in blocked)
                 return "IDLE", f"无新提交，队列里 {ids} 受阻，等用户处理（origin/main {head[:7]}）"
@@ -127,9 +147,12 @@ def check():
         return "ERROR", str(e)
 
     lines = []
-    if pending:
-        lines.append(f"队列还有 {len(pending)} 批待处理（本轮只做第一批）：")
-        lines += [f"  {b.get('id', '?')} {b.get('title', '')}" for b in pending]
+    if ready:
+        lines.append(f"队列还有 {len(ready)} 批可开工（本轮只做第一批）：")
+        lines += [f"  {b.get('id', '?')} {b.get('title', '')}" for b in ready]
+    if stuck:
+        lines.append("还不能开工的 pending 批次（前面有等答复的批次，或依赖的批次没做完）："
+                     + "、".join(b.get("id", "?") for b in stuck))
     if theirs:
         lines.append(f"origin/main {head[:7]}，lastSeen {last[:7]}，策划等人的新提交 {len(theirs)} 个"
                      + ("（要并入队列重排）：" if batches else "："))
