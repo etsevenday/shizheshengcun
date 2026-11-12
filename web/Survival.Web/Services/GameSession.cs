@@ -278,6 +278,9 @@ public sealed partial class GameSession
     /// <summary>当前敌方逐条展示的间隔：快／标准／慢 = 240／480／720 毫秒（Q321，取代原 max(160, 4×段间隔)）。</summary>
     public int EnemyStepDelayMs => Presentation.EnemyStepDelayMs;
 
+    /// <summary>B46（Q535）：单段 5 分钟行动唯一真实段之前中央条的表现等待：快／标准／慢 = 600／1200／1800 毫秒（交开发方定，沿 Q321 倍率）。</summary>
+    public int SingleSegmentShowMs => Presentation.SingleSegmentShowMs;
+
     /// <summary>按当前动画速度缩放一个界面动效的基准时长（Q321「其他动效取各自基准时长」）。</summary>
     public int MotionMs(int baseMs) => UiPresentationPrefs.Scale(baseMs, Presentation.Speed);
 
@@ -2125,6 +2128,22 @@ public sealed partial class GameSession
     }
 
     /// <summary>
+    /// B46（Q535）单段展示：先渲染中央条，等它画出来再计时 <see cref="SingleSegmentShowMs"/>；「跳过动画」（点击或合法空格，同一个 _skip）只缩短这段等待。
+    /// 等待期间不推进世界分钟、不结算；Running 保持为真，其他整理、开工请求照旧按「行动进行中」拦住，不是免费整理或撤回窗口。
+    /// 允许退出的旧在办行动在等待中退出时，行动已由内核按原规则结束，循环随后看到没有行动即停。
+    /// </summary>
+    private async Task ShowSingleSegment()
+    {
+        var shown = (S.Sub ?? S.Main)?.ActionId;
+        Notify();
+        await Task.Delay(1);   // 让出一次：这一帧画出来以后才开始计时，不让入场把展示耗尽
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var total = SingleSegmentShowMs;
+        while (!_skip && State != null && (S.Sub ?? S.Main)?.ActionId == shown && clock.ElapsedMilliseconds < total)
+            await Task.Delay((int)Math.Max(1, Math.Min(50, total - clock.ElapsedMilliseconds)));
+    }
+
+    /// <summary>
     /// 两段之间的动画间隔：一般为 SegmentDelayMs；撤出（Q202 ④）按全程段数摊开，保证整条撤出至少约 <see cref="ExtractMinVisibleMs"/> 毫秒可见。
     /// </summary>
     private int SegmentDelay(ActionState? a)
@@ -2143,6 +2162,9 @@ public sealed partial class GameSession
         var segs = 0;
         try
         {
+            // B46（S01／S14 Q535）：单段 5 分钟行动——开工即时提交已在 BeginAction 里完成；先让中央条（行动名、原进度、不可退出说明、
+            // 「跳过动画 空格」）真实可见一段表现时间，再进下面的循环提交唯一的原 5 分钟段。
+            if (State != null && E.SingleSegmentShowPending(S)) await ShowSingleSegment();
             while (State != null && !S.Progress.Dead)
             {
                 var a = S.Sub ?? S.Main;

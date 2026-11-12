@@ -530,8 +530,7 @@ button .kc, .wasteland button kbd.kc { color: inherit; border-color: currentColo
 /* P2：锁定行动暂停的复核原因与「本次行动无法继续…」——完整弹窗里各占一行；窄条里接排成一行，窄条按内容放高（不再裁掉），
    一级面板按窄条实际高度让位（--dock-live，不小于原 --dock-h） */
 .cprog .cp-resume > span { display: block; }
-.pause-dock .cprog .cp-resume > span { display: inline; }
-.pause-dock .cprog .cp-resume > span + span { margin-left: .5em; }
+/* B46（S14 Q533）：窄条里也按「原暂停原因 → 下一行复核原因 → 永久失效再下一行中止说明」逐行显示，不接排 */
 .wasteland .pause-dock:has(.cp-resume) { max-height: none; }
 .center-scroll.four.full-panel.docked-prog .panel-host { bottom: calc(max(var(--dock-h), var(--dock-live, 0px)) + var(--sh-gap)); }
 /* P3：原工具例外拾取开放时，暂停遮罩只盖①②两行，③当前地面、④随身不被挡住（弹窗在上半区内滚动，中间行动位仍吸附可见） */
