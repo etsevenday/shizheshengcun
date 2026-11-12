@@ -60,8 +60,9 @@ namespace Survival.Core.State
         /// "48" 起小队队长 GameState.SquadLeader、潜行行动快照 ActionState.Stealth、躲避隐藏与种群归属 WorldEnemy.EvadeHiddenUntil／PopAccount、
         /// 现身次数与潜行经验领取 EnemyCardsState.Appearances／StealthXpClaims、先手 BattleState.FirstStrike／FirstStrikeDamage
         /// （R05 Q342、Q420—Q428、Q445、Q503—Q508，开发记录 B41c；47→48 只补默认值）。
+        /// "49" 起开工 5 分钟不可中途退出标记 ActionState.NoExit（S01 Q506、Q516、Q524，开发记录 B41c2；48→49 只按原固定计划初始化在办行动）。
         /// </summary>
-        public const string CurrentSchema = "48";
+        public const string CurrentSchema = "49";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -1342,6 +1343,12 @@ namespace Survival.Core.State
         /// <summary>B41c 潜行接近／躲避／练习潜行开工时的快照（R05 Q342、Q422、Q503—Q508）；其他行动为 null。</summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public StealthCheck? Stealth { get; set; }
+
+        /// <summary>
+        /// B41c2（S01 Q506、Q516、Q524）：本次开工不可中途退出。成功开工那一刻按同源真实总预计世界分钟（固定时长取真实计划；工作、移动与等待加工
+        /// 取与正式预览同源的实际预计）等于 5 认定，之后变慢、暂停、暂存与读档都不重认。存档 48 及以前的在办行动只在迁移时按原固定计划初始化一次。
+        /// </summary>
+        public bool NoExit { get; set; }
 
         public bool IsWorkType => IsWork(Type);
 

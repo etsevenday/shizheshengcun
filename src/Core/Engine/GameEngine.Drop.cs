@@ -104,6 +104,8 @@ namespace Survival.Core.Engine
         public int MaxQuantity { get; set; }
         /// <summary>卡面上没有语义组合：界面应改落到所在区域的插入线（热区 → 卡面 → 插入线的优先级）。</summary>
         public bool FallThrough { get; set; }
+        /// <summary>B41c2（Q523）：锁定主行动暂停中把本行动锁住的同一原工具拾取到随身——唯一放过忙碌表的拾取。</summary>
+        public bool LockedToolPickup { get; set; }
 
         public bool IsPreview => Verb == DropVerb.PreviewGatherTool || Verb == DropVerb.PreviewRecipe;
 
@@ -180,7 +182,7 @@ namespace Survival.Core.Engine
         /// <summary>忙碌表（拖拽与容器案 8）：执行中与子行动中只允许排序；暂停中另允许投料与点火维护（补给走卡下按钮或暂停层）。</summary>
         private DropIntent? Busy(GameState s, DropIntent intent)
         {
-            if (intent.Verb == DropVerb.Reorder) return null;
+            if (intent.Verb == DropVerb.Reorder || intent.LockedToolPickup) return null;
             if (s.Sub != null || (s.Main != null && s.Main.Status == ActionStatus.Running))
                 return DropIntent.No("行动进行中，只能整理卡片顺序");
             if (s.Main != null && s.Main.Status == ActionStatus.Paused
@@ -225,6 +227,14 @@ namespace Survival.Core.Engine
             }
             if (head.Owner == zone)
                 return new DropIntent { Ok = true, Verb = DropVerb.Reorder, Label = "调整顺序", Instant = InstantRequest.Reorder(zone, CardKey(head), index) };
+            // B41c2（Q523）：锁定暂停中只缺拾取的同一原工具，地面→随身整件；容量／重量不允许时只读给原因（继续行动可系统收尾）
+            if (zone == ItemInstance.Carried && LockedPickupTool(s) is ItemInstance own && own.InstanceId == head.InstanceId)
+            {
+                if (LockedToolCapacityBlock(s, own) is string cap) return DropIntent.No(cap);
+                var pick = Instant(DropVerb.Transfer, $"拾取1{name}到随身", InstantRequest.Pickup(own.InstanceId, own.Count));
+                pick.LockedToolPickup = true;
+                return pick;
+            }
             if (IsLocked(s, head)) return DropIntent.No("行动占用：该物品正被当前行动使用");
             var batch = CardBatchCount(s, head);
             if (zone == ItemInstance.Carried)

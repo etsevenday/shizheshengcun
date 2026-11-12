@@ -91,9 +91,10 @@ public class B21EntryTests : TestBase
         Assert.That(e.StartedMinute, Is.EqualTo(s.GameMinute));
         Assert.That(E.DungeonStatus(s, "d01"), Is.EqualTo(DungeonStatuses.Active));
         Assert.That(s.Log.Last(l => l.Text.StartsWith("远征开始")).Text, Does.Contain("撤出至少30分钟"));
-        // 取消这段移动：人还在 01，远征已开始（B21-3）
-        Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.CurrentLocation, Is.EqualTo("d01_01"));
+        // B41c2（S01 Q506）：01→02 开工 5 分钟，不可中途退出；走到 02 再回 01：远征已开始（B21-3）
+        Assert.That(E.Cancel(s).Reason, Is.EqualTo("该行动不可中途取消"));
+        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
+        Go(s, "d01_01");
         Assert.That(s.Expedition, Is.Not.Null);
         Assert.That(E.CanStart(s, ActionRequest.Travel("c03_crypt")), Does.Contain("未通关离开要先终止本次远征"));
         // 再走向危险房间不再要确认、不再 +1

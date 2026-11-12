@@ -147,10 +147,13 @@ namespace Survival.Core.Engine
         /// Q490：维护（含现场修补）与拆解「继续行动」时的当前目标复核（只读，取第一条真实原因）。耐久与开工时不同本身不拒绝；
         /// 非有限的耐久按目标失效。维护：仍有耐久且未满（0 可维护）；现场修补：未满且缺损至少 0.1，原包仍须够恢复 0.1；拆解：仍符合拆解用途，耐久不限。
         /// </summary>
-        private string? ResumeTargetDurabilityBlock(GameState s, ActionState a, RecipeConfig rc, ItemInstance target)
+        /// <param name="locked">B41c2（逐字稿 Q525）：锁定行动的五句耐久原因只删去「，请退出行动」，具体原因与原判定顺序、阈值不变。</param>
+        private string? ResumeTargetDurabilityBlock(GameState s, ActionState a, RecipeConfig rc, ItemInstance target, bool locked = false)
         {
+            var tail = locked ? "" : "，请退出行动";
             var cfg = _items[target.ItemId];
-            if ((target.Durability is double d0 && !double.IsFinite(d0)) || (target.MaxDurability is double m0 && !double.IsFinite(m0))) return ResumeTargetGone;
+            var gone = locked ? LockedTargetGone : ResumeTargetGone;
+            if ((target.Durability is double d0 && !double.IsFinite(d0)) || (target.MaxDurability is double m0 && !double.IsFinite(m0))) return gone;
             if (rc.IsSalvage)
             {
                 if (!cfg.IsEquipment) return $"{cfg.Name}不是装备，不能拆解";
@@ -171,19 +174,19 @@ namespace Survival.Core.Engine
             var patch = IsFieldPatchRecipe(rc) || a.PatchInstanceId != null;
             if (!patch)
             {
-                if (IsFieldPatch(target)) return ResumeTargetGone;
-                if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，无法继续维护，请退出行动。";
+                if (IsFieldPatch(target)) return gone;
+                if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，无法继续维护{tail}。";
                 if (!(OnPlayer(target) || target.Owner == s.Ground))
                     return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能维护随身或当前地面的工具";
                 if (OccupiedByOther(s, target, a)) return "行动占用：这件工具正被使用";
                 if (!RepairFilterOk(rc, target.ItemId)) return $"{rc.Name}只修有金属制作或拆解依据的武器、工具或防具，{cfg.Name}不能用它修（枪械、锅、打火器和木石布皮制品不修）";
-                if (target.Durability.Value >= target.MaxDurability.Value - 1e-9) return $"{cfg.Name}耐久已满，无法继续维护，请退出行动。";
+                if (target.Durability.Value >= target.MaxDurability.Value - 1e-9) return $"{cfg.Name}耐久已满，无法继续维护{tail}。";
                 if (IsPot(target) && PotContents(s, target.InstanceId).Count > 0 && RepairRecipe?.RequireEmptyDetachedPotWhenTargetIsPot == true)
                     return "锅须先取下并清空才能维护";
                 return null;
             }
-            if (IsFieldPatch(target)) return ResumeTargetGone;
-            if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，无法继续修补，请退出行动。";
+            if (IsFieldPatch(target)) return gone;
+            if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，无法继续修补{tail}。";
             if (!(OnPlayer(target) || target.Owner == s.Ground))
                 return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能修补本人随身、穿戴中或当前地面的物品";
             if (OccupiedByOther(s, target, a)) return "行动占用：这件物品正被使用";
@@ -196,8 +199,8 @@ namespace Survival.Core.Engine
             }
             var d = target.Durability.Value;
             var m = target.MaxDurability.Value;
-            if (d >= m - 1e-9) return $"{cfg.Name}耐久已满，无法继续修补，请退出行动。";
-            if (System.Math.Floor((m - d) * 10 + 1e-6) < 1) return $"{cfg.Name}缺损不足0.1，无需修补，请退出行动。";
+            if (d >= m - 1e-9) return $"{cfg.Name}耐久已满，无法继续修补{tail}。";
+            if (System.Math.Floor((m - d) * 10 + 1e-6) < 1) return $"{cfg.Name}缺损不足0.1，无需修补{tail}。";
             if (a.PatchInstanceId is int pid && FindItem(s, pid) is ItemInstance pack && FieldPatchQuote(target, pack).restoreTenths < 1)
                 return $"{ItemName(pack.ItemId)}剩余耐久{PatchRemaining(pack)}，不够恢复0.1";
             return null;

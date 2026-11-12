@@ -361,7 +361,7 @@ public class B18AppraisalTests : TestBase
 
     /// <summary>
     /// AT06/AT15：23:55 开始的 5 分钟交易在午夜完成——发开始日的 exactOutput、只扣旧日桶；新日照常 2 包；
-    /// 下一次安全访问生成新日表，不改旧事务；取消不把旧余额转到新日。
+    /// 下一次安全访问生成新日表，不改旧事务；5 分钟交易开工后不可中途取消（B41c2 Q506）。
     /// </summary>
     [Test]
     public void AT06_AT15_CrossMidnight_StartDayQuoteAndBucket()
@@ -395,12 +395,11 @@ public class B18AppraisalTests : TestBase
         s.GameMinute = (day + 1) * Clock.MinutesPerDay - 5;
         E.EnsureAppraisalQuotes(s);
         Ok(E.StartAppraisalTrade(s, b.InstanceId, "white_for_cloth"));
-        Ok(E.Cancel(s));
-        Assert.That(s.Log.Last().Text, Does.Contain("样本未交出"));
-        Assert.That(E.FindItem(s, b.InstanceId)!.ReservedBy, Is.Null);
+        // B41c2（S01 Q506）：换物交易开工 5 分钟，不可中途退出——旧取消请求拒绝，样本与额度预留原样
+        Assert.That(E.Cancel(s).Reason, Is.EqualTo("该行动不可中途取消"));
+        Assert.That(s.City.Pending, Is.Not.Null);
+        Assert.That(E.FindItem(s, b.InstanceId)!.ReservedBy, Is.Not.Null);
         Assert.That(s.City.QuotaUsed.ContainsKey($"appraisal_white_v1@{day + 1}"), Is.False);
-        s.GameMinute = (day + 1) * Clock.MinutesPerDay;
-        Assert.That(E.AppraisalPreview(s).QuotaAvailable, Is.EqualTo(2), "过期日剩余额度不结转");
     }
 
     /// <summary>AT07：随身五卡满且超重时换物，奖励确切落服务区地面，随身不变。</summary>

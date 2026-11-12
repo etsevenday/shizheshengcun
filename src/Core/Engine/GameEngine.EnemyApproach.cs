@@ -249,7 +249,8 @@ namespace Survival.Core.Engine
                 m.PauseReason = PauseReason.EnemyApproach;
                 m.PauseStat = null;
                 m.PauseNote = EnemyApproachPauseNote(card.Title);
-                Emit(s, GameEventKind.ActionPaused, text + $"{m.Label}已暂停，战后可以继续或退出。");
+                // B41c2（逐字稿 Q517）：开工 5 分钟锁定的行动不承诺退出
+                Emit(s, GameEventKind.ActionPaused, text + (ExitLocked(m) ? $"{m.Label}已暂停，战后可以继续。" : $"{m.Label}已暂停，战后可以继续或退出。"));
             }
             else Emit(s, GameEventKind.Encounter, text, null, card.Members.Select(w => $"enemy:{w.Id}"));
             switch (card.Kind)

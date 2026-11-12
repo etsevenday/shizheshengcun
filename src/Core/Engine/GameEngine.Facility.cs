@@ -374,7 +374,7 @@ namespace Survival.Core.Engine
         private string? HolderBlocked(GameState s)
         {
             if (s.Sub != null || (s.Main != null && s.Main.Status == ActionStatus.Running)) return "行动进行中，不能整理物品";
-            if (s.Main != null) return "行动暂停中，放入或取出设施里的物品要先结束或取消行动";
+            if (s.Main != null) return LockedMainPaused(s) ? LockedPausedBusy : "行动暂停中，放入或取出设施里的物品要先结束或取消行动";   // B41c2（Q526）
             return null;
         }
 

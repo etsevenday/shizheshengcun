@@ -284,11 +284,11 @@ public class B41bResumeReturnTests : B41bTestBase
         Assert.That(w.Items.Where(i => i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(4));
         Assert.That(w.Items.Any(i => i.ReservedBy != null), Is.False);
 
-        // 野营布／柴炉部署：保留「已结束{行动名}。」，只解锁原物
+        // 野营布／柴炉部署：保留「已结束{行动名}。」，只解锁原物（B41c2：柴炉部署开工 5 分钟不可退出，改用 10 分钟的铺开野营布）
         var c = New();
         E.DebugTeleport(c, "w19_survey");
         c.WorldEnemies.RemoveAll(x => x.LocationId == "w19_survey");
-        var stove = E.CreateItems(c, "folding_stove", 1, ItemInstance.Carried).Single();
+        var stove = E.CreateItems(c, "field_tarp", 1, ItemInstance.Carried).Single();
         Start(c, GameEngine.Deploy(stove));
         MarkKept(c);
         var label = c.Main!.Label;

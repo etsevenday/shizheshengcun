@@ -15,6 +15,8 @@ namespace Survival.Core.Engine
         Extracting,
         Running,
         Paused,
+        /// <summary>B41c2（逐字稿 Q517）：暂停的是开工 5 分钟锁定的行动（原因句不再承诺退出）。</summary>
+        PausedLocked,
         ForcedTidy,
         RecruitPlacement,
     }
@@ -48,7 +50,7 @@ namespace Survival.Core.Engine
             if (s.Encounter != null) return ManualSaveBlock.Encounter;
             if (s.Expedition?.IsExtracting == true) return ManualSaveBlock.Extracting;
             if (s.Sub != null || (s.Main != null && s.Main.Status != ActionStatus.Paused)) return ManualSaveBlock.Running;
-            if (s.Main != null) return ManualSaveBlock.Paused;
+            if (s.Main != null) return LockedMainPaused(s) ? ManualSaveBlock.PausedLocked : ManualSaveBlock.Paused;
             if (DuplicateWeaponsIllegal(s) || CarriedOverflow(s)) return ManualSaveBlock.ForcedTidy;
             if (s.Recruit.Pending?.AwaitingPlacement == true) return ManualSaveBlock.RecruitPlacement;
             return ManualSaveBlock.None;
@@ -63,6 +65,7 @@ namespace Survival.Core.Engine
             ManualSaveBlock.Extracting => "撤出途中不能手动存档。",
             ManualSaveBlock.Running => "行动进行中，不能手动存档。",
             ManualSaveBlock.Paused => "行动暂停中，先继续或退出行动再存档。",
+            ManualSaveBlock.PausedLocked => LockedSaveBlock,
             ManualSaveBlock.ForcedTidy => "先完成整理再存档。",
             ManualSaveBlock.RecruitPlacement => "先办完当前事务再存档。",
             _ => null,

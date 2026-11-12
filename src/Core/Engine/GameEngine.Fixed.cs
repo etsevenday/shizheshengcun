@@ -124,7 +124,8 @@ namespace Survival.Core.Engine
             if (!Config.CombatEnabled) return "战斗未启用";
             if (s.Battle != null) return "已在战斗中";
             if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
-            if (s.Main != null || s.Sub != null) return s.Main?.Status == ActionStatus.Paused ? "行动暂停中，先结束或取消行动" : "行动进行中";
+            if (s.Main != null || s.Sub != null)
+                return s.Main?.Status == ActionStatus.Paused ? (s.Sub == null && LockedMainPaused(s) ? LockedPausedBusy : "行动暂停中，先结束或取消行动") : "行动进行中";   // B41c2（Q526）
             if (s.CurrentZone == SafehouseZone) return "在安全屋屋内：先出门再接近敌人";
             if (TutorialGateOpen(s)) return "先完成农野荒地的首战（游荡尸），再接近其他敌人";
             return null;

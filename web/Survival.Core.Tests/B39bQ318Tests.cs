@@ -68,7 +68,7 @@ public class B39bQ318Tests : TestBase
         Assert.That(t.Observe(notice, s), Is.True, "取消后清除");
     }
 
-    /// <summary>退出请求尚待段边界（单段事务“本段完成后结束”）时行动仍占用，保留；本段结束、行动停止后清除。</summary>
+    /// <summary>不可中途退出的行动（B41c2：点火等开工 5 分钟行动的退出请求被拒）仍占用，保留；本段结束、行动停止后清除。</summary>
     [Test]
     public void Q318_ExitDeferred_KeepsUntilStopped()
     {
@@ -80,8 +80,8 @@ public class B39bQ318Tests : TestBase
         t.Rearm();
         Assert.That(t.Observe(Busy, s), Is.False);
         var exit = E.RequestExit(s);
-        Assert.That((exit.Ok, exit.Deferred), Is.EqualTo((true, true)), "点火是单段事务，退出要等本段完成");
-        Assert.That(t.Observe(Busy, s), Is.False, "尚待段边界，行动仍占用，保留");
+        Assert.That((exit.Ok, exit.Reason), Is.EqualTo((false, "该行动不可中途取消")), "点火开工 5 分钟，不可中途退出");
+        Assert.That(t.Observe(Busy, s), Is.False, "行动仍占用，保留");
         Run(s);
         Assert.That(s.Main, Is.Null);
         Assert.That(t.Observe(Busy, s), Is.True, "停止后清除");

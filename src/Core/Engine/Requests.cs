@@ -230,6 +230,8 @@ namespace Survival.Core.Engine
         public bool Duplicate { get; set; }
         /// <summary>退出请求（RequestExit）：单段事务已开始结算，本段完成后才结束（不退还、不撤销）。</summary>
         public bool Deferred { get; set; }
+        /// <summary>B41c2（S01 Q514、Q523）：这次真实「继续行动」或例外拾取复核后，锁定行动因永久失效已按原取消规则自动中止。</summary>
+        public bool Aborted { get; set; }
 
         public static ActionResult Success(int? actionId = null) => new ActionResult { Ok = true, ActionId = actionId };
         public static ActionResult Repeated() => new ActionResult { Ok = true, Duplicate = true };
@@ -269,6 +271,8 @@ namespace Survival.Core.Engine
         public string ConfirmText { get; set; } = "";
         public ActionType Type { get; set; }
         public bool AsSubAction { get; set; }
+        /// <summary>B41c2（S01 Q516、逐字稿 Q517）：按此刻条件真实开工会被认定为开工 5 分钟、不可中途退出（只读，不建标记）。</summary>
+        public bool NoExit { get; set; }
 
         public int BaseMinutes { get; set; }
         /// <summary>需求工作量：基础分钟×装备与熟练节点倍率（Q61 开工快照，S01 倍率 M 之前）；非工作行动等于 BaseMinutes。</summary>

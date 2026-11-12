@@ -84,6 +84,7 @@ namespace Survival.Core.Save
         public const string Schema45 = "45";
         public const string Schema46 = "46";
         public const string Schema47 = "47";
+        public const string Schema48 = "48";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -146,6 +147,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema45) From45To46(s);
             if (s.SchemaVersion == Schema46) From46To47(s);
             if (s.SchemaVersion == Schema47) From47To48(s);
+            if (s.SchemaVersion == Schema48) From48To49(s);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             return notes;
@@ -1430,6 +1432,21 @@ namespace Survival.Core.Save
             s.EnemyCards ??= new EnemyCardsState();
             s.EnemyCards.Appearances ??= new Dictionary<string, int>();
             s.EnemyCards.StealthXpClaims ??= new List<string>();
+            s.SchemaVersion = Schema48;
+        }
+
+        // ───────────────────────── 48 → 49 ─────────────────────────
+
+        /// <summary>
+        /// B41c2 开工 5 分钟不可中途退出（S01 Q506 第 6 条、Q516、Q524，开发记录 B41c2）：在办的主行动、子行动与暂存原工作只按原固定计划初始化一次——
+        /// 固定时长计划为 5 分钟、固定等待处理配方为 5 分钟，以及原本就不可取消的单段事务与潜行接近／躲避记为不可退出；
+        /// 工作量型、移动没有保存开工同源预计，不按基础分钟或当前剩余反推；旧在办等待加工的计划分钟混有受热需求兜底，一律保持可退出（Q524）。
+        /// 不改进度、预留、费用与日志，静默。幂等（49 档不再经过这里）。
+        /// </summary>
+        private static void From48To49(GameState s)
+        {
+            foreach (var a in new[] { s.Main, s.Sub, s.StashedWork })
+                if (a != null) a.NoExit = Survival.Core.Engine.GameEngine.LegacyFixedPlanLock(a);
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

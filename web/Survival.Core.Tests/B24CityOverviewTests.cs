@@ -252,7 +252,7 @@ public class B24CityOverviewTests : TestBase
         Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-4").Reason, Is.EqualTo("已在此地"));
     }
 
-    /// <summary>UI-X02/CITY-UI06：提交后未抵达前设施栏仍是出发地人物、目标人物不能交谈；中途退出留在出发地；读档后仍在途、不算已到达。</summary>
+    /// <summary>UI-X02/CITY-UI06：提交后未抵达前设施栏仍是出发地人物、目标人物不能交谈；5 分钟一段不可中途退出（B41c2）；读档后仍在途、不算已到达。</summary>
     [Test]
     public void UI_X02_NoServiceBeforeArrival()
     {
@@ -265,8 +265,9 @@ public class B24CityOverviewTests : TestBase
         var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
         Assert.That(m.CurrentLocation, Is.EqualTo("h03_workshop"));
         Assert.That(m.Main!.TargetId, Is.EqualTo("h02_square"), "读档不把目标当已到达");
-        Ok(E.Cancel(s));
-        Assert.That(s.CurrentLocation, Is.EqualTo("h03_workshop"), "退出留在本段起点");
+        // B41c2（S01 Q506）：这一段开工 5 分钟，不可中途退出；没抵达前仍在出发地
+        Assert.That(E.Cancel(s).Reason, Is.EqualTo("该行动不可中途取消"));
+        Assert.That(s.CurrentLocation, Is.EqualTo("h03_workshop"), "未抵达仍在本段起点");
         Assert.That(E.NpcsHere(s).Select(n => n.NpcId), Does.Contain("npc_luo_zheng"));
     }
 

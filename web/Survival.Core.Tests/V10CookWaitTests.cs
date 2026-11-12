@@ -270,8 +270,9 @@ public class V10CookWaitTests : BattleTestBase
         Start(s, ActionRequest.UseItem("clean_water"));
         var w = s.Stats.Hydration;
         var r = E.RequestExit(s);
-        Assert.That(r.Ok && r.Deferred, Is.True, "已开始结算：本段完成后结束");
-        Assert.That(E.ActionProgress(s) is { Exit: ExitKind.CompletesCurrentTransaction }, Is.True);
+        // B41c2（S01 Q506）：开工 5 分钟的单段事务没有退出入口，旧请求拒绝「该行动不可中途取消」
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "该行动不可中途取消")));
+        Assert.That(E.ActionProgress(s) is { Exit: ExitKind.None, Locked: true, ExitNote: "本次行动不可中途退出。" }, Is.True);
         Assert.That(s.Stats.Hydration, Is.EqualTo(w), "即时效果不回滚");
         Assert.That(s.Main, Is.Not.Null);
         Run(s);
@@ -281,7 +282,7 @@ public class V10CookWaitTests : BattleTestBase
         E.DebugGive(s, "wood", 1);
         E.DoInstant(s, InstantRequest.AddFuel());
         Start(s, ActionRequest.Ignite(First(s, "lighter").InstanceId));
-        Assert.That(E.RequestExit(s).Deferred, Is.True);
+        Assert.That(E.RequestExit(s).Reason, Is.EqualTo("该行动不可中途取消"));
         Run(s);
         Assert.That(s.Locations["camp"].Facility.FireLit, Is.True);
 

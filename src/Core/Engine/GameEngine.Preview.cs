@@ -52,6 +52,7 @@ namespace Survival.Core.Engine
             }
             if (plan.Type == ActionType.Use) p.StatsAfterImmediate = c.Stats.Clone();
             var a = plan.IsSub ? c.Sub : c.Main;
+            p.NoExit = a != null && ExitLocked(a);   // B41c2（Q516、Q517）：真实开工会不会锁定（与真实开工同一认定，副本上不留标记）
             if (a != null)
             {
                 a.HazardHit = false;
@@ -77,7 +78,7 @@ namespace Survival.Core.Engine
                 if (!plan.IsSub && cur.Status == ActionStatus.Paused)
                 {
                     if (cur.PauseStat.HasValue) alerts.Add(cur.PauseStat.Value);
-                    Resume(c);
+                    ResumeCore(c, false);
                 }
                 if (trackFactor)
                 {
@@ -455,8 +456,8 @@ namespace Survival.Core.Engine
             return over;
         }
 
-        /// <summary>估算当前行动的完成时刻（提醒自动继续、风险不计）。火堆会熄灭等无法预估时返回 null。</summary>
-        public int? EstimateEndMinute(GameState s)
+        /// <summary>估算当前行动的完成时刻（提醒自动继续、风险不计）。火堆会熄灭等无法预估时返回 null。limit：最多模拟几段（B41c2 开工认定只看前两段），超出也返回 null。</summary>
+        public int? EstimateEndMinute(GameState s, int limit = SimLimit)
         {
             var a = s.Sub ?? s.Main;
             if (a == null) return null;
@@ -468,14 +469,14 @@ namespace Survival.Core.Engine
             var sub = target.IsSub;
             target.HazardHit = false;
             target.EncounterRoll = 1;
-            if (!sub && target.Status == ActionStatus.Paused) Resume(c);
-            for (var k = 0; k < SimLimit; k++)
+            if (!sub && target.Status == ActionStatus.Paused) ResumeCore(c, false);
+            for (var k = 0; k <= limit; k++)
             {
                 SimReadDialogues(c);
                 var cur = sub ? c.Sub : c.Main;
                 if (cur == null || cur.ActionId != id) return c.GameMinute;
-                if (c.Progress.Dead) return null;
-                if (!sub && cur.Status == ActionStatus.Paused) Resume(c);
+                if (c.Progress.Dead || k == limit) return null;
+                if (!sub && cur.Status == ActionStatus.Paused) ResumeCore(c, false);
                 Advance(c);
             }
             return null;

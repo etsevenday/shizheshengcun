@@ -40,7 +40,7 @@ public class B41cStealthCheckTests : B41cTestBase
         Assert.That(E.StartStealth(s, key, "sneak", "req-1").Ok, Is.True, "重复请求不另开");
         Assert.That(s.NextActionId, Is.EqualTo(s.Main.ActionId + 1));
         Assert.That(E.Cancel(s).Reason, Is.EqualTo("该行动不可中途取消"));
-        Assert.That(E.RequestExit(s).Deferred, Is.True, "退出入口不取消：本段做完");
+        Assert.That(E.RequestExit(s).Reason, Is.EqualTo("该行动不可中途取消"), "B41c2（Q506、Q521）：旧退出请求同样拒绝");
         Assert.That(s.Main, Is.Not.Null);
         AdvanceUntil(s, Won);
         Assert.That(s.GameMinute, Is.EqualTo(t0 + 5));

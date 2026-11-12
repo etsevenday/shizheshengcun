@@ -560,7 +560,7 @@ public class B28FeedTests : TestBase
         Fed(s, Req(Lin, Me, Give(s, "canned_food", ItemInstance.Carried)));
         Assert.That(E.Cancel(s).Reason, Is.EqualTo("该行动不可中途取消"));
         var exit = E.RequestExit(s);
-        Assert.That((exit.Ok, exit.Deferred), Is.EqualTo((true, true)), "已提交的消耗与效果不撤销");
+        Assert.That((exit.Ok, exit.Reason), Is.EqualTo((false, "该行动不可中途取消")), "B41c2（Q506）：开工 5 分钟不可退出，旧请求拒绝");
         Assert.That(s.Main, Is.Not.Null);
     }
 

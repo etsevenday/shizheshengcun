@@ -354,7 +354,7 @@ namespace Survival.Core.Engine
             else if (s.Main.Status == ActionStatus.Paused && s.Sub == null)
             {
                 plan.IsSub = true;
-                if (r.Type == ActionType.WaitCook) return "主行动暂停中：请先退出原行动再等待加工";
+                if (r.Type == ActionType.WaitCook) return LockedMainPaused(s) ? LockedPausedBusy : "主行动暂停中：请先退出原行动再等待加工";   // B41c2（Q526）
                 if (r.Type != ActionType.Use && r.Type != ActionType.Rest && r.Type != ActionType.Ignite)
                     return "暂停中只能补给、休息或点火维护";
                 plan.TravelPaused = s.Main.Type == ActionType.Travel;
@@ -1042,6 +1042,7 @@ namespace Survival.Core.Engine
             if (a.IsWorkType && !a.FixedWait) ReserveCarry(s, a, p.BaseWork);
             if (!p.IsSub && CardsV2(s)) RecordWorkOrigin(s, a);   // B41b（R05 Q440、Q466）：开工所在区、地牢世代与预留来源
             if (p.IsSub) s.Sub = a; else s.Main = a;
+            a.NoExit = StartLocks(s, a);   // B41c2（S01 Q506、Q516）：成功开工同一事务认定，之后不重认
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse && !IsStealthCheck(a))   // B41c：潜行接近／躲避只写判定结果句
                 Emit(s, GameEventKind.ActionStarted, $"开始{a.Label}。");
             // Q128：PRO12 引导在打开恢复面板/选睡眠时（提交前），开始睡眠时不再播
@@ -1145,10 +1146,17 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>暂停中的主行动继续推进。</summary>
-        public ActionResult Resume(GameState s)
+        public ActionResult Resume(GameState s) => ResumeCore(s, true);
+
+        /// <summary>
+        /// 继续推进；commit 为 false 用于预览／估算副本：B41c2 锁定行动的永久失效与等待加工全完成只拒绝、不收束。
+        /// </summary>
+        private ActionResult ResumeCore(GameState s, bool commit)
         {
+            // B41c2（S01 Q514、Q515）：锁定行动按分类复核——暂时保持暂停、永久自动中止、等待加工全完成正常结束
+            if (LockedResumeCommit(s, commit) is ActionResult locked) return locked;
             // B41b（R05 Q465、Q474）：检查与正式提交共用同一只读判定；失败不改任何状态
-            if (ResumeBlockReason(s) is string why) return ActionResult.Fail(why);
+            if (!LockedMainPaused(s) && ResumeBlockReason(s) is string why) return ActionResult.Fail(why);
             s.Main!.RetreatMoveOpen = false;   // B41b（R05 Q473）：成功继续原工作即结束本次暂停的移动例外
             s.Main.Status = ActionStatus.Running;
             s.Main.PauseReason = PauseReason.None;

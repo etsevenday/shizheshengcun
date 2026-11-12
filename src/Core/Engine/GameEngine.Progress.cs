@@ -8,7 +8,7 @@ namespace Survival.Core.Engine
     /// <summary>点“退出”会怎样（S01 §9）。</summary>
     public enum ExitKind
     {
-        /// <summary>不能退出（没有行动、战斗中、对话中、已死亡）。</summary>
+        /// <summary>不能退出（没有行动、战斗中、对话中、已死亡；B41c2 起也包括开工 5 分钟锁定的行动，见 <see cref="ActionProgressInfo.Locked"/>）。</summary>
         None,
         /// <summary>在当前 5 分钟段边界停止，不再调度下一段；已发生的保留、未发生的不结算。</summary>
         StopAtBoundary,
@@ -53,6 +53,12 @@ namespace Survival.Core.Engine
         public bool ExitForfeits { get; set; }
         /// <summary>等待烹饪的目标与各自预计（其他行动为空）。</summary>
         public List<CookTargetInfo> CookTargets { get; set; } = new List<CookTargetInfo>();
+        /// <summary>B41c2（S01 Q506、S14 Q506）：本次行动不可中途退出——界面不放「退出行动」及其后果行与焦点，只写「本次行动不可中途退出。」。</summary>
+        public bool Locked { get; set; }
+        /// <summary>B41c2（S01 Q514、逐字稿 Q517）：锁定行动暂停中「继续行动」此刻的只读复核原因（可以继续或更高输入锁时为 null）。</summary>
+        public string? ResumeNote { get; set; }
+        /// <summary>B41c2：复核为永久失效，真正点「继续行动」会自动中止（旁显「本次行动无法继续，点击「继续行动」后将自动中止。」）。</summary>
+        public bool ResumeAborts { get; set; }
     }
 
     public sealed partial class GameEngine
@@ -60,8 +66,8 @@ namespace Survival.Core.Engine
         /// <summary>只有一个 5 分钟原子事务、开始时就提交效果的行动（S01 §9）。</summary>
         public static bool IsSingleTransaction(ActionType t) => t == ActionType.Use || t == ActionType.Ignite || t == ActionType.Fuse;
 
-        /// <summary>开工后不可中途取消的行动：单段事务与 B41c 潜行接近／躲避（R05 Q506；通用 5 分钟规则另见 S01，不在这里）。</summary>
-        public static bool NotCancellable(ActionState a) => IsSingleTransaction(a.Type) || IsStealthCheck(a);
+        /// <summary>开工后不可中途取消的行动：B41c2 开工 5 分钟锁定（S01 Q506、Q516），以及原本就不可取消的单段事务与潜行接近／躲避。</summary>
+        public static bool NotCancellable(ActionState a) => ExitLocked(a);
 
         private static bool IsFixedDuration(ActionType t) =>
             t == ActionType.Wait || t == ActionType.Rest || t == ActionType.Sleep || t == ActionType.Bypass || t == ActionType.Extract || IsSingleTransaction(t);
@@ -111,8 +117,16 @@ namespace Survival.Core.Engine
                 info.Fraction = a.BaseWorkMinutes <= 0 ? 0 : Math.Min(1, (a.CarryReserved + a.WorkDone) / a.BaseWorkMinutes);
             }
             var why = ExitBlocked(s);
-            info.Exit = why != null ? ExitKind.None : NotCancellable(a) ? ExitKind.CompletesCurrentTransaction : ExitKind.StopAtBoundary;
+            // B41c2（S01 Q506、S14 Q506）：锁定行动没有退出入口（不是灰色按钮），说明固定「本次行动不可中途退出。」
+            info.Locked = NotCancellable(a);
+            info.Exit = why != null || info.Locked ? ExitKind.None : ExitKind.StopAtBoundary;
             var forfeit = info.Exit == ExitKind.StopAtBoundary ? ExitForfeitText(s, a) : null;
+            if (info.Paused && info.Locked && !info.DialogueWaiting)
+            {
+                var v = LockedResume(s);
+                if (v.Kind == LockedResumeKind.Temporary || v.Kind == LockedResumeKind.Permanent) info.ResumeNote = v.Reason;
+                info.ResumeAborts = v.Kind == LockedResumeKind.Permanent;
+            }
             // B41b（R05 Q472 第 6 条）：暂存的原工作只读摘要与撤退离地保留行动的原地点（界面文字在 B41e 接）
             info.StashedLabel = s.StashedWork?.Label;
             var kept = s.StashedWork ?? (a.RetreatKept && CardsV2(s) ? a : null);
@@ -129,7 +143,7 @@ namespace Survival.Core.Engine
                     ? $"现在：{LocName(s.CurrentLocation)}→{LocName(a.TargetId)}"
                     : $"现在：{LocName(s.CurrentLocation)}→{LocName(next)}→…→{LocName(a.TargetId)}";
             }
-            info.ExitNote = why ?? (info.Exit == ExitKind.CompletesCurrentTransaction ? $"{a.Label}已开始结算，本段完成后结束（已提交的消耗与效果不撤销）" : forfeit ?? "在当前5分钟段结束处停止，已发生的消耗与收获保留");
+            info.ExitNote = info.Locked ? NoExitNote : why ?? forfeit ?? "在当前5分钟段结束处停止，已发生的消耗与收获保留";
             return info;
         }
 
@@ -168,15 +182,13 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 中央条“退出”（S01 §9）：内核每次推进都是完整的 5 分钟原子段，所以收到请求时总在段边界——立即停止调度后续段，
         /// 未发生的时长/工作不结算、按各玩法释放预留；已提交的时间、消耗、收获不回滚。子行动退出后回原主行动暂停态（父行动不解除占用）。
-        /// 点火、自用、融合开始时已提交：返回 Ok 且 Deferred=true，本段照常完成，不退还。对话中、战斗中、死亡后拒绝。
+        /// B41c2（S01 Q506 第 3 条）：开工 5 分钟锁定的行动（含点火、自用、融合与潜行接近／躲避）旧请求一律拒绝「该行动不可中途取消」，
+        /// 不返料、不清行动、不推进额外时间。对话中、战斗中、死亡后拒绝。
         /// </summary>
         public ActionResult RequestExit(GameState s)
         {
             var why = ExitBlocked(s);
             if (why != null) return ActionResult.Fail(why);
-            var a = (s.Sub ?? s.Main)!;
-            if (NotCancellable(a))
-                return new ActionResult { Ok = true, Deferred = true, ActionId = a.ActionId, Reason = $"{a.Label}已开始结算，本段完成后结束（已提交的消耗与效果不撤销）" };
             return Cancel(s);
         }
     }

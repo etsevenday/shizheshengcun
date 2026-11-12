@@ -380,7 +380,7 @@ namespace Survival.Core.Engine
             if (s.Battle != null) return "当前正在战斗。";
             if (s.Expedition?.IsExtracting == true) return "撤出途中无法开始这项行动。";
             if (s.Sub != null || (s.Main != null && s.Main.Status != ActionStatus.Paused)) return "当前行动还没结束。";
-            if (s.Main != null) return "行动暂停中，请先继续或退出行动。";
+            if (s.Main != null) return LockedMainPaused(s) ? LockedPausedBusy : "行动暂停中，请先继续或退出行动。";   // B41c2（Q517）
             if (DuplicateWeaponsIllegal(s) || CarriedOverflow(s)) return "请先完成随身物品整理。";
             if (s.Recruit.Pending?.AwaitingPlacement == true) return "请先办完当前事务。";
             var card = FindEnemyCard(s, cardKey, out var gone);

@@ -213,7 +213,7 @@ namespace Survival.Core.Engine
         /// <summary>Validate 的等待烹饪分支：空闲、本地有燃烧的火堆、下一段燃料有效（开发假设 A8）、至少一个可完成的目标。</summary>
         private string? ValidateCookWait(GameState s, Plan plan)
         {
-            if (plan.IsSub) return "主行动暂停中：请先退出原行动再等待加工";
+            if (plan.IsSub) return LockedMainPaused(s) ? LockedPausedBusy : "主行动暂停中：请先退出原行动再等待加工";   // B41c2（Q526）
             var here = s.Ground;
             if (!HasFireAt(s, here)) return "这里没有火堆";
             var fac = FacOf(s, here)!;

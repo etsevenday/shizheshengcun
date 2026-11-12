@@ -31,7 +31,7 @@ public class B41aMigrationTests : B41aTestBase
     [Test]
     public void NewGame_ModelVersionFollowsSwitch()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("48"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("49"));
         Assert.That(Off.NewGame(1).EnemyCards.ModelVersion, Is.EqualTo(0));
         Assert.That(Off.CardsV2(Off.NewGame(1)), Is.False);
         var s = E.NewGame(1);
@@ -49,7 +49,7 @@ public class B41aMigrationTests : B41aTestBase
         var rng = RngOf(s);
         var log = s.Log.Count;
         var t = SaveSerializer.Deserialize(AsSchema45(s), CfgOff);
-        Assert.That(t.SchemaVersion, Is.EqualTo("48"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("49"));
         Assert.That(t.EnemyCards.ModelVersion, Is.EqualTo(0));
         Assert.That(t.EnemyCards.Groups, Is.Empty);
         Assert.That(t.Encounter, Is.Not.Null, "开关关着：旧待处理名单原样");
@@ -81,7 +81,7 @@ public class B41aMigrationTests : B41aTestBase
         var log = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema45(s), CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("48"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("49"));
         Assert.That(E.CardsV2(t), Is.True);
         Assert.That(t.Encounter, Is.Null, "旧待处理名单转成组卡后清掉");
         Assert.That(t.EnemyCards.Groups, Has.Count.EqualTo(1));

@@ -46,6 +46,8 @@ namespace Survival.Core.Engine
             {
                 case InstantKind.Pickup:
                 {
+                    // B41c2（S01／S07 Q523）：锁定主行动暂停中只缺拾取同一原工具时，这一件可从当前地面整件拾取到随身（锁与暂停保持）
+                    if (LockedToolPickup(s, r) is ActionResult toolPick) return toolPick;
                     var inst = FindItem(s, r.InstanceId);
                     if (inst != null && IsLocked(s, inst)) return ActionResult.Fail("行动占用：该物品正被当前行动使用");
                     if (IsBusy(s) && !ExtractTidyAllowed(s)) return ActionResult.Fail("行动进行中，不能整理物品");

@@ -425,8 +425,10 @@ public class B14CityTests : TestBase
         SetStats(s, 15, 30, 80, 15, 80, 70);
         Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_water").Ok, Is.False, "水分不低于40不可领水");
         Ok(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_food"));
-        Ok(E.Cancel(s));
-        Assert.That(E.CityQuotaUsed(s, "church_relief_ration", Clock.Day(s.GameMinute)), Is.EqualTo(0), "取消不扣额");
+        // B41c2（S01 Q506、Q519）：领取救助配给开工 5 分钟，不可中途退出——旧取消请求拒绝、行动与额度预留不变
+        Assert.That(E.Cancel(s).Reason, Is.EqualTo("该行动不可中途取消"));
+        Assert.That(s.Main, Is.Not.Null);
+        Assert.That(E.ActionProgress(s) is { Locked: true, Exit: ExitKind.None }, Is.True, "没有退出入口");
     }
 
     /// <summary>CS07：观察休息/安静休息 30 分钟按普通有遮蔽 rest 逐段推进（全体同行），可停止；无额外效果。</summary>
