@@ -130,7 +130,9 @@ public class BM1B42HoverTests : TestBase
         var fc = Web("Components/FacilityCard.razor");
         Assert.That(fc, Does.Contain("var buildRecipe = built ? null : Kind == \"workshops\" ? \"build_workbench\" : Kind;"), "按原点击对应的设施配方");
         Assert.That(fc, Does.Contain("if (Kind != \"workshops\") { G.OpenPanel(\"craft\", Kind); return; }"), "原点击照旧打开对应配方");
-        Assert.That(fc, Does.Contain("G.OpenPanel(\"craft\", \"build_workbench\");"));
+        // B45（Q542）：工坊汇总卡点击改走 OpenWorkshops，一座加工设施都没有时仍是原「营地建造」工作台入口
+        Assert.That(fc, Does.Contain("G.OpenWorkshops();"));
+        Assert.That(Web("Services/GameSession.FacMenu.cs"), Does.Contain("OpenPanel(\"craft\", \"build_workbench\");"));
         Assert.That(fc, Does.Contain("PeekExtra=\"@(buildRecipe == null ? null : BuildConditions(buildRecipe))\""));
         Assert.That(fc, Does.Contain("=> @<CraftOverlay Part=\"detail\" PeekRecipe=\"@recipeId\" UnbuiltPeek=\"true\" />;"), "与点击后右栏同一份详细预估（B44 Q493：只换底部脚注）");
         Assert.That(fc, Does.Contain("Tooltip=\"@(built ? effect : $\"{title}未建造：{need}\")\""), "原说明句保留");

@@ -239,9 +239,13 @@ else
         @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
     </div>
 
+    @* B45（Q548）：火堆里的内容与加工菜单开着时右栏只读、操作在中央加工菜单——不显示指向选卡操作窗的旧脚注 *@
+    @if (G.Panel != GameSession.FireMenuPanel && G.InFireCrumbs(sel) == null)
+    {
     <div class="detail-foot">
         <div class="under">@(busy ? "行动进行中，暂不能整理物品" : GameEngine.CanSelfUse(cfg) ? $"在被选中卡片旁的操作窗里点“{GameEngine.UseButtonText(cfg)}”使用；转移目标与数量也在那里" : "转移目标与数量在被选中卡片旁的操作窗里")</div>
     </div>
+    }
 }
 
 @code {

@@ -46,7 +46,8 @@
         <div class="sub-head">
             @* 试玩修复 M77-B7（Q21）：材料来源等教学短文移进悬浮说明 *@
             <div><h2>手工制作</h2><span class="sub" title="@($"材料来自随身与{lc.Name}地面（火堆与锅里的物资要先取出）；按工坊分类；未掌握的做法也列出并写来源；在配方卡下方开始，详细预估在右栏对象信息。")">配方 · 详细预估在右栏 ⓘ</span></div>
-            <button class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+            @* B45（Q560）：经「选择设施」明确点一座进入时为「返回 ESC」（回实时选择层），其余入口照原「关闭 ESC」 *@
+            <button class="secondary" @onclick="Close">@(G.CraftFromChooser ? "返回" : "关闭")<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
         </div>
         <div class="sub-body craft-grid @(candidates == null ? "tabbed" : "")">
             @if (candidates == null)
@@ -109,8 +110,8 @@
                             }
                         </div>
                         <div class="btn-row" style="margin-top:10px">
-                            <button class="secondary" disabled="@(!e.HasFireAt(s, s.Ground))" title="@(e.HasFireAt(s, s.Ground) ? "关闭手工制作，在地块栏第二行选中火堆" : $"{lc.Name}没有火堆，回到营地才能加工")"
-                                    @onclick="G.SelectFire">查看火堆 ▸</button>
+                            <button class="secondary" disabled="@(!e.HasFireAt(s, s.Ground))" title="@(e.HasFireAt(s, s.Ground) ? ViewFireTip : $"{lc.Name}没有火堆，回到营地才能加工")"
+                                    @onclick="G.OpenFireMenu">查看火堆 ▸</button>
                         </div>
                     </div>
                 }
@@ -418,7 +419,7 @@
                     <div class="panel fire-box">
                         <ItemRow Icon="@(fac.FireLit ? "fire_lit" : "fire_out")" Name="营地火堆" Qty="@(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃")"
                                  Status="@($"燃料{fac.FuelMinutes}/{e.FuelCapOf(fac)}分钟 · 内容物{used}/{e.Config.Fire.ProcessingSlots}")">
-                            <button class="secondary" @onclick="G.SelectFire">查看火堆 ▸</button>
+                            <button class="secondary" title="@ViewFireTip" @onclick="G.OpenFireMenu">查看火堆 ▸</button>
                         </ItemRow>
                     </div>
                 }
@@ -452,8 +453,8 @@ else if (proc != null)
         }
     </div>
     <div class="detail-foot">
-        @if (!peekOn) { <button class="primary" disabled="@(!G.E.HasFireAt(G.S, G.S.Ground))" @onclick="G.SelectFire">查看火堆 ▸</button> }
-        <div class="under">@(proc.IsSlotBatch ? "没有开始按钮：在火堆卡空加工位点“煅烧木炭”投料" : "没有开始按钮：放进燃烧的火堆即自动加工")</div>
+        @if (!peekOn) { <button class="primary" disabled="@(!G.E.HasFireAt(G.S, G.S.Ground))" title="@(G.E.HasFireAt(G.S, G.S.Ground) ? ViewFireTip : null)" @onclick="G.OpenFireMenu">查看火堆 ▸</button> }
+        <div class="under">@(proc.IsSlotBatch ? "没有开始按钮：点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」投料" : "没有开始按钮：放进燃烧的火堆即自动加工")</div>
     </div>
 }
 else
@@ -508,7 +509,7 @@ else
     {
         var e = G.E;
         if (p.IsSlotBatch)
-            return $"在火堆卡空加工位点“煅烧木炭”投料：每批{e.ItemName(p.InputId)}×{p.InputCount}占1个加工位，{p.HeatMinutes}有效受热分钟后原位变成{e.ItemName(p.OutputId)}×{p.OutputCount}。"
+            return $"点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」投料：每批{e.ItemName(p.InputId)}×{p.InputCount}占1个加工位，{p.HeatMinutes}有效受热分钟后原位变成{e.ItemName(p.OutputId)}×{p.OutputCount}。"
                    + $"火堆燃料另计（两批并行不倍扣，点火那5分钟不计热）；把{e.ItemName(p.InputId)}拖到火堆是添加燃料，不是煅烧。不给经验。";
         return (p.IsPotBatch ? "boil_water" : p.InPot ? "boil_root" : "roast_root") switch
         {
@@ -528,7 +529,7 @@ else
             return new()
             {
                 (p.InputId, e.ItemName(p.InputId), $"1. 随身或当前地面备好{e.ItemName(p.InputId)}×{p.InputCount}（拖到火堆是加燃料）"),
-                ("slot_empty", "空加工位", $"2. 点火堆卡空加工位里的“煅烧木炭”，确认投料（占1位，不耗时）"),
+                ("slot_empty", "空加工位", $"2. 点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」，确认投料（占1位，不耗时）"),
                 ("fire_lit", "燃烧的火堆", $"3. 点火并保持燃料，{p.HeatMinutes}有效受热分钟；燃料另计，熄火保留进度"),
                 (p.OutputId, e.ItemName(p.OutputId), $"4. 原位变成{e.ItemName(p.OutputId)}×{p.OutputCount}，取出才进包；不给经验"),
             };
@@ -759,5 +760,9 @@ else
         return res;
     }
 
-    private void Close() => G.OpenPanel(null);
+    /// <summary>B45（Q560）：经选择层进入时回选择层，其余照原关闭（与 ESC 同一入口）。</summary>
+    private void Close() => G.PanelEscape();
+
+    /// <summary>B45（逐字稿 Q546／Q547）：「查看火堆 ▸」悬停新句——关闭制作、打开当前区火源加工菜单主层。</summary>
+    private const string ViewFireTip = "关闭手工制作，打开火堆加工菜单";
 }

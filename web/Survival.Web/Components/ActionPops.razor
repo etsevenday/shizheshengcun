@@ -175,6 +175,34 @@
             </AnchorPop>
             break;
         }
+        case GameSession.StationsPop:
+        {
+            @* B45（S14 Q542／Q559／Q560）：工坊汇总卡「选择设施」——只有标题、当前区已建陶窑／固定净水台的实时列表与「关闭」（无 ×、无默认 Enter）；
+               行「{设施名} · {已}/{需}分」或「{设施名} · 空闲」，点一座重验后进入它的原制作分类；一座都没有时显示定句、只留关闭 *@
+            var choices = e.ProcessingStationChoices(s);
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@GameEngine.ChooserTitle" HideX="true" CssClass="@("stations" + G.MenuHideCss)" OnClose="G.ClosePop">
+                <ChildContent>
+                    @if (choices.Count == 0)
+                    {
+                        <div class="apop-note">@GameEngine.ChooserEmpty</div>
+                    }
+                    else
+                    {
+                        <div class="st-list">
+                            @foreach (var c in choices)
+                            {
+                                var sid = c.StationId;
+                                <button type="button" class="secondary st-pick" id="@($"st-pick-{sid}")" @onclick="() => G.PickStation(sid)">@c.Line</button>
+                            }
+                        </div>
+                    }
+                </ChildContent>
+                <Actions>
+                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">关闭<EscCap On="@G.EscOnDisk" /></button>
+                </Actions>
+            </AnchorPop>
+            break;
+        }
         case "charcoal":
         {
             var info = G.CharcoalPreview();
@@ -293,6 +321,8 @@
             GameSession.EnemyCardPop => s.Battle == null && e.EnemyCardHere(s, pop.Id) != null,
             // B45：煅烧投料盘从中央火堆加工菜单的空加工位打开（盘叠在菜单之上）
             "charcoal" => s.Battle == null && (G.Panel == null || G.Panel == GameSession.FireMenuPanel) && pop.Id == s.Ground && e.HasFireAt(s, s.Ground),
+            // B45（Q560）：换地点／区（Pop.Id 记打开时的区）、战斗即按原清理收起，不保留旧地返回链
+            GameSession.StationsPop => s.Battle == null && G.Panel == null && pop.Id == s.Ground,
             "lockstack" => s.Battle == null && G.Panel == null && e.AdjacentLockedGroups(s).Any(g => g.Routes.Count >= 3),
             "harvest" => s.Battle == null && G.Panel == "drying" && e.DryingRackHere(s) && int.TryParse(pop.Id, out var hk) && e.DryingSlotAt(s, s.Ground, hk)?.Status == DryingSlot.Done,
             "gather" => G.Selected.Kind == SelectionKind.Action && G.PendingAction != null && G.PendingAction.Type == ActionType.Gather && G.PendingAction.TargetId == pop.Id,

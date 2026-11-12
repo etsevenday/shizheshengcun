@@ -21,7 +21,7 @@
     var buildRecipe = built ? null : Kind == "workshops" ? "build_workbench" : Kind;
 }
 @* B32a（Q340、Q345）：重墨 V2 卡模板，副标一行写效果或建造条件；正在建这张卡的设施时为加工中 *@
-<ObjectCard Ink2="true" PeekId="@Peek.Card("fac-" + Kind)" CssClass="k2-fac" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
+<ObjectCard Ink2="true" Id="@(Kind == "workshops" ? "fac-workshops" : null)" PeekId="@Peek.Card("fac-" + Kind)" CssClass="k2-fac" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
             Busy="@(Kind != "workshops" && CardStates.BusyBuild(s, Kind))"
             Sub="@(built ? effect : need)" Tooltip="@(built ? effect : $"{title}未建造：{need}")" OnClick="Open"
             PeekExtra="@(buildRecipe == null ? null : BuildConditions(buildRecipe))">
@@ -35,11 +35,12 @@
     /// <summary>BM1（Q487）：与点击后右栏同一份制作详细预估（CraftOverlay 右栏部分，悬停只读：不改所选配方、份数与材料槽）。</summary>
     private static RenderFragment BuildConditions(string recipeId) => @<CraftOverlay Part="detail" PeekRecipe="@recipeId" UnbuiltPeek="true" />;
 
+    /// <summary>
+    /// B45（S14 Q542）：工坊汇总卡——当前区陶窑、固定净水台都已建先开「选择设施」，只建一座直进它的原制作分类，都没建照原「营地建造」工作台入口。
+    /// </summary>
     private void Open()
     {
         if (Kind != "workshops") { G.OpenPanel("craft", Kind); return; }
-        G.OpenPanel("craft", "build_workbench");
-        G.CraftTab = "camp";
-        G.Notify();
+        G.OpenWorkshops();
     }
 }

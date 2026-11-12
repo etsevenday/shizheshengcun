@@ -57,9 +57,10 @@ public sealed partial class GameSession
     {
         if (State == null || S.Progress.Dead || InBattleUi || DialogueLocked || !E.HasFireAt(S, S.Ground)) return;
         HoverPreview = null;
-        OpenPanel(FireMenuPanel);
-        if (Panel != FireMenuPanel) return;
+        // 先建上下文再开面板（OpenPanel 里的 Notify 会核对菜单，没有上下文的 fire 面板视为失效）；已开着时重开回主层
         FireMenu = new FireMenuContext { Location = S.CurrentLocation, Ground = S.Ground, Minute = S.GameMinute };
+        OpenPanel(FireMenuPanel);
+        if (Panel != FireMenuPanel) { FireMenu = null; return; }
         SyncRightSilently(new Selection { Kind = SelectionKind.Facility, Id = GameEngine.FireIdOf(S.Ground) });
         Guide("fire");
         PanelFocusPending = true;
@@ -315,6 +316,8 @@ public sealed partial class GameSession
             OpenPanel(null);
             ChooserReturnStation = station;
             OpenPop(StationsPop, S.Ground, "fac-workshops");
+            // Q560：焦点回仍有效的原设施行；该行已不在时留在选择层（安全焦点）
+            if (station != null && E.ProcessingStationChoices(S).Any(c => c.StationId == station)) FocusIdPending = $"st-pick-{station}";
             return;
         }
         OpenPanel(null);
