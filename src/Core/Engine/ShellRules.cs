@@ -154,6 +154,133 @@ namespace Survival.Core.Engine
 
         /// <summary>本页五个技能位对应的等级（A10 §6.4，与网页壳 BattleHotkeySkill 同一张表）。</summary>
         public static readonly int[] SkillSlotLevels = { 1, 3, 5, 7, 10 };
+
+        // BM2（Q502）：中央行动进度条「跳过动画 空格」——只绑空格，不加中央 Enter；悬停沿原句
+        public const string SkipAnim = "跳过动画";
+        public const string SpaceCap = "空格";
+        public const string SkipAnimTitle = "只跳过表现，不改变游戏时间与结果";
+
+        /// <summary>BM2（Q496）：顶栏、战斗区、结算页「菜单 ESC」按钮的悬停正式句。</summary>
+        public const string MenuHover = "点击打开或关闭菜单。按 ESC 时先处理当前可关闭层；没有可关闭层时打开菜单。";
+    }
+
+    /// <summary>系统说明「键盘快捷键」里的一行：操作标签／键位与配套说明（顶栏行没有说明）。</summary>
+    public sealed class KeyHelpRow
+    {
+        public KeyHelpRow(string label, string? note) { Label = label; Note = note; }
+        public string Label { get; }
+        public string? Note { get; }
+    }
+
+    /// <summary>系统说明「键盘快捷键」的一个区（顶栏、局部操作、战斗、动画跳过）。</summary>
+    public sealed class KeyHelpGroup
+    {
+        public KeyHelpGroup(string title, IReadOnlyList<KeyHelpRow> rows) { Title = title; Rows = rows; }
+        public string Title { get; }
+        public IReadOnlyList<KeyHelpRow> Rows { get; }
+    }
+
+    /// <summary>
+    /// BM2（Q495、Q501；S14「B43 Q495—Q502」、重墨 V2 逐字稿同日节）：系统说明「入门与操作」里的「键盘快捷键」条目与「ESC 与界面层级」六段。
+    /// 键表标签由 <see cref="ShellKeys"/> 的按钮原文与键帽拼出，与按钮、真实绑定同源；未交付的战斗两级跳过不列。
+    /// </summary>
+    public static class ShellKeyHelp
+    {
+        public const string Title = "键盘快捷键";
+        public const string Lead = "这里列出已可用的键盘操作。按键与对应按钮执行相同操作；按钮不可用时，快捷键也不可用。输入文字或打开菜单、对白、确认窗口时，按键优先作用于当前界面。";
+
+        /// <summary>表旁三句逐字补充。</summary>
+        public static readonly IReadOnlyList<string> Notes = new[]
+        {
+            "字母键不区分大小写。",
+            "多个并列选项不会由 Enter 自动代选；可用 Tab 选择控件后再激活。",
+            "仅显示“×”的关闭键和手动存档页的“返回”按钮不标 ESC，仍可按 ESC 按界面层级返回。",
+        };
+
+        /// <summary>四个区：顶栏 12 项（与 <see cref="ShellKeys.TopLabel"/> 同源）、局部操作、战斗、动画跳过（当前只有中央「跳过动画 空格」）。</summary>
+        public static IReadOnlyList<KeyHelpGroup> Groups()
+        {
+            var top = new List<KeyHelpRow>();
+            for (var i = 0; i < ShellKeys.TopCaps.Count; i++) top.Add(new KeyHelpRow(ShellKeys.TopLabel(i), null));
+            return new[]
+            {
+                new KeyHelpGroup("顶栏", top),
+                new KeyHelpGroup("局部操作", new[]
+                {
+                    new KeyHelpRow($"返回／取消／菜单 {ShellKeys.Esc}", "按 ESC 先处理当前可关闭层；没有可关闭层时打开菜单。"),
+                    new KeyHelpRow($"当前确认 {ShellKeys.Enter}", "仅当前界面有唯一可用主确认时执行；多个并列选项不代选。"),
+                    new KeyHelpRow($"继续／结束对话 {ShellKeys.Enter}", "只推进当前一句对白；有分支时先明确选择。"),
+                    new KeyHelpRow($"{ShellKeys.ZoomIn} {ShellKeys.ZoomInCap}／{ShellKeys.ZoomOut} {ShellKeys.ZoomOutCap}／{ShellKeys.BackToHere} {ShellKeys.BackToHereCap}", "只操作当前区域地图，不移动队伍。"),
+                    new KeyHelpRow($"{ShellKeys.Qty} {ShellKeys.Digits}", "进入或输入物品数量；数量仍须符合实际范围。"),
+                    new KeyHelpRow($"{ShellKeys.DragQty} {ShellKeys.Shift}", "按住 Shift 松手可选数量。"),
+                }),
+                new KeyHelpGroup("战斗", new[]
+                {
+                    new KeyHelpRow($"{ShellKeys.WeaponPage1} {ShellKeys.WeaponPage1Cap}／{ShellKeys.WeaponPage2} {ShellKeys.WeaponPage2Cap}", "切换武器页，不提交攻击。"),
+                    new KeyHelpRow($"技能卡位 1–{ShellKeys.SkillSlotLevels.Length}", "数字对应当前武器页的五个技能卡位，不是所需等级。"),
+                    new KeyHelpRow($"{ShellKeys.PrevTarget} {ShellKeys.PrevTargetCap}／{ShellKeys.NextTarget} {ShellKeys.NextTargetCap}", "只切换合法目标的预测，不执行指令。"),
+                    new KeyHelpRow($"{ShellAim.ConfirmLabel("{指令名}")} {ShellKeys.Enter}", "提交当前指令与已指定的合法目标。"),
+                }),
+                new KeyHelpGroup("动画跳过", new[]
+                {
+                    new KeyHelpRow($"{ShellKeys.SkipAnim} {ShellKeys.SpaceCap}", "跳过中央行动的表现等待，实际行动仍按原规则逐段结算。"),
+                }),
+            };
+        }
+
+        /// <summary>Q501：条目标题由「Esc 与界面层级」改为「ESC 与界面层级」。</summary>
+        public const string EscTitle = "ESC 与界面层级";
+
+        /// <summary>Q501：「ESC 与界面层级」六段定稿（逐字替换原两段）。</summary>
+        public static readonly IReadOnlyList<string> EscParagraphs = new[]
+        {
+            "按 ESC 时，先返回或关闭当前最上层可关闭的界面；没有可关闭层时，打开当前场景的菜单。一次只处理一层。",
+            "游戏菜单的手动存档页按 ESC 返回菜单首页；在菜单首页再按 ESC，回到原画面。覆盖确认打开时，先取消覆盖确认，不会保存或覆盖存档。",
+            "ESC 不会退出正在进行或暂停的行动，也不会替你继续行动。需要退出时，请使用中央行动栏的“退出行动”。强制整理等必须完成的步骤不能用 ESC 跳过。",
+            "战斗中，ESC 先收起当前可关闭的说明、物资页、医疗盘或取消尚未提交的指令；没有这些界面时打开战斗菜单。选择“返回战斗”或再次按 ESC 只返回战场，不能脱战。菜单内的存档、系统说明和反馈按各自可用条件开放。",
+            "对白期间，ESC 可以打开菜单，但不会结束对白或确认选项；关闭菜单后回到原对白。结算页按 ESC 打开或关闭结算菜单，查看记录等子页先按自身层级返回。",
+            "反馈与留言窗口打开时，ESC 由窗口处理；关闭后回到菜单。",
+        };
+    }
+
+    /// <summary>
+    /// BM2（Q497；S14「Q497 瞄准预测区的明确提交」、R03 同日节、逐字稿 Q497）：战斗目标预测区「执行{指令名} Enter」按钮的文字与禁用原因顺序。
+    /// 按钮、Enter 与原「点亮起的合法目标」共用同一当前预览与正式提交校验；这里只定原因顺序与原句，校验本身沿内核 CommandBlocked／PreviewCommand。
+    /// </summary>
+    public static class ShellAim
+    {
+        /// <summary>按钮业务名「执行{指令名}」（指令名取本次所选指令的公开业务名，与预测标题同一指令）；键帽 Enter 在同一按钮里。</summary>
+        public static string ConfirmLabel(string command) => $"执行{command}";
+
+        public const string NeedTarget = "请先指定目标。";
+        public const string NoTargets = "没有可用目标。";
+        public const string TargetChanged = "目标已变化，请重新选择。";
+        /// <summary>指向从未合法的候选且内核没有更具体句时，沿该敌人锚点上原有的说明（战斗区不可选目标的原句）。</summary>
+        public const string OutOfScope = "不在本指令范围内";
+
+        /// <summary>目标预测区的指引（取代「点击亮起的目标即执行；右键/Esc 取消」等旧句）。</summary>
+        public static string Guide(string command) => $"指定目标后，可点击亮起的目标或“执行{command}”按钮，也可按 Enter 执行；右键/ESC 取消。";
+
+        /// <summary>目标预测区下方只读提示。</summary>
+        public const string ReadOnly = "查看预测不扣费、不抽随机。";
+
+        /// <summary>无目标类指令的原控制台说明（Q501 按键词写 ESC）。</summary>
+        public static string ConsoleGuide(string command, int ap) => $"在操作台点“确认 · {command} · {ap}AP”才提交；ESC 取消";
+
+        /// <summary>
+        /// 「执行{指令名}」此刻为什么不可用（null 为可用）。顺序：战斗通用锁（未轮到、对白等，<paramref name="lockWhy"/>，空串表示锁定但无原句）→
+        /// 群体指令按真实受影响集合（集合为空「没有可用目标。」，否则看预览）→ 尚未指定目标（候选为 0「没有可用目标。」，否则「请先指定目标。」）→
+        /// 已指定但不合法：内核更具体句优先；没有时，原先合法、现在失效的写「目标已变化，请重新选择。」，从未合法的候选沿锚点原句 → 合法目标再看预览（成本等）。
+        /// 不把失效目标默认成另一只。
+        /// </summary>
+        public static string? ConfirmBlocked(string? lockWhy, bool area, int legalCount, bool hasTarget, bool targetLegal, bool targetWasLegal, string? targetWhy, string? previewWhy)
+        {
+            if (lockWhy != null) return lockWhy;
+            if (area) return legalCount == 0 ? NoTargets : previewWhy;
+            if (!hasTarget) return legalCount == 0 ? NoTargets : NeedTarget;
+            if (!targetLegal) return targetWhy ?? (targetWasLegal ? TargetChanged : OutOfScope);
+            return previewWhy;
+        }
     }
 
     /// <summary>Esc 这一下该做什么（Q322「Esc」「菜单内」「返回」）。</summary>
@@ -163,6 +290,8 @@ namespace Survival.Core.Engine
         Ignore,
         /// <summary>收起已开的游戏菜单（常态、对白锁、行动推进、暂停、死亡结算）。</summary>
         CloseMenu,
+        /// <summary>BM2（Q500）：游戏菜单开在子页（手动存档）上——先收子页里的覆盖确认，没有就回菜单首页；不关整个菜单、不保存。</summary>
+        CloseMenuSubPage,
         /// <summary>收起已开的战斗菜单（战斗、敌踪、战斗中的对白）。</summary>
         CloseBattleMenu,
         /// <summary>按原层级收起最上方可关闭的子层（交给原 Esc 栈逐级处理；死亡结算时为结算页的「查看记录」层）。</summary>
@@ -186,6 +315,8 @@ namespace Survival.Core.Engine
         public bool BattleUi { get; set; }
         public bool MenuOpen { get; set; }
         public bool BattleMenuOpen { get; set; }
+        /// <summary>BM2（Q500）：游戏菜单当前开在子页（手动存档）上；菜单首页为 false。</summary>
+        public bool MenuSubPage { get; set; }
         /// <summary>原 Esc 栈里还有看得见、可关闭的子层（数量框、浮层、面板、二级页、选中等；不含看不见的残留状态）。</summary>
         public bool HasClosableLayer { get; set; }
     }
@@ -202,7 +333,7 @@ namespace Survival.Core.Engine
         {
             if (i.FeedbackOpen) return ShellEscRoute.Ignore;
             if (i.Dead) return i.MenuOpen ? ShellEscRoute.CloseMenu : i.HasClosableLayer ? ShellEscRoute.CloseLayer : ShellEscRoute.OpenMenu;
-            if (i.MenuOpen) return ShellEscRoute.CloseMenu;
+            if (i.MenuOpen) return i.MenuSubPage ? ShellEscRoute.CloseMenuSubPage : ShellEscRoute.CloseMenu;
             if (i.BattleMenuOpen) return ShellEscRoute.CloseBattleMenu;
             if (!i.DialogueLocked && i.HasClosableLayer) return ShellEscRoute.CloseLayer;
             return i.BattleUi ? ShellEscRoute.OpenBattleMenu : ShellEscRoute.OpenMenu;

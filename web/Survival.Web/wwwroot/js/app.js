@@ -357,6 +357,20 @@ window.survival = {
         if (inBar) { ev.preventDefault(); tgt.blur(); return; }
       }
       if (mod) return;
+      // BM2（Q502）：中央行动进度条「跳过动画 空格」。只在跳过按钮真实可见、可用、所在行动层可受理输入时，点同一按钮一次（与鼠标点击同效）；
+      // 编辑／输入法（上面已挡）、菜单、对白、模态盘、前景面板与浮窗、拖拽中不穿透；焦点在其他具体控件或就在该按钮上时按原生语义（不重复）；
+      // 按住的重复 keydown 已由捕获阶段的 __survivalKeyGuard 挡掉。处理时阻止本次空格滚动页面。没有可用的跳过按钮时空格不做任何事。
+      if (k === ' ') {
+        var sk = document.querySelector('.cprog:not(.fading) [data-skip-anim]');
+        if (!sk || sk.disabled || !shown(sk) || (sk.closest && sk.closest('[inert]'))) return;
+        var sae = document.activeElement;
+        if (sae === sk || control(sae)) return;
+        if (topModal() || topPanel() || document.querySelector('.bfs') || document.body.classList.contains('dragging')) return;
+        if (Array.prototype.some.call(document.querySelectorAll('.apop, .st-pop.pinned'), shown)) return;
+        ev.preventDefault();
+        sk.click();
+        return;
+      }
       // 全屏战斗（A10 §6.4）：1—5 只选本页技能位、Q/E 切武器Ⅰ/Ⅱ页（0AP）、←/→ 在合法目标间移动预测、回车提交当前预测的目标；
       // 焦点在按钮或可点锚点上时回车/空格交给它自己（浏览器原生），不重复提交
       if (document.querySelector('.bfs')) {

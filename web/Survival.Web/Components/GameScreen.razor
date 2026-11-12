@@ -48,7 +48,7 @@
             <button class="@(G.Panel == "tips" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="T" title="@NavTitle("当前求生建议", 8)" @onclick="() => ActivateTop(8)">@TopFace(8)</button>
             <button class="@(G.Panel == "dialogs" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="D" title="@NavTitle("已经展示过的人物对话", 9)" @onclick="() => ActivateTop(9)">@TopFace(9)</button>
             <button class="@(G.Panel == "help" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="H" title="@NavTitle("各系统通用规则说明", 10)" @onclick="() => ActivateTop(10)">@TopFace(10)</button>
-            <button class="@(G.MenuOpen || G.BattleMenuOpen ? "on" : "")" data-menu-key aria-keyshortcuts="Escape" title="@($"{ShellText.Menu}（{ShellKeys.Esc}）")" @onclick="ToggleMenu">@TopFace(11)</button>
+            <button class="@(G.MenuOpen || G.BattleMenuOpen ? "on" : "")" data-menu-key aria-keyshortcuts="Escape" title="@ShellKeys.MenuHover" @onclick="ToggleMenu">@TopFace(11)</button>
         </nav>
     </header>
 
@@ -394,6 +394,7 @@
             BattleUi = G.InBattleUi,
             MenuOpen = G.MenuOpen,
             BattleMenuOpen = G.BattleMenuOpen,
+            MenuSubPage = !dead && G.ManualPageOpen,
             HasClosableLayer = dead ? G.DeathLogOpen : full ? G.BattleHasEscLayer : G.InBattleUi ? G.EncounterEscOwner() != EscOwner.OpenMenu : G.NormalEscOwner() != EscOwner.OpenMenu,
         });
         // B31d（Q333）：死亡结算页上 Esc 只在结算页这几层之间走：先收「查看记录」，再开／关结算菜单
@@ -407,6 +408,8 @@
         switch (route)
         {
             case ShellEscRoute.CloseMenu: G.SetMenu(false); break;
+            // BM2（Q500）：手动存档子页先收覆盖确认，再回菜单首页；菜单首页再按 ESC 才关菜单
+            case ShellEscRoute.CloseMenuSubPage: G.ManualPageEscape(); break;
             case ShellEscRoute.CloseBattleMenu: G.ToggleBattleMenu(false); break;
             case ShellEscRoute.OpenMenu: G.SetMenu(true); break;
             case ShellEscRoute.OpenBattleMenu: G.ToggleBattleMenu(true); break;

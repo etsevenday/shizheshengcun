@@ -193,6 +193,37 @@ public sealed partial class GameSession
     /// <summary>离开手动存档子页（Q406：清除该次失败与重试）。</summary>
     public void LeaveManualPage() => Saves?.ClearManualFailure();
 
+    /// <summary>BM2（Q500）：游戏菜单当前开在「手动存档」子页上（ESC 先回菜单首页，菜单首页再按 ESC 才关菜单）。关菜单即复位。</summary>
+    public bool ManualPageOpen { get; private set; }
+    /// <summary>BM2（Q500）：手动存档子页里正打开覆盖确认的那一份（槽键）；ESC 先取消它，不写盘、不同时退两层。</summary>
+    public string? ManualConfirmKey { get; set; }
+
+    /// <summary>进入手动存档子页（Q405）：先清上一次的失败（Q406）。</summary>
+    public void OpenManualPage()
+    {
+        LeaveManualPage();
+        ManualPageOpen = true;
+        ManualConfirmKey = null;
+        Notify();
+    }
+
+    /// <summary>手动存档子页「返回」与 ESC（Q405、Q500）：回到游戏菜单首页，不保存、不关菜单；离开时清该次失败与重试（Q406）。</summary>
+    public void CloseManualPage()
+    {
+        LeaveManualPage();
+        ManualPageOpen = false;
+        ManualConfirmKey = null;
+        Notify();
+    }
+
+    /// <summary>BM2（Q500）：手动存档子页上的 ESC——覆盖确认开着先只取消它（不保存、不覆盖），否则回菜单首页。</summary>
+    public void ManualPageEscape()
+    {
+        if (!ManualPageOpen) return;
+        if (ManualConfirmKey != null) { ManualConfirmKey = null; Notify(); return; }
+        CloseManualPage();
+    }
+
     /// <summary>新游戏前要不要确认（Q335 / Q386 / Q409）。</summary>
     public bool NewGameNeedsConfirm(bool midGame) => Saves?.NewGameNeedsConfirm(midGame) ?? midGame;
 
@@ -498,6 +529,9 @@ public sealed partial class GameSession
     {
         if (open && State == null) return;
         MenuOpen = open;
+        // BM2（Q500）：菜单每次打开都从首页开始，关闭时子页（手动存档与其覆盖确认）一并复位
+        ManualPageOpen = false;
+        ManualConfirmKey = null;
         if (open)
         {
             // 菜单盖住画面：收起悬停预测、就近浮窗与状态浮层，它们不在菜单下面继续可点（不提交、不取消任何草稿以外的东西）
@@ -1309,6 +1343,8 @@ public sealed partial class GameSession
             StatusHover = null;
             StatusPinned = null;
             MenuOpen = false;
+            ManualPageOpen = false;   // BM2（Q500）
+            ManualConfirmKey = null;
             BattleMenuOpen = false;
             // B9 战斗对白锁（A10 §6.2）：取消未提交瞄准、医疗确认、抽屉与临时悬停；已提交的指令不撤销，选中查看的对象保留
             BattleAction = null;
@@ -1421,6 +1457,8 @@ public sealed partial class GameSession
         DetailTab = DetailTab.Character;
         Panel = null;
         MenuOpen = false;
+        ManualPageOpen = false;   // BM2（Q500）
+        ManualConfirmKey = null;
         HoverPreview = null;
         IgniteMenuOpen = false;
         Pop = null;
@@ -2333,7 +2371,17 @@ public sealed partial class GameSession
     /// 操作台上选中的指令（R03 §7.4、S14 §18.4）：需要目标的技能选中即进入瞄准——合法目标高亮，悬停看右侧预测，点击合法目标即提交；
     /// 自用/无目标指令选中后在操作台就近点“确认”提交。
     /// </summary>
-    public string? BattleAction { get; private set; }
+    public string? BattleAction
+    {
+        get => _battleAction;
+        private set
+        {
+            // BM2（Q497）：所选指令一变（取消、换指令、切武器页、提交、对白锁、读档）就是新一次瞄准，旧的明确目标不再沿用
+            if (_battleAction != value) _aimSeq++;
+            _battleAction = value;
+        }
+    }
+    private string? _battleAction;
     /// <summary>选中查看的敌人（本场序号）：未瞄准时点敌卡只选中查看，不攻击；单敌自动选中也只是查看。</summary>
     public int? BattleTarget { get; private set; }
     /// <summary>鼠标正悬停的敌人：右栏对象信息临时显示它（瞄准中显示对它的实际预测），移开恢复。</summary>
@@ -2548,13 +2596,13 @@ public sealed partial class GameSession
         else ExplainBlocked(o.Label, o.Reason);
     }
 
-    /// <summary>←/→：瞄准中在合法目标间按号位移动预测（只悬停，不提交）。</summary>
+    /// <summary>←/→：瞄准中在合法目标间按号位移动预测（只改本次明确查看的目标，不提交）。</summary>
     public void BattleCycleTarget(int dir)
     {
         if (State == null || S.Battle == null || !BattleAiming || DialogueLocked) return;
         var list = AimTargets().Select(i => S.Battle.Enemies.First(x => x.Index == i)).OrderBy(x => x.Pos).Select(x => x.Index).ToList();
         if (list.Count == 0) return;
-        var at = BattleHover is int h ? list.IndexOf(h) : -1;
+        var at = BattleAimTarget is int h ? list.IndexOf(h) : -1;
         var next = at < 0 ? (dir > 0 ? 0 : list.Count - 1) : (at + dir + list.Count) % list.Count;
         HoverBattleTarget(list[next]);
     }
@@ -2568,10 +2616,77 @@ public sealed partial class GameSession
         if (State == null || S.Battle == null || BattleAction == null || BattleBusy || DialogueLocked || BattleMenuOpen || !E.AwaitingPlayer(S)) return;
         if (BattleAiming)
         {
-            if (BattleHover is int h && AimTargets().Contains(h)) await ClickBattleTarget(h, BattleExecToken());
+            // BM2（Q497）：瞄准中回车与目标预测区「执行{指令名}」同一入口、同一校验
+            await BattleAimSubmit(BattleExecToken());
             return;
         }
         if (E.PreviewCommand(S, CurrentBattleCommand()).Ok) await ExecuteBattleCommand(BattleExecToken());
+    }
+
+    // ───── BM2（Q497）：瞄准中本次明确查看的目标与「执行{指令名} Enter」 ─────
+    private int _aimSeq;
+    private int? _aimTarget;
+    private string? _aimCtx;
+    private bool _aimTargetWasLegal;
+
+    /// <summary>本次瞄准的上下文：同一场、同一轮与游标、同一行动者、同一次所选指令与物品。任何一项变了，旧的明确目标就不再沿用（不存档）。</summary>
+    private string AimCtx() => S.Battle is { } b ? $"{_aimSeq}:{b.BattleId}:{b.Round}:{b.Cursor}:{b.ActiveAlly}:{BattleItem}" : "";
+
+    /// <summary>
+    /// 本次瞄准中鼠标或 ←/→ 明确查看过的目标（敌人本场序号）：移出敌人锚点、跨过空白到右栏预测区或确认按钮时保留，不随悬停漂移；
+    /// 明确查看另一敌人时改为它（不合法的也记下，用来显示其真实原因并禁用）。取消／换指令、切武器页、换行动者、提交、出战斗、读档后作废。
+    /// 目标本身失效时仍指向它，不自动改选下一只。
+    /// </summary>
+    public int? BattleAimTarget => State != null && BattleAiming && _aimTarget != null && _aimCtx == AimCtx() ? _aimTarget : null;
+
+    private void SetAimTarget(int index)
+    {
+        _aimTarget = index;
+        _aimCtx = AimCtx();
+        _aimTargetWasLegal = AimTargets().Contains(index);
+    }
+
+    /// <summary>「执行{指令名} Enter」此刻的状态：可否提交、第一条真实原因、提交给谁、指令名（与预测标题同一指令）。</summary>
+    public sealed record AimConfirmState(bool Ok, string? Why, int? Target, string Name);
+
+    /// <summary>
+    /// BM2（Q497）：目标预测区「执行{指令名}」与回车的同一校验（原因顺序见 <see cref="ShellAim.ConfirmBlocked"/>）。
+    /// 单体／贯穿按本次明确目标；群体按真实受影响集合，不为群体硬选第一只。指令名取所选指令的预览标题（与右栏预测标题同一指令）。
+    /// </summary>
+    public AimConfirmState BattleAimConfirm()
+    {
+        if (State == null || S.Battle == null || !BattleAiming) return new AimConfirmState(false, null, null, "");
+        var action = BattleAction!;
+        var name = E.PreviewCommand(S, BattleCommand.Of(action, null, BattleItem)).Title;
+        var set = AimTargets();
+        string? lockWhy = null;
+        if (DialogueLocked || !E.AwaitingPlayer(S)) lockWhy = E.CommandBlocked(S, BattleCommand.Of(action, null, BattleItem)) ?? "";
+        else if (BattleBusy) lockWhy = "";
+        var area = AreaAction;
+        var t = area ? null : BattleAimTarget;
+        var legal = t is int ti && set.Contains(ti);
+        var targetWhy = t is int tj && !legal ? E.CommandBlocked(S, BattleCommand.Of(action, tj, BattleItem)) : null;
+        string? previewWhy = null;
+        if (lockWhy == null && (area ? set.Count > 0 : legal))
+        {
+            var p = E.PreviewCommand(S, BattleCommand.Of(action, area ? null : t, BattleItem));
+            previewWhy = p.Ok ? null : p.Reason;
+        }
+        var why = ShellAim.ConfirmBlocked(lockWhy, area, set.Count, t != null, legal, _aimTargetWasLegal, targetWhy, previewWhy);
+        return new AimConfirmState(why == null, why, t, name);
+    }
+
+    /// <summary>
+    /// BM2（Q497）：「执行{指令名}」按钮与瞄准中回车的提交——与原「点亮起的合法目标」走同一个 <see cref="ClickBattleTarget"/>／<see cref="ExecuteBattleCommand"/>
+    /// 与同一请求号去重；一次只执行一条，不追加二次确认。不合法时什么也不做（按钮已禁用并写原因）。
+    /// </summary>
+    public async Task BattleAimSubmit(string token)
+    {
+        if (State == null || S.Battle == null || BattleAction == null || BattleBusy || DialogueLocked || BattleMenuOpen || !E.AwaitingPlayer(S) || !BattleAiming) return;
+        var st = BattleAimConfirm();
+        if (!st.Ok) return;
+        if (AreaAction) await ExecuteBattleCommand(token);
+        else if (st.Target is int t) await ClickBattleTarget(t, token);
     }
 
     /// <summary>说明抽屉、战斗菜单打开时是阅读暂停（A10 §6.3）：逐条展示的敌方行动等它们关上再继续，不额外推进。</summary>
@@ -2679,7 +2794,14 @@ public sealed partial class GameSession
     /// <summary>悬停敌卡：右栏对象信息临时显示它；瞄准中显示对它的实际预测（不扣费、不抽随机）。</summary>
     public void HoverBattleTarget(int? index)
     {
-        if (BattleHover == index) return;
+        // BM2（Q497）：瞄准中鼠标进入哪只敌人，本次明确目标就改为它；离开锚点（index 为 null）时保留，供移向右栏预测与确认按钮
+        var aimChanged = false;
+        if (index is int i && BattleAiming && S.Battle!.Enemies.Any(x => x.Index == i && x.Alive) && BattleAimTarget != i)
+        {
+            SetAimTarget(i);
+            aimChanged = true;
+        }
+        if (BattleHover == index && !aimChanged) return;
         BattleHover = index;
         Notify();
     }

@@ -88,6 +88,30 @@
                         }
                     </div>
                 }
+                @if (entry.KeyGroups != null)
+                {
+                    @* BM2（Q495）：「键盘快捷键」四个区——标签与按钮原文、键帽同源（ShellKeys），说明逐字；没有说明的区（顶栏）排成一组按钮原文 *@
+                    @foreach (var g in entry.KeyGroups())
+                    {
+                        var flow = g.Rows.All(r => r.Note == null);
+                        <section class="help-keys" aria-label="@g.Title">
+                            <h4>@g.Title</h4>
+                            <dl class="@(flow ? "hk-flow" : "hk-table")">
+                                @foreach (var r in g.Rows)
+                                {
+                                    <div class="hk-row"><dt>@r.Label</dt>@if (r.Note != null) {<dd>@r.Note</dd>}</div>
+                                }
+                            </dl>
+                        </section>
+                    }
+                }
+                @if (entry.After != null)
+                {
+                    @foreach (var para in entry.After)
+                    {
+                        <p>@para</p>
+                    }
+                }
             </article>
         }
     </div>

@@ -7,7 +7,7 @@
 @{
     var sv = G.Saves!;
     var why = sv.ManualBlockedText(G.S);
-    var confirmEntry = confirmKey == null ? null : list.FirstOrDefault(e => e.Key == confirmKey);
+    var confirmEntry = G.ManualConfirmKey == null ? null : list.FirstOrDefault(e => e.Key == G.ManualConfirmKey);
 }
 <div class="menu-scrim" role="presentation">
 <div class="menu-modal overlay menu-top manual-save" role="dialog" aria-modal="true" aria-label="@SaveSlots.ManualPageTitle">
@@ -38,7 +38,8 @@
                 <div class="slot-card static"><SaveSlotCard Entry="confirmEntry" /></div>
                 <div class="row">
                     <button class="secondary danger" disabled="@(why != null)" title="@why" @onclick="ConfirmOverwrite">@SaveSlots.OverwriteConfirmButton</button>
-                    <button class="secondary" @onclick="() => confirmKey = null">@SaveSlots.CancelButton</button>
+                    @* BM2（Q500）：覆盖确认开着时 ESC 先只取消它（不写盘），「取消」按实际层级带 ESC 键帽 *@
+                    <button class="secondary" @onclick="() => G.ManualConfirmKey = null">@SaveSlots.CancelButton<EscCap On="true" /></button>
                 </div>
             </div>
         }
@@ -64,6 +65,7 @@
         }
     </div>
     <div class="mm-foot">
+        @* BM2（Q500）：「返回」仍只写「返回」，不显示 ESC 键帽（按 ESC 与它同效，先回菜单首页） *@
         <button class="primary" @ref="_back" @onclick="OnBack">@SaveSlots.BackButton</button>
     </div>
 </div>
@@ -73,7 +75,6 @@
     [Parameter] public EventCallback OnBack { get; set; }
 
     private List<SaveSlotEntry> list = new();
-    private string? confirmKey;
     private string? status;
     private ElementReference _back;
 
@@ -89,15 +90,15 @@
     private void AskOverwrite(SaveSlotEntry e)
     {
         status = null;
-        confirmKey = e.Key;
+        G.ManualConfirmKey = e.Key;
     }
 
     private void CreateNew() => Apply(G.SaveManual(null));
 
     private void ConfirmOverwrite()
     {
-        var key = confirmKey;
-        confirmKey = null;
+        var key = G.ManualConfirmKey;
+        G.ManualConfirmKey = null;
         Apply(G.SaveManual(key));
     }
 

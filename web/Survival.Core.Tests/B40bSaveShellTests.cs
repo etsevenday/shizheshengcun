@@ -132,7 +132,7 @@ public class B40bSaveShellTests
         Assert.That(entry, Is.GreaterThan(battleEnd), "战斗层菜单（含敌踪）不提供入口");
         Assert.That(menu, Does.Contain("var manualWhy = sv.ManualBlockedText(G.S);"));
         Assert.That(menu, Does.Contain("@if (manualWhy != null) { <div class=\"tiny muted\">@manualWhy</div> }"));
-        Assert.That(menu, Does.Contain("@if (manualPage && !dead)"));
+        Assert.That(menu, Does.Contain("@if (G.ManualPageOpen && !dead)"), "BM2（Q500）：子页状态在会话里，ESC 路由同源");
         var deadGate = menu.LastIndexOf("@if (!dead)", entry);
         Assert.That(deadGate, Is.GreaterThan(battleEnd), "死亡结算菜单不提供入口");
     }
@@ -145,14 +145,17 @@ public class B40bSaveShellTests
         Assert.That(page, Does.Contain("<button type=\"button\" class=\"slot-card @(entry.Readable ? \"\" : \"unreadable\")\" @onclick=\"() => AskOverwrite(entry)\">"), "已有档（含不可读）整条按钮，可键盘激活");
         Assert.That(page, Does.Contain("@SaveSlots.OverwriteConfirmTitle").And.Contain("@SaveSlots.OverwriteConfirmButton").And.Contain("@SaveSlots.CancelButton"));
         Assert.That(page, Does.Contain("<SaveSlotCard Entry=\"confirmEntry\" />"), "覆盖确认带同卡摘要");
+        Assert.That(page, Does.Contain("var confirmEntry = G.ManualConfirmKey == null ? null"), "BM2（Q500）：覆盖确认在会话里，ESC 先取消它");
         Assert.That(page, Does.Contain("@SaveSlots.ManualFullText").And.Contain("@SaveSlots.ManualNewButton"));
         Assert.That(page, Does.Contain("status = r.Ok ? SaveSlots.ManualSavedText : r.BlockedText;"));
         Assert.That(page, Does.Contain("else if (status != null && status != why)"), "被拒句与顶部失权句相同时只显示一行（B40 收尾）");
         Assert.That(page, Does.Contain("@if (sv.ManualFailure is { } fail)").And.Contain("@onclick=\"Retry\">@SaveSlots.RetryButton</button>"));
         Assert.That(page, Does.Contain("@onclick=\"OnBack\">@SaveSlots.BackButton</button>"));
         var menu = Web("Components", "MenuOverlay.razor");
-        var leave = menu.Substring(menu.IndexOf("private void LeaveManual()"), 120);
-        Assert.That(leave, Does.Contain("G.LeaveManualPage();").And.Contain("manualPage = false;"));
+        Assert.That(menu, Does.Contain("private void LeaveManual() => G.CloseManualPage();"), "「返回」与 ESC 同一入口");
+        var g = Web("Services", "GameSession.cs");
+        var close = g.Substring(g.IndexOf("public void CloseManualPage()"), 200);
+        Assert.That(close, Does.Contain("LeaveManualPage();").And.Contain("ManualPageOpen = false;"), "离开子页清失败与重试（Q406）");
         Assert.That(SaveSlots.ManualSavedText, Is.EqualTo("已保存到手动存档。"));
         Assert.That(SaveSlots.ManualFullText, Is.EqualTo("手动存档已满。请选择一份覆盖。"));
     }

@@ -238,7 +238,8 @@ public class B32fTests : TestBase
         outside = outside.Substring(0, outside.IndexOf("\n    }"));
         Assert.That(outside, Does.Contain("if (G.MenuHidesDisks) return;"));
         // B43：顶栏「菜单 ESC」悬停提示改由 ShellKeys.Esc 拼出（显示为 ESC），按钮仍带 data-menu-key、点击仍是 ToggleMenu
-        Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("data-menu-key aria-keyshortcuts=\"Escape\" title=\"@($\"{ShellText.Menu}（{ShellKeys.Esc}）\")\" @onclick=\"ToggleMenu\""));
+        // BM2（Q496）：悬停改为正式句 ShellKeys.MenuHover
+        Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("data-menu-key aria-keyshortcuts=\"Escape\" title=\"@ShellKeys.MenuHover\" @onclick=\"ToggleMenu\""));
         var screen = Web("Components", "GameScreen.razor");
         Assert.That(screen, Does.Contain("@if (G.IgniteMenuOpen && !battleUi && e.HasFireAt(s, s.Ground) && !e.FacOf(s, s.Ground)!.FireLit) { <IgniteMenu /> }"), "点火盘原失效条件不变");
     }

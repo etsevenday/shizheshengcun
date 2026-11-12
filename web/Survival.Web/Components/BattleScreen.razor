@@ -40,7 +40,7 @@
     var items = opts.Where(o => o.Group == "item" && CarriedFor(o) > 0).ToList();
     // B9（A10 §4.5）：瞄准中悬停合法目标时，目标生命条上画“预计”条纹——与右栏同一次 PreviewCommand（只读、不抽随机）
     _forecast = null;
-    if (aiming && G.BattleHover is int hov && aimSet.Contains(hov))
+    if (aiming && G.BattleAimTarget is int hov && aimSet.Contains(hov))
     {
         var pv = e.PreviewCommand(s, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : hov, G.BattleItem));
         if (pv.Ok && pv.Targets.Count > 0) _forecast = pv.Targets.ToDictionary(t => t.Index, t => (t.DamageMin, t.DamageMax));
@@ -72,7 +72,7 @@
             </span>
             <span class="bfs-top-btns">
                 <button type="button" class="secondary" @onclick='() => G.OpenBattleDrawer("help")' title="系统说明（只读，阅读时敌方行动暂停）">系统说明</button>
-                <button type="button" class="secondary @(G.BattleMenuOpen ? "on" : "")" @onclick="() => G.ToggleBattleMenu()" aria-keyshortcuts="Escape" title="战斗菜单（ESC）：继续、系统说明、保存并返回标题；不能脱战">@ShellText.Menu <kbd class="kc">@ShellKeys.Esc</kbd></button>
+                <button type="button" class="secondary @(G.BattleMenuOpen ? "on" : "")" @onclick="() => G.ToggleBattleMenu()" aria-keyshortcuts="Escape" title="@ShellKeys.MenuHover">@ShellText.Menu <kbd class="kc">@ShellKeys.Esc</kbd></button>
             </span>
         </header>
 
@@ -206,7 +206,7 @@
                 @if (G.MedTrayOpen)
                 {
                     <div class="bc-medtray" role="dialog" aria-label="快捷医疗">
-                        <div class="bc-medtray-head"><b>快捷医疗（药品只对自己）与战术品（每人每大回合1次）</b><button type="button" class="bx-x" aria-label="收起（Esc）" @onclick="() => G.ToggleMedTray(false)">×</button></div>
+                        <div class="bc-medtray-head"><b>快捷医疗（药品只对自己）与战术品（每人每大回合1次）</b><button type="button" class="bx-x" aria-label="收起（ESC）" @onclick="() => G.ToggleMedTray(false)">×</button></div>
                         @foreach (var m in meds)
                         {
                             var mo = m;
@@ -255,7 +255,7 @@
             }
             else if (sel != null && aiming)
             {
-                <span class="bx-hint">@AimHint(sel) · 右键/Esc 取消</span>
+                <span class="bx-hint">@AimHint(sel) · 右键/ESC 取消</span>
             }
             else if (sel != null)
             {
@@ -268,7 +268,7 @@
                 }
                 <button type="button" class="bx-go" id="bt-confirm" disabled="@(!p.Ok || locked)" title="@(p.Ok ? "点击确认才提交；同一指令只提交一次" : p.Reason)"
                         aria-keyshortcuts="Enter" @onclick="() => Exec(token)">@(sel.Action == "end_turn" ? $"确认结束行动 · 剩余{p.Ap}AP清零" : $"确认 · {ShortName(sel)} · {p.Ap}AP")<EnterCap On="@(p.Ok && !locked)" /></button>
-                <button type="button" class="bx-x" aria-label="取消（Esc）" title="取消（Esc/右键），不执行" @onclick="G.ClearBattleAction">×</button>
+                <button type="button" class="bx-x" aria-label="取消（ESC）" title="取消（ESC/右键），不执行" @onclick="G.ClearBattleAction">×</button>
             }
             else
             {
@@ -341,7 +341,7 @@
         var s = G.S;
         var b = s.Battle!;
         string N(string id) => id == GameState.PlayerId ? "你" : G.E.ActorDisplayName(s, id);
-        if (G.BattleAllyTarget == null) return "整队第1步：点要交换站位的第一名友方（可以是自己）· Esc 取消";
+        if (G.BattleAllyTarget == null) return "整队第1步：点要交换站位的第一名友方（可以是自己）· ESC 取消";
         if (G.BattleAllyTarget2 == null) return $"整队第2步：已选{N(G.BattleAllyTarget)}（{GameEngine.AllyPos(b, G.BattleAllyTarget)}号位），再点与他相邻、亮起的一名友方 · 再点{N(G.BattleAllyTarget)}重选";
         return $"整队：{N(G.BattleAllyTarget)} ⇄ {N(G.BattleAllyTarget2)}，确认后交换 · 再点任一人改选";
     }
@@ -462,7 +462,7 @@
         var note = e.IntentTargetNote(s, b, en);
         var (ico, brief, range, kind) = IntentBrief(en, shown);
         var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
-        <div @key="@("foe" + idx)" id="@($"foe-{idx}")" data-slot="@pos" data-peek="@Peek.Foe(idx)" class="anc foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx ? "hover" : "")"
+        <div @key="@("foe" + idx)" id="@($"foe-{idx}")" data-slot="@pos" data-peek="@Peek.Foe(idx)" class="anc foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx || (aiming && G.BattleAimTarget == idx) ? "hover" : "")"
              role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))"
              aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{shown}{(note != null ? "；" + note : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
              title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"

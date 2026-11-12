@@ -103,7 +103,7 @@
                     <div class="ci-head">
                         <b>@(focusB.Discovered ? focusB.Name : "尚未发现")</b>
                         <span class="ci-state">@(focusB.IsHere ? "当前" : !focusB.Discovered ? "未公开" : focusB.Path == null ? "未开通" : "可前往")@(pinned ? " · 已选中" : "")</span>
-                        @if (pinned) { <button type="button" class="ci-x" aria-label="取消选择" title="取消选择（Esc/右键）" @onclick="() => G.PickCity(null)">×</button> }
+                        @if (pinned) { <button type="button" class="ci-x" aria-label="取消选择" title="取消选择（ESC/右键）" @onclick="() => G.PickCity(null)">×</button> }
                     </div>
                     @if (focusB.IsHere)
                     {

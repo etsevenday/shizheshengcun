@@ -1262,6 +1262,16 @@ kbd { font-size: var(--fs-aux); }
 
 /* ───────────── 系统说明正文：插图行（方位图例、状态图标、指令图；开发计划 M66） ───────────── */
 .help-article { max-width: 920px; }
+/* BM2（Q495）：系统说明「键盘快捷键」分区键表 */
+.help-keys { margin: 0 0 12px; }
+.help-keys h4 { margin: 0 0 6px; font-size: var(--fs-body); font-weight: 600; color: var(--accent); }
+.help-keys dl { margin: 0; }
+.help-keys .hk-flow { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.help-keys .hk-flow .hk-row { padding: 2px 8px; border: 1px solid var(--line); border-radius: 4px; }
+.help-keys .hk-table .hk-row { display: grid; grid-template-columns: minmax(9em, 16em) 1fr; gap: 4px 12px; padding: 4px 0; border-top: 1px solid var(--line); }
+.help-keys .hk-table .hk-row:first-child { border-top: 0; }
+.help-keys dt { font-weight: 600; }
+.help-keys dd { margin: 0; line-height: 1.6; }
 .help-figs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 4px 0 12px; }
 .help-fig { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: #1f2721; }
 .hf-ico { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 5px; background: var(--paper); display: flex; align-items: center; justify-content: center; }

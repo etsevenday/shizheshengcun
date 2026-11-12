@@ -13,7 +13,7 @@
     <div class="apop-head">
         @if (Art != null) { <span class="apop-art" aria-hidden="true">@Art</span> }
         <span class="apop-title"><b>@Title</b>@if (!string.IsNullOrEmpty(Sub)) {<small>@Sub</small>}</span>
-        <button type="button" class="apop-x" aria-label="@(CloseAria ?? $"关闭{Title}，不执行")" title="关闭（Esc），不执行" @onclick="Close">×</button>
+        <button type="button" class="apop-x" aria-label="@(CloseAria ?? $"关闭{Title}，不执行")" title="关闭（ESC），不执行" @onclick="Close">×</button>
     </div>
     @if (ChildContent != null) { <div class="apop-body">@ChildContent</div> }
     @if (Actions != null) { <div class="apop-foot">@Actions</div> }

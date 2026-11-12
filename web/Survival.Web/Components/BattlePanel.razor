@@ -1,8 +1,9 @@
 @inherits GameComponent
 @inject IJSRuntime JS
 
-@* 战斗右栏“对象信息”（v0.6 §07；S14 §18.4、R03 §7.4）：只读，不执行。
-   瞄准中悬停合法目标 → 对该目标的实际预测（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）；
+@* 战斗右栏“对象信息”（v0.6 §07；S14 §18.4、R03 §7.4）：只读预测；BM2（Q497）起瞄准中目标预测区底部另有「执行{指令名} Enter」，
+   与 Enter、点亮起的合法目标同一校验与去重（取代旧「右栏绝不保留执行按钮」）。
+   瞄准中本次明确查看的合法目标（BattleAimTarget：悬停或 ←/→ 指定，移出锚点保留）→ 对该目标的实际预测（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）；
    未瞄准时显示悬停或选中的敌人详情，移开恢复已选对象；另列最近战斗记录。敌踪选择时显示敌方组成与绕行预测。 *@
 @{
     var s = G.S;
@@ -55,8 +56,9 @@ else if (b != null)
     var awaiting = e.AwaitingPlayer(s);
     var aiming = G.BattleAiming;
     var aimSet = G.AimTargets();
-    // 瞄准中：只在悬停合法目标时给出对它的预测（不预选目标、不自动攻击）；自用/无目标指令按所选指令预测
-    int? hoverTarget = aiming && G.BattleHover is int hv && aimSet.Contains(hv) ? hv : null;
+    // 瞄准中：只对本次明确查看的合法目标给出预测（不预选目标、不自动攻击）；BM2（Q497）移出锚点到右栏时保留同一目标；自用/无目标指令按所选指令预测
+    int? hoverTarget = aiming && G.BattleAimTarget is int hv && aimSet.Contains(hv) ? hv : null;
+    var aimName = aiming ? G.BattleAimConfirm().Name : "";
     var cmd = aiming
         ? BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : hoverTarget, G.BattleItem)
         : G.CurrentBattleCommand();
@@ -77,15 +79,15 @@ else if (b != null)
                 @if (o?.EffectText != null) { <p class="muted">@o.EffectText</p> }
                 @if (o?.TargetMode == "suffix") { <p class="muted">贯穿：点哪个敌人就从它的号位打到4号位，每个目标独立判命中；离起点0/1/2/3格伤害×0.65/0.50/0.35/0.25，空位也占一格、不重排。</p> }
             </div>
-            @if (G.BattleHover is int hx && !aimSet.Contains(hx) && e.BattleEnemyAt(b, hx) is BattleEnemy he && he.Alive)
+            @if (G.BattleAimTarget is int hx && !aimSet.Contains(hx) && e.BattleEnemyAt(b, hx) is BattleEnemy he && he.Alive)
             {
                 @* 试玩修复 B7c-3：悬停够不到/不可选的目标时，右栏也写原因（与执行同源的 CommandBlocked） *@
                 <div class="blocked">@($"{he.Slot}号位 {e.EnemyName(he)}：{e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, hx, G.BattleItem)) ?? "不是这个指令的目标"}")</div>
             }
-            <div class="risk none">把鼠标移到亮起的目标上，这里显示对它的实际命中率与伤害；点击亮起的目标即执行。右键或 Esc 取消，不耗AP。</div>
+            <div class="risk none">@ShellAim.Guide(aimName)</div>
             @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
         </div>
-        <div class="detail-foot">@TargetCycle(aimSet.Count)<div class="under">悬停只看预测，不扣费、不抽随机</div></div>
+        <div class="detail-foot">@TargetCycle(aimSet.Count)@AimConfirm(null)<div class="under">@ShellAim.ReadOnly</div></div>
     }
     else if (G.BattleAction != null)
     {
@@ -128,9 +130,9 @@ else if (b != null)
             @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
         </div>
         <div class="detail-foot">
-            @* S14 §18.4、R03 §7.4：提交入口在战斗区（点亮起的目标 / 操作台“确认”），这里只作完整预测，不保留执行按钮 *@
-            @if (aiming) { @TargetCycle(aimSet.Count) }
-            <div class="under">@(aiming ? "点击亮起的目标即执行；右键/Esc 取消" : $"在操作台点“确认 · {p.Title} · {p.Ap}AP”才提交；Esc 取消")</div>
+            @* S14 §18.4、R03 §7.4：无目标类指令的提交入口在战斗区操作台“确认”，这里只作完整预测；BM2（Q497）瞄准中补「执行{指令名} Enter」 *@
+            @if (aiming) { @TargetCycle(aimSet.Count) @AimConfirm(p.Ok ? null : p.Reason) }
+            <div class="under">@(aiming ? ShellAim.Guide(aimName) : ShellAim.ConsoleGuide(p.Title, p.Ap))</div>
         </div>
     }
     else if ((peekAlly ?? G.BattleAllyView) != null && G.BattleHover == null && peekFoe == null)
@@ -222,6 +224,22 @@ else if (b != null)
         <div class="bp-cycle" role="group" aria-label="切换预测目标">
             <button type="button" class="secondary" aria-keyshortcuts="ArrowLeft" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(-1)">@ShellKeys.PrevTarget <kbd class="kc kc-sym">@ShellKeys.PrevTargetCap</kbd></button>
             <button type="button" class="secondary" aria-keyshortcuts="ArrowRight" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(1)">@ShellKeys.NextTarget <kbd class="kc kc-sym">@ShellKeys.NextTargetCap</kbd></button>
+        </div>
+    };
+
+    /// <summary>
+    /// BM2（Q497）：目标预测区底部「执行{指令名} Enter」——业务名与键帽同一按钮；只在全屏战斗瞄准中出现（无所选指令的查看、无目标类指令不出现）。
+    /// 不可用时禁用并在按钮下写第一条真实原因（与上方预测里已写的同一句不重复写）；点击与回车同一入口 BattleAimSubmit。
+    /// </summary>
+    private RenderFragment AimConfirm(string? shownAbove) => __builder =>
+    {
+        if (!G.BattleFullscreen || !G.BattleAiming) return;
+        var st = G.BattleAimConfirm();
+        var token = G.BattleExecToken();
+        <div class="bp-confirm">
+            <button type="button" class="primary bp-go" data-aim-confirm aria-keyshortcuts="Enter" disabled="@(!st.Ok)" title="@st.Why"
+                    @onclick="() => G.BattleAimSubmit(token)">@ShellAim.ConfirmLabel(st.Name)<EnterCap On="@st.Ok" /></button>
+            @if (!string.IsNullOrEmpty(st.Why) && st.Why != shownAbove) { <div class="bp-why warn-text" role="status">@st.Why</div> }
         </div>
     };
 

@@ -57,7 +57,8 @@
             }
             else if (G.Running && !dlg)
             {
-                <button type="button" class="secondary cp-skip" @onclick="G.SkipAnimation" title="只跳过表现，不改变游戏时间与结果">跳过动画</button>
+                @* BM2（Q502）：常驻「跳过动画 空格」，只绑空格（app.js 按受理边界点同一按钮一次），不加中央 Enter；点击效果不变 *@
+                <button type="button" class="secondary cp-skip" data-skip-anim aria-keyshortcuts="Space" @onclick="G.SkipAnimation" title="@ShellKeys.SkipAnimTitle">@ShellKeys.SkipAnim <kbd class="kc">@ShellKeys.SpaceCap</kbd></button>
             }
             @* 附带小改：退出会作废本次成果的行动（探索/清理/采集/制作/处理尸体/移动）在退出旁常驻写明后果 *@
             <span class="cp-exit-note @(p.ExitForfeits ? "forfeit" : "")">@(exitNote ?? (p.Exit == ExitKind.None || p.Exit == ExitKind.CompletesCurrentTransaction || p.ExitForfeits ? p.ExitNote : ""))</span>

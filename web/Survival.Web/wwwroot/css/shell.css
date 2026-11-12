@@ -473,6 +473,10 @@ button:is(:disabled, .gate-off, .off) .kc, button[aria-disabled="true"] .kc { co
 .bp-cycle { display: flex; gap: 6px; margin-bottom: 2px; }
 .bp-cycle .secondary { flex: 1 1 0; width: auto; min-height: 26px; padding: 0 6px; font-size: var(--fs-aux); line-height: 1.2; white-space: nowrap; }
 .bfs-info .detail-foot:has(.bp-cycle) { margin-top: 4px; }
+/* BM2（Q497）：目标预测区「执行{指令名} Enter」与不可用原因 */
+.bp-confirm { margin: 4px 0 2px; }
+.bp-confirm .bp-go { min-height: 32px; padding: 4px 8px; line-height: 1.25; }
+.bp-confirm .bp-why { margin-top: 2px; font-size: var(--fs-aux); line-height: 1.35; }
 @media (max-height: 800px) { .bfs-info .detail-foot:has(.bp-cycle) .under { line-height: 1.3; } }
 /* 方向键帽：像素字体里的箭头只有一短横，改用系统字体画箭头 */
 .kc.kc-sym, .wasteland kbd.kc.kc-sym { font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "Apple Symbols", system-ui, sans-serif; font-size: var(--fs-body); font-weight: 700; line-height: 16px; padding: 0 3px; }

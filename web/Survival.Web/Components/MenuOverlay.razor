@@ -56,7 +56,7 @@
     </div>
     return;
 }
-@if (manualPage && !dead)
+@if (G.ManualPageOpen && !dead)
 {
     <ManualSavePage OnBack="LeaveManual" />
     return;
@@ -679,20 +679,11 @@
         G.SetMenu(false);
     }
 
-    private bool manualPage;
+    /// <summary>进入手动存档子页（Q405）。子页状态在会话里（BM2 Q500：ESC 先回菜单首页，由 GameScreen 的 ESC 路由同一处理）。</summary>
+    private void OpenManual() => G.OpenManualPage();
 
-    private void OpenManual()
-    {
-        G.LeaveManualPage();
-        manualPage = true;
-    }
-
-    /// <summary>手动存档子页「返回」回到游戏菜单（Q405）；离开时清除该次失败与重试（Q406）。</summary>
-    private void LeaveManual()
-    {
-        G.LeaveManualPage();
-        manualPage = false;
-    }
+    /// <summary>手动存档子页「返回」回到游戏菜单（Q405）；离开时清除该次失败与重试（Q406）。与 ESC 同一入口 CloseManualPage。</summary>
+    private void LeaveManual() => G.CloseManualPage();
 
     /// <summary>终止远征确认窗（PXd）：先收菜单再开确认窗。</summary>
     private void OpenAbort()
@@ -706,9 +697,14 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // 菜单打开时键盘焦点进菜单：回车／空格落在菜单自己的按钮上，不会推进背后的对白或下达战斗指令（Q322「菜单不会消费对白继续键」）
-        if (firstRender)
+        // BM2（Q500）：从手动存档子页（「返回」或 ESC）回到菜单首页时，焦点同样回到菜单底部关闭键
+        var backFromManual = _wasManual && !G.ManualPageOpen;
+        _wasManual = G.ManualPageOpen;
+        if (firstRender || backFromManual)
         {
             try { await _first.FocusAsync(); } catch (Exception) { /* 渲染尚未完成或已关闭 */ }
         }
     }
+
+    private bool _wasManual;
 }
