@@ -33,19 +33,7 @@ public class BM1B42HoverTests : TestBase
         Assert.That(shell, Does.Contain("public static string Member(string actorId) => PeekKey.Make(PeekKey.Member, actorId);"));
     }
 
-    /// <summary>Q483-A01：已穿戴槽行与队员行是热区（右栏里只放行这两类，data-peek-rail），空槽不造对象；行内按钮与展开的随身物品不算热区；可键盘聚焦。</summary>
-    [Test]
-    public void Q483_CharacterPageRowsAreHotZones()
-    {
-        var c = Web("Components/CharacterPanel.razor");
-        Assert.That(c, Does.Contain("data-peek=\"@(it != null ? Peek.Worn(it.InstanceId) : null)\" data-peek-rail=\"@(it != null ? \"\" : null)\" tabindex=\"@(it != null ? \"0\" : null)\""), "只有已穿戴槽是入口，空槽不造对象");
-        Assert.That(c, Does.Contain("<span class=\"eq-btns\" data-peek=\"\">"), "卸下、维修、现场修补、放当前地面按钮区不触发");
-        var p = Web("Components/PartyPanel.razor");
-        Assert.That(p, Does.Contain("data-actor=\"@id\" data-peek=\"@Peek.Member(id)\" data-peek-rail tabindex=\"0\""));
-        Assert.That(p, Does.Contain("<span class=\"party-acts\" data-peek=\"\">"));
-        Assert.That(p, Does.Contain("party-items-btn\" data-peek=\"\""), "展开随身物品按钮不触发");
-        Assert.That(p, Does.Contain("data-party-items=\"@id\" data-peek=\"\""), "展开的随身物品列表不触发");
-    }
+    // Q483-A01 原「已穿戴槽行与队员行是悬停热区」已由 B44（Q492 选 B）取代：触发方式改为点击名称，见 B44NameViewTests。
 
     /// <summary>Q483-A01：有效性只看对象本身（仍穿在同行／候补身上、成员仍在队伍），来源行因右栏换页卸载不算失效；全屏战斗不受理。</summary>
     [Test]
@@ -81,7 +69,7 @@ public class BM1B42HoverTests : TestBase
 
     // ───────────── Q485 右栏对象详情内嵌卡 ─────────────
 
-    /// <summary>Q485-A01：右栏里内嵌的对象卡悬停或键盘聚焦都不替换整页（JS 在右栏内只放行 data-peek-rail）；右栏外的嵌套对象仍按最内层；原点击不变。</summary>
+    /// <summary>Q485-A01：右栏里内嵌的对象卡悬停或键盘聚焦都不替换整页（B44 起右栏内一律不发送悬停，人物页两类行改为点名称）；右栏外的嵌套对象仍按最内层；原点击不变。</summary>
     [Test]
     public void Q485_EmbeddedCardsInRailDoNotReplace()
     {
@@ -89,7 +77,7 @@ public class BM1B42HoverTests : TestBase
         var i = js.IndexOf("window.survivalPeek", StringComparison.Ordinal);
         var peek = js.Substring(i);
         var hot = peek.Substring(peek.IndexOf("function hotOf(t)", StringComparison.Ordinal), 600);
-        Assert.That(hot, Does.Contain("if (el.closest('[data-detail-rail]') && !el.hasAttribute('data-peek-rail')) return null;"));
+        Assert.That(hot, Does.Contain("if (el.closest('[data-detail-rail]')) return null;"));
         Assert.That(peek, Does.Contain("var el = hotOf(ev.target);"), "鼠标走同一过滤");
         Assert.That(peek, Does.Contain("var el = hotOf(t);"), "键盘聚焦走同一过滤");
         Assert.That(Web("Components/DetailPanel.razor"), Does.Contain("<aside class=\"panel detail\" data-detail-rail"));
@@ -144,7 +132,7 @@ public class BM1B42HoverTests : TestBase
         Assert.That(fc, Does.Contain("if (Kind != \"workshops\") { G.OpenPanel(\"craft\", Kind); return; }"), "原点击照旧打开对应配方");
         Assert.That(fc, Does.Contain("G.OpenPanel(\"craft\", \"build_workbench\");"));
         Assert.That(fc, Does.Contain("PeekExtra=\"@(buildRecipe == null ? null : BuildConditions(buildRecipe))\""));
-        Assert.That(fc, Does.Contain("=> @<CraftOverlay Part=\"detail\" PeekRecipe=\"@recipeId\" />;"), "与点击后右栏同一份详细预估");
+        Assert.That(fc, Does.Contain("=> @<CraftOverlay Part=\"detail\" PeekRecipe=\"@recipeId\" UnbuiltPeek=\"true\" />;"), "与点击后右栏同一份详细预估（B44 Q493：只换底部脚注）");
         Assert.That(fc, Does.Contain("Tooltip=\"@(built ? effect : $\"{title}未建造：{need}\")\""), "原说明句保留");
         Assert.That(fc, Does.Contain("\"点击查看建造条件\"").And.Contain("\"需先建成遮蔽棚\"").And.Contain("\"点击在“营地建造”里建\""));
         var oc = Web("Components/ObjectCard.razor");
@@ -156,7 +144,7 @@ public class BM1B42HoverTests : TestBase
         // 同源详细预估本身只读：不给开工键，悬停的别的配方按点选初值、不改所选配方／份数／材料槽
         var co = Web("Components/CraftOverlay.razor");
         Assert.That(co, Does.Contain("var peekOn = Part != \"center\" && PeekRecipe != null;"));
-        Assert.That(co, Does.Contain("Confirmable=\"false\" FootNote=\"@(rc.IsDrying"), "配方详情不给确认键");
+        Assert.That(co, Does.Contain("Confirmable=\"false\" FootNote=\"@(UnbuiltPeek ? PeekText.UnbuiltBuildFootNote : rc.IsDrying"), "配方详情不给确认键");
         var at = co.IndexOf("@code {", StringComparison.Ordinal);
         var detailPart = co.Substring(co.IndexOf("else if (proc != null)", StringComparison.Ordinal), at - co.IndexOf("else if (proc != null)", StringComparison.Ordinal));
         Assert.That(detailPart, Does.Not.Contain("G.CraftRecipe =").And.Not.Contain("G.CraftBatch =").And.Not.Contain("StartAction"), "右栏部分不改制作选择、不开工");

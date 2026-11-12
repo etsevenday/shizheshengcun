@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @* 右栏（基础UI布局与操作修订案 v0.7 第 6.1 节；S14 §11.1 起执行进度移到中央推进条）：
    固定两个页签「对象」「人物」（B31b R54，逐字稿 §2 右栏）→ 详情区；对象页顶部区标题「对象详情」。
@@ -35,7 +36,7 @@
         <button type="button" role="tab" aria-selected="@(shownTab == DetailTab.Object)" class="@(shownTab == DetailTab.Object ? "on" : "")"
                 @onclick="() => G.SetDetailTab(DetailTab.Object)">@ShellText.ObjectTab</button>
         <button type="button" role="tab" aria-selected="@(shownTab == DetailTab.Character)" class="@(shownTab == DetailTab.Character ? "on" : "")"
-                @onclick="() => G.SetDetailTab(DetailTab.Character)">@ShellText.CharacterTab</button>
+                data-tab-character @onclick="() => G.SetDetailTab(DetailTab.Character)">@ShellText.CharacterTab</button>
     </div>
     @if (shownTab == DetailTab.Object && !G.BattleFullscreen)
     {
@@ -105,6 +106,15 @@
     }
 
     private void OnPeekChanged() => InvokeAsync(StateHasChanged);
+
+    // B44（S14 Q492）：点人物页装备名／队员名进入详情后焦点交给详情标题；点「人物」返回时焦点回到原名称（已消失回「人物」页签）。
+    // 焦点只在右栏里移动，名称与标题都不是悬停热区，恢复焦点不再进入详情。
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (G.TakeRailFocus() is not string req) return;
+        try { await JS.InvokeVoidAsync("survivalPeek.railFocus", req); }
+        catch (JSException) { /* 旧缓存 app.js 没有 railFocus：只是不移焦点 */ }
+    }
 
     public override void Dispose()
     {

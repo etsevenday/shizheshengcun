@@ -422,8 +422,16 @@
 
 /* BM1（Q483）：右栏人物页队员行悬停的只读队员详情——沿队伍行原有文字逐行排列 */
 .member-peek .member-lines { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-aux); line-height: 1.45; }
-/* BM1（Q483）：人物页装备槽行、队员行可键盘聚焦（同悬停入口），聚焦时只描框 */
-.detail .equip-row[data-peek-rail]:focus-visible, .detail .party-row[data-peek-rail]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* B44（S14 Q492 选 B，取代 BM1 Q483 的整行悬停即切）：人物页已穿戴槽行、队员行悬停或其中控件有焦点时只高亮所在行，不换页；
+   实际物品名／姓名是查看控件（.peek-name）：外观沿原名称文字（品质色、粗细不变），指着时下划线，聚焦时描框并在名称旁显示「ENTER」键帽 */
+.detail :is(.equip-row:not(.empty), .party-row):is(:hover, :focus-within) { background: #ffffff0f; }
+.detail .peek-name { display: inline; margin: 0; padding: 0; min-height: 0; background: none; border: 0; border-radius: 2px; box-shadow: none; text-align: left; line-height: inherit; cursor: pointer; }
+.detail .equip-row .peek-name { padding-top: 2px; }
+.detail .peek-name:hover { text-decoration: underline; text-underline-offset: 3px; }
+.detail .peek-name .peek-name-cap { display: none; margin-left: 4px; }
+.detail .peek-name:focus .peek-name-cap { display: inline-block; }
+.detail .peek-name:focus, .wasteland .detail .peek-name:focus { outline: 2px solid var(--ink2-light, #e0b979); outline-offset: 1px; }
+.detail .peek-detail h2[tabindex]:focus:not(:focus-visible) { outline: none; }
 /* BM1（Q487）：未建设施悬停——原标题、角标与说明在上（不伸缩），下接与点击同源的建造条件详情（自带滚动区） */
 .peek-card-head { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
 .peek-card-head .op-head p { margin: 0; }

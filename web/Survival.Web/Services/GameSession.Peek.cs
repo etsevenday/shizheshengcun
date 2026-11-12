@@ -99,7 +99,44 @@ public sealed partial class GameSession
     private void ResetPeek()
     {
         _peek.Clear();
+        _nameView.Reset();
+        _railFocus = null;
         _peekEpoch++;
+    }
+
+    // ───── B44（S14 Q492 选 B）：人物页装备名／队员名点击才查看 ─────
+
+    private readonly PeekNameView _nameView = new();
+    /// <summary>右栏下一次绘制后要交出焦点的目标：「title」为详情标题，「name:{键}」为人物页原名称；null 为不动焦点。</summary>
+    private string? _railFocus;
+
+    /// <summary>
+    /// B44（Q492）：点击或用 Enter／空格激活右栏人物页的已穿戴装备名、队员名——临时显示该对象原有的只读详情（与原 Q483 同一事实，页签亮「对象」，
+    /// 底层仍记人物页），键盘焦点交给详情标题。与悬停同一受理条件（对白锁、菜单、数量框、对象失效时不受理）；
+    /// 不改真正选中、当前成员、队伍展开、任务、引导、装备或整备草稿。
+    /// </summary>
+    public void ViewByName(string? key)
+    {
+        if (PeekLocked || PendingDrop != null || !PeekNameView.Allowed(key) || !PeekValid(key!)) return;
+        _peek.Enter(key, PeekContext());
+        _nameView.Open(key);
+        _railFocus = "title";
+        PeekSerial++;
+        Notify();
+    }
+
+    /// <summary>点「人物」页签返回时：右栏仍在显示由名称打开的那一项就让焦点回到原名称（原名称已消失由网页脚本回「人物」页签）。</summary>
+    private void ReturnFromNameView()
+    {
+        if (_nameView.Return(_peek.Key) is string k) _railFocus = "name:" + k;
+    }
+
+    /// <summary>右栏绘制后取走一次焦点请求（DetailPanel 交给 survivalPeek.railFocus）。</summary>
+    public string? TakeRailFocus()
+    {
+        var r = _railFocus;
+        _railFocus = null;
+        return r;
     }
 
     /// <summary>

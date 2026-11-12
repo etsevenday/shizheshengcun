@@ -459,13 +459,18 @@ else if (proc != null)
 else
 {
     <PreviewView Request="request" Eyebrow="@($"手工制作 · {(rc.IsBuild ? "营地设施" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)"
-                 Confirmable="false" FootNote="@(rc.IsDrying ? "晾制在设施栏“晾制架”卡的面板里选空位投料；0分钟投料、不占行动，离开也继续" : e.IsStationBatchRecipe(rc) ? $"在中间配方卡下方点“投料（{batch}批）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
+                 Confirmable="false" FootNote="@(UnbuiltPeek ? PeekText.UnbuiltBuildFootNote : rc.IsDrying ? "晾制在设施栏“晾制架”卡的面板里选空位投料；0分钟投料、不占行动，离开也继续" : e.IsStationBatchRecipe(rc) ? $"在中间配方卡下方点“投料（{batch}批）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
 }
 
 @code {
     [Parameter] public string Part { get; set; } = "center";
     /// <summary>B42：右栏悬停查看的配方或处理说明（"proc:" 前缀），只读；null 读当前所选。</summary>
     [Parameter] public string? PeekRecipe { get; set; }
+    /// <summary>
+    /// B44（S14 Q493 选 A）：主桌面悬停未建设施时的只读建造条件（FacilityCard.BuildConditions）——此时中间没有配方卡，
+    /// 底部脚注只留「时间为预计值」；点击进入制作面板后的右栏仍是原完整脚注。
+    /// </summary>
+    [Parameter] public bool UnbuiltPeek { get; set; }
 
     /// <summary>处理说明条目在 CraftRecipe 里的前缀，避免与配方 ID 混淆。</summary>
     public const string ProcPrefix = "proc:";

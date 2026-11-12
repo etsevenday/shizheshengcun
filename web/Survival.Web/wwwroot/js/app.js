@@ -200,6 +200,7 @@ window.survival = {
       return !!el.closest('button, a[href], [role=button], [role=radio], [role=tab], [role=checkbox], [role=option], input, summary');
     }
     function shown(el) { return !!(el && (el.offsetWidth || el.offsetHeight)); }
+    function focusVisible(el) { try { return !!el.matches(':focus-visible'); } catch (e) { return false; } }
     // 当前最上层的模态层（数量框、强制整理与确认窗、居中局部盘）；没有时为 null
     function topModal() {
       var sels = ['.modal-back', '.overflow-layer', '.disk-scrim'];
@@ -334,7 +335,9 @@ window.survival = {
       // 局部唯一主确认（B43）：数量框、转移条、整备比较／交接、就近盘、强制整理与确认窗、二级面板……
       // 焦点停在被打开着的二级面板盖住的背后控件上（如先点过地面卡再按 R）时，当作焦点不在任何控件上，归该面板
       var fae = document.activeElement, pnl = topPanel();
-      if (pnl && fae && fae !== document.body && control(fae) && !pnl.contains(fae) && !fae.closest('.top, .apop, .modal, .overflow-layer')) fae = null;
+      // B44（Q492）：右栏不被二级面板盖住，键盘 Tab 聚焦在右栏控件（人物页名称与行内按钮）上时回车只作用该控件，不穿透到面板的唯一确认
+      if (pnl && fae && fae !== document.body && control(fae) && !pnl.contains(fae) && !fae.closest('.top, .apop, .modal, .overflow-layer')
+          && !(fae.closest('[data-detail-rail]') && (focusVisible(fae) || fae.hasAttribute('data-peek-name')))) fae = null;
       if (k === 'Enter' && !mod && !control(fae)) {
         var sc = enterScope(fae);
         if (sc) {
@@ -975,9 +978,10 @@ window.survivalPeek = (function () {
   function hotOf(t) {
     var el = t && t.closest ? t.closest('[data-peek]') : null;
     if (!el || el.closest('[inert]')) return null;
-    // BM1（Q485）：右栏（data-detail-rail）里内嵌的对象卡（锅、水、食材等）悬停或键盘聚焦都不替换整页，只按原点击进入；
-    // 右栏「人物」页的已穿戴装备槽行与队员行（data-peek-rail）按 Q483 例外。右栏之外的嵌套对象仍按最内层
-    if (el.closest('[data-detail-rail]') && !el.hasAttribute('data-peek-rail')) return null;
+    // BM1（Q485）：右栏（data-detail-rail）里内嵌的对象卡（锅、水、食材等）悬停或键盘聚焦都不替换整页，只按原点击进入。
+    // B44（Q492 取代 Q483 的悬停即切）：右栏「人物」页的已穿戴装备槽行与队员行也不再是悬停热区（悬停只高亮），
+    // 点击或激活名称（data-peek-name）才查看。右栏之外的嵌套对象仍按最内层
+    if (el.closest('[data-detail-rail]')) return null;
     return el;
   }
   function busy() {
@@ -1017,6 +1021,22 @@ window.survivalPeek = (function () {
           host.querySelectorAll('*').forEach(function (el) { if (el.scrollTop > 0) el.scrollTop = 0; });
         });
       } catch (e) { }
+    },
+    /* B44（S14 Q492）：右栏焦点交接。'title'：点名称进入只读详情后焦点交给详情标题；'name:{键}'：点「人物」返回后焦点回到原名称，
+       原名称已不在（卸下、离队等）时回「人物」页签。名称与标题都不是悬停热区，聚焦它们不会再进入详情 */
+    railFocus: function (req) {
+      var rail = document.querySelector('[data-detail-rail]');
+      if (!rail || !req) return;
+      var el = null;
+      if (req === 'title') {
+        el = rail.querySelector('[data-peek-shown] h2');
+        if (el && !el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+      } else if (req.indexOf('name:') === 0) {
+        var k = req.substring(5);
+        el = Array.prototype.filter.call(rail.querySelectorAll('[data-peek-name]'), function (x) { return x.getAttribute('data-peek-name') === k; })[0]
+          || rail.querySelector('[data-tab-character]');
+      }
+      if (el) { try { el.focus({ preventScroll: false }); } catch (e) { } }
     },
     init: function (ref) {
       net = ref;

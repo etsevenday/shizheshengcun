@@ -119,12 +119,62 @@ namespace Survival.Core.Engine
             TryParse(key, out _, out var p) && i < p.Length && p[i].Length > 0 ? p[i] : null;
     }
 
+    /// <summary>
+    /// B44（S14「BM1 Q492—Q494 人物页入口与悬停版文案」Q492 选 B，取代 Q483 的悬停／聚焦即切）：右栏「人物」页的已穿戴装备名、队员名
+    /// 是独立的查看控件——悬停或仅聚焦只高亮、不换页；点击（或标准 Enter／空格激活）才临时显示该对象原有的只读详情（页签亮「对象」，底层仍是人物页）。
+    /// 记下「由名称主动打开」的对象键：读者点「人物」页签返回时，若右栏仍在显示这一项，焦点回到原名称（已消失则回「人物」页签）；
+    /// 恢复焦点本身不再进入详情。只是界面显示状态，不进存档。
+    /// </summary>
+    public sealed class PeekNameView
+    {
+        /// <summary>焦点在名称控件上时名称旁的键帽（逐字稿 Q492：旁边可见键帽「ENTER」）。</summary>
+        public const string Cap = "ENTER";
+
+        /// <summary>名称控件的可访问名称（逐字稿 Q492：装备「查看{物品名}详情」，队员「查看{姓名}详情」）。</summary>
+        public static string Label(string name) => $"查看{name}详情";
+
+        /// <summary>只有人物页的已穿戴装备（<see cref="PeekKey.Worn"/>）与队员（<see cref="PeekKey.Member"/>）有名称查看入口。</summary>
+        public static bool Allowed(string? key) => PeekKey.KindOf(key) is PeekKey.Worn or PeekKey.Member;
+
+        /// <summary>由名称主动打开、尚未返回的对象键；null 为没有。</summary>
+        public string? Key { get; private set; }
+
+        /// <summary>点击或激活名称：记下对象键（不是这两类键时不受理，返回 false）。</summary>
+        public bool Open(string? key)
+        {
+            if (!Allowed(key)) return false;
+            Key = key;
+            return true;
+        }
+
+        /// <summary>
+        /// 点「人物」页签返回：右栏此刻显示的仍是由名称打开的那一项（<paramref name="shownKey"/>）时，返回该键（焦点回到原名称）；
+        /// 已被别的悬停替换或已清掉时返回 null（不恢复焦点）。无论结果如何都结束记录。
+        /// </summary>
+        public string? Return(string? shownKey)
+        {
+            var k = Key != null && Key == shownKey ? Key : null;
+            Key = null;
+            return k;
+        }
+
+        /// <summary>读档、新局等：作废记录。</summary>
+        public void Reset() => Key = null;
+    }
+
     /// <summary>BM1（S14 Q486 选 A）：没有独立详情组件的公开条目在右栏的「说明」与「副标」去重。</summary>
     public static class PeekText
     {
         /// <summary>
+        /// B44（S14 Q493 选 A）：未建设施悬停版建造条件详情底部的脚注——去掉「在中间配方卡下方点"开始建造"」指引及连接的分号，逐字只留这一句。
+        /// 点击进入制作面板后的右栏原脚注不变。
+        /// </summary>
+        public const string UnbuiltBuildFootNote = "时间为预计值";
+
+        /// <summary>
         /// 副标是否与说明重复：两段各去首尾空白后都非空，且逐字相同或任一句整段包含另一句时为 true（只留说明行）。
         /// 说明为空、副标为空或互不包含时为 false（副标照常显示）。不做近义推断、拆词或跨字段比较。
+        /// B44（Q494 选 A，维持 Q486）：副标末尾「（另N条）」等计数后缀是原显示内容，比较前不剥离。
         /// </summary>
         public static bool SubRepeatsDesc(string? desc, string? sub)
         {

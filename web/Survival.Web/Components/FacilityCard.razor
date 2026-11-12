@@ -33,7 +33,7 @@
     [Parameter, EditorRequired] public string Kind { get; set; } = "shelter";
 
     /// <summary>BM1（Q487）：与点击后右栏同一份制作详细预估（CraftOverlay 右栏部分，悬停只读：不改所选配方、份数与材料槽）。</summary>
-    private static RenderFragment BuildConditions(string recipeId) => @<CraftOverlay Part="detail" PeekRecipe="@recipeId" />;
+    private static RenderFragment BuildConditions(string recipeId) => @<CraftOverlay Part="detail" PeekRecipe="@recipeId" UnbuiltPeek="true" />;
 
     private void Open()
     {
