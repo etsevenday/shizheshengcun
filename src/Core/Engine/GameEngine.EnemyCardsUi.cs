@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Survival.Core.Config;
 using Survival.Core.State;
 
 namespace Survival.Core.Engine
@@ -46,18 +48,49 @@ namespace Survival.Core.Engine
             string.IsNullOrEmpty(cardKey) ? null : EnemyCardsHere(s).FirstOrDefault(c => c.Key == cardKey);
 
         /// <summary>
-        /// 敌踪卡悬停（Q446 ⑥）：常驻、固定战、可选强敌复用脚注句，加该卡真实状态句（<see cref="CardApproachStatus"/>）；固定卡补必须战胜说明
-        /// （可选卡「由你决定何时处理」就在它的状态句里）。按行返回，界面自行排版。
-        /// 随机组卡：Q539 未答，没有专用悬停句，返回空表（TODO Q539：答复后按原句补）。
+        /// 敌踪卡悬停（Q446 ⑥、Q539、Q550、Q551）：按行返回，界面自行排版。顺序：通用句 → 关键句（固定关键敌人，含教学卡；Q550）
+        /// → 可选强敌特殊掉落说明（Q551）→ 该卡真实状态句（<see cref="CardApproachStatus"/>）。随机组卡也复用通用句再接同一状态句（Q539）。
+        /// 可选卡「由你决定何时处理」就在它的状态句里；普通常驻、随机组、可选强敌不补关键句。
         /// </summary>
         public List<string> EnemyCardHoverLines(GameState s, EnemyCardView card)
         {
-            var lines = new List<string>();
-            if (card.Kind == "group") return lines;   // TODO Q539：随机组卡的悬停句等策划答复
-            lines.Add(EnemyCardFootnote);
-            if (card.Kind == "fixed") lines.Add(KeyEnemyDetailNote);
+            var lines = new List<string> { EnemyCardFootnote };
+            if (card.KeyEnemy) lines.Add(KeyEnemyDetailNote);
+            if (EliteDropNote(card) is string drop) lines.Add(drop);
             if (CardApproachStatus(s, card) is string st) lines.Add(st);
             return lines;
+        }
+
+        /// <summary>
+        /// 卡面第一副标的成员名单（Q539：随机组卡照固定卡格式）：锁定名单原序的当前存活真实成员公开名，以「、」连接，同名不合并。
+        /// 只给随机组卡与固定战卡，其余为 null。
+        /// </summary>
+        public string? EnemyCardMemberNames(EnemyCardView card) =>
+            card.Kind is "group" or "fixed" ? string.Join("、", card.Members.Select(w => _enemies[w.EnemyId].Name)) : null;
+
+        /// <summary>
+        /// 同卡撤退保护的长句（Q538；逐字稿 B41e Q537—Q541 补充表）：只在该卡自己的撤退保护有效时给出，放敌踪详情与居中操作盘的主动接近风险区；
+        /// 剩余时长取同一真实截止减当前世界时间，沿 Clock.Duration 原格式；到期为 null。旧档历史全地点保护不套此句。
+        /// </summary>
+        public string? CardGuardNote(GameState s, EnemyCardView card)
+        {
+            if (card.Optional) return null;
+            var g = CardTimer(s, card.Key)?.GuardUntil;
+            return g is int until && until > s.GameMinute ? $"此敌踪撤退保护剩余{Clock.Duration(until - s.GameMinute)}，期间可主动处理。" : null;
+        }
+
+        /// <summary>
+        /// 新版可选强敌卡的特殊掉落说明（Q551；Q446 ⑤）：卡悬停与敌踪详情两处同源。沿旧告示说明的「可选强敌 · 单局一次」与特殊掉落片段，
+        /// 概率分支的「首次接战时抽定」改为「首次处理时抽定」，100% 分支沿原短句；不写旧「已交过手」前缀，不揭示锁定命中。只读，不生成敌人、不抽签。
+        /// 不是可选强敌卡为 null。
+        /// </summary>
+        public string? EliteDropNote(EnemyCardView card)
+        {
+            if (card.Kind != "elite" || !(EliteConfig(card.Key.Substring(ElitePrefix.Length)) is LegacyEliteConfig c)) return null;
+            var drop = c.RewardChance >= 1
+                ? $"特殊掉落{ItemName(c.RewardItemId)}×{c.RewardCount}"
+                : $"特殊掉落{ItemName(c.RewardItemId)}×{c.RewardCount}（{Fmt.Pct(c.RewardChance)}，首次处理时抽定）";
+            return "可选强敌 · 单局一次 · " + drop;
         }
 
         /// <summary>
@@ -80,5 +113,100 @@ namespace Survival.Core.Engine
             var group = EnemyCardPreviewMembers(s, card).Select(m => m.Enemy ?? new WorldEnemy { EnemyId = m.EnemyId }).ToList();
             return FearNote(s, group, evadeFail ? FearEncounter : FearApproach);
         }
+
+        /// <summary>
+        /// 可躲避卡的躲避失败受惊行（Q549：整卡每情境一行；逐字稿 B41e1 Q549—Q551 补充表「躲避失败时：{原受惊预览}」），按失败入战 1.0 情境。
+        /// 固定关键敌人不能躲避，为 null。
+        /// </summary>
+        public string? EvadeFailFearLine(GameState s, EnemyCardView card) =>
+            card.KeyEnemy ? null : $"{EvadeFailFearPrefix}：{EnemyCardFearNote(s, card, true)}";
+
+        // ───────────── 练习盘（逐字稿 B41「队长与练习潜行」；Q540） ─────────────
+
+        /// <summary>逐字稿「队长与练习潜行」各字段原句。</summary>
+        public const string PracticeTitle = "练习潜行";
+        public const string PracticeActorLabel = "练习者";
+        public const string PracticeNote = "练习按等待消耗身体状态。做满30分钟才获得经验，退出不退已耗时间。";
+        public const string PracticeStart = "开始练习";
+        public const string PracticeBodyLabel = "真实身体预估";
+
+        /// <summary>逐字稿「时长字段及值」：耗时30分钟（分钟取配置 encounters.stealth.practiceMinutes）。</summary>
+        public string PracticeMinutesText => $"耗时{Config.Encounters.Stealth.PracticeMinutes}分钟";
+
+        /// <summary>练习盘可选的练习者：主角与同地同区存活的同行者（同行队伍原顺序，主角在前）。</summary>
+        public List<string> PracticeCandidates(GameState s) =>
+            new[] { GameState.PlayerId }.Concat(s.Party.Where(id => id != GameState.PlayerId)).Where(id => SquadMemberValid(s, id)).ToList();
+
+        /// <summary>
+        /// 练习者本人此刻的等待身体费率（Q540）：按该人当前状态、所在地点与装备修正算一段等待（ComputeSegment，与真实练习每段同源）。
+        /// 只读，不扣费。练习者不存在为 null。
+        /// </summary>
+        public RateBlock? PracticeBodyRates(GameState s, string actorId)
+        {
+            if (!s.Actors.TryGetValue(actorId, out var a)) return null;
+            return ComputeSegment(s, new ActionState { Type = ActionType.Wait }, a).Rates;
+        }
+
+        /// <summary>
+        /// 练习盘「真实身体预估」一行（Q540；逐字稿「等待期间每小时 {变化列表}」「等待期间每小时 无变化」）：饱食、水分、体力、清醒、精神原顺序，
+        /// 非零项用原带正负号精度、空格连接。每世界小时速率，不是 30 分钟后的值。练习者不存在为 null。
+        /// </summary>
+        public string? PracticeBodyRateText(GameState s, string actorId)
+        {
+            if (!(PracticeBodyRates(s, actorId) is RateBlock r)) return null;
+            var parts = new[] { ("饱食", r.Satiety), ("水分", r.Hydration), ("体力", r.Energy), ("清醒", r.Wakefulness), ("精神", r.Morale) }
+                .Where(x => x.Item2 != 0).Select(x => x.Item1 + Fmt.SignedT(x.Item2)).ToList();
+            return "等待期间每小时 " + (parts.Count == 0 ? "无变化" : string.Join(" ", parts));
+        }
+
+        // ───────────── 队长（逐字稿 B41「队长与练习潜行」） ─────────────
+
+        /// <summary>逐字稿「编队队长标签」「队长说明」。</summary>
+        public const string SquadLeaderLabel = "小队队长";
+        public const string SquadLeaderNote = "潜行和躲避使用小队队长的潜行等级、清醒和精神进行判定。";
+
+        // ───────────── 先手显示（R05 Q537；逐字稿 B41「先手说明与攻击预览」、B41e Q537—Q541 补充表） ─────────────
+
+        /// <summary>逐字稿「角色仍有伤害资格的状态」。</summary>
+        public const string FirstStrikeReadyText = "先手伤害加成可用。";
+
+        /// <summary>括注里的先手项「先手×1.5」（倍率取配置 encounters.firstStrike）。</summary>
+        public static string FirstStrikeTag(double factor) => $"先手×{Fmt.T(factor)}";
+
+        /// <summary>
+        /// 某名参战者本轮有效速度里的先手倍率（Q537、R05 Q422）：本场先手方的开场参战者在第一完整回合为配置倍率，中途增援与其余情况为 1。
+        /// key 为我方人员 ID 或敌方 "e:世界ID"。与行动队列同源，只读。
+        /// </summary>
+        public double FirstStrikeRoundSpeedFactor(BattleState b, string key)
+        {
+            if (key.StartsWith("e:"))
+            {
+                var e = b.Enemies.FirstOrDefault(x => FirstStrikeEnemyKey(x.WorldId) == key);
+                return e != null && e.JoinRound <= 1 ? FirstStrikeSpeedFactor(b, FirstStrikeEnemy) : 1;
+            }
+            return FirstStrikeSpeedFactor(b, FirstStrikeAlly);
+        }
+
+        /// <summary>敌人的先手键（界面查 FirstStrikeReady、FirstStrikeRoundSpeedFactor 用）。</summary>
+        public static string FirstStrikeKeyOf(BattleEnemy e) => FirstStrikeEnemyKey(e.WorldId);
+
+        /// <summary>敌人本轮有效速度（Q537：含第一完整回合的先手×1.5，与行动队列同源）与括注；不适用先手时括注为空。</summary>
+        public (double Speed, string Note) EnemyRoundSpeed(BattleState b, BattleEnemy e)
+        {
+            var f = FirstStrikeRoundSpeedFactor(b, FirstStrikeEnemyKey(e.WorldId));
+            return (EnemySpeedWithFirstStrike(e, f), f > 1 ? $"（含{FirstStrikeTag(f)}）" : "");
+        }
+
+        // ───────────── Q446 ⑩ 生存提示第 13 条 ─────────────
+
+        /// <summary>生存提示第 13 条旧分句（配置 progress.tips）。</summary>
+        public const string TipOldEncounterClause = "可以接敌，也可以绕行10分钟。";
+
+        /// <summary>
+        /// 生存提示的显示文本（Q446 ⑩【交开发方定】最小换词）：新版敌踪下把旧「可以接敌，也可以绕行10分钟。」换成「可以主动接近、潜行接近或躲避。」；
+        /// 其余提示与开关关时原样。
+        /// </summary>
+        public string TipForState(GameState s, string tip) =>
+            CardsV2(s) && tip.EndsWith(TipOldEncounterClause) ? tip.Substring(0, tip.Length - TipOldEncounterClause.Length) + "可以主动接近、潜行接近或躲避。" : tip;
     }
 }

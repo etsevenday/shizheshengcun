@@ -98,7 +98,7 @@ public class B41e1EnemyCardUiTests : B41cTestBase
         E.DebugSetProgress(s, cfg.NodeId, 100);
         var card = E.EnemyCardsHere(s).Single();
         Assert.That(card.Kind, Is.EqualTo("elite"));
-        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, "可选挑战，由你决定何时处理。" }));
+        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, E.EliteDropNote(card), "可选挑战，由你决定何时处理。" }), "B41e2（Q551）：通用句后补特殊掉落说明");
         var members = E.EnemyCardPreviewMembers(s, card);
         Assert.That(members.Select(m => (m.EnemyId, m.Enemy)), Is.EqualTo(new[] { ("z_guard", (WorldEnemy?)null) }));
         Assert.That(E.EnemyCardFearNote(s, card, false), Is.Not.Empty);
@@ -106,14 +106,14 @@ public class B41e1EnemyCardUiTests : B41cTestBase
     }
 
     [Test]
-    public void GroupCard_NoHover_Q539_PreviewLockedOrder_FearContexts_Q447()
+    public void GroupCard_Hover_Q539_PreviewLockedOrder_FearContexts_Q447()
     {
         var s = Field(3, "shambler", "crawler", "runner", "worker");
         var g = FormGroup(s);
         var card = E.EnemyCardHere(s, GameEngine.GroupCardKey(g.Id))!;
         Assert.That(card.Badge, Is.EqualTo("敌踪待处理"));
         Assert.That(card.Danger, Is.True);
-        Assert.That(E.EnemyCardHoverLines(s, card), Is.Empty, "Q539 未答：组卡不写专用悬停句");
+        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote }.Concat(new[] { E.CardApproachStatus(s, card) }.Where(x => x != null))), "B41e2（Q539）：通用句接同一状态句");
         var members = E.EnemyCardPreviewMembers(s, card);
         Assert.That(members.Select(m => m.Enemy!.Id), Is.EqualTo(g.MemberIds), "按锁定名单原顺序逐个成员");
         var group = members.Select(m => m.Enemy!).ToList();

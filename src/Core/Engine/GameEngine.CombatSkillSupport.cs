@@ -67,7 +67,7 @@ namespace Survival.Core.Engine
         private void RelockAsAttack(GameState s, BattleEnemy t)
         {
             t.Intent = "attack";
-            t.IntentLabel = IntentLabel(t);
+            t.IntentLabel = IntentLabel(t, s.Battle);   // B41e2（Q537）：意图区间计入本场真实先手资格
         }
 
         /// <summary>正在保护 t 的敌人（存活、不是它自己）。</summary>

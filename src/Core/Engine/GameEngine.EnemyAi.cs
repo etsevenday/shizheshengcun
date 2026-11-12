@@ -204,14 +204,19 @@ namespace Survival.Core.Engine
 
         private string Range(EnemyConfig cfg, double f) => $"{Fmt.N(cfg.DamageMin * f)}—{Fmt.N(cfg.DamageMax * f)}";
 
-        /// <summary>B20 试玩修复：带下一击加成（自身蓄势、被鼓动）的伤害范围，并标注“含鼓动×1.1”。</summary>
-        private string Range(EnemyConfig cfg, double f, BattleEnemy e)
+        /// <summary>
+        /// B20 试玩修复：带下一击加成（自身蓄势、被鼓动）的伤害范围，并标注“含鼓动×1.1”。
+        /// B41e2（R05 Q537）：本场敌方先手且这名敌人还有首次攻击伤害资格时，区间再乘先手倍率，括注追加「先手×1.5」（同一个「含」括注，不双乘）。
+        /// </summary>
+        private string Range(EnemyConfig cfg, double f, BattleEnemy e, BattleState? b = null)
         {
-            var boost = (e.NextHitFactor > 1 ? e.NextHitFactor : 1) * (e.RallyFactor > 1 ? e.RallyFactor : 1);
+            var fs = b != null ? FirstStrikeDamageFactor(b, FirstStrikeEnemyKey(e.WorldId)) : 1;
+            var boost = (e.NextHitFactor > 1 ? e.NextHitFactor : 1) * (e.RallyFactor > 1 ? e.RallyFactor : 1) * (fs > 1 ? fs : 1);
             if (boost <= 1) return Range(cfg, f);
             var tags = new List<string>();
             if (e.NextHitFactor > 1) tags.Add($"蓄势×{Fmt.T(e.NextHitFactor)}");
             if (e.RallyFactor > 1) tags.Add($"鼓动×{Fmt.T(e.RallyFactor)}");
+            if (fs > 1) tags.Add(FirstStrikeTag(fs));
             return $"{Range(cfg, f * boost)}（含{string.Join("、", tags)}）";
         }
 
@@ -234,9 +239,9 @@ namespace Survival.Core.Engine
             var tail = extra.Count > 0 ? "，" + string.Join("，", extra) : "";
             switch (e.Intent)
             {
-                case "attack": return $"{verb} {Range(cfg, st.Factor, e)}{tail}";
-                case "bite": return $"咬击 {Range(cfg, 1, e)}（可能感染）{(cfg.DeathSplash > 0 ? $"，死亡时喷溅1、2号位各{Fmt.T(cfg.DeathSplash)}" : "")}";
-                case "charge": return $"{verb} {Range(cfg, st.Factor, e)}{tail}";
+                case "attack": return $"{verb} {Range(cfg, st.Factor, e, b)}{tail}";
+                case "bite": return $"咬击 {Range(cfg, 1, e, b)}（可能感染）{(cfg.DeathSplash > 0 ? $"，死亡时喷溅1、2号位各{Fmt.T(cfg.DeathSplash)}" : "")}";
+                case "charge": return $"{verb} {Range(cfg, st.Factor, e, b)}{tail}";
                 case "charge_prepare":
                 {
                     var next = AllSteps(cfg).FirstOrDefault(x => x.Kind == "charge");
@@ -250,16 +255,16 @@ namespace Survival.Core.Engine
                     : "保护相邻同伴（执行时找相邻的同伴）";
                 case "signal": return $"{verb}（呼叫附近同类增援1次）";
                 case "buff": return $"{verb}（自身下一击×{Fmt.T(st.NextHitFactor)}）";
-                case "sweep": return $"{verb}1、2号位 各{Range(cfg, st.Factor, e)}";
-                case "spit": return $"{verb} {Range(cfg, st.Factor, e)}{tail}（不感染）";
+                case "sweep": return $"{verb}1、2号位 各{Range(cfg, st.Factor, e, b)}";
+                case "spit": return $"{verb} {Range(cfg, st.Factor, e, b)}{tail}（不感染）";
                 case "pull": return st.Factor > 0
-                    ? $"{verb} {Range(cfg, st.Factor, e)}（命中后把{(st.TargetMarked ? "被标记的目标" : "目标")}往前拉{Math.Max(1, st.Pull)}位）"
+                    ? $"{verb} {Range(cfg, st.Factor, e, b)}（命中后把{(st.TargetMarked ? "被标记的目标" : "目标")}往前拉{Math.Max(1, st.Pull)}位）"
                     : $"{verb}（命中后把目标往前拉{Math.Max(1, st.Pull)}位）";
                 case "rally": return $"{verb}（至多两名同伴下一击×{Fmt.T(st.NextHitFactor)}，不叠层）";
                 case "mark": return st.MarkRule == "rearmost"
                     ? $"{verb}我方最靠后的存活者{(b != null && e.IntentActor != null && b.Allies.IndexOf(e.IntentActor) >= 0 ? $"（现在是{PosName(b.Allies.IndexOf(e.IntentActor) + 1)}{(e.IntentActor == GameState.PlayerId ? "的你" : "")}）" : "")}"
                     : $"{verb}我方1人（攻击时随机选一名存活者）";
-                case "shoot": return $"{verb} {Range(cfg, st.Factor, e)}（弹仓{Math.Max(0, e.Mag)}，备弹{e.Reserve}）";
+                case "shoot": return $"{verb} {Range(cfg, st.Factor, e, b)}（弹仓{Math.Max(0, e.Mag)}，备弹{e.Reserve}）";
                 case "reload": return $"{verb}（1AP，弹仓{Math.Max(0, e.Mag)}→{Math.Min(cfg.Magazine, Math.Max(0, e.Mag) + e.Reserve)}）";
             }
             return e.Intent;
@@ -394,17 +399,17 @@ namespace Survival.Core.Engine
             var lead = assist == AssistKind.Assist ? $"等{EnemyName(f!)}补到{e.Pos - 2}号位（它花自己1AP），再" : "";
             switch (plan)
             {
-                case ReachPlan.AdvanceThenAttack: return $"{lead}前移到{e.Pos - 1}号位{(lead != "" ? "（1AP）" : "")}后{verb} {Range(cfg, 1, e)}{(e.Intent == "bite" ? "（可能感染）" : "")}";
+                case ReachPlan.AdvanceThenAttack: return $"{lead}前移到{e.Pos - 1}号位{(lead != "" ? "（1AP）" : "")}后{verb} {Range(cfg, 1, e, b)}{(e.Intent == "bite" ? "（可能感染）" : "")}";
                 case ReachPlan.Advance: return assist == AssistKind.Assist ? $"{lead}前移到{e.Pos - 1}号位（1AP；还够不到）" : $"前移1位（在{e.Pos}号位够不到）";
-                case ReachPlan.Weak: return $"弱攻击 {Range(cfg, WeakAttackFactor, e)}（在{e.Pos}号位，{verb}要在{PosList(SlotsOf(cfg, st).own)}）";
+                case ReachPlan.Weak: return $"弱攻击 {Range(cfg, WeakAttackFactor, e, b)}（在{e.Pos}号位，{verb}要在{PosList(SlotsOf(cfg, st).own)}）";
                 case ReachPlan.Guard:
                 {
                     // B9 遗留：原来只写“够不到目标”，站在非法己位又不能迫近时每轮都防御，看起来像卡住——写明它要在哪出手、为什么只能防御
                     var (own, tgt) = SlotsOf(cfg, st);
                     return $"防御（够不到目标：{verb}要在{PosList(own)}打{PosList(tgt)}，它在{e.Pos}号位{(own.Contains(e.Pos) ? "，目标位里没有我方" : "")}，不能前移或迫近时只防御）";
                 }
-                case ReachPlan.Approach: return $"迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(s, b, e, e.Pos)}）→弱近袭 {Range(cfg, ea.DamageFactor, e)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
-                case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(s, b, e, e.Pos - 1)}）→弱近袭 {Range(cfg, ea.DamageFactor, e)}（共{1 + ea.TotalAp}AP，不咬不控）";
+                case ReachPlan.Approach: return $"迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(s, b, e, e.Pos)}）→弱近袭 {Range(cfg, ea.DamageFactor, e, b)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
+                case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(s, b, e, e.Pos - 1)}）→弱近袭 {Range(cfg, ea.DamageFactor, e, b)}（共{1 + ea.TotalAp}AP，不咬不控）";
             }
             return IntentLabel(e, b);
         }
