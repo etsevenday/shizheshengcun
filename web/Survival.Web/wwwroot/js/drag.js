@@ -22,7 +22,7 @@ window.survivalDrag = (function () {
     document.addEventListener('keydown', onKey, true);
     // 拖动中滚动目标栏（滚轮或滚动条）：按最后的指针坐标重算高亮与落点，不按滚动前坐标投放（v0.7 第 5 节 U719）
     // 滚轮由 wheel.js 先同步滚动（它的捕获监听先注册），这里紧接着重算；拖滚动条走 scroll 事件
-    var rehover = function () { if (st && st.started && st.lastX != null) hover(st.lastX, st.lastY); };
+    var rehover = function () { if (st && st.started && st.lastX != null) { hover(st.lastX, st.lastY); place(st.lastX, st.lastY); } };
     document.addEventListener('wheel', rehover, true);
     document.addEventListener('scroll', rehover, true);
     window.addEventListener('blur', function () { cancel(); });
@@ -57,8 +57,8 @@ window.survivalDrag = (function () {
     ev.preventDefault();
     st.lastX = ev.clientX;
     st.lastY = ev.clientY;
-    place(ev.clientX, ev.clientY);
     hover(ev.clientX, ev.clientY);
+    place(ev.clientX, ev.clientY);   // 先按落点更新拖影内容，再按它的实际大小摆位（贴近窗口边时翻到指针另一侧）
   }
 
   function begin() {
@@ -93,10 +93,15 @@ window.survivalDrag = (function () {
     return true;
   }
 
+  // B43 试玩修复：拖影默认在指针右下；下沿或右沿超出窗口时翻到指针上方／左侧（1280×720 拖到随身最下一行时「选数量 Shift」一行不被截）
   function place(x, y) {
     if (!ghost) return;
-    ghost.style.left = (x + 14) + 'px';
-    ghost.style.top = (y + 12) + 'px';
+    var w = ghost.offsetWidth, h = ghost.offsetHeight, vw = window.innerWidth, vh = window.innerHeight, m = 4;
+    var left = x + 14, top = y + 12;
+    if (left + w > vw - m) left = Math.max(m, x - 14 - w);
+    if (top + h > vh - m) top = Math.max(m, y - 12 - h);
+    ghost.style.left = left + 'px';
+    ghost.style.top = top + 'px';
   }
 
   // 命中：热区 > 卡面（卡面无组合时落到所在区） > 区域插入线

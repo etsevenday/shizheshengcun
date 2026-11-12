@@ -157,7 +157,7 @@ public class B43KeyHintTests : TestBase
         Assert.That(Web("Components/DropQuantity.razor"), Does.Not.Contain("if (ev.Key == \"Enter\") Confirm();"), "回车只走一条路由，已聚焦的取消键不再同时确认");
         var js = Web("wwwroot/js/app.js");
         Assert.That(js, Does.Contain("return own.length === 1 && !own[0].disabled ? own[0] : null;"), "恰好一个可用确认");
-        Assert.That(js, Does.Contain("if (k === 'Enter' && !mod && !control(document.activeElement))"), "已聚焦按钮上的 Enter 走原生语义");
+        Assert.That(js, Does.Contain("if (k === 'Enter' && !mod && !control(fae))"), "已聚焦按钮上的 Enter 走原生语义");
     }
 
     /// <summary>A03、A05：对白唯一推进键「继续 Enter／结束对话 Enter」带 data-dlg-next；招募两选项不带；Esc 不结束对白。</summary>
@@ -225,9 +225,31 @@ public class B43KeyHintTests : TestBase
         Assert.That(bs, Does.Contain("<EnterCap On=\"@(p.Ok && !locked)\" /></button>").And.Contain("id=\"bt-confirm\" disabled=\"@(!p.Ok || locked)\""));
         var bp = Web("Components/BattlePanel.razor");
         Assert.That(Regex.Matches(bp, "TargetCycle\\(aimSet.Count\\)").Count, Is.EqualTo(2), "瞄准中两种预测区都有");
-        Assert.That(bp, Does.Contain("@onclick=\"() => G.BattleCycleTarget(-1)\">@ShellKeys.PrevTarget <kbd class=\"kc\">@ShellKeys.PrevTargetCap</kbd></button>"));
-        Assert.That(bp, Does.Contain("@onclick=\"() => G.BattleCycleTarget(1)\">@ShellKeys.NextTarget <kbd class=\"kc\">@ShellKeys.NextTargetCap</kbd></button>"));
+        Assert.That(bp, Does.Contain("@onclick=\"() => G.BattleCycleTarget(-1)\">@ShellKeys.PrevTarget <kbd class=\"kc kc-sym\">@ShellKeys.PrevTargetCap</kbd></button>"));
+        Assert.That(bp, Does.Contain("@onclick=\"() => G.BattleCycleTarget(1)\">@ShellKeys.NextTarget <kbd class=\"kc kc-sym\">@ShellKeys.NextTargetCap</kbd></button>"));
         Assert.That(bp, Does.Contain("if (!G.BattleFullscreen) return;"), "方向键只在全屏战斗路由，按钮也只在那里给");
+    }
+
+    /// <summary>
+    /// M751 试玩修复：二级面板唯一确认在焦点落在 body（按 R 打开、进整备比较后）时也收回车；鼠标点区内／面板里按钮、顶栏、目标切换后焦点不留在被点按钮上；
+    /// 按钮里的键帽随按钮文字色（金底转移条看不见）；拖影贴边翻转。
+    /// </summary>
+    [Test]
+    public void M751_PanelEnterFocusAndCaps()
+    {
+        var js = Web("wwwroot/js/app.js");
+        Assert.That(js, Does.Contain("return panelScope();"), "没有居中盘／确认窗时取打开着的二级面板");
+        Assert.That(js, Does.Contain("if (p.matches('[data-enter-scope]')) return p;"));
+        Assert.That(js, Does.Contain("if (b.closest('.top .nav, .bp-cycle')) return { b: b, host: null, scope: null };"));
+        Assert.That(js, Does.Contain("ev.preventDefault();   // 不让按钮拿到焦点（click 照常触发）"));
+        Assert.That(js, Does.Contain("if (!ev.detail) return;   // 键盘回车／空格触发的 click（detail 为 0）不动焦点"), "键盘激活不改焦点（原生语义）");
+        Assert.That(Web("Components/BattlePanel.razor"), Does.Not.Contain("@onmousedown:preventDefault"), "目标切换的焦点处理只走一处");
+        var css = Web("wwwroot/css/shell.css");
+        Assert.That(css, Does.Contain("button .kc, .wasteland button kbd.kc { color: inherit; border-color: currentColor; }"));
+        Assert.That(css, Does.Contain("[data-enter-scope]:focus, [data-enter-scope]:focus-visible { outline: none; }"));
+        var drag = Web("wwwroot/js/drag.js");
+        Assert.That(drag, Does.Contain("if (top + h > vh - m) top = Math.max(m, y - 12 - h);"));
+        Assert.That(drag.IndexOf("    hover(ev.clientX, ev.clientY);\n    place(ev.clientX, ev.clientY);".Replace("\n", drag.Contains("\r\n") ? "\r\n" : "\n")), Is.GreaterThan(0), "先更新内容再按实际大小摆位");
     }
 
     // ───────────── 按键路由（KEYHINT-A02、A05） ─────────────

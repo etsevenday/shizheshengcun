@@ -212,11 +212,11 @@ window.survival = {
     // 局部唯一主确认（S14「局部盘唯一主确认」「物品转移条唯一提交按钮」）：焦点所在的活动盘／工作区（data-enter-scope），
     // 焦点不在任何控件上（如点过盘内空白、盘刚打开）时取最上层模态里可见的那一个；该区内只认恰好一个可用的 [data-enter]。
     function enterScope(ae) {
-      if (ae && ae !== document.body && ae.closest) {
+      if (ae && ae !== document.body && ae !== document.documentElement && ae.closest) {
         var s = ae.closest('[data-enter-scope]');
         if (s) return s;
         // 焦点在别处（背后四轨、顶栏等）：不从那里抢走按键
-        if (!ae.closest('.apop, .modal, .overflow-layer')) return null;
+        if (!ae.closest('.apop, .modal, .overflow-layer, .sub-panel')) return null;
       }
       var hosts = ['.modal', '.overflow-layer', '.apop-c'];
       for (var i = 0; i < hosts.length; i++) {
@@ -226,7 +226,24 @@ window.survival = {
           return list[j];
         }
       }
-      return null;
+      // B43 试玩修复：没有居中盘／确认窗时，打开着的二级面板就是活动工作区（按 R 打开休息、进整备比较后焦点在 body 也能回车）
+      return panelScope();
+    }
+    // 最上层打开着的二级面板（.sub-panel，不在 inert 里）
+    function topPanel() {
+      var ps = Array.prototype.filter.call(document.querySelectorAll('.sub-panel'), function (p) { return shown(p) && !(p.closest && p.closest('[inert]')); });
+      return ps.length ? ps[ps.length - 1] : null;
+    }
+    // 该面板的确认区：面板本身是区就取它；否则取面板里唯一一个顶层的区（如整备里的比较／交接工作区）
+    function panelScope() {
+      var p = topPanel();
+      if (!p) return null;
+      if (p.matches('[data-enter-scope]')) return p;
+      var top = Array.prototype.filter.call(p.querySelectorAll('[data-enter-scope]'), function (x) {
+        var up = x.parentElement && x.parentElement.closest('[data-enter-scope]');
+        return shown(x) && !(up && p.contains(up));
+      });
+      return top.length === 1 ? top[0] : null;
     }
     // 该区自己的 [data-enter]（不算嵌套区里的）；自己一个都没有时，若只有一个嵌套区（如选卡盘里的转移条）就看那一个
     function uniqueEnter(scope) {
@@ -252,6 +269,44 @@ window.survival = {
       }
     };
     window.addEventListener('keydown', window.__survivalKeyGuard, true);
+    // B43 试玩修复：鼠标点确认区／二级面板里的按钮与可点卡、顶栏按钮、战斗目标切换按钮时不把焦点留在被点的按钮上
+    // （否则接着按 Enter 会按原生语义再点一次它，而不是该区的唯一确认）。焦点交给所在确认区（tabindex=-1 的容器）；
+    // 区里正在输入的数量框保持焦点；不在区里时把留在面板外的焦点放掉。键盘 Tab 聚焦与按钮原生 Enter/Space 不受影响。
+    function parkTarget(el) {
+      if (!el || !el.closest || editable(el)) return null;
+      var b = el.closest('button, [role=button], [role=tab], [role=radio], [role=option]');
+      if (!b || b.matches('input, select, textarea') || (b.closest('[data-dlg-next]'))) return null;
+      if (b.closest('.top .nav, .bp-cycle')) return { b: b, host: null, scope: null };
+      var scope = b.closest('[data-enter-scope]');
+      var host = scope || b.closest('.sub-panel');
+      return host ? { b: b, host: host, scope: scope } : null;
+    }
+    function park(t) {
+      var ae = document.activeElement;
+      if (t.scope) {
+        if (ae && t.scope.contains(ae) && (editable(ae) || ae === t.scope)) return;
+        try { t.scope.focus({ preventScroll: true }); } catch (e) { }
+      } else if (ae && ae !== document.body && (!t.host || !t.host.contains(ae) || ae === t.b)) {
+        ae.blur();
+      }
+    }
+    if (window.__survivalMouseDown) document.removeEventListener('mousedown', window.__survivalMouseDown, true);
+    if (window.__survivalMouseClick) document.removeEventListener('click', window.__survivalMouseClick, true);
+    window.__survivalMouseDown = function (ev) {
+      if (ev.button !== 0) return;
+      var t = parkTarget(ev.target);
+      if (!t) return;
+      ev.preventDefault();   // 不让按钮拿到焦点（click 照常触发）
+      park(t);
+    };
+    // 兜底：若浏览器仍把焦点给了按钮（或点击后重渲染把焦点落到别处），鼠标点击后再归位一次
+    window.__survivalMouseClick = function (ev) {
+      if (!ev.detail) return;   // 键盘回车／空格触发的 click（detail 为 0）不动焦点
+      var t = parkTarget(ev.target);
+      if (t && document.activeElement === t.b) park(t);
+    };
+    document.addEventListener('mousedown', window.__survivalMouseDown, true);
+    document.addEventListener('click', window.__survivalMouseClick, true);
     window.__survivalKeys = function (ev) {
       var tgt = ev.target, t = tgt && tgt.tagName, k = ev.key;
       // 输入法组合输入中：一律不处理
@@ -276,9 +331,12 @@ window.survival = {
         }
         return;
       }
-      // 局部唯一主确认（B43）：数量框、转移条、整备比较／交接、就近盘、强制整理与确认窗……
-      if (k === 'Enter' && !mod && !control(document.activeElement)) {
-        var sc = enterScope(document.activeElement);
+      // 局部唯一主确认（B43）：数量框、转移条、整备比较／交接、就近盘、强制整理与确认窗、二级面板……
+      // 焦点停在被打开着的二级面板盖住的背后控件上（如先点过地面卡再按 R）时，当作焦点不在任何控件上，归该面板
+      var fae = document.activeElement, pnl = topPanel();
+      if (pnl && fae && fae !== document.body && control(fae) && !pnl.contains(fae) && !fae.closest('.top, .apop, .modal, .overflow-layer')) fae = null;
+      if (k === 'Enter' && !mod && !control(fae)) {
+        var sc = enterScope(fae);
         if (sc) {
           var go = uniqueEnter(sc);
           if (go) { ev.preventDefault(); go.click(); return; }

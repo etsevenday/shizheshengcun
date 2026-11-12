@@ -220,8 +220,8 @@ else if (b != null)
     {
         if (!G.BattleFullscreen) return;
         <div class="bp-cycle" role="group" aria-label="切换预测目标">
-            <button type="button" class="secondary" aria-keyshortcuts="ArrowLeft" @onmousedown:preventDefault="true" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(-1)">@ShellKeys.PrevTarget <kbd class="kc">@ShellKeys.PrevTargetCap</kbd></button>
-            <button type="button" class="secondary" aria-keyshortcuts="ArrowRight" @onmousedown:preventDefault="true" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(1)">@ShellKeys.NextTarget <kbd class="kc">@ShellKeys.NextTargetCap</kbd></button>
+            <button type="button" class="secondary" aria-keyshortcuts="ArrowLeft" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(-1)">@ShellKeys.PrevTarget <kbd class="kc kc-sym">@ShellKeys.PrevTargetCap</kbd></button>
+            <button type="button" class="secondary" aria-keyshortcuts="ArrowRight" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(1)">@ShellKeys.NextTarget <kbd class="kc kc-sym">@ShellKeys.NextTargetCap</kbd></button>
         </div>
     };
 
