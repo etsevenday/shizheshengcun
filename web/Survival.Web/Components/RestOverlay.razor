@@ -22,7 +22,7 @@
 
 @if (Part == "center")
 {
-    <div class="sub-panel rest-panel" role="dialog" aria-label="休息与睡眠">
+    <div class="sub-panel rest-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="休息与睡眠">
         <div class="sub-head">
             <div><h2>休息与睡眠</h2><span class="sub">@e.ZoneName(s, here) · @(sheltered ? "遮蔽" : tarpOnly ? "露天（野营布：睡眠算遮蔽）" : "露天")@(fac.BedBuilt ? " · 有床垫" : "") · 选时长后在下方开始，详细预估在右侧</span></div>
             <button class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
@@ -73,7 +73,7 @@
                 <b>@(kind == "sleep" ? "睡眠" : "休息") · @Clock.Duration(minutes)</b>
                 <small class="@(p.Ok ? "" : "warn-text")">@(p.Ok ? $"预计{Clock.HHmm(p.EstimatedEndMinute)}结束{(p.Warnings.Count > 0 ? " · " + p.Warnings[0] : "")}" : p.Reason)</small>
             </span>
-            <button type="button" class="primary rg-start" disabled="@(!p.Ok || busy)" @onclick="Start">@(p.Ok ? p.ConfirmText : "无法开始")</button>
+            <button type="button" class="primary rg-start" data-enter disabled="@(!p.Ok || busy)" @onclick="Start">@(p.Ok ? p.ConfirmText : "无法开始")<EnterCap On="@(p.Ok && !busy)" /></button>
         </div>
     </div>
 }

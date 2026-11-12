@@ -7,19 +7,20 @@
     var n = Parse();
     var invalid = n < 1 || n > d.MaxQuantity;
     <div class="modal-back" @onclick="Cancel">
-        <div class="modal" role="dialog" aria-label="选择数量" @onclick:stopPropagation="true" @onkeydown="OnKey">
+        <div class="modal" data-enter-scope tabindex="-1" role="dialog" aria-label="选择数量" @onclick:stopPropagation="true" @onkeydown="OnKey">
             @{ var src = d.Instant == null ? null : G.S.Items.FirstOrDefault(i => i.InstanceId == d.Instant.InstanceId); }
             <h3 class="dq-head">@if (src != null) {<span class="ir-icon">@Icons.Markup(src.ItemId)</span>}@Verb(d)@(src != null ? $" · {G.E.ItemName(src.ItemId)}" : "")</h3>
             <div class="small muted">@d.Label.Replace("1份", "").Replace("1", "") · 最多 @d.MaxQuantity</div>
             <div class="tbar-row">
                 <button type="button" class="tbar-step" aria-label="减少" @onclick="() => Step(-1)">−</button>
+                <span class="tbar-qlabel">@ShellKeys.Qty <kbd class="kc">@ShellKeys.Digits</kbd></span>
                 <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" aria-label="数量" />
                 <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1)">+</button>
                 <button type="button" class="tbar-max" @onclick="() => text = d.MaxQuantity.ToString()">最多@(d.MaxQuantity)</button>
             </div>
             @if (invalid) { <div class="tbar-note bad">请输入 1 到 @d.MaxQuantity 之间的数字</div> }
             <div class="btn-row">
-                <button class="primary" disabled="@invalid" @onclick="Confirm">确认@(invalid ? "" : $" {n}")</button>
+                <button class="primary" data-enter disabled="@invalid" @onclick="Confirm">确认@(invalid ? "" : $" {n}")<EnterCap On="@(!invalid)" /></button>
                 <button class="secondary" @onclick="Cancel">取消<EscCap On="@(G.EscOwner == EscOwner.DropQty)" /></button>
             </div>
         </div>
@@ -66,8 +67,8 @@
 
     private void OnKey(KeyboardEventArgs ev)
     {
-        if (ev.Key == "Enter") Confirm();
-        else if (ev.Key == "Escape") Cancel();
+        // B43：回车改由 app.js 局部确认路由按「确认」按钮提交（已聚焦的「取消」等按钮上回车走原生语义，不再同时确认）；Esc 仍在这里取消
+        if (ev.Key == "Escape") Cancel();
     }
 
     private void Confirm()

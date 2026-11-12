@@ -15,7 +15,7 @@
     var members = draft.Where(x => x != "").ToList();
 }
 
-<div class="sub-panel formation-panel" role="dialog" aria-label="编队">
+<div class="sub-panel formation-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="编队">
     <div class="sub-head">
         <div><h2>编队</h2><span class="sub">开战号位 · 前排1号位→后排4号位 · 同行@(members.Count)/C@(cap)（C只限人数，不限号位）· 保存不花时间、AP和体力</span></div>
         <button class="secondary" @onclick="G.CancelFormation">取消<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
@@ -69,7 +69,7 @@
     </div>
     <div class="fm-foot">
         <span class="tiny muted fm-draft">草稿：@e.FormationText(s, draft)</span>
-        <button type="button" class="primary" disabled="@(saveWhy != null)" title="@(saveWhy ?? "保存这份编队，下一场战斗按此开局")" @onclick="() => G.SaveFormation()">保存编队</button>
+        <button type="button" class="primary" disabled="@(saveWhy != null)" title="@(saveWhy ?? "保存这份编队，下一场战斗按此开局")" data-enter @onclick="() => G.SaveFormation()">保存编队<EnterCap On="@(saveWhy == null)" /></button>
         <button type="button" class="secondary" @onclick="G.CancelFormation">取消</button>
     </div>
     @if (saveWhy != null && G.FormationDirty)

@@ -13,7 +13,7 @@
 {
     var cand = p.Candidate;
     var weapons = e.SlotsFor(cand.ItemId).Where(EquipSlots.IsWeaponSlot).ToList();
-    <div class="g3-compare" data-gear-compare>
+    <div class="g3-compare" data-gear-compare data-enter-scope tabindex="-1">
         <div class="g3-whead">
             <h3>@GearPanelCopy.CompareTitle</h3>
             <button type="button" class="secondary" @onclick="G.GearBack">@GearPanelCopy.Back<EscCap On="@(G.EscOwner == EscOwner.GearSub)" /></button>
@@ -92,7 +92,7 @@
         <div class="g3-row"><span>@GearPanelCopy.WeightAfter</span><b>@Ui.KgText(p.GramsAfter)</b></div>
         @if (p.Blocked != null) { <div class="warn-text g3-why">@p.Blocked</div> }
         <div class="g3-actions">
-            <button type="button" class="primary" disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmEquip</button>
+            <button type="button" class="primary" data-enter disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmEquip<EnterCap On="@(p.Blocked == null)" /></button>
             @* Q448：本人随身装备的比较底部同时提供「交给…」，不要求先返回 *@
             <GearGiveEntry />
         </div>

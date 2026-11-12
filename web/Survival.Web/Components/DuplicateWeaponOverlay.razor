@@ -14,7 +14,7 @@
 }
 @* B33 P03d（Q434）：精简——区标题「选择保留的武器」「另一件放到」，删长说明；底部只在受阻时写原原因，可确认时不写「可以确认」；
    仍无取消键，须完成整理才能退出（关闭或 Esc 都不能绕过）。 *@
-<div class="overflow-layer" role="dialog" aria-modal="true" aria-label="整理同类型武器">
+<div class="overflow-layer" data-enter-scope tabindex="-1" role="dialog" aria-modal="true" aria-label="整理同类型武器">
     <div class="panel overflow-box">
         <div class="ov-head">
             <h2>@GearPanelCopy.DupTitle</h2>
@@ -48,7 +48,7 @@
         </div>
         <div class="ov-foot">
             @if (why != null) { <span class="danger-text">@why</span> } else { <span></span> }
-            <button type="button" class="primary" disabled="@(why != null || _busy)" @onclick="Confirm">@GearPanelCopy.DupConfirm</button>
+            <button type="button" class="primary" data-enter disabled="@(why != null || _busy)" @onclick="Confirm">@GearPanelCopy.DupConfirm<EnterCap On="@(!(why != null || _busy))" /></button>
         </div>
         @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
     </div>

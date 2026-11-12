@@ -77,7 +77,7 @@
         </div>
     </ChildContent>
     <Actions>
-        <button type="button" class="primary apop-go" disabled="@(picked == null || why != null || G.Running || starting)" @onclick="Go">@CardStates.IgniteButton(minutes)</button>
+        <button type="button" class="primary apop-go" data-enter disabled="@(picked == null || why != null || G.Running || starting)" @onclick="Go">@CardStates.IgniteButton(minutes)<EnterCap On="@(!(picked == null || why != null || G.Running || starting))" /></button>
         <button type="button" class="secondary apop-cancel" @onclick="Close">取消<EscCap On="@G.EscOnDisk" /></button>
     </Actions>
 </AnchorPop>

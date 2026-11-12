@@ -12,7 +12,7 @@
     var max = e.MaxRootCards;
     var over = cards > max;
 }
-<div class="overflow-layer" role="dialog" aria-modal="true" aria-label="整理随身物品">
+<div class="overflow-layer" data-enter-scope tabindex="-1" role="dialog" aria-modal="true" aria-label="整理随身物品">
     <div class="panel overflow-box">
         <div class="ov-head">
             <h2>整理随身物品</h2>
@@ -33,7 +33,7 @@
         </div>
         <div class="ov-foot">
             <span class="@(over ? "danger-text" : "")">已选@(cards)/@(max)张@(over ? "，超过上限" : "")</span>
-            <button type="button" class="primary" disabled="@(over || _busy)" @onclick="Confirm">保留所选，其余放到地面</button>
+            <button type="button" class="primary" data-enter disabled="@(over || _busy)" @onclick="Confirm">保留所选，其余放到地面<EnterCap On="@(!(over || _busy))" /></button>
         </div>
         @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
     </div>

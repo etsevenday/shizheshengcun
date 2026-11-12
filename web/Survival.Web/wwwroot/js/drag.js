@@ -7,6 +7,8 @@
 window.survivalDrag = (function () {
   var net = null, threshold = 6, st = null, line = null, ghost = null, lastHover = null, flashTimer = 0;
   var NO_SELF = '选中物品后在卡片下方使用';
+  // 与内核 ShellKeys.DragQty、ShellKeys.Shift 同字（B43）
+  var DRAG_QTY = '选数量', SHIFT = 'Shift';
 
   function init(ref, px) {
     net = ref;
@@ -74,7 +76,8 @@ window.survivalDrag = (function () {
     ghost = document.createElement('div');
     ghost.className = 'drag-ghost';
     var title = st.el.getAttribute('data-drag-title') || (st.el.querySelector('.ctitle') || st.el).innerText;
-    ghost.innerHTML = '<div class="dg-title"></div><div class="dg-from"></div><div class="dg-label"></div>';
+    // B43（S14「可选数量的拖拽落点预览 选数量 Shift」）：合法多份落点上常驻键帽，原「按住 Shift 松手可选数量」解释保留在落点说明里
+    ghost.innerHTML = '<div class="dg-title"></div><div class="dg-from"></div><div class="dg-label"></div><div class="dg-key" hidden>' + DRAG_QTY + ' <kbd class="kc">' + SHIFT + '</kbd></div>';
     ghost.querySelector('.dg-title').textContent = title.replace(/\s+/g, ' ').trim();
     ghost.querySelector('.dg-from').textContent = st.el.getAttribute('data-drag-from') || '';
     document.body.appendChild(ghost);
@@ -170,6 +173,8 @@ window.survivalDrag = (function () {
     if (lastHover && (!h || lastHover !== h.el)) lastHover.classList.remove('drop-hover', 'drop-hover-no');
     line.style.display = 'none';
     var label = ghost.querySelector('.dg-label');
+    var qkey = ghost.querySelector('.dg-key');
+    if (qkey) qkey.hidden = !(h && h.r && h.r.ok && h.r.qty);
     st.hit = h;
     if (!h || !h.r) {
       ghost.classList.remove('ok', 'preview', 'no');

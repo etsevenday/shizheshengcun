@@ -222,19 +222,23 @@ window.survival = {
       for (var i = 0; i < hosts.length; i++) {
         var list = document.querySelectorAll(hosts[i]);
         for (var j = list.length - 1; j >= 0; j--) {
-          if (!shown(list[j])) continue;
-          if (list[j].matches('[data-enter-scope]')) return list[j];
-          var inner = Array.prototype.filter.call(list[j].querySelectorAll('[data-enter-scope]'), shown);
-          if (inner.length === 1) return inner[0];
-          if (inner.length) return null;
+          if (!shown(list[j]) || !list[j].matches('[data-enter-scope]')) continue;
+          return list[j];
         }
       }
       return null;
     }
+    // 该区自己的 [data-enter]（不算嵌套区里的）；自己一个都没有时，若只有一个嵌套区（如选卡盘里的转移条）就看那一个
     function uniqueEnter(scope) {
       var own = Array.prototype.filter.call(scope.querySelectorAll('[data-enter]'), function (b) {
         return b.closest('[data-enter-scope]') === scope && shown(b);
       });
+      if (!own.length) {
+        var inner = Array.prototype.filter.call(scope.querySelectorAll('[data-enter-scope]'), function (x) {
+          return shown(x) && x.parentElement && x.parentElement.closest('[data-enter-scope]') === scope;
+        });
+        return inner.length === 1 ? uniqueEnter(inner[0]) : null;
+      }
       return own.length === 1 && !own[0].disabled ? own[0] : null;
     }
     // 按住 Enter／Space 的重复 keydown：一律不再触发（浏览器原生按钮激活、卡片的回车选择、对白继续、局部确认都不重复）。

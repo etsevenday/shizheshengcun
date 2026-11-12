@@ -8,7 +8,7 @@
 }
 @if (p != null)
 {
-    <div class="overflow-layer" role="dialog" aria-modal="true" aria-label="重置地牢">
+    <div class="overflow-layer" data-enter-scope tabindex="-1" role="dialog" aria-modal="true" aria-label="重置地牢">
         <div class="panel overflow-box exp-abort">
             <div class="ov-head">
                 <h2>重置地牢 · @p.DungeonName（第@(p.Generation)代 → 第@(p.Generation + 1)代）</h2>
@@ -48,7 +48,7 @@
             <div class="ov-foot">
                 <button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">取消<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
                 @* B40（S01 Q381）：没有写权限时确认重置禁用，原因同底栏 *@
-                <button type="button" class="primary" disabled="@(p.Reason != null || G.Running || G.Saves?.WriteBlockedText != null)" title="@(p.Reason ?? G.Saves?.WriteBlockedText ?? "确认后立即迁出遗留物并建立新一代")" @onclick="G.ConfirmReset">确认重置</button>
+                <button type="button" class="primary" disabled="@(p.Reason != null || G.Running || G.Saves?.WriteBlockedText != null)" title="@(p.Reason ?? G.Saves?.WriteBlockedText ?? "确认后立即迁出遗留物并建立新一代")" data-enter @onclick="G.ConfirmReset">确认重置<EnterCap On="@(!(p.Reason != null || G.Running || G.Saves?.WriteBlockedText != null))" /></button>
             </div>
             @if (p.Reason != null)
             {

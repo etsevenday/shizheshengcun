@@ -1,0 +1,7 @@
+@* B43（S14 2026-11-12「局部盘唯一主确认 {原确认按钮名} Enter」）：唯一主确认可用时在按钮内常驻「Enter」键帽；不可用时不显示（键与按钮同一禁用条件）。
+   所在按钮带 data-enter、所在盘／工作区带 data-enter-scope，回车由 app.js 局部确认路由按同一按钮 click 提交（不另走一条事务）。 *@
+@if (On) {<kbd class="kc">@ShellKeys.Enter</kbd>}
+
+@code {
+    [Parameter] public bool On { get; set; }
+}

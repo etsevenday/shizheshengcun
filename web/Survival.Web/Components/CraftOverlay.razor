@@ -42,7 +42,7 @@
 
 @if (Part == "center")
 {
-    <div class="sub-panel" role="dialog" aria-label="手工制作与营地设施">
+    <div class="sub-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="手工制作与营地设施">
         <div class="sub-head">
             @* 试玩修复 M77-B7（Q21）：材料来源等教学短文移进悬浮说明 *@
             <div><h2>手工制作</h2><span class="sub" title="@($"材料来自随身与{lc.Name}地面（火堆与锅里的物资要先取出）；按工坊分类；未掌握的做法也列出并写来源；在配方卡下方开始，详细预估在右栏对象信息。")">配方 · 详细预估在右栏 ⓘ</span></div>
@@ -387,7 +387,7 @@
                                     else { <small class="warn-text">@sbWhy</small> }
                                 </span>
                                 <button type="button" class="primary cg-start" disabled="@(sbWhy != null || StationHeld)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
-                                        @onclick="(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)">投料（@(batch)批）</button>
+                                        data-enter @onclick="(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)">投料（@(batch)批）<EnterCap On="@(sbWhy == null && !StationHeld)" /></button>
                             </div>
                         }
                         else
@@ -406,7 +406,7 @@
                                     }
                                 </span>
                                 <button type="button" class="primary cg-start" disabled="@(!p.Ok || startBusy)" title="@(p.Ok ? "确认后才预留材料并推进游戏时间" : p.Reason)"
-                                        @onclick="() => Start(request)">@(p.Ok ? p.ConfirmText : StartLabel(rc))</button>
+                                        data-enter @onclick="() => Start(request)">@(p.Ok ? p.ConfirmText : StartLabel(rc))<EnterCap On="@(p.Ok && !startBusy)" /></button>
                             </div>
                         }
                     </div>

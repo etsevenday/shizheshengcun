@@ -8,7 +8,7 @@
    B32d（Q378）起被新开的面板实际盖住也算来源失效（OnCovered，没给时同 OnClose），焦点交给该面板。
    B31d（逐字稿 §1.2 Q338 选 B）起盘是当前操作层：四轨上有遮罩（GameScreen .disk-scrim，点遮罩＝取消本盘），四轨 inert（不能点、拖、取得键盘焦点，
    由 survivalPop 在盘显示时加上）；×、Esc、遮罩、盘里的「取消」收盘后焦点回到仍存在的触发控件。居中位置由 CSS 决定。Place／Bound 只在旧锚定模式（Centered=false）下使用。 *@
-<div class="apop @(Centered ? "apop-c" : "") @CssClass" @ref="_el" data-anchor="@AnchorId" data-place="@Place" data-bound="@Bound" data-center="@(Centered ? "1" : null)" role="dialog" aria-label="@Title"
+<div class="apop @(Centered ? "apop-c" : "") @CssClass" data-enter-scope tabindex="-1" @ref="_el" data-anchor="@AnchorId" data-place="@Place" data-bound="@Bound" data-center="@(Centered ? "1" : null)" role="dialog" aria-label="@Title"
      @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true" @onmousedown:stopPropagation="true" @onwheel:stopPropagation="true">
     <div class="apop-head">
         @if (Art != null) { <span class="apop-art" aria-hidden="true">@Art</span> }

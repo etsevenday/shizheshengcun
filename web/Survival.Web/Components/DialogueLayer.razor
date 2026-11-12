@@ -52,7 +52,8 @@
                 }
                 else
                 {
-                    <button type="button" class="primary dlg-next" aria-describedby="@(v.Footnote != null ? "dlg-foot" : null)" @onclick="() => Ack(cur.LineId)">@(more ? "继续" : "结束对话")</button>
+                    @* B43：唯一无分支的推进键「继续 Enter／结束对话 Enter」（data-dlg-next）：焦点不在具体控件上时回车按一次只确认当前行一次；招募两选项不带 Enter *@
+                    <button type="button" class="primary dlg-next" data-dlg-next aria-keyshortcuts="Enter" aria-describedby="@(v.Footnote != null ? "dlg-foot" : null)" @onclick="() => Ack(cur.LineId)">@(more ? "继续" : "结束对话") <kbd class="kc">@ShellKeys.Enter</kbd></button>
                 }
             </div>
         </div>

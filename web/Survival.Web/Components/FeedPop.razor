@@ -48,7 +48,7 @@
             <b class="fp-foot-label">@FeedPanelCopy.SectionConfirm</b>
             <button type="button" class="secondary" data-feed-cancel @onclick="G.CancelFeed">@FeedPanelCopy.Cancel<EscCap On="@G.EscOnDisk" /></button>
             <button type="button" class="secondary" data-feed-help @onclick="G.OpenFeedHelp">@FeedPanelCopy.Help</button>
-            <button type="button" class="apop-go fp-go" data-feed-confirm disabled="@(why != null)" title="@why" @onclick="() => Confirm(v.Request)">@v.ConfirmText</button>
+            <button type="button" class="apop-go fp-go" data-feed-confirm data-enter disabled="@(why != null)" title="@why" @onclick="() => Confirm(v.Request)">@v.ConfirmText<EnterCap On="@(why == null)" /></button>
         </Actions>
     </AnchorPop>
 }

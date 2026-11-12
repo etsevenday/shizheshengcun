@@ -14,7 +14,7 @@
     var moveBusy = e.IsBusy(s) || G.Running;
     SyncDefault(m);
     @* Esc 不在这里处理：交给 GameScreen 的 Esc 栈统一判定（先清选中），避免条内与全局各处理一次直接弹出菜单（试玩修复 B1） *@
-    <div class="tbar cact" role="group" aria-label="@($"{m.Name}的操作")" @onclick:stopPropagation="true">
+    <div class="tbar cact" data-enter-scope tabindex="-1" role="group" aria-label="@($"{m.Name}的操作")" @onclick:stopPropagation="true">
         <div class="ca-head">
             <span class="ir-icon">@Icons.Markup(m.Icon)</span>
             <span class="ca-title"><b>@m.Name</b><small>@m.From · ×@m.Available@(m.Batches != null ? $" · 所选批{BatchFresh(m.Batches.First(b => b.Key == m.BatchKey))}" : "")</small></span>
@@ -180,12 +180,13 @@
                 <div class="tbar-row">
                     @if (m.Mode == Mode.Stack)
                     {
+                        <span class="tbar-qlabel">@ShellKeys.Qty <kbd class="kc">@ShellKeys.Digits</kbd></span>
                         <button type="button" class="tbar-step" aria-label="减少" @onclick="() => Step(-1, m)">−</button>
                         <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" aria-label="转移数量" />
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1, m)">+</button>
                         <button type="button" class="tbar-max" @onclick="() => SetN(m.ToCarried ? m.Max : m.Available)">@(m.ToCarried ? $"最多{m.Max}" : "全部")</button>
                     }
-                    <button type="button" class="tbar-go" disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)</button>
+                    <button type="button" class="tbar-go" data-enter disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)<EnterCap On="@(!(invalid || tooHeavy || (m.ToCarried && m.Max < 1)))" /></button>
                 </div>
                 @if (m.Instance != null && e.CarcassOf(m.Instance.ItemId) != null)
                 {
@@ -338,7 +339,7 @@
             var verb = e.IsPot(it) ? (zone == ItemInstance.Carried ? "拾取" : "取下") : "取出";
             <TargetPicker Value="@zone" Here="@s.Ground" OnPick="v => target = v" />
             <div class="tbar-row">
-                <button type="button" class="tbar-go" disabled="@(why != null)" title="@why" @onclick="() => Take(it, zone)">@(verb)@(m.Name)@(e.IsPot(it) ? "（含内容）" : "")到@(zone == ItemInstance.Carried ? "随身" : "地面")</button>
+                <button type="button" class="tbar-go" data-enter disabled="@(why != null)" title="@why" @onclick="() => Take(it, zone)">@(verb)@(m.Name)@(e.IsPot(it) ? "（含内容）" : "")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(why == null)" /></button>
             </div>
             @if (why != null) { <div class="ca-note bad">@why</div> }
             else
@@ -360,11 +361,12 @@
                 <div class="tbar-row">
                     @if (max > 1)
                     {
+                        <span class="tbar-qlabel">@ShellKeys.Qty <kbd class="kc">@ShellKeys.Digits</kbd></span>
                         <button type="button" class="tbar-step" aria-label="减少" @onclick="() => SetN(Math.Max(1, Parse() - 1))">−</button>
                         <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" aria-label="转移数量" />
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => SetN(Math.Min(max, Parse() + 1))">+</button>
                     }
-                    <button type="button" class="tbar-go" disabled="@invalid" @onclick="() => Decant(water, zone, max > 1 ? n : 1)">取出@(e.ItemName(water.ItemId))@(max > 1 ? (invalid ? "" : $"{n}份") : "1份")到@(zone == ItemInstance.Carried ? "随身" : "地面")</button>
+                    <button type="button" class="tbar-go" data-enter disabled="@invalid" @onclick="() => Decant(water, zone, max > 1 ? n : 1)">取出@(e.ItemName(water.ItemId))@(max > 1 ? (invalid ? "" : $"{n}份") : "1份")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(!invalid)" /></button>
                 </div>
                 <div class="ca-note">每份@(e.PotConfig(m.PotInstance!).UnitMl)毫升 · 可取@(max)份 · 不耗时</div>
             }

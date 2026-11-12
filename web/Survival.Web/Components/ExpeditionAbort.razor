@@ -6,7 +6,7 @@
     var p = G.E.AbortPreview(G.S);
     var shakenAt = Clock.DayTime(p.ShakenUntil);
 }
-<div class="overflow-layer" role="dialog" aria-modal="true" aria-label="终止本次远征">
+<div class="overflow-layer" data-enter-scope tabindex="-1" role="dialog" aria-modal="true" aria-label="终止本次远征">
     <div class="panel overflow-box exp-abort">
         <div class="ov-head">
             <h2>终止本次远征@(p.DungeonName.Length > 0 ? " · " + p.DungeonName : "")</h2>
@@ -48,7 +48,7 @@
             </div>
             <div class="ov-foot">
                 <button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">取消（不扣任何东西）<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
-                <button type="button" class="primary danger" disabled="@(G.Running || _busy)" @onclick="Confirm">确认终止并撤出</button>
+                <button type="button" class="primary danger" data-enter disabled="@(G.Running || _busy)" @onclick="Confirm">确认终止并撤出<EnterCap On="@(!(G.Running || _busy))" /></button>
             </div>
             @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
         }

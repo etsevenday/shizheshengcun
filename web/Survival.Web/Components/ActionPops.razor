@@ -76,7 +76,7 @@
                     }
                     else
                     {
-                        <button type="button" class="primary apop-go" disabled="@(!p.Ok || busy)" @onclick='() => Travel(req, pop.Kind == "mapnode")'>@(p.Ok ? (needExp ? "确认开始远征并前往" : "确认移动") : "无法移动")</button>
+                        <button type="button" class="primary apop-go" data-enter disabled="@(!p.Ok || busy)" @onclick='() => Travel(req, pop.Kind == "mapnode")'>@(p.Ok ? (needExp ? "确认开始远征并前往" : "确认移动") : "无法移动")<EnterCap On="@(p.Ok && !busy)" /></button>
                     }
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
                 </Actions>
@@ -110,7 +110,7 @@
                     @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
                 </ChildContent>
                 <Actions>
-                    <button type="button" class="primary apop-go fight" disabled="@(why != null || busy)" @onclick="() => Approach(wid)">接近并开战</button>
+                    <button type="button" class="primary apop-go fight" data-enter disabled="@(why != null || busy)" @onclick="() => Approach(wid)">接近并开战<EnterCap On="@(why == null && !busy)" /></button>
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
                 </Actions>
             </AnchorPop>
@@ -176,7 +176,7 @@
                 </ChildContent>
                 <Actions>
                     @* Q365：主按钮始终写「确认投料」，当前受阻时禁用，原因在盘内 *@
-                    <button type="button" class="primary apop-go" disabled="@(!info.Ok || busy)" @onclick="LoadCharcoal">确认投料</button>
+                    <button type="button" class="primary apop-go" data-enter disabled="@(!info.Ok || busy)" @onclick="LoadCharcoal">确认投料<EnterCap On="@(info.Ok && !busy)" /></button>
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
                 </Actions>
             </AnchorPop>
@@ -231,7 +231,7 @@
                     }
                 </ChildContent>
                 <Actions>
-                    <button type="button" class="primary apop-go" disabled="@(!p.Ok || busy)" @onclick="() => Gather(req)">@(p.Ok ? p.ConfirmText : "无法开始")</button>
+                    <button type="button" class="primary apop-go" data-enter disabled="@(!p.Ok || busy)" @onclick="() => Gather(req)">@(p.Ok ? p.ConfirmText : "无法开始")<EnterCap On="@(p.Ok && !busy)" /></button>
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
                 </Actions>
             </AnchorPop>

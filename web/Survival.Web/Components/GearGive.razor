@@ -15,7 +15,7 @@
 {
     var fromName = e.ActorDisplayName(s, from);
     var receivers = e.GiveReceivers(s, from);
-    <div class="g3-give" data-gear-give>
+    <div class="g3-give" data-gear-give data-enter-scope tabindex="-1">
         <div class="g3-whead">
             <h3>@GearPanelCopy.GiveTitle</h3>
             <button type="button" class="secondary" @onclick="G.GearBack">@GearPanelCopy.Back<EscCap On="@(G.EscOwner == EscOwner.GearSub)" /></button>
@@ -55,7 +55,7 @@
         @if (p.ContainerNote) { <div class="tiny muted">@GearPanelCopy.ContainerNote</div> }
         @if (p.Blocked != null) { <div class="warn-text g3-why">@p.Blocked</div> }
         <div class="g3-actions">
-            <button type="button" class="primary" disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmGive</button>
+            <button type="button" class="primary" data-enter disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmGive<EnterCap On="@(p.Blocked == null)" /></button>
         </div>
         </div>
     </div>
