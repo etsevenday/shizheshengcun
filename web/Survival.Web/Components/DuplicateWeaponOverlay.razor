@@ -30,7 +30,8 @@
                     <label class="dup-keep">
                         <input type="radio" name="dup-keep" checked="@on" @onchange="() => Keep(id)" />
                         <span class="ov-ico">@Icons.Markup(it.ItemId)</span>
-                        <span class="ov-text"><b>@e.ItemName(it.ItemId)</b>
+                        @* Q482：名称后补真实品质「{名称} {品质}」，品质单独成标签不随长名截去；槽、耐久与重量沿原第二行 *@
+                        <span class="ov-text"><span class="dup-name"><b>@e.ItemName(it.ItemId)</b>@if (GearPanelCopy.QualityTag(e.QualityName(it)) is { Length: > 0 } q) {<span class="gs-q" data-quality="@(it.Quality ?? "white")">@q</span>}</span>
                             <small>@EquipSlots.Name(slot) · @Ui.ItemLine(e, s, it) · @Ui.Kg(e.ItemGrams(s, it))公斤</small></span>
                     </label>
                     @if (keep != null && !on)

@@ -41,7 +41,10 @@ namespace Survival.Core.Engine
         public const string CardsAfter = "更换后随身";
         public const string WeightAfter = "更换后负重";
         public const string ConfirmEquip = "确认更换";
-        public const string EmptySlot = "空槽";
+        /// <summary>空装备值（Q478：七槽列表与比较列统一写「空」，取代 Q430、P03b 比较列的「空槽」；不可比项目仍写「—」）。</summary>
+        public const string EmptySlot = "空";
+        /// <summary>来源卡与整理窗的品质标签（Q482：与地面卡同为「{品质}色」，非装备为空串、不伪造品质）。</summary>
+        public static string QualityTag(string qualityName) => string.IsNullOrEmpty(qualityName) ? "" : qualityName + "色";
         public const string Dash = "—";
         public const string CombatGroup = "战斗";
         public const string SurvivalGroup = "求生";

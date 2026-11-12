@@ -59,7 +59,7 @@
                         <span class="gs-name">@EquipSlots.Name(sl)</span>
                         @if (it == null)
                         {
-                            <span class="muted">空</span>
+                            <span class="muted">@GearPanelCopy.EmptySlot</span>
                         }
                         else
                         {
@@ -173,7 +173,8 @@
             <div class="gear-card g3-card @(on ? "on" : "")" role="button" tabindex="0" data-item="@inst.ItemId"
                  id="@($"feed-src-{inst.InstanceId}")" data-gear-src="@inst.InstanceId" data-peek="@Peek.Gear(inst.InstanceId)" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
                  @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
-                <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
+                @* Q482：随身装备卡在名称后补真实品质（与当前地面卡一致），数量与耐久沿原副标；非装备不写品质 *@
+                <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b>@QualityOf(inst)<small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
                 @if (e.FeedEntry(s, inst.InstanceId) is { } fe)
                 {
                     @* B29（Q263）：整备的通用物品卡复用食饮入口，不替代队伍面板的展开 *@
@@ -189,17 +190,29 @@
             <div class="gear-card g3-card @(on ? "on" : "")" role="button" tabindex="0" data-ground-item="@inst.ItemId"
                  data-gear-src="@inst.InstanceId" data-peek="@Peek.Gear(inst.InstanceId)" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
                  @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
-                <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>@Stat(inst)</small></span>
+                @* Q482：品质单独成标签（长名只省略名称，品质不随之截去），耐久与重量沿原副标顺序 *@
+                <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b>@QualityOf(inst)<small>· @string.Join(" · ", StatParts(inst))</small></span>
             </div>
         }
     };
 
-    private string Stat(ItemInstance it)
+    /// <summary>Q482：名称后的品质标签「{品质}色」（来源卡与整理窗同一写法）；非装备不渲染。</summary>
+    private RenderFragment QualityOf(ItemInstance it) => __builder =>
     {
-        var e = G.E;
-        var parts = new List<string> { e.QualityName(it) + "色" };
+        var q = GearPanelCopy.QualityTag(G.E.QualityName(it));
+        if (q != "") { <span class="gs-q" data-quality="@(it.Quality ?? "white")">@q</span> }
+    };
+
+    /// <summary>当前地面卡与槽行的副标：耐久（有才写）、重量。</summary>
+    private List<string> StatParts(ItemInstance it)
+    {
+        var parts = new List<string>();
         if (it.MaxDurability.HasValue) parts.Add("耐久" + GameEngine.DurabilityText(it));
-        parts.Add(Ui.KgText(e.ItemGrams(G.S, it)));
-        return string.Join(" · ", parts);
+        parts.Add(Ui.KgText(G.E.ItemGrams(G.S, it)));
+        return parts;
     }
+
+    /// <summary>七槽行副标：品质、耐久、重量（槽行沿原写法）。</summary>
+    private string Stat(ItemInstance it) =>
+        string.Join(" · ", new[] { GearPanelCopy.QualityTag(G.E.QualityName(it)) }.Where(x => x != "").Concat(StatParts(it)));
 }

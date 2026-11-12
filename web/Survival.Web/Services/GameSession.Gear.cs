@@ -74,6 +74,12 @@ public sealed partial class GameSession
         if (GearPeekId is int pid && E.FindItem(S, pid) == null) GearPeekId = null;
     }
 
+    /// <summary>
+    /// BM1（Q481 选 A）：右栏显示整备临时详情时点「人物」页签——只清点击临时详情（悬停覆盖由页签统一结束），正常进入人物页；
+    /// 不切同行者、不清来源选择／比较目标槽／旧物去向／交接草稿、不改真正选中。下一次真正悬停或点击对象才重新显示详情。
+    /// </summary>
+    private void EndGearPeekForCharacterTab() => GearPeekId = null;
+
     /// <summary>切成员（Q453-5）：清旧比较、交接与食饮草稿，右栏回打开整备前的上下文；不换世界行动执行者。</summary>
     public void GearPickActor(string actorId)
     {

@@ -326,6 +326,8 @@ public sealed partial class GameSession
         HoverPreview = null;
         // B42（S14 2026-11-12）：明确点右栏页签结束本次悬停覆盖，执行页签原功能；下次进入真实对象热区前不再切走
         PeekClear();
+        // BM1（Q481）：整备临时详情显示时点“人物”直接切到人物页并清掉该临时详情（不清比较／交接草稿、不改真正选中）
+        if (tab == DetailTab.Character) EndGearPeekForCharacterTab();
         // 点“人物”页签回到一级简表（二级说明页只由属性入口打开）
         CharPage = null;
         Notify();

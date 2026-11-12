@@ -1468,6 +1468,13 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .g3-card .gs-item b { white-space: nowrap; }
 .g3-card .gs-item small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .g3-card .gs-item .eq-ico svg { width: 20px; height: 20px; }
+/* BM1 Q482：来源卡长名只省略名称，品质标签不随名称截去（三档可辨）；副标仍按原规则省略 */
+.g3-card .gs-item { min-width: 0; }
+.g3-card .gs-item b { flex: 0 1 auto; min-width: 2.5em; overflow: hidden; text-overflow: ellipsis; }
+.g3-card .gs-item small { flex: 0 1 auto; min-width: 0; }
+.gs-q, .dup-name .gs-q { flex: 0 0 auto; white-space: nowrap; color: var(--muted); font-size: var(--fs-aux); }
+.dup-name { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.dup-name b { min-width: 2.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .g3-card .gs-btns { grid-column: auto; }
 .g3-card.on { border-color: var(--accent); background: #2c3427; }
 .g3-work { border-top: 1px solid var(--line); padding-top: 6px; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
