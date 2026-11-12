@@ -2135,13 +2135,26 @@ public sealed partial class GameSession
     private async Task ShowSingleSegment()
     {
         var shown = (S.Sub ?? S.Main)?.ActionId;
-        Notify();
-        await Task.Delay(1);   // 让出一次：这一帧画出来以后才开始计时，不让入场把展示耗尽
-        var clock = System.Diagnostics.Stopwatch.StartNew();
-        var total = SingleSegmentShowMs;
-        while (!_skip && State != null && (S.Sub ?? S.Main)?.ActionId == shown && clock.ElapsedMilliseconds < total)
-            await Task.Delay((int)Math.Max(1, Math.Min(50, total - clock.ElapsedMilliseconds)));
+        // B46 试玩修复（Q535-A01／A04）：从选卡操作盘、点火盘开工时，居中局部盘收起（选卡盘同 Q378 收盘保留选中），不挡中央条与「跳过动画」；
+        // 中央条带 data-single-show，app.js 在展示期间把空格交给跳过（不落到获得焦点的卡上重开操作盘）
+        if (CardPopShown) CardPopCovered = true;
+        IgniteMenuOpen = false;
+        Pop = null;
+        SingleShowing = true;
+        try
+        {
+            Notify();
+            await Task.Delay(1);   // 让出一次：这一帧画出来以后才开始计时，不让入场把展示耗尽
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            var total = SingleSegmentShowMs;
+            while (!_skip && State != null && (S.Sub ?? S.Main)?.ActionId == shown && clock.ElapsedMilliseconds < total)
+                await Task.Delay((int)Math.Max(1, Math.Min(50, total - clock.ElapsedMilliseconds)));
+        }
+        finally { SingleShowing = false; }
     }
+
+    /// <summary>B46 试玩修复：单段展示等待中（中央条据此标 data-single-show，空格按跳过处理）。</summary>
+    public bool SingleShowing { get; private set; }
 
     /// <summary>
     /// 两段之间的动画间隔：一般为 SegmentDelayMs；撤出（Q202 ④）按全程段数摊开，保证整条撤出至少约 <see cref="ExtractMinVisibleMs"/> 毫秒可见。

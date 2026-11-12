@@ -18,7 +18,8 @@
     var pct = Math.Clamp(p.Fraction, 0, 1) * 100;
     var busy = G.Running || G.S.Sub != null;
     <div class="cprog @(InFlow ? "inflow" : Docked ? "float docked" : "float") @(Fading ? "fading" : "") @(p.Paused ? "paused" : "") @(dlg ? "dlg" : "")"
-         role="status" aria-live="polite" aria-label="@($"{p.Label}：{(dlg ? "对话中，时间未推进" : remain ?? advanced)}")" inert="@(Fading || G.DialogueLocked)">
+         role="status" aria-live="polite" aria-label="@($"{p.Label}：{(dlg ? "对话中，时间未推进" : remain ?? advanced)}")" inert="@(Fading || G.DialogueLocked)"
+         data-single-show="@(G.SingleShowing && !Fading ? "1" : null)">
         <div class="cp-head">
             <b class="cp-name">@p.Label</b>
             <span class="cp-chip @(p.IsSub ? "sub" : p.Paused ? "paused" : "")">@(p.IsSub ? "补给／维护" : dlg ? "等待对话" : p.Paused ? ShellText.ActionPaused : ShellText.ActionRunning)</span>

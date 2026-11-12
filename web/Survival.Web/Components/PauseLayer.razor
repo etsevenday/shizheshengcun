@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @{
     var s = G.S;
@@ -141,6 +142,19 @@
     [Parameter] public bool Docked { get; set; }
 
     private async Task Sub(ActionRequest r) => await G.StartAction(r);
+
+    // B46 试玩修复：完整暂停弹窗每次打开（新的暂停或补给子行动换了、从窄条回到完整弹窗）都从顶部开始，标题与说明不被滚走；
+    // 之后玩家自己的滚动不动
+    private string? _topKey;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var key = G.State == null || G.S.Main == null || Docked ? null : $"{G.S.Main.ActionId}|{G.S.Sub?.ActionId}";
+        if (key == _topKey) return;
+        _topKey = key;
+        if (key == null) return;
+        try { await JS.InvokeVoidAsync("survival.pauseTop"); } catch (JSException) { } catch (InvalidOperationException) { }
+    }
 
 
     private static string CancelHint(ActionState a) => a.Type switch

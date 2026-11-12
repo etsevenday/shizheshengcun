@@ -35,6 +35,13 @@ window.survival = {
     go();
     setTimeout(go, 50);
   },
+  // B46 试玩修复：完整暂停弹窗打开时滚回顶部（标题、说明可见）；渲染后与下一帧、50ms 后各补一次，压过打开时焦点等带来的滚动
+  pauseTop: function () {
+    var go = function () { var g = document.querySelector('.pause-scrim > .pause-grid'); if (g && g.scrollTop > 0) g.scrollTop = 0; };
+    go();
+    requestAnimationFrame(go);
+    setTimeout(go, 50);
+  },
   // 选中卡片后卡下操作条可能落在横滚行的可视区外（卡片靠左/靠右）：横向把它滚进来；在中部下方看不到时中部纵滚到刚好露出（试玩修复 L5）
   revealBar: function () {
     var go = function () {
@@ -332,6 +339,16 @@ window.survival = {
         }
         return;
       }
+      // B46 试玩修复（Q535-A04）：单段 5 分钟行动的展示等待中（中央条 data-single-show），空格就是「跳过动画」——焦点在卡片等控件上或
+      // 刚收起的操作盘还在淡出时也一样，不重开操作盘；焦点就在跳过按钮上时交给原生（不重复），输入框里不处理（上面菜单／对白已先拦）
+      if (k === ' ' && !mod && !editable(tgt)) {
+        var ss = document.querySelector('.cprog[data-single-show]:not(.fading) [data-skip-anim]');
+        if (ss && !ss.disabled && !(ss.closest && ss.closest('[inert]')) && document.activeElement !== ss && !topModal()) {
+          ev.preventDefault();
+          ss.click();
+          return;
+        }
+      }
       // 局部唯一主确认（B43）：数量框、转移条、整备比较／交接、就近盘、强制整理与确认窗、二级面板……
       // 焦点停在被打开着的二级面板盖住的背后控件上（如先点过地面卡再按 R）时，当作焦点不在任何控件上，归该面板
       var fae = document.activeElement, pnl = topPanel();
@@ -366,7 +383,8 @@ window.survival = {
         var sae = document.activeElement;
         if (sae === sk || control(sae)) return;
         if (topModal() || topPanel() || document.querySelector('.bfs') || document.body.classList.contains('dragging')) return;
-        if (Array.prototype.some.call(document.querySelectorAll('.apop, .st-pop.pinned'), shown)) return;
+        // B46 试玩修复：正在淡出的旧盘（.pop-ghosts 里的残影）不算开着
+        if (Array.prototype.some.call(document.querySelectorAll('.apop, .st-pop.pinned'), function (el) { return shown(el) && !(el.closest && el.closest('.pop-ghosts')); })) return;
         ev.preventDefault();
         sk.click();
         return;

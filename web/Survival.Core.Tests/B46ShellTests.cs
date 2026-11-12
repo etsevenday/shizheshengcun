@@ -100,4 +100,43 @@ public class B46ShellTests
         var loop = resume.IndexOf("await RunLoop();", StringComparison.Ordinal);
         Assert.That(guard, Is.GreaterThan(0).And.LessThan(loop));
     }
+
+    /// <summary>B46 试玩修复 1（Q535-A01／A04）：单段展示开始时收起挡中央条的选卡操作盘与点火盘；展示期间空格按跳过处理，不落到卡上重开操作盘；淡出中的旧盘不挡空格。</summary>
+    [Test]
+    public void Fix1_SingleShow_CollapsesLocalDisk_SpaceSkipsDuringShow()
+    {
+        var session = Web("Services/GameSession.cs");
+        var body = Between(session, "private async Task ShowSingleSegment()", "/// <summary>");
+        Assert.That(body, Does.Contain("if (CardPopShown) CardPopCovered = true;").And.Contain("IgniteMenuOpen = false;").And.Contain("Pop = null;"));
+        Assert.That(body, Does.Contain("SingleShowing = true;").And.Contain("finally { SingleShowing = false; }"));
+        Assert.That(body.IndexOf("SingleShowing = true;", StringComparison.Ordinal), Is.LessThan(body.IndexOf("Notify();", StringComparison.Ordinal)), "先收盘再渲染");
+        Assert.That(Web("Components/CentralProgress.razor"), Does.Contain("data-single-show=\"@(G.SingleShowing && !Fading ? \"1\" : null)\""));
+        var js = Web("wwwroot/js/app.js");
+        var early = js.IndexOf("var ss = document.querySelector('.cprog[data-single-show]:not(.fading) [data-skip-anim]');", StringComparison.Ordinal);
+        var apopGuard = js.IndexOf("if (tgt && tgt.closest && tgt.closest('.apop') && k !== 'Escape' && !tgt.closest('.tbar')) return;", StringComparison.Ordinal);
+        Assert.That(early, Is.GreaterThan(0).And.LessThan(apopGuard), "展示期间的空格在就近盘、焦点控件判断之前处理");
+        Assert.That(js, Does.Contain("document.activeElement !== ss && !topModal()"));
+        Assert.That(js, Does.Contain("return shown(el) && !(el.closest && el.closest('.pop-ghosts'));"));
+    }
+
+    /// <summary>B46 试玩修复 2：窄条不限高、压紧间距；休息面板在窄条让位后整块滚动、开始条贴底。</summary>
+    [Test]
+    public void Fix2_DockStripNotClipped_RestPanelScrolls()
+    {
+        var css = Web("wwwroot/css/shell.css");
+        var fix = css.Substring(css.IndexOf("B46 试玩修复（线上构建 b6a1d4b）", StringComparison.Ordinal));
+        Assert.That(fix, Does.Contain(".wasteland :is(.cprog.docked, .pause-dock) { max-height: none; }"));
+        Assert.That(fix, Does.Contain(".center-scroll.four.docked-prog .panel-host .rest-panel { overflow-y: auto; overscroll-behavior: contain; }"));
+        Assert.That(fix, Does.Contain(".center-scroll.four.docked-prog .panel-host .rest-panel > .rest-go { position: sticky; bottom: 0; }"));
+    }
+
+    /// <summary>B46 试玩修复 3：完整暂停弹窗每次打开都滚回顶部（标题与说明可见）。</summary>
+    [Test]
+    public void Fix3_PauseDialogOpensAtTop()
+    {
+        var pause = Web("Components/PauseLayer.razor");
+        Assert.That(pause, Does.Contain("@inject IJSRuntime JS").And.Contain("await JS.InvokeVoidAsync(\"survival.pauseTop\")"));
+        Assert.That(pause, Does.Contain("Docked ? null : $\"{G.S.Main.ActionId}|{G.S.Sub?.ActionId}\""));
+        Assert.That(Web("wwwroot/js/app.js"), Does.Contain("var g = document.querySelector('.pause-scrim > .pause-grid'); if (g && g.scrollTop > 0) g.scrollTop = 0;"));
+    }
 }

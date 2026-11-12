@@ -535,3 +535,17 @@ button .kc, .wasteland button kbd.kc { color: inherit; border-color: currentColo
 .center-scroll.four.full-panel.docked-prog .panel-host { bottom: calc(max(var(--dock-h), var(--dock-live, 0px)) + var(--sh-gap)); }
 /* P3：原工具例外拾取开放时，暂停遮罩只盖①②两行，③当前地面、④随身不被挡住（弹窗在上半区内滚动，中间行动位仍吸附可见） */
 .pause-scrim.pick-open { bottom: calc(50% + var(--sh-gap) / 2); }
+
+/* ═════ B46 试玩修复（线上构建 b6a1d4b）═════ */
+/* 中央行动位窄条不再限高：暂停原因、复核原因、中止说明（Q533）与等待加工的目标行都直接完整可见，不裁字；一级面板按窄条实际高度让位（--dock-live） */
+.wasteland :is(.cprog.docked, .pause-dock) { max-height: none; }
+/* 窄条压紧：内边距、行距与按钮高度收一点（字号、文字不变），少占面板的高度 */
+.wasteland .pause-dock { gap: 2px; }
+.wasteland .cprog.docked, .wasteland .pause-dock .cprog.inflow { padding: 4px 10px; row-gap: 2px; }
+.wasteland :is(.cprog.docked, .pause-dock .cprog.inflow) :is(.cp-reason, .cp-resume, .cp-note, .cp-targets) { line-height: 1.35; }
+.wasteland :is(.cprog.docked, .pause-dock .cprog.inflow) .cp-ctrl button { min-height: 36px; padding-top: 2px; padding-bottom: 2px; }
+/* 休息面板在窄条让位后放不下时：整块面板一起纵向滚动（标题随之滚走），开始条贴底常驻，说明与时长卡都能滚到、不被压成一条缝 */
+.center-scroll.four.docked-prog .panel-host .rest-panel { overflow-y: auto; overscroll-behavior: contain; }
+.center-scroll.four.docked-prog .panel-host .rest-panel > * { flex-shrink: 0; }
+.center-scroll.four.docked-prog .panel-host .rest-panel > .rest-scroll { overflow: visible; }
+.center-scroll.four.docked-prog .panel-host .rest-panel > .rest-go { position: sticky; bottom: 0; }
