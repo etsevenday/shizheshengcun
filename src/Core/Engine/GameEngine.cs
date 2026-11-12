@@ -1157,6 +1157,14 @@ namespace Survival.Core.Engine
             if (LockedResumeCommit(s, commit) is ActionResult locked) return locked;
             // B41b（R05 Q465、Q474）：检查与正式提交共用同一只读判定；失败不改任何状态
             if (!LockedMainPaused(s) && ResumeBlockReason(s) is string why) return ActionResult.Fail(why);
+            // B46（S01 Q536）：非锁定与 Q524 旧在办的等待加工过了原前置后，原绑定目标全部有完成回执即走原正常完成，不进推进循环、不再加 5 分钟
+            if (!LockedMainPaused(s) && CookWaitAllDone(s, s.Main!) && HasFireAt(s, s.Main!.TargetId))
+            {
+                if (!commit) return ActionResult.Fail("原等待目标已全部完成");
+                var done = s.Main!;
+                FinishCookWaitNow(s, done);
+                return ActionResult.Success(done.ActionId);
+            }
             s.Main!.RetreatMoveOpen = false;   // B41b（R05 Q473）：成功继续原工作即结束本次暂停的移动例外
             s.Main.Status = ActionStatus.Running;
             s.Main.PauseReason = PauseReason.None;

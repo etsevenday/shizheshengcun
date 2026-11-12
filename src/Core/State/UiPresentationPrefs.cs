@@ -39,6 +39,11 @@ namespace Survival.Core.State
         public const int SegmentBaseMs = 120;
         /// <summary>当前敌方逐条展示的基准间隔（Q321；Q297 特写替换前的过渡展示）。</summary>
         public const int EnemyStepBaseMs = 480;
+        /// <summary>
+        /// B46（S01／S14／逐字稿 Q535【交开发方定】）：单段 5 分钟行动在唯一真实段之前中央条的表现等待基准 1200 毫秒 → 快／标准／慢 600／1200／1800。
+        /// 只是表现，不是玩法数值：从中央条真实可见后计，可被「跳过动画」缩短；系统减少动态效果时同一间隔照常保留（静态展示）。
+        /// </summary>
+        public const int SingleSegmentShowBaseMs = 1200;
 
         public ReadingFont Font { get; set; } = DefaultFont;
         public AnimationSpeed Speed { get; set; } = DefaultSpeed;
@@ -56,6 +61,7 @@ namespace Survival.Core.State
 
         public int SegmentDelayMs => Scale(SegmentBaseMs, Speed);
         public int EnemyStepDelayMs => Scale(EnemyStepBaseMs, Speed);
+        public int SingleSegmentShowMs => Scale(SingleSegmentShowBaseMs, Speed);
 
         /// <summary>存储值（小写英文，与 wwwroot/js/app.js 的启动预读一致）。</summary>
         public static string FontValue(ReadingFont f) => f == ReadingFont.Clear ? "clear" : "pixel";

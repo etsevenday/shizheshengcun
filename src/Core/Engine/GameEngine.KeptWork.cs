@@ -16,6 +16,7 @@ namespace Survival.Core.Engine
         public const string ResumeReserveChanged = "本次行动的预留已变化，无法继续，请退出行动。";
         public const string ResumeSpoiled = "原料已腐败，无法继续，请退出行动。";
         public const string ResumeToolGone = "原工具已不在，无法继续，请退出行动。";
+        /// <summary>B46（Q536）起只剩空绑定列表这一种（原有）拒绝；原绑定目标全部完成时「继续行动」直接正常完成。</summary>
         public const string ResumeCookAllDone = "原等待目标已全部完成，请退出等待。";
 
         /// <summary>
@@ -125,7 +126,8 @@ namespace Survival.Core.Engine
                     var fac = FacOf(s, a.TargetId);
                     if (fac == null || !HasFireAt(s, a.TargetId)) return ResumeTargetGone;
                     var open = a.CookTargets.Where(p => !a.CookDone.Contains(p) && !fac.Completed.Any(x => x.StartsWith(p + "@"))).ToList();
-                    if (open.Count == 0) return ResumeCookAllDone;
+                    // B46（Q536）：原非空绑定目标全部有完成回执时可以继续，由 Resume 直接走原正常完成；空绑定仍沿原拒绝
+                    if (open.Count == 0) return CookWaitAllDone(s, a) ? null : ResumeCookAllDone;
                     if (open.Any(p => !fac.Processes.Any(x => x.ProcessId == p))) return ResumeTargetGone;
                     if (!fac.FireLit) return "火堆未燃烧：请先点火（等待加工不会自动点火）";
                     if (fac.FuelMinutes < Tick) return "火堆燃料不够下一段，请先投入木材（等待加工不会自动加木）";

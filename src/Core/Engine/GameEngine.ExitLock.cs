@@ -62,6 +62,9 @@ namespace Survival.Core.Engine
         public const string LockedSubRunning = "当前行动还没结束。";
         public const string ElapsedKept = "已耗时间保留。";
 
+        /// <summary>B46（Q532、逐字稿「B41c2 Q531—Q534 实施补充逐字稿」）：锁定采集／处理尸体只缺拾取同一有效原工具时的复核与继续拒绝句。</summary>
+        public string LockedPickupOwnTool(ItemInstance tool) => $"需要先拾取原工具：{ItemName(tool.ItemId)}。";
+
         /// <summary>开工后不可中途退出（运行、暂停、子行动都一样）：本次开工认定的锁定，加上原本就不可取消的单段事务与潜行接近／躲避（旧档原限制保持）。</summary>
         public static bool ExitLocked(ActionState a) => a.NoExit || IsSingleTransaction(a.Type) || IsStealthCheck(a);
 
@@ -135,7 +138,7 @@ namespace Survival.Core.Engine
                         if (tool == null || (!OnPlayer(tool) && !OwnGroundTool(s, a, tool))) return LockedResumeVerdict.Perm(LockedGatherToolGone);
                         if (!HasWear(tool, GatherWear))
                             return LockedResumeVerdict.Perm(tool.Durability <= 0 ? LockedGatherToolBroken : $"这件工具耐久不足（{DurabilityText(tool)}），无法继续。");
-                        if (!OnPlayer(tool)) return ToolPickupVerdict(s, tool, "先拾取工具");
+                        if (!OnPlayer(tool)) return ToolPickupVerdict(s, tool, LockedPickupOwnTool(tool));   // B46（Q532）：与处理尸体同句，取原工具公开名
                     }
                     return LockedResumeVerdict.Ok();
                 }
@@ -193,7 +196,7 @@ namespace Survival.Core.Engine
                     var missing = $"缺少本次处理所需的有效{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}，无法继续。";
                     var tool = a.ToolInstanceId is int tid ? FindItem(s, tid) : null;
                     if (tool == null || !HasWear(tool, c.ToolWearOnSuccess) || (!OnPlayer(tool) && !OwnGroundTool(s, a, tool))) return LockedResumeVerdict.Perm(missing);
-                    if (!OnPlayer(tool)) return ToolPickupVerdict(s, tool, $"需要先拾取原工具：{ItemName(tool.ItemId)}。");
+                    if (!OnPlayer(tool)) return ToolPickupVerdict(s, tool, LockedPickupOwnTool(tool));
                     return LockedResumeVerdict.Ok();
                 }
                 case ActionType.WaitCook:
@@ -201,7 +204,7 @@ namespace Survival.Core.Engine
                     var fac = FacOf(s, a.TargetId);
                     if (fac == null || !HasFireAt(s, a.TargetId)) return LockedResumeVerdict.Perm(LockedTargetGone);
                     var open = a.CookTargets.Where(p => !a.CookDone.Contains(p) && !fac.Completed.Any(x => x.StartsWith(p + "@"))).ToList();
-                    if (open.Count == 0) return new LockedResumeVerdict { Kind = LockedResumeKind.CookDone };
+                    if (CookWaitAllDone(s, a)) return new LockedResumeVerdict { Kind = LockedResumeKind.CookDone };   // B46（Q536）：空绑定不算全部完成
                     if (open.Any(p => !fac.Processes.Any(x => x.ProcessId == p))) return LockedResumeVerdict.Perm(LockedTargetGone);
                     if (!fac.FireLit) return LockedResumeVerdict.Temp("火堆未燃烧：请先点火（等待加工不会自动点火）");
                     if (fac.FuelMinutes < Tick) return LockedResumeVerdict.Temp("火堆燃料不够下一段，请先投入木材（等待加工不会自动加木）");
@@ -290,7 +293,7 @@ namespace Survival.Core.Engine
                     AbortLocked(s, m, v.Reason);
                     return new ActionResult { Ok = true, ActionId = m.ActionId, Aborted = true, Reason = v.Reason };
                 case LockedResumeKind.CookDone when commit:
-                    FinishLockedCookWait(s, m);
+                    FinishCookWaitNow(s, m);
                     return ActionResult.Success(m.ActionId);
                 case LockedResumeKind.CookDone:
                     return ActionResult.Fail("原等待目标已全部完成");
@@ -299,8 +302,21 @@ namespace Survival.Core.Engine
             }
         }
 
-        /// <summary>Q515：原绑定目标全部有完成回执——记回执、清等待占用一次、写原完成句；不推进时间、不再产物／经验。</summary>
-        private void FinishLockedCookWait(GameState s, ActionState a)
+        /// <summary>
+        /// B46（S01「B41c2 Q535—Q536 试玩批定稿」Q536）：等待加工的原非空绑定目标逐一已有真实完成回执（已登记，或火堆完成回执里有它）。
+        /// 只读。剩余显示为 0、目标消失／腐败而没有回执、空绑定列表都不算；后来放进火堆的新加工不在原绑定里，不影响。
+        /// </summary>
+        public bool CookWaitAllDone(GameState s, ActionState a)
+        {
+            if (a.Type != ActionType.WaitCook || a.CookTargets.Count == 0 || FacOf(s, a.TargetId) is not FacilityState fac) return false;
+            return a.CookTargets.All(p => a.CookDone.Contains(p) || fac.Completed.Any(x => x.StartsWith(p + "@")));
+        }
+
+        /// <summary>
+        /// Q515，B46 扩到非锁定与 Q524 旧在办等待（Q536）：原绑定目标全部有完成回执——记回执、清等待占用一次、写原完成句；
+        /// 不推进时间、不进单段展示、不再产物／经验、不扣燃料或身体费用。已耗时只取本次等待自己实际提交的段（暂停中别的行动不计）。
+        /// </summary>
+        private void FinishCookWaitNow(GameState s, ActionState a)
         {
             var fac = FacOf(s, a.TargetId);
             foreach (var pid in a.CookTargets.Where(p => !a.CookDone.Contains(p)).ToList())

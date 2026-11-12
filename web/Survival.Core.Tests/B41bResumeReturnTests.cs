@@ -315,7 +315,9 @@ public class B41bResumeReturnTests : B41bTestBase
             Status = ActionStatus.Paused, PauseReason = PauseReason.StatAlert, Label = "等待加工",
             CookTargets = new List<string> { "p1" }, CookTargetItems = new List<int> { 0 },
         };
-        Assert.That(E.ResumeBlockReason(s), Is.EqualTo(GameEngine.ResumeCookAllDone), "后放进去的新工序不加进目标");
+        // B46（Q536）：原绑定目标全部有完成回执时可以继续，继续即正常完成；后放进去的新工序不加进目标
+        Assert.That(E.ResumeBlockReason(s), Is.Null, "后放进去的新工序不加进目标");
+        Assert.That(E.CookWaitAllDone(s, s.Main), Is.True);
         s.Main.CookTargets.Add("p2");
         s.Main.CookTargetItems.Add(0);
         fac.FireLit = false;

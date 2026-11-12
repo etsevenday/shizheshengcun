@@ -316,7 +316,7 @@ namespace Survival.Core.Engine
             if (s.Battle != null) return "已在战斗中";
             if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (s.Main != null || s.Sub != null)
-                return s.Main?.Status == ActionStatus.Paused ? (s.Sub == null && LockedMainPaused(s) ? LockedPausedBusy : "行动暂停中，先结束或取消行动") : "行动进行中";   // B41c2（Q526）
+                return s.Main?.Status == ActionStatus.Paused ? (LockedMainPaused(s) ? (s.Sub != null ? LockedSubRunning : LockedPausedBusy) : "行动暂停中，先结束或取消行动") : "行动进行中";   // B41c2（Q526）；B46（Q534）：锁定主行动暂停且子行动未结束
             var w = FindWorldEnemy(s, worldEnemyId);
             if (w == null) return "这个敌人已不在";
             if (w.LocationId != s.CurrentLocation || Hidden(s, w)) return "只能接近当前地点可见的敌人";
