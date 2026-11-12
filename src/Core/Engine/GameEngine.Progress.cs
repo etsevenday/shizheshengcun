@@ -57,6 +57,11 @@ namespace Survival.Core.Engine
         public string? ResumeNote { get; set; }
         /// <summary>B41c2：复核为永久失效，真正点「继续行动」会自动中止（旁显「本次行动无法继续，点击「继续行动」后将自动中止。」）。</summary>
         public bool ResumeAborts { get; set; }
+        /// <summary>
+        /// B41e2（R05 Q440；逐字稿「异地尝试继续原行动」「原行动地点／地牢世代失效」）：撤退离地保留的原工作此刻不能继续的原因（异地或原地点失效）；
+        /// 能继续或不适用为 null。界面据此禁用「继续行动」并写原因。只在新版敌踪下有值。
+        /// </summary>
+        public string? KeptResumeBlock { get; set; }
     }
 
     public sealed partial class GameEngine
@@ -160,6 +165,7 @@ namespace Survival.Core.Engine
             info.StashedLabel = s.StashedWork?.Label;
             var kept = s.StashedWork ?? (a.RetreatKept && CardsV2(s) ? a : null);
             info.WorkPlace = kept != null ? WorkPlaceName(s, kept) : null;
+            if (info.Paused && !info.Locked && ReferenceEquals(s.Main, a)) info.KeptResumeBlock = KeptWorkResumeBlock(s, a);
             info.ExitForfeits = forfeit != null;
             // B21：撤出不可取消（R03 D5.2、A10 §7“已经提交的撤出进程不可取消，UI 显示原因”）
             if (a.Type == ActionType.Extract && s.Expedition?.IsExtracting == true)

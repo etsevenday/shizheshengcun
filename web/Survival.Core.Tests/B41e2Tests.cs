@@ -255,6 +255,27 @@ public class B41e2Tests : B41cTestBase
         Assert.That(GameEngine.PracticeNote, Is.EqualTo("练习按等待消耗身体状态。做满30分钟才获得经验，退出不退已耗时间。"));
     }
 
+    // ───────────── 中央条暂存摘要与行动地点（Q440、Q472） ─────────────
+
+    [Test]
+    public void Q440_KeptWork_ProgressShowsWorkPlace_AndResumeBlockedAwayFromSite()
+    {
+        var s = Field(1);
+        KeptCraft(s);
+        var p = E.ActionProgress(s)!;
+        Assert.That(p.Paused, Is.True);
+        Assert.That(p.WorkPlace, Is.EqualTo(E.LocName("field")));
+        Assert.That(p.KeptResumeBlock, Is.EqualTo($"请返回{E.LocName("field")}后再继续{s.Main!.Label}。"), "异地禁用继续，原因同内核继续校验");
+        Assert.That(E.Resume(s).Reason, Is.EqualTo(p.KeptResumeBlock));
+    }
+
+    [Test]
+    public void Q440_KeptResumeBlock_NullWhenSwitchOff()
+    {
+        var s = LegacyField();
+        Assert.That(Off.ActionProgress(s)?.KeptResumeBlock, Is.Null);
+    }
+
     // ───────────── Q446 ⑩ 生存提示 ─────────────
 
     [Test]

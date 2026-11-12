@@ -197,6 +197,17 @@ namespace Survival.Core.Engine
             return (EnemySpeedWithFirstStrike(e, f), f > 1 ? $"（含{FirstStrikeTag(f)}）" : "");
         }
 
+        // ───────────── 中央行动位与暂停层的暂存摘要（逐字稿「B41b Q472—Q476 暂存与移动」「B41b Q439—Q444」行动地点） ─────────────
+
+        /// <summary>逐字稿「暂存原工作摘要」：暂存行动：{原行动名}。</summary>
+        public static string StashedWorkText(string label) => $"暂存行动：{label}";
+
+        /// <summary>逐字稿「原工作地点摘要」／「原行动地点标签」：行动地点：{原地点}。</summary>
+        public static string WorkPlaceText(string place) => $"行动地点：{place}";
+
+        /// <summary>逐字稿「暂存说明」。</summary>
+        public const string StashedWorkNote = "原行动保持暂停，移动结束后返回原行动的暂停状态。";
+
         // ───────────── Q446 ⑩ 生存提示第 13 条 ─────────────
 
         /// <summary>生存提示第 13 条旧分句（配置 progress.tips）。</summary>
