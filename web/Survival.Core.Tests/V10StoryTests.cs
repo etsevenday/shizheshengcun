@@ -12,8 +12,11 @@ public class V10StoryTests : BattleTestBase
 {
     private const string Sub = "active_substance_white_unidentified";
 
-    /// <summary>读完待读对话后移动到荒地；read 时把到达后出现的对话（首战警告）也读完。</summary>
-    private void ToField(GameState s, bool read = true)
+    /// <summary>
+    /// 读完待读对话后移动到荒地；fight 时像玩家一样马上主动接近教学卡开首战（B41b R05 Q421：到达只出教学卡、不直接开战；B41e3 起是唯一流程）；
+    /// read 时把开战后出现的对话（首战警告）也读完。
+    /// </summary>
+    private void ToField(GameState s, bool read = true, bool fight = true)
     {
         ReadDialogues(s);
         Start(s, ActionRequest.Travel("field"));
@@ -22,6 +25,7 @@ public class V10StoryTests : BattleTestBase
             var r = E.Advance(s);
             if (r.Status == SegmentStatus.Paused) E.Resume(s);
         }
+        if (fight) ApproachTutorial(s);
         if (read) ReadDialogues(s);
     }
 
@@ -77,13 +81,17 @@ public class V10StoryTests : BattleTestBase
         Assert.That(E.Preview(s, ActionRequest.Travel("field")).Ok, Is.False, "开场对白未读完时不能开始移动");
         ReadDialogues(s);
         Assert.That(E.Preview(s, ActionRequest.Travel("field")).Warnings.Any(w => w.Contains("首战")), Is.True, "移动预览提前说明");
-        ToField(s, read: false);
+        ToField(s, read: false, fight: false);
         Assert.That(s.CurrentLocation, Is.EqualTo("field"), "先落点到荒地");
-        Assert.That(s.Battle, Is.Not.Null, "到达后直接进入首战");
+        Assert.That(s.Battle, Is.Null, "B41b（R05 Q421）：到达只出教学卡，不直接开战");
+        Assert.That(s.Story.PendingDialogues, Does.Not.Contain("tutorial_arrive"), "首战警告等教学战真正开始才播");
+        Assert.That(E.EnemyCardHere(s, GameEngine.SingleCardKey(tid)), Is.Not.Null, "教学卡在荒地");
+        Assert.That(E.ApproachCard(s, GameEngine.SingleCardKey(tid)).Ok, Is.True);
+        Assert.That(s.Battle, Is.Not.Null, "主动接近教学卡进入首战");
         Assert.That(s.Battle!.Tutorial, Is.True);
-        Assert.That(s.Battle.Context, Is.EqualTo(GameEngine.FearTutorial));
+        Assert.That(s.Battle.Context, Is.EqualTo(GameEngine.FearApproach), "主动接近的受惊情境");
         Assert.That(s.Battle.Enemies.Single().WorldId, Is.EqualTo(tid), "唯一保留游荡尸，不复制敌人");
-        Assert.That(s.Battle.FearChance, Is.EqualTo(E.FearChance(0.35, s.Battle.FearMorale, GameEngine.FearTutorial)).Within(1e-12));
+        Assert.That(s.Battle.FearChance, Is.EqualTo(E.FearChance(0.35, s.Battle.FearMorale, GameEngine.FearApproach)).Within(1e-12));
         Assert.That(s.Story.PendingDialogues, Does.Contain("tutorial_arrive"));
         Assert.That(s.WorldEnemies.Count(w => w.EnemyId == "shambler" && w.LocationId == "field"), Is.EqualTo(1));
     }
@@ -101,7 +109,7 @@ public class V10StoryTests : BattleTestBase
         Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.EqualTo(0));
         Assert.That(E.EncounterNote(s, "village", ActionType.Explore), Does.Contain("首战"));
         var other = s.WorldEnemies.First(w => w.LocationId == "village");
-        Assert.That(E.CanApproach(s, other.Id), Does.Contain("首战"));
+        Assert.That(E.CanApproach(s, other.Id), Is.EqualTo("先战胜农野荒地的游荡尸，再处理其他敌踪。"), "B41e3：新版教学门槛句（R05 B41）");
         // 首战保留游荡尸不巡游（巡游大量抽签也不动）
         for (var k = 0; k < 200; k++)
         {
@@ -173,11 +181,11 @@ public class V10StoryTests : BattleTestBase
         Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
         // 重复到达不再强制入战，但可主动接近同一教学敌人继续挑战；其他敌人仍关闭
         SetStats(s, 20, 80, 80, 18, 90, 60);
-        ToField(s);
+        ToField(s, fight: false);
         Assert.That(s.Battle, Is.Null);
         Assert.That(E.CanApproach(s, tid), Is.Null);
         var other = E.DebugSpawnEnemy(s, "crawler", "field");
-        Assert.That(E.CanApproach(s, other.Id), Does.Contain("首战"));
+        Assert.That(E.CanApproach(s, other.Id), Is.EqualTo("先战胜农野荒地的游荡尸，再处理其他敌踪。"), "B41e3：新版教学门槛句（R05 B41）");
         Assert.That(E.Approach(s, tid).Ok, Is.True);
         Assert.That(s.Battle!.Tutorial, Is.True);
         WinTutorial(s);
@@ -318,11 +326,10 @@ public class V10StoryTests : BattleTestBase
         if (s.Battle != null) Assert.Inconclusive("强制撤退未成功");
         Assert.That(s.Story.TutorialWon, Is.False);
         Assert.That(s.CurrentLocation, Is.EqualTo("camp"), "B22h：撤退退回走来的营地");
-        ToField(s);
+        ToField(s, fight: false);
         Assert.That(s.Battle, Is.Null, "重复到达不强制入战");
         // 开发入口“本地敌人立即形成敌踪”→“接敌”：普通战斗里把首战游荡尸打死
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = new List<int> { tid }, Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(s, new List<int> { tid }, GameEngine.FearEncounter), Is.True);
         Assert.That(s.Battle!.Tutorial, Is.False);
         ReadDialogues(s);
         for (var k = 0; k < 20 && s.Battle != null; k++)

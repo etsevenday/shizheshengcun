@@ -31,7 +31,6 @@ namespace Survival.Core.Engine
         private string? CanteenHereBlocked(GameState s, ItemInstance c)
         {
             if (s.Battle != null) return "战斗中不能整理物品或饮水";
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (IsBusy(s)) return "行动进行中，不能整理物品";
             if (!(c.IsCarried || c.Owner == s.Ground)) return "只能操作随身或当前地面的水壶";

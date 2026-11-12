@@ -188,22 +188,6 @@
 .wasteland .ocard.k2 .k2-l2 > .oc-line.warn-line,
 .wasteland .ocard.k2 .k2-sub > .oc-line.warn-line { color: #e7b46d; }
 
-/* ───── 发现敌踪覆盖层（Q342 过渡）：敌人卡保持模板尺寸、不被压扁，也不压住「接敌」「绕行」——
-   B32a 试玩修复：说明行移到标题行右侧（可折行），各行按内容定高；按钮说明折行多时覆盖层自身纵向滚动，而不是压缩卡片行 ───── */
-.wasteland .center-scroll.four .rows2-inner > .battle-overlay.encounter {
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto auto auto;
-  grid-template-areas: "head log" "cards cards" "act act";
-  align-content: start;
-  overflow-x: hidden; overflow-y: auto;
-}
-.battle-overlay.encounter > .bt-head { grid-area: head; }
-.battle-overlay.encounter > .bt-cards { grid-area: cards; min-height: 0; align-items: flex-start; }
-.battle-overlay.encounter > .enc-actions { grid-area: act; }
-.wasteland .battle-overlay.encounter > .bt-log { grid-area: log; align-self: center; max-height: none; overflow: visible; border-top: 0; padding-top: 0; text-align: right; }
-.wasteland .battle-overlay.encounter .bt-cards > .ocard.k2.k2 { height: var(--k2-h); min-height: 0; flex: 0 0 var(--k2-w); }
-.battle-overlay.encounter .ocard.k2.stays { opacity: .55; filter: grayscale(.6); }
-
 /* ───── 路线卡（Q340）：场景图铺满主图区；副标方位箭头 + 单程时间 ───── */
 .ocard.k2 > .k2-art > .loc-art { position: absolute; inset: 0; width: auto; height: auto; min-height: 0; background-size: cover; background-position: center 60%; }
 .ocard.k2 .k2-sub .dir-mark { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; border-radius: 50%; border: 1px solid var(--k2-bar-line); background: #20271d; }

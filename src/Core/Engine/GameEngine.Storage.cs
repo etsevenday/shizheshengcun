@@ -37,7 +37,6 @@ namespace Survival.Core.Engine
         {
             if (s.CurrentZone != SafehouseZone || !SafehouseBuilt(s, s.CurrentLocation)) return "只有在安全屋屋内才能存取柜子";
             if (s.Battle != null) return "战斗中不能整理物品";
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (IsBusy(s)) return "行动进行中，不能存取柜子";
             return null;
         }

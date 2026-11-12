@@ -5,7 +5,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41b 里程碑 6：继续前的完整只读重验与分来源返还（开关开；R05「B41b Q463—Q471」Q465、Q466、Q471，「Q472—Q476」Q475、Q476；
+/// B41b 里程碑 6：继续前的完整只读重验与分来源返还（R05「B41b Q463—Q471」Q465、Q466、Q471，「Q472—Q476」Q475、Q476；
 /// 逐字稿「B41b Q463—Q471 续接与返还逐字稿」；验收 Q440-A01 返还部分、Q440-A02、Q465-A01—A03、Q466-A01—A02、Q471-A01、Q475-A01、Q476-A01）。
 /// </summary>
 public class B41bResumeReturnTests : B41bTestBase
@@ -328,13 +328,5 @@ public class B41bResumeReturnTests : B41bTestBase
         fac.FuelMinutes = 60;
         Assert.That(E.ResumeBlockReason(s), Is.Null);
         Assert.That(s.Main.CookDone, Is.Empty, "检查不改完成记录");
-    }
-
-    [Test]
-    public void FlagOff_ResumeKeepsOldGeneralChecksOnly()
-    {
-        var s = New();
-        s.Main = new ActionState { ActionId = 99, Type = ActionType.Craft, TargetId = "no_such_recipe", Status = ActionStatus.Paused, Label = "制作" };
-        Assert.That(Off.ResumeBlockReason(s), Is.Null, "开关关时不做 Q465 重验");
     }
 }

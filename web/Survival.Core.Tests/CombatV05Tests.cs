@@ -10,6 +10,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class CombatV05Tests : BattleTestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     /// <summary>B501 原为“开关关闭时无敌人”。不适用：用户 2026-10-26 拍板全量接入、直接开启，不做开关。</summary>
     [Test]
     public void B501_NotApplicable_CombatEnabledByDecision()
@@ -343,8 +346,7 @@ public class CombatV05Tests : BattleTestBase
         s.SpawnNextCheck = int.MaxValue;
         s.PatrolNextCheck = int.MaxValue;
         var dog = E.DebugSpawnEnemy(s, "feral_dog", "camp");
-        s.Encounter = new PendingEncounter { LocationId = "camp", EnemyIds = { dog.Id } };
-        E.Engage(s);
+        Assert.That(E.DebugStartBattle(s, new List<int> { dog.Id }, GameEngine.FearEncounter), Is.True);
         Ready(s);
         Arm(s, "hatchet");
         var e0 = s.Stats.Energy;
@@ -507,9 +509,9 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(s.WorldEnemies.Single().Hp, Is.EqualTo(Enemy2Hp(hurt, s)).Within(1e-9));
         Assert.That(AttackXpKeys.Hits(s.WorldEnemies.Single().ActorXpHits, GameState.PlayerId, "blade"), Is.EqualTo(1), "经验计数随 worldEnemyId 保存");
         Assert.That(s.Items.Count(i => i.Owner == "field" && i.ItemId is "cloth" or "scrap"), Is.EqualTo(0), "撤退不领取掉落");
-        Assert.That(s.EncounterGraceUntil, Is.EqualTo(s.GameMinute + 60));
+        Assert.That(s.EncounterGraceUntil, Is.LessThanOrEqualTo(s.GameMinute), "B41e3：不再写战后全地点随机接敌保护（同卡撤退保护见 B41b 用例）");
         // 主动重进：同一实例、HP 保留
-        Assert.That(E.Approach(s, wid).Ok, Is.True, "保护期不挡主动接敌");
+        Assert.That(E.Approach(s, wid).Ok, Is.True, "撤退后可主动重接");
         Assert.That(s.Battle!.Enemies.Single().Hp, Is.EqualTo(s.WorldEnemies.Single().Hp));
         Assert.That(AttackXpKeys.Hits(s.Battle.Enemies.Single().ActorXpHits, GameState.PlayerId, "blade"), Is.EqualTo(1));
     }
@@ -529,10 +531,11 @@ public class CombatV05Tests : BattleTestBase
         ForceLoot(s, "fiber");
         s.Main!.EncounterRoll = 0;
         Run(s);
-        Assert.That(s.Encounter, Is.Not.Null);
+        var g = s.EnemyCards.Groups.Single();   // B41e3：命中后形成随机组卡（新版没有待处理敌踪）
         var progress = s.Locations["field"].Progress;
         var fiber = Count(s, "fiber", "field");
-        E.Engage(s);
+        Assert.That(E.ApproachCard(s, GameEngine.GroupCardKey(g.Id)).Ok, Is.True);
+        Assert.That(s.Battle, Is.Not.Null);
         Assert.That(s.Locations["field"].Progress, Is.EqualTo(progress));
         Assert.That(Count(s, "fiber", "field"), Is.EqualTo(fiber));
     }

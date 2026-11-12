@@ -11,7 +11,6 @@ namespace Survival.Core.Engine
         Ended,
         Dialogue,
         Battle,
-        Encounter,
         Extracting,
         Running,
         Paused,
@@ -47,7 +46,6 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return ManualSaveBlock.Ended;
             if (DialogueLocked(s)) return ManualSaveBlock.Dialogue;
             if (s.Battle != null) return ManualSaveBlock.Battle;
-            if (s.Encounter != null) return ManualSaveBlock.Encounter;
             if (s.Expedition?.IsExtracting == true) return ManualSaveBlock.Extracting;
             if (s.Sub != null || (s.Main != null && s.Main.Status != ActionStatus.Paused)) return ManualSaveBlock.Running;
             if (s.Main != null) return LockedMainPaused(s) ? ManualSaveBlock.PausedLocked : ManualSaveBlock.Paused;
@@ -61,7 +59,6 @@ namespace Survival.Core.Engine
         {
             ManualSaveBlock.Dialogue => "请先读完对话",
             ManualSaveBlock.Battle => "战斗中不能手动存档。",
-            ManualSaveBlock.Encounter => "先处理敌踪再存档。",
             ManualSaveBlock.Extracting => "撤出途中不能手动存档。",
             ManualSaveBlock.Running => "行动进行中，不能手动存档。",
             ManualSaveBlock.Paused => "行动暂停中，先继续或退出行动再存档。",

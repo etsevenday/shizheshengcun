@@ -129,8 +129,8 @@ public sealed class SurvivalBot
     private void HandleStory()
     {
         ReadDialogues();
-        // B41b（R05 Q421）：新版敌踪下首次到荒地只出教学卡、不直接开战——脚本像玩家一样马上主动接近它，保持“到荒地先打首战”的节奏
-        if (S.Battle == null && S.Main == null && S.Sub == null && !S.Progress.Dead && E.CardsV2(S) && GameEngine.TutorialGateOpen(S)
+        // B41b（R05 Q421）：首次到荒地只出教学卡、不直接开战——脚本像玩家一样马上主动接近它，保持“到荒地先打首战”的节奏
+        if (S.Battle == null && S.Main == null && S.Sub == null && !S.Progress.Dead && GameEngine.TutorialGateOpen(S)
             && S.Story.TutorialEnemyId is int tid && E.EnemyCardsHere(S).Any(c => c.Key == GameEngine.SingleCardKey(tid)))
             E.ApproachCard(S, GameEngine.SingleCardKey(tid));
         if (S.Battle != null && !S.Progress.Dead)
@@ -149,22 +149,18 @@ public sealed class SurvivalBot
         ReadDialogues();
     }
 
-    /// <summary>v0.6：探索/清理后发现敌踪时，脚本选择绕行10分钟（不打架），之后60分钟保护期。</summary>
+    /// <summary>
+    /// 探索／清理后在当地形成随机组卡（B41e3 起只有新版敌踪卡，旧版“绕行10分钟＋60分钟保护”已删）：
+    /// 战斗策略且健康够就主动接近打掉；否则不理会（到期由敌方开战时 Drive 照常打完、能撤就撤）。
+    /// </summary>
     private void HandleEncounter()
     {
-        if (S.Encounter == null || S.Progress.Dead) return;
-        if (_fight && S.Stats.Health >= 0.6 * S.Stats.HealthMax)
-        {
-            Encounters++;
-            EquipBest();
-            if (E.Engage(S).Ok) { FightBattle(); return; }
-        }
-        if (E.Start(S, ActionRequest.Bypass()).Ok)
-        {
-            Encounters++;
-            Log("Bypass 敌踪");
-            Drive();
-        }
+        if (!_fight || S.Progress.Dead || S.Battle != null || S.Main != null || S.Sub != null || S.Stats.Health < 0.6 * S.Stats.HealthMax) return;
+        var card = E.EnemyCardsHere(S).FirstOrDefault(c => c.Kind == "group" && !c.Hidden && !c.Engaged);
+        if (card == null) return;
+        Encounters++;
+        EquipBest();
+        if (E.ApproachCard(S, card.Key).Ok) FightBattle();
     }
 
     public int Encounters { get; private set; }
@@ -444,6 +440,8 @@ public sealed class SurvivalBot
         if (Tod < 6 * 60) { Do(ActionRequest.Wait(30)); return; }
         if (S.Stats.Wakefulness < 25) { Do(ActionRequest.Sleep(240)); return; }
         if (LowEnergy) { Do(ActionRequest.Rest(60)); return; }
+        // B41e3：新版敌踪到期会主动开战（不再能绕行），重伤出门容易被一路打死——健康不到上限一半先在营地休息
+        if (S.Stats.Health < 0.5 * S.Stats.HealthMax) { if (!Do(ActionRequest.Rest(60))) Do(ActionRequest.Wait(60)); return; }
         if (Tod > 18 * 60 + 30) { Do(ActionRequest.Wait(60)); return; }
 
         Trip();

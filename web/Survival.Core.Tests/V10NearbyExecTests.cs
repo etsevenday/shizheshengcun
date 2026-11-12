@@ -45,7 +45,8 @@ public class V10NearbyExecTests : TestBase
         Start(s, ActionRequest.Travel("field").WithRequestId("t"));
         for (var i = 0; i < 20 && s.Main != null; i++) E.Advance(s);
         Assert.That(s.CurrentLocation, Is.EqualTo("field"));
-        Assert.That(s.Battle, Is.Not.Null, "原到达事务不变：第一次到荒地直接进入首战");
+        Assert.That(s.Battle, Is.Null, "B41b（R05 Q421）：第一次到荒地只出教学卡，不直接开战");
+        Assert.That(E.EnemyCardHere(s, GameEngine.SingleCardKey(s.Story.TutorialEnemyId!.Value)), Is.Not.Null);
     }
 
     [Test]

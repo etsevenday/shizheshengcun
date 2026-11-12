@@ -6,7 +6,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41c 新版敌踪潜行、小队队长、隐藏重现与先手的公共工具（开关开的配置，见 <see cref="B41aTestBase"/>）。
+/// B41c 新版敌踪潜行、小队队长、隐藏重现与先手的公共工具（B41e3 起新版敌踪是唯一流程，见 <see cref="B41aTestBase"/>）。
 /// </summary>
 public abstract class B41cTestBase : B41bTestBase
 {
@@ -61,7 +61,7 @@ public abstract class B41cTestBase : B41bTestBase
     /// <summary>某敌人的单卡键（普通单卡）。</summary>
     protected static string Key(WorldEnemy w) => GameEngine.SingleCardKey(w.Id);
 
-    /// <summary>开关开的新局，农野荒地放下一只游荡尸（容量 1），返回卡键。</summary>
+    /// <summary>新局，农野荒地放下一只游荡尸（容量 1），返回卡键。</summary>
     protected (GameState s, string key) OneShambler(int capacity = 1)
     {
         var s = Field(capacity, "shambler");

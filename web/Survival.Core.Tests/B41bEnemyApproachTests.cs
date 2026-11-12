@@ -4,7 +4,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41b 里程碑 3：到期队列与敌方主动开战（开关开；R05「Q416、Q421」「Q441」「Q467」「Q468—Q470」；逐字稿「结果、取消与队长回退」「B41b Q439—Q444 正式文案」；
+/// B41b 里程碑 3：到期队列与敌方主动开战（R05「Q416、Q421」「Q441」「Q467」「Q468—Q470」；逐字稿「结果、取消与队长回退」「B41b Q439—Q444 正式文案」；
 /// 验收 Q342-A02 后半、Q416-A01 前半、Q441-A01、Q444-A01 敌方部分、Q467-A01、Q468-A01、Q469-A01、Q470-A01）。
 /// </summary>
 public class B41bEnemyApproachTests : B41bTestBase
@@ -203,19 +203,5 @@ public class B41bEnemyApproachTests : B41bTestBase
         Start(s, ActionRequest.Travel("field"));
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
         Assert.That(s.Battle!.CardKey, Is.EqualTo(key), "回到同地同区，到达边界重验后开战");
-    }
-
-    [Test]
-    public void SwitchOff_NoTimerNoBattle()
-    {
-        var s = LegacyField();
-        Off.DebugSpawnEnemy(s, "shambler", "field");
-        Assert.That(Off.Start(s, ActionRequest.Explore()).Ok, Is.True);
-        for (var k = 0; k < 200 && s.Main != null; k++) { if (Off.Advance(s).Status == SegmentStatus.Paused) Off.Resume(s); }
-        Assert.That(s.Main, Is.Null);
-        Assert.That(s.Battle, Is.Null);
-        Assert.That(s.EnemyCards.Timers, Is.Empty);
-        Assert.That(Off.CheckEnemyApproach(s), Is.False);
-        Assert.That(Off.DueCardsHere(s), Is.Empty);
     }
 }

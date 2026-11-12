@@ -169,7 +169,7 @@
             var after = e.CarriedGrams(s) + (m.ToCarried ? 1 : -1) * unit * (invalid ? 0 : n);
             if (moveBusy && !m.LockedPick)
             {
-                <div class="ca-note">@(s.Battle != null ? "战斗中不能拾取、放下或投放物品" : s.Encounter != null ? "发现敌踪：先选择接敌或绕行" : "行动进行中，暂不能整理物品")</div>
+                <div class="ca-note">@(s.Battle != null ? "战斗中不能拾取、放下或投放物品" : "行动进行中，暂不能整理物品")</div>
             }
             else if (m.Available == 0)
             {

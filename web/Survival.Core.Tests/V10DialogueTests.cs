@@ -61,7 +61,7 @@ public class V10DialogueTests : BattleTestBase
         Assert.That(E.DoInstant(s, InstantRequest.Pickup(First(s, "wood", "camp").InstanceId, 1)).Ok, Is.False);
         Assert.That(E.Cancel(s).Ok, Is.False);
         Assert.That(E.Resume(s).Ok, Is.False);
-        Assert.That(E.Engage(s).Ok, Is.False);
+        Assert.That(E.Approach(s, 0).Reason, Is.EqualTo(GameEngine.DialogueLockedReason), "主动接近敌踪也被对白锁拒绝");
         Assert.That(E.Equip(s, GameState.PlayerId, First(s, "lighter").InstanceId, EquipSlots.Weapon1).Ok, Is.False);
         Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Dialogue));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json), "被拒绝的请求不改任何状态、不 tick");
@@ -99,6 +99,7 @@ public class V10DialogueTests : BattleTestBase
         ReadDialogues(s);
         Start(s, ActionRequest.Travel("field"));
         for (var i = 0; i < 200 && s.Main != null; i++) { var r = E.Advance(s); if (r.Status == SegmentStatus.Paused) E.Resume(s); }
+        Assert.That(ApproachTutorial(s), Is.True, "B41b（R05 Q421）：到达只出教学卡，主动接近才开首战");
         Assert.That(s.Battle, Is.Not.Null);
         Assert.That(E.ActiveDialogue(s)!.EventId, Is.EqualTo("tutorial_arrive"));
         var b = s.Battle!;

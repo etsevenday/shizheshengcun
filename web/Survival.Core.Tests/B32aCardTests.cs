@@ -96,7 +96,7 @@ public class B32aCardTests : TestBase
     {
         var strip = Web("Components", "LocationStrip.razor");
         Assert.That(strip, Does.Contain("Dim=\"empty\"\n                                Blocked=\"@(cardWhy != null)\" Busy=\"@CardStates.BusyResource(s, nodeId)\"").Or.Contain("Dim=\"empty\"\r\n                                Blocked=\"@(cardWhy != null)\" Busy=\"@CardStates.BusyResource(s, nodeId)\""));
-        Assert.That(strip, Does.Contain("Danger=\"@ec.Elite\""), "Q357 取代：普通常驻敌踪不挂危险，精英挂");
+        Assert.That(strip, Does.Contain("<ObjectCard Ink2=\"true\" Danger=\"@c.Danger\""), "B41e3：敌踪统一走卡视图，危险取内核卡视图（Q357 规则见 B41a/B41e1 用例）");
         Assert.That(Web("Components", "LocationCard.razor"), Does.Contain("Busy=\"@CardStates.BusyRoute(s, LocationId)\"").And.Contain("Badge=\"未开通\" BadgeClass=\"unbuilt\" Dim=\"true\""));
         var shelf = Web("Components", "ItemShelf.razor");
         Assert.That(shelf, Does.Contain("@(spoiledFront ? \"st-danger\" : \"\")").And.Contain("CardStates.BrokenTool(t) ? \"broken st-danger\""));
@@ -132,31 +132,12 @@ public class B32aCardTests : TestBase
         var strip = Web("Components", "LocationStrip.razor");
         Assert.That(strip, Does.Contain("var perLine = $\"{GameEngine.AccountLabel(r)} · 每次{per}{e.ItemName(r.Outputs.Keys.First())}\";"));
         Assert.That(strip, Does.Contain("var perTip = perLine + (r.Refills ? $\" · 日补{r.DailyRefill}\" : \"\");"));
-        Assert.That(strip, Does.Contain("Sub=\"@($\"健康 {Ui.N(w.Hp)}/{Ui.N(ec.Hp)}\")\""));
+        Assert.That(strip, Does.Contain("var sub = c.Kind is \"single\" or \"elite\" ? $\"健康 {Ui.N(one?.Hp ?? lead.Hp)}/{Ui.N(lead.Hp)}\" : names;"), "B41e3：敌踪卡副标（单卡健康数值）");
         var loc = Web("Components", "LocationCard.razor");
         Assert.That(loc, Does.Contain("<span class=\"k2-subtext\">单程@(edge?.BaseMinutes ?? 0)分钟</span>").And.Contain("<span class=\"dir-mark\""));
         var shelf = Web("Components", "ItemShelf.razor");
         Assert.That(shelf, Does.Contain("<div class=\"k2-sub is-qty\" title=\"@(qtyTip ?? infoLine)\">@qtyText</div>"), "Q356 取代：副标固定数量");
         Assert.That(shelf, Does.Not.Contain("#@"), "物品卡不显示内部编号");
-    }
-
-    // ───────────── Q342 过渡 ─────────────
-
-    /// <summary>Q342-A01：现行随机敌踪仍在覆盖层整组办理「接敌」「绕行（{时长}）」，不参战者「留在原地」，参战敌人角标「敌踪待处理」（P01c）；常驻敌人仍走「接近」。1280 下卡片区不再撑出最小高度。</summary>
-    [Test]
-    public void Q342_A01_EncounterOverlayTransition()
-    {
-        var o = Web("Components", "BattleOverlay.razor");
-        Assert.That(o, Does.Contain("Badge=\"@(stays ? \"留在原地\" : \"敌踪待处理\")\""));
-        Assert.That(o, Does.Contain("<strong>接敌</strong>").And.Contain("<strong>绕行（@Clock.Duration(cfg.Encounters.BypassMinutes)）</strong>"));
-        Assert.That(o, Does.Not.Contain("绕行 · "));
-        Assert.That(Clock.Duration(10), Is.EqualTo("10分钟"));
-        Assert.That(Web("Components", "LocationStrip.razor"), Does.Contain("<strong>接近 ▸</strong>"));
-        var css = Web("wwwroot", "css", "cards.css");
-        Assert.That(css, Does.Contain(".battle-overlay.encounter > .bt-cards { grid-area: cards; min-height: 0;"));
-        // B32a 试玩修复：敌人卡保持模板高度（不再按剩余高度压扁），说明行移到标题行，覆盖层过高时自身滚动
-        Assert.That(css, Does.Contain(".wasteland .battle-overlay.encounter .bt-cards > .ocard.k2.k2 { height: var(--k2-h); min-height: 0; flex: 0 0 var(--k2-w); }"));
-        Assert.That(css, Does.Contain("grid-template-areas: \"head log\" \"cards cards\" \"act act\";"));
     }
 
     // ───────────── B32a 试玩修复（线上构建 c38c397） ─────────────
@@ -201,7 +182,7 @@ public class B32aCardTests : TestBase
         var strip = Web("Components", "LocationStrip.razor");
         foreach (var t in new[] { "<div class=\"dg-title\">设施</div>", "<div class=\"dg-title\">敌踪</div>", "<div class=\"dg-title\">采集资源</div>", "<div class=\"dg-title\">远征</div>" })
             Assert.That(strip, Does.Contain(t));
-        Assert.That(strip, Does.Contain("@if (enemies.Count > 0)"), "没有敌踪不出空分组");
+        Assert.That(strip, Does.Contain("@if (cards.Count > 0)"), "没有敌踪不出空分组");
         Assert.That(strip, Does.Contain("这里还没有发现资源点，探索周边可能找到线索"));
     }
 
@@ -286,28 +267,31 @@ public class B32aCardTests : TestBase
         Assert.That(Web("wwwroot", "css", "cards.css"), Does.Contain(".card.item.k2i .k2-l2 {"));
     }
 
-    /// <summary>Q357-A01：普通常驻敌踪不挂危险；精英常驻敌踪与可选强敌挂；固定战与待处理敌踪覆盖层沿 Q345 挂危险。</summary>
+    /// <summary>
+    /// Q357-A01：普通常驻敌踪不挂危险；精英常驻敌踪、可选强敌、固定战挂。B41e3 起敌踪统一走内核卡视图（旧常驻敌人卡、固定战卡、可选强敌卡与
+    /// 待处理敌踪覆盖层已删），危险取 EnemyCardView.Danger。
+    /// </summary>
     [Test]
     public void Q357_A01_DangerOnlyEliteAndFixed()
     {
         var strip = Web("Components", "LocationStrip.razor");
-        Assert.That(strip, Does.Contain("CssClass=\"k2-enemy\" Title=\"@ec.Name\" Badge=\"@(w.Hostile ? \"敌对\" : \"中立\")\""));
-        Assert.That(strip, Does.Contain("Danger=\"@ec.Elite\" Sub=\"@($\"健康 {Ui.N(w.Hp)}/{Ui.N(ec.Hp)}\")\""));
+        Assert.That(strip, Does.Contain("<ObjectCard Ink2=\"true\" Danger=\"@c.Danger\""));
         Assert.That(strip, Does.Not.Contain("Danger=\"@w.Hostile\""));
-        Assert.That(strip, Does.Contain("<ObjectCard Ink2=\"true\" Danger=\"true\" @key=\"@(\"elite-\" + cid)\""), "可选强敌挂危险");
-        Assert.That(strip, Does.Contain("<ObjectCard Ink2=\"true\" Danger=\"true\" @key=\"@(\"fixed-\" + here)\""), "固定战沿 Q345");
-        Assert.That(Web("Components", "BattleOverlay.razor"), Does.Contain("Danger=\"true\""), "待处理敌踪覆盖层沿 Q345");
         Assert.That(Cfg.Enemies.Any(x => x.Elite) && Cfg.Enemies.Any(x => !x.Elite), Is.True, "配置里精英与普通敌人都有");
+        var s = New();
+        E.DebugTeleport(s, "field");
+        s.WorldEnemies.Clear();
+        var plain = E.DebugSpawnEnemy(s, Cfg.Enemies.First(x => !x.Elite && x.Id == "shambler").Id, "field");
+        Assert.That(E.EnemyCardHere(s, GameEngine.SingleCardKey(plain.Id))!.Danger, Is.False, "普通常驻敌踪不挂危险");
     }
 
-    /// <summary>Q358-A01：固定战卡副标按锁定名单（fixedHere）顺序以「、」列敌人名称。</summary>
+    /// <summary>Q358-A01：固定战卡副标按锁定名单顺序以「、」列敌人名称（B41e3 起取内核 EnemyCardMemberNames）。</summary>
     [Test]
     public void Q358_A01_FixedBattleNamesInRosterOrder()
     {
         var strip = Web("Components", "LocationStrip.razor");
-        Assert.That(strip, Does.Contain("var names = string.Join(\"、\", fixedHere.Select(w => e.Enemy(w.EnemyId).Name));"));
-        Assert.That(strip, Does.Contain("<SubContent><div class=\"oc-line\" title=\"@names\">@names</div></SubContent>"));
-        Assert.That(strip, Does.Contain("全名单一起入场（从1号位起）"), "接战同一份名单");
+        Assert.That(strip, Does.Contain("var names = e.EnemyCardMemberNames(c);"));
+        Assert.That(strip, Does.Contain("var sub = c.Kind is \"single\" or \"elite\" ? $\"健康 {Ui.N(one?.Hp ?? lead.Hp)}/{Ui.N(lead.Hp)}\" : names;"));
     }
 
     /// <summary>Q359-A01：资源副标单行、原字号，超宽省略号；悬停写完整副标（含日补）。</summary>
@@ -319,12 +303,11 @@ public class B32aCardTests : TestBase
         Assert.That(Web("Components", "LocationStrip.razor"), Does.Contain("<div class=\"oc-line\" title=\"@perTip\"><AccountIcon Label=\"@GameEngine.AccountLabel(r)\" />@perLine</div>"));
     }
 
-    /// <summary>Q360-A01：常驻敌踪角标沿真实关系「敌对」「中立」；待处理敌踪覆盖层「敌踪待处理」「留在原地」。</summary>
+    /// <summary>Q360-A01：敌踪角标沿内核卡视图（单卡按真实关系「敌对」「中立」；B41e3 起旧待处理敌踪覆盖层已删）。</summary>
     [Test]
     public void Q360_A01_EnemyBadges()
     {
-        Assert.That(Web("Components", "LocationStrip.razor"), Does.Contain("Badge=\"@(w.Hostile ? \"敌对\" : \"中立\")\""));
-        Assert.That(Web("Components", "BattleOverlay.razor"), Does.Contain("Badge=\"@(stays ? \"留在原地\" : \"敌踪待处理\")\""));
+        Assert.That(Web("Components", "LocationStrip.razor"), Does.Contain("Badge=\"@c.Badge\" BadgeClass=\"@(c.Badge == \"中立\" ? \"\" : \"new\")\""));
     }
 
     private static string Root()

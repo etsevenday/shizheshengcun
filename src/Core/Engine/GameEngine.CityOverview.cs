@@ -109,7 +109,7 @@ namespace Survival.Core.Engine
         {
             if (s.Progress.Dead) return "角色已死亡";
             if (DialogueLocked(s)) return DialogueLockedReason;
-            if (s.Battle != null || s.Encounter != null) return "先处理眼前的敌踪";
+            if (s.Battle != null) return "先处理眼前的敌踪";
             if (s.CurrentZone == GameState.SafehouseZone) return "先回到外部区";
             if (CityOf(s.CurrentLocation) == null) return "只在三城城内可以打开主城鸟瞰";
             return null;

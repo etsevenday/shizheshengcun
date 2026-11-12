@@ -10,8 +10,7 @@
     var actor = s.Actors.TryGetValue(me, out var a) ? a : s.Player;
     var views = e.SkillViews(actor);
     var cur = views.FirstOrDefault(v => v.Id == G.GrowthSkill) ?? views.First();
-    // B41e2（逐字稿「Q427 卡名、角标与 Q428 成长页」、Q446 ⑧⑨）：新版敌踪下「求生」组改「求生与行动」，副标「{角色名} · 共16项熟练度」，潜行条目与练习入口
-    var cardsV2 = e.CardsV2(s);
+    // B41e2（逐字稿「Q427 卡名、角标与 Q428 成长页」、Q446 ⑧⑨）：「求生」组改「求生与行动」，副标「{角色名} · 共16项熟练度」，潜行条目与练习入口
 }
 
 @if (Part == "detail")
@@ -28,14 +27,7 @@
     <div class="sub-head">
         <div>
             <h2>成长</h2>
-            @if (cardsV2)
-            {
-                <span class="sub">@e.ActorDisplayName(s, me) · 共@(views.Count)项熟练度</span>
-            }
-            else
-            {
-                <span class="sub" title="熟练度属于每名角色，不是全队共享；这里可看全部门类的技能与解锁条件；战斗操作台显示当前门类五张，未解锁的置灰、不可执行（Q227）">@e.ActorDisplayName(s, me) · 十五门熟练度 · 只浏览 ⓘ</span>
-            }
+            <span class="sub">@e.ActorDisplayName(s, me) · 共@(views.Count)项熟练度</span>
         </div>
         <button class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
@@ -51,7 +43,7 @@
     }
     <div class="sub-body growth-body">
         <div class="growth-list" data-wheel="y">
-            @foreach (var grp in new[] { ("combat", "战斗"), ("both", "医疗（战内外）"), ("survival", cardsV2 ? "求生与行动" : "求生") })
+            @foreach (var grp in new[] { ("combat", "战斗"), ("both", "医疗（战内外）"), ("survival", "求生与行动") })
             {
                 <div class="skill-group muted">@grp.Item2</div>
                 @foreach (var sk in views.Where(x => x.Category == grp.Item1))
@@ -78,7 +70,7 @@
         var s = G.S;
         var e = G.E;
         var me = G.GearActorId;
-        var stealth = sk.Id == GameEngine.StealthSkill && e.CardsV2(s);
+        var stealth = sk.Id == GameEngine.StealthSkill;
         <div class="growth-detail" data-wheel="y">
             <div class="eyebrow">@e.ActorDisplayName(s, me) · @sk.Name</div>
             <div class="growth-head">

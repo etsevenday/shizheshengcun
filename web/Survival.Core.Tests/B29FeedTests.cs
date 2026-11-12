@@ -285,9 +285,6 @@ public class B29FeedTests : TestBase
     {
         var s = Party();
         var id = Give(s, "canned_food", ItemInstance.Carried).InstanceId;
-        s.Encounter = new PendingEncounter { LocationId = "camp", EnemyIds = new List<int>(), Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.FeedEntry(s, id)!.Blocked, Is.EqualTo("发现敌踪：请先选择接敌或绕行"));
-        s.Encounter = null;
         s.Expedition = new ExpeditionState { Id = "x", DungeonId = "d01", Phase = ExpeditionState.Extracting };
         Assert.That(E.FeedEntry(s, id)!.Blocked, Is.EqualTo(FeedCopy.Extracting));
         s.Expedition = null;
@@ -414,11 +411,12 @@ public class B29FeedTests : TestBase
         var food = Give(s, "canned_food", ItemInstance.Carried);
         var d = Open(s, food);
         Pick(s, d, Lin);
-        s.Encounter = new PendingEncounter { LocationId = "camp", EnemyIds = new List<int>(), Source = "explore", Minute = s.GameMinute };
+        // B41e3：旧版待处理敌踪锁随旧接敌流程删除，全局锁用战斗
+        s.Battle = new BattleState { BattleId = 9, LocationId = "camp", Allies = new List<string> { Me, Lin } };
         var v = E.FeedPanel(s, d);
         Assert.That(v.Selected, Is.Not.Null);
-        Assert.That(v.ConfirmWhy, Is.EqualTo("发现敌踪：请先选择接敌或绕行"));
-        Assert.That(v.BlockedLine, Is.EqualTo("不可用：发现敌踪：请先选择接敌或绕行"));
+        Assert.That(v.ConfirmWhy, Is.EqualTo(FeedCopy.Battle));
+        Assert.That(v.BlockedLine, Is.EqualTo("不可用：" + FeedCopy.Battle));
     }
 
     // ───────────── A09 队伍面板与目标留空 ─────────────

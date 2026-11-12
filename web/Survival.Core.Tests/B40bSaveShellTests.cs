@@ -24,19 +24,19 @@ public class B40bSaveShellTests
 
     // ───────────── Q388 正式说明 ─────────────
 
-    /// <summary>Q388：「保存与继续」三段与三处菜单说明句逐字取自 S01；系统说明不再写旧单槽口径。</summary>
+    /// <summary>Q388：「保存与继续」三段与菜单说明句逐字取自 S01；系统说明不再写旧单槽口径。（敌踪待处理那句随旧接敌流程在 B41e3 删除。）</summary>
     [Test]
     public void Q388_TextsVerbatim()
     {
         var doc = S01();
         Assert.That(SaveSlots.HelpParagraphs, Has.Length.EqualTo(3));
         foreach (var p in SaveSlots.HelpParagraphs) Assert.That(doc, Does.Contain(p));
-        foreach (var p in new[] { SaveSlots.BattleMenuNote, SaveSlots.ExtractMenuNote, SaveSlots.EncounterMenuNote }) Assert.That(doc, Does.Contain(p));
+        foreach (var p in new[] { SaveSlots.BattleMenuNote, SaveSlots.ExtractMenuNote }) Assert.That(doc, Does.Contain(p));
         var help = Web("Services", "HelpCatalog.cs");
         Assert.That(help, Does.Contain("Paragraphs = (e, s) => Survival.Core.Save.SaveSlots.HelpParagraphs,"));
         Assert.That(help, Does.Not.Contain("游戏只有一个存档"));
         var menu = Web("Components", "MenuOverlay.razor");
-        Assert.That(menu, Does.Contain("@SaveSlots.BattleMenuNote").And.Contain("@SaveSlots.EncounterMenuNote").And.Contain("@SaveSlots.ExtractMenuNote"));
+        Assert.That(menu, Does.Contain("@SaveSlots.BattleMenuNote").And.Contain("@SaveSlots.ExtractMenuNote").And.Not.Contain("EncounterMenuNote"));
         Assert.That(menu, Does.Not.Contain("每条指令与敌方行动后都已自动保存"));
     }
 

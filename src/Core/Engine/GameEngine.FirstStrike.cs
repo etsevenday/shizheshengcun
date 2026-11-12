@@ -7,7 +7,7 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// B41c 先手加成（R05「Q422 首次出手与受惊」、R03；逐字稿 B41「先手说明与攻击预览」；开发记录 B41c）。
-    /// 只在新版敌踪（开关 encounters.enemyCardsV2）下由潜行成功（我方）与敌方主动开战（敌方）给出；旧战斗与开关关着时没有先手。
+    /// 由潜行成功（我方）与敌方主动开战（敌方）给出；主动接近与上线前开始的旧战斗没有先手。
     /// </summary>
     public sealed partial class GameEngine
     {

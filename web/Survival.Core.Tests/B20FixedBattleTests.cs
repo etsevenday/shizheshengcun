@@ -154,7 +154,7 @@ public class B20FixedBattleTests : BattleTestBase
         WinBattle(s);
         Assert.That(E.CanStart(s, ActionRequest.Explore()), Is.Null);
         Assert.That(E.FixedStateAt(s, "d01_03")!.Won, Is.True);
-        Assert.That(E.CanEngageFixed(s), Is.EqualTo("这里没有固定战"));
+        Assert.That(E.CanEngageFixed(s), Is.EqualTo("这处敌踪已不在这里。"), "B41e3：固定战卡已失效，沿新版主动接近拒绝句（R05 Q456）");
 
         var m = At("m02_checkpoint", 1);
         Assert.That(E.FixedEnemiesAt(m, "m02_checkpoint").Select(w => w.EnemyId), Is.EqualTo(new[] { "z_slow" }));

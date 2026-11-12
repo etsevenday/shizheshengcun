@@ -27,8 +27,7 @@ public class B9aPartyBattleTests : BattleTestBase
         s.PatrolNextCheck = int.MaxValue;
         s.WorldEnemies.Clear();
         var ids = enemies.Select(id => E.DebugSpawnEnemy(s, id, "field").Id).ToList();
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = ids, Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(s, ids, GameEngine.FearEncounter), Is.True);
         return s;
     }
 
@@ -87,8 +86,7 @@ public class B9aPartyBattleTests : BattleTestBase
         s.GameMinute = At(2, 9, 0);
         s.WorldEnemies.Clear();
         var w = E.DebugSpawnEnemy(s, "shambler", "field");
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = new List<int> { w.Id }, Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(s, new List<int> { w.Id }, GameEngine.FearEncounter), Is.True);
         var b = s.Battle!;
         Assert.That(b.Capacity, Is.EqualTo(2));
         Assert.That(GameEngine.AlliesOnField(b), Has.Count.EqualTo(2));

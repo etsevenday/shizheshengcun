@@ -266,8 +266,7 @@ public class B22hTests : BattleTestBase
     private void FightHere(GameState s, string enemy = "shambler")
     {
         var id = E.DebugSpawnEnemy(s, enemy, s.CurrentLocation).Id;
-        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = new List<int> { id }, Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(s, new List<int> { id }, GameEngine.FearEncounter), Is.True);
         Assert.That(s.Battle, Is.Not.Null);
     }
 
@@ -323,7 +322,7 @@ public class B22hTests : BattleTestBase
         Assert.That(s.Battle, Is.Null, "不连触另一场战斗");
         Assert.That(s.Encounter, Is.Null);
         Assert.That(E.VisibleEnemiesAt(s, "camp").Select(x => x.Id), Does.Contain(campEnemy.Id), "到达处敌踪照常公开");
-        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain("有敌踪").And.Contain("不会自动开战"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain("有敌踪").And.Contain("（可以主动接近、潜行接近或躲避）").And.Not.Contain("不会自动开战"), "B41e2 Q446 ①：B41e3 起只有新句");
         Assert.That(E.Approach(s, campEnemy.Id).Ok, Is.True);
         Assert.That(s.Battle!.WorldRetreat!.From, Is.Null, "最近一次完成的移动是营地→荒地，到达点不是营地");
         PlayerFirst(s);
@@ -374,7 +373,6 @@ public class B22hTests : BattleTestBase
         t.SpawnNextCheck = int.MaxValue;
         t.PatrolNextCheck = int.MaxValue;
         t.WorldEnemies.RemoveAll(w => w.LocationId == parent);
-        t.Encounter = null;
         t.LastMove = new LastMoveRecord { From = buffer, To = parent, EdgeId = edge.Id, Minute = t.GameMinute };
         FightHere(t);
         Assert.That(t.Battle!.WorldRetreat!.From, Is.EqualTo(buffer));

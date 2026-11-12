@@ -11,6 +11,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class MigrationTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private static string Fixture(string name) =>
         File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "Fixtures", $"save-0.2-proto-1-{name}.json"));
 
@@ -120,6 +123,7 @@ public class MigrationTests : TestBase
         Steps(s, 3);
         var json = SaveSerializer.Serialize(s);
         var t = SaveSerializer.Deserialize(json);
+        t.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         Assert.That(t.Body.HighImmunityMinutes, Is.EqualTo(s.Body.HighImmunityMinutes), "不丢连续时间");
         Assert.That(t.Body.AntibioticUntil, Is.EqualTo(s.Body.AntibioticUntil));
         Assert.That(t.Items.Single(i => i.InstanceId == knife.InstanceId).MaxDurability, Is.EqualTo(knife.MaxDurability), "不重抽装备");
@@ -132,6 +136,7 @@ public class MigrationTests : TestBase
         var before = u.Rng.State;
         E.ExposeToVirus(u, out _);
         var after = SaveSerializer.Deserialize(SaveSerializer.Serialize(u));
+        after.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         Assert.That(after.Rng.State, Is.Not.EqualTo(before));
         Assert.That(after.Body.Infected, Is.EqualTo(u.Body.Infected));
     }
@@ -276,6 +281,7 @@ public class MigrationTests : TestBase
     public void E14_ActiveExplore_LegacyNoLoot_ThenNewRules()
     {
         var s = SaveSerializer.Deserialize(Fixture("explore"), Cfg);
+        s.SuppressEnemyApproach = true;   // 只测旧探索迁移，不测敌方接近（B41e3 起新局默认新版）
         Assert.That(s.Main!.Type, Is.EqualTo(ActionType.Explore));
         Assert.That(s.Main.LegacyNoLoot, Is.True);
         Assert.That(s.Main.LootPlanned, Is.False);

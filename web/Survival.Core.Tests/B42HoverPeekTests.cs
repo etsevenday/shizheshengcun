@@ -201,7 +201,7 @@ public class B42HoverPeekTests
         var loc = Web("Components/LocationCard.razor");
         Assert.That(loc, Does.Contain("data-peek=\"@Peek.Sel(SelectionKind.Location, LocationId)\"").And.Contain("PeekId=\"@Peek.Sel(SelectionKind.Entrance, LocationId)\""));
         var strip = Web("Components/LocationStrip.razor");
-        Assert.That(strip, Does.Contain("PeekId=\"@Peek.Sel(SelectionKind.Resource, nodeId)\"").And.Contain("PeekId=\"@Peek.Sel(SelectionKind.Enemy, wid.ToString(), \"\", wid)\""));
+        Assert.That(strip, Does.Contain("PeekId=\"@Peek.Sel(SelectionKind.Resource, nodeId)\"").And.Contain("PeekId=\"@Peek.Sel(SelectionKind.Enemy, key)\""));   // B41e3：敌踪统一按卡键
         Assert.That(Web("Components/FireCard.razor"), Does.Contain("PeekId=\"@Peek.Sel(SelectionKind.Facility, GameEngine.FireIdOf(here))\""));
         var shelf = Web("Components/ItemShelf.razor");
         Assert.That(shelf, Does.Contain("data-peek=\"@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, bk)\"").And.Contain("data-peek=\"@Peek.Sel(SelectionKind.Tool, toolId, Owner, inst)\""));

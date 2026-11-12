@@ -139,9 +139,9 @@ namespace Survival.Core.Engine
 
         // ───────────── 开放与周期（RC1/RC7、S01） ─────────────
 
-        /// <summary>现在是不是在收容所的安全访问：实际在收容所、已登记、未终局、没有战斗或敌踪待处理。</summary>
+        /// <summary>现在是不是在收容所的安全访问：实际在收容所、已登记、未终局、没有战斗。</summary>
         private bool SafeAtShelterForRecruit(GameState s) =>
-            s.CurrentLocation == Rc.LocationId && s.CurrentZone == ExteriorZone && !s.Progress.Dead && s.Battle == null && s.Encounter == null
+            s.CurrentLocation == Rc.LocationId && s.CurrentZone == ExteriorZone && !s.Progress.Dead && s.Battle == null
             && s.Progress.Flags.Contains(Rc.OpenedByFact);
 
         /// <summary>

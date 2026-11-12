@@ -439,9 +439,9 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 鉴定/换物已开工后取消或事务失败（B22d，Q177 选 A）：在原安全边界（人在鉴定所、没死、没有战斗或敌踪待处理）播一次陶岑原结束句
+        /// 鉴定/换物已开工后取消或事务失败（B22d，Q177 选 A）：在原安全边界（人在鉴定所、没死、没有战斗；B41e3 起没有旧版待处理敌踪）播一次陶岑原结束句
         /// （service_end；离岗时走代班接续说明，见 CityServiceEnd）；0 时间 0 奖励，不改返还/结算。成功不走这里；开工前的校验失败只在按钮上写原因。
-        /// 被战斗/敌踪挡住时本人的结束句照旧不播；离岗时交给 CityServiceEnd 记待补播（Q243）。
+        /// 被战斗挡住时本人的结束句照旧不播；离岗时交给 CityServiceEnd 记待补播（Q243）。
         /// </summary>
         private void AppraisalServiceEnd(GameState s, string npcId)
         {

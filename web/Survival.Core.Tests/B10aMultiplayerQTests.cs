@@ -27,8 +27,7 @@ public class B10aMultiplayerQTests : BattleTestBase
         s.PatrolNextCheck = int.MaxValue;
         s.WorldEnemies.Clear();
         var ids = enemies.Select(id => E.DebugSpawnEnemy(s, id, "field").Id).ToList();
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = ids, Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(s, ids, GameEngine.FearEncounter), Is.True);
         return s;
     }
 
@@ -118,8 +117,7 @@ public class B10aMultiplayerQTests : BattleTestBase
         s.PatrolNextCheck = int.MaxValue;
         s.WorldEnemies.Clear();
         var w = E.DebugSpawnEnemy(s, "shambler", "field");
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = new List<int> { w.Id }, Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(s, new List<int> { w.Id }, GameEngine.FearEncounter), Is.True);
         var b = s.Battle!;
         var u = b.Fighter(Me).FearRoll;
         Assert.That(w.FearRoll, Is.EqualTo(u), "u 存在主惊吓源世界敌人上");

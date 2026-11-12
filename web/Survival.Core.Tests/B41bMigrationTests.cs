@@ -31,20 +31,20 @@ public class B41bMigrationTests : B41aTestBase
         Assert.That(GameState.CurrentSchema, Is.EqualTo("49"));
         Assert.That(Cfg.Encounters.ApproachMinutes, Is.EqualTo(new[] { 20, 25, 30, 35, 40 }), "R05 Q416 五档");
         Assert.That(Cfg.Encounters.CardRetreatGuardMinutes, Is.EqualTo(60), "R05 Q416 同卡撤退保护 60 世界分钟");
-        Assert.That(Survival.Core.Config.ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json"))).Encounters.EnemyCardsV2,
-            Is.False, "发布配置仍关着（B41e 翻开；按文件原值读，不受测试环境变量影响）");
     }
 
     [Test]
-    public void SwitchOff_46To47_OnlyDefaults_Silent()
+    public void Schema46To47_OnlyDefaults_Silent()
     {
-        var s = LegacyField();
-        Off.DebugSpawnEnemy(s, "shambler", "field");
-        Assert.That(Off.Start(s, ActionRequest.Clear()).Ok, Is.True);
-        Off.Advance(s);
+        // 已采纳新版卡模型的 46 档（开关开着试玩时写下的）：升到 47 只补默认值
+        var s = V2Field();
+        E.DebugSpawnEnemy(s, "shambler", "field");
+        s.Locations["field"].ClearCharges = Math.Max(1, s.Locations["field"].ClearCharges);
+        Assert.That(E.Start(s, ActionRequest.Clear()).Ok, Is.True);
+        E.Advance(s);
         var rng = RngOf(s);
         var log = s.Log.Count;
-        var t = SaveSerializer.Deserialize(AsSchema46(s), CfgOff);
+        var t = SaveSerializer.Deserialize(AsSchema46(s), CfgV2);
         Assert.That(t.SchemaVersion, Is.EqualTo("49"));
         Assert.That(t.EnemyCards.Timers, Is.Empty);
         Assert.That(t.StashedWork, Is.Null, "旧档无暂存记录即按无暂存处理");
@@ -56,7 +56,7 @@ public class B41bMigrationTests : B41aTestBase
         Assert.That(t.Log.Count, Is.EqualTo(log), "静默");
         Assert.That(RngOf(t), Is.EqualTo(rng), "不抽随机");
         var once = SaveSerializer.Serialize(t);
-        Assert.That(SaveSerializer.Serialize(SaveSerializer.Deserialize(once, CfgOff)), Is.EqualTo(once), "幂等");
+        Assert.That(SaveSerializer.Serialize(SaveSerializer.Deserialize(once, CfgV2)), Is.EqualTo(once), "幂等");
     }
 
     [Test]

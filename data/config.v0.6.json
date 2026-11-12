@@ -62,7 +62,6 @@
       "rest": "rest",
       "butcher": "craft",
       "repair": "craft",
-      "bypass": "travel",
       "salvage": "craft"
     },
     "workActionTypes": [
@@ -20561,7 +20560,7 @@
       "简易斧让木材产量翻倍，石刀让纤维采集快一倍；工具与武器的最大耐久按实例随机，成功使用会磨损，可用废金属1+零件1维护。",
       "精神低于20时，休息和睡眠的体力恢复减半；遮蔽睡眠和熟食能提升精神。",
       "自然资源每天00:00补充，遗迹里的箱子搜空后不会再有。",
-      "第一次到达农野荒地会遇到一只游荡尸（首战，饱饱会引导）；首战胜利后、第2日起探索或清理完成时可能撞上本地已有的敌人：可以接敌，也可以绕行10分钟。",
+      "第一次到达农野荒地会遇到一只游荡尸（首战，饱饱会引导）；首战胜利后、第2日起探索或清理完成时可能撞上本地已有的敌人：可以主动接近、潜行接近或躲避。",
       "丧尸咬击命中并造成伤害时，才可能因咬伤感染。饱饱也会让体内的病毒缓慢累积。免疫≥{baobaoSuppressImmunity}时，饱饱带来的病毒累积会停止。免疫越低，咬伤后越容易感染，病情也发展得越快。",
       "感染后，免疫≥{cureImmunity}连续维持{cureDuration}，且病毒程度≤{cureLoad}时，可自然治愈。绷带和抗生素能降低病毒程度，使用后仍处于感染状态。病毒特效药可直接清除感染。",
       "健康只在遮蔽处休息或睡眠、且饱食与水分不低于40、精神不低于20时缓慢恢复；草药绷带止血并恢复少量健康。",
@@ -20877,8 +20876,7 @@
       "initialLevel": 1,
       "nextLevelXpFormula": "50*(L+1)",
       "levelCap": 10,
-      "trackOnly": true,
-      "enemyCardsV2Only": true
+      "trackOnly": true
     }
   ],
   "weapons": [
@@ -24592,16 +24590,12 @@
     "noRiskWhenZeroHostile": true,
     "activeContactEnabled": true,
     "commitOriginalActionBeforeEncounter": true,
-    "bypassMinutes": 10,
-    "bypassRateCategory": "travel",
-    "postExitRandomEncounterGraceMinutes": 60,
     "noNestedRandomDuringCombatOrBypass": true,
     "groupMax": 3,
     "groupSelection": "oldest_local_hostile_then_nearest_existing_hostiles_max3",
     "bypassLeavesWorldEnemiesAlive": true,
     "defeatRemovesOnlyKilledWorldIds": true,
     "combatSurvivorsKeepHpAndXpCountersOnWorldId": true,
-    "enemyCardsV2": false,
     "approachMinutes": [
       20,
       25,

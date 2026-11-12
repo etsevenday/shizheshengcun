@@ -16,7 +16,7 @@ namespace Survival.Core.Engine
         /// </summary>
         public bool SingleSegmentShowPending(GameState s)
         {
-            if (s.Progress.Dead || DialogueLocked(s) || s.Battle != null || s.Encounter != null) return false;
+            if (s.Progress.Dead || DialogueLocked(s) || s.Battle != null) return false;
             var a = s.Sub ?? s.Main;
             if (a == null || a.Status != ActionStatus.Running || a.ElapsedMinutes > 0) return false;
             if (ExitLocked(a)) return true;

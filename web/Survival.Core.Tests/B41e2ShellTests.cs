@@ -3,8 +3,8 @@ using Survival.Core.Engine;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41e2 网页壳（源码检查）：开关 encounters.enemyCardsV2 开时的成长页练习盘、编队队长、先手显示、中央条暂存摘要、帮助与 Q446 旧句；
-/// 开关关时旧句保留。另有一项读逐字稿原文（DesignSync），核对原句常量与策划案一致。
+/// B41e2 网页壳（源码检查）：新版敌踪的成长页练习盘、编队队长、先手显示、中央条暂存摘要、帮助与 Q446 旧句；
+/// B41e3 起开关关时的旧句已删。另有一项读逐字稿原文（DesignSync），核对原句常量与策划案一致。
 /// </summary>
 public class B41e2ShellTests
 {
@@ -63,7 +63,7 @@ public class B41e2ShellTests
     public void Growth_PracticeDisk_Q428_Q540()
     {
         var g = Web("Components/GrowthOverlay.razor");
-        Assert.That(g, Does.Contain("cardsV2 ? \"求生与行动\" : \"求生\""), "Q446 ⑨、Q428 组名，开关关原样");
+        Assert.That(g, Does.Contain("(\"survival\", \"求生与行动\")").And.Not.Contain("cardsV2"), "Q446 ⑨、Q428 组名（B41e3 删开关关的旧组名）");
         Assert.That(g, Does.Contain("共@(views.Count)项熟练度"));
         Assert.That(g, Does.Contain("潜行提高接近和躲避的成功率，判定使用小队队长的等级与身体状态。"));
         Assert.That(g, Does.Contain("\"潜行已满级\""));
@@ -81,10 +81,10 @@ public class B41e2ShellTests
     public void Formation_LeaderPick_SubmittedWithSave()
     {
         var f = Web("Components/FormationOverlay.razor");
-        Assert.That(f, Does.Contain("@if (G.FormationLeader is string leader)"), "开关关时没有队长行");
+        Assert.That(f, Does.Contain("@if (G.FormationLeader is string leader)"));
         Assert.That(f, Does.Contain("@GameEngine.SquadLeaderLabel").And.Contain("@GameEngine.SquadLeaderNote").And.Contain("G.PickFormationLeader(aid)"));
         var s = Web("Services/GameSession.cs");
-        Assert.That(s, Does.Contain("FormationLeader = E.CardsV2(S) ? E.SquadLeaderId(S) : null;"));
+        Assert.That(s, Does.Contain("FormationLeader = E.SquadLeaderId(S);"));
         Assert.That(s, Does.Contain("E.SaveFormationBlocked(S, FormationDraft, FormationDraftVersion, FormationLeader)"));
         Assert.That(s, Does.Contain("Guid.NewGuid().ToString(\"N\"), FormationLeader)"));
     }
@@ -109,20 +109,22 @@ public class B41e2ShellTests
         Assert.That(c, Does.Contain("disabled=\"@(busy || p.KeptResumeBlock != null)\""), "异地禁用继续并写原因");
     }
 
+    /// <summary>Q446 旧句替换：B41e3 翻开开关后只留新句，开关关时的旧分支删除。</summary>
     [Test]
-    public void Q446_OldSentences_ReplacedOnlyWhenCardsV2()
+    public void Q446_OldSentences_NewOnly()
     {
         var sh = Web("Components/SafehouseCard.razor");
-        Assert.That(sh, Does.Contain("（战斗、行动中不能进出）").And.Contain("（战斗、敌踪待处理、行动中不能进出）"), "⑦ 两分支");
+        Assert.That(sh, Does.Contain("（战斗、行动中不能进出）").And.Not.Contain("（战斗、敌踪待处理、行动中不能进出）"), "⑦");
         var gs = Web("Components/GameScreen.razor");
-        Assert.That(gs, Does.Contain("\"成长：十六门熟练度的十级轨道与技能节点\"").And.Contain("\"成长：十五门熟练度的十级轨道与技能节点（只浏览）\""), "⑧");
-        Assert.That(Web("Components/CharacterPanel.razor"), Does.Contain("G.E.CardsV2(G.S) ? \"求生与行动\" : \"求生\""), "⑨");
-        Assert.That(Web("Components/TipsOverlay.razor"), Does.Contain("e.TipForState(s, tips[k])"), "⑩");
+        Assert.That(gs, Does.Contain("\"成长：十六门熟练度的十级轨道与技能节点\"").And.Not.Contain("十五门"), "⑧");
+        Assert.That(Web("Components/CharacterPanel.razor"), Does.Contain("(\"survival\", \"求生与行动\")").And.Not.Contain("CardsV2"), "⑨");
+        Assert.That(Web("Components/TipsOverlay.razor"), Does.Not.Contain("TipForState"), "⑩ 配置里的提示已是新句");
         var h = Web("Services/HelpCatalog.cs");
         Assert.That(h, Does.Contain("退回处的敌踪照常显示。撤退成功后，只有同一张敌踪卡在{e.Config.Encounters.CardRetreatGuardMinutes}游戏分钟内不会主动开战。"), "②");
-        Assert.That(h, Does.Contain("(e.CardsV2(s) ? CapacityCardsV2 : \"敌踪比容量多时"), "③");
-        Assert.That(h, Does.Contain("e.CardsV2(s) ? StealthXpSource").And.Contain("e.CardsV2(s) ? StealthRole"), "Q447 熟练度两句");
-        Assert.That(h, Does.Contain("new[] { FirstStrikeHelp }"), "Q447 先手帮助");
+        Assert.That(h, Does.Contain("\" + CapacityCardsV2 + \""), "③");
+        Assert.That(h, Does.Contain("\" + StealthXpSource,").And.Contain("\" + StealthRole,"), "Q447 熟练度两句");
+        Assert.That(h, Does.Contain("FirstStrikeHelp,"), "Q447 先手帮助");
         Assert.That(h, Does.Contain("StealthEvadeNote,"), "Q447 潜行与躲避补句");
+        Assert.That(h, Does.Not.Contain("CardsV2(s)").And.Not.Contain("敌踪比容量多时"), "B41e3 删开关关的旧帮助");
     }
 }

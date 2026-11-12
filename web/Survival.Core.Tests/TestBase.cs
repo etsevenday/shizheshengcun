@@ -8,19 +8,9 @@ public abstract class TestBase
 {
     protected static readonly GameConfig Cfg = LoadConfig();
 
-    /// <summary>
-    /// 读发布配置。enemyCardsV2 为 null 时按文件原值；环境变量 SURVIVAL_ENEMY_CARDS_V2=1 时把新版敌踪开关改成开
-    /// （B41a：用来在“开关开”的配置下跑全量、列出要在翻开关那批处理的旧用例，平时不设）。
-    /// </summary>
-    protected static GameConfig LoadConfig(bool? enemyCardsV2 = null)
-    {
-        var json = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json"));
-        var v2 = enemyCardsV2 ?? (Environment.GetEnvironmentVariable("SURVIVAL_ENEMY_CARDS_V2") == "1" ? true : (bool?)null);
-        if (v2 == null) return ConfigLoader.FromJson(json);
-        var raw = Newtonsoft.Json.Linq.JObject.Parse(json);
-        raw["encounters"]!["enemyCardsV2"] = v2.Value;
-        return ConfigLoader.FromJson(raw.ToString());
-    }
+    /// <summary>读发布配置（B41e3 起新版敌踪是唯一流程，没有开关可改）。</summary>
+    protected static GameConfig LoadConfig() =>
+        ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
 
     protected GameEngine E = null!;
 
@@ -36,8 +26,29 @@ public abstract class TestBase
         var s = E.NewGame(seed);
         E.DebugLegacyStory(s);
         if (ServiceStandIn) s.ServiceMapMigrated = false;
+        if (NoEnemyApproach) s.SuppressEnemyApproach = true;
         return s;
     }
+
+    /// <summary>
+    /// 到达荒地后像玩家一样主动接近教学卡开首战（B41b R05 Q421：到达只出教学卡、不直接开战；B41e3 起是唯一流程）。
+    /// 已在战斗、首战已胜或没有教学卡时什么也不做；返回是否开了首战。
+    /// </summary>
+    protected bool ApproachTutorial(GameState s)
+    {
+        if (s.Battle != null || s.Story.TutorialWon || s.Story.TutorialEnemyId is not int tid) return false;
+        var key = GameEngine.SingleCardKey(tid);
+        if (E.EnemyCardHere(s, key) == null) return false;
+        var r = E.ApproachCard(s, key);
+        Assert.That(r.Ok, Is.True, r.Reason);
+        return true;
+    }
+
+    /// <summary>
+    /// 与敌踪无关的旧系统用例（采集、清理、地图、成长等）写于新版敌踪上线前，那时没有“到期敌踪主动开战”。B41e3 翻开开关后，
+    /// 这些用例的 New() 冻结敌踪接近（测试专用、不存档的 SuppressEnemyApproach，B41a 起已有），只验证各自系统；敌踪接近本身见 B41b 用例。
+    /// </summary>
+    protected virtual bool NoEnemyApproach => false;
 
     /// <summary>
     /// 队伍服务的旧用例（B8—B8d）按“迁址前”口径测服务规则本身：营区与收容所服务都在替身临时营地（camp）。Q119 选 B（B13a）起
@@ -117,8 +128,7 @@ public abstract class TestBase
     }
 
     /// <summary>
-    /// 按世界时间推进的循环里调用：开关开（新版敌踪）时到期敌踪会主动开战，推进停在战斗上不再前进——直接判失败而不是空转
-    /// （B41b；开关关时不会发生，用例行为不变）。
+    /// 按世界时间推进的循环里调用：到期敌踪会主动开战（B41b），推进停在战斗上不再前进——直接判失败而不是空转。
     /// </summary>
     protected static void StopIfBattle(GameState s)
     {

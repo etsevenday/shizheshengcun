@@ -149,7 +149,7 @@ public sealed partial class GameSession
         Panel is "gear" or "growth" ? GearActorId : null,
         S.CurrentLocation,
         S.CurrentZone ?? "",
-        S.Battle != null ? "battle" : S.Encounter != null ? "encounter" : "",
+        S.Battle != null ? "battle" : "",
         Panel == "map" ? MapLayer : Panel == "craft" ? $"{CraftTab}/{(CraftCandidates == null ? "" : string.Join(",", CraftCandidates))}" : null);
 
     /// <summary>Notify 前校验：上下文变了、对象失效或整局输入锁定时立即清掉（不按同一位置改指别物）。</summary>
@@ -263,9 +263,8 @@ public sealed partial class GameSession
             case SelectionKind.Facility:
                 return E.HasFireAt(S, S.Ground) && sel.Id == GameEngine.FireIdOf(S.Ground);
             case SelectionKind.Enemy:
-                // B41e1：新版敌踪按卡键（当前地点、当前区域可操作的卡）
-                if (E.CardsV2(S)) return E.EnemyCardHere(S, sel.Id) != null;
-                return S.CurrentZone != GameState.SafehouseZone && sel.InstanceId is int wid && E.VisibleEnemiesAt(S, here).Any(w => w.Id == wid);
+                // B41e1：按卡键（当前地点、当前区域可操作的卡）
+                return E.EnemyCardHere(S, sel.Id) != null;
             default:
                 return false;
         }

@@ -110,7 +110,10 @@ public class B31cShellTests : TestBase
         var g = Web("Services", "GameSession.cs");
         Assert.That(g, Does.Contain("SetToast(ResultToast.Pick(Toast, batch));"));
         Assert.That(g, Does.Contain("if (sel.Kind != SelectionKind.None) SetToast(ResultToast.OnBrowse(Toast));"));
-        Assert.That(g, Does.Contain("if (res.Ok) Toast = null;"), "接敌被拒不清提示");
+        // B41e3：旧「接敌」已删，敌踪主动接近被拒同样不清提示（Toast 只在 res.Ok 分支里清）
+        var approach = g.Substring(g.IndexOf("public async Task ApproachEnemyCard(string cardKey)", StringComparison.Ordinal));
+        approach = approach.Substring(0, approach.IndexOf("public async Task<ActionResult> StealthEnemyCard", StringComparison.Ordinal));
+        Assert.That(approach.IndexOf("Toast = null;", StringComparison.Ordinal), Is.GreaterThan(approach.IndexOf("if (res.Ok)", StringComparison.Ordinal)).And.GreaterThan(0), "主动接近被拒不清提示");
         Assert.That(g, Does.Contain("if (ResultToast.AutoDismiss(t)) _ = AutoDismissToast(_toastSeq);"));
         var notify = g.Substring(g.IndexOf("public void Notify()"));
         Assert.That(notify.Substring(0, notify.IndexOf("Version++")), Does.Contain("SyncCommitMark();"));

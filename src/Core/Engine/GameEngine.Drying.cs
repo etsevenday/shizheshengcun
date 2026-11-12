@@ -140,7 +140,6 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return "本局已结束";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (s.Battle != null) return "战斗中不能操作晾制架";
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (s.Main != null || s.Sub != null) return "行动进行中，先完成或取消再操作晾制架";
             if (!DryingRackHere(s)) return $"{ZoneName(s, s.Ground)}没有晾制架（只能操作当前区的晾制架）";
             return null;

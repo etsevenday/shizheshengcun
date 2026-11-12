@@ -4,7 +4,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41a 里程碑 4：统一敌踪卡视图与「主动接近」入口（开关开；R05「Q417–Q419」「Q423」，逐字稿「新操作的禁用与拒绝」「Q427 卡名、角标」；
+/// B41a 里程碑 4：统一敌踪卡视图与「主动接近」入口（R05「Q417–Q419」「Q423」，逐字稿「新操作的禁用与拒绝」「Q427 卡名、角标」；
 /// 验收 Q342-A01 内核、Q419-A01、Q423-A01、Q427-A01、Q428-A01 内核）。
 /// </summary>
 public class B41aApproachTests : B41aTestBase
@@ -66,10 +66,9 @@ public class B41aApproachTests : B41aTestBase
         Assert.That(card.Members.Select(w => w.Id), Is.EqualTo(ids.Take(3)));
         Assert.That(card.Vigilance, Is.EqualTo(4), "组警惕取当前存活成员最高值（狂奔尸 4）");
 
-        // 组员的单卡、旧「接敌」入口都不可用
+        // 组员的单卡不可用（旧「接敌」入口 B41e3 已删）
         Assert.That(E.CanApproachCard(s, GameEngine.SingleCardKey(ids[0])), Is.EqualTo("这处敌踪已不在这里。"));
         Assert.That(E.Approach(s, ids[0]).Ok, Is.False);
-        Assert.That(E.Engage(s).Ok, Is.False);
         Assert.That(s.Battle, Is.Null);
 
         var minute = s.GameMinute;
@@ -302,20 +301,5 @@ public class B41aApproachTests : B41aTestBase
         WinBattle(s);
         Assert.That(E.CanApproachCard(s, key), Is.EqualTo("本局已挑战成功"));
         Assert.That(E.EnemyCardsHere(s), Is.Empty);
-    }
-
-    [Test]
-    public void SwitchOff_NewEntryUnavailable_OldEntryUnchanged()
-    {
-        var s = LegacyField();
-        var w = Off.DebugSpawnEnemy(s, "shambler", "field");
-        Assert.That(Off.CardsV2(s), Is.False);
-        Assert.That(Off.ApproachCard(s, GameEngine.SingleCardKey(w.Id)).Ok, Is.False);
-        Assert.That(s.Battle, Is.Null);
-        s.CurrentZone = GameEngine.SafehouseZone;
-        Assert.That(Off.CanApproach(s, w.Id), Is.EqualTo("在安全屋屋内：先出门再接近敌人"), "开关关：旧拒绝句原样");
-        s.CurrentZone = GameEngine.ExteriorZone;
-        Assert.That(Off.Approach(s, w.Id).Ok, Is.True);
-        Assert.That(s.Battle!.CardKey, Is.Null);
     }
 }

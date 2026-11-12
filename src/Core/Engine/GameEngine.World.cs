@@ -15,8 +15,8 @@ namespace Survival.Core.Engine
     {
         private WorldEnemiesConfig WE => Config.WorldEnemies;
 
-        /// <summary>战斗中或敌踪待选：普通行动推进暂停，由战斗流程自己推进世界时间。</summary>
-        public bool InCombatFlow(GameState s) => s.Battle != null || s.Encounter != null;
+        /// <summary>战斗中：普通行动推进暂停，由战斗流程自己推进世界时间（B41e3 起没有“敌踪待选”状态）。</summary>
+        public bool InCombatFlow(GameState s) => s.Battle != null;
 
         /// <summary>首个不早于 minute 的检查点：start + k×interval。</summary>
         private static int NextGrid(int minute, int start, int interval) =>
@@ -91,7 +91,7 @@ namespace Survival.Core.Engine
         public WorldEnemy? FindWorldEnemy(GameState s, int id) => s.WorldEnemies.FirstOrDefault(w => w.Id == id);
 
         /// <summary>
-        /// 完成探索/清理后的接敌概率：基础风险×(本地未交战敌对数/本地上限)；第1日、安全地点、无敌对、保护期内为 0。
+        /// 完成探索/清理后形成随机组卡的概率：基础风险×(本地未交战敌对数/本地上限)；第1日、安全地点、无敌对、旧档历史保护期内、同地已有组卡为 0。
         /// v3 新节点（B11，Q31）：基础风险取逐点 encounterBase*Percent、分母取人口区本地上限；城市/公共城内与地牢房间不随机接敌
         /// （地牢只有固定实例遭遇）；危险度只作显示，不乘概率。旧 8 地点参数不变。
         /// </summary>
@@ -105,7 +105,7 @@ namespace Survival.Core.Engine
             if (_locs.TryGetValue(loc, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior)) return 0;
             if (s.GameMinute < s.EncounterGraceUntil) return 0;
             // B41a（R05 Q417）：同地已有未隐藏的存续随机组卡时，探索／清理不再形成新组
-            if (CardsV2(s) && VisibleGroupCardAt(s, loc) != null) return 0;
+            if (VisibleGroupCardAt(s, loc) != null) return 0;
             var key = type == ActionType.Explore ? "explore" : type == ActionType.Clear ? "clear" : "";
             double risk;
             var nodePct = lc == null ? null : type == ActionType.Explore ? lc.EncounterBaseExplorePercent : type == ActionType.Clear ? lc.EncounterBaseClearPercent : null;
@@ -117,20 +117,8 @@ namespace Survival.Core.Engine
             return risk * n / cap;
         }
 
-        /// <summary>预览说明：“完成后接敌概率 0.67%（本地敌对1/上限3）”。</summary>
-        public string EncounterNote(GameState s, string loc, ActionType type)
-        {
-            var en = Config.Encounters;
-            if (CardsV2(s)) return GroupCardPreviewNote(s, loc, type);
-            if (TutorialGateOpen(s)) return "首战（农野荒地的游荡尸）胜利前不会随机遇敌";
-            if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay) return $"第{en.NoRandomBeforeDay}日起完成后才可能遇到本地敌人（今天不会）";
-            if (en.SafeLocations.Contains(loc)) return "营地是安全区，不会遇敌";
-            if (_locs.TryGetValue(loc, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior))
-                return lc.IsDungeon ? "地牢房间只有固定遭遇，不会随机遇敌" : "城市与公共地点不会随机遇敌";
-            if (s.GameMinute < s.EncounterGraceUntil) return $"随机接敌保护期还剩{Clock.Duration(s.EncounterGraceUntil - s.GameMinute)}";
-            var p = EncounterChance(s, loc, type);
-            return $"完成后接敌概率{Fmt.Pct(p)}（本地敌对{LocalHostiles(s, loc).Count}/上限{LocalCapOf(loc)}）；只会遇到这里已有的敌人，可选择绕行";
-        }
+        /// <summary>探索／清理预览里的随机组卡说明（即 <see cref="GroupCardPreviewNote"/>）。</summary>
+        public string EncounterNote(GameState s, string loc, ActionType type) => GroupCardPreviewNote(s, loc, type);
 
         // ───────────── 世界 tick：刷新与巡游 ─────────────
 
@@ -246,8 +234,8 @@ namespace Survival.Core.Engine
         // ───────────── 接敌 ─────────────
 
         /// <summary>
-        /// 探索/清理完成后（原行动结果已提交）检查随机接敌：用开始时锁定的判定值与当时的本地敌对密度比较；
-        /// 触发时从同地已有敌人中按最早出现取至多3只，等待玩家选择接敌或绕行。
+        /// 探索/清理完成后（原行动结果已提交）检查随机遭遇：用开始时锁定的判定值与当时的本地敌对密度比较；
+        /// 命中时形成一张随机组卡（B41a，R05 Q417；不产生“待处理敌踪”，不阻断其他操作）。
         /// </summary>
         private void CheckRandomEncounter(GameState s, ActionState a)
         {
@@ -256,25 +244,8 @@ namespace Survival.Core.Engine
             var loc = s.CurrentLocation;
             var p = EncounterChance(s, loc, a.Type);
             if (p <= 0 || a.EncounterRoll >= p) return;
-            // B41a：新版敌踪不产生“待处理敌踪”，改为形成一张随机组卡（不阻断其他操作）
-            if (CardsV2(s)) { FormRandomGroupCard(s, a, loc); return; }
-            var group = LocalHostiles(s, loc).Take(Config.Encounters.GroupMax).ToList();
-            if (group.Count == 0) return;
-            s.Encounter = new PendingEncounter
-            {
-                LocationId = loc,
-                EnemyIds = group.Select(w => w.Id).ToList(),
-                Source = a.Type == ActionType.Explore ? "explore" : "clear",
-                Minute = s.GameMinute,
-            };
-            var names = string.Join("、", group.GroupBy(w => w.EnemyId).Select(g => $"{_enemies[g.Key].Name}×{g.Count()}"));
-            Emit(s, GameEventKind.Encounter, $"发现敌踪：{names}。可以接敌，也可以绕行{Clock.Duration(Config.Encounters.BypassMinutes)}。",
-                null, group.Select(w => $"enemy:{w.Id}"));
+            FormRandomGroupCard(s, a, loc);
         }
-
-        /// <summary>敌踪的组成（界面卡片用）。</summary>
-        public List<WorldEnemy> EncounterEnemies(GameState s) =>
-            s.Encounter == null ? new List<WorldEnemy>() : s.Encounter.EnemyIds.Select(id => FindWorldEnemy(s, id)).Where(w => w != null).Select(w => w!).ToList();
 
         // ───────────── 调试 ─────────────
 

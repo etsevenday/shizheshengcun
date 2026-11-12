@@ -235,16 +235,5 @@ public class B41cStealthCheckTests : B41cTestBase
         }
     }
 
-    [Test]
-    public void SwitchOff_NoStealthActions()
-    {
-        var s = LegacyField();
-        var w = Off.DebugSpawnEnemy(s, "shambler", "field");
-        Assert.That(Off.StartStealth(s, Key(w), "sneak").Reason, Is.EqualTo("当前无法发起战斗。"));
-        var req = ActionRequest.Wait(5);
-        req.TargetId = "stealth:sneak:" + Key(w);
-        Assert.That(Off.Start(s, req).Reason, Is.EqualTo("未知行动"));
-    }
-
     private static string LastLogContaining(GameState s, string part) => s.Log.Last(l => l.Text.Contains(part)).Text;
 }

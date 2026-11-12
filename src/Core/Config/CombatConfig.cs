@@ -125,8 +125,6 @@ namespace Survival.Core.Config
         public string Category { get; set; } = "combat";
         /// <summary>只有等级和经验轨、没有招式节点（B41c：第 16 门潜行，R05「队长、潜行与 Q424 练习」）。</summary>
         public bool TrackOnly { get; set; }
-        /// <summary>只在新版敌踪开关 encounters.enemyCardsV2 打开时存在（B41c：潜行；开关关时不进角色、成长页、招募说明）。</summary>
-        public bool EnemyCardsV2Only { get; set; }
 
         [JsonIgnore] public double XpBase => Formula.Num(NextLevelXpFormula, 0);
         [JsonIgnore] public double XpOffset => Formula.Num(NextLevelXpFormula, 1);
@@ -805,7 +803,7 @@ namespace Survival.Core.Config
         public bool FreezeNegativeSatietyHydration { get; set; }
     }
 
-    /// <summary>v0.6 encounters：按地块敌密度接敌、绕行与保护期（§15）。</summary>
+    /// <summary>v0.6 encounters：按地块敌密度形成随机组卡（§15）；B41 新版敌踪的时限、潜行与先手（R05 Q342 定稿，B41e3 起为唯一行为）。</summary>
     public sealed class EncountersConfig
     {
         public string Source { get; set; } = "";
@@ -818,20 +816,12 @@ namespace Survival.Core.Config
         public bool NoRiskWhenZeroHostile { get; set; }
         public bool ActiveContactEnabled { get; set; }
         public bool CommitOriginalActionBeforeEncounter { get; set; }
-        public int BypassMinutes { get; set; }
-        public string BypassRateCategory { get; set; } = "";
-        public int PostExitRandomEncounterGraceMinutes { get; set; }
         public bool NoNestedRandomDuringCombatOrBypass { get; set; }
         public int GroupMax { get; set; } = 3;
         public string GroupSelection { get; set; } = "";
         public bool BypassLeavesWorldEnemiesAlive { get; set; }
         public bool DefeatRemovesOnlyKilledWorldIds { get; set; }
         public bool CombatSurvivorsKeepHpAndXpCountersOnWorldId { get; set; }
-        /// <summary>
-        /// B41 新版敌踪总开关（R05 文首「Q342 新版敌踪、潜行和躲避定稿」）：B41a—B41e 的内核与界面先做在关着的开关后面，B41f 全部做完后一次打开。
-        /// 关：旧版接敌／绕行流程原样；开：且存档已采纳新版卡模型（EnemyCardsState.ModelVersion）时走新分支。
-        /// </summary>
-        public bool EnemyCardsV2 { get; set; }
         /// <summary>B41b 计时卡每次现身的接近时间候选（世界分钟，等概率抽一次；R05 Q416：20、25、30、35、40）。</summary>
         public List<int> ApproachMinutes { get; set; } = new List<int>();
         /// <summary>B41b 成功撤退后同一张敌踪卡的主动接近保护（世界分钟；R05 Q416：60）。</summary>

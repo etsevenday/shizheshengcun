@@ -76,7 +76,7 @@ namespace Survival.Core.State
             map.TryGetValue(Key(actorId, skillId), out var h) ? h : 0;
     }
 
-    /// <summary>探索/清理完成后发现的敌踪（v0.6 §15）：等待玩家选“接敌”或“绕行10分钟”。敌人是同地已有实例，不另造。</summary>
+    /// <summary>旧版探索/清理完成后发现的待处理敌踪（v0.6 §15，只存在于旧档；读档采纳新版敌踪时转为组卡，见 GameEngine.AdoptEnemyCards）。</summary>
     public sealed class PendingEncounter
     {
         public string LocationId { get; set; } = "";

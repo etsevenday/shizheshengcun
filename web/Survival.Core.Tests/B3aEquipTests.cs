@@ -159,23 +159,28 @@ public class B3aEquipTests : BattleTestBase
 
     // ───────────── EQ-B3-42：换装时机表 ─────────────
 
+    /// <summary>
+    /// 敌踪卡在场时战前调整装备（B41e3 改写：旧版“敌踪待选时地面取放被锁”随旧接敌流程删除；新版敌踪卡在场本身不拒绝任何操作，R05 Q456）：
+    /// 随身与地面取放都可以，0 分钟，敌踪卡不变。
+    /// </summary>
     [Test]
-    public void EQB342_EncounterPending_CarriedAdjustAllowed_GroundBlocked_EncounterKept()
+    public void EQB342_EnemyCardPresent_AdjustAllowed_CardKept()
     {
         var s = New(421);
         var knife = Give(s, "stone_knife");
         var spear = Give(s, "wooden_spear");
         E.DebugTeleport(s, "field");
         Quiet(s);
+        s.SuppressEnemyApproach = true;
         var w = E.DebugSpawnEnemy(s, "shambler", "field");
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = { w.Id }, Source = "explore", Minute = s.GameMinute };
+        var key = GameEngine.SingleCardKey(w.Id);
+        Assert.That(E.EnemyCardHere(s, key), Is.Not.Null);
         var minute = s.GameMinute;
-        Assert.That(E.Equip(s, P0, knife.InstanceId, EquipSlots.Weapon1).Ok, Is.True, "敌踪待选时可战前调整");
+        Assert.That(E.Equip(s, P0, knife.InstanceId, EquipSlots.Weapon1).Ok, Is.True, "敌踪卡在场可战前调整");
         Assert.That(E.Equip(s, P0, spear.InstanceId, EquipSlots.Weapon2).Ok, Is.True);
         Assert.That(E.Unequip(s, P0, EquipSlots.Weapon2, false).Ok, Is.True);
-        Assert.That(E.Unequip(s, P0, EquipSlots.Weapon1, true).Reason, Does.Contain("发现敌踪"), "地面取放不越过敌踪锁");
-        Assert.That(s.Encounter, Is.Not.Null, "调整不清除敌踪");
-        Assert.That(s.Encounter!.EnemyIds, Is.EqualTo(new List<int> { w.Id }));
+        Assert.That(E.Unequip(s, P0, EquipSlots.Weapon1, true).Ok, Is.True, "地面取放也可以");
+        Assert.That(E.EnemyCardHere(s, key), Is.Not.Null, "调整不改敌踪卡");
         Assert.That(s.GameMinute, Is.EqualTo(minute), "0 分钟");
     }
 

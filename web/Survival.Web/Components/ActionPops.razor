@@ -2,10 +2,10 @@
 
 @* 就近执行浮窗（S14 §14.1、S02 §5、R05 §7、S08 §5）：一个时刻只有一个当前操作上下文（G.Pop）。
    travel/mapnode：相邻地图卡或区域地图节点旁预览基础时间、预计完成、负重与入夜影响，“确认移动”一次确认；
-   approach：敌踪卡旁对象/风险预览，“接近并开战”才按 R05 接敌；gather：拖工具到资源卡后在卡旁确认开始；
+   enemycard：点敌踪卡打开的居中操作盘（B41e1，主动接近／潜行接近／躲避）；gather：拖工具到资源卡后在卡旁确认开始；
    charcoal：火堆卡“煅烧木炭”旁的投料确认（Q111，S14 本轮章）：4木→3炭、原料来源、空位、60有效分钟、燃料另计与冷火55提示，“确认投料”才投（0分钟）。
    每次渲染都从内核现算预览；目标失效（不再相邻、敌人离开、预览被替换）时直接收起，不保留失效按钮。
-   点击执行再交给内核按真实 ID/所在地/占用重验（E.Start、E.Approach），执行中锁住按钮，重复点击不重复提交。
+   点击执行再交给内核按真实 ID/所在地/占用重验（E.Start、E.ApproachCard），执行中锁住按钮，重复点击不重复提交。
    B32f（逐字稿 §1.5 Q395，同 Q390 物品操作盘）：游戏菜单（含战斗菜单）打开期间只隐藏（menu-hidden）、不卸载，盘内状态保留；
    关菜单后仍有效的原盘恢复显示并按当前状态重算预览与按钮（每次渲染本来就现算）；目标失效照上面 Valid 收起；恢复不提交。 *@
 @if (G.State != null && G.Pop is GameSession.PopContext pop && !G.DialogueLocked && Valid(pop))
@@ -78,39 +78,6 @@
                     {
                         <button type="button" class="primary apop-go" data-enter disabled="@(!p.Ok || busy)" @onclick='() => Travel(req, pop.Kind == "mapnode")'>@(p.Ok ? (needExp ? "确认开始远征并前往" : "确认移动") : "无法移动")<EnterCap On="@(p.Ok && !busy)" /></button>
                     }
-                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
-                </Actions>
-            </AnchorPop>
-            break;
-        }
-        case "approach":
-        {
-            var wid = int.Parse(pop.Id);
-            var w = e.FindWorldEnemy(s, wid)!;
-            var ec = e.Enemy(w.EnemyId);
-            var why = e.CanApproach(s, wid);
-            var weapon = e.CurrentWeapon(s, out var wi);
-            var hit = e.OutOfBattleHit(s, ec);   // Q67：与战斗中同一公式（+8、疲劳一次×0.95）
-            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"接近{ec.Name}")" CssClass="@("approach" + G.MenuHideCss)"
-                       Sub="@($"健康{Ui.N(w.Hp)}/{Ui.N(ec.Hp)} · {(w.Hostile ? "敌对" : "中立")} · 只与这一只交战")" OnClose="G.ClosePop">
-                <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
-                <ChildContent>
-                    <div class="apop-facts">
-                        <span title="敌人对你的命中率与伤害"><i class="pf-ico">⚔</i>对你@(Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))) · 伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax))</span>
-                        <span title="开战默认页（第一个有武器的页）的命中率（战斗中可切换武器页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(e.DefaultWeaponPage(s) == 1 ? "Ⅰ" : "Ⅱ") @(wi == null ? "拳" : weapon.Name) · 命中@(Ui.Pct(hit.HitChance))</span>
-                    </div>
-                    @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
-                    {
-                        <div class="apop-risk">@($"{weapon.Name}")弹仓为0：开战后需先装填（1AP）</div>
-                    }
-                    @if (e.CanBite(ec)) { <div class="apop-risk">咬伤可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）</div> }
-                    else if (ec.IsZombie) { <div class="apop-note">它的意图里没有咬击，不会咬伤（攻击不传播病毒）</div> }
-                    <div class="apop-note">@e.FearNote(s, new[] { w }, GameEngine.FearApproach)</div>
-                    @if (why != null) { <div class="apop-risk">@why</div> }
-                    @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
-                </ChildContent>
-                <Actions>
-                    <button type="button" class="primary apop-go fight" data-enter disabled="@(why != null || busy)" @onclick="() => Approach(wid)">接近并开战<EnterCap On="@(why == null && !busy)" /></button>
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
                 </Actions>
             </AnchorPop>
@@ -317,12 +284,11 @@
         var e = G.E;
         var ok = pop.Kind switch
         {
-            "travel" => s.Battle == null && s.Encounter == null && G.Panel == null && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
+            "travel" => s.Battle == null && G.Panel == null && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
             "mapnode" => G.Panel == "map" && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
-            "approach" => s.Battle == null && s.Encounter == null && int.TryParse(pop.Id, out var wid) && e.VisibleEnemiesAt(s, s.CurrentLocation).Any(w => w.Id == wid),
             // B41e1（R05 Q457）：卡键仍在当前地点、当前区域的可操作卡里；失效即收盘（DropPop 一并清该卡详情），不改选别的敌人
-            GameSession.EnemyCardPop => s.Battle == null && s.Encounter == null && e.CardsV2(s) && e.EnemyCardHere(s, pop.Id) != null,
-            "charcoal" => s.Battle == null && s.Encounter == null && G.Panel == null && pop.Id == s.Ground && e.HasFireAt(s, s.Ground),
+            GameSession.EnemyCardPop => s.Battle == null && e.EnemyCardHere(s, pop.Id) != null,
+            "charcoal" => s.Battle == null && G.Panel == null && pop.Id == s.Ground && e.HasFireAt(s, s.Ground),
             "lockstack" => s.Battle == null && G.Panel == null && e.AdjacentLockedGroups(s).Any(g => g.Routes.Count >= 3),
             "harvest" => s.Battle == null && G.Panel == "drying" && e.DryingRackHere(s) && int.TryParse(pop.Id, out var hk) && e.DryingSlotAt(s, s.Ground, hk)?.Status == DryingSlot.Done,
             "gather" => G.Selected.Kind == SelectionKind.Action && G.PendingAction != null && G.PendingAction.Type == ActionType.Gather && G.PendingAction.TargetId == pop.Id,
@@ -344,15 +310,6 @@
             if (fromMap && G.S.Main?.Type == ActionType.Travel) G.OpenPanel(null);
             await t;
         }
-        finally { _go = false; }
-    }
-
-    private async Task Approach(int wid)
-    {
-        if (_go) return;
-        _go = true;
-        _tried = true;
-        try { await G.ApproachEnemy(wid); }
         finally { _go = false; }
     }
 

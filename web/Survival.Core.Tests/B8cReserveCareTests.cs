@@ -14,6 +14,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B8cReserveCareTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     /// <summary>迁址前口径：服务在替身 camp（见 TestBase.ServiceStandIn）。</summary>
     protected override bool ServiceStandIn => true;
 

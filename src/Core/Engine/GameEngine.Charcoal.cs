@@ -148,7 +148,6 @@ namespace Survival.Core.Engine
         {
             if (s.Progress.Dead) return "角色已死亡";
             if (s.Battle != null) return "战斗中不能整理物品";
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (DialogueLocked(s)) return DialogueLockedReason;
             var busy = HolderBlocked(s);
             if (busy != null) return busy;

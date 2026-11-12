@@ -285,20 +285,23 @@ public class B24CityOverviewTests : TestBase
         Assert.That(E.StartCityOverviewTravel(s, "c02_church", "far").Reason, Is.EqualTo("目标不在这座城内"));
     }
 
-    /// <summary>CITY-UI06/14：敌踪出现时鸟瞰不可用（界面据此自动关闭）、“前往”拒绝；自动打开等到敌踪处理完；关闭/再开不改真实位置与库存。</summary>
+    /// <summary>
+    /// CITY-UI06/14：战斗中鸟瞰不可用（界面据此自动关闭）、“前往”拒绝；自动打开等到战斗结束；关闭/再开不改真实位置与库存。
+    /// （B41e3 起没有旧版待处理敌踪，原用例的敌踪锁改用战斗；敌踪卡本身不挡操作。）
+    /// </summary>
     [Test]
     public void CITY_UI06_EncounterClosesAndBlocks()
     {
         var s = Registered("h02_square");
         E.MarkCityOverviewShown(s);
-        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = new List<int>(), Source = "explore", Minute = s.GameMinute };
+        s.Battle = new BattleState();
         Assert.That(E.CityOverviewBlocked(s), Is.EqualTo("先处理眼前的敌踪"));
         Assert.That(E.StartCityOverviewTravel(s, "h03_workshop", "enc").Ok, Is.False);
         Assert.That(s.Main, Is.Null);
         E.DebugResetCityOverview(s);
         s.City.OverviewPending = "h02_square";
-        Assert.That(E.CityOverviewAutoOpenDue(s), Is.False, "敌踪中不自动打开");
-        s.Encounter = null;
+        Assert.That(E.CityOverviewAutoOpenDue(s), Is.False, "战斗中不自动打开");
+        s.Battle = null;
         Assert.That(E.CityOverviewAutoOpenDue(s), Is.True);
     }
 

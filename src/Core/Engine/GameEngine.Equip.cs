@@ -57,7 +57,6 @@ namespace Survival.Core.Engine
         /// </summary>
         public string? GroundEquipBlocked(GameState s, bool fromGround)
         {
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (s.Main != null || s.Sub != null) return fromGround ? "行动进行中，不能从地面穿上" : "行动进行中，不能放到地面";
             return null;
         }
@@ -184,7 +183,6 @@ namespace Survival.Core.Engine
             if (it.ReservedBy != null || IsLocked(s, it)) return "行动占用：该物品正被当前行动使用";
             if (toGround)
             {
-                if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
                 if (IsBusy(s)) return "行动进行中，不能放到地面";
                 return null;
             }

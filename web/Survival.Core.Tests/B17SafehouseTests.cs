@@ -171,12 +171,15 @@ public class B17SafehouseTests : TestBase
         Ok(E.ExitSafehouse(s));
         Assert.That((s.CurrentZone, s.GameMinute), Is.EqualTo((GameState.ExteriorZone, t0)));
 
-        // 敌踪待处理 / 行动中：不能用门跳过
-        s.Encounter = new PendingEncounter { LocationId = "camp", EnemyIds = new List<int>(), Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.EnterSafehouse(s).Reason, Does.Contain("敌踪待处理"));
-        s.Encounter = null;
+        // 行动中 / 战斗中：不能用门跳过（B41e3 起敌踪卡本身不挡门，旧「敌踪待处理」一句随旧接敌流程删除）
         Start(s, ActionRequest.Rest(60));
         Assert.That(E.EnterSafehouse(s).Reason, Does.Contain("行动进行中"));
+        Ok(E.Cancel(s));
+        var w = E.DebugSpawnEnemy(s, "shambler", "camp");
+        Ok(E.EnterSafehouse(s));
+        Ok(E.ExitSafehouse(s));
+        Assert.That(E.DebugStartBattle(s, new[] { w.Id }, GameEngine.FearEncounter), Is.True);
+        Assert.That(E.EnterSafehouse(s).Reason, Does.Contain("战斗中不能进出安全屋"));
     }
 
     // ───────────── SH09/SH10 屋内休息 ─────────────

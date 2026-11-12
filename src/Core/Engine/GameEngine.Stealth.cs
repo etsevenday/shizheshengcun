@@ -8,7 +8,6 @@ namespace Survival.Core.Engine
     /// <summary>
     /// B41c 新版敌踪的小队队长、潜行接近／躲避、练习潜行（R05「队长、潜行与 Q424 练习」「潜行与躲避判定」「B41c Q503—Q508」，
     /// R08「Q342 小队队长」；逐字稿 B41「结果、取消与队长回退」「新操作的禁用与拒绝」「队长与练习潜行」；开发记录 B41c）。
-    /// 全部挂在 <see cref="CardsV2"/> 后面：开关 encounters.enemyCardsV2 关着时没有队长、潜行行动与潜行经验，旧版流程原样。
     /// </summary>
     public sealed partial class GameEngine
     {
@@ -39,7 +38,7 @@ namespace Survival.Core.Engine
             if (s.SquadLeader == actorId && !SquadMemberValid(s, actorId))
             {
                 s.SquadLeader = null;
-                if (!s.Progress.Dead && CardsV2(s)) Emit(s, GameEventKind.Info, "原队长已无法带队，小队队长已改为你。");
+                if (!s.Progress.Dead) Emit(s, GameEventKind.Info, "原队长已无法带队，小队队长已改为你。");
             }
             if (!SquadMemberValid(s, actorId)) EndPracticeOf(s, actorId);
         }
@@ -103,7 +102,7 @@ namespace Survival.Core.Engine
         /// </summary>
         public string? CanStealthCard(GameState s, string cardKey, string kind, string? leaderId = null, int? expectedRate = null)
         {
-            if (!CardsV2(s) || (kind != SneakKind && kind != EvadeKind)) return "当前无法发起战斗。";
+            if (kind != SneakKind && kind != EvadeKind) return "当前无法发起战斗。";
             var why = CanApproachCard(s, cardKey);
             if (why != null) return why;
             if (leaderId != null && !SquadMemberValid(s, leaderId)) return "队长已失效，请重新选择。";
@@ -146,10 +145,9 @@ namespace Survival.Core.Engine
         /// <summary>某张卡本次现身的序号（躲避隐藏后真正重现一次 +1；没有记录为 0）。</summary>
         public int AppearanceOf(GameState s, string cardKey) => s.EnemyCards.Appearances.TryGetValue(cardKey, out var n) ? n : 0;
 
-        /// <summary>Validate 的潜行等待分支：时长取配置（判定 5、练习 30），行动名取逐字稿；开关关着不认识这种行动。</summary>
+        /// <summary>Validate 的潜行等待分支：时长取配置（判定 5、练习 30），行动名取逐字稿。</summary>
         private string? ValidateStealth(GameState s, ActionRequest r, Plan plan)
         {
-            if (!CardsV2(s)) return "未知行动";
             var kind = StealthKindOf(r.TargetId);
             var minutes = kind == PracticeKind ? Config.Encounters.Stealth.PracticeMinutes : kind == SneakKind || kind == EvadeKind ? Config.Encounters.Stealth.CheckMinutes : -1;
             if (minutes <= 0 || r.Minutes != minutes) return "等待时长无效";
@@ -303,7 +301,6 @@ namespace Survival.Core.Engine
         /// </summary>
         public string? CanPracticeStealth(GameState s, string? actorId)
         {
-            if (!CardsV2(s)) return "未知行动";
             if (s.Progress.Dead) return "本局已结束。";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (s.Battle != null) return "当前正在战斗。";

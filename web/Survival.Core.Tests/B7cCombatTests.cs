@@ -31,7 +31,6 @@ public class B7cCombatTests : BattleTestBase
     private List<int> Spot(GameState s, params string[] ids)
     {
         var list = ids.Select(id => E.DebugSpawnEnemy(s, id, "field").Id).ToList();
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = list, Source = "explore", Minute = s.GameMinute };
         return list;
     }
 
@@ -48,10 +47,8 @@ public class B7cCombatTests : BattleTestBase
         var s = Field(1);
         var ids = Spot(s, "worker", "shambler", "crawler");
         Assert.That(E.BattleCapacity(s), Is.EqualTo(1), "新局无事实 C1，不沿临时 3");
-        Assert.That(E.EncounterJoiners(s).Select(w => w.Id), Is.EqualTo(ids.Take(1)), "按有序名单取前 C 个");
-        Assert.That(E.EncounterCapacityNote(s), Does.Contain("容量C1").And.Contain("其余2只留在原地"));
         var hp = s.WorldEnemies.ToDictionary(w => w.Id, w => w.Hp);
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(s, ids, GameEngine.FearEncounter), Is.True);
         var b = s.Battle!;
         Assert.That(b.Capacity, Is.EqualTo(1));
         Assert.That(b.Enemies.Select(e => e.WorldId), Is.EqualTo(ids.Take(1)));
@@ -631,15 +628,13 @@ public class B7cCombatTests : BattleTestBase
         Assert.That(u.AccuracyText, Is.EqualTo("武器26＋熟练3＋基础8"));
     }
 
-    /// <summary>修复2：容量说明有不带“本场容量C”前缀的版本，右栏不重复；修复4：精神没变时胜利日志不写“精神−0.00”。</summary>
+    /// <summary>修复4：精神没变时胜利日志不写“精神−0.00”。（修复2 的旧版待处理敌踪容量说明随旧接敌流程在 B41e3 删除。）</summary>
     [Test]
-    public void Fix_B7c_StayNoteNoPrefix_NoZeroMoraleText()
+    public void Fix_B7c_NoZeroMoraleText()
     {
         var s = Field(62);
-        Spot(s, "shambler", "crawler");
-        Assert.That(E.EncounterStayNote(s), Does.StartWith("只有排在最前的1只接战").And.Not.Contain("容量C"));
-        Assert.That(E.EncounterCapacityNote(s), Does.StartWith("本场容量C1：只有排在最前的1只接战"));
-        Assert.That(E.Engage(s).Ok, Is.True);
+        var ids = Spot(s, "shambler", "crawler");
+        Assert.That(E.DebugStartBattle(s, ids, GameEngine.FearEncounter), Is.True);
         Enemy(s, 1).Hp = 0.01;
         s.Battle!.Panic = 0;
         ToPlayer(s);

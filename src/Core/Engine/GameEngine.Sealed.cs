@@ -51,7 +51,7 @@ namespace Survival.Core.Engine
         public string? SealBlocked(GameState s, int instanceId)
         {
             if (s.Progress.Dead) return "本局已结束";
-            if (s.Battle != null || s.Encounter != null) return "战斗结束后才能封存";
+            if (s.Battle != null) return "战斗结束后才能封存";
             var e = s.Expedition;
             if (e == null || DungeonAt(s.CurrentLocation) != e.DungeonId) return "只有在本次远征的地牢里才能封存";
             var it = FindItem(s, instanceId);
@@ -88,7 +88,7 @@ namespace Survival.Core.Engine
         public string? UnsealBlocked(GameState s, int instanceId, bool toGround)
         {
             if (s.Progress.Dead) return "本局已结束";
-            if (s.Battle != null || s.Encounter != null) return "战斗中不能从封存里拿东西";
+            if (s.Battle != null) return "战斗中不能从封存里拿东西";
             var it = FindItem(s, instanceId);
             if (it == null || !it.Owner.StartsWith(SealedPrefix)) return "这件物品不在封存里";
             var d = DungeonAt(s.CurrentLocation);

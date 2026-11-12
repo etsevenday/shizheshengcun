@@ -58,7 +58,7 @@ namespace Survival.Core.Engine
 
     /// <summary>
     /// B41a 新版敌踪卡模型（R05 文首「Q342 新版敌踪、潜行和躲避定稿」；重墨 V2 逐字稿「B41 Q426–Q428 正式文案」；开发记录 B41a）。
-    /// 全部新逻辑挂在 <see cref="CardsV2"/> 后面：开关 encounters.enemyCardsV2 关着时旧版接敌／绕行流程原样。
+    /// B41e3 起是唯一的敌踪流程（旧版接敌／绕行、全局“敌踪待处理”阻断、战后全地点保护已删除；旧档读档时由 <see cref="AdoptEnemyCards"/> 转换一次）。
     /// </summary>
     public sealed partial class GameEngine
     {
@@ -80,16 +80,10 @@ namespace Survival.Core.Engine
             };
         }
 
-        // ───────────── 开关与采纳（R05 Q425、Q436—Q438） ─────────────
+        // ───────────── 旧档采纳（R05 Q425、Q436—Q438） ─────────────
 
-        /// <summary>EnemyCardsState.ModelVersion 的“已采纳新版卡模型”值。</summary>
+        /// <summary>EnemyCardsState.ModelVersion 的“已采纳新版卡模型”值（旧档采纳一次后置此值；新局直接置此值）。</summary>
         public const int EnemyCardsModelV2 = 1;
-
-        /// <summary>
-        /// 这一局走新版敌踪：开关 encounters.enemyCardsV2 开着，且存档已采纳新版卡模型（新局直接采纳；旧档读档时采纳一次）。
-        /// 为假时旧版接敌／绕行流程原样（s.Encounter、全局“敌踪待处理”阻断、绕行、战后全地点保护）。
-        /// </summary>
-        public bool CardsV2(GameState s) => Config.Encounters.EnemyCardsV2 && s.EnemyCards.ModelVersion >= EnemyCardsModelV2;
 
         /// <summary>动物（配置 family=animal）：不进随机组卡、不混编（R05「B41a Q436 动物单卡」）。</summary>
         public bool IsAnimal(string enemyId) => _enemies[enemyId].IsAnimal;
@@ -98,7 +92,7 @@ namespace Survival.Core.Engine
         public const string LegacyBypassCancelledText = "原绕行行动已取消。";
 
         /// <summary>
-        /// 旧档采纳新版敌踪卡模型（R05「Q425 旧档与持久化」、Q436、Q437；只在开关开着且还没采纳过时做一次，重复调用不再改任何东西）：
+        /// 旧档采纳新版敌踪卡模型（R05「Q425 旧档与持久化」、Q436、Q437；还没采纳过时做一次，重复调用不再改任何东西）：
         /// 1. 正在进行或暂停的绕行取消：已耗时间与身体变化保留，预留沿原取消路径释放一次；不结算绕行完成、不给保护期、不重取名单、不建组卡，
         ///    当地敌人保持各自单卡；无论当地有没有敌人都只写「原绕行行动已取消。」。暂停绕行下的在途子行动转为独立行动续做（R05 Q454）。
         /// 2. 不是绕行的旧待处理名单（s.Encounter）：原名单里仍在当地、未交战、未隐藏的成员，先去掉动物（还原单卡），再按原顺序取前 C 个
@@ -108,7 +102,6 @@ namespace Survival.Core.Engine
         /// </summary>
         public void AdoptEnemyCards(GameState s)
         {
-            if (!Config.Encounters.EnemyCardsV2) return;
             if (s.EnemyCards.ModelVersion >= EnemyCardsModelV2) return;
 
             // 1. 旧绕行（主行动；绕行不会是子行动，这里两处都看以防坏档）
@@ -395,12 +388,11 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 主动接近一张敌踪卡（盘内点击即提交，0 世界分钟；受惊情境按主动接近 0.5）：单卡打这一只真实实例，随机组卡全锁定名单入场，
-        /// 固定战全名单入场（禁增援），可选强敌第一次实际处理时才建唯一敌人并锁定掉落抽签。只在新版敌踪下可用。
+        /// 固定战全名单入场（禁增援），可选强敌第一次实际处理时才建唯一敌人并锁定掉落抽签。
         /// </summary>
         public ActionResult ApproachCard(GameState s, string cardKey, string? requestId = null)
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            if (!CardsV2(s)) return ActionResult.Fail("当前无法发起战斗。");
             var why = CanApproachCard(s, cardKey);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);

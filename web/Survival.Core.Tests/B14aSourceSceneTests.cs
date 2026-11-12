@@ -318,16 +318,16 @@ public class B14aSourceSceneTests : BattleTestBase
         Assert.That(E.CurrentHint(s)!.Value.TaskId, Is.EqualTo("PRO03"), "制作上下文");
         ReadDialogues(s);
 
-        // 休息中、战前敌踪：都不算战内
+        // 休息中、战前敌踪卡在场：都不算战内
         var r = Fresh();
         E.DismissHint(r, "PRO01");
         Start(r, ActionRequest.Wait(30));
         Assert.That(E.CurrentHint(r)?.TaskId, Is.Not.EqualTo("PRO04"), "休息/等待中");
         Run(r);
-        r.Encounter = new PendingEncounter { LocationId = r.CurrentLocation, EnemyIds = new List<int>(), Source = "explore", Minute = r.GameMinute };
-        Assert.That(E.CurrentHint(r)?.TaskId, Is.Not.EqualTo("PRO04"), "战前敌踪预览");
+        r.SuppressEnemyApproach = true;
+        E.DebugSpawnEnemy(r, "shambler", r.CurrentLocation);
+        Assert.That(E.CurrentHint(r)?.TaskId, Is.Not.EqualTo("PRO04"), "战前敌踪卡在场");
         Assert.That(E.BattleHint(r), Is.Null);
-        r.Encounter = null;
 
         // 其他普通主目标的战外回退提示不受影响
         var w = Won();
@@ -354,6 +354,7 @@ public class B14aSourceSceneTests : BattleTestBase
         Assert.That(E.CurrentHint(s), Is.Null);
         Start(s, ActionRequest.Travel("field"));
         Run(s);
+        ApproachTutorial(s);   // B41b（R05 Q421）：到达只出教学卡，主动接近才开首战
         Assert.That(s.Battle?.Tutorial, Is.True);
         var ap = s.Battle!.PlayerAp;
         var minute = s.GameMinute;
@@ -385,6 +386,7 @@ public class B14aSourceSceneTests : BattleTestBase
         var t = Fresh();
         Start(t, ActionRequest.Travel("field"));
         Run(t);
+        ApproachTutorial(t);   // B41b（R05 Q421）：到达只出教学卡，主动接近才开首战
         ReadDialogues(t);
         Assert.That(t.Prologue.GuideActive, Is.EqualTo("PRO04"));
         t.Battle = null;   // 模拟已离开战斗（PRO04 未完成）

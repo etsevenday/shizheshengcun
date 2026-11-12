@@ -667,7 +667,7 @@ namespace Survival.Core.Save
                     sk.Xp = 0;
                 }
                 var added = 0;
-                foreach (var sc in config.Skills.Where(x => !x.EnemyCardsV2Only))   // B41c：第 16 门潜行不属于这次迁移，开关开时读档另补（AdoptEnemyCards）
+                foreach (var sc in config.Skills.Where(x => x.Id != Engine.GameEngine.StealthSkill))   // B41c：第 16 门潜行不属于这次迁移，读档时另补（AdoptEnemyCards）
                 {
                     if (actor.Skills.ContainsKey(sc.Id)) continue;
                     actor.Skills[sc.Id] = new SkillState { Level = sc.InitialLevel, Xp = 0 };
@@ -1398,7 +1398,7 @@ namespace Survival.Core.Save
         /// <summary>
         /// 新版敌踪卡模型的存档结构（R05 文首「Q342 新版敌踪、潜行和躲避定稿」「Q425 旧档与持久化」，开发记录 B41a）：只补空结构——
         /// 组卡表为空、采纳标记 0、世界敌人不属于任何组、进行中的战斗没有卡键（按旧快照打完）。不改敌人、行动、保护期，不抽随机，静默。幂等。
-        /// 旧待处理名单转组卡、在办绕行取消等规则性的转换不在这里：由 <see cref="AdoptEnemyCards"/> 在开关 encounters.enemyCardsV2 打开后做一次。
+        /// 旧待处理名单转组卡、在办绕行取消等规则性的转换不在这里：由 <see cref="AdoptEnemyCards"/> 在读档链尾做一次（B41e3 新版敌踪上线）。
         /// </summary>
         private static void From45To46(GameState s)
         {
@@ -1451,14 +1451,13 @@ namespace Survival.Core.Save
         }
 
         /// <summary>
-        /// 读档时采纳新版敌踪卡模型（开关关着或已采纳过都不做任何事，幂等）：链尾与“已是当前版本”的读档（EnsureStates）都调用——开关在 B41f 才打开，
-        /// 那时线上存档早已是 46，采纳发生在打开后的第一次读档。规则见 Engine.GameEngine.AdoptEnemyCards。
+        /// 读档时采纳新版敌踪卡模型（已采纳过不做任何事，幂等）：链尾与“已是当前版本”的读档（EnsureStates）都调用——B41e3 新版敌踪上线时
+        /// 线上存档早已是 46—49，采纳发生在上线后的第一次读档。规则见 Engine.GameEngine.AdoptEnemyCards。
         /// </summary>
         public static void AdoptEnemyCards(GameState s, GameConfig config)
         {
-            if (!config.Encounters.EnemyCardsV2) return;
             s.EnemyCards ??= new EnemyCardsState();
-            // B41c：开关开着时每次读档都给所有人补第 16 门潜行（缺才补，1 级 0 经验；R05 Q342 / R01），已有的不动
+            // B41c：每次读档都给所有人补第 16 门潜行（缺才补，1 级 0 经验；R05 Q342 / R01），已有的不动
             new Engine.GameEngine(config).InitSkills(s);
             if (s.EnemyCards.ModelVersion >= Engine.GameEngine.EnemyCardsModelV2) return;
             new Engine.GameEngine(config).AdoptEnemyCards(s);
@@ -1483,7 +1482,7 @@ namespace Survival.Core.Save
             EnsureLocationStates(s, config);
             EnsureResourceStates(s, config);
             RejudgeGates(s, config);
-            AdoptEnemyCards(s, config);   // B41a：开关打开后的第一次读档采纳新版敌踪卡模型（关着或已采纳不做事）
+            AdoptEnemyCards(s, config);   // B41a：新版敌踪上线后的第一次读档采纳新版敌踪卡模型（已采纳不做事）
         }
 
         /// <summary>

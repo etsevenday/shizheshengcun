@@ -4,7 +4,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41e1 新版敌踪界面一（敌踪卡、居中操作盘、敌踪详情）用到的内核只读数据与原句（开关开的配置，见 <see cref="B41aTestBase"/>）。
+/// B41e1 新版敌踪界面一（敌踪卡、居中操作盘、敌踪详情）用到的内核只读数据与原句（B41e3 起新版敌踪是唯一流程，见 <see cref="B41aTestBase"/>）。
 /// 原句出处：《重墨 V2 开工裁定与界面逐字稿》「B41 Q426–Q428 正式文案」卡片、操作盘与倒计时；Q446 ④⑥；Q447。验收 B41-TEXT02（卡状态句部分）。
 /// </summary>
 public class B41e1EnemyCardUiTests : B41cTestBase

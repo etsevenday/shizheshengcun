@@ -277,16 +277,16 @@ public class B19RecruitTests : TestBase
         Assert.That(again.Log.Count(l => l.Text.Contains("版本42")), Is.EqualTo(1));
     }
 
-    /// <summary>不在安全访问时不开放：战斗/敌踪中到达不记起点（RC1“安全空闲”）。</summary>
+    /// <summary>不在安全访问时不开放：战斗中到达不记起点（RC1“安全空闲”；B41e3 起没有旧版待处理敌踪，用战斗代替）。</summary>
     [Test]
     public void RC01_NotOpenedWhenUnsafe()
     {
         var s = New();
         s.Progress.Flags.Add("hub_registered");
         s.CurrentLocation = Shelter;
-        s.Encounter = new PendingEncounter();
+        s.Battle = new BattleState();
         Assert.That(E.TryOpenShelterRecruitment(s), Is.False);
-        s.Encounter = null;
+        s.Battle = null;
         Assert.That(E.TryOpenShelterRecruitment(s), Is.True);
         Assert.That(E.TryOpenShelterRecruitment(s), Is.False, "只开放一次");
     }

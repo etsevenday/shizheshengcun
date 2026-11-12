@@ -34,8 +34,8 @@
     var custom = s.Locations[here].Safehouse?.Name;
     var title = (built && !string.IsNullOrWhiteSpace(custom) ? custom! : "安全屋") + (fav ? " ★" : "");
     var tip = inside ? $"{name}屋内：{line}。不会遇到普通遭遇，时间、饮食与伤病照常推进；出门0分钟"
-        // B41e2（Q446 ⑦【交开发方定】最小删词）：新版敌踪下敌踪在场本身不禁进出，删「敌踪待处理」
-        : built ? (e.CardsV2(s) ? $"{name}：点“进入”0分钟进屋（战斗、行动中不能进出）" : $"{name}：点“进入”0分钟进屋（战斗、敌踪待处理、行动中不能进出）")
+        // B41e2（Q446 ⑦【交开发方定】最小删词）：敌踪在场本身不禁进出，删「敌踪待处理」
+        : built ? $"{name}：点“进入”0分钟进屋（战斗、行动中不能进出）"
         : reasons.Count == 0 ? $"可以建：{string.Join("、", e.SafehouseRecipe.Inputs.Select(kv => $"{e.ItemName(kv.Key)}{kv.Value}"))}，{e.SafehouseRecipe.BaseMinutes}分钟；点击打开营地建造"
         : "建安全屋还差：" + string.Join("；", reasons);
 }

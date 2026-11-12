@@ -7,6 +7,9 @@ namespace Survival.Core.Tests;
 /// <summary>人物战斗与免疫系统修订参考案 v0.6 第 17 节接入验收 R601–R624（同名用例；涉及战斗的部分见 M42 起的补充）。</summary>
 public class CombatV06Tests : BattleTestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private double Hours(string key, Func<Config.RateBlock, double> f, double hours) => f(Cfg.HourlyRates[key]) * hours;
 
     /// <summary>
@@ -594,51 +597,49 @@ public class CombatV06Tests : BattleTestBase
         Start(s, ActionRequest.Explore());
         s.Main!.EncounterRoll = 0;   // 即使抽到最小值
         Run(s);
-        Assert.That(s.Encounter, Is.Null, "不凭空造敌");
+        Assert.That((s.Encounter, s.EnemyCards.Groups.Count), Is.EqualTo(((PendingEncounter?)null, 0)), "不凭空造敌");
         Assert.That(E.LiveCount(s), Is.EqualTo(before));
     }
 
-    /// <summary>R618 低遭遇与绕行保护：概率=基础×本地敌对数/上限；第1日与营地为0；绕行后60分钟内不再随机接敌。</summary>
+    /// <summary>
+    /// R618 低遭遇：概率=基础×本地敌对数/上限；第1日与营地为0。命中后原探索结果已提交，形成随机组卡（B41e3 起旧版“待处理敌踪＋绕行10分钟＋60分钟保护”已删，
+    /// 组卡不阻断其他操作；已有可见组卡时本次不再成组，R05 Q417）。
+    /// </summary>
     [Test]
-    public void R618_DensityRisk_BypassGrace()
+    public void R618_DensityRisk_GroupCard()
     {
         var s = New();
         E.DebugTeleport(s, "village");
         Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.EqualTo(0), "第1日不随机接敌");
         s.GameMinute = At(2, 9, 0);
         FreezeWorld(s);
+        s.SuppressEnemyApproach = true;
         Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.EqualTo(0.02 * 2 / 4).Within(1e-12), "探索2%×2/4");
         Assert.That(E.EncounterChance(s, "village", ActionType.Clear), Is.EqualTo(0.01 * 2 / 4).Within(1e-12), "清理1%×2/4");
         Assert.That(E.EncounterChance(s, "camp", ActionType.Clear), Is.EqualTo(0), "营地0");
 
-        // 强制命中：先提交探索结果，再出现敌踪（2只同地游荡尸，按最早出现）
+        // 强制命中：先提交探索结果，再形成组卡（按最早出现、按容量截取）
+        var expect = E.GroupCardCandidates(s, "village").Select(w => w.Id).ToList();
+        Assert.That(expect, Is.Not.Empty);
         Start(s, ActionRequest.Explore());
         ForceLoot(s, "cloth");
         s.Main!.EncounterRoll = 0;
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
         Assert.That(s.Locations["village"].Progress, Is.EqualTo(25), "原探索已提交");
         Assert.That(Count(s, "cloth", "village"), Is.EqualTo(1), "随机物资已提交、不回滚");
-        Assert.That(s.Encounter, Is.Not.Null);
-        Assert.That(s.Encounter!.EnemyIds, Is.EqualTo(s.WorldEnemies.Where(w => w.LocationId == "village").OrderBy(w => w.Id).Select(w => w.Id)));
-        Assert.That(E.IsBusy(s), Is.True);
-        Assert.That(E.CanStart(s, ActionRequest.Explore()), Does.Contain("接敌或绕行"));
-        Assert.That(E.DoInstant(s, InstantRequest.Pickup(First(s, "cloth", "village").InstanceId, 1)).Ok, Is.False, "敌踪待选时锁定实体操作");
+        Assert.That(s.Encounter, Is.Null, "新版不设待处理敌踪");
+        var g = s.EnemyCards.Groups.Single();
+        Assert.That(g.MemberIds, Is.EqualTo(expect));
+        Assert.That(E.IsBusy(s), Is.False, "组卡不阻断其他操作");
+        Assert.That(E.CanStart(s, ActionRequest.Explore()), Is.Null);
+        Assert.That(E.DoInstant(s, InstantRequest.Pickup(First(s, "cloth", "village").InstanceId, 1)).Ok, Is.True);
+        Assert.That(E.LocalCount(s, "village"), Is.EqualTo(2), "成组不杀死世界敌人");
 
-        // 绕行：10分钟按 travel 消耗，敌人仍在；之后60分钟保护
-        var e0 = s.Stats.Energy;
-        Start(s, ActionRequest.Bypass());
-        Assert.That(s.Encounter, Is.Null);
-        Run(s);
-        Assert.That(s.GameMinute, Is.EqualTo(At(2, 9, 40)));
-        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(1.28 * 10 / 60).Within(1e-9), "按 travel 消耗（非战斗新率−1.28/h）");
-        Assert.That(E.LocalCount(s, "village"), Is.EqualTo(2), "绕行不杀死世界敌人");
-        Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.EqualTo(0), "保护期内");
+        // 已有可见组卡：再探索命中也不成新组
         Start(s, ActionRequest.Explore());
         s.Main!.EncounterRoll = 0;
         Run(s);
-        Assert.That(s.Encounter, Is.Null, "60分钟保护期不重复随机接敌");
-        Idle(s, s.EncounterGraceUntil);
-        Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.GreaterThan(0));
+        Assert.That(s.EnemyCards.Groups, Has.Count.EqualTo(1), "已有可见组卡，本次不形成新组卡");
         // 预览不触发接敌、不推进随机
         var json = SaveSerializer.Serialize(s);
         E.Preview(s, ActionRequest.Explore());
@@ -930,9 +931,7 @@ public class CombatV06Tests : BattleTestBase
         // 巡游走到别处再走回来：同一实例
         w.LocationId = "stream";
         w.LocationId = "field";
-        s.EncounterGraceUntil = 0;
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = { w.Id } };
-        E.Engage(s);
+        Assert.That(E.Approach(s, w.Id).Ok, Is.True);
         Assert.That(s.Battle!.Enemies[0].WorldId, Is.EqualTo(w.Id));
         Assert.That(s.Battle.Enemies[0].Hp, Is.EqualTo(hp).Within(1e-9), "换 encounterId 也不刷满血");
         Assert.That(AttackXpKeys.Hits(s.Battle.Enemies[0].ActorXpHits, GameState.PlayerId, "axe"), Is.EqualTo(1), "经验计数不重置");

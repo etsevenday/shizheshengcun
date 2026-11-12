@@ -476,6 +476,8 @@ public class ConfigTests : TestBase
         var designEnemyIds = ((JArray)d["enemies"]!).Select(w => (string)w["id"]!).ToList();
         mapped["enemies"] = new JArray(designEnemyIds.Select(id => ((JArray)mapped["enemies"]!).First(w => (string?)w["id"] == id)));
         mapped["animalCarcasses"] = new JArray(((JArray)mapped["animalCarcasses"]!).Take(((JArray)d["animalCarcasses"]!).Count));   // 野犬首领/暴躁野猪的尸体行追加在后
+        // B41e3（R05「Q342 新版敌踪、潜行和躲避定稿」上线）：旧绕行时长、绕行速率类别、脱战后随机接敌保护随旧接敌流程删除；新版规则由 B41a—B41e 用例核对
+        foreach (var k in new[] { "bypassMinutes", "bypassRateCategory", "postExitRandomEncounterGraceMinutes" }) ((JObject)d["encounters"]!).Remove(k);
         foreach (var (ds, cs) in CopiedSections)
             AssertSubset(d[ds]!, mapped[cs]!, $"v0.6.{ds}");
         // 丧尸掉落表（v0.6 沿用 v0.5）

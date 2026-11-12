@@ -12,6 +12,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B27aResourceCardTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private const string ColdBox = "village_cold_box";
     private const string Quarry = "w03_quarry_blueprints";
 

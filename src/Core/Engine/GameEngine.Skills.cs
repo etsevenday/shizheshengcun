@@ -55,10 +55,9 @@ namespace Survival.Core.Engine
         public SkillConfig? SkillCfg(string id) => Config.Skills.FirstOrDefault(x => x.Id == id);
 
         /// <summary>
-        /// 当前生效的技能门类：B41c 第 16 门潜行（enemyCardsV2Only）只在开关 encounters.enemyCardsV2 开着时出现（R05 Q342、R01），
-        /// 关着时仍是原来 15 门（人物页、新人、招募、帮助都不变）。
+        /// 当前生效的技能门类：配置里的全部 16 门（B41c 第 16 门潜行随 B41e3 新版敌踪上线一起生效，R05 Q342、R01）。
         /// </summary>
-        public IEnumerable<SkillConfig> SkillsInPlay => Config.Skills.Where(k => !k.EnemyCardsV2Only || Config.Encounters.EnemyCardsV2);
+        public IEnumerable<SkillConfig> SkillsInPlay => Config.Skills;
 
         public string SkillName(string id) => SkillCfg(id)?.Name ?? id;
 

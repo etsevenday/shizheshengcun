@@ -218,7 +218,6 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return "角色已死亡";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (s.Battle != null) return "战斗中不能交接物品";
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (s.Main != null || s.Sub != null) return "行动进行中，不能交接物品";
             return null;
         }

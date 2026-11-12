@@ -198,9 +198,7 @@ namespace Survival.Core.Engine
                     p.ConfirmText = "确认移动";
                     var tb = Config.Story.TutorialBattle;
                     if (TutorialGateOpen(s) && !s.Story.TutorialTriggered && s.CurrentLocation == tb.FromLocationId && r.TargetId == tb.LocationId)
-                        p.Warnings.Add(CardsV2(s)
-                            ? $"第一次到达{LocName(tb.LocationId)}会遇到一只{_enemies[tb.EnemyId].Name}（首战）"   // B41b（R05 Q421 第 3 项）：到达不再直接开战
-                            : $"第一次到达{LocName(tb.LocationId)}会遇到一只{_enemies[tb.EnemyId].Name}（首战，到达后直接进入战斗）");
+                        p.Warnings.Add($"第一次到达{LocName(tb.LocationId)}会遇到一只{_enemies[tb.EnemyId].Name}（首战）");   // B41b（R05 Q421 第 3 项）：到达不再直接开战
                     break;
                 }
                 case ActionType.Explore:
@@ -365,12 +363,6 @@ namespace Survival.Core.Engine
                     if (inst?.ExpiresAt is int ex) p.Notes.Add($"尸体还有{Clock.Duration(System.Math.Max(0, ex - s.GameMinute))}腐败");
                     break;
                 }
-                case ActionType.Bypass:
-                    p.BaseMinutes = Config.Encounters.BypassMinutes;
-                    p.ConfirmText = $"绕行·{Config.Encounters.BypassMinutes}分钟";
-                    p.Notes.Add($"按移动消耗，固定{Clock.Duration(Config.Encounters.BypassMinutes)}；不改变位置，敌人仍留在这里");
-                    p.Notes.Add($"绕行后{Clock.Duration(Config.Encounters.PostExitRandomEncounterGraceMinutes)}内不会再随机遇敌（主动接近仍可）");
-                    break;
                 case ActionType.Rest:
                 {
                     p.BaseMinutes = r.Minutes;

@@ -5,7 +5,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41b 里程碑 2：敌踪接近时限（开关开；R05「Q416、Q421 接近时间与到期入战」「B41b Q439—Q444」Q439、Q442；
+/// B41b 里程碑 2：敌踪接近时限（R05「Q416、Q421 接近时间与到期入战」「B41b Q439—Q444」Q439、Q442；
 /// 逐字稿「卡片、操作盘与倒计时」；验收 Q342-A02 前半、Q418-A01 时限部分、Q439-A01、Q442-A01 时限部分）。
 /// </summary>
 public class B41bTimerTests : B41bTestBase

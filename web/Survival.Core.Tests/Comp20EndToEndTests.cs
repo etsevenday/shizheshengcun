@@ -25,7 +25,7 @@ public class Comp20EndToEndTests : TestBase
         TestContext.WriteLine($"===== {title} =====");
         foreach (var l in d.Ledger) TestContext.WriteLine(l);
         TestContext.WriteLine($"合计：主角吃{d.FoodEaten}份 喝{d.WaterDrunk}份；给同行者吃{d.CompanionFood}份 喝{d.CompanionWater}份（{string.Join("、", d.FedBy.Select(kv => $"{kv.Key}食{kv.Value.Food}/水{kv.Value.Water}"))}；出物 主角随身{d.FedFromPlayer}次、目标本人随身{d.FedFromSelf}次）；开发补给 0；探索{d.ExploreMinutes}分钟 移动{d.TravelMinutes}分钟 等待{d.WaitMinutes}分钟 睡眠{d.SleepMinutes}分钟；"
-                              + $"战斗{d.Battles}场 撤退{d.Retreats}次 绕行{d.Bypasses}次；最终 {Clock.DayTime(d.S.GameMinute)} H{d.S.Stats.Health:0.0} N{d.S.Stats.Satiety:0} W{d.S.Stats.Hydration:0}");
+                              + $"战斗{d.Battles}场 撤退{d.Retreats}次；最终 {Clock.DayTime(d.S.GameMinute)} H{d.S.Stats.Health:0.0} N{d.S.Stats.Satiety:0} W{d.S.Stats.Hydration:0}");
         foreach (var l in d.LineSummaries) TestContext.WriteLine("走通：" + l);
         foreach (var f in d.FixedResults) TestContext.WriteLine("固定战实打：" + f);
         TestContext.WriteLine(d.Shortages.Count == 0 ? "缺食缺水：无" : "缺食缺水：" + string.Join("；", d.Shortages));
@@ -60,6 +60,8 @@ public class Comp20EndToEndTests : TestBase
         Assert.That(s.Progress.Flags, Does.Contain(GameEngine.FactVisitorAvailable), "D5 08:00 后首战已胜（或旧档等效）来客可用");
         Ok(E.TalkNpc(s, "npc_cheng_wang"), "与程望交谈");
         d.ReadDialogues();
+        // B41e3：新版敌踪会到期主动开战（不再有绕行＋保护期），序章脚本可能带伤回营；像玩家一样先在营地休整再出发
+        if (d.LiveApproach) d.Leg("营地休整", () => d.Recover(0.8, 72, 0.6));
         d.Leg("营地→村庄", () => d.Go("village"));
         Ok(E.ConfirmJourney(s), "PRO17 远行确认");
         d.ReadDialogues();
@@ -336,6 +338,39 @@ public class Comp20EndToEndTests : TestBase
             Safehouse(d);
             Assert.That(s.Progress.Dead, Is.False);
         });
+    }
+
+    /// <summary>
+    /// B41e3（R135/R151 翻开关风险检查）：新版敌踪“敌方接近照常”跑新局教会线先整条路线。路线脚本按旧版“遇敌可绕行”设计，
+    /// 新版下可能在途中正常战死（脚本策略不足，不是规则错误）；本例只要求：途中确实发生过敌方到期开战打断行动、
+    /// 序章首战照常胜利，并且结局只能是走完或正常战死——不许出现行动锁死、拒绝循环、异常等其他“卡住”。
+    /// </summary>
+    [Test]
+    public void COMP20_NewGame_LiveEnemyApproach_NoStuck()
+    {
+        var s = NewStory(1);
+        var d = new Comp20Driver(E, s, liveApproach: true);
+        Assert.That(s.SuppressEnemyApproach, Is.False);
+        Exception? end = null;
+        try
+        {
+            Prologue(d, legacy: false);
+            HubServices(d);
+            Depart(d, "第一条线出发");
+            ChurchLine(d);
+            Depart(d, "第二条线出发");
+            AcademyLine(d);
+        }
+        catch (Exception ex) { end = ex; }
+        Dump(d, "COMP20 新局（敌方接近照常，教会线先，种子1）");
+        TestContext.WriteLine($"敌方到期开战打断行动 {d.ApproachBattles} 次；结局：{(end == null ? "走完两条线" : s.Progress.Dead ? "途中战死" : end.Message)}");
+        if (end != null && !s.Progress.Dead)
+        {
+            foreach (var l in d.Trace.TakeLast(40)) TestContext.WriteLine("  " + l);
+            Assert.Fail($"新版敌踪下路线卡住（非战死）：{end}");
+        }
+        Assert.That(s.Story.TutorialWon, Is.True, "序章首战照常胜利");
+        Assert.That(d.ApproachBattles, Is.GreaterThan(0), "途中确有敌方到期开战打断行动");
     }
 
     // ───────────── 失败与死亡 ─────────────

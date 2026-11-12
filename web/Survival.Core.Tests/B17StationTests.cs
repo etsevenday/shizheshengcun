@@ -10,6 +10,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B17StationTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private void Ok(ActionResult r) => Assert.That(r.Ok, Is.True, r.Reason);
 
     private static ActionRequest Craft(string id) => ActionRequest.Craft(id, null, null, 1);
@@ -63,6 +66,7 @@ public class B17StationTests : TestBase
         Run(s);
         var json = SaveSerializer.Serialize(s);
         var t = SaveSerializer.Deserialize(json, Cfg);
+        t.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         AdvanceTo(t, t0 + 60);
         Assert.That(Sum(t, "ceramic_shell", "camp"), Is.EqualTo(2), "产物落在陶窑所在区地面");
         Assert.That(Sum(t, "clay") + Sum(t, "charcoal"), Is.EqualTo(0), "黏土2与燃料木炭1一次核销");

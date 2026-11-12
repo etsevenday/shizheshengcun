@@ -484,7 +484,6 @@ namespace Survival.Core.Engine
             if (DungeonAt(s.CurrentLocation) != e.DungeonId) return "不在本次远征的地牢里";
             if (DungeonCleared(s, e.DungeonId)) return "本代已通关：直接走出口或原路离开就行，不扣惩罚";
             if (DialogueLocked(s)) return DialogueLockedReason;
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (s.Main != null || s.Sub != null)   // B41c2（Q526）：挡路的当前行动开工 5 分钟锁定时不写「或取消」
                 return ExitLocked((s.Sub ?? s.Main)!) ? LockedExpeditionAbortBlock : "行动进行中：先结束或取消当前行动，再终止远征";
             if (s.AppliedEventKeys.Contains(e.Id + AbortPenaltyKeySuffix)) return "本次远征已经终止过";

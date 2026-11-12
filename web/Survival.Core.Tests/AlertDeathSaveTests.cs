@@ -7,6 +7,9 @@ namespace Survival.Core.Tests;
 /// <summary>S09 阈值暂停与补给子行动、S11 致死搜集伤害、S12 暂停中存档恢复，以及实施方案 9A 的拍板规则。</summary>
 public class AlertDeathSaveTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     [Test]
     public void S09_LowWaterPause_DrinkAsSubAction_ThenContinue()
     {
@@ -133,6 +136,7 @@ public class AlertDeathSaveTests : TestBase
 
         var json = SaveSerializer.Serialize(s);
         var t = SaveSerializer.Deserialize(json);
+        t.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         Assert.That(SaveSerializer.Serialize(t), Is.EqualTo(json));
         Assert.That(t.SegmentCount, Is.EqualTo(s.SegmentCount));
         Assert.That(t.Main!.HazardHit, Is.EqualTo(s.Main!.HazardHit));

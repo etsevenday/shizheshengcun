@@ -42,8 +42,6 @@ public enum EscOwner
     BattleDrawer,
     BattleAction,
     BattleView,
-    // 敌踪选择
-    EncounterAction,
 }
 
 public sealed partial class GameSession
@@ -51,8 +49,8 @@ public sealed partial class GameSession
     private bool ShelfSelectionKind => Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid;
 
     /// <summary>
-    /// B43：当前这一下 Esc 由哪一层承接——与 GameScreen.Escape 实际执行的顺序同源（常态 <see cref="NormalEscOwner"/>、敌踪 <see cref="EncounterEscOwner"/>、
-    /// 全屏战斗 <see cref="BattleEscape"/> 的顺序），供界面只在承接本次 Esc 的那个控件上显示「ESC」键帽。
+    /// B43：当前这一下 Esc 由哪一层承接——与 GameScreen.Escape 实际执行的顺序同源（常态 <see cref="NormalEscOwner"/>、
+    /// 全屏战斗 <see cref="BattleEscape"/> 的顺序；B41e3 起没有“敌踪选择”层），供界面只在承接本次 Esc 的那个控件上显示「ESC」键帽。
     /// 对白锁时 Esc 不收背后子层、直接开菜单（Q322）；反馈窗由窗口自己处理，不在这里。
     /// </summary>
     public EscOwner EscOwner
@@ -65,7 +63,6 @@ public sealed partial class GameSession
             if (BattleMenuOpen) return EscOwner.BattleMenu;
             if (DialogueLocked) return EscOwner.OpenMenu;
             if (BattleFullscreen) return BattleEscOwner();
-            if (InBattleUi) return EncounterEscOwner();
             return NormalEscOwner();
         }
     }
@@ -81,18 +78,6 @@ public sealed partial class GameSession
         if (BattleDrawer == "help") return EscOwner.BattleHelp;
         if (BattleDrawer != null) return EscOwner.BattleDrawer;
         if (BattleAction != null) return EscOwner.BattleAction;
-        return EscOwner.OpenMenu;
-    }
-
-    /// <summary>敌踪选择中可关闭的子层：数量框 → 状态浮层 → 人物二级页 → 就近浮窗 → 指令预览 → ③④物品选中（①②被敌踪层替换，那里的残留选中看不见）。</summary>
-    public EscOwner EncounterEscOwner()
-    {
-        if (PendingDrop != null) return EscOwner.DropQty;
-        if (StatusPinned != null) return EscOwner.Status;
-        if (CharPage != null && DetailTab == DetailTab.Character) return EscOwner.CharPage;
-        if (Pop != null) return EscOwner.Pop;
-        if (BattleAction != null) return EscOwner.EncounterAction;
-        if (ShellEsc.BattleSelectionVisible(false, ShelfSelectionKind)) return EscOwner.Selection;
         return EscOwner.OpenMenu;
     }
 

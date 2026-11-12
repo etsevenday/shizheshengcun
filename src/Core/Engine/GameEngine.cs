@@ -89,7 +89,7 @@ namespace Survival.Core.Engine
         public static bool IsRecoveryModule(string? kind) => kind != null && RecoveryModules.Contains(kind);
 
         /// <summary>角色忙碌：有主/子行动、战斗中或敌踪待选（世界交互、拖拽、即时操作统一拒绝）。</summary>
-        public bool IsBusy(GameState s) => s.Main != null || s.Sub != null || s.Battle != null || s.Encounter != null;
+        public bool IsBusy(GameState s) => s.Main != null || s.Sub != null || s.Battle != null;
 
         /// <summary>
         /// 当前状态异常（v0.7 第 6.1 节）：腹泻剩余时间、绷带冷却剩余。右栏人物页与左栏 HUD 读同一份数据，不各自维护。
@@ -240,8 +240,8 @@ namespace Survival.Core.Engine
                 };
             }
 
-            // B41a：开关开着的新局直接是新版敌踪卡模型；关着时 0（旧版流程）
-            s.EnemyCards.ModelVersion = Config.Encounters.EnemyCardsV2 ? EnemyCardsModelV2 : 0;
+            // B41a：新局直接是新版敌踪卡模型（不需要旧档采纳）
+            s.EnemyCards.ModelVersion = EnemyCardsModelV2;
             Visit(s, s.CurrentLocation);
             InitSkills(s);
             InitWorldEnemies(s);
@@ -328,23 +328,13 @@ namespace Survival.Core.Engine
             if (s.Battle != null) return r.Feeding != null ? FeedCopy.Battle : "战斗中：请使用战斗指令";
             // B21-9：撤出一旦开始一直走到父地点，途中不能做别的事（R03 D5.2、S13 B4）
             if (s.Expedition?.IsExtracting == true) return r.Feeding != null ? FeedCopy.Extracting : ExtractingBusyReason(s);
-            if (s.Encounter != null && r.Type != ActionType.Bypass) return "发现敌踪：请先选择接敌或绕行";
-            if (r.Type == ActionType.Bypass)
-            {
-                // B41a：新版敌踪下线绕行入口（不会再有待处理敌踪；沿用原拒绝句）
-                if (s.Encounter == null || CardsV2(s)) return "当前没有需要绕行的敌踪";
-                plan.Planned = Config.Encounters.BypassMinutes;
-                plan.Label = "绕行敌踪";
-                plan.TargetId = s.Encounter.LocationId;
-                return null;
-            }
 
             if (s.Main == null)
             {
                 plan.IsSub = false;
             }
             else if (r.Type == ActionType.Travel && s.Main.Status == ActionStatus.Paused && s.Main.RetreatMoveOpen && s.Sub == null
-                     && s.StashedWork == null && CardsV2(s))
+                     && s.StashedWork == null)
             {
                 // B41b（R05 Q464、Q472、Q473）：战后撤退离地保留的暂停期间，地图上已发现、已开通的合法「前往」持续可走（不限方向、回到原地也不收回）；
                 // 移动按原规则校验，通过并开工时才把原工作整份暂存，移动作为当前普通主行动
@@ -898,9 +888,6 @@ namespace Survival.Core.Engine
                     // 随机接敌判定开始时锁定（v0.6 §15），完成时按当时的本地敌对密度比较；读档不重抽
                     a.EncounterRoll = s.Rng.NextDouble();
                     break;
-                case ActionType.Bypass:
-                    s.Encounter = null;
-                    break;
                 case ActionType.Travel:
                     if (p.CommitDungeon != null) StartExpeditionOnTravel(s, p.CommitDungeon);   // B21：确认即提交（B21-3）
                     break;
@@ -1040,7 +1027,7 @@ namespace Survival.Core.Engine
             // B16 fixed_wait：固定等待不吃装备/节点倍率，也不用工作量余额（需求就是配方原分钟）
             if (p.CampingItem != null) a.LockedItemIds.Add(p.CampingItem.InstanceId);
             if (a.IsWorkType && !a.FixedWait) ReserveCarry(s, a, p.BaseWork);
-            if (!p.IsSub && CardsV2(s)) RecordWorkOrigin(s, a);   // B41b（R05 Q440、Q466）：开工所在区、地牢世代与预留来源
+            if (!p.IsSub) RecordWorkOrigin(s, a);   // B41b（R05 Q440、Q466）：开工所在区、地牢世代与预留来源
             if (p.IsSub) s.Sub = a; else s.Main = a;
             a.NoExit = StartLocks(s, a);   // B41c2（S01 Q506、Q516）：成功开工同一事务认定，之后不重认
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse && !IsStealthCheck(a))   // B41c：潜行接近／躲避只写判定结果句
@@ -1084,7 +1071,6 @@ namespace Survival.Core.Engine
                 ActionType.Build => "已取消建造，预留材料已返还当前地面，进度归零，没有建成。",
                 ActionType.Sleep => "已提前醒来。",
                 ActionType.Butcher => "已取消处理尸体，尸体返还当前地面，保质期不变，没有产物。",
-                ActionType.Bypass => "已取消绕行。",
                 ActionType.Survey => "已取消遗迹勘整，未获得经验，不占今日勘整次数；已消耗的时间保留。",
                 ActionType.WaitCook => $"已退出等待加工（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
                 // B15 试玩修复 M333：城市事项/委托工作写实际进行的时长，不写计划工时
@@ -1188,7 +1174,7 @@ namespace Survival.Core.Engine
                 rs.Available = (rs.Available ?? 0) + a.ReservedResourceUnits;
                 a.ReservedResourceUnits = 0;
             }
-            if (a.ReservedItemIds.Count > 0 && bySource && a.RetreatKept && CardsV2(s))
+            if (a.ReservedItemIds.Count > 0 && bySource && a.RetreatKept)
             {
                 ReleaseToSources(s, a);   // B41b（R05 Q466）：本批因撤退离地保留的行动按开工来源返还
             }

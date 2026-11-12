@@ -229,8 +229,8 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// “建野外火堆”预览的全部不合格原因（逐项显示）：死亡/对白/战斗/敌踪/撤出/行动占用→地点与火源→制造等级→材料。
-        /// 施工不能消除危险：敌踪要先接敌或绕行。合格为空表。
+        /// “建野外火堆”预览的全部不合格原因（逐项显示）：死亡/对白/战斗/撤出/行动占用→地点与火源→制造等级→材料。
+        /// 合格为空表。（B41e3 起敌踪卡本身不挡施工，旧“发现敌踪”一项随旧接敌流程删除。）
         /// </summary>
         public List<string> WildFireReasons(GameState s)
         {
@@ -239,7 +239,6 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) list.Add("角色已死亡");
             if (DialogueLocked(s)) list.Add(DialogueLockedReason);
             if (s.Battle != null) list.Add("战斗中不能施工");
-            if (s.Encounter != null) list.Add("发现敌踪：先接敌或绕行，不能靠施工躲开");
             if (s.Expedition?.IsExtracting == true) list.Add(ExtractingBusyReason(s));
             if (s.Main != null || s.Sub != null) list.Add("行动进行中：先完成或取消原行动");
             list.AddRange(WildFireSiteReasons(s));

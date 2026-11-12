@@ -51,9 +51,9 @@ namespace Survival.Core.Engine
         public AppraisalQuoteSnapshot? QuoteSnapshot(GameState s, int day) =>
             s.City.Quotes.FirstOrDefault(q => q.Day == day && q.ServiceId == Ap.ServiceId && q.QuoteVersion == Ap.QuoteVersion && q.CampaignId == CampaignIdOf(s));
 
-        /// <summary>现在是不是在鉴定所的安全访问：实际在鉴定所、未死亡、没有战斗或敌踪待处理。</summary>
+        /// <summary>现在是不是在鉴定所的安全访问：实际在鉴定所、未死亡、没有战斗。</summary>
         private bool SafeAtAppraisal(GameState s) =>
-            !string.IsNullOrEmpty(Ap.LocationId) && s.CurrentLocation == Ap.LocationId && !s.Progress.Dead && s.Battle == null && s.Encounter == null;
+            !string.IsNullOrEmpty(Ap.LocationId) && s.CurrentLocation == Ap.LocationId && !s.Progress.Dead && s.Battle == null;
 
         /// <summary>
         /// 当日首次安全访问时生成并持久化完整三档报价表（开发假设 B18-1：实际到达鉴定所，或在鉴定所打开面板/开工）。

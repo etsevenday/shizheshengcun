@@ -33,7 +33,6 @@ public sealed class Comp20Driver
     private int _seq;
     public int Battles { get; private set; }
     public int Retreats { get; private set; }
-    public int Bypasses { get; private set; }
     public int WaitMinutes { get; private set; }
     public int SleepMinutes { get; private set; }
     public int ExploreMinutes { get; private set; }
@@ -44,7 +43,23 @@ public sealed class Comp20Driver
     /// <summary>用开发入口替代的环节（写进账本与汇报，不冒充实走）。</summary>
     public readonly List<string> Shortcuts = new();
 
-    public Comp20Driver(GameEngine e, GameState s) { E = e; S = s; Verbose = Environment.GetEnvironmentVariable("COMP20_TRACE") != null; }
+    public Comp20Driver(GameEngine e, GameState s, bool liveApproach = false)
+    {
+        E = e;
+        S = s;
+        LiveApproach = liveApproach;
+        // B41e3：COMP20 路线按旧版“遇敌可绕行＋保护期”设计（固定战、关键链、食水预算）。新版敌踪到期主动开战后脚本策略打不通整条路线，
+        // 路线回归默认冻结敌方接近（引擎原有的模拟开关，不改游戏规则；敌踪卡照常生成、组卡照常主动接近打掉）；
+        // 新版敌方接近照常的整条路线由 COMP20_NewGame_LiveEnemyApproach_NoStuck 单独跑（只许正常战死，不许卡死／异常）。
+        if (!liveApproach) S.SuppressEnemyApproach = true;
+        Verbose = Environment.GetEnvironmentVariable("COMP20_TRACE") != null;
+    }
+
+    /// <summary>行动中途被敌方开战打断的次数（敌踪到期主动开战）。</summary>
+    public int ApproachBattles { get; private set; }
+
+    /// <summary>敌方接近照常（新版敌踪到期主动开战）；false 时路线回归冻结敌方接近。</summary>
+    public bool LiveApproach { get; }
 
     /// <summary>战斗逐轮写进 Trace（排查用）。</summary>
     public bool Verbose { get; set; }
@@ -126,6 +141,7 @@ public sealed class Comp20Driver
             {
                 // B41b（R05 Q416）：敌踪到期主动开战打断当前行动——打完；能继续原行动就继续，不能（撤退离地等）就退出原行动
                 ReadDialogues();
+                ApproachBattles++;
                 Fight();
                 ReadDialogues();
                 if (S.Progress.Dead || S.Battle != null || S.Main?.Status != ActionStatus.Paused || S.Sub != null) continue;
@@ -167,21 +183,20 @@ public sealed class Comp20Driver
         ReadDialogues();
     }
 
-    /// <summary>敌踪：默认绕行；绕不开就接敌。</summary>
+    /// <summary>
+    /// 敌踪（B41e3 起只有新版敌踪卡）：探索／清理后在当地形成的随机组卡，脚本马上主动接近打掉（主动接近不吃敌方先手、受惊按主动接近），
+    /// 不等它到期由敌方开战；其余单卡不主动去打（到期由敌方开战时 Drive 照常打完）。
+    /// 敌方接近照常时（<see cref="LiveApproach"/>）全队最低健康不到六成不去招惹。
+    /// </summary>
     public void HandleEncounter()
     {
-        for (var k = 0; k < 4 && S.Encounter != null && !S.Progress.Dead; k++)
+        for (var k = 0; k < 4 && S.Battle == null && S.Main == null && S.Sub == null && !S.Progress.Dead && (!LiveApproach || MinHealthFrac() >= 0.6); k++)
         {
-            if (E.Start(S, ActionRequest.Bypass()).Ok)
-            {
-                Bypasses++;
-                Log("绕行敌踪");
-                Drive();
-                ReadDialogues();
-                if (S.Battle != null) Fight();
-                continue;
-            }
-            if (E.Engage(S).Ok) Fight();
+            var card = E.EnemyCardsHere(S).FirstOrDefault(c => c.Kind == "group" && !c.Hidden && !c.Engaged);
+            if (card == null || !E.ApproachCard(S, card.Key).Ok) return;
+            Log($"主动接近{card.Title}");
+            Fight();
+            ReadDialogues();
         }
     }
 
@@ -266,7 +281,7 @@ public sealed class Comp20Driver
     /// </summary>
     public void Needs()
     {
-        if (S.Battle != null || S.Encounter != null || S.Progress.Dead) return;
+        if (S.Battle != null || S.Progress.Dead) return;
         TakeBack();
         for (var k = 0; k < 6; k++)
         {
@@ -325,7 +340,7 @@ public sealed class Comp20Driver
     /// </summary>
     public void FeedCompanions()
     {
-        for (var k = 0; k < 12 && S.Battle == null && S.Encounter == null && !S.Progress.Dead && S.Main == null && S.Sub == null; k++)
+        for (var k = 0; k < 12 && S.Battle == null && !S.Progress.Dead && S.Main == null && S.Sub == null; k++)
         {
             var fed = false;
             foreach (var t in E.FeedTargets(S))
@@ -573,6 +588,14 @@ public sealed class Comp20Driver
             {
                 if (S.Progress.Dead) throw Stuck("角色死亡");
                 Needs();
+                // B41e3：新版敌踪会到期主动开战（不再能绕行＋保护期），带重伤继续赶路／探索会被一路打死；像玩家一样先就地休整到八成再走
+                if (LiveApproach && MinHealthFrac() < 0.5 && S.Battle == null && E.CanStart(S, ActionRequest.Rest(60)) == null)
+                {
+                    var used = Recover(0.8, 48);
+                    Log($"重伤在{Here}休整{used}分钟");
+                    PrepMinutes += used;
+                    if (S.Progress.Dead) throw Stuck("角色死亡");
+                }
                 var req = ActionRequest.Travel(step, E.NeedsExpeditionConfirm(S, step));
                 var why = E.CanStart(S, req);
                 if (why == null && !prepared && E.FixedBattleAt(step) != null && E.FixedStateAt(S, step)?.Won != true

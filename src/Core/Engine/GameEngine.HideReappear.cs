@@ -7,7 +7,7 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// B41c 躲避隐藏到期后的重现（R05「Q420 躲避重现与固定关键敌人」「Q445」「Q503 原人口账与实际所在地」；开发记录 B41c）。
-    /// 只处理躲避隐藏（WorldEnemy.EvadeHiddenUntil，开关 encounters.enemyCardsV2 下才会出现）；旧版逃走隐藏（HiddenUntil）不变。
+    /// 只处理躲避隐藏（WorldEnemy.EvadeHiddenUntil）；旧版逃走隐藏（HiddenUntil）不变。
     /// </summary>
     public sealed partial class GameEngine
     {

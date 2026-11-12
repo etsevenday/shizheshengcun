@@ -405,10 +405,10 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That(E.Cancel(s).Ok, Is.True);
         ReadDialogues(s);
 
-        s.Encounter = new PendingEncounter();
+        BattleHere(s);
         r = E.TalkNpc(s, "npc_xu_an");
         Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "先处理眼前的敌踪")));
-        s.Encounter = null;
+        EndBattleQuietly(s);
         Assert.That(GameEngine.SubstituteIntroShown(s, "npc_xu_an"), Is.False);
         Assert.That(s.City.Talks.ContainsKey("npc_xu_an"), Is.False);
 
@@ -1229,9 +1229,9 @@ public class B26aSubstituteTalkTests : TestBase
         ReadDialogues(s);
         sessions = s.Story.DialogueLog.Count;
 
-        s.Encounter = new PendingEncounter();
+        BattleHere(s);
         Assert.That(E.AcceptQuest(s, quest).Reason, Is.EqualTo("先处理眼前的敌踪"));
-        s.Encounter = null;
+        EndBattleQuietly(s);
         AssertUntouched(s, npc, quest, sessions);
 
         var ids = Cfg.Story.Dialogues.Where(d => d.Event == "HU01_offer").Select(d => d.Id).ToList();
@@ -1327,20 +1327,33 @@ public class B26aSubstituteTalkTests : TestBase
 
     private static int Deferred(GameState s) => s.City.SubstituteIntroDeferred.Count;
 
-    private void EncounterHere(GameState s)
+    /// <summary>
+    /// 在当前地点开一场战斗（B41e3 起敌踪卡不再挡操作，挡住对白显示的只有战斗；原用例用旧版待处理敌踪当锁，这里改成战斗）。
+    /// </summary>
+    private void BattleHere(GameState s)
     {
         var id = E.DebugSpawnEnemy(s, "shambler", s.CurrentLocation).Id;
-        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = new List<int> { id }, Source = "explore", Minute = s.GameMinute };
+        Assert.That(E.DebugStartBattle(s, new List<int> { id }, GameEngine.FearEncounter), Is.True);
     }
 
-    /// <summary>代班未示的鉴定所：开工后碰上敌踪再取消，原服务结束入口被挡住（鉴定取消是走得到结束钩子的入口）。</summary>
+    /// <summary>
+    /// 只拆掉战斗锁、不走任何结算与边界回调（对应原用例直接把旧版待处理敌踪置空）：交战敌人放回世界、战斗记录清空。
+    /// </summary>
+    private static void EndBattleQuietly(GameState s)
+    {
+        foreach (var e in s.Battle!.Enemies)
+            if (s.WorldEnemies.FirstOrDefault(w => w.Id == e.WorldId) is WorldEnemy w) w.Engaged = false;
+        s.Battle = null;
+    }
+
+    /// <summary>代班未示的鉴定所：开工后进入战斗再取消，原服务结束入口被战斗挡住（鉴定取消是走得到结束钩子的入口）。</summary>
     private GameState BlockedEnd(GameState? office = null)
     {
         var s = office ?? AppraisalOffice();
         if (!s.City.Absent.Contains(OfficeNpc)) E.DebugToggleCityPostAbsent(s);
         Assert.That(E.StartAppraise(s, Sample(s).InstanceId).Ok, Is.True);
         Steps(s, 1);
-        EncounterHere(s);
+        BattleHere(s);
         Assert.That(E.Cancel(s).Ok, Is.True);
         return s;
     }
@@ -1402,25 +1415,8 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That((r.CampaignId, r.NpcId, r.LocationId, r.IdentityKey), Is.EqualTo((GameEngine.CampaignIdOf(s), OfficeNpc, Office, GameEngine.SubstituteIntroKey(s, OfficeNpc))));
         E.UpdateFlags(s);
         E.SubstituteIntroBoundary(s);
-        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False, "敌踪还在：重复回调不显示、不记已示");
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False, "战斗还在：重复回调不显示、不记已示");
         Assert.That(Deferred(s), Is.EqualTo(1));
-    }
-
-    /// <summary>敌踪绕开后：绕行结束那一段自动显示一次；取消日志只有一条，样本不扣；留在当地未接触的敌人不算显示锁。</summary>
-    [Test]
-    public void Q243_01_Bypass_AutoShowsOnce_ServiceNotResettled()
-    {
-        var s = BlockedEnd();
-        var cancels = s.Log.Count(l => l.Text.Contains("详细鉴定") || l.Text.Contains("鉴定"));
-        var fiber = Count(s, "fiber");
-        var completed = s.City.Completed;
-        Start(s, ActionRequest.Bypass());
-        Run(s);
-        Assert.That(s.Main, Is.Null);
-        Assert.That(E.LocalHostiles(s, Office), Is.Not.Empty, "未接触的游荡敌人不另加为显示锁");
-        AssertAutoShownOnce(s);
-        Assert.That(s.Log.Count(l => l.Text.Contains("详细鉴定") || l.Text.Contains("鉴定")), Is.EqualTo(cancels), "原服务不再结算、不再写日志");
-        Assert.That((Count(s, "fiber"), s.City.Completed), Is.EqualTo((fiber, completed)));
     }
 
     /// <summary>战斗后：胜利结算的同一步自动显示一次。</summary>
@@ -1428,7 +1424,6 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_01_BattleWon_AutoShowsOnce()
     {
         var s = BlockedEnd();
-        Assert.That(E.Engage(s).Ok, Is.True);
         Assert.That(s.Battle, Is.Not.Null);
         E.UpdateFlags(s);
         Assert.That(E.DialogueLocked(s), Is.False, "战斗中不显示");
@@ -1436,26 +1431,15 @@ public class B26aSubstituteTalkTests : TestBase
         AssertAutoShownOnce(s);
     }
 
-    /// <summary>敌踪自行散去（接敌时名单已空）这条路不走 UpdateFlags，也是边界。</summary>
-    [Test]
-    public void Q243_01_EncounterGone_AutoShowsOnce()
-    {
-        var s = BlockedEnd();
-        s.WorldEnemies.Clear();
-        Assert.That(E.Engage(s).Ok, Is.True);
-        Assert.That(s.Encounter, Is.Null);
-        AssertAutoShownOnce(s);
-    }
-
-    /// <summary>敌踪解除后还有动作锁：不打断，动作结束才显示；绕行段内一直等待。</summary>
+    /// <summary>战斗解除后还有动作锁：不打断，动作结束才显示；行动段内一直等待。</summary>
     [Test]
     public void Q243_02_ActionLock_Waits_ShowsOnRelease()
     {
         var s = BlockedEnd();
-        Start(s, ActionRequest.Bypass());
-        Assert.That(s.Encounter, Is.Null);
+        EndBattleQuietly(s);
+        Start(s, ActionRequest.Wait(30));
         E.Advance(s);
-        Assert.That(s.Main, Is.Not.Null, "绕行还没走完");
+        Assert.That(s.Main, Is.Not.Null, "行动还没走完");
         Assert.That((E.DialogueLocked(s), Deferred(s)), Is.EqualTo((false, 1)));
         Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
         Run(s);
@@ -1467,7 +1451,7 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_02_ActionCancelled_StillHere_Shows()
     {
         var s = BlockedEnd();
-        s.Encounter = null;
+        EndBattleQuietly(s);
         Start(s, ActionRequest.Wait(30));
         E.Advance(s);
         Assert.That(E.DialogueLocked(s), Is.False, "动作中不打断");
@@ -1481,7 +1465,7 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_02_OtherDialogue_NotInterrupted_ShowsAfter()
     {
         var s = BlockedEnd();
-        s.Encounter = null;
+        EndBattleQuietly(s);
         Assert.That(E.AcceptQuest(s, "HU01").Ok, Is.True);
         Assert.That(Base(E.ActiveDialogue(s)!), Is.EqualTo("HU01_offer"));
         Assert.That(Deferred(s), Is.EqualTo(1));
@@ -1498,7 +1482,7 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_02_Left_Cancelled_ReturnNoReplay_NextTalkShows()
     {
         var s = BlockedEnd();
-        s.Encounter = null;
+        EndBattleQuietly(s);
         Walk(s, "h02_square");
         Assert.That(Deferred(s), Is.Zero, "到达别处就取消");
         Assert.That(E.DialogueLocked(s), Is.False, "不跨地点追播");
@@ -1516,7 +1500,6 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_02_RetreatAway_Cancelled()
     {
         var s = BlockedEnd(WalkedIntoOffice());
-        Assert.That(E.Engage(s).Ok, Is.True);
         typeof(GameEngine).GetMethod("FinishBattle", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, "retreat", true });
         Assert.That(s.CurrentLocation, Is.EqualTo("h02_square"));
         Assert.That((E.DialogueLocked(s), Deferred(s)), Is.EqualTo((false, 0)));
@@ -1532,7 +1515,7 @@ public class B26aSubstituteTalkTests : TestBase
         E.DebugToggleCityPostAbsent(s);
         Assert.That(Deferred(s), Is.Zero);
         E.DebugToggleCityPostAbsent(s);
-        s.Encounter = null;
+        EndBattleQuietly(s);
         E.UpdateFlags(s);
         Assert.That(E.DialogueLocked(s), Is.False, "回岗再离岗不恢复");
         Assert.That(Plays(s, OfficeIntro), Is.Zero);
@@ -1549,7 +1532,7 @@ public class B26aSubstituteTalkTests : TestBase
     {
         var s = BlockedEnd();
         s.City.SubstituteIntroDeferred.Single().IdentityKey = "other|" + OfficeNpc;
-        s.Encounter = null;
+        EndBattleQuietly(s);
         E.UpdateFlags(s);
         Assert.That((E.DialogueLocked(s), Deferred(s)), Is.EqualTo((false, 0)));
         Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
@@ -1576,19 +1559,16 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That(s.City.Greeted, Does.Not.Contain(npc));
     }
 
-    /// <summary>读档：待补播随存档；敌踪还在就等，绕开后才显示，显示时才记已示。</summary>
+    /// <summary>读档：待补播随存档；战斗还在就等，战斗结束才显示，显示时才记已示。</summary>
     [Test]
     public void Q243_04_Reload_RevalidatesLock_ShowsOnStart()
     {
         var s = SaveSerializer.Deserialize(SaveSerializer.Serialize(BlockedEnd()), Cfg, out _);
         Assert.That(Deferred(s), Is.EqualTo(1));
-        Assert.That(E.SubstituteIntroBoundary(s), Is.False, "敌踪还在");
+        Assert.That(E.SubstituteIntroBoundary(s), Is.False, "战斗还在");
         Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
-        Start(s, ActionRequest.Bypass());
-        var mid = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg, out _);
-        Assert.That(Deferred(mid), Is.EqualTo(1), "行动中读档仍等待");
-        Run(mid);
-        AssertAutoShownOnce(mid);
+        WinBattle(s);
+        AssertAutoShownOnce(s);
     }
 
     /// <summary>读回时已安全：读档这个边界就显示；不在原地、别的本局、已回岗的记录不算可信，丢弃不显示。</summary>
@@ -1599,7 +1579,7 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_04_ReloadIdle_RevalidatesRecord(string kind)
     {
         var s = BlockedEnd();
-        s.Encounter = null;
+        EndBattleQuietly(s);
         var j = JObject.Parse(SaveSerializer.Serialize(s));
         if (kind == "left") j["CurrentLocation"] = "h02_square";
         if (kind == "campaign") j["City"]!["SubstituteIntroDeferred"]![0]!["CampaignId"] = "1";
@@ -1611,36 +1591,12 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That(GameEngine.SubstituteIntroShown(m, OfficeNpc), Is.EqualTo(kind == "ok"));
     }
 
-    /// <summary>线上试玩路线的存档写法（开发计划 B26a.5）：代班未示的岗位，手写敌踪和待补播，读档后绕开或接敌都自动显示一次。</summary>
-    [TestCase(true)]
-    [TestCase(false)]
-    public void Q243_04_PlaytestRoute_HandWrittenSave(bool bypass)
-    {
-        var s = AppraisalOffice();
-        E.DebugToggleCityPostAbsent(s);
-        var j = JObject.Parse(SaveSerializer.Serialize(s));
-        var seed = (string)j["Seed"]!;
-        j["Encounter"] = JObject.FromObject(new { LocationId = Office, EnemyIds = new int[0], Source = "explore", Minute = (int)j["GameMinute"]! });
-        j["City"]!["SubstituteIntroDeferred"] = JArray.FromObject(new[] { new { CampaignId = seed, NpcId = OfficeNpc, LocationId = Office, IdentityKey = seed + "|" + OfficeNpc } });
-        var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
-        Assert.That(E.SubstituteIntroBoundary(m), Is.False);
-        Assert.That(Deferred(m), Is.EqualTo(1));
-        if (bypass)
-        {
-            Start(m, ActionRequest.Bypass());
-            Run(m);
-        }
-        else Assert.That(E.Engage(m).Ok, Is.True);
-        AssertAutoShownOnce(m);
-    }
-
     /// <summary>显示中和已示的档重载不重播；已取消的档重载、回到原地也不恢复。</summary>
     [Test]
     public void Q243_04_ShownOrCancelled_SaveKeepsIt()
     {
         var s = BlockedEnd();
-        s.WorldEnemies.Clear();
-        E.Engage(s);
+        WinBattle(s);
         var shown = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg, out _);
         Assert.That(GameEngine.SubstituteIntroShown(shown, OfficeNpc), Is.True);
         ReadDialogues(shown);
@@ -1650,7 +1606,7 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That(Plays(again, OfficeIntro), Is.EqualTo(1));
 
         var c = BlockedEnd();
-        c.Encounter = null;
+        EndBattleQuietly(c);
         Walk(c, "h02_square");
         var away = SaveSerializer.Deserialize(SaveSerializer.Serialize(c), Cfg, out _);
         Walk(away, Office);
@@ -1664,7 +1620,7 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_04_OldSave_NoGuess(bool from41)
     {
         var s = BlockedEnd();
-        s.Encounter = null;
+        EndBattleQuietly(s);
         s.City.Talks[OfficeNpc] = 3;
         Action<JObject> strip = j => ((JObject)j["City"]!).Remove("SubstituteIntroDeferred");
         GameState m;
@@ -1702,14 +1658,14 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_05_SameKey_Merged()
     {
         var s = BlockedEnd();
-        s.Encounter = null;
+        EndBattleQuietly(s);
         var hold = s.City.SubstituteIntroDeferred.ToList();
         s.City.SubstituteIntroDeferred.Clear();
         var again = E.StartAppraise(s, First(s, "active_substance_white_unidentified").InstanceId);
         Assert.That(again.Ok, Is.True, again.Reason);
         s.City.SubstituteIntroDeferred.AddRange(hold);
         Steps(s, 1);
-        EncounterHere(s);
+        BattleHere(s);
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(Deferred(s), Is.EqualTo(1));
     }
@@ -1727,7 +1683,7 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That(E.StartAppraise(s, Sample(s).InstanceId).Ok, Is.True);
         Steps(s, 1);
         if (kind == "missing") s.City.Pending!.NpcId = "npc_none";
-        EncounterHere(s);
+        BattleHere(s);
         if (kind == "elsewhere") E.DebugTeleport(s, "h02_square");
         var mark = s.Story.DialogueLog.Count;
         Assert.That(E.Cancel(s).Ok, Is.True);
@@ -1751,7 +1707,7 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_05_Dead_NotShown()
     {
         var s = BlockedEnd();
-        s.Encounter = null;
+        EndBattleQuietly(s);
         s.Progress.Dead = true;
         E.UpdateFlags(s);
         E.SubstituteIntroBoundary(s);
@@ -1764,13 +1720,13 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_05_ZeroCost_TitlesAndLedgerKept()
     {
         var s = BlockedEnd();
-        s.WorldEnemies.Clear();
+        EndBattleQuietly(s);
         var snap = Ledger(s);
         var flags = s.Progress.Flags.Count;
         var quests = s.City.Completed;
         var greeted = s.City.Greeted.Count;
         var title = E.DialogueSetTitle(OfficeIntro);
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.SubstituteIntroBoundary(s), Is.True);
         ReadDialogues(s);
         Assert.That(Ledger(s), Is.EqualTo(snap));
         Assert.That((s.Progress.Flags.Count, s.City.Completed, s.City.Greeted.Count), Is.EqualTo((flags, quests, greeted)));
@@ -1919,8 +1875,7 @@ public class B26aSubstituteTalkTests : TestBase
     {
         var s = SaveSerializer.Deserialize(SaveSerializer.Serialize(BlockedEnd()), Cfg);
         Assert.That(Deferred(s), Is.EqualTo(1));
-        Start(s, ActionRequest.Bypass());
-        Run(s);
+        WinBattle(s);
         AssertAutoShownOnce(s);
         var g = IntroOf(OfficeNpc);
         Assert.That(s.Story.DialogueLog.Single(x => Base(x) == OfficeIntro).Lines.Select(l => l.Text), Is.EqualTo(new[] { IntroText(g), IntroSystem(g) }));

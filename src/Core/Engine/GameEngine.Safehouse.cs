@@ -179,7 +179,6 @@ namespace Survival.Core.Engine
             else if (s.CurrentZone != SafehouseZone) return "不在安全屋屋内";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (s.Battle != null) return "战斗中不能进出安全屋（门不是撤退按钮）";
-            if (s.Encounter != null) return "敌踪待处理：先接敌或绕行，不能靠进出门跳过";
             if (s.Main != null || s.Sub != null) return "行动进行中，先完成或取消再进出安全屋";
             return null;
         }

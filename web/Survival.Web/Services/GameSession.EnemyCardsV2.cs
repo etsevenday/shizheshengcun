@@ -4,7 +4,7 @@ using Survival.Core.State;
 namespace Survival.Web.Services;
 
 /// <summary>
-/// B41e2 新版敌踪界面二（开关 encounters.enemyCardsV2 开时才有入口）：成长页的练习潜行盘、编队页的小队队长草稿。
+/// B41e2 新版敌踪界面二：成长页的练习潜行盘、编队页的小队队长草稿。
 /// 规则与原句全部来自内核（CanPracticeStealth、PracticeXpPreview、PracticeBodyRateText、SaveFormationBlocked 的 leaderId 分支）。
 /// </summary>
 public sealed partial class GameSession
@@ -20,7 +20,7 @@ public sealed partial class GameSession
     /// <summary>点「练习潜行」：打开练习盘，草稿从未选人开始（逐字稿：明确选练习者）。</summary>
     public void OpenPractice()
     {
-        if (State == null || !E.CardsV2(S)) return;
+        if (State == null) return;
         PracticeOpen = true;
         PracticeActor = null;
         Notify();
@@ -77,17 +77,17 @@ public sealed partial class GameSession
 
     // ───────────── 编队页「小队队长」（逐字稿 B41「队长与练习潜行」；R08 Q342） ─────────────
 
-    /// <summary>编队草稿里的小队队长（开关开时打开编队面板按当前队长建草稿；开关关为 null，不提交队长）。</summary>
+    /// <summary>编队草稿里的小队队长（打开编队面板时按当前队长建草稿）。</summary>
     public string? FormationLeader { get; private set; }
 
     /// <summary>草稿里选小队队长（只改草稿，随「保存编队」一起提交）。</summary>
     public void PickFormationLeader(string actorId)
     {
-        if (FormationDraft == null || State == null || !E.CardsV2(S) || !FormationDraft.Contains(actorId)) return;
+        if (FormationDraft == null || State == null || !FormationDraft.Contains(actorId)) return;
         FormationLeader = actorId;
         Notify();
     }
 
     /// <summary>队长草稿是否与已保存的队长不同。</summary>
-    private bool LeaderDirty => State != null && FormationLeader != null && E.CardsV2(S) && FormationLeader != E.SquadLeaderId(S);
+    private bool LeaderDirty => State != null && FormationLeader != null && FormationLeader != E.SquadLeaderId(S);
 }

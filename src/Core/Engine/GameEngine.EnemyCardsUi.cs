@@ -7,7 +7,7 @@ using Survival.Core.State;
 namespace Survival.Core.Engine
 {
     /// <summary>
-    /// B41e1 新版敌踪界面（敌踪卡、居中操作盘、敌踪详情）用到的只读数据与原句。挂开关 encounters.enemyCardsV2（壳层只在 <see cref="GameEngine.CardsV2"/> 为真时读）。
+    /// B41e1 新版敌踪界面（敌踪卡、居中操作盘、敌踪详情）用到的只读数据与原句。（B41e3 起新版敌踪是唯一流程。）
     /// 原句出处：《重墨 V2 开工裁定与界面逐字稿》「B41 Q426–Q428 正式文案」之「卡片、操作盘与倒计时」、「B41d／B41e Q445—Q447 补充定稿」Q446 ④⑥、Q447。
     /// </summary>
     public sealed partial class GameEngine
@@ -207,17 +207,5 @@ namespace Survival.Core.Engine
 
         /// <summary>逐字稿「暂存说明」。</summary>
         public const string StashedWorkNote = "原行动保持暂停，移动结束后返回原行动的暂停状态。";
-
-        // ───────────── Q446 ⑩ 生存提示第 13 条 ─────────────
-
-        /// <summary>生存提示第 13 条旧分句（配置 progress.tips）。</summary>
-        public const string TipOldEncounterClause = "可以接敌，也可以绕行10分钟。";
-
-        /// <summary>
-        /// 生存提示的显示文本（Q446 ⑩【交开发方定】最小换词）：新版敌踪下把旧「可以接敌，也可以绕行10分钟。」换成「可以主动接近、潜行接近或躲避。」；
-        /// 其余提示与开关关时原样。
-        /// </summary>
-        public string TipForState(GameState s, string tip) =>
-            CardsV2(s) && tip.EndsWith(TipOldEncounterClause) ? tip.Substring(0, tip.Length - TipOldEncounterClause.Length) + "可以主动接近、潜行接近或躲避。" : tip;
     }
 }

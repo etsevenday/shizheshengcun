@@ -55,16 +55,14 @@ public class V10CombatTests : BattleTestBase
         Assert.That(s.Battle.Panic, Is.EqualTo(expectPanic).Within(1e-9));
 
         var (t, w2) = Spot(2, "shambler");
-        t.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = { w2.Id }, Source = "explore", Minute = t.GameMinute };
         Force(t, Below(0.13));
-        Assert.That(E.Engage(t).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(t, new List<int> { w2.Id }, GameEngine.FearEncounter), Is.True);
         Assert.That(t.Battle!.Frightened, Is.True);
         Assert.That(t.Battle.Panic, Is.EqualTo(26).Within(1e-9), "未受惊P20，受惊P26（R03 §2.1 算例）");
 
         var (u, w3) = Spot(3, "shambler");
-        u.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = { w3.Id }, Source = "explore", Minute = u.GameMinute };
         Force(u, AtLeast(0.15));
-        Assert.That(E.Engage(u).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(u, new List<int> { w3.Id }, GameEngine.FearEncounter), Is.True);
         Assert.That(u.Battle!.Frightened, Is.False);
         Assert.That(u.Battle.Panic, Is.EqualTo(20).Within(1e-9), "未受惊不再固定+10");
     }
@@ -81,11 +79,10 @@ public class V10CombatTests : BattleTestBase
         var e2 = E.DebugSpawnEnemy(s, "shambler", "field");
         Assert.That(E.FearSource(new[] { e2, a })!.Id, Is.EqualTo(Math.Min(a.Id, e2.Id)), "再平手按 worldEnemyId");
         // 多敌只判一次，不对每敌叠加
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = { a.Id, b.Id, c.Id }, Source = "explore", Minute = s.GameMinute };
         UnlockCapacity(s, 3);   // Q62：三只都入场需要 C3（新局 C1 只有排第一的入场、受惊只看入场者）
         s.Stats.Morale = 0;
         Force(s, Below(0.5));
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(s, new List<int> { a.Id, b.Id, c.Id }, GameEngine.FearEncounter), Is.True);
         Assert.That(s.Battle!.FearSourceWorldId, Is.EqualTo(b.Id));
         Assert.That(s.Battle.Panic, Is.EqualTo(50 + 16).Within(1e-9), "只加主惊吓源的16");
     }

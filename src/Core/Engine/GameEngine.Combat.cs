@@ -306,81 +306,11 @@ namespace Survival.Core.Engine
 
         // ───────────── 开始 ─────────────
 
-        /// <summary>主动接近当前地块的可见敌人（v0.6 §15）：不受随机接敌保护期限制。</summary>
-        public string? CanApproach(GameState s, int worldEnemyId)
-        {
-            if (CardsV2(s)) return CanApproachCard(s, SingleCardKey(worldEnemyId));   // B41a：新版敌踪走卡的主动接近
-            if (s.Progress.Dead) return "角色已死亡";
-            if (DialogueLocked(s)) return DialogueLockedReason;
-            if (!Config.CombatEnabled || !Config.Encounters.ActiveContactEnabled) return "战斗未启用";
-            if (s.Battle != null) return "已在战斗中";
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
-            if (s.Main != null || s.Sub != null)
-                return s.Main?.Status == ActionStatus.Paused ? (LockedMainPaused(s) ? (s.Sub != null ? LockedSubRunning : LockedPausedBusy) : "行动暂停中，先结束或取消行动") : "行动进行中";   // B41c2（Q526）；B46（Q534）：锁定主行动暂停且子行动未结束
-            var w = FindWorldEnemy(s, worldEnemyId);
-            if (w == null) return "这个敌人已不在";
-            if (w.LocationId != s.CurrentLocation || Hidden(s, w)) return "只能接近当前地点可见的敌人";
-            if (s.CurrentZone == SafehouseZone) return "在安全屋屋内：先出门再接近敌人";
-            if (w.Engaged) return "这个敌人正在交战";
-            // 首战胜利前只开放保留的游荡尸（S15 §5：第一次接敌必须由首战承接）
-            if (TutorialGateOpen(s) && s.Story.TutorialEnemyId != w.Id) return "先完成农野荒地的首战（游荡尸），再接近其他敌人";
-            return null;
-        }
+        /// <summary>主动接近当前地块的一只独立单卡敌人：即 <see cref="CanApproachCard"/>（卡键 we:世界敌人号）。</summary>
+        public string? CanApproach(GameState s, int worldEnemyId) => CanApproachCard(s, SingleCardKey(worldEnemyId));
 
-        public ActionResult Approach(GameState s, int worldEnemyId, string? requestId = null)
-        {
-            if (CardsV2(s)) return ApproachCard(s, SingleCardKey(worldEnemyId), requestId);   // B41a：旧入口转到卡的主动接近
-            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            var why = CanApproach(s, worldEnemyId);
-            if (why != null) return ActionResult.Fail(why);
-            RememberRequest(s, requestId);
-            // 首战撤退后再接近同一保留游荡尸：仍是教学首战（胜利才发教学物质），情境按主动接近
-            var tutorial = IsTutorialEnemy(s, worldEnemyId);
-            StartBattle(s, new List<WorldEnemy> { FindWorldEnemy(s, worldEnemyId)! }, false, tutorial ? "首战" : "主动接近", FearApproach, tutorial);
-            if (tutorial) s.Story.TutorialBattleId = s.Battle?.BattleId;
-            return ActionResult.Success();
-        }
-
-        /// <summary>敌踪选择“接敌”：用开始时那组同地现有敌人入战（受惊情境系数 K=1，R03 §2.1）。</summary>
-        public ActionResult Engage(GameState s, string? requestId = null)
-        {
-            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
-            if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
-            // B41a：新版敌踪没有“待处理敌踪”，旧「接敌」入口不再可用（沿用原拒绝句）
-            if (s.Encounter == null || CardsV2(s)) return ActionResult.Fail("当前没有敌踪");
-            var group = EncounterGroup(s);
-            RememberRequest(s, requestId);
-            if (group.Count == 0)
-            {
-                s.Encounter = null;
-                Emit(s, GameEventKind.Info, "敌踪已经离开。");
-                SubstituteIntroBoundary(s);   // Q243：这条路不走 UpdateFlags，敌踪解除也要重验待补播
-                return ActionResult.Success();
-            }
-            s.Encounter = null;
-            StartBattle(s, group, true, "遭遇", FearEncounter);
-            return ActionResult.Success();
-        }
-
-        /// <summary>敌踪里还在本地、未交战的有序名单（接敌时按它截前 C 个）。</summary>
-        public List<WorldEnemy> EncounterGroup(GameState s) =>
-            EncounterEnemies(s).Where(w => !w.Engaged && w.LocationId == s.CurrentLocation).ToList();
-
-        /// <summary>接敌时实际入战的敌人：有序名单的前 C 个（Q62：未选的留在原地、不判死亡与奖励）。受惊判定也只看这几只。</summary>
-        public List<WorldEnemy> EncounterJoiners(GameState s) => EncounterGroup(s).Take(BattleCapacity(s)).ToList();
-
-        /// <summary>敌踪名单超过容量时的说明：“本场容量C1：只有排在最前的1只接战，其余2只留在原地”；不超过为 null。</summary>
-        public string? EncounterCapacityNote(GameState s) =>
-            EncounterStayNote(s) is string n ? $"本场容量C{BattleCapacity(s)}：{n}" : null;
-
-        /// <summary>同上，不带“本场容量C”前缀（右栏已另写容量时用，避免重复）：“只有排在最前的1只接战，其余2只留在原地……”。</summary>
-        public string? EncounterStayNote(GameState s)
-        {
-            var all = EncounterGroup(s).Count;
-            var c = BattleCapacity(s);
-            return all > c ? $"只有排在最前的{c}只接战，其余{all - c}只留在原地（不算击杀、没有战利品）" : null;
-        }
+        /// <summary>主动接近一只独立单卡敌人：即 <see cref="ApproachCard"/>（卡键 we:世界敌人号）。</summary>
+        public ActionResult Approach(GameState s, int worldEnemyId, string? requestId = null) => ApproachCard(s, SingleCardKey(worldEnemyId), requestId);
 
         /// <summary>入战情境（R03 §2.1）：主动接近、探索/清理接敌、剧情首战。</summary>
         public const string FearApproach = "approach";
@@ -460,7 +390,7 @@ namespace Survival.Core.Engine
             }).ToList();
             BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。" + (mates.Count > 0 ? $"同行入场：{string.Join("、", mates)}。" : "") + (left > 0 ? $"本场容量C{b.Capacity}，另有{left}只留在原地。" : "") + (shaken.Count > 0 ? $"惊魂未定：{string.Join("、", shaken)}恐慌+{Fmt.T(DX.ShakenPanic)}（只这一场）。" : ""));
             Emit(s, GameEventKind.Battle, $"战斗开始：{names}。", null, b.Enemies.Select(e => $"enemy:{e.WorldId}"));
-            if (firstStrike != null && CardsV2(s)) GrantFirstStrike(s, b, firstStrike);
+            if (firstStrike != null) GrantFirstStrike(s, b, firstStrike);
             // 同速排序用的锁定随机数 u（R03 §2）：入场时各抽一次并存档（在受惊判定之后抽，不改受惊结果）
             b.PlayerTieRoll = s.Rng.NextDouble();
             foreach (var be in b.Enemies) be.TieRoll = s.Rng.NextDouble();
@@ -1513,7 +1443,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 结束（胜利或撤退成功）：本轮唯一一次世界 tick（中途退出也只推进一次；tick 致死则不提交掉落）；存活敌带 HP 回世界池、清临时状态；
-        /// 逃离的狼/鹿迁到合法相邻地或原地隐藏60分钟；胜利一次落地掉落；战后精神−min(5,P/20)，恐慌清除；60分钟随机接敌保护。
+        /// 逃离的狼/鹿迁到合法相邻地或原地隐藏60分钟；胜利一次落地掉落；战后精神−min(5,P/20)，恐慌清除（B41e3 起不再给旧版 60 分钟随机接敌保护）。
         /// </summary>
         private void FinishBattle(GameState s, string outcome, bool tick = true)
         {
@@ -1546,7 +1476,7 @@ namespace Survival.Core.Engine
             // B20：固定战/旧精英挑战最终胜利结固定账（守卫门、检查哨路线、挑战奖励）
             var fixedLines = outcome == "victory" ? FixedVictory(s, b) : new List<string>();
             // B41b（R05 Q416、Q443）：成功撤退给这次交战的同一张敌踪卡（无卡旧战斗：各参战幸存敌人所属的卡）60 世界分钟主动接近保护，从撤退结算时刻起算
-            if (outcome == "retreat" && CardsV2(s) && !s.Progress.Dead) GrantRetreatGuard(s, b);
+            if (outcome == "retreat" && !s.Progress.Dead) GrantRetreatGuard(s, b);
             // B21（R03 D4）：地牢远征里撤退成功，全队沿来路退到第一个没有敌人的房间（首个危险房间退回 01，不出地牢），含在本场唯一 tick 里
             if (outcome == "retreat" && DungeonRetreatLanding(s, b) is string landed) fixedLines.Add(landed);
             // B22h（Q196 选 C）：普通主世界撤退成功退回开战快照锁定的来处（0 额外分钟，不是常规移动）；没有可返回的来路就留在原地并写明
@@ -1554,7 +1484,7 @@ namespace Survival.Core.Engine
             // B22h 试玩修复（M448）：远征外的地牢节点、上线前开始的旧战撤退留在原地——结果提示与预览一致写“留在<地点>”
             else if (outcome == "retreat" && !s.Progress.Dead) fixedLines.Add($"留在{LocName(loc)}");
             // B41b（R05 Q440、Q463）：主行动已暂停、撤退又让队伍离开原行动地点／区域——保留这次暂停（不限最初暂停原因），开放地图移动
-            if (outcome == "retreat" && CardsV2(s) && !s.Progress.Dead) KeepPausedWorkOnRetreat(s);
+            if (outcome == "retreat" && !s.Progress.Dead) KeepPausedWorkOnRetreat(s);
             var me = b.Fighter(GameState.PlayerId);
             var loss = Math.Min(Config.Panic.MoraleLossMax, me.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Actor(GameState.PlayerId).Stats.Add(StatId.Morale, -loss);
@@ -1567,9 +1497,8 @@ namespace Survival.Core.Engine
                 ma.Stats.Add(StatId.Morale, -ml);
                 mateLoss.Add($"{ActorDisplayName(s, id)}精神−{Fmt.N(ml)}");
             }
-            // B41a（R05 Q416）：新版敌踪下胜利、撤退都不再新增全地点保护（同卡撤退保护在 B41b）；旧档已生效的历史保护原值不动。
+            // B41a（R05 Q416）：胜利、撤退都不新增全地点保护（同卡撤退保护见 GrantRetreatGuard）；旧档已生效的历史保护原值不动。
             // 组卡成员的 HP 已随世界实例回写，幸存者仍属原组（GroupId 不变），全灭的组在 KillEnemy 时已移除
-            if (!CardsV2(s)) s.EncounterGraceUntil = s.GameMinute + Config.Encounters.PostExitRandomEncounterGraceMinutes;
             var head = outcome == "victory" ? "战斗胜利" : "撤退成功";
             // 撤退：只有场上确有倒下敌人的掉落/尸体时才写“放弃”（试玩修复 L3）
             var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品")

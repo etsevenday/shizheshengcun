@@ -14,6 +14,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B13a2FireAxeTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private static JObject Contract() => JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.fire-axe-adjudications.json")));
 
     private static void Lv(GameState s, string id, int lv) => s.Skills[id].Level = lv;
@@ -83,6 +86,7 @@ public class B13a2FireAxeTests : TestBase
         var max = axe.MaxDurability!.Value;
         axe.Durability = max - 7.3;
         var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg, out _);
+        loaded.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         var a2 = loaded.Items.Single(i => i.ItemId == "fire_axe");
         Assert.That((a2.MaxDurability, a2.Durability), Is.EqualTo(((double?)max, (double?)(max - 7.3))), "读档不重抽、不补满");
         Assert.That(E.CanStart(loaded, ActionRequest.Gather("firetruck_cache")), Does.Contain("已领取"), "不重复奖励");
@@ -289,6 +293,7 @@ public class B13a2FireAxeTests : TestBase
         E.Advance(s);
         Axe(s);   // 开工后才拿到消防斧：在办动作不换工具、不改价
         var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg, out _);
+        loaded.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         Assert.That(loaded.Main!.BaseWorkMinutes, Is.EqualTo(25).Within(1e-9));
         Assert.That(loaded.Main.ToolInstanceId, Is.EqualTo(bar.InstanceId));
         var t0 = loaded.GameMinute;
@@ -302,6 +307,7 @@ public class B13a2FireAxeTests : TestBase
         Start(o, ActionRequest.Gather("w19_survey_b", old.InstanceId));
         o.Main!.BaseWorkMinutes = 25;
         var lo = SaveSerializer.Deserialize(SaveSerializer.Serialize(o), Cfg, out _);
+        lo.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         var start = lo.GameMinute;
         Run(lo);
         Assert.That(lo.GameMinute - start, Is.EqualTo(25), "沿开工快照 25");

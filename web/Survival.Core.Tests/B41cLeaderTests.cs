@@ -80,15 +80,4 @@ public class B41cLeaderTests : B41cTestBase
         E.DebugToggleActive(s, "npc_tang_li");
         Assert.That(s.Log.Skip(n).Select(l => l.Text), Has.None.EqualTo("原队长已无法带队，小队队长已改为你。"));
     }
-
-    [Test]
-    public void SwitchOff_FormationLogUnchanged_LeaderIgnored()
-    {
-        var s = WithCompanions(Off);
-        var slots = s.FormationPreset.ToList();
-        (slots[0], slots[1]) = (slots[1], slots[0]);
-        Assert.That(Off.SaveFormation(s, slots, s.FormationVersion, null, "npc_lin_zhao").Ok, Is.True);
-        Assert.That(s.SquadLeader, Is.Null, "开关关：没有队长");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("编队已保存：" + Off.FormationText(s, s.FormationPreset) + "（下一场战斗按此开局）。"));
-    }
 }

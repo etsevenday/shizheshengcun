@@ -82,11 +82,13 @@ public class B46ShellTests
     [Test]
     public void Q534_A01_ApproachAndFixedHover_SameSourceAsRealRejection()
     {
+        // B41e3：旧常驻敌人卡的「接近」、固定战卡、可选强敌卡已删，敌踪统一在居中操作盘与右栏敌踪详情里处理，禁用原因直接取内核 CanApproachCard
+        // （有未结束子行动时就是「当前行动还没结束。」，内核断言见 B46Tests.Q534_A01_A02）
+        var pops = Web("Components/ActionPops.razor");
+        Assert.That(pops, Does.Contain("var whyApproach = e.CanApproachCard(s, key);"));
+        Assert.That(Web("Components/EnemyDetail.razor"), Does.Contain("var why = e.CanApproachCard(s, card.Key);"));
         var strip = Web("Components/LocationStrip.razor");
-        Assert.That(strip, Does.Contain("GameEngine.LockedMainPaused(s) ? e.CanApproach(s, wid) ?? \"行动进行中\" : \"行动进行中\""));
-        Assert.That(strip, Does.Not.Contain("GameEngine.LockedMainPaused(s) && s.Sub == null"));
-        Assert.That(strip, Does.Contain("var why = busy ? (GameEngine.LockedMainPaused(s) ? e.CanEngageFixed(s) ?? \"行动进行中\" : \"行动进行中\") : e.CanEngageFixed(s);"));
-        Assert.That(strip, Does.Contain("var why = busy ? (GameEngine.LockedMainPaused(s) ? e.CanEngageElite(s, cid) ?? \"行动进行中\" : \"行动进行中\") : e.CanEngageElite(s, cid);"));
+        Assert.That(strip, Does.Not.Contain("e.CanEngageFixed(s)").And.Not.Contain("e.CanEngageElite(s, cid)").And.Not.Contain("e.CanApproach(s, wid)"));
         Assert.That(GameEngine.LockedSubRunning, Is.EqualTo("当前行动还没结束。"));
     }
 

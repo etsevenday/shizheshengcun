@@ -424,8 +424,7 @@ public class B22fVerifyTests : BattleTestBase
             s.Player.ShakenUntil = playerUntil == null ? null : s.GameMinute + playerUntil;
             s.Actor(Lin).ShakenUntil = linUntil == null ? null : s.GameMinute + linUntil;
             var id = E.DebugSpawnEnemy(s, "shambler", "field").Id;
-            s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = new List<int> { id }, Source = "explore", Minute = s.GameMinute };
-            Ok(E.Engage(s));
+            Assert.That(E.DebugStartBattle(s, new List<int> { id }, GameEngine.FearEncounter), Is.True);
             return s;
         }
         var baseline = Setup(null, null);
@@ -614,9 +613,9 @@ public class B22fVerifyTests : BattleTestBase
         mine.RewardOrigin = inst;
         his.RewardOrigin = inst;
         Assert.That(E.SealableItems(s).Select(i => i.InstanceId), Is.EquivalentTo(new[] { mine.InstanceId, his.InstanceId }));
-        s.Encounter = new PendingEncounter { LocationId = "d01_02" };
+        s.Battle = new BattleState();
         Assert.That(E.SealBlocked(s, his.InstanceId), Does.Contain("战斗结束后"), "非战斗才能封存");
-        s.Encounter = null;
+        s.Battle = null;
         var t = s.GameMinute;
         Ok(E.SealReward(s, his.InstanceId));
         Ok(E.SealReward(s, mine.InstanceId));

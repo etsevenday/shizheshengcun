@@ -14,17 +14,20 @@ public class B41a2SubActionTests : B41aTestBase
 {
     private static string RngOf(GameState s) => JObject.Parse(SaveSerializer.Serialize(s))["Rng"]!.ToString();
 
-    /// <summary>旧版（开关关）新局在临时营地：摆一条旧待处理敌踪、开绕行、走一段、暂停，再在暂停下开一个子行动。</summary>
+    /// <summary>
+    /// 旧档式新局（敌踪卡模型标记 0）在临时营地：摆出旧版在办绕行（B41e3 起旧绕行已删，用 <see cref="B41aTestBase.LegacyBypass"/> 直接改状态）、
+    /// 走一段、暂停，再在暂停下开一个子行动。
+    /// </summary>
     private GameState PausedBypassWithSub(string sub)
     {
-        var s = Off.NewGame(7);
-        Off.DebugLegacyStory(s);
+        var s = New(7);
+        E.DebugLegacyStory(s);
         s.SpawnNextCheck = int.MaxValue;
         s.PatrolNextCheck = int.MaxValue;
-        Off.DebugSetStats(s, 100, 60, 80, 90, 90, 60);
-        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = new List<int>(), Source = "explore", Minute = s.GameMinute };
-        Assert.That(Off.Start(s, ActionRequest.Bypass()).Ok, Is.True);
-        Off.Advance(s);
+        s.SuppressEnemyApproach = true;
+        s.EnemyCards.ModelVersion = 0;
+        E.DebugSetStats(s, 100, 60, 80, 90, 90, 60);
+        LegacyBypass(s);
         Assert.That(s.Main!.Type, Is.EqualTo(ActionType.Bypass));
         s.Main.Status = ActionStatus.Paused;
         s.Main.PauseReason = PauseReason.StatAlert;
@@ -35,10 +38,10 @@ public class B41a2SubActionTests : B41aTestBase
             "rest" => ActionRequest.Rest(30),
             _ => ActionRequest.Ignite(First(s, "lighter").InstanceId),
         };
-        var r = Off.Start(s, req);
+        var r = E.Start(s, req);
         Assert.That(r.Ok, Is.True, r.Reason);
         Assert.That(s.Sub!.IsSub, Is.True);
-        if (sub == "rest") Off.Advance(s);   // 休息先走一段，带着已耗时间和进度存档
+        if (sub == "rest") E.Advance(s);   // 休息先走一段，带着已耗时间和进度存档
         return s;
     }
 
@@ -68,13 +71,14 @@ public class B41a2SubActionTests : B41aTestBase
         var rng = RngOf(s);
         var log = s.Log.Count;
 
-        // 对照：同一状态在旧版下照常把子行动做完（主行动仍暂停）
-        var control = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), CfgOff);
-        for (var i = 0; i < 100 && control.Sub != null; i++) Off.Advance(control);
+        // 对照：同一状态不经读档（不采纳）照常把子行动做完（主行动仍暂停）
+        var control = s.Clone();
+        for (var i = 0; i < 100 && control.Sub != null; i++) E.Advance(control);
         Assert.That(control.Sub, Is.Null);
 
-        var json = via46 ? SaveSerializer.Serialize(SaveSerializer.Deserialize(AsSchema45(s), CfgOff)) : AsSchema45(s);
-        if (via46) Assert.That(JObject.Parse(json)["Sub"]!.Type, Is.Not.EqualTo(JTokenType.Null), "开关关着升到 46 不动行动");
+        // via46：开关关着时写下的新 schema 档（卡模型标记仍为 0），读档同样采纳
+        var json = via46 ? SaveSerializer.Serialize(s) : AsSchema45(s);
+        if (via46) Assert.That(JObject.Parse(json)["Sub"]!.Type, Is.Not.EqualTo(JTokenType.Null), "未采纳的档行动原样");
         var t = SaveSerializer.Deserialize(json, CfgV2);
 
         // 只取消绕行；子行动沿原身份、已耗时间、进度、占用转成独立行动
@@ -125,17 +129,5 @@ public class B41a2SubActionTests : B41aTestBase
         Assert.That(t.Stats.Energy, Is.EqualTo(control.Stats.Energy).Within(1e-6), "休息按原剩余过程");
         Assert.That(t.Items.All(i => i.ReservedBy != subId), Is.True, "完成后占用释放");
         Assert.That(t.Main?.LockedItemIds ?? new List<int>(), Is.Empty);
-    }
-
-    [Test]
-    public void Q454_SwitchOff_PausedBypassWithSub_Unchanged()
-    {
-        var s = PausedBypassWithSub("rest");
-        var t = SaveSerializer.Deserialize(AsSchema45(s), CfgOff);
-        Assert.That(t.Main!.Type, Is.EqualTo(ActionType.Bypass), "开关关着旧绕行原样");
-        Assert.That(t.Main.Status, Is.EqualTo(ActionStatus.Paused));
-        Assert.That(t.Sub!.Type, Is.EqualTo(ActionType.Rest));
-        Assert.That(t.Sub.IsSub, Is.True);
-        Assert.That(t.Log.Count, Is.EqualTo(s.Log.Count));
     }
 }

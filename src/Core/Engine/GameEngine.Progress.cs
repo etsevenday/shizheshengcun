@@ -59,7 +59,7 @@ namespace Survival.Core.Engine
         public bool ResumeAborts { get; set; }
         /// <summary>
         /// B41e2（R05 Q440；逐字稿「异地尝试继续原行动」「原行动地点／地牢世代失效」）：撤退离地保留的原工作此刻不能继续的原因（异地或原地点失效）；
-        /// 能继续或不适用为 null。界面据此禁用「继续行动」并写原因。只在新版敌踪下有值。
+        /// 能继续或不适用为 null。界面据此禁用「继续行动」并写原因。
         /// </summary>
         public string? KeptResumeBlock { get; set; }
     }
@@ -161,9 +161,9 @@ namespace Survival.Core.Engine
                 if (v.Kind == LockedResumeKind.Temporary || v.Kind == LockedResumeKind.Permanent) info.ResumeNote = v.Reason;
                 info.ResumeAborts = v.Kind == LockedResumeKind.Permanent;
             }
-            // B41b（R05 Q472 第 6 条）：暂存的原工作只读摘要与撤退离地保留行动的原地点（界面文字在 B41e 接）
+            // B41b（R05 Q472 第 6 条）：暂存的原工作只读摘要与撤退离地保留行动的原地点（界面文字见 B41e2）
             info.StashedLabel = s.StashedWork?.Label;
-            var kept = s.StashedWork ?? (a.RetreatKept && CardsV2(s) ? a : null);
+            var kept = s.StashedWork ?? (a.RetreatKept ? a : null);
             info.WorkPlace = kept != null ? WorkPlaceName(s, kept) : null;
             if (info.Paused && !info.Locked && ReferenceEquals(s.Main, a)) info.KeptResumeBlock = KeptWorkResumeBlock(s, a);
             info.ExitForfeits = forfeit != null;

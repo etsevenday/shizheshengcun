@@ -11,6 +11,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B11ExploreTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     /// <summary>B12 起 96 条增量资源并入资源表：某地点已发现的资源点 ID。</summary>
     private static List<string> DiscAt(GameState s, string loc) =>
         Cfg.Resources.Where(r => r.LocationId == loc && s.Resources[r.NodeId].Discovered).Select(r => r.NodeId).ToList();
@@ -161,6 +164,7 @@ public class B11ExploreTests : TestBase
         Start(s, ActionRequest.Explore());
         Steps(s, 2);
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        t.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         Run(s);
         Run(t);
         Assert.That(SaveSerializer.Serialize(t), Is.EqualTo(SaveSerializer.Serialize(s)), "读档续行一致");

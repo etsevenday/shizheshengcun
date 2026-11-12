@@ -6,7 +6,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41b 里程碑 5：战后撤退离地保留暂停、暂存原工作的地图移动与续接（开关开；R05「B41b Q439—Q444」Q440、「Q463—Q471」Q463—Q464、
+/// B41b 里程碑 5：战后撤退离地保留暂停、暂存原工作的地图移动与续接（R05「B41b Q439—Q444」Q440、「Q463—Q471」Q463—Q464、
 /// 「Q472—Q476」Q472—Q474；逐字稿「B41b Q472—Q476 暂存与移动逐字稿」；验收 Q440-A01 地点部分、Q463-A01、Q464-A01、Q472-A01—A03、Q473-A01、Q474-A01）。
 /// </summary>
 public class B41bKeptWorkTests : B41bTestBase

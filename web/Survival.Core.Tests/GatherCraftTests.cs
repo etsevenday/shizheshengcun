@@ -7,6 +7,9 @@ namespace Survival.Core.Tests;
 /// <summary>物资搜集案 07 验收用例 G01–G08。</summary>
 public class GatherCraftTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private GameState AtWoods(uint seed = 7)
     {
         var s = New(seed);
@@ -199,6 +202,7 @@ public class GatherCraftTests : TestBase
         Steps(s, 2);
         var hazard = s.Main!.HazardHit;
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
+        t.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         Assert.That(t.Main!.HazardHit, Is.EqualTo(hazard), "读档不重掷");
         Run(s);
         Run(t);

@@ -151,7 +151,6 @@ namespace Survival.Core.Engine
             if (infiniteFuel) { fac.FireLit = true; fac.FuelMinutes = Config.Fire.MaxFuelMinutes * 1000; }
             c.Sub = null;
             c.Battle = null;
-            c.Encounter = null;
             c.Main = new ActionState
             {
                 ActionId = -1, Type = ActionType.Wait, PlannedMinutes = int.MaxValue / 2, Label = "模拟等待",

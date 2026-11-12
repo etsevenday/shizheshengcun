@@ -223,7 +223,7 @@ namespace Survival.Core.Engine
         /// 等安全空闲再整理（S06 §8）。
         /// </summary>
         public bool OverflowResolvable(GameState s) =>
-            !s.Progress.Dead && s.Battle == null && s.Encounter == null && s.Main == null && s.Sub == null && !DialogueLocked(s);
+            !s.Progress.Dead && s.Battle == null && s.Main == null && s.Sub == null && !DialogueLocked(s);
 
         /// <summary>超额整理窗列出的随身根物品（未预留的随身实例，按卡片顺序）。</summary>
         public List<ItemInstance> CarriedRootItems(GameState s) =>

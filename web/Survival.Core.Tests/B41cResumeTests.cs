@@ -250,20 +250,6 @@ public class B41cResumeTests : B41cTestBase
         Assert.That(s.Items.Any(i => i.InstanceId == mach.InstanceId), Is.False);
     }
 
-    [Test]
-    public void Q490_SwitchOff_NoRecheck()
-    {
-        var s = LegacyField();
-        var mach = E.DebugCreateEquipment(s, "machete", "white", ItemInstance.Carried);
-        mach.Durability = Math.Round(mach.MaxDurability!.Value / 2);
-        E.DebugGive(s, "scrap", 1);
-        E.DebugGive(s, "parts", 1);
-        Assert.That(Off.Start(s, new ActionRequest { Type = ActionType.Craft, TargetId = "repair_selected_tool", InstanceId = mach.InstanceId }).Ok, Is.True);
-        Pause(s);
-        mach.Durability = mach.MaxDurability;
-        Assert.That(Off.ResumeBlockReason(s), Is.Null, "开关关：沿旧行为不复核");
-    }
-
     // ───────────── Q491 ─────────────
 
     [Test]

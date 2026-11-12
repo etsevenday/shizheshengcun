@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-"""B41a 新版敌踪：警惕等级与上线开关的配置导入 → data/config.v0.6.json。
+"""B41a 新版敌踪：警惕等级的配置导入 → data/config.v0.6.json。
 
 数值逐条取自策划案，不自补：
 - R05「Q423 警惕逐项定稿」表（42 种敌人 × 普通常驻／固定战成员／守卫本体／可选强敌四列，单位级，合法 1–10）
   → enemies[].vigilance{resident,fixedMember,guardianBody,optionalElite}。
 - 同节正文「教学首战的游荡尸特例为 1」→ story.tutorialBattle.vigilance = 1。
 - 同节正文「固定战成员至少 3，守卫本体至少 5，可选强敌至少 6」只作断言（表中已是取高后的值，脚本不改表值）。
-- encounters.enemyCardsV2：新版敌踪总开关。B41a—B41e 内核与界面先做在关着的开关后面（待确认文档 B41a 节「上线方式」），
-  本脚本只在该键不存在时写 false，已有值不动（B41f 翻开关不被重跑覆盖）。
+（原先还会补 encounters.enemyCardsV2 开关键；B41e3 新版敌踪上线后开关已删，本脚本不再写它。）
 
 可重复运行，结果相同。用法：python tools/import-b41-vigilance.py
 """
@@ -76,12 +75,9 @@ def main():
     assert 1 <= tutorial <= 10
     tb["vigilance"] = tutorial
 
-    enc = cfg["encounters"]
-    enc.setdefault("enemyCardsV2", False)
-
     with open(CONFIG, "w", encoding="utf-8", newline="\n") as f:
         f.write(json.dumps(cfg, ensure_ascii=False, indent=2) + "\n")
-    print(f"vigilance rows {len(rows)}, tutorial {tutorial}, enemyCardsV2 {enc['enemyCardsV2']}")
+    print(f"vigilance rows {len(rows)}, tutorial {tutorial}")
 
 
 if __name__ == "__main__":

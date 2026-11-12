@@ -128,6 +128,7 @@ public class B13dGuideTests : BattleTestBase
         var s = Fresh();
         Start(s, ActionRequest.Travel("field"));
         Run(s);
+        ApproachTutorial(s);   // B41b（R05 Q421）：到达只出教学卡，主动接近才开首战
         Assert.That(s.Battle?.Tutorial, Is.True);
         var events = new List<string>();
         var ap = s.Battle!.PlayerAp;
@@ -151,6 +152,7 @@ public class B13dGuideTests : BattleTestBase
         var s = Fresh();
         Start(s, ActionRequest.Travel("field"));
         Run(s);
+        ApproachTutorial(s);   // B41b（R05 Q421）：到达只出教学卡，主动接近才开首战
         ReadDialogues(s);
         for (var k = 0; k < 20 && s.Battle != null; k++)
         {
@@ -186,6 +188,7 @@ public class B13dGuideTests : BattleTestBase
         Assert.That(s.Prologue.GuideSeen, Does.Not.Contain("PRO12"), "暂停期间不记、不积压");
         Start(s, ActionRequest.Travel("field"));
         Run(s);
+        ApproachTutorial(s);   // B41b（R05 Q421）：到达只出教学卡，主动接近才开首战
         var events = new List<string>();
         for (var k = 0; k < 10 && E.DialogueLocked(s); k++)
         {
@@ -439,6 +442,7 @@ public class B13dGuideTests : BattleTestBase
         E.SetHintsPaused(s, true);
         Start(s, ActionRequest.Travel("field"));
         Run(s);
+        ApproachTutorial(s);   // B41b（R05 Q421）：到达只出教学卡，主动接近才开首战
         ReadDialogues(s);
         for (var k = 0; k < 20 && s.Battle != null; k++)
         {

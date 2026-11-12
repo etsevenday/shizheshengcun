@@ -47,7 +47,7 @@ namespace Survival.Core.Engine
         {
             if (s.Progress.Dead) return "本局已结束";
             if (!s.Remains.TryGetValue(deadId, out var rem)) return "这里没有这份遗物";
-            if (s.Battle != null || s.Encounter != null) return "战斗结束后才能整理遗物";
+            if (s.Battle != null) return "战斗结束后才能整理遗物";
             if (rem.LocationId != s.CurrentLocation || (rem.Zone != null && rem.Zone != s.CurrentZone))
                 return $"{(rem.IsClaim ? "认领箱" : rem.IsDungeonBox ? rem.Name : "遗物")}在{RemainsWhere(s, rem)}，要到那里才能取";
             var it = FindItem(s, instanceId);

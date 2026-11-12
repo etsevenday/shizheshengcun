@@ -4,7 +4,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41b 里程碑 7：首战入口改成教学敌踪卡（开关开；R05「Q416、Q421」末段、待确认 Q421 三项均 A；S15 首战；验收 Q421-A01）。
+/// B41b 里程碑 7：首战入口改成教学敌踪卡（R05「Q416、Q421」末段、待确认 Q421 三项均 A；S15 首战；验收 Q421-A01）。
 /// </summary>
 public class B41bTutorialEntryTests : B41bTestBase
 {

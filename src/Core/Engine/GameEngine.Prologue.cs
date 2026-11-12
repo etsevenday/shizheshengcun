@@ -305,7 +305,7 @@ namespace Survival.Core.Engine
         // ───────────────────────── 安全边界 ─────────────────────────
 
         private bool PrologueIdle(GameState s) =>
-            !s.Progress.Dead && s.Main == null && s.Sub == null && s.Battle == null && s.Encounter == null && !DialogueLocked(s);
+            !s.Progress.Dead && s.Main == null && s.Sub == null && s.Battle == null && !DialogueLocked(s);
 
         /// <summary>
         /// 序章安全边界（段末、战斗结束、即时操作、对话结束、读档迁移、新局）：追认任务 → 来客登记与通知/抵达对白 →（空闲时）重验暂存的引导、
@@ -435,7 +435,7 @@ namespace Survival.Core.Engine
 
         /// <summary>安全上下文：不在对话读完锁、敌踪/战斗、子行动或进行中的主行动里（暂停中的主行动不算忙）。</summary>
         private bool GuideSafe(GameState s) =>
-            !s.Progress.Dead && !DialogueLocked(s) && s.Battle == null && s.Encounter == null && s.Sub == null
+            !s.Progress.Dead && !DialogueLocked(s) && s.Battle == null && s.Sub == null
             && (s.Main == null || s.Main.Status == ActionStatus.Paused);
 
         /// <summary>呈现一项引导：成为当前系统提示；该项首次呈现时播饱饱/主角短句（饱饱在体内且非旧档才播；同组对白只播一次）。</summary>
@@ -592,7 +592,7 @@ namespace Survival.Core.Engine
         {
             if (s.Progress.Dead) return "角色已死亡";
             if (DialogueLocked(s)) return DialogueLockedReason;
-            if (s.Battle != null || s.Encounter != null) return "先处理眼前的敌踪";
+            if (s.Battle != null) return "先处理眼前的敌踪";
             if (s.Main != null || s.Sub != null) return "行动进行中";
             return null;
         }

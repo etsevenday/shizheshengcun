@@ -13,6 +13,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B13aQTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private static JObject Adj() =>
         JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.map-adjudications.json")));
 

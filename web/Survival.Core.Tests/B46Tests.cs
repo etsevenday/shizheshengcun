@@ -13,8 +13,6 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B46Tests : TestBase
 {
-    private static readonly GameConfig CfgOff = LoadConfig(false);
-    private static readonly GameConfig CfgV2 = LoadConfig(true);
 
     private static void Pause(GameState s)
     {
@@ -177,14 +175,13 @@ public class B46Tests : TestBase
         Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.StatAlert));
     }
 
-    // ───────────── Q534 有未结束子行动时的旧接敌／固定战原因 ─────────────
+    // ───────────── Q534 有未结束子行动时的接近／固定战原因（B41e3 起只有新版敌踪入口，旧接敌已删） ─────────────
 
     [Test]
     public void Q534_A01_A02_LockedPausedWithSub_ApproachAndFixedSay_NotFinished()
     {
-        var off = new GameEngine(CfgOff);
+        var off = E;
         var s = Camping(off);
-        Assert.That(off.CardsV2(s), Is.False, "旧接敌／固定战入口");
         StartOk(off, s, GameEngine.Deploy(off.CreateItems(s, "folding_stove", 1, ItemInstance.Carried).Single()));
         Pause(s);
         off.DebugGive(s, "clean_water", 1);
@@ -209,11 +206,13 @@ public class B46Tests : TestBase
         Pause(s2);
         off.DebugGive(s2, "clean_water", 1);
         StartOk(off, s2, ActionRequest.UseItem("clean_water"));
-        Assert.That(off.CanApproach(s2, 999), Is.EqualTo("行动暂停中，先结束或取消行动"));
-        Assert.That(off.CanEngageFixed(s2), Is.EqualTo("行动暂停中，先结束或取消行动"));
+        Assert.That(off.CanApproach(s2, 999), Is.EqualTo("当前行动还没结束。"), "新版：子行动未结束一律先说这句");
+        Assert.That(off.CanEngageFixed(s2), Is.EqualTo("当前行动还没结束。"));
+        while (s2.Sub != null) off.Advance(s2);
+        Assert.That(off.CanApproach(s2, 999), Is.EqualTo("行动暂停中，请先继续或退出行动。"));
 
         // 读档后同真实状态
-        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), CfgOff);
+        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
         Assert.That(off.CanApproach(t, 999), Is.EqualTo("行动暂停中，请先继续行动。"));
     }
 
@@ -359,15 +358,12 @@ public class B46Tests : TestBase
         return s;
     }
 
-    [TestCase(false, false)]
-    [TestCase(false, true)]
-    [TestCase(true, false)]
-    [TestCase(true, true)]
-    public void Q536_A01_A02_AllDone_ResumeCompletesNow_NoExtraTimeOrCost(bool locked, bool v2)
+    [TestCase(false)]
+    [TestCase(true)]
+    public void Q536_A01_A02_AllDone_ResumeCompletesNow_NoExtraTimeOrCost(bool locked)
     {
-        var e = new GameEngine(v2 ? CfgV2 : CfgOff);
+        var e = E;
         var s = CookWait(e, locked, out var fac, out var pot);
-        Assert.That(e.CardsV2(s), Is.EqualTo(v2));
         e.Advance(s);   // 等待自己的一段
         Pause(s);
         var own = s.Main!.ElapsedMinutes;
@@ -399,7 +395,7 @@ public class B46Tests : TestBase
     [Test]
     public void Q536_A02_ProductTakenAway_ReceiptStillCounts_NewProcessNotAdded()
     {
-        var e = new GameEngine(CfgOff);
+        var e = E;
         var s = CookWait(e, false, out var fac, out var pot);
         Pause(s);
         var pid = s.Main!.CookTargets.Single();
@@ -416,11 +412,10 @@ public class B46Tests : TestBase
         Assert.That(s.Log.Last().Text, Does.Contain("火堆1项加工全部完成"), "目标数取原绑定");
     }
 
-    [TestCase(false)]
-    [TestCase(true)]
-    public void Q536_A03_NotAllDone_EmptyOrMissing_NotTreatedAsDone(bool v2)
+    [Test]
+    public void Q536_A03_NotAllDone_EmptyOrMissing_NotTreatedAsDone()
     {
-        var e = new GameEngine(v2 ? CfgV2 : CfgOff);
+        var e = E;
         // 部分完成（目标仍在加工）：不冒充，继续照原规则运行
         var s = CookWait(e, false, out var fac, out _);
         Pause(s);
@@ -443,7 +438,7 @@ public class B46Tests : TestBase
         Assert.That(e.CookWaitAllDone(s3, s3.Main), Is.False);
         var r3 = e.Resume(s3);
         Assert.That(s3.Log.Any(l => l.Text.StartsWith("等待加工结束：")), Is.False);
-        if (v2) Assert.That(r3.Reason, Is.EqualTo(GameEngine.ResumeCookAllDone), "空绑定沿原拒绝");
+        Assert.That(r3.Reason, Is.EqualTo(GameEngine.ResumeCookAllDone), "空绑定沿原拒绝");
 
         // 更高锁（未结束子行动）先拦
         var s4 = CookWait(e, false, out var fac4, out _);
@@ -460,7 +455,7 @@ public class B46Tests : TestBase
     [Test]
     public void Q536_A04_ReadOnly_NoClear_OldSaveStillExitable_AndCompletesZeroTime()
     {
-        var e = new GameEngine(CfgOff);
+        var e = E;
         var s = CookWait(e, false, out var fac, out _);
         Pause(s);
         var pid = s.Main!.CookTargets.Single();
@@ -475,14 +470,14 @@ public class B46Tests : TestBase
         Assert.That(s.Main, Is.Not.Null);
 
         // Q524 旧档在办等待：读回不锁、仍可退出；全完成后继续同样 0 新增时间
-        var old = SaveSerializer.Deserialize(AsSchema48(s), CfgOff);
+        var old = SaveSerializer.Deserialize(AsSchema48(s), Cfg);
         Assert.That(old.Main!.NoExit, Is.False);
         Assert.That(e.ActionProgress(old)!.Exit, Is.EqualTo(ExitKind.StopAtBoundary), "退出能力不改");
         var t0 = old.GameMinute;
         Assert.That(e.Resume(old).Ok, Is.True);
         Assert.That((old.Main, old.GameMinute), Is.EqualTo(((ActionState?)null, t0)));
         // 读回完成后的档不再重做
-        var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(old), CfgOff);
+        var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(old), Cfg);
         Assert.That((again.Main, e.Resume(again).Ok), Is.EqualTo(((ActionState?)null, false)));
     }
 }

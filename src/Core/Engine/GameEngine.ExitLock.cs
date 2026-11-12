@@ -37,7 +37,7 @@ namespace Survival.Core.Engine
     /// <summary>
     /// B41c2 开工 5 分钟的行动不可中途退出（S01「B41c Q506」「B41c2 Q514—Q519」「B41c2 Q523—Q527」，S07、S11、S14 同批节，R05 本批验收，
     /// 逐字稿「B41c2 Q514—Q519 锁定行动继续与结果逐字稿」「B41c2 Q523—Q527 例外、拒绝与帮助逐字稿」；开发记录 B41c2）。
-    /// 不挂新版敌踪开关：认定、拒绝退出、继续复核与自动中止对所有行动生效；撤退离地保留等新版敌踪才有的分支仍只在开关开时出现。
+    /// 认定、拒绝退出、继续复核与自动中止对所有行动生效（B41e3 起新版敌踪唯一流程，撤退离地保留等分支常开）。
     /// </summary>
     public sealed partial class GameEngine
     {
@@ -112,7 +112,7 @@ namespace Survival.Core.Engine
             if (s.Battle != null) return LockedResumeVerdict.Higher("战斗中：请使用战斗指令");
             if (s.Sub != null) return LockedResumeVerdict.Higher(LockedSubRunning);
             if (a.Type == ActionType.Travel) return LockedResumeVerdict.Ok();   // Q474：已开始的移动只验通用状态
-            if (CardsV2(s) && a.RetreatKept)
+            if (a.RetreatKept)
             {
                 if (a.StartGeneration is int g && DungeonGenerationAt(s, a.SourceLocation) != g) return LockedResumeVerdict.Perm(LockedPlaceGone);
                 if (s.CurrentLocation != a.SourceLocation || s.CurrentZone != (a.StartZone ?? ExteriorZone))
@@ -242,7 +242,7 @@ namespace Survival.Core.Engine
         /// <summary>Q523：此刻按例外可拾取（或拾取请求会触发自动中止）的原工具实例；不适用为 null。只读。</summary>
         public ItemInstance? LockedPickupTool(GameState s)
         {
-            if (s.Encounter != null || s.Expedition?.IsExtracting == true) return null;
+            if (s.Expedition?.IsExtracting == true) return null;
             var v = LockedResume(s);
             if (v.PickupToolId is not int id || (v.Kind != LockedResumeKind.Temporary && v.Kind != LockedResumeKind.Permanent)) return null;
             return FindItem(s, id) is ItemInstance t && t.Owner == s.Ground ? t : null;
@@ -337,7 +337,7 @@ namespace Survival.Core.Engine
         {
             // Q518-A02：已丢失或改属别人的预留不在本次释放之列（不补造、不解别人的标记）
             a.ReservedItemIds.RemoveAll(id => FindItem(s, id) is not ItemInstance i || i.ReservedBy != a.ActionId);
-            var kept = a.RetreatKept && CardsV2(s);
+            var kept = a.RetreatKept;
             var src = kept ? KeptSources(s, a) : default;
             var groundName = ZoneName(s, s.Ground);
             var hadMaterials = a.ReservedItemIds.Count > 0;

@@ -62,7 +62,6 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return "本局已结束";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (s.Battle != null) return "战斗中不能投料";
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (s.Main != null || s.Sub != null) return "行动进行中，先完成或取消再投料";
             if (RecipeUnknownReason(s, rc) is string unknown) return unknown;
             foreach (var kv in rc.MinSkills)
@@ -308,7 +307,7 @@ namespace Survival.Core.Engine
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             if (s.Progress.Dead) return ActionResult.Fail("本局已结束");
-            if (s.Battle != null || s.Encounter != null) return ActionResult.Fail("战斗或敌踪待处理时不能操作");
+            if (s.Battle != null) return ActionResult.Fail("战斗或敌踪待处理时不能操作");
             var place = s.Ground;
             var fac = FacOf(s, place);
             var b = StationBatchHere(s, stationId);
@@ -332,7 +331,7 @@ namespace Survival.Core.Engine
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             if (s.Progress.Dead) return ActionResult.Fail("本局已结束");
-            if (s.Battle != null || s.Encounter != null) return ActionResult.Fail("战斗或敌踪待处理时不能操作");
+            if (s.Battle != null) return ActionResult.Fail("战斗或敌踪待处理时不能操作");
             var place = s.Ground;
             var fac = FacOf(s, place);
             var waiting = StationWaitingHere(s, stationId);

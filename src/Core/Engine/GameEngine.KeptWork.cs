@@ -8,7 +8,6 @@ namespace Survival.Core.Engine
     /// <summary>
     /// B41b 暂停主行动的「继续行动」完整只读重验与战后撤退离地保留行动的分来源返还文案
     /// （R05「B41b Q463—Q471」Q465、Q466、Q471，「Q472—Q476」Q474—Q476；逐字稿「B41b Q463—Q471 续接与返还逐字稿」；开发记录 B41b）。
-    /// 全部挂在 <see cref="CardsV2"/> 后面：开关关时继续只验原有通用状态、退出沿原返还当前地面的规则与原句。
     /// </summary>
     public sealed partial class GameEngine
     {
@@ -22,7 +21,7 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 「继续行动」现在为什么不能继续（null 为可以）。检查与正式提交共用这一判定，只读：不推进时间、不扣物、不占新库存、不重抽、不改预留与原暂停原因。
         /// 新版敌踪下按 Q465 的顺序取第一条实际原因：通用状态 → 原地点／区域与地牢世代（仅撤退离地保留的行动）→ 原目标、本行动预留与工具 → 该用途开工条件；
-        /// 已经开始的移动按 Q474 只验通用状态。开关关时只验原有通用状态。
+        /// 已经开始的移动按 Q474 只验通用状态。
         /// </summary>
         public string? ResumeBlockReason(GameState s)
         {
@@ -30,12 +29,11 @@ namespace Survival.Core.Engine
             if (DialogueLocked(s)) return DialogueLockedReason;
             var a = s.Main;
             if (a == null || a.Status != ActionStatus.Paused) return "没有暂停中的行动";
-            var v2 = CardsV2(s);
             // B41b：敌方接近打断后，战斗中不能继续原行动（战后按当前合法条件继续或退出）
-            if (v2 && s.Battle != null) return "战斗中：请使用战斗指令";
-            // B41c（R05 Q491）：新版下已开始的移动有未结束子行动也统一用「当前行动还没结束。」
-            if (s.Sub != null) return v2 ? "当前行动还没结束。" : "请等待当前补给或维护完成";
-            if (!v2 || a.Type == ActionType.Travel) return null;   // Q474：已开始的移动只验通用状态
+            if (s.Battle != null) return "战斗中：请使用战斗指令";
+            // B41c（R05 Q491）、B46（Q534）：子行动未结束（含已开始的移动）统一用「当前行动还没结束。」
+            if (s.Sub != null) return "当前行动还没结束。";
+            if (a.Type == ActionType.Travel) return null;   // Q474：已开始的移动只验通用状态
             if (KeptWorkResumeBlock(s, a) is string where) return where;
             return WorkResumeBlock(s, a);
         }
@@ -266,7 +264,7 @@ namespace Survival.Core.Engine
             return lead + KeptReturnClause(s, a, src, result) + after + (result ? "已耗时间保留。" : "已耗时间不退。");
         }
 
-        /// <summary>撤退离地保留、按 Q471 改写退出句的行动（新版敌踪下）。</summary>
-        private bool KeptExitApplies(GameState s, ActionState a) => CardsV2(s) && a.RetreatKept && !a.IsSub && KeptExitHasQ471Row(a);
+        /// <summary>撤退离地保留、按 Q471 改写退出句的行动。</summary>
+        private bool KeptExitApplies(GameState s, ActionState a) => a.RetreatKept && !a.IsSub && KeptExitHasQ471Row(a);
     }
 }

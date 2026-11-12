@@ -33,14 +33,13 @@ namespace Survival.Core.Engine
         /// 在当时所在地点地面照常校验五卡与负重；吃喝、用药、休息、接战等仍不行。
         /// </summary>
         public bool ExtractTidyAllowed(GameState s) =>
-            s.Main?.Type == ActionType.Extract && s.Sub == null && s.Battle == null && s.Encounter == null;
+            s.Main?.Type == ActionType.Extract && s.Sub == null && s.Battle == null;
 
         private ActionResult DoInstantOnce(GameState s, InstantRequest r)
         {
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
             // 战斗与敌踪待选时锁定一切实体操作（v0.5 §16）：装备与弹药走战斗指令
             if (s.Battle != null) return ActionResult.Fail("战斗中不能整理物品；换武器、装填与用药请用战斗指令");
-            if (s.Encounter != null) return ActionResult.Fail("发现敌踪：请先选择接敌或绕行");
             var here = s.Ground;
             switch (r.Kind)
             {

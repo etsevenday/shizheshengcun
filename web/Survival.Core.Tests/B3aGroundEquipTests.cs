@@ -150,17 +150,16 @@ public class B3aGroundEquipTests : BattleTestBase
         Assert.That(E.EquipBlocked(s, P0, spear.InstanceId, W1), Does.Contain("预留"));
         spear.ReservedBy = null;
 
-        // 地面操作条件：行动进行中、敌踪待选都不能从地面穿或把旧件放地（不借 Q42 放开）
+        // 地面操作条件：行动进行中不能从地面穿或把旧件放地（不借 Q42 放开）；B41e3 起敌踪卡在场不挡（旧“敌踪待选”锁随旧接敌流程删除）
         Start(s, ActionRequest.Wait(30));
         Assert.That(E.EquipBlocked(s, P0, spear.InstanceId, W1), Does.Contain("行动进行中，不能从地面穿上"));
         Assert.That(E.EquipBlocked(s, P0, kitchen.InstanceId, W1), Does.Contain("已装备在武器Ⅱ"));
         E.Cancel(s);
-        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = { }, Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.EquipBlocked(s, P0, spear.InstanceId, W1), Does.Contain("发现敌踪"));
+        s.SuppressEnemyApproach = true;
+        E.DebugSpawnEnemy(s, "shambler", s.CurrentLocation);
+        Assert.That(E.EquipBlocked(s, P0, spear.InstanceId, W1), Is.Null, "敌踪卡在场地面穿戴可以");
         var carriedSpear = Give(s, "metal_spear");
-        Assert.That(E.EquipBlocked(s, P0, carriedSpear.InstanceId, W1), Is.Null, "敌踪待选时随身→穿戴仍可");
-        Assert.That(E.EquipBlocked(s, P0, carriedSpear.InstanceId, W2, oldToGround: true), Does.Contain("发现敌踪"), "旧件放地也要地面条件");
-        s.Encounter = null;
+        Assert.That(E.EquipBlocked(s, P0, carriedSpear.InstanceId, W1), Is.Null, "随身→穿戴可以");
 
         // 其他地点、他人身上的不算当前地面
         var away = E.CreateItems(s, "wooden_spear", 1, "field").Single();

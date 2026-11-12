@@ -73,12 +73,18 @@ public class B41aVigilanceTests : TestBase
         Assert.That(E.VigilanceOf(Cfg.Story.TutorialBattle.EnemyId, EnemyCardIdentity.Tutorial), Is.EqualTo(1));
     }
 
+    /// <summary>B41e3：新版敌踪上线、开关删除；旧绕行与战后全地点保护的配置项随旧流程一起删掉，潜行不再标“只在新版生效”。</summary>
     [Test]
-    public void Switch_DefaultsOff()
+    public void B41e3_SwitchAndBypassConfigRemoved()
     {
-        Assert.That((bool)Raw()["encounters"]!["enemyCardsV2"]!, Is.False, "B41a—B41e 挂在关着的开关后面，B41f 才打开");
-        Assert.That(LoadConfig(false).Encounters.EnemyCardsV2, Is.False);
-        Assert.That(LoadConfig(true).Encounters.EnemyCardsV2, Is.True);
+        var raw = Raw();
+        var enc = (JObject)raw["encounters"]!;
+        foreach (var k in new[] { "enemyCardsV2", "bypassMinutes", "bypassRateCategory", "postExitRandomEncounterGraceMinutes" })
+            Assert.That(enc.ContainsKey(k), Is.False, k);
+        Assert.That(((JObject)raw["actions"]!["rateAliases"]!).ContainsKey("bypass"), Is.False);
+        var stealth = (JObject)((JArray)raw["skills"]!).First(x => (string?)x["id"] == "stealth");
+        Assert.That(stealth.ContainsKey("enemyCardsV2Only"), Is.False);
+        Assert.That(E.SkillsInPlay.Select(k => k.Id), Does.Contain("stealth"), "潜行是正式的第 16 门");
     }
 
     private static JObject Raw() => JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));

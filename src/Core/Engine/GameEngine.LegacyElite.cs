@@ -39,35 +39,13 @@ namespace Survival.Core.Engine
         public WorldEnemy? EliteEnemy(GameState s, string id) =>
             s.Population.Elites.TryGetValue(id, out var st) && st.WorldId is int wid && FindWorldEnemy(s, wid) is WorldEnemy w && w.FixedOf == ElitePrefix + id ? w : null;
 
-        public string? CanEngageElite(GameState s, string id)
-        {
-            if (CardsV2(s)) return CanApproachCard(s, EliteCardKey(id));   // B41a：新版敌踪走卡的主动接近
-            var c = EliteConfig(id);
-            if (c == null) return "没有这项挑战";
-            var why = EngageBlocked(s);
-            if (why != null) return why;
-            if (s.CurrentLocation != c.NodeId) return $"要在{LocName(c.NodeId)}接战";
-            if (!EliteVisible(s, c)) return s.Population.Elites.TryGetValue(id, out var st) && st.Settled ? "本局已挑战成功" : "挑战还没有出现";
-            if (EliteEnemy(s, id) is WorldEnemy w && w.Engaged) return "这个敌人正在交战";
-            return null;
-        }
+        /// <summary>主动接近可选强敌：即 <see cref="CanApproachCard"/>（卡键 elite:挑战号）。</summary>
+        public string? CanEngageElite(GameState s, string id) => CanApproachCard(s, EliteCardKey(id));
 
         /// <summary>
-        /// 明确接战：第一次接战时建唯一世界敌人并锁定特殊掉落抽签（只抽这一次，撤退/读档不重抽）；之后再接战用同一只（保留 HP）。
-        /// 单独入场（不受 C 截掉、不附同地敌人），受惊按主动接近；本场禁增援。
+        /// 主动接近可选强敌：即 <see cref="ApproachCard"/>（第一次实际处理时才建唯一世界敌人并锁定特殊掉落抽签；之后用同一只、保留 HP；单独入场，本场禁增援）。
         /// </summary>
-        public ActionResult EngageElite(GameState s, string id, string? requestId = null)
-        {
-            if (CardsV2(s)) return ApproachCard(s, EliteCardKey(id), requestId);   // B41a：旧入口转到卡的主动接近
-            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            var why = CanEngageElite(s, id);
-            if (why != null) return ActionResult.Fail(why);
-            RememberRequest(s, requestId);
-            var c = EliteConfig(id)!;
-            var w = EnsureEliteEnemy(s, c);
-            StartBattle(s, new List<WorldEnemy> { w }, false, "可选强敌挑战", FearApproach, fixedKey: ElitePrefix + id);
-            return ActionResult.Success();
-        }
+        public ActionResult EngageElite(GameState s, string id, string? requestId = null) => ApproachCard(s, EliteCardKey(id), requestId);
 
         /// <summary>
         /// 这处挑战的唯一世界敌人：第一次实际处理时才建，并锁定特殊掉落抽签（只抽这一次，撤退／读档／重复处理不重抽）；之后都用同一只。
@@ -121,15 +99,6 @@ namespace Survival.Core.Engine
                 st.Noticed = true;
                 Emit(s, GameEventKind.Info, $"可选强敌告示：{LocName(c.NodeId)}有{_enemies[c.EnemyId].Name}出没（单局一次的可选挑战；不接也不影响行路、资源与主线）。");
             }
-        }
-
-        /// <summary>挑战告示上的说明：特殊掉落与抽签状态、是否已接过战（HP）。</summary>
-        public string EliteNote(GameState s, LegacyEliteConfig c)
-        {
-            var parts = new List<string> { "可选强敌 · 单局一次" };
-            parts.Add(c.RewardChance >= 1 ? $"特殊掉落{ItemName(c.RewardItemId)}×{c.RewardCount}" : $"特殊掉落{ItemName(c.RewardItemId)}×{c.RewardCount}（{Fmt.Pct(c.RewardChance)}，首次接战时抽定）");
-            if (EliteEnemy(s, c.Id) is WorldEnemy w) parts.Add($"已交过手：健康{Fmt.N(w.Hp)}/{Fmt.N(_enemies[c.EnemyId].Hp)}");
-            return string.Join(" · ", parts);
         }
 
         /// <summary>开发入口：记营区登记、传送到某处挑战地点（按实际到达）并把当地探索度拨到 100%，让告示出现。</summary>

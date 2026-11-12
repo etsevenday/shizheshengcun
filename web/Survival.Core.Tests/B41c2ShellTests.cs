@@ -69,7 +69,7 @@ public class B41c2ShellTests
         Assert.That(css, Does.Contain(".pause-scrim.pick-open { bottom: calc(50% + var(--sh-gap) / 2); }"));
         Assert.That(Web("Components/CentralProgress.razor"), Does.Contain("<div class=\"cp-note cp-resume warn-text\">"));
         Assert.That(Web("Components/PauseLayer.razor"), Does.Contain("e.LockedToolPickupOpen(s, pickTool) ? \"pick-open\""));
-        Assert.That(Web("Components/EnemyDetail.razor"), Does.Contain("@(lead.EndsWith(\"。\") ? \"\" : \"；\")ESC 不能关掉战斗"));
-        Assert.That(Web("Components/LocationStrip.razor"), Does.Contain("GameEngine.LockedMainPaused(s) ? e.CanApproach(s, wid)"));   // B46（Q534）：有子行动时也与真实拒绝同源
+        // B41e3：旧常驻敌人详情（含「ESC 不能关掉战斗」脚注）与旧接近按钮随旧流程删除；新版敌踪详情脚注与禁用原因见 B41e1ShellTests、B46ShellTests
+        Assert.That(Web("Components/EnemyDetail.razor"), Does.Contain("<div class=\"under\">@GameEngine.EnemyCardFootnote</div>"));
     }
 }

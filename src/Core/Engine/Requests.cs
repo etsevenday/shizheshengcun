@@ -59,8 +59,6 @@ namespace Survival.Core.Engine
         public static ActionRequest UseItem(string itemId) => new ActionRequest { Type = ActionType.Use, TargetId = itemId };
         /// <summary>给同行者吃喝一份（B28）：与主角食饮同一 5 分钟事务，开始时原子扣一份并给效果。</summary>
         public static ActionRequest FeedCompanion(FeedRequest f) => new ActionRequest { Type = ActionType.Use, Feeding = f, RequestId = f.RequestId };
-        /// <summary>绕行当前敌踪（固定10分钟，按 travel 消耗）。</summary>
-        public static ActionRequest Bypass() => new ActionRequest { Type = ActionType.Bypass };
         /// <summary>饱饱吞噬融合指定的活性物质实例（R07 §4）。</summary>
         public static ActionRequest Fuse(int instanceId) => new ActionRequest { Type = ActionType.Fuse, InstanceId = instanceId };
         /// <summary>等待当前地点火堆里全部当前可加工内容完成（S11 §9）：时长由目标动态决定，按 wait 消耗。</summary>

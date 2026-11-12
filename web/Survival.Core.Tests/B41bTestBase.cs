@@ -4,11 +4,11 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41b 新版敌踪接近时限、到期开战、撤退保护与战后撤退离地保留的公共工具（开关开的配置，见 <see cref="B41aTestBase"/>）。
+/// B41b 新版敌踪接近时限、到期开战、撤退保护与战后撤退离地保留的公共工具（B41e3 起新版敌踪是唯一流程，见 <see cref="B41aTestBase"/>）。
 /// </summary>
 public abstract class B41bTestBase : B41aTestBase
 {
-    /// <summary>开关开的新局：第2日白天在农野荒地、冻结刷新巡游、清掉原有敌人，放下给定敌人（容量 C）。</summary>
+    /// <summary>新局：第2日白天在农野荒地、冻结刷新巡游、清掉原有敌人，放下给定敌人（容量 C）。</summary>
     protected GameState Field(int capacity, params string[] enemyIds)
     {
         var s = V2Field();

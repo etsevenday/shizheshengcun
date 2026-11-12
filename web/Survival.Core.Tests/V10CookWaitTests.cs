@@ -329,7 +329,10 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(E.RequestExit(b).Reason, Does.Contain("战斗"));
     }
 
-    /// <summary>R03-A12：首次强制教学首战 K=1；撤退后主动重接同一敌人 K=0.5；同敌、HP 保留，教学奖励唯一不变。</summary>
+    /// <summary>
+    /// R03-A12（B41b R05 Q421 起按实际入战方式取受惊系数，B41e3 起是唯一流程）：到荒地只出教学卡；教学卡到期由敌方开战 K=1；
+    /// 撤退后主动重接同一敌人 K=0.5；同敌、HP 保留，教学奖励唯一不变。
+    /// </summary>
     [Test]
     public void R03_A12_TutorialK1_ReapproachK05()
     {
@@ -338,12 +341,18 @@ public class V10CookWaitTests : BattleTestBase
         Start(s, ActionRequest.Travel("field"));
         for (var i = 0; i < 200 && s.Main != null; i++) { var r = E.Advance(s); if (r.Status == SegmentStatus.Paused) E.Resume(s); }
         ReadDialogues(s);
+        Assert.That(s.Battle, Is.Null, "到达只出教学卡");
+        var tid = s.Story.TutorialEnemyId!.Value;
+        var timer = s.EnemyCards.Timers[GameEngine.SingleCardKey(tid)];
+        timer.Left = 0;
+        timer.DueMinute = s.GameMinute;
+        Assert.That(E.CheckEnemyApproach(s), Is.True, "教学卡到期由敌方开战");
+        ReadDialogues(s);
         var b = s.Battle!;
         Assert.That(b.Tutorial, Is.True);
-        Assert.That(b.Context, Is.EqualTo(GameEngine.FearTutorial));
-        Assert.That(Cfg.Panic.Fear.Factor(GameEngine.FearTutorial), Is.EqualTo(1.0));
-        Assert.That(b.FearChance, Is.EqualTo(E.FearChance(E.Enemy("shambler").FearChance, b.FearMorale, GameEngine.FearTutorial)).Within(1e-12));
-        var tid = s.Story.TutorialEnemyId!.Value;
+        Assert.That(b.Context, Is.EqualTo(GameEngine.FearEncounter));
+        Assert.That(Cfg.Panic.Fear.Factor(GameEngine.FearEncounter), Is.EqualTo(1.0));
+        Assert.That(b.FearChance, Is.EqualTo(E.FearChance(E.Enemy("shambler").FearChance, b.FearMorale, GameEngine.FearEncounter)).Within(1e-12));
         for (var i = 0; i < 20 && s.Battle != null && !E.AwaitingPlayer(s); i++) E.BattleStep(s);
         s.Battle!.Enemies[0].Hp = 2.0;
         Force(s, Below(0.0001));
@@ -374,6 +383,7 @@ public class V10CookWaitTests : BattleTestBase
         ReadDialogues(s);
         Start(s, ActionRequest.Travel("field"));
         for (var i = 0; i < 200 && s.Main != null; i++) { var r = E.Advance(s); if (r.Status == SegmentStatus.Paused) E.Resume(s); }
+        ApproachTutorial(s);
         ReadDialogues(s);
         var tid = s.Story.TutorialEnemyId!.Value;
         for (var i = 0; i < 20 && s.Battle != null && !E.AwaitingPlayer(s); i++) E.BattleStep(s);

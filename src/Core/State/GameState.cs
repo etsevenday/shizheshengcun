@@ -7,7 +7,7 @@ namespace Survival.Core.State
     public enum StatId { Health, Satiety, Hydration, Energy, Wakefulness, Morale }
 
     /// <summary>
-    /// 角色主行动。Butcher 处理动物尸体（v0.5 §14）；Repair 工具维护（v0.6 §05，走配方）；Bypass 绕行敌踪（v0.6 §15，固定 10 分钟按 travel 消耗）；Fuse 饱饱吞噬融合活性物质（R07 §4，固定 5 分钟按 wait 消耗）；
+    /// 角色主行动。Butcher 处理动物尸体（v0.5 §14）；Repair 工具维护（v0.6 §05，走配方）；Bypass 旧版绕行敌踪（只存在于旧档，读档采纳新版敌踪时取消，B41e3 起不再产生）；Fuse 饱饱吞噬融合活性物质（R07 §4，固定 5 分钟按 wait 消耗）；
     /// WaitCook 等待本火堆当前全部可加工内容完成（S11 §9、S13 §5，按 wait 消耗，时长由目标动态决定）；
     /// Salvage 拆解装备（A05 §5，B4 H9：走配方 salvage_equipment，15 基础分钟按 craft 消耗，产物落当前地面）。
     /// </summary>
@@ -54,7 +54,7 @@ namespace Survival.Core.State
         /// "44" 起随机资源点掉落按点持久化：资源点状态带可空的本局抽定记录 ResourceState.LootDraw（策划答复 Q271，开发计划 v0.9 B27c）。
         /// "45" 起陶窑与固定净水台多批排队：被动批次带排队标记 StationBatch.Queued，同一座工坊的批次按列表先后为队列顺序（策划答复 Q380，开发计划 B32e）。
         /// "46" 起新版敌踪卡模型：随机组卡与采纳标记 GameState.EnemyCards、世界敌人所属组 WorldEnemy.GroupId、战斗所属卡 BattleState.CardKey
-        /// （R05 文首 Q342 定稿与 Q425、Q436—Q438，开发记录 B41a；开关 encounters.enemyCardsV2 关着时只补空结构）。
+        /// （R05 文首 Q342 定稿与 Q425、Q436—Q438，开发记录 B41a）。
         /// "47" 起敌踪接近时限与撤退保护 EnemyCardsState.Timers、行动的敌方接近原因与战后撤退离地保留标记（ActionState.PauseNote、RetreatKept 等）、
         /// 开工来源 ActionState.ReserveSources、暂存工作 GameState.StashedWork（R05 Q416、Q439—Q443、Q463—Q476，开发记录 B41b；46→47 只补默认值）。
         /// "48" 起小队队长 GameState.SquadLeader、潜行行动快照 ActionState.Stealth、躲避隐藏与种群归属 WorldEnemy.EvadeHiddenUntil／PopAccount、
@@ -217,7 +217,7 @@ namespace Survival.Core.State
         public ActionState? StashedWork { get; set; }
 
         /// <summary>
-        /// B41c 小队队长（R05 Q342／R08；开关 encounters.enemyCardsV2）：同行人员 ID；null = 主角（旧档与开关关着时都为 null）。
+        /// B41c 小队队长（R05 Q342／R08）：同行人员 ID；null = 主角（旧档读入为 null）。
         /// 队长死亡、离队或不再同行时立即改回主角。
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -246,9 +246,13 @@ namespace Survival.Core.State
         public int SpawnNextCheck { get; set; }
         /// <summary>下次巡游检查的绝对分钟（每180分钟）。</summary>
         public int PatrolNextCheck { get; set; }
-        /// <summary>随机接敌保护期截止（绕行/脱战后60分钟）；主动接敌不受限。</summary>
+        /// <summary>
+        /// 旧版随机接敌保护期截止（旧版绕行／脱战后写入）。B41e3 起不再写入；旧档已生效的历史保护按原截止生效到期（R05 Q438：期内不形成随机组卡、敌方不主动开战）。
+        /// </summary>
         public int EncounterGraceUntil { get; set; }
-        /// <summary>探索/清理完成后待玩家选择“接敌/绕行”的敌踪；没有为 null。</summary>
+        /// <summary>
+        /// 旧版“待玩家选择接敌／绕行”的敌踪（只存在于旧档）。B41e3 起不再产生；读档时 <see cref="Engine.GameEngine.AdoptEnemyCards"/> 把它转成组卡并清空。
+        /// </summary>
         public PendingEncounter? Encounter { get; set; }
         /// <summary>B41a 新版敌踪卡模型（随机组卡、是否已采纳新版）；旧档读入为空结构、ModelVersion 0。</summary>
         public EnemyCardsState EnemyCards { get; set; } = new EnemyCardsState();
@@ -1322,15 +1326,15 @@ namespace Survival.Core.State
         /// <summary>等待烹饪：已完成的绑定进程。</summary>
         public List<string> CookDone { get; set; } = new List<string>();
 
-        // ───── B41b 新版敌踪（R05 Q416、Q440、Q444、Q463—Q472；开关 encounters.enemyCardsV2，关着时全部保持默认值） ─────
+        // ───── B41b 新版敌踪（R05 Q416、Q440、Q444、Q463—Q472） ─────
 
         /// <summary>敌方接近打断时在开战瞬间快照的暂停原因字段「{敌踪名}主动接近」（取不到名为「敌人主动接近」，Q444、Q470）；其他暂停为 null。</summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string? PauseNote { get; set; }
-        /// <summary>开工时所在区（外部区／安全屋屋内）；B41b 前开工或开关关着为 null，按外部区。</summary>
+        /// <summary>开工时所在区（外部区／安全屋屋内）；B41b 前开工（旧档）为 null，按外部区。</summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string? StartZone { get; set; }
-        /// <summary>开工时所在地牢的世代（不在地牢或开关关着为 null）。</summary>
+        /// <summary>开工时所在地牢的世代（不在地牢或旧档为 null）。</summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public int? StartGeneration { get; set; }
         /// <summary>Q440／Q463：已暂停后因战斗撤退离开原地点而保留。退出按开工来源返还（Q466），之后走回原处也不改；继续成功也不清。</summary>
@@ -1436,7 +1440,7 @@ namespace Survival.Core.State
         Discovery, Hazard, Alert, Death, SevenDay, NewDay, FireOut, Info,
         /// <summary>设施自动加工完成（不暂停、不替换角色主行动）。</summary>
         FacilityDone,
-        /// <summary>探索/清理后发现敌踪，等待接敌或绕行（v0.6 §15）。</summary>
+        /// <summary>敌踪事件：探索／清理后形成随机组卡、敌踪到期开战等（v0.6 §15 起；B41e3 起旧版“等待接敌或绕行”已删）。</summary>
         Encounter,
         /// <summary>战斗事件：开始、指令结果、敌方行动、轮末与结束（v0.5 §16）。</summary>
         Battle,

@@ -5,7 +5,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41c 存档 48、潜行配置与第 16 门潜行（R05 Q342、R01；开关 encounters.enemyCardsV2）。
+/// B41c 存档 48、潜行配置与第 16 门潜行（R05 Q342、R01；B41e3 起开关已删）。
 /// </summary>
 public class B41cSchemaTests : B41cTestBase
 {
@@ -26,16 +26,7 @@ public class B41cSchemaTests : B41cTestBase
     }
 
     [Test]
-    public void SwitchOff_FifteenSkills_NoStealth()
-    {
-        var s = Off.NewGame(1);
-        Assert.That(s.Player.Skills.ContainsKey("stealth"), Is.False);
-        Assert.That(Off.SkillViews(s).Count, Is.EqualTo(15));
-        Assert.That(Off.SkillViews(s).Select(v => v.Name), Does.Not.Contain("潜行"));
-    }
-
-    [Test]
-    public void SwitchOn_SixteenthSkill_StealthLevel1()
+    public void NewGame_SixteenthSkill_StealthLevel1()
     {
         var s = E.NewGame(1);
         Assert.That(Stealth(s), Is.EqualTo((1, 0L)));
@@ -46,30 +37,31 @@ public class B41cSchemaTests : B41cTestBase
     }
 
     [Test]
-    public void SwitchOff_47To48_OnlyDefaults_Silent()
+    public void Schema47To48_OnlyDefaults_Silent()
     {
-        var s = LegacyField();
-        Off.DebugSpawnEnemy(s, "shambler", "field");
-        Assert.That(Off.Start(s, ActionRequest.Clear()).Ok, Is.True);
-        Off.Advance(s);
+        var s = V2Field();
+        E.DebugSpawnEnemy(s, "shambler", "field");
+        s.Locations["field"].ClearCharges = Math.Max(1, s.Locations["field"].ClearCharges);
+        Assert.That(E.Start(s, ActionRequest.Clear()).Ok, Is.True);
+        E.Advance(s);
         var rng = s.Rng.State;
         var log = s.Log.Count;
-        var t = SaveSerializer.Deserialize(AsSchema47(s), CfgOff);
+        var t = SaveSerializer.Deserialize(AsSchema47(s), CfgV2);
         Assert.That(t.SchemaVersion, Is.EqualTo("49"));
         Assert.That(t.SquadLeader, Is.Null, "队长为主角");
         Assert.That(t.EnemyCards.Appearances, Is.Empty);
         Assert.That(t.EnemyCards.StealthXpClaims, Is.Empty);
         Assert.That(t.WorldEnemies.All(w => w.EvadeHiddenUntil == null && w.PopAccount == null), Is.True);
         Assert.That(t.Main!.Stealth, Is.Null);
-        Assert.That(t.Player.Skills.ContainsKey("stealth"), Is.False, "开关关着不补第 16 门");
+        Assert.That(Stealth(t), Is.EqualTo((1, 0L)), "补第 16 门潜行 1 级");
         Assert.That(t.Log.Count, Is.EqualTo(log), "静默");
         Assert.That(t.Rng.State, Is.EqualTo(rng), "不抽随机");
         var once = SaveSerializer.Serialize(t);
-        Assert.That(SaveSerializer.Serialize(SaveSerializer.Deserialize(once, CfgOff)), Is.EqualTo(once), "幂等");
+        Assert.That(SaveSerializer.Serialize(SaveSerializer.Deserialize(once, CfgV2)), Is.EqualTo(once), "幂等");
     }
 
     [Test]
-    public void SwitchOn_47To48_AddsStealthLevel1_KeepsOtherSkills()
+    public void Schema47To48_AddsStealthLevel1_KeepsOtherSkills()
     {
         var s = V2Field();
         s.Player.Skills["athletics"] = new SkillState { Level = 4, Xp = 30 };
@@ -77,8 +69,10 @@ public class B41cSchemaTests : B41cTestBase
         Assert.That(t.SchemaVersion, Is.EqualTo("49"));
         Assert.That(Stealth(t), Is.EqualTo((1, 0L)), "补潜行 1 级 0 经验");
         Assert.That((t.Player.Skills["athletics"].Level, t.Player.Skills["athletics"].Xp), Is.EqualTo((4, 30L)), "已有技能不动");
-        // 已是 48 的档开关打开后读入（开关后开的情形）也补
-        var u = Off.NewGame(2);
+        // 开关关着时已是 48 的档（没有潜行、卡模型标记 0）在 B41e3 打开开关后读入也补
+        var u = E.NewGame(2);
+        u.Player.Skills.Remove("stealth");
+        u.EnemyCards.ModelVersion = 0;
         var v = SaveSerializer.Deserialize(SaveSerializer.Serialize(u), CfgV2);
         Assert.That(Stealth(v), Is.EqualTo((1, 0L)));
     }

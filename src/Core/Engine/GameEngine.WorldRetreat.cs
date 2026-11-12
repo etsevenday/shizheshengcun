@@ -85,9 +85,9 @@ namespace Survival.Core.Engine
             var text = $"全队退回{LocName(to)}（最近一次走来的地点；不另花时间、不收移动消耗、不算一次移动）";
             var seen = VisibleEnemiesAt(s, to).Where(w => !w.Engaged).ToList();
             if (seen.Count > 0)
-                // B41e2（Q446 ①【交开发方定】最小删词换词）：新版敌踪删「不会自动开战」与旧避开承诺，处理方式复用「主动接近／潜行接近／躲避」
+                // B41e2（Q446 ①【交开发方定】最小删词换词）：删旧「不会自动开战」与旧避开承诺，处理方式复用「主动接近／潜行接近／躲避」
                 text += $"；{LocName(to)}有敌踪：{string.Join("、", seen.GroupBy(w => w.EnemyId).Select(g => $"{_enemies[g.Key].Name}×{g.Count()}"))}"
-                    + (CardsV2(s) ? "（可以主动接近、潜行接近或躲避）" : "（可以接近，也可以避开；不会自动开战）");
+                    + "（可以主动接近、潜行接近或躲避）";
             return text;
         }
     }

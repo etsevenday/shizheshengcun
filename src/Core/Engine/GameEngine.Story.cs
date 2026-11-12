@@ -183,8 +183,8 @@ namespace Survival.Core.Engine
         // ───────────── 首战 ─────────────
 
         /// <summary>
-        /// 移动完成后（已落点并记访问）：第一次从营地到达荒地、且首战未胜利时，由保留游荡尸唯一触发一次教学首战（剧情情境 K=1）。
-        /// 重复到达、死亡、取消移动都不触发；之后撤退的同一敌人仍留在荒地，可以主动接近继续挑战。
+        /// 移动完成后（已落点并记访问）：第一次从营地到达荒地、且首战未胜利时，保留游荡尸作为教学敌踪卡现身（R05 Q421；不在到达时开战）。
+        /// 重复到达、死亡、取消移动都不触发；主动接近、潜行接近或敌方到期真正进入教学战时才播警告与引导（<see cref="TutorialBattleStarted"/>）。
         /// </summary>
         private void TryStartTutorialBattle(GameState s, ActionState travel)
         {
@@ -194,16 +194,9 @@ namespace Survival.Core.Engine
             if (travel.TargetId != tb.LocationId || travel.SourceLocation != tb.FromLocationId) return;
             st.TutorialTriggered = true;
             var w = st.TutorialEnemyId.HasValue ? FindWorldEnemy(s, st.TutorialEnemyId.Value) : null;
-            if (w == null || w.LocationId != tb.LocationId || w.Engaged || InCombatFlow(s)) return;
+            if (w == null || w.LocationId != tb.LocationId || w.Engaged || s.Battle != null) return;
+            // B41b（R05 Q421，S15 首战入口）：首次实到荒地只让原教学游荡尸作为敌踪卡现身，到达时不开战
             w.HiddenUntil = null;
-            // B41b（R05 Q421，S15 首战入口）：新版敌踪下首次实到荒地只让原教学游荡尸作为敌踪卡现身，到达时不开战；
-            // 主动接近、潜行接近或敌方到期真正进入教学战时才播饱饱警告与序章引导（TutorialBattleStarted）
-            if (CardsV2(s)) return;
-            StartBattle(s, new List<WorldEnemy> { w }, false, "首战", FearTutorial, tutorial: true);
-            // 首战建立并保存后先展示警告对白，读完才接受第一条战斗指令（R03 §7.1）
-            OpenDialogue(s, EventOf(DialogueTutorialArrive));
-            TutorialBattleGuide(s);   // Q128：首战教学上下文（原警告之后、首次行动结算之前）：PRO04 系统提示与饱饱“它过来了”
-            st.TutorialBattleId = s.Battle?.BattleId;
         }
 
         /// <summary>

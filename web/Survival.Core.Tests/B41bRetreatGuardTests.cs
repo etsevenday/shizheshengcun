@@ -4,7 +4,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41b 里程碑 4：同卡撤退保护（开关开；R05「Q416、Q421」末段、「B41b Q439—Q444」Q442、Q443；验收 Q416-A01 保护部分、Q442-A01、Q443-A01）。
+/// B41b 里程碑 4：同卡撤退保护（R05「Q416、Q421」末段、「B41b Q439—Q444」Q442、Q443；验收 Q416-A01 保护部分、Q442-A01、Q443-A01）。
 /// </summary>
 public class B41bRetreatGuardTests : B41bTestBase
 {

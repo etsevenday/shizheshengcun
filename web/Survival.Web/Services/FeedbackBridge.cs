@@ -90,7 +90,6 @@ public sealed class FeedbackBridge
         if (s.Progress.Dead) return s.Progress.Death?.Zombified == true ? "尸变结算" : "死亡结算";
         if (s.Battle != null)
             return $"战斗覆盖层（第{s.Battle.Round}轮，{(G.E.AwaitingPlayer(s) ? $"玩家行动，剩{s.Battle.PlayerAp}AP" : "敌方行动中")}{(G.BattleAction != null ? $"，预览{GameEngine.ActionName(G.BattleAction)}" : "")}{(G.BattleMenuOpen ? "，战斗菜单" : "")}）";
-        if (s.Encounter != null) return G.BattleMenuOpen ? "敌踪选择 · 菜单" : "敌踪选择（接敌/绕行）";
         if (G.SevenDayPending && s.Main == null) return "七日检查";
         if (G.DialogueLocked) return "人物对话（读完前输入锁定）";
         if (G.Panel != null)

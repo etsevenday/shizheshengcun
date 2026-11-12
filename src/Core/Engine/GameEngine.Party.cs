@@ -354,7 +354,6 @@ namespace Survival.Core.Engine
         {
             if (s.Progress.Dead) return "本局已结束";
             if (s.Battle != null) return "战斗中不能编队（战斗里改站位用“调整站位”）";
-            if (s.Encounter != null) return "先处理眼前的敌踪（接敌或绕行）";
             if (s.Main != null)
             {
                 if (s.Main.Type == ActionType.Travel) return "移动中不能编队";
@@ -383,11 +382,11 @@ namespace Survival.Core.Engine
             var party = RepairedFormation(s, s.FormationPreset).Where(id => id != "").ToList();
             if (members.Any(id => !party.Contains(id))) return "编队里有不在当前同行队伍里的人";
             if (party.Any(id => !members.Contains(id))) return "每名当前同行者都要有一个号位";
-            // B41c（R08 Q342）：开关开时可一起选小队队长（主角或编队里存活的同行者）；null = 不改
-            var v2Leader = leaderId != null && CardsV2(s);
-            if (v2Leader && (!members.Contains(leaderId!) || !SquadMemberValid(s, leaderId!))) return "队长已失效，请重新选择。";
+            // B41c（R08 Q342）：可一起选小队队长（主角或编队里存活的同行者）；null = 不改
+            var withLeader = leaderId != null;
+            if (withLeader && (!members.Contains(leaderId!) || !SquadMemberValid(s, leaderId!))) return "队长已失效，请重新选择。";
             if (slots.Select(x => x ?? "").SequenceEqual(s.FormationPreset)
-                && (!v2Leader || NormalLeader(leaderId!) == s.SquadLeader)) return "编队没有改动";
+                && (!withLeader || NormalLeader(leaderId!) == s.SquadLeader)) return "编队没有改动";
             return null;
         }
 
@@ -403,13 +402,9 @@ namespace Survival.Core.Engine
             RememberRequest(s, requestId);
             s.FormationPreset = slots.Select(x => x ?? "").ToList();
             s.FormationVersion++;
-            if (CardsV2(s))
-            {
-                // B41c（逐字稿 B41「队长与练习潜行」编队保存日志）：队长随编队一起提交，0 世界分钟
-                if (leaderId != null) s.SquadLeader = NormalLeader(leaderId);
-                Emit(s, GameEventKind.Info, "编队已保存：" + FormationText(s, s.FormationPreset) + "。小队队长：" + ActorDisplayName(s, SquadLeaderId(s)) + "。下一场战斗按此开局。");
-            }
-            else Emit(s, GameEventKind.Info, "编队已保存：" + FormationText(s, s.FormationPreset) + "（下一场战斗按此开局）。");
+            // B41c（逐字稿 B41「队长与练习潜行」编队保存日志）：队长随编队一起提交，0 世界分钟
+            if (leaderId != null) s.SquadLeader = NormalLeader(leaderId);
+            Emit(s, GameEventKind.Info, "编队已保存：" + FormationText(s, s.FormationPreset) + "。小队队长：" + ActorDisplayName(s, SquadLeaderId(s)) + "。下一场战斗按此开局。");
             return ActionResult.Success();
         }
 

@@ -7,7 +7,6 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// B41b 新版敌踪的接近时限（R05「Q416、Q421 接近时间与到期入战」「B41b Q439—Q444」；逐字稿「卡片、操作盘与倒计时」；开发记录 B41b）。
-    /// 全部挂在 <see cref="CardsV2"/> 后面：开关 encounters.enemyCardsV2 关着时不抽、不扣、不开战，旧版流程原样。
     /// - 计时卡：普通敌对单卡、随机组卡、固定战（含守卫、检查哨）、教学首战卡。可选强敌不倒计时（Q419），普通中立单卡不抽不计时（Q439），
     ///   首战未胜时教学卡以外的卡不抽不计时（Q421）。
     /// - 每次现身首次与队伍同地同区且可操作时，从 encounters.approachMinutes 等概率抽一次并保存；读档、刷新、巡游、离开返回、撤退都不重抽。
@@ -15,8 +14,8 @@ namespace Survival.Core.Engine
     /// </summary>
     public sealed partial class GameEngine
     {
-        /// <summary>这一局此刻要按 B41b 结算敌踪接近（新版敌踪、战斗开放、不是模拟／冻结的副本）。</summary>
-        private bool ApproachLive(GameState s) => CardsV2(s) && Config.CombatEnabled && !s.SuppressEnemyApproach;
+        /// <summary>这一局此刻要按 B41b 结算敌踪接近（战斗开放、不是模拟／冻结的副本）。</summary>
+        private bool ApproachLive(GameState s) => Config.CombatEnabled && !s.SuppressEnemyApproach;
 
         /// <summary>
         /// 这张卡按接近时限计时（Q416、Q419、Q421、Q439）：可选强敌、受首战门控的卡、普通中立单卡都不计时。
@@ -116,7 +115,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 敌踪接近的空闲边界（Q416 第 4 条），给壳层与测试在“战后回到非战斗”等时刻显式调用：抽时限，到期且合法就开一场。返回是否开了战。
-        /// 开关关着时什么都不做。
+        /// 模拟副本（SuppressEnemyApproach）或战斗关闭时什么都不做。
         /// </summary>
         public bool CheckEnemyApproach(GameState s) => EnemyApproachBoundary(s);
 
@@ -176,7 +175,7 @@ namespace Survival.Core.Engine
         public List<EnemyCardView> DueCardsHere(GameState s)
         {
             var list = new List<EnemyCardView>();
-            if (!CardsV2(s) || s.GameMinute < s.EncounterGraceUntil) return list;
+            if (s.GameMinute < s.EncounterGraceUntil) return list;
             foreach (var card in EnemyCardsHere(s))
             {
                 if (!CardTimed(card) || !(CardTimer(s, card.Key) is EnemyCardTimer t) || t.Left != 0) continue;
@@ -294,7 +293,7 @@ namespace Survival.Core.Engine
         private int? DungeonGenerationAt(GameState s, string locationId) =>
             DungeonAt(locationId) is string d ? (s.DungeonInstances.TryGetValue(d, out var inst) ? inst.Generation : 0) : (int?)null;
 
-        /// <summary>开工时记下所在区、地牢世代与每个预留批次的开工来源（真实物主或地面地点／区域）；只在新版敌踪下记（Q440、Q466）。</summary>
+        /// <summary>开工时记下所在区、地牢世代与每个预留批次的开工来源（真实物主或地面地点／区域）；B41e3 起所有新开工都记（Q440、Q466）。</summary>
         private void RecordWorkOrigin(GameState s, ActionState a)
         {
             a.StartZone = s.CurrentZone;
@@ -349,11 +348,11 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 战后撤退离地保留的原工作继续前的地点与世代校验（Q440）：原地牢世代失效「原行动地点已失效，无法继续。」，
-        /// 人不在原地点／区域「请返回{地点}后再继续{行动名}。」。其余工作不受这里限制；开关关时恒为 null。
+        /// 人不在原地点／区域「请返回{地点}后再继续{行动名}。」。其余工作不受这里限制。
         /// </summary>
         private string? KeptWorkResumeBlock(GameState s, ActionState a)
         {
-            if (!CardsV2(s) || !a.RetreatKept || a.Type == ActionType.Travel) return null;
+            if (!a.RetreatKept || a.Type == ActionType.Travel) return null;
             if (a.StartGeneration is int g && DungeonGenerationAt(s, a.SourceLocation) != g) return "原行动地点已失效，无法继续。";
             if (s.CurrentLocation != a.SourceLocation || s.CurrentZone != (a.StartZone ?? ExteriorZone))
                 return $"请返回{WorkPlaceName(s, a)}后再继续{a.Label}。";

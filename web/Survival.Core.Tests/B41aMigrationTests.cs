@@ -7,7 +7,8 @@ namespace Survival.Core.Tests;
 
 /// <summary>
 /// B41a 里程碑 2：存档 46 与旧档采纳新版敌踪卡模型（R05「Q425 旧档与持久化」、Q436、Q437；验收 Q425-A01 前半、Q436-A01 旧名单部分、Q437-A01）。
-/// 开关关着：45→46 只补空结构；开关开着：读档时采纳一次（旧绕行取消、旧待处理名单转组卡且动物还原单卡），幂等、不抽随机。
+/// 读档时采纳一次（旧绕行取消、旧待处理名单转组卡且动物还原单卡），幂等、不抽随机。B41e3 起开关已删，新版是唯一流程：
+/// 旧档（schema 45）与开关关着时写下的新 schema 档（卡模型标记 0）都在读档时采纳；旧版状态用 <see cref="B41aTestBase.LegacyField"/> 等直接摆出。
 /// </summary>
 public class B41aMigrationTests : B41aTestBase
 {
@@ -17,7 +18,7 @@ public class B41aMigrationTests : B41aTestBase
     {
         var s = LegacyField();
         UnlockCapacity(s, capacity);
-        foreach (var id in enemyIds) Off.DebugSpawnEnemy(s, id, "field");
+        foreach (var id in enemyIds) E.DebugSpawnEnemy(s, id, "field");
         s.Encounter = new PendingEncounter
         {
             LocationId = "field",
@@ -29,45 +30,10 @@ public class B41aMigrationTests : B41aTestBase
     }
 
     [Test]
-    public void NewGame_ModelVersionFollowsSwitch()
+    public void NewGame_ModelVersionIsV2()
     {
         Assert.That(GameState.CurrentSchema, Is.EqualTo("49"));
-        Assert.That(Off.NewGame(1).EnemyCards.ModelVersion, Is.EqualTo(0));
-        Assert.That(Off.CardsV2(Off.NewGame(1)), Is.False);
-        var s = E.NewGame(1);
-        Assert.That(s.EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2));
-        Assert.That(E.CardsV2(s), Is.True);
-        // 开关开着但存档还没采纳：仍按旧版
-        s.EnemyCards.ModelVersion = 0;
-        Assert.That(E.CardsV2(s), Is.False);
-    }
-
-    [Test]
-    public void SwitchOff_45To46_OnlyAddsStructure()
-    {
-        var s = WithEncounter(3, "shambler", "wolf", "crawler");
-        var rng = RngOf(s);
-        var log = s.Log.Count;
-        var t = SaveSerializer.Deserialize(AsSchema45(s), CfgOff);
-        Assert.That(t.SchemaVersion, Is.EqualTo("49"));
-        Assert.That(t.EnemyCards.ModelVersion, Is.EqualTo(0));
-        Assert.That(t.EnemyCards.Groups, Is.Empty);
-        Assert.That(t.Encounter, Is.Not.Null, "开关关着：旧待处理名单原样");
-        Assert.That(t.Encounter!.EnemyIds, Is.EqualTo(s.Encounter!.EnemyIds));
-        Assert.That(t.WorldEnemies.Select(w => w.GroupId), Has.All.Null);
-        Assert.That(t.Log.Count, Is.EqualTo(log), "静默");
-        Assert.That(RngOf(t), Is.EqualTo(rng), "不抽随机");
-
-        // 在办绕行也原样
-        Assert.That(Off.Start(s, ActionRequest.Bypass()).Ok, Is.True);
-        Off.Advance(s);
-        var u = SaveSerializer.Deserialize(AsSchema45(s), CfgOff);
-        Assert.That(u.Main?.Type, Is.EqualTo(ActionType.Bypass));
-        Assert.That(u.Main!.ElapsedMinutes, Is.EqualTo(5));
-
-        // 幂等：再存再读不变
-        var once = SaveSerializer.Serialize(u);
-        Assert.That(SaveSerializer.Serialize(SaveSerializer.Deserialize(once, CfgOff)), Is.EqualTo(once));
+        Assert.That(E.NewGame(1).EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2), "新局直接是新版卡模型");
     }
 
     [Test]
@@ -82,7 +48,7 @@ public class B41aMigrationTests : B41aTestBase
 
         var t = SaveSerializer.Deserialize(AsSchema45(s), CfgV2);
         Assert.That(t.SchemaVersion, Is.EqualTo("49"));
-        Assert.That(E.CardsV2(t), Is.True);
+        Assert.That(t.EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2));
         Assert.That(t.Encounter, Is.Null, "旧待处理名单转成组卡后清掉");
         Assert.That(t.EnemyCards.Groups, Has.Count.EqualTo(1));
         var g = t.EnemyCards.Groups[0];
@@ -133,9 +99,8 @@ public class B41aMigrationTests : B41aTestBase
     {
         var s = WithEncounter(3, "shambler", "crawler");
         s.WorldEnemies[0].Hp -= 1;
-        Assert.That(Off.Start(s, ActionRequest.Bypass()).Ok, Is.True);
-        Assert.That(s.Encounter, Is.Null, "旧版绕行开工就清掉了名单");
-        Off.Advance(s);
+        s.Encounter = null;   // 旧版绕行开工就清掉了名单
+        LegacyBypass(s);
         if (paused) { s.Main!.Status = ActionStatus.Paused; s.Main.PauseReason = PauseReason.StatAlert; }
         if (!enemiesRemain) s.WorldEnemies.Clear();
         var minute = s.GameMinute;
@@ -180,7 +145,10 @@ public class B41aMigrationTests : B41aTestBase
     public void Q425_BattleInProgress_KeepsOldSnapshot()
     {
         var s = WithEncounter(3, "shambler", "wolf");
-        Assert.That(Off.Engage(s).Ok, Is.True);
+        // 旧版接敌：清掉待处理名单、按名单开一场不属于任何敌踪卡的战斗
+        var ids = s.Encounter!.EnemyIds.ToList();
+        s.Encounter = null;
+        Assert.That(E.DebugStartBattle(s, ids, GameEngine.FearEncounter), Is.True);
         var t = SaveSerializer.Deserialize(AsSchema45(s), CfgV2);
         Assert.That(t.Battle, Is.Not.Null, "原已开始的战斗按旧快照完成");
         Assert.That(t.Battle!.CardKey, Is.Null);
@@ -193,9 +161,10 @@ public class B41aMigrationTests : B41aTestBase
     [Test]
     public void SwitchTurnedOnLater_CurrentSchemaSaveAdoptsOnLoad()
     {
-        // 开关关着时已经升到 46 的档（线上实际情况）：B41f 打开开关后的第一次读档才采纳
+        // 开关关着时已经升到 46 及以后的档（线上实际情况，卡模型标记 0）：B41e3 打开开关后的第一次读档才采纳
         var s = WithEncounter(3, "shambler", "crawler");
-        var v46 = SaveSerializer.Serialize(SaveSerializer.Deserialize(AsSchema45(s), CfgOff));
+        var v46 = SaveSerializer.Serialize(s);
+        Assert.That(JObject.Parse(v46)["EnemyCards"]!["ModelVersion"]!.Value<int>(), Is.EqualTo(0));
         var t = SaveSerializer.Deserialize(v46, CfgV2);
         Assert.That(t.Encounter, Is.Null);
         Assert.That(t.EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2));

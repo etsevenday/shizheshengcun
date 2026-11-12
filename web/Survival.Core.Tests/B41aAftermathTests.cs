@@ -6,7 +6,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41a 里程碑 5：新版敌踪的战后口径与测试入口（开关开；R05「Q416」保护期、「Q417」组卡存续与增援、「Q436」动物单卡；
+/// B41a 里程碑 5：新版敌踪的战后口径与测试入口（R05「Q416」保护期、「Q417」组卡存续与增援、「Q436」动物单卡；
 /// 验收 Q417-A01 撤退同组／组员不增援、Q436-A01 狼鹿逃离与旧在途战斗）。
 /// </summary>
 public class B41aAftermathTests : B41aTestBase
@@ -156,12 +156,12 @@ public class B41aAftermathTests : B41aTestBase
         // 旧版流程里已开打的一场（灰狼 + 游荡尸同场），升级后在新版下打完
         var old = LegacyField();
         UnlockCapacity(old, 3);
-        Off.DebugSpawnEnemy(old, "wolf", "field");
-        Off.DebugSpawnEnemy(old, "shambler", "field");
-        old.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = old.WorldEnemies.Select(w => w.Id).ToList(), Source = "explore", Minute = old.GameMinute };
-        Assert.That(Off.Engage(old).Ok, Is.True);
+        E.DebugSpawnEnemy(old, "wolf", "field");
+        E.DebugSpawnEnemy(old, "shambler", "field");
+        // 旧版接敌开的战斗不属于任何敌踪卡（B41e3 起旧接敌已删，用不带卡键的测试开战代替）
+        Assert.That(E.DebugStartBattle(old, old.WorldEnemies.Select(w => w.Id), GameEngine.FearEncounter), Is.True);
         var s = SaveSerializer.Deserialize(AsSchema45(old), CfgV2);
-        Assert.That(E.CardsV2(s), Is.True);
+        Assert.That(s.EnemyCards.ModelVersion, Is.EqualTo(1), "读档已采纳");
         Assert.That(s.Battle!.Enemies.Select(e => e.EnemyId), Is.EqualTo(new[] { "wolf", "shambler" }), "不拆当前快照");
         Assert.That(s.Battle.CardKey, Is.Null);
 
@@ -173,7 +173,7 @@ public class B41aAftermathTests : B41aTestBase
     }
 
     [Test]
-    public void DebugStartBattle_WorksInBothFlows_NoCardKey()
+    public void DebugStartBattle_NoCardKey()
     {
         var s = Field(3, "shambler", "crawler");
         Assert.That(E.DebugStartBattle(s, s.WorldEnemies.Select(w => w.Id), GameEngine.FearEncounter), Is.True);
@@ -182,21 +182,10 @@ public class B41aAftermathTests : B41aTestBase
         Assert.That(s.Battle.CardKey, Is.Null);
         Assert.That(E.DebugStartBattle(s, s.WorldEnemies.Select(w => w.Id)), Is.False, "已在战斗");
 
-        var o = LegacyField();
-        var w = Off.DebugSpawnEnemy(o, "shambler", "field");
-        Assert.That(Off.DebugStartBattle(o, new[] { w.Id }, GameEngine.FearApproach), Is.True);
+        var o = V2Field();
+        var w = E.DebugSpawnEnemy(o, "shambler", "field");
+        Assert.That(E.DebugStartBattle(o, new[] { w.Id }, GameEngine.FearApproach), Is.True);
         Assert.That(o.Battle!.Context, Is.EqualTo(GameEngine.FearApproach));
         Assert.That(o.Battle.Surprise, Is.False);
-    }
-
-    [Test]
-    public void SwitchOff_GraceStillGrantedAfterBattle()
-    {
-        var o = LegacyField();
-        var w = Off.DebugSpawnEnemy(o, "shambler", "field");
-        Assert.That(Off.Approach(o, w.Id).Ok, Is.True);
-        E = Off;   // WinBattle 用 E
-        WinBattle(o);
-        Assert.That(o.EncounterGraceUntil, Is.EqualTo(o.GameMinute + Cfg.Encounters.PostExitRandomEncounterGraceMinutes), "开关关：旧版战后全地点保护原样");
     }
 }

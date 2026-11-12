@@ -35,8 +35,7 @@ public class B8aFormationTests : BattleTestBase
         s.GameMinute = At(2, 9, 0);
         s.WorldEnemies.Clear();
         var ids = enemyIds.Select(id => E.DebugSpawnEnemy(s, id, "field").Id).ToList();
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = ids, Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(E.DebugStartBattle(s, ids, GameEngine.FearEncounter), Is.True);
         return s;
     }
 
@@ -125,9 +124,7 @@ public class B8aFormationTests : BattleTestBase
         Assert.That(E.FormationEditBlocked(s), Does.Contain("移动中"));
         s.Main = null;
 
-        s.Encounter = new PendingEncounter { LocationId = "camp", Source = "explore" };
-        Assert.That(E.FormationEditBlocked(s), Does.Contain("敌踪"));
-        s.Encounter = null;
+        // B41e3：旧版待处理敌踪锁随旧接敌流程删除（敌踪卡在场可编队，见 B41aGroupCardTests）
 
         var t = NewStory(8602);
         Assert.That(E.DialogueLocked(t), Is.True, "完整新局开场对白");

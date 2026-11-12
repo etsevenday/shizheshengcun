@@ -11,6 +11,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B13PrologueTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private const int D5 = 6240;
 
     private void Travel(GameState s, string to)
@@ -253,6 +256,7 @@ public class B13PrologueTests : TestBase
     public void SP03_AwayOnlyNotice_NoTeleport_Persistent()
     {
         var s = Won();
+        s.SuppressEnemyApproach = true;   // B41e3：新版敌方接近会在荒地久等中开战；本例只测来客通知
         Travel(s, "field");
         s.GameMinute = D5 - 5;
         E.DrainEvents(s);
@@ -516,6 +520,7 @@ public class B13PrologueTests : TestBase
         ReadDialogues(s);
         Start(s, ActionRequest.Travel("field"));
         Run(s);
+        ApproachTutorial(s);   // B41b（R05 Q421）：到达只出教学卡，主动接近才开首战
         Assert.That(s.Battle, Is.Not.Null);
         var events = new List<string>();
         for (var k = 0; k < 10 && E.DialogueLocked(s); k++)
@@ -594,6 +599,7 @@ public class B13PrologueTests : TestBase
         E.DebugUnlockEdge(s, "field__village");
         Start(s, ActionRequest.Travel("field"));
         Run(s);
+        ApproachTutorial(s);   // B41b（R05 Q421）：到达只出教学卡，主动接近才开首战
         ReadDialogues(s);
         Start(s, ActionRequest.Travel("village"));
         Run(s);

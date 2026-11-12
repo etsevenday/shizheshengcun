@@ -492,9 +492,10 @@ public class B28FeedTests : TestBase
     {
         var s = Party();
         var f = Req(Lin, Me, Give(s, "canned_food", ItemInstance.Carried));
-        s.Encounter = new PendingEncounter { LocationId = "camp", EnemyIds = new List<int>(), Source = "explore", Minute = s.GameMinute };
-        Rejected(s, f, "发现敌踪：请先选择接敌或绕行");
-        s.Encounter = null;
+        // B41e3：旧版待处理敌踪（「发现敌踪：请先选择接敌或绕行」）随旧接敌流程删除；敌踪卡在场不挡喂食
+        s.SuppressEnemyApproach = true;
+        E.DebugSpawnEnemy(s, "shambler", "camp");
+        Assert.That(E.FeedBlocked(s, f), Is.Null);
 
         s.Expedition = new ExpeditionState { Id = "x", DungeonId = "d01", Phase = ExpeditionState.Extracting };
         Assert.That(E.FeedBlocked(s, f), Is.EqualTo("正在撤出，无法给同行者吃喝。"));
@@ -514,9 +515,9 @@ public class B28FeedTests : TestBase
     public void Timing_OneSentenceOnly_GlobalBeforeTargetBeforeItem()
     {
         var s = Party();
-        s.Encounter = new PendingEncounter { LocationId = "camp", EnemyIds = new List<int>(), Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.FeedBlocked(s, new FeedRequest()), Is.EqualTo("发现敌踪：请先选择接敌或绕行"), "敌踪专属句不被未选目标盖住");
-        s.Encounter = null;
+        s.Battle = new BattleState { BattleId = 9, LocationId = "camp", Allies = new List<string> { Me, Lin } };
+        Assert.That(E.FeedBlocked(s, new FeedRequest()), Is.EqualTo("战斗中无法给同行者吃喝。"), "全局锁句不被未选目标盖住（B41e3 起旧敌踪句已删，用战斗）");
+        s.Battle = null;
         var spoiled = Give(s, "berry", ItemInstance.Carried);
         spoiled.ExpiresAt = s.GameMinute;
         spoiled.ReservedBy = 1;

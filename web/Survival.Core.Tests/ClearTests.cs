@@ -7,6 +7,9 @@ namespace Survival.Core.Tests;
 /// <summary>地图清理案 v0.3 第 9 节 C01–C08、C10–C13、C15。</summary>
 public class ClearTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private GameState AtWoods(int minute = 480)
     {
         var s = New();
@@ -146,6 +149,7 @@ public class ClearTests : TestBase
 
         // 离线：存档后不推进时间，读档次数不变
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
+        t.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         Assert.That(t.Locations["woods"].ClearCharges, Is.EqualTo(3));
         Assert.That(E.ClearChargesAt(t, "woods"), Is.EqualTo((3, 0)));
     }
@@ -202,6 +206,7 @@ public class ClearTests : TestBase
         Start(s, ActionRequest.UseItem("clean_water"));
         Run(s);
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
+        t.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         Assert.That(t.Main!.LootRoll, Is.EqualTo(roll));
         Assert.That(t.Main.LootItemId, Is.EqualTo(item));
         Assert.That(t.Main.WorkDone, Is.EqualTo(work));

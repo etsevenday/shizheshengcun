@@ -90,7 +90,7 @@ public class B43KeyHintTests : TestBase
     {
         Assert.That(Web("Components/EscCap.razor"), Does.Contain("@if (On) {<kbd class=\"kc\">@ShellKeys.Esc</kbd>}"));
         var screen = Web("Components/GameScreen.razor");
-        Assert.That(screen, Does.Contain("switch (G.NormalEscOwner())").And.Contain("switch (G.EncounterEscOwner())"), "Esc 执行与键帽同一判定");
+        Assert.That(screen, Does.Contain("switch (G.NormalEscOwner())").And.Not.Contain("EncounterEscOwner"), "Esc 执行与键帽同一判定（B41e3 删旧敌踪选择层）");
         Assert.That(screen, Does.Not.Contain("private bool NormalLayer()"));
         var panel = "<EscCap On=\"@(G.EscOwner == EscOwner.Panel)\" />";
         foreach (var f in new[] { "MapOverlay", "CraftOverlay", "RestOverlay", "LogOverlay", "GoalsOverlay", "TipsOverlay", "DialogueLogOverlay", "GearOverlay", "GrowthOverlay",
@@ -149,7 +149,7 @@ public class B43KeyHintTests : TestBase
         Has("CraftOverlay", "<EnterCap On=\"@(p.Ok && !startBusy)\" />", 2);
         Assert.That(Web("Components/AnchorPop.razor"), Does.Contain("data-enter-scope tabindex=\"-1\""), "居中局部盘是确认区");
         var pops = Web("Components/ActionPops.razor");
-        Assert.That(Regex.Matches(pops, "data-enter ").Count, Is.EqualTo(4), "移动、接近、投炭、采集各一个唯一确认");
+        Assert.That(Regex.Matches(pops, "data-enter ").Count, Is.EqualTo(3), "移动、投炭、采集各一个唯一确认（B41e3 删旧「接近」盘；敌踪盘不贴 Enter，Q499）");
         var harvest = pops.Substring(pops.IndexOf("@CardStates.HarvestToCarried") - 200, 400);
         Assert.That(harvest, Does.Not.Contain("data-enter"), "收取随身／地面是并列分支，不贴默认 Enter");
         Assert.That(pops, Does.Contain("终止本次远征…</button>").And.Not.Contain("data-enter disabled=\"@busy\" @onclick=\"G.OpenAbort\""), "打开终止确认窗不是提交");

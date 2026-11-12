@@ -419,7 +419,7 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return "本局已结束，无法办理。";
             if (s.CurrentLocation != svc.LocationId) return $"到{LocName(svc.LocationId)}后才能办理。";
             if (DialogueLocked(s)) return "请先读完当前对话。";
-            if (s.Battle != null || s.Encounter != null) return "先处理眼前的敌踪。";
+            if (s.Battle != null) return "先处理眼前的敌踪。";
             if (s.Main != null || s.Sub != null) return CityBusyText;
             return null;
         }

@@ -11,8 +11,8 @@ namespace Survival.Core.State
     public sealed class EnemyCardsState
     {
         /// <summary>
-        /// 0 = 旧版敌踪（旧档读入后的默认值；开关 encounters.enemyCardsV2 关着时一直是 0）；1 = 已采纳新版卡模型
-        /// （开关开着时新局直接为 1，旧档读档时做一次采纳后置 1，见 GameEngine.AdoptEnemyCards）。
+        /// 0 = 还没采纳新版卡模型（旧档读入后的默认值）；1 = 已采纳
+        /// （新局直接为 1，旧档读档时做一次采纳后置 1，见 GameEngine.AdoptEnemyCards；B41e3 起新版敌踪是唯一流程，这个值只决定要不要做那一次采纳）。
         /// </summary>
         public int ModelVersion { get; set; }
         public int NextGroupId { get; set; } = 1;

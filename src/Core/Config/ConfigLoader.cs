@@ -493,23 +493,18 @@ namespace Survival.Core.Config
             if (we.SpawnCheckIntervalMinutes <= 0 || we.SpawnCheckIntervalMinutes % tick != 0) e.Add($"刷新检查间隔须为{tick}的正倍数");
             if (we.PatrolCheckIntervalMinutes <= 0 || we.PatrolCheckIntervalMinutes % tick != 0) e.Add($"巡游检查间隔须为{tick}的正倍数");
             foreach (var sl in c.Encounters.SafeLocations) if (!locs.Contains(sl)) e.Add($"安全地点 {sl} 不存在");
-            if (c.Encounters.BypassMinutes <= 0 || c.Encounters.BypassMinutes % tick != 0) e.Add($"绕行时长须为{tick}的正倍数");
             // B41b：接近时间候选与同卡撤退保护（R05 Q416）
             if (c.Encounters.ApproachMinutes.Count == 0 || c.Encounters.ApproachMinutes.Any(m => m <= 0 || m % tick != 0)) e.Add($"敌踪接近时间候选须非空且都是{tick}的正倍数");
             if (c.Encounters.CardRetreatGuardMinutes <= 0 || c.Encounters.CardRetreatGuardMinutes % tick != 0) e.Add($"敌踪撤退保护时长须为{tick}的正倍数");
             // B41c：潜行判定、练习与躲避隐藏（R05 Q342 定稿）
             var stl = c.Encounters.Stealth;
-            if (c.Skills.Any(x => x.EnemyCardsV2Only))
-            {
-                if (stl.CheckMinutes <= 0 || stl.CheckMinutes % tick != 0) e.Add($"潜行判定时长须为{tick}的正倍数");
-                if (stl.PracticeMinutes <= 0 || stl.PracticeMinutes % tick != 0) e.Add($"练习潜行时长须为{tick}的正倍数");
-                if (stl.SneakMin > stl.SneakMax || stl.EvadeMin > stl.EvadeMax || stl.SneakMin < 0 || stl.EvadeMax > 100) e.Add("潜行／躲避成功率上下限无效");
-                if (stl.XpSuccess < 0 || stl.XpFail < 0 || stl.PracticeXp < 0) e.Add("潜行经验不能为负");
-                if (stl.HideStepMinutes <= 0 || stl.HideStepMinutes % tick != 0 || stl.HideMinMinutes <= 0 || stl.HideMaxMinutes < stl.HideMinMinutes
-                    || (stl.HideMaxMinutes - stl.HideMinMinutes) % stl.HideStepMinutes != 0 || stl.HideMinMinutes % tick != 0) e.Add("躲避隐藏时长档位无效");
-                if (c.Encounters.FirstStrike.SpeedFactor <= 0 || c.Encounters.FirstStrike.DamageFactor <= 0) e.Add("先手倍率须为正");
-            }
-            if (!c.HourlyRates.ContainsKey(c.Encounters.BypassRateCategory)) e.Add($"绕行速率类别 {c.Encounters.BypassRateCategory} 不存在");
+            if (stl.CheckMinutes <= 0 || stl.CheckMinutes % tick != 0) e.Add($"潜行判定时长须为{tick}的正倍数");
+            if (stl.PracticeMinutes <= 0 || stl.PracticeMinutes % tick != 0) e.Add($"练习潜行时长须为{tick}的正倍数");
+            if (stl.SneakMin > stl.SneakMax || stl.EvadeMin > stl.EvadeMax || stl.SneakMin < 0 || stl.EvadeMax > 100) e.Add("潜行／躲避成功率上下限无效");
+            if (stl.XpSuccess < 0 || stl.XpFail < 0 || stl.PracticeXp < 0) e.Add("潜行经验不能为负");
+            if (stl.HideStepMinutes <= 0 || stl.HideStepMinutes % tick != 0 || stl.HideMinMinutes <= 0 || stl.HideMaxMinutes < stl.HideMinMinutes
+                || (stl.HideMaxMinutes - stl.HideMinMinutes) % stl.HideStepMinutes != 0 || stl.HideMinMinutes % tick != 0) e.Add("躲避隐藏时长档位无效");
+            if (c.Encounters.FirstStrike.SpeedFactor <= 0 || c.Encounters.FirstStrike.DamageFactor <= 0) e.Add("先手倍率须为正");
             if (c.BattleTime.RoundWorldMinutes != tick) e.Add("战斗每轮世界分钟须等于时间段长度");
 
             foreach (var en in c.ZombieLoot.Entries)

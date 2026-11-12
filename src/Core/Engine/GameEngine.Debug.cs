@@ -97,30 +97,24 @@ namespace Survival.Core.Engine
                 : $"{carried}张放到随身，随身最多{MaxRootCards}张卡，放不下的{ground}张放在当前地面。";
         }
 
-        /// <summary>调试：立即以当前地点的现有敌对敌人形成敌踪（第1日也可，用于检查界面）。没有敌人返回 false。</summary>
+        /// <summary>
+        /// 调试：立即以当前地点的现有敌对敌人形成一张随机组卡（第1日也可，用于检查界面；同正式规则：排除动物、按容量锁名单、已有可见组不再成组）。
+        /// 没有合法候选返回 false。
+        /// </summary>
         public bool DebugForceEncounter(GameState s)
         {
             if (InCombatFlow(s) || s.Main != null || s.Sub != null) return false;
-            // B41a：新版敌踪下直接形成一张随机组卡（同正式规则：排除动物、按容量锁名单、已有可见组不再成组）
-            if (CardsV2(s))
-            {
-                if (VisibleGroupCardAt(s, s.CurrentLocation) != null) return false;
-                var members = GroupCardCandidates(s, s.CurrentLocation);
-                if (members.Count == 0) return false;
-                var g = AddGroupCard(s, s.CurrentLocation, members, "explore", s.GameMinute);
-                Emit(s, GameEventKind.Encounter, "（调试）" + GroupCardFoundText(GroupCardTitle(s, g)), null, members.Select(w => $"enemy:{w.Id}"));
-                return true;
-            }
-            var group = LocalHostiles(s, s.CurrentLocation).Take(Config.Encounters.GroupMax).ToList();
-            if (group.Count == 0) return false;
-            s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = group.Select(w => w.Id).ToList(), Source = "explore", Minute = s.GameMinute };
-            Emit(s, GameEventKind.Encounter, "（调试）发现敌踪。");
+            if (VisibleGroupCardAt(s, s.CurrentLocation) != null) return false;
+            var members = GroupCardCandidates(s, s.CurrentLocation);
+            if (members.Count == 0) return false;
+            var g = AddGroupCard(s, s.CurrentLocation, members, "explore", s.GameMinute);
+            Emit(s, GameEventKind.Encounter, "（调试）" + GroupCardFoundText(GroupCardTitle(s, g)), null, members.Select(w => $"enemy:{w.Id}"));
             return true;
         }
 
         /// <summary>
         /// 测试与调试：不经敌踪流程，直接用指定的世界敌人开一场普通战斗（按给定顺序截前 C 个入场）。context 取
-        /// <see cref="FearEncounter"/>（旧版“接敌”口径：战报写“遭遇”、受惊系数 1.0）或 <see cref="FearApproach"/>（主动接近 0.5）。
+        /// <see cref="FearEncounter"/>（测试口径：战报写“遭遇”、受惊系数 1.0）或 <see cref="FearApproach"/>（主动接近 0.5）。
         /// 不属于任何敌踪卡（CardKey 为空）。已在战斗、主角已死或没有可入战的敌人时返回 false。
         /// </summary>
         public bool DebugStartBattle(GameState s, IEnumerable<int> worldEnemyIds, string context = FearEncounter)
@@ -128,7 +122,6 @@ namespace Survival.Core.Engine
             if (s.Battle != null || s.Progress.Dead) return false;
             var group = worldEnemyIds.Select(id => FindWorldEnemy(s, id)).Where(w => w != null && !w.Engaged && w.LocationId == s.CurrentLocation).Select(w => w!).ToList();
             if (group.Count == 0) return false;
-            s.Encounter = null;
             var encounter = context != FearApproach;
             StartBattle(s, group, encounter, encounter ? "遭遇" : "主动接近", context);
             return true;
@@ -183,13 +176,13 @@ namespace Survival.Core.Engine
 
         public string DebugSetSkillLevels(GameState s, int level, bool survivalOnly)
         {
-            var ids = SkillsInPlay.Where(k => !survivalOnly || (k.Category == "survival" && !k.EnemyCardsV2Only)).Select(k => k.Id).ToList();
+            var ids = SkillsInPlay.Where(k => !survivalOnly || (k.Category == "survival" && k.Id != StealthSkill)).Select(k => k.Id).ToList();
             foreach (var id in ids)
             {
                 var lv = Math.Max(1, Math.Min(SkillCap(id), level));
                 s.Skills[id] = new SkillState { Level = lv, Xp = 0 };
             }
-            return $"{(survivalOnly ? "求生五门（制造、采集、搜集、烹饪、行旅）" : (ids.Count == 16 ? "全部十六门" : "全部十五门"))}熟练度设为{level}级（开发用）。";
+            return $"{(survivalOnly ? "求生五门（制造、采集、搜集、烹饪、行旅）" : "全部十六门")}熟练度设为{level}级（开发用）。";
         }
 
         /// <summary>开发入口“技能器具一组”的清单（B7）：每类武器各一件（含盾、指挥、医疗器具）与技能耗材。</summary>

@@ -174,8 +174,6 @@ namespace Survival.Core.Save
         public const string BattleMenuNote = "要离开战斗，请在指令条选择「撤退」。选择「保存并返回标题」会保留当前战斗进度，下次读取这份存档时可以继续战斗。";
         /// <summary>Q388 撤出中的游戏菜单说明句。</summary>
         public const string ExtractMenuNote = "正在撤出，将一直走到外部入口，途中无法取消。选择「保存并返回标题」后，读取这份存档时会从剩余路程接着走。";
-        /// <summary>Q388 敌踪待处理的游戏菜单说明句。</summary>
-        public const string EncounterMenuNote = "请在敌踪界面选择「接敌」或「绕行」。选择「保存并返回标题」后，读取这份存档时仍须处理这次敌踪。";
 
         /// <summary>Q410 导入档首次读取的升级提示。</summary>
         public static string UpgradeNotice(string currentSchema) => $"旧存档已升级到版本{currentSchema}。";

@@ -341,7 +341,7 @@ namespace Survival.Core.Engine
             {
                 why = QuestRequiresBlocked(s, q)
                       ?? (s.CurrentLocation != q.LocationId ? $"须实际到达{LocName(q.LocationId)}" : null)
-                      ?? (s.Battle != null || s.Encounter != null ? "先处理眼前的敌踪" : s.Main != null || s.Sub != null ? "行动进行中" : null);
+                      ?? (s.Battle != null ? "先处理眼前的敌踪" : s.Main != null || s.Sub != null ? "行动进行中" : null);
                 if (why == null)
                 {
                     var res = RecruitByQuest(s, q);
@@ -383,7 +383,7 @@ namespace Survival.Core.Engine
             if (s.CurrentLocation != q.LocationId && q.WorkServiceIds.Count == 0) return $"须实际到达{LocName(q.LocationId)}";
             if (s.Progress.Dead) return "角色已死亡";
             if (DialogueLocked(s)) return DialogueLockedReason;
-            if (s.Battle != null || s.Encounter != null) return "先处理眼前的敌踪";
+            if (s.Battle != null) return "先处理眼前的敌踪";
             if (s.Main != null || s.Sub != null) return "行动进行中";
             return null;
         }
@@ -513,7 +513,7 @@ namespace Survival.Core.Engine
         /// </summary>
         private void QuestBoundary(GameState s)
         {
-            if (Config.Quests.List.Count == 0 || s.Progress.Dead || s.Battle != null || s.Encounter != null) return;
+            if (Config.Quests.List.Count == 0 || s.Progress.Dead || s.Battle != null) return;
             foreach (var q in LiveQuests)
             {
                 if (QuestDone(s, q.Id)) continue;

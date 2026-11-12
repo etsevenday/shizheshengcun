@@ -646,8 +646,7 @@ public class B40aSaveSlotsTests : TestBase
         Assert.That(c.ManualBlockedText(s), Is.EqualTo("行动进行中，不能手动存档。"), "子行动在办");
         s.Expedition = new ExpeditionState { Phase = ExpeditionState.Extracting };
         Assert.That(c.ManualBlockedText(s), Is.EqualTo("撤出途中不能手动存档。"));
-        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation };
-        Assert.That(c.ManualBlockedText(s), Is.EqualTo("先处理敌踪再存档。"));
+        // B41e3：旧版待处理敌踪那一档（「先处理敌踪再存档。」）随旧接敌流程删除
         s.Battle = new BattleState();
         Assert.That(c.ManualBlockedText(s), Is.EqualTo("战斗中不能手动存档。"));
 

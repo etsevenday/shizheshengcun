@@ -221,7 +221,7 @@ public class B32fTests : TestBase
         Assert.That(css, Does.Contain(".wasteland .apop.menu-hidden { display: none !important; }"));
 
         var ap = Web("Components", "ActionPops.razor");
-        foreach (var c in new[] { "travel", "approach", "lockstack", "charcoal", "harvest", "gather" })
+        foreach (var c in new[] { "travel", "lockstack", "charcoal", "harvest", "gather" })   // B41e3：旧「接近」盘已删，敌踪盘见 B41e1
             Assert.That(ap, Does.Contain($"CssClass=\"@(\"{c}\" + G.MenuHideCss)\""), c);
         Assert.That(ap, Does.Not.Contain("MenuOpen"), "就近盘的显示条件不含菜单（不卸载）");
 

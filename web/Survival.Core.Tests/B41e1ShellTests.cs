@@ -3,7 +3,7 @@ using Survival.Core.Engine;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41e1 网页壳（源码检查）：开关 encounters.enemyCardsV2 开时的敌踪卡分组、居中操作盘、敌踪详情；开关关时旧组件分支保留。
+/// B41e1 网页壳（源码检查）：新版敌踪的敌踪卡分组、居中操作盘、敌踪详情；B41e3 起开关关时的旧组件分支已删。
 /// 另有一项读逐字稿原文（DesignSync），核对界面原句常量与策划案一致。
 /// </summary>
 public class B41e1ShellTests
@@ -44,14 +44,12 @@ public class B41e1ShellTests
     }
 
     [Test]
-    public void Cards_OneGroup_FromEnemyCardsHere_OldGroupsOnlyWhenOff()
+    public void Cards_OneGroup_FromEnemyCardsHere_OldGroupsRemoved()
     {
         var ls = Web("Components/LocationStrip.razor");
-        Assert.That(ls, Does.Contain("var cardsV2 = e.CardsV2(s);"));
-        Assert.That(ls, Does.Contain("var cards = cardsV2 && !inside ? e.EnemyCardsHere(s) : new List<EnemyCardView>();"));
-        Assert.That(ls, Does.Contain("var enemies = inside || cardsV2 ? new List<WorldEnemy>() : e.VisibleEnemiesAt(s, here);"), "开关开时旧单卡组不出");
-        Assert.That(ls, Does.Contain("var fixedHere = inside || cardsV2 ? new List<WorldEnemy>() : e.FixedEnemiesAt(s, here);"));
-        Assert.That(ls, Does.Contain("var elites = cardsV2 ? new List<LegacyEliteConfig>() : e.EliteChallengesHere(s);"));
+        Assert.That(ls, Does.Contain("var cards = !inside ? e.EnemyCardsHere(s) : new List<EnemyCardView>();"));
+        Assert.That(ls, Does.Not.Contain("CardsV2").And.Not.Contain("e.VisibleEnemiesAt(s, here)").And.Not.Contain("e.FixedEnemiesAt(s, here)").And.Not.Contain("e.EliteChallengesHere(s)"),
+            "B41e3：旧单卡组、固定战组、可选强敌组随开关删除");
         var grp = Segment(ls, "@if (cards.Count > 0)", "@* B17 试玩修复 B1");
         Assert.That(grp, Does.Contain("<div class=\"dg-title\">敌踪</div>"));
         Assert.That(grp, Does.Contain("Title=\"@c.Title\"").And.Contain("Badge=\"@c.Badge\"").And.Contain("Danger=\"@c.Danger\""), "Q427 标题、角标、危险");
@@ -74,26 +72,26 @@ public class B41e1ShellTests
         Assert.That(disk, Does.Contain("e.EnemyCardFearNote(s, c, false)").And.Contain("e.EvadeFailFearLine(s, c)"), "B41e2（Q549）：躲避失败时：{原受惊预览}");
         Assert.That(disk, Does.Not.Contain("data-enter").And.Not.Contain("EnterCap"), "不贴 Enter 快捷（Q499）");
         Assert.That(disk, Does.Contain("GameEngine.EnemyDiskBack<EscCap"));
-        Assert.That(ap, Does.Contain("GameSession.EnemyCardPop => s.Battle == null && s.Encounter == null && e.CardsV2(s) && e.EnemyCardHere(s, pop.Id) != null"), "Q457 收盘重验");
+        Assert.That(ap, Does.Contain("GameSession.EnemyCardPop => s.Battle == null && e.EnemyCardHere(s, pop.Id) != null"), "Q457 收盘重验");
         var session = Web("Services/GameSession.cs");
         Assert.That(session, Does.Contain("E.StartStealth(S, cardKey, kind, Guid.NewGuid().ToString(\"N\"), leaderId, expectedRate)"));
         Assert.That(session, Does.Contain("E.ApproachCard(S, cardKey, Guid.NewGuid().ToString(\"N\"))"));
         Assert.That(session, Does.Contain("if (Pop?.Kind == EnemyCardPop && State != null && Selected.Kind == SelectionKind.Enemy && Selected.Id == Pop.Id && E.EnemyCardHere(S, Pop.Id) == null)"));
-        Assert.That(session, Does.Contain("if (E.CardsV2(S) ? E.EnemyCardHere(S, Selected.Id) == null"), "选中按卡键重验");
-        Assert.That(Web("Services/GameSession.Peek.cs"), Does.Contain("if (E.CardsV2(S)) return E.EnemyCardHere(S, sel.Id) != null;"), "悬停按卡键重验");
+        Assert.That(session, Does.Contain("if (E.EnemyCardHere(S, Selected.Id) == null) ClearSelectionSilently();"), "选中按卡键重验");
+        Assert.That(Web("Services/GameSession.Peek.cs"), Does.Contain("E.EnemyCardHere(S, sel.Id) != null"), "悬停按卡键重验");
     }
 
     [Test]
     public void Detail_V2Branch_Q446_4()
     {
         var d = Web("Components/EnemyDetail.razor");
-        var v2 = Segment(d, "@if (cardsV2)", "else if (w == null || w.LocationId != s.CurrentLocation)");
+        var v2 = Segment(d, "@if (card == null)", "@code {");
         Assert.That(v2, Does.Contain("GameEngine.EnemyCardDetailTitle"));
         Assert.That(v2, Does.Contain("GameEngine.EnemyCardFootnote"));
         Assert.That(v2, Does.Contain("@if (card.KeyEnemy) { <li>@GameEngine.KeyEnemyDetailNote</li> }"));
         Assert.That(v2, Does.Not.Contain("；不受随机接敌保护期限制；"), "Q446 ④ 删旧失效说明");
         Assert.That(v2, Does.Contain("card.Kind is \"single\" or \"elite\" ? \"只与这一只交战\""), "组卡不写「只与这一只交战」");
-        Assert.That(d.Substring(d.IndexOf("else if (w == null")), Does.Contain("；不受随机接敌保护期限制；只与这一只交战。"), "开关关时原详情不变");
+        Assert.That(d, Does.Not.Contain("CardsV2"), "B41e3：开关关时的旧详情已删");
     }
 
     [Test]

@@ -4,7 +4,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41e2 新版敌踪界面二用到的内核只读数据与原句（开关开的配置，见 <see cref="B41aTestBase"/>）。
+/// B41e2 新版敌踪界面二用到的内核只读数据与原句（B41e3 起新版敌踪是唯一流程，见 <see cref="B41aTestBase"/>）。
 /// 出处：《重墨 V2 开工裁定与界面逐字稿》「B41e1 Q549—Q551 补充逐字稿」「B41e Q537—Q541 补充逐字稿」「B41 Q426–Q428 正式文案」队长与练习潜行、先手；
 /// R05 Q537—Q541、Q549—Q551；Q446 ①⑩。
 /// </summary>
@@ -104,7 +104,6 @@ public class B41e2Tests : B41cTestBase
         Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, note, "可选挑战，由你决定何时处理。" }));
         Assert.That(s.WorldEnemies.Any(w => w.FixedOf == card.Key), Is.False, "只读，不生成实例");
         Assert.That(s.Population.Elites.TryGetValue(cfg.Id, out var st) && st.RewardWon != null, Is.False, "不抽签");
-        Assert.That(E.EliteNote(s, cfg), Does.Contain("首次接战时抽定"), "开关关的旧告示说明不变");
     }
 
     [Test]
@@ -269,24 +268,18 @@ public class B41e2Tests : B41cTestBase
         Assert.That(E.Resume(s).Reason, Is.EqualTo(p.KeptResumeBlock));
     }
 
-    [Test]
-    public void Q440_KeptResumeBlock_NullWhenSwitchOff()
-    {
-        var s = LegacyField();
-        Assert.That(Off.ActionProgress(s)?.KeptResumeBlock, Is.Null);
-    }
-
     // ───────────── Q446 ⑩ 生存提示 ─────────────
 
+    /// <summary>B41e3：开关翻开后配置里这条提示直接改成新句（原句式其余部分不动），不再在显示时替换。</summary>
     [Test]
-    public void Q446_10_TipReplacedOnlyWhenCardsV2()
+    public void Q446_10_TipReplacedInConfig()
     {
-        var tip = Cfg.Progress.Tips.Single(t => t.EndsWith(GameEngine.TipOldEncounterClause));
-        var (s, _) = OneShambler();
-        var shown = E.TipForState(s, tip);
-        Assert.That(shown, Does.EndWith("可以主动接近、潜行接近或躲避。").And.Not.Contain("绕行"));
-        Assert.That(shown.Substring(0, shown.Length - "可以主动接近、潜行接近或躲避。".Length), Is.EqualTo(tip.Substring(0, tip.Length - GameEngine.TipOldEncounterClause.Length)), "原句式其余部分不动");
-        var off = LegacyField();
-        Assert.That(Off.TipForState(off, tip), Is.EqualTo(tip), "开关关原样");
+        var tip = Cfg.Progress.Tips.Single(t => t.EndsWith("可以主动接近、潜行接近或躲避。"));
+        Assert.That(tip, Does.Not.Contain("绕行"));
+        Assert.That(Cfg.Progress.Tips.Any(t => t.Contains("可以接敌，也可以绕行10分钟。")), Is.False, "旧句已删");
+        Assert.That(tip.Substring(0, tip.Length - "可以主动接近、潜行接近或躲避。".Length), Is.EqualTo(OldTipHead), "原句式其余部分不动");
     }
+
+    /// <summary>B41e3 前配置里这条提示的前半句（开关关时显示原样，翻开后只换句尾）。</summary>
+    private const string OldTipHead = "第一次到达农野荒地会遇到一只游荡尸（首战，饱饱会引导）；首战胜利后、第2日起探索或清理完成时可能撞上本地已有的敌人：";
 }

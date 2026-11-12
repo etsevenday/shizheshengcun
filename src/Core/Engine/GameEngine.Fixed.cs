@@ -107,42 +107,11 @@ namespace Survival.Core.Engine
             return $"{(f.Guardian ? "守卫" : "固定敌踪")}还在这里（{names}）：先接战取胜，或离开";
         }
 
-        public string? CanEngageFixed(GameState s)
-        {
-            if (CardsV2(s)) return CanApproachCard(s, FixedCardKey(s.CurrentLocation));   // B41a：新版敌踪走卡的主动接近
-            var why = EngageBlocked(s);
-            if (why != null) return why;
-            if (FixedEnemiesAt(s, s.CurrentLocation).Count == 0) return "这里没有固定战";
-            return null;
-        }
+        /// <summary>主动接近本地固定战：即 <see cref="CanApproachCard"/>（卡键 fixed:当前地点）。</summary>
+        public string? CanEngageFixed(GameState s) => CanApproachCard(s, FixedCardKey(s.CurrentLocation));
 
-        /// <summary>接战前的通用拦截（与主动接近同口径）。</summary>
-        private string? EngageBlocked(GameState s)
-        {
-            if (s.Progress.Dead) return "角色已死亡";
-            if (DialogueLocked(s)) return DialogueLockedReason;
-            if (!Config.CombatEnabled) return "战斗未启用";
-            if (s.Battle != null) return "已在战斗中";
-            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
-            if (s.Main != null || s.Sub != null)
-                return s.Main?.Status == ActionStatus.Paused ? (LockedMainPaused(s) ? (s.Sub != null ? LockedSubRunning : LockedPausedBusy) : "行动暂停中，先结束或取消行动") : "行动进行中";   // B41c2（Q526）；B46（Q534）：锁定主行动暂停且子行动未结束
-            if (s.CurrentZone == SafehouseZone) return "在安全屋屋内：先出门再接近敌人";
-            if (TutorialGateOpen(s)) return "先完成农野荒地的首战（游荡尸），再接近其他敌人";
-            return null;
-        }
-
-        /// <summary>明确接战本地固定战：揭示时锁定的全名单一起入场（从 1 号位紧凑排位），受惊按主动接近；本场禁增援（EC04）。</summary>
-        public ActionResult EngageFixed(GameState s, string? requestId = null)
-        {
-            if (CardsV2(s)) return ApproachCard(s, FixedCardKey(s.CurrentLocation), requestId);   // B41a：旧入口转到卡的主动接近
-            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            var why = CanEngageFixed(s);
-            if (why != null) return ActionResult.Fail(why);
-            RememberRequest(s, requestId);
-            var f = FixedBattleAt(s.CurrentLocation)!;
-            StartBattle(s, FixedEnemiesAt(s, s.CurrentLocation), false, f.Guardian ? "守卫战" : "固定战", FearApproach, fixedKey: FixedPrefix + s.CurrentLocation);
-            return ActionResult.Success();
-        }
+        /// <summary>主动接近本地固定战：即 <see cref="ApproachCard"/>（揭示时锁定的全名单一起入场，受惊按主动接近，本场禁增援）。</summary>
+        public ActionResult EngageFixed(GameState s, string? requestId = null) => ApproachCard(s, FixedCardKey(s.CurrentLocation), requestId);
 
         /// <summary>固定类战斗（固定战/旧精英挑战）最终胜利：结固定账、写事实并重判门槛，返回给结算日志的短语。</summary>
         private List<string> FixedVictory(GameState s, BattleState b)

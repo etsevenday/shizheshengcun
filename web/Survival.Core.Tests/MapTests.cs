@@ -7,6 +7,9 @@ namespace Survival.Core.Tests;
 /// <summary>地图系统案 09 验收用例 M01–M09。</summary>
 public class MapTests : TestBase
 {
+    /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
+    protected override bool NoEnemyApproach => true;
+
     private void Explore(GameState s)
     {
         Start(s, ActionRequest.Explore());
@@ -177,6 +180,7 @@ public class MapTests : TestBase
         Steps(s, 3);
         var json = SaveSerializer.Serialize(s);
         var t = SaveSerializer.Deserialize(json);
+        t.SuppressEnemyApproach = true;   // 读档不带不存档的测试开关（见 TestBase.NoEnemyApproach）
         Assert.That(t.CurrentLocation, Is.EqualTo("field"));
         Assert.That(t.UnlockedEdges, Is.EquivalentTo(s.UnlockedEdges));
         Assert.That(t.Locations["field"].TriggeredMilestones, Is.EquivalentTo(new[] { 25 }));

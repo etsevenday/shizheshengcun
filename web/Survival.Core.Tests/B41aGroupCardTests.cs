@@ -5,7 +5,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41a 里程碑 3：随机组卡的形成与存续（开关开；R05「Q417–Q419」「B41a Q436 动物单卡」，逐字稿预览与日志句；
+/// B41a 里程碑 3：随机组卡的形成与存续（R05「Q417–Q419」「B41a Q436 动物单卡」，逐字稿预览与日志句；
 /// 验收 Q417-A01、Q427-A01 标题、Q436-A01 新组筛选、Q438-A01 预览）。
 /// </summary>
 public class B41aGroupCardTests : B41aTestBase
@@ -50,7 +50,7 @@ public class B41aGroupCardTests : B41aTestBase
         Assert.That(E.ManualSaveBlocked(s), Is.EqualTo(ManualSaveBlock.None), "可按其他条件保存");
         Assert.That(E.FormationEditBlocked(s), Is.Null, "可编队");
         Assert.That(E.CanStart(s, ActionRequest.Rest(30)), Is.Null, "可开始别的行动");
-        Assert.That(E.CanStart(s, ActionRequest.Bypass()), Is.Not.Null, "绕行入口下线");
+        Assert.That(E.CanStart(s, new ActionRequest { Type = ActionType.Bypass }), Is.Not.Null, "绕行入口下线");
     }
 
     [TestCase(1, 1)]
@@ -136,7 +136,6 @@ public class B41aGroupCardTests : B41aTestBase
     {
         // 首战未胜
         var story = NewStory();
-        Assert.That(E.CardsV2(story), Is.True);
         Assert.That(E.EncounterNote(story, "field", ActionType.Explore), Is.EqualTo("首战胜利前不会形成随机遭遇组卡。"));
 
         // 未到开放日
@@ -175,23 +174,5 @@ public class B41aGroupCardTests : B41aTestBase
         Assert.That(t.EncounterGraceUntil, Is.EqualTo(s.EncounterGraceUntil));
         s.GameMinute = s.EncounterGraceUntil;
         Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Does.StartWith("完成后发现敌踪概率"));
-    }
-
-    [Test]
-    public void SwitchOff_OldFlowUnchanged()
-    {
-        var s = LegacyField();
-        UnlockCapacity(s, 3);
-        Off.DebugSpawnEnemy(s, "wolf", "field");
-        Off.DebugSpawnEnemy(s, "shambler", "field");
-        s.Locations["field"].ClearCharges = Math.Max(1, s.Locations["field"].ClearCharges);
-        Assert.That(Off.Start(s, ActionRequest.Clear()).Ok, Is.True);
-        s.Main!.EncounterRoll = 0;
-        for (var i = 0; i < 500 && s.Main != null; i++) { var r = Off.Advance(s); if (r.Status == SegmentStatus.Paused) Off.Resume(s); }
-        Assert.That(s.Encounter, Is.Not.Null, "开关关：仍是旧版待处理敌踪");
-        Assert.That(s.Encounter!.EnemyIds, Has.Count.EqualTo(2), "旧版名单含动物");
-        Assert.That(s.EnemyCards.Groups, Is.Empty);
-        Assert.That(Off.EncounterNote(s, "field", ActionType.Clear), Does.Not.Contain("组卡"));
-        Assert.That(Off.IsBusy(s), Is.True);
     }
 }

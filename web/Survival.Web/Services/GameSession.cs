@@ -1249,7 +1249,7 @@ public sealed partial class GameSession
     public bool IsFoldOpen(string sectionId, string actorId = UiFoldPrefs.MainActor) =>
         Fold.IsOpen(UiFoldPrefs.DefaultProfile, actorId, sectionId);
 
-    /// <summary>对白读完前、战斗/接敌界面期间，人物栏折叠不接受背后点击（S14 截图复核 §C 输入锁）。</summary>
+    /// <summary>对白读完前、战斗期间，人物栏折叠不接受背后点击（S14 截图复核 §C 输入锁）。</summary>
     public bool FoldLocked => DialogueLocked || InBattleUi;
 
     /// <summary>玩家点击折叠标题：切换并立即写入偏好。输入锁期间不处理。</summary>
@@ -1768,7 +1768,7 @@ public sealed partial class GameSession
         ClearHoverNow();
         // 选中的物品被吃完、用尽时清空选中（试玩修复 B6）
         ReconcileSelection();
-        // 无选中时右栏回人物页（例如敌踪“绕行”后不停在“未选中对象”）
+        // 无选中时右栏回人物页（不停在“未选中对象”）
         if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
         // 拖拽打开的预览确认后收起，避免行动结束后仍停在旧预览上
         if (Selected.Kind == SelectionKind.Action)
@@ -1904,9 +1904,8 @@ public sealed partial class GameSession
                 if (E.FacilityLocation(Selected.Id) != S.Ground) ClearSelectionSilently();
                 return;
             case SelectionKind.Enemy:
-                // B41e1（R05 Q457）：新版敌踪按卡键重验，卡已不在当前地点、当前区域的可操作卡里就清掉选中，不改选别的敌人
-                if (E.CardsV2(S) ? E.EnemyCardHere(S, Selected.Id) == null
-                    : !(Selected.InstanceId is int wid && E.VisibleEnemiesAt(S, S.CurrentLocation).Any(w => w.Id == wid))) ClearSelectionSilently();
+                // B41e1（R05 Q457）：按卡键重验，卡已不在当前地点、当前区域的可操作卡里就清掉选中，不改选别的敌人
+                if (E.EnemyCardHere(S, Selected.Id) == null) ClearSelectionSilently();
                 return;
         }
     }
@@ -2411,8 +2410,8 @@ public sealed partial class GameSession
 
     // ───────────── 战斗（人物与战斗 v0.5 §16、v0.6 §07） ─────────────
 
-    /// <summary>战斗或敌踪选择中：顶栏导航、M/C/R/L、二级面板与世界交互锁定。</summary>
-    public bool InBattleUi => State != null && (S.Battle != null || S.Encounter != null);
+    /// <summary>战斗中：顶栏导航、M/C/R/L、二级面板与世界交互锁定（B41e3 起没有“敌踪选择”状态，与 <see cref="BattleFullscreen"/> 同义）。</summary>
+    public bool InBattleUi => State != null && S.Battle != null;
 
     /// <summary>
     /// 操作台上选中的指令（R03 §7.4、S14 §18.4）：需要目标的技能选中即进入瞄准——合法目标高亮，悬停看右侧预测，点击合法目标即提交；
@@ -2980,6 +2979,7 @@ public sealed partial class GameSession
     {
         if (State == null || S.Battle == null || BattleBusy || BattleAction == null) return;
         var cmd = CurrentBattleCommand().WithRequestId(string.IsNullOrEmpty(requestId) ? Guid.NewGuid().ToString("N") : requestId);
+        var battleId = S.Battle.BattleId;
         BattleBusy = true;
         try
         {
@@ -2997,6 +2997,7 @@ public sealed partial class GameSession
                 AutoTarget();
             }
             if (State != null && S.Battle == null) OnBattleEnded();
+            else if (State != null && S.Battle != null && S.Battle.BattleId != battleId) OnChainedBattle();
             Drain();
             Commit();
             Notify();
@@ -3008,26 +3009,7 @@ public sealed partial class GameSession
         await BattleLoop();
     }
 
-    /// <summary>敌踪：接敌。</summary>
-    public async Task EngageEncounter()
-    {
-        if (State == null || S.Encounter == null || BattleBusy) return;
-        var res = E.Engage(S, Guid.NewGuid().ToString("N"));
-        Notice = res.Ok ? null : res.Reason;
-        ResetBattleUi();
-        // B31c（Q330）：被拒的接敌请求不清结果提示
-        if (res.Ok) Toast = null;
-        ClearHoverNow();
-        Pop = null;
-        Selected = new Selection();
-        DetailTab = DetailTab.Object;
-        Drain();
-        Commit();
-        Notify();
-        await BattleLoop();
-    }
-
-    // ───────────── B41e1 新版敌踪卡（开关 encounters.enemyCardsV2） ─────────────
+    // ───────────── B41e1 新版敌踪卡 ─────────────
 
     /// <summary>B41e1：敌踪卡居中操作盘的浮窗种类（G.Pop.Kind；Id 为卡键）。</summary>
     public const string EnemyCardPop = "enemycard";
@@ -3095,51 +3077,6 @@ public sealed partial class GameSession
         Notify();
         await RunLoop();
         return res;
-    }
-
-    /// <summary>主动接近地块上的敌人卡。</summary>
-    public async Task ApproachEnemy(int worldEnemyId)
-    {
-        if (State == null || BattleBusy) return;
-        if (FormationOpen) { Notice = FormationOpenText; Notify(); return; }
-        var res = E.Approach(S, worldEnemyId, Guid.NewGuid().ToString("N"));
-        Notice = res.Ok ? null : res.Reason;
-        if (res.Ok)
-        {
-            ResetBattleUi();
-            Pop = null;
-            Selected = new Selection();
-            DetailTab = DetailTab.Object;
-            // 进入战斗：上一场的“战斗胜利”等旧提示与地块上的悬停预测作废（试玩修复 G5、L6）
-            Toast = null;
-            ClearHoverNow();
-        }
-        Drain();
-        Commit();
-        Notify();
-        if (res.Ok) await BattleLoop();
-    }
-
-    /// <summary>B20：接战当前地点的固定战（地牢房间/检查哨）或旧精英可选挑战；流程同主动接近。</summary>
-    public async Task EngageFixed(string? eliteId = null)
-    {
-        if (State == null || BattleBusy) return;
-        if (FormationOpen) { Notice = FormationOpenText; Notify(); return; }
-        var res = eliteId == null ? E.EngageFixed(S, Guid.NewGuid().ToString("N")) : E.EngageElite(S, eliteId, Guid.NewGuid().ToString("N"));
-        Notice = res.Ok ? null : res.Reason;
-        if (res.Ok)
-        {
-            ResetBattleUi();
-            Pop = null;
-            Selected = new Selection();
-            DetailTab = DetailTab.Object;
-            Toast = null;
-            ClearHoverNow();
-        }
-        Drain();
-        Commit();
-        Notify();
-        if (res.Ok) await BattleLoop();
     }
 
     // ───────────── B21 地牢远征（R03 D3/D5、A10 §7） ─────────────
@@ -3312,12 +3249,16 @@ public sealed partial class GameSession
                 while (State != null && S.Battle != null && BattleReadingPause) await Task.Delay(120);
                 if (State == null || S.Battle == null) break;
                 var at = S.Battle.Cursor < S.Battle.Queue.Count ? S.Battle.Queue[S.Battle.Cursor] : (int?)null;
+                var stepBattle = S.Battle.BattleId;
                 var r = E.BattleStep(S);
+                var chained = State != null && S.Battle != null && S.Battle.BattleId != stepBattle;
+                if (chained) { OnChainedBattle(); at = null; }
                 // B9 遗留 1：敌人这一步结算完游标已经往后走，展示停顿期间按“刚出手的那一只”点名
                 BattleShownActor = r.Kind == BattleStepKind.EnemyActed && at > 0 ? at : null;
                 Drain();
                 Commit();
                 Notify();
+                if (chained) { await Task.Delay(EnemyStepDelayMs); continue; }   // B41e3：上一场结束、下一场已开——接着走下一场（敌方先手等），不停在“已结束”
                 if (r.Kind is BattleStepKind.None or BattleStepKind.Ended or BattleStepKind.Dialogue) break;
                 if (r.Kind is BattleStepKind.EnemyActed or BattleStepKind.RoundEnded)
                     await Task.Delay(EnemyStepDelayMs);
@@ -3340,6 +3281,20 @@ public sealed partial class GameSession
         ReconcileSelection();
         ClearHoverNow();
         if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
+    }
+
+    /// <summary>
+    /// B41e3（R05 Q416 第 4 条）：一次指令／推进让上一场战斗结束、回到非战斗边界时，另一张到期敌踪立刻开了下一场（战斗号变了）——
+    /// 先按战斗结束收尾上一场（清指令、目标、悬停与失效选中），再按原入战流程接下一场（收盘、清选中、右栏对象页、自动选目标）；
+    /// 上一场的目标、草稿、菜单不带进下一场。
+    /// </summary>
+    private void OnChainedBattle()
+    {
+        OnBattleEnded();
+        Pop = null;
+        Selected = new Selection();
+        DetailTab = DetailTab.Object;
+        AutoTarget();
     }
 
     // ───────────── 七个穿戴槽（S06 全系统更新目标 §1、R02 §1、A05 §5；开发计划 v0.9 B3 H5/H9） ─────────────
@@ -3531,7 +3486,7 @@ public sealed partial class GameSession
         FormationDraft = E.RepairedFormation(S, S.FormationPreset);
         FormationDraftVersion = S.FormationVersion;
         FormationPick = null;
-        FormationLeader = E.CardsV2(S) ? E.SquadLeaderId(S) : null;   // B41e2：开关开时队长随编队草稿一起编辑
+        FormationLeader = E.SquadLeaderId(S);   // B41e2：队长随编队草稿一起编辑
         OpenPanel("formation");
     }
 

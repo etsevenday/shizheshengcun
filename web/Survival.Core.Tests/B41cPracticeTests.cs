@@ -166,11 +166,4 @@ public class B41cPracticeTests : B41cTestBase
         E.DebugActor(s, "npc_lin_zhao", "kill");
         Assert.That(s.Log.Any(l => l.Text.Contains("潜行练习已结束")), Is.False, "主角终局只走终局呈现");
     }
-
-    [Test]
-    public void SwitchOff_NoPractice()
-    {
-        var s = LegacyField();
-        Assert.That(Off.StartPractice(s, GameState.PlayerId).Reason, Is.EqualTo("未知行动"));
-    }
 }

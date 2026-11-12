@@ -4,7 +4,7 @@
 @* 战斗右栏“对象信息”（v0.6 §07；S14 §18.4、R03 §7.4）：只读预测；BM2（Q497）起瞄准中目标预测区底部另有「执行{指令名} Enter」，
    与 Enter、点亮起的合法目标同一校验与去重（取代旧「右栏绝不保留执行按钮」）。
    瞄准中本次明确查看的合法目标（BattleAimTarget：悬停或 ←/→ 指定，移出锚点保留）→ 对该目标的实际预测（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）；
-   未瞄准时显示悬停或选中的敌人详情，移开恢复已选对象；另列最近战斗记录。敌踪选择时显示敌方组成与绕行预测。 *@
+   未瞄准时显示悬停或选中的敌人详情，移开恢复已选对象；另列最近战斗记录。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -17,41 +17,7 @@
     var peekAlly = PeekKey.KindOf(peekKey) == PeekKey.Ally ? PeekKey.Part(peekKey!, 0) : null;
 }
 
-@if (b == null && s.Encounter != null)
-{
-    <div class="detail-scroll">
-        <div class="op-head">
-            <div class="eyebrow">发现敌踪 · @e.LocName(s.Encounter.LocationId)</div>
-            <h2>接敌还是绕行？</h2>
-            <p>原@(s.Encounter.Source == "explore" ? "探索" : "清理")的结果已经提交，不会因为这次选择回滚。</p>
-        </div>
-        @* 试玩修复 M553：这一支 b（s.Battle）一定为空，视角成员取 MeId（敌踪时就是主角），不能读战斗里的 FocusId *@
-        @{ var joinIds = e.EncounterJoiners(s).Select(x => x.Id).ToHashSet(); }
-        @foreach (var w in e.EncounterEnemies(s))
-        {
-            var ec = e.Enemy(w.EnemyId);
-            @if (!joinIds.Contains(w.Id))
-            {
-                @* 试玩修复 B7c-2：容量 C 以外的不参战，不列命中/伤害 *@
-                <div class="lines enemy-lines"><div><span>@ec.Name</span><b>留在原地、不参战（超出本场容量）</b></div></div>
-                continue;
-            }
-            <div class="lines enemy-lines">
-                <div><span>@ec.Name</span><b>健康@(Ui.N(w.Hp))/@(Ui.N(ec.Hp)) · 甲@(Ui.T(ec.Armor))</b></div>
-                <div><span>对@(GameEngine.MeId(s) == GameState.PlayerId ? "你" : e.ActorDisplayName(s, GameEngine.MeId(s)))命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))（攻击能力@(Ui.T(ec.AttackRating))对闪避@(Ui.T(e.MyBaseDodge(s)))）</b></div>
-                <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)@(ec.IsZombie ? BiteText(ec) : "")</b></div>
-            </div>
-        }
-        <div class="risk">当前免疫@(Ui.N(s.Body.Immunity))。咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div>
-        <ul class="notes">
-            <li>接敌：入战恐慌=(100−精神)/2；@e.FearNote(s, e.EncounterJoiners(s), GameEngine.FearEncounter)。每轮推进5分钟世界时间。</li>
-            <li>@e.CapacityText(s)：本场最多@(e.BattleCapacity(s))只敌人（含之后被噪声吸引来的增援）。@(e.EncounterStayNote(s) is string cn ? cn + "。" : "")</li>
-            <li>绕行：固定@(e.Config.Encounters.BypassMinutes)分钟、按移动消耗；敌人仍留在这里；之后@(Clock.Duration(e.Config.Encounters.PostExitRandomEncounterGraceMinutes))内不会再随机遇敌，主动接近仍可。</li>
-        </ul>
-    </div>
-    <div class="detail-foot"><div class="under">在中间的敌踪卡下方选择接敌或绕行</div></div>
-}
-else if (b != null)
+@if (b != null)
 {
     var awaiting = e.AwaitingPlayer(s);
     var aiming = G.BattleAiming;
@@ -263,15 +229,6 @@ else if (b != null)
         if (k == null) return;
         try { await JS.InvokeVoidAsync("survivalPeek.top", ".bfs-info .detail-body"); }
         catch (JSException) { /* 旧缓存 app.js 没有 top：只是不复位 */ }
-    }
-
-    /// <summary>丧尸的咬击口径（A09 §1 意图循环）：抓击类的咬击改判概率，或循环里固定的一次咬击；没有咬击写明。</summary>
-    private static string BiteText(EnemyConfig ec)
-    {
-        var steps = ec.Intents.Opening.Concat(ec.Intents.Cycle).ToList();
-        var pct = steps.Where(x => x.Kind == "attack").Select(x => x.BitePct).DefaultIfEmpty(0).Max();
-        if (pct > 0) return $" · 攻击时{Ui.T(pct)}%改为咬击";
-        return steps.Any(x => x.Kind == "bite") ? " · 循环里有一次咬击" : " · 不咬击";
     }
 
     /// <summary>敌人身上的技能状态（B7）：标记、破甲、虚弱、保护、弹药。</summary>

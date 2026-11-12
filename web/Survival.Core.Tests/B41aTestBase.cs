@@ -7,38 +7,46 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41a 新版敌踪用例的公共工具：开关 encounters.enemyCardsV2 打开的配置（发布配置默认关，这里在内存里改成开）、
-/// 把当前状态写成“上一版（schema 45）旧档”再读回。
+/// B41a 新版敌踪用例的公共工具：野外布置、把当前状态写成“上一版（schema 45）旧档”再读回、在状态上摆出旧版才有的
+/// 待处理敌踪与在办绕行（B41e3 起旧流程已删，只能直接改状态模拟旧档）。
 /// </summary>
 public abstract class B41aTestBase : BattleTestBase
 {
-    /// <summary>发布配置把 encounters.enemyCardsV2 改成 true（其余原样）。</summary>
-    protected static readonly GameConfig CfgV2 = LoadConfig(true);
+    /// <summary>发布配置（B41e3 起新版敌踪是唯一流程）。</summary>
+    protected static GameConfig CfgV2 => Cfg;
 
-    /// <summary>开关明确关着的配置（不受 SURVIVAL_ENEMY_CARDS_V2 影响）。</summary>
-    protected static readonly GameConfig CfgOff = LoadConfig(false);
-
-    /// <summary>开关关着的引擎（E 在本基类里是开关开着的）。</summary>
-    protected GameEngine Off = null!;
-
-    [SetUp]
-    public void V2SetUp()
-    {
-        Off = new GameEngine(CfgOff);
-        E = new GameEngine(CfgV2);
-    }
-
-    /// <summary>旧版（开关关）新局：去掉新剧情，冻结刷新与巡游，第2日白天在农野荒地，清掉原有敌人。</summary>
+    /// <summary>旧档式新局：同 <see cref="V2Field"/> 的布置，但敌踪卡模型标记退回 0（等同新版上线前的旧档，读档时才采纳）。</summary>
     protected GameState LegacyField(uint seed = 7)
     {
-        var s = Off.NewGame(seed);
-        Off.DebugLegacyStory(s);
-        PrepareField(Off, s);
+        var s = New(seed);
+        s.SuppressEnemyApproach = true;   // 旧版没有敌踪接近；不存档，读档后的新版状态照常接近
+        PrepareField(E, s);
+        s.EnemyCards.ModelVersion = 0;
         return s;
     }
 
+    /// <summary>旧版“发现敌踪、待选接敌／绕行”的待处理名单（只存在于旧档）：按给定顺序摆在当前地点。</summary>
+    protected static void LegacyEncounter(GameState s, IEnumerable<WorldEnemy> group, string source = "clear")
+    {
+        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = group.Select(w => w.Id).ToList(), Source = source, Minute = s.GameMinute };
+    }
+
     /// <summary>
-    /// 新版（开关开）新局：同上布置。B41a 的用例按 B41a 口径写（没有接近时限与敌方开战），这里冻结敌踪接近（不存档的 SuppressEnemyApproach）；
+    /// 旧版在办绕行（只存在于旧档）：用等待开工、推进一段，再把行动改成旧绕行 10 分钟的样子（类型、名称、目标、计划时长），
+    /// 已耗时间与身体变化按真实推进保留。
+    /// </summary>
+    protected void LegacyBypass(GameState s, bool advance = true)
+    {
+        Start(s, ActionRequest.Wait(30));
+        if (advance) E.Advance(s);
+        s.Main!.Type = ActionType.Bypass;
+        s.Main.PlannedMinutes = 10;
+        s.Main.Label = "绕行敌踪";
+        s.Main.TargetId = s.CurrentLocation;
+    }
+
+    /// <summary>
+    /// 新局：去掉新剧情，冻结刷新与巡游，第2日白天在农野荒地，清掉原有敌人。B41a 的用例按 B41a 口径写（没有接近时限与敌方开战），这里冻结敌踪接近（不存档的 SuppressEnemyApproach）；
     /// B41b 的用例用 B41bTestBase 的布置放开。
     /// </summary>
     protected GameState V2Field(uint seed = 7)
@@ -46,7 +54,6 @@ public abstract class B41aTestBase : BattleTestBase
         var s = New(seed);
         s.SuppressEnemyApproach = true;
         PrepareField(E, s);
-        Assert.That(E.CardsV2(s), Is.True);
         return s;
     }
 

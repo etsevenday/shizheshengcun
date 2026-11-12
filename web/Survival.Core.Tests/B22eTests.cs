@@ -195,10 +195,10 @@ public class B22eTests : TestBase
         var why = E.CanStart(s, Fire());
         Assert.That(why, Does.Contain("缺少石块（现有1/需4）").And.Contain("缺少木材（现有0/需2）"), "材料逐项写全");
         Assert.That(E.WildFireReasons(s), Has.Count.EqualTo(2));
-        // 敌踪：不能靠施工躲开
-        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = new List<int>(), Source = "explore", Minute = s.GameMinute };
-        Assert.That(E.CanStart(s, Fire()), Does.Contain("敌踪"));
-        Assert.That(E.WildFireReasons(s), Has.Some.Contains("敌踪").And.Some.Contains("缺少石块"));
+        // 战斗中：不能靠施工躲开（B41e3 起敌踪卡本身不挡施工，旧「发现敌踪」一句随旧接敌流程删除）
+        s.Battle = new BattleState();
+        Assert.That(E.WildFireReasons(s), Has.Some.Contains("战斗中不能施工").And.Some.Contains("缺少石块"));
+        Assert.That(E.WildFireReasons(s), Has.None.Contains("敌踪"));
     }
 
     [Test]

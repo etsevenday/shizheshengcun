@@ -36,7 +36,6 @@ namespace Survival.Core.Engine
             ActionType.Butcher => "butcher",
             ActionType.Repair => "repair",
             ActionType.Salvage => "salvage",
-            ActionType.Bypass => "bypass",
             ActionType.Survey => "gather",   // 遗迹勘整按正常搜集身体费率（Q55）
             _ => "wait",
         };
@@ -605,14 +604,6 @@ namespace Survival.Core.Engine
                     return true;
                 case ActionType.Butcher:
                     return CompleteButcher(s, a);
-                case ActionType.Bypass:
-                {
-                    ClearAction(s, a);
-                    // 绕行不杀死、不清空世界敌人，只暂时避开；之后60分钟内不再随机接敌（主动接敌仍可）
-                    s.EncounterGraceUntil = s.GameMinute + Config.Encounters.PostExitRandomEncounterGraceMinutes;
-                    Emit(s, GameEventKind.ActionCompleted, $"绕行完成，暂时避开了敌踪；{Clock.Duration(Config.Encounters.PostExitRandomEncounterGraceMinutes)}内不会再随机遇敌。");
-                    return true;
-                }
                 case ActionType.Ignite:
                 {
                     ClearAction(s, a);
