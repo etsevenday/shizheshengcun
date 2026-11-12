@@ -288,6 +288,8 @@ namespace Survival.Core.Engine
             public ActionType Type;
             public bool IsSub;
             public bool TravelPaused;
+            /// <summary>B41b（R05 Q472）：战后撤退离地保留暂停期间发起的地图移动——开工时把原工作整份暂存，移动作为当前普通主行动。</summary>
+            public bool StashMain;
             public string TargetId = "";
             public string Label = "";
             public double BaseWork;
@@ -340,6 +342,14 @@ namespace Survival.Core.Engine
             if (s.Main == null)
             {
                 plan.IsSub = false;
+            }
+            else if (r.Type == ActionType.Travel && s.Main.Status == ActionStatus.Paused && s.Main.RetreatMoveOpen && s.Sub == null
+                     && s.StashedWork == null && CardsV2(s))
+            {
+                // B41b（R05 Q464、Q472、Q473）：战后撤退离地保留的暂停期间，地图上已发现、已开通的合法「前往」持续可走（不限方向、回到原地也不收回）；
+                // 移动按原规则校验，通过并开工时才把原工作整份暂存，移动作为当前普通主行动
+                plan.IsSub = false;
+                plan.StashMain = true;
             }
             else if (s.Main.Status == ActionStatus.Paused && s.Sub == null)
             {
@@ -845,7 +855,7 @@ namespace Survival.Core.Engine
 
         /// <summary>本次 Main 在这个资源点搜集时占着的预留（Q252、Q260）；别的行动和旧档残留的 Reserved 不算。只给卡面读法，不改账。</summary>
         private static int OwnGatherHeld(GameState s, string nodeId) =>
-            s.Main != null && s.Main.Type == ActionType.Gather && s.Main.TargetId == nodeId ? s.Main.ReservedResourceUnits : 0;
+            s.MainWorks().FirstOrDefault(m => m.Type == ActionType.Gather && m.TargetId == nodeId)?.ReservedResourceUnits ?? 0;   // B41b Q472：暂存的原采集仍算在办
 
         /// <summary>空闲时开始主行动；主行动暂停时开始子行动（补给、休息、点火）。</summary>
         public ActionResult Start(GameState s, ActionRequest r)
@@ -855,6 +865,12 @@ namespace Survival.Core.Engine
             var err = Validate(s, r, out var p);
             if (err != null) return ActionResult.Fail(err);
             RememberRequest(s, r.RequestId);
+            if (p.StashMain)
+            {
+                // B41b（R05 Q472 第 1、2 条）：原工作完整暂存（身份、进度、预留与来源、工具锁、随机结果原样），不推进、不释放、不写开工／取消日志
+                s.StashedWork = s.Main;
+                s.Main = null;
+            }
 
             var a = new ActionState
             {
@@ -1022,6 +1038,7 @@ namespace Survival.Core.Engine
             // B16 fixed_wait：固定等待不吃装备/节点倍率，也不用工作量余额（需求就是配方原分钟）
             if (p.CampingItem != null) a.LockedItemIds.Add(p.CampingItem.InstanceId);
             if (a.IsWorkType && !a.FixedWait) ReserveCarry(s, a, p.BaseWork);
+            if (!p.IsSub && CardsV2(s)) RecordWorkOrigin(s, a);   // B41b（R05 Q440、Q466）：开工所在区、地牢世代与预留来源
             if (p.IsSub) s.Sub = a; else s.Main = a;
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse)
                 Emit(s, GameEventKind.ActionStarted, $"开始{a.Label}。");
@@ -1048,6 +1065,8 @@ namespace Survival.Core.Engine
             try { Release(s, a, s.Ground); }
             finally { _stagedCancelNote = null; }
             if (a.IsSub) s.Sub = null; else s.Main = null;
+            // B41b（R05 Q472 第 5 条）：退出暂存期间的当前移动只取消移动；原工作随后放回主行动位、仍暂停，预留不被移动取消释放
+            var keptWork = a.IsSub ? null : RestoreStashedWork(s);
 
             string text = a.Type switch
             {
@@ -1070,6 +1089,7 @@ namespace Survival.Core.Engine
                 _ => $"已结束{a.Label}。",
             };
             if (stagedNote.Count > 0) text += string.Join("", stagedNote);   // B23 试玩修复：记录领取保留的段写进取消提示
+            if (keptWork != null) text += StillPausedText(keptWork);
             Emit(s, GameEventKind.ActionCancelled, text);
             if (apTxn != null) AppraisalServiceEnd(s, apTxn.NpcId);   // B22d Q177：鉴定/换物开工后取消，播一次陶岑原结束句
             UpdateFlags(s);
@@ -1127,6 +1147,8 @@ namespace Survival.Core.Engine
             // B41b：敌方接近打断后，战斗中不能继续原行动（战后按当前合法条件继续或退出）
             if (CardsV2(s) && s.Battle != null) return ActionResult.Fail("战斗中：请使用战斗指令");
             if (s.Sub != null) return ActionResult.Fail("请等待当前补给或维护完成");
+            if (KeptWorkResumeBlock(s, s.Main) is string keptWhy) return ActionResult.Fail(keptWhy);
+            s.Main.RetreatMoveOpen = false;   // B41b（R05 Q473）：成功继续原工作即结束本次暂停的移动例外
             s.Main.Status = ActionStatus.Running;
             s.Main.PauseReason = PauseReason.None;
             s.Main.PauseStat = null;
@@ -1146,7 +1168,11 @@ namespace Survival.Core.Engine
                 rs.Available = (rs.Available ?? 0) + a.ReservedResourceUnits;
                 a.ReservedResourceUnits = 0;
             }
-            if (a.ReservedItemIds.Count > 0)
+            if (a.ReservedItemIds.Count > 0 && a.RetreatKept && CardsV2(s))
+            {
+                ReleaseToSources(s, a);   // B41b（R05 Q466）：本批因撤退离地保留的行动按开工来源返还
+            }
+            else if (a.ReservedItemIds.Count > 0)
             {
                 var owners = new HashSet<string> { groundLocation };
                 foreach (var id in a.ReservedItemIds)

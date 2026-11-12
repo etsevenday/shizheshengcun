@@ -26,7 +26,7 @@ namespace Survival.Core.Engine
 
         /// <summary>该地点正在建安全屋：主行动是安全屋基础的建造且在此地开工（暂停也算）；取消即回到未开工。</summary>
         public bool SafehouseBuilding(GameState s, string locationId) =>
-            s.Main is ActionState a && a.Type == ActionType.Build && a.TargetId == Config.Safehouse.BuildRecipe && a.SourceLocation == locationId;
+            s.MainWorks().Any(a => a.Type == ActionType.Build && a.TargetId == Config.Safehouse.BuildRecipe && a.SourceLocation == locationId);
 
         /// <summary>not_started / building / built（S09 X2.4）。</summary>
         public string SafehouseStatus(GameState s, string locationId) =>

@@ -138,10 +138,11 @@ namespace Survival.Core.Engine
         private void Zombify(GameState s)
         {
             var loc = s.Ground;
-            foreach (var a in new[] { s.Sub, s.Main })
+            foreach (var a in new[] { s.Sub, s.Main, s.StashedWork })   // B41b Q472 第 7 条
                 if (a != null) Release(s, a, loc);
             s.Main = null;
             s.Sub = null;
+            s.StashedWork = null;
             s.Body.VirusLoad = Inf.ZombificationAtLoad;
             s.Progress.Dead = true;
             s.Progress.Death = new DeathInfo { Cause = ZombifiedCause, Minute = s.GameMinute, LocationId = loc, Zombified = true };

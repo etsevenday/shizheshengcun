@@ -305,7 +305,8 @@ namespace Survival.Core.Engine
             UsableBatches(s, itemId, allowGround, includeContainers).Sum(i => i.Count);
 
         public bool IsLocked(GameState s, ItemInstance i) =>
-            (s.Main != null && s.Main.LockedItemIds.Contains(i.InstanceId)) || (s.Sub != null && s.Sub.LockedItemIds.Contains(i.InstanceId));
+            (s.Main != null && s.Main.LockedItemIds.Contains(i.InstanceId)) || (s.Sub != null && s.Sub.LockedItemIds.Contains(i.InstanceId))
+            || (s.StashedWork != null && s.StashedWork.LockedItemIds.Contains(i.InstanceId));   // B41b Q472：暂存原工作的工具锁仍生效
 
         // ───────────────────────── 金属锅（拖拽与容器案 6） ─────────────────────────
 

@@ -1536,6 +1536,8 @@ namespace Survival.Core.Engine
             else if (outcome == "retreat" && WorldRetreatLanding(s, b) is string worldLanded) fixedLines.Add(worldLanded);
             // B22h 试玩修复（M448）：远征外的地牢节点、上线前开始的旧战撤退留在原地——结果提示与预览一致写“留在<地点>”
             else if (outcome == "retreat" && !s.Progress.Dead) fixedLines.Add($"留在{LocName(loc)}");
+            // B41b（R05 Q440、Q463）：主行动已暂停、撤退又让队伍离开原行动地点／区域——保留这次暂停（不限最初暂停原因），开放地图移动
+            if (outcome == "retreat" && CardsV2(s) && !s.Progress.Dead) KeepPausedWorkOnRetreat(s);
             var me = b.Fighter(GameState.PlayerId);
             var loss = Math.Min(Config.Panic.MoraleLossMax, me.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Actor(GameState.PlayerId).Stats.Add(StatId.Morale, -loss);

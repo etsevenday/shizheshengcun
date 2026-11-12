@@ -501,9 +501,12 @@ namespace Survival.Core.Engine
                     var mapNotes = new List<string>();
                     var revealed = Visit(s, a.TargetId, mapNotes);
                     ClearAction(s, a);
+                    // B41b（R05 Q472 第 4 条）：先提交到达，再把暂存的原工作放回主行动位、仍暂停（在到达后的敌踪入战／对白触发前回填）
+                    var keptWork = RestoreStashedWork(s);
                     var t = $"到达{LocName(a.TargetId)}（{AwardTravelXp(s, from, a.TargetId)}）。";
                     if (revealed.Count > 0) t += $"发现{string.Join("、", revealed.Select(id => _res[id].Name))}。";
                     foreach (var n in mapNotes) t += n + "。";
+                    if (keptWork != null) t += StillPausedText(keptWork);
                     Emit(s, GameEventKind.ActionCompleted, t, null, revealed);
                     ExpeditionAfterArrive(s, a.TargetId);   // B21：维护来路轨迹；通关后离开地牢结束远征
                     NoteArrive(s, from, a.TargetId);   // B13：PRO14 往返、到达反应、出区抵达
@@ -703,10 +706,11 @@ namespace Survival.Core.Engine
         private void Kill(GameState s, string cause)
         {
             var loc = s.Ground;
-            foreach (var a in new[] { s.Sub, s.Main })
+            foreach (var a in new[] { s.Sub, s.Main, s.StashedWork })   // B41b Q472 第 7 条：终局同时收束暂存的原工作，各占用只释放一次
                 if (a != null) Release(s, a, loc);
             s.Main = null;
             s.Sub = null;
+            s.StashedWork = null;
             s.Actor(GameState.PlayerId).Stats.Health = 0;   // B9a：战斗中 s.Stats 可能指向当前视角的队友，主角终局只改主角
             s.Progress.Dead = true;
             s.Progress.Death = new DeathInfo

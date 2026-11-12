@@ -15,7 +15,7 @@ namespace Survival.Core.Engine
 
         /// <summary>主行动正在采集/搜集这个资源点。</summary>
         public static bool BusyResource(GameState s, string nodeId) =>
-            s.Main is ActionState a && a.Type == ActionType.Gather && a.TargetId == nodeId;
+            s.MainWorks().Any(a => a.Type == ActionType.Gather && a.TargetId == nodeId);   // B41b Q472：暂存的原采集仍是在办
 
         /// <summary>主行动正在当前地点探索、清理或遗迹勘整（作用于地点大图卡）。</summary>
         public static bool BusyPlace(GameState s, string locationId) =>
@@ -28,7 +28,7 @@ namespace Survival.Core.Engine
 
         /// <summary>主行动正在建造这个设施配方（遮蔽棚、床垫等设施卡）。</summary>
         public static bool BusyBuild(GameState s, string recipeId) =>
-            s.Main is ActionState a && a.Type is ActionType.Build or ActionType.Craft && a.TargetId == recipeId;
+            s.MainWorks().Any(a => a.Type is ActionType.Build or ActionType.Craft && a.TargetId == recipeId);
 
         // ───────────── Q345 危险 ─────────────
 

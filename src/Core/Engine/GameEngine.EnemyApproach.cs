@@ -280,5 +280,106 @@ namespace Survival.Core.Engine
         {
             s.Story.TutorialBattleId = s.Battle?.BattleId;
         }
+
+        // ───────────────────────── 战后撤退离地保留暂停（R05 Q440、Q463—Q466、Q472—Q474） ─────────────────────────
+
+        /// <summary>某地点所属地牢的当前代号；不在地牢里为 null。</summary>
+        private int? DungeonGenerationAt(GameState s, string locationId) =>
+            DungeonAt(locationId) is string d ? (s.DungeonInstances.TryGetValue(d, out var inst) ? inst.Generation : 0) : (int?)null;
+
+        /// <summary>开工时记下所在区、地牢世代与每个预留批次的开工来源（真实物主或地面地点／区域）；只在新版敌踪下记（Q440、Q466）。</summary>
+        private void RecordWorkOrigin(GameState s, ActionState a)
+        {
+            a.StartZone = s.CurrentZone;
+            a.StartGeneration = DungeonGenerationAt(s, a.SourceLocation);
+            BackfillReserveSources(s, a);
+        }
+
+        /// <summary>给还没有来源记录的预留批次补来源：取它此刻的真实归属（预留只打标记不搬物；Q466 旧档补齐也走这里）。已记的不改写。</summary>
+        private void BackfillReserveSources(GameState s, ActionState a)
+        {
+            foreach (var id in a.ReservedItemIds)
+            {
+                if (a.ReserveSources != null && a.ReserveSources.ContainsKey(id)) continue;
+                var inst = FindItem(s, id);
+                if (inst == null) continue;
+                (a.ReserveSources ??= new Dictionary<int, string>())[id] = inst.Owner;
+            }
+        }
+
+        /// <summary>
+        /// 撤退成功、队伍落地之后：主行动已经暂停且队伍已离开它的原地点／区域，就按 Q440 保留这次暂停（不限最初暂停原因，Q463）——
+        /// 记保留标记、开放地图移动（Q464、Q473），旧行动缺的区域／世代／来源在这里按仍在原处的真实状态补齐（Q466）。移动、撤出不适用。
+        /// </summary>
+        private void KeepPausedWorkOnRetreat(GameState s)
+        {
+            var a = s.Main;
+            if (a == null || a.IsSub || a.Status != ActionStatus.Paused || a.Type is ActionType.Travel or ActionType.Extract) return;
+            // 暂停期间不能进出安全屋、不能移动（除本例外），开战只在屋外：旧行动缺区域时就是屋外，缺世代时取原地点当前世代（撤退不换代）
+            a.StartZone ??= ExteriorZone;
+            if (a.StartGeneration == null) a.StartGeneration = DungeonGenerationAt(s, a.SourceLocation);
+            if (s.CurrentLocation == a.SourceLocation && s.CurrentZone == a.StartZone) return;
+            BackfillReserveSources(s, a);
+            a.RetreatKept = true;
+            a.RetreatMoveOpen = true;
+        }
+
+        /// <summary>移动到达或退出后把暂存的原工作放回主行动位（仍暂停、不自动继续）；没有暂存返回 null（Q472 第 4、5 条）。</summary>
+        private ActionState? RestoreStashedWork(GameState s)
+        {
+            var w = s.StashedWork;
+            if (w == null || s.Main != null) return null;
+            s.Main = w;
+            s.StashedWork = null;
+            return w;
+        }
+
+        /// <summary>移动到达／退出结果末尾追加一次的事实分句（逐字稿 Q472 表）。</summary>
+        private static string StillPausedText(ActionState w) => $"{w.Label}仍保持暂停。";
+
+        /// <summary>原行动地点／区域的公开名称（屋外为地点名，屋内为安全屋名）。</summary>
+        public string WorkPlaceName(GameState s, ActionState a) => ZoneName(s, ZonePlace(a.SourceLocation, a.StartZone ?? ExteriorZone));
+
+        /// <summary>
+        /// 战后撤退离地保留的原工作继续前的地点与世代校验（Q440）：原地牢世代失效「原行动地点已失效，无法继续。」，
+        /// 人不在原地点／区域「请返回{地点}后再继续{行动名}。」。其余工作不受这里限制；开关关时恒为 null。
+        /// </summary>
+        private string? KeptWorkResumeBlock(GameState s, ActionState a)
+        {
+            if (!CardsV2(s) || !a.RetreatKept || a.Type == ActionType.Travel) return null;
+            if (a.StartGeneration is int g && DungeonGenerationAt(s, a.SourceLocation) != g) return "原行动地点已失效，无法继续。";
+            if (s.CurrentLocation != a.SourceLocation || s.CurrentZone != (a.StartZone ?? ExteriorZone))
+                return $"请返回{WorkPlaceName(s, a)}后再继续{a.Label}。";
+            return null;
+        }
+
+        /// <summary>
+        /// 按开工来源返还预留（Q466）：原随身部分解除预留留在原物主随身，原地面部分回原行动地点／区域地面；不按当前队伍地点改落点。
+        /// 返回实际返还的随身批数、地面落点（给 Q471 文案）。
+        /// </summary>
+        private (bool carried, string? groundPlace) ReleaseToSources(GameState s, ActionState a)
+        {
+            var carried = false;
+            string? ground = null;
+            var owners = new HashSet<string>();
+            foreach (var id in a.ReservedItemIds)
+            {
+                var inst = FindItem(s, id);
+                if (inst == null) continue;
+                inst.ReservedBy = null;
+                var src = a.ReserveSources != null && a.ReserveSources.TryGetValue(id, out var o) ? o : inst.Owner;
+                if (TryPlace(src, out _, out _))
+                {
+                    inst.Owner = src;
+                    ground ??= src;
+                }
+                else carried = true;
+                owners.Add(inst.Owner);
+            }
+            a.ReservedItemIds.Clear();
+            a.ReserveSources = null;
+            foreach (var o in owners) Normalize(s, o);
+            return (carried, ground);
+        }
     }
 }

@@ -212,6 +212,13 @@ namespace Survival.Core.State
         /// </summary>
         public ActionState? StashedWork { get; set; }
 
+        /// <summary>占着主工作位的行动：主行动与 B41b 暂存的原工作（占用、预留、工具锁判定都要算上暂存工作，Q472 第 2 条）。</summary>
+        public IEnumerable<ActionState> MainWorks()
+        {
+            if (Main != null) yield return Main;
+            if (StashedWork != null) yield return StashedWork;
+        }
+
         public ProgressState Progress { get; set; } = new ProgressState();
         public List<LogEntry> Log { get; set; } = new List<LogEntry>();
 
