@@ -92,7 +92,8 @@
                 var why = busy ? "行动进行中" : d.ReadBlocked;
                 var id = d.Id;
                 <ObjectCard @key="@("doc-" + id)" Id="@($"doc-{id}")" CssClass="@($"res-card doc-card{(d.Choices.Count > 0 ? " choice-card" : "")}{(focus == "doc:" + id ? " tut-lit" : "")}")" Title="@d.Title"
-                            Tooltip="@(why != null ? $"{d.Title}：{d.Status}。" : $"{d.Title}：{d.Status}。点卡片或“查看”阅读（不耗时，不移动、不揭开未知地点；可重读）")" OnClick="() => Read(id, why)">
+                            Tooltip="@(why != null ? $"{d.Title}：{d.Status}。" : $"{d.Title}：{d.Status}。点卡片或“查看”阅读（不耗时，不移动、不揭开未知地点；可重读）")" OnClick="() => Read(id, why)"
+                            PeekSubText="@d.CardLine">
                     <Art>@Icons.Markup(id == "village_south_sign" ? "route" : "placeholder")</Art>
                     <ChildContent>
                         @* Q259：状态行只写文书自身状态，全局原因在下面按钮（B39 Q309：aria-disabled + 可访问名称，轻点或 Enter／空格在原反馈位显示）。

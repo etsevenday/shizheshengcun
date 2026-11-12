@@ -119,7 +119,13 @@ public class BM1B42HoverTests : TestBase
     public void Q486_OnlyRailBodyDeduped()
     {
         var oc = Web("Components/ObjectCard.razor");
-        Assert.That(oc, Does.Contain("else if (!string.IsNullOrEmpty(Sub) && !PeekText.SubRepeatsDesc(Tooltip ?? SubTitle, Sub)) { <div class=\"k2-sub @SubClass\">@Sub</div> }"));
+        Assert.That(oc, Does.Contain("private bool PeekSubDup => PeekText.SubRepeatsDesc(Tooltip ?? SubTitle, PeekSubText ?? Sub);"));
+        Assert.That(oc, Does.Contain("else if (!string.IsNullOrEmpty(Sub) && !PeekSubDup) { <div class=\"k2-sub @SubClass\">@Sub</div> }"), "文字副标");
+        Assert.That(oc, Does.Contain("@if (SubContent != null) { if (PeekSubText == null || !PeekSubDup) {"), "片段副标只在给了原文时比较");
+        Assert.That(oc, Does.Contain("@if (ChildContent != null && (SubContent != null || PeekSubText == null || !PeekSubDup))"), "旧模板单行正文同理");
+        // 安全屋卡、文书卡的副标是单行片段：传该行原文参与比较
+        Assert.That(Web("Components/SafehouseCard.razor"), Does.Contain("PeekSubText=\"@(cab != null ? lead + cab : line + (!built && reasons.Count > 1 ? $\"（另{reasons.Count - 1}条）\" : \"\"))\""));
+        Assert.That(Web("Components/PrologueCards.razor"), Does.Contain("PeekSubText=\"@d.CardLine\"").And.Contain("<div class=\"oc-line\" title=\"@d.CardLine\">@d.CardLine</div>"));
         Assert.That(oc, Does.Contain("else if (!string.IsNullOrEmpty(Sub)) { <div class=\"k2-sub @SubClass\" title=\"@(SubTitle ?? Sub)\">@Sub</div> }"), "卡面副标照旧");
         Assert.That(oc, Does.Contain("Desc = Tooltip ?? SubTitle,"));
         Assert.That(oc, Does.Contain("@if (Line2 != null) { <div class=\"k2-l2\">@Line2</div> }"));

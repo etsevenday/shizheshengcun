@@ -122,13 +122,21 @@ else
         _peekReg = k;
     }
 
-    // BM1（Q486 选 A）：右栏里说明（Tooltip ?? SubTitle）与文字副标去首尾空白后相同、或任一句整段包含另一句时只留说明行；
-    // 说明为空保留副标，互不包含各留。只比这两段原文，不改卡面副标，不动标题、角标、第二行与正文。图标片段副标（SubContent）不做文字比较
+    /// <summary>
+    /// BM1（Q486）：副标以片段给出（SubContent，或旧卡模板的单行正文 ChildContent）时，该行的原文纯文字，只供右栏去重比较；
+    /// 只在片段恰好就是这一行文字时传（安全屋卡、文书卡），多行或带图标的片段不传、不比较。
+    /// </summary>
+    [Parameter] public string? PeekSubText { get; set; }
+
+    // BM1（Q486 选 A）：右栏里说明（Tooltip ?? SubTitle）与副标（文字副标 Sub，或片段副标的原文 PeekSubText）去首尾空白后相同、
+    // 或任一句整段包含另一句时只留说明行；说明为空保留副标，互不包含各留。只比这两段原文，不改卡面，不动标题、角标、第二行与其余正文
+    private bool PeekSubDup => PeekText.SubRepeatsDesc(Tooltip ?? SubTitle, PeekSubText ?? Sub);
+
     private RenderFragment PeekBody => @<div class="peek-lines">
-        @if (SubContent != null) { <div class="k2-sub @SubClass">@SubContent</div> }
-        else if (!string.IsNullOrEmpty(Sub) && !PeekText.SubRepeatsDesc(Tooltip ?? SubTitle, Sub)) { <div class="k2-sub @SubClass">@Sub</div> }
+        @if (SubContent != null) { if (PeekSubText == null || !PeekSubDup) { <div class="k2-sub @SubClass">@SubContent</div> } }
+        else if (!string.IsNullOrEmpty(Sub) && !PeekSubDup) { <div class="k2-sub @SubClass">@Sub</div> }
         @if (Line2 != null) { <div class="k2-l2">@Line2</div> }
-        @if (ChildContent != null) { <div class="oc-body">@ChildContent</div> }
+        @if (ChildContent != null && (SubContent != null || PeekSubText == null || !PeekSubDup)) { <div class="oc-body">@ChildContent</div> }
     </div>;
 
     public void Dispose()
