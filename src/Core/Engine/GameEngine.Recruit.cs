@@ -766,6 +766,7 @@ namespace Survival.Core.Engine
                 + (items.Count > 0 ? $"{items.Count}件个人物品已放进{LocName(Rc.LocationId)}认领箱，只能在这里取。" : "")
                 + (loans.Count > 0 ? $"借用矛（{string.Join("、", loans)}）在认领箱里，仍归原借用位，不另发。" : "")
                 + $"随机/保底名册{SharedRoster(s).Count}/{SharedRosterCap(s)}。");
+            AfterSquadLeave(s, actorId);
             return ActionResult.Success();
         }
 

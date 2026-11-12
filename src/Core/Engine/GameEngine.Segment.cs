@@ -402,6 +402,7 @@ namespace Survival.Core.Engine
             var whereName = houseOf != null ? $"{SafehouseName(s, houseOf)}屋内" : LocName(where);
             Emit(s, GameEventKind.Alert, inBattle && wasActive ? $"{ActorLabel(actor)}已战死（{cause}）"
                 : $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{whereName}。" : "。"));
+            AfterSquadLeave(s, actor.Id);   // B41c：队长回退、练习潜行收束（先写原死亡结果再追加）
             return moved;
         }
 

@@ -227,6 +227,7 @@ namespace Survival.Core.Engine
             ApplySetActive(s, actorId, active);
             var name = RosterOf(s, actorId)!.Name;
             Emit(s, GameEventKind.Info, active ? $"{name}编入同行队伍。" : $"{name}留在{LocName(HubLocation(s))}作候补（自主休息/睡眠，饱食/水分/精神慢慢回到{Fmt.T(Config.Party.ReserveCare.PublicNutritionTarget)}，伤病照常）。");
+            if (!active) AfterSquadLeave(s, actorId);
             return ActionResult.Success();
         }
 
@@ -273,6 +274,7 @@ namespace Survival.Core.Engine
             ApplySetActive(s, actorId, false, loc);
             var name = RosterOf(s, actorId)!.Name;
             Emit(s, GameEventKind.Info, $"{name}留守{SafehouseName(s, loc)}屋内作候补（0分钟；自主休息/睡眠，饱食/水分/精神慢慢回到{Fmt.T(Config.Party.ReserveCare.PublicNutritionTarget)}，伤病照常；要你回到这间屋里才能再编入同行）。");
+            AfterSquadLeave(s, actorId);
             return ActionResult.Success();
         }
 
@@ -369,7 +371,7 @@ namespace Survival.Core.Engine
         /// 保存编队的只读预演（提交时同一函数重验）：空闲；草稿基于的阵容版本未变；正好 4 格；每名存活当前同行者恰一格、每格至多一人、
         /// 主角必在、不含同行以外的人；与当前预设相同为“没有改动”。C 只限制同行人数，不限制可选号位。null 为可以保存。
         /// </summary>
-        public string? SaveFormationBlocked(GameState s, IList<string> slots, int baseVersion)
+        public string? SaveFormationBlocked(GameState s, IList<string> slots, int baseVersion, string? leaderId = null)
         {
             var why = FormationEditBlocked(s);
             if (why != null) return why;
@@ -381,7 +383,11 @@ namespace Survival.Core.Engine
             var party = RepairedFormation(s, s.FormationPreset).Where(id => id != "").ToList();
             if (members.Any(id => !party.Contains(id))) return "编队里有不在当前同行队伍里的人";
             if (party.Any(id => !members.Contains(id))) return "每名当前同行者都要有一个号位";
-            if (slots.Select(x => x ?? "").SequenceEqual(s.FormationPreset)) return "编队没有改动";
+            // B41c（R08 Q342）：开关开时可一起选小队队长（主角或编队里存活的同行者）；null = 不改
+            var v2Leader = leaderId != null && CardsV2(s);
+            if (v2Leader && (!members.Contains(leaderId!) || !SquadMemberValid(s, leaderId!))) return "队长已失效，请重新选择。";
+            if (slots.Select(x => x ?? "").SequenceEqual(s.FormationPreset)
+                && (!v2Leader || NormalLeader(leaderId!) == s.SquadLeader)) return "编队没有改动";
             return null;
         }
 
@@ -389,17 +395,26 @@ namespace Survival.Core.Engine
         /// 保存编队（Q86）：原子写入 4 格预设并把阵容版本 +1；0 世界分钟、0AP、0E、0 经验，不治疗、不恢复状态、不重抽、不动工作余额/队列/设施计时。
         /// 重复请求幂等；任何条件不满足整份不变。下一场战斗按它开局，战斗中的站位变化不反写。
         /// </summary>
-        public ActionResult SaveFormation(GameState s, IList<string> slots, int baseVersion, string? requestId = null)
+        public ActionResult SaveFormation(GameState s, IList<string> slots, int baseVersion, string? requestId = null, string? leaderId = null)
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            var why = SaveFormationBlocked(s, slots, baseVersion);
+            var why = SaveFormationBlocked(s, slots, baseVersion, leaderId);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
             s.FormationPreset = slots.Select(x => x ?? "").ToList();
             s.FormationVersion++;
-            Emit(s, GameEventKind.Info, "编队已保存：" + FormationText(s, s.FormationPreset) + "（下一场战斗按此开局）。");
+            if (CardsV2(s))
+            {
+                // B41c（逐字稿 B41「队长与练习潜行」编队保存日志）：队长随编队一起提交，0 世界分钟
+                if (leaderId != null) s.SquadLeader = NormalLeader(leaderId);
+                Emit(s, GameEventKind.Info, "编队已保存：" + FormationText(s, s.FormationPreset) + "。小队队长：" + ActorDisplayName(s, SquadLeaderId(s)) + "。下一场战斗按此开局。");
+            }
+            else Emit(s, GameEventKind.Info, "编队已保存：" + FormationText(s, s.FormationPreset) + "（下一场战斗按此开局）。");
             return ActionResult.Success();
         }
+
+        /// <summary>存档里的队长写法：主角记为 null。</summary>
+        private static string? NormalLeader(string leaderId) => leaderId == GameState.PlayerId ? null : leaderId;
 
         /// <summary>“1号位你，2号位空，3号位唐梨，4号位空”。</summary>
         public string FormationText(GameState s, IList<string> slots) =>
@@ -574,6 +589,7 @@ namespace Survival.Core.Engine
             var active = !s.Party.Contains(actorId);
             if (active && s.Party.Count >= PartyCapacity(s)) return $"同行已满 {s.Party.Count}/{PartyCapacity(s)}";
             ApplySetActive(s, actorId, active);
+            if (!active) AfterSquadLeave(s, actorId);
             return active ? $"{r.Name}编入同行" : $"{r.Name}设为候补";
         }
     }
