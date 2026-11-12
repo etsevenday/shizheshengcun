@@ -31,7 +31,8 @@ public class B41bMigrationTests : B41aTestBase
         Assert.That(GameState.CurrentSchema, Is.EqualTo("47"));
         Assert.That(Cfg.Encounters.ApproachMinutes, Is.EqualTo(new[] { 20, 25, 30, 35, 40 }), "R05 Q416 五档");
         Assert.That(Cfg.Encounters.CardRetreatGuardMinutes, Is.EqualTo(60), "R05 Q416 同卡撤退保护 60 世界分钟");
-        Assert.That(Cfg.Encounters.EnemyCardsV2, Is.False, "发布配置仍关着（B41e 翻开）");
+        Assert.That(Survival.Core.Config.ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json"))).Encounters.EnemyCardsV2,
+            Is.False, "发布配置仍关着（B41e 翻开；按文件原值读，不受测试环境变量影响）");
     }
 
     [Test]

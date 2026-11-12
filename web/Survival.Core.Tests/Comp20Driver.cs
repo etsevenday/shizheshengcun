@@ -122,6 +122,17 @@ public sealed class Comp20Driver
         for (var i = 0; i < 5000 && !S.Progress.Dead; i++)
         {
             if (S.Main == null && S.Sub == null) return;
+            if (S.Battle != null && !S.Progress.Dead)
+            {
+                // B41b（R05 Q416）：敌踪到期主动开战打断当前行动——打完；能继续原行动就继续，不能（撤退离地等）就退出原行动
+                ReadDialogues();
+                Fight();
+                ReadDialogues();
+                if (S.Progress.Dead || S.Battle != null || S.Main?.Status != ActionStatus.Paused || S.Sub != null) continue;
+                if (E.ResumeBlockReason(S) == null) E.Resume(S);
+                else { Log($"无法继续{S.Main.Label}：{E.ResumeBlockReason(S)}，退出"); E.Cancel(S); }
+                continue;
+            }
             var st = E.Advance(S).Status;
             if (st == SegmentStatus.Dialogue) { ReadDialogues(); continue; }
             if (st == SegmentStatus.Paused)

@@ -218,6 +218,7 @@ public class B10cForgeFuelTests : TestBase
         var end = f.GameMinute + 60;
         while (f.GameMinute < end)
         {
+            StopIfBattle(f);
             if (f.Main == null) Start(f, ActionRequest.Wait(60));
             E.Advance(f);
         }

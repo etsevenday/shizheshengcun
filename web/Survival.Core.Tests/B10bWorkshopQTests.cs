@@ -60,6 +60,7 @@ public class B10bWorkshopQTests : TestBase
         var end = s.GameMinute + minutes;
         while (s.GameMinute < end)
         {
+            StopIfBattle(s);
             if (s.Main == null) Start(s, ActionRequest.Wait(60));
             else if (s.Main.Status == ActionStatus.Paused) E.Resume(s);
             E.Advance(s);

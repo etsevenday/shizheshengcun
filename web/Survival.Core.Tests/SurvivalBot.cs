@@ -129,6 +129,10 @@ public sealed class SurvivalBot
     private void HandleStory()
     {
         ReadDialogues();
+        // B41b（R05 Q421）：新版敌踪下首次到荒地只出教学卡、不直接开战——脚本像玩家一样马上主动接近它，保持“到荒地先打首战”的节奏
+        if (S.Battle == null && S.Main == null && S.Sub == null && !S.Progress.Dead && E.CardsV2(S) && GameEngine.TutorialGateOpen(S)
+            && S.Story.TutorialEnemyId is int tid && E.EnemyCardsHere(S).Any(c => c.Key == GameEngine.SingleCardKey(tid)))
+            E.ApproachCard(S, GameEngine.SingleCardKey(tid));
         if (S.Battle != null && !S.Progress.Dead)
         {
             Log(S.Battle.Tutorial ? "首战" : "战斗");
@@ -170,11 +174,27 @@ public sealed class SurvivalBot
         for (var i = 0; i < 3000 && !S.Progress.Dead; i++)
         {
             if (S.Main == null && S.Sub == null) return;
+            if (S.Battle != null) { EnemyApproachBattle(); continue; }
             var st = E.Advance(S).Status;
             if (st == SegmentStatus.Dialogue) { ReadDialogues(); continue; }
             if (st == SegmentStatus.Paused) HandlePause();
             else if (st != SegmentStatus.Running) { if (S.Main == null) return; }
         }
+    }
+
+    /// <summary>
+    /// B41b（R05 Q416）：敌踪到期主动开战打断了当前行动——像普通战斗一样打完；战后原行动暂停，能继续就继续，
+    /// 不能继续（撤退离地等）就退出原行动（预留按来源返还）。
+    /// </summary>
+    private void EnemyApproachBattle()
+    {
+        Log(S.Battle!.Tutorial ? "首战（敌方接近）" : "敌方接近");
+        EquipBest();
+        FightBattle();
+        ReadDialogues();
+        if (S.Progress.Dead || S.Battle != null || S.Main == null || S.Main.Status != ActionStatus.Paused || S.Sub != null) return;
+        if (E.ResumeBlockReason(S) == null) E.Resume(S);
+        else { Log($"无法继续{S.Main.Label}：{E.ResumeBlockReason(S)}，退出"); E.Cancel(S); }
     }
 
     private void DriveSub()
@@ -449,7 +469,7 @@ public sealed class SurvivalBot
         var needWood = (!fac.ShelterBuilt && Stock("wood") < 5) || Stock("wood") < 3;
         if (needWood && GoTo("woods"))
         {
-            while (woods.Progress < 25) Do(ActionRequest.Explore());
+            while (woods.Progress < 25) { if (!Do(ActionRequest.Explore())) break; }   // B41b：被敌方接近打断、撤退离地后原地动作开不了就停，不空转
             for (var i = 0; i < 3 && Avail("wood") > 0; i++) Do(ActionRequest.Gather("wood"));
             ReturnToCamp();
             return;
@@ -465,15 +485,15 @@ public sealed class SurvivalBot
 
         if (_route == Route.StreamAndRoots && food < 6 && Avail("roots") >= 2 && GoTo("field"))
         {
-            while (Avail("roots") > 0 && Tod < 19 * 60) Do(ActionRequest.Gather("roots"));
+            while (Avail("roots") > 0 && Tod < 19 * 60) { if (!Do(ActionRequest.Gather("roots"))) break; }   // B41b：被敌方接近打断、撤退离地后原地动作开不了就停，不空转
             ReturnToCamp();
             return;
         }
 
         if (_route == Route.BerriesAndCaches && food < 8 && GoTo("woods"))
         {
-            while (woods.Progress < 75) Do(ActionRequest.Explore());
-            while (Avail("berries") > 0) Do(ActionRequest.Gather("berries"));
+            while (woods.Progress < 75) { if (!Do(ActionRequest.Explore())) break; }   // B41b：被敌方接近打断、撤退离地后原地动作开不了就停，不空转
+            while (Avail("berries") > 0) { if (!Do(ActionRequest.Gather("berries"))) break; }   // B41b：被敌方接近打断、撤退离地后原地动作开不了就停，不空转
             ReturnToCamp();
             return;
         }

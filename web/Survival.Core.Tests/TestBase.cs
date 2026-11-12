@@ -108,11 +108,22 @@ public abstract class TestBase
     {
         while (s.GameMinute < minute)
         {
+            StopIfBattle(s);
             if (s.Main == null) Start(s, ActionRequest.Wait(30));
             else if (s.Main.Status == ActionStatus.Paused) E.Resume(s);
             E.Advance(s);
         }
         if (s.Main?.Type == ActionType.Wait) E.Cancel(s);
+    }
+
+    /// <summary>
+    /// 按世界时间推进的循环里调用：开关开（新版敌踪）时到期敌踪会主动开战，推进停在战斗上不再前进——直接判失败而不是空转
+    /// （B41b；开关关时不会发生，用例行为不变）。
+    /// </summary>
+    protected static void StopIfBattle(GameState s)
+    {
+        if (s.Battle != null) Assert.Fail("推进途中进入了战斗（新版敌踪：到期敌踪主动开战），时间不再前进");
+        if (s.Progress.Dead) Assert.Fail("推进途中角色已死亡，时间不再前进");
     }
 
     /// <summary>覆盖当前主行动已锁定的随机结果（itemId 为 null 表示空结果），用于验收表里的“强制抽中”。</summary>
