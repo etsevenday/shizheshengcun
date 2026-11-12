@@ -85,7 +85,7 @@ else if (b != null)
             <div class="risk none">把鼠标移到亮起的目标上，这里显示对它的实际命中率与伤害；点击亮起的目标即执行。右键或 Esc 取消，不耗AP。</div>
             @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
         </div>
-        <div class="detail-foot"><div class="under">悬停只看预测，不扣费、不抽随机</div></div>
+        <div class="detail-foot">@TargetCycle(aimSet.Count)<div class="under">悬停只看预测，不扣费、不抽随机</div></div>
     }
     else if (G.BattleAction != null)
     {
@@ -129,6 +129,7 @@ else if (b != null)
         </div>
         <div class="detail-foot">
             @* S14 §18.4、R03 §7.4：提交入口在战斗区（点亮起的目标 / 操作台“确认”），这里只作完整预测，不保留执行按钮 *@
+            @if (aiming) { @TargetCycle(aimSet.Count) }
             <div class="under">@(aiming ? "点击亮起的目标即执行；右键/Esc 取消" : $"在操作台点“确认 · {p.Title} · {p.Ap}AP”才提交；Esc 取消")</div>
         </div>
     }
@@ -211,6 +212,19 @@ else if (b != null)
 }
 
 @code {
+    /// <summary>
+    /// B43（S14「战斗目标预测切换」）：瞄准中原目标预测区的「上一目标 ←」「下一目标 →」，与方向键同一入口 BattleCycleTarget——
+    /// 只在合法目标间移动预测（悬停），不提交攻击；没有合法目标时禁用（键也无效）。只在全屏战斗里给（方向键只在全屏战斗路由）。
+    /// </summary>
+    private RenderFragment TargetCycle(int legal) => __builder =>
+    {
+        if (!G.BattleFullscreen) return;
+        <div class="bp-cycle" role="group" aria-label="切换预测目标">
+            <button type="button" class="secondary" aria-keyshortcuts="ArrowLeft" @onmousedown:preventDefault="true" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(-1)">@ShellKeys.PrevTarget <kbd class="kc">@ShellKeys.PrevTargetCap</kbd></button>
+            <button type="button" class="secondary" aria-keyshortcuts="ArrowRight" @onmousedown:preventDefault="true" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(1)">@ShellKeys.NextTarget <kbd class="kc">@ShellKeys.NextTargetCap</kbd></button>
+        </div>
+    };
+
     // B42 试玩修复：悬停换成另一名敌人或队友时对象信息区滚动回到顶部；同一对象刷新不复位
     private string? _shownPeek;
 

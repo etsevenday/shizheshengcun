@@ -2536,7 +2536,7 @@ public sealed partial class GameSession
     public void BattleHotkeySkill(int slot)
     {
         if (State == null || S.Battle == null || DialogueLocked || BattleMenuOpen || slot < 1 || slot > 5) return;
-        var lv = new[] { 1, 3, 5, 7, 10 }[slot - 1];
+        var lv = ShellKeys.SkillSlotLevels[slot - 1];   // B43：与技能卡上的键帽 1—5 同一张表
         var w = E.CurrentWeapon(S, out _);
         var node = E.Config.SkillNodes.FirstOrDefault(n => n.SkillId == w.SkillId && n.Level == lv && !n.IsSurvival);
         var o = node == null ? null : E.BattleOptions(S).FirstOrDefault(x => x.NodeId == node.Id);

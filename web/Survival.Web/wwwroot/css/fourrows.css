@@ -1040,7 +1040,7 @@
 .map-mini:hover { opacity: 1; }
 /* 1280×720 档 ①② 合并区只有约 240px 高：缩略导航会盖住节点，改由拖动/滚动/“回到当前位置”导航；工具条按钮收紧，给面包屑让位 */
 @media (max-height: 800px) { .map-mini { display: none; } }
-@media (max-width: 1400px) { .map-tools { gap: 4px; } .map-tools .secondary { padding: 4px 7px; } .map-tools kbd { display: none; } .map-tools .map-layer { max-width: 8.5em; } }
+@media (max-width: 1400px) { .map-tools { gap: 4px; } .map-tools .secondary { padding: 4px 7px; } .map-tools .map-layer { max-width: 8.5em; } }
 .map-mini circle { fill: #6f7f6a; }
 .map-mini circle.visited { fill: #9fb198; }
 .map-mini circle.here { fill: #f0d9a0; }

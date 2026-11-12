@@ -114,6 +114,8 @@ namespace Survival.Core.Engine
         public const string BackToHereCap = "0";
 
         // 战斗（S14「战斗武器页」「战斗五个技能位」「战斗目标预测切换」）
+        public const string WeaponPage1 = "武器Ⅰ";
+        public const string WeaponPage2 = "武器Ⅱ";
         public const string WeaponPage1Cap = "Q";
         public const string WeaponPage2Cap = "E";
         public const string PrevTarget = "上一目标";

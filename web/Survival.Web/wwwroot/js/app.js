@@ -331,7 +331,7 @@ window.survival = {
       // 与地图上同名按钮同一入口（按钮禁用时键也无效）。转移条数量框开着且焦点不在地图里时，数字留给数量框（地图局部键不抢数量输入）。
       if (mapPanel && ['+', '=', '-', '_', '0'].indexOf(k) >= 0) {
         var which = k === '+' || k === '=' ? 'in' : k === '0' ? 'here' : 'out';
-        var mb = mapPanel.querySelector('[data-map-key="' + which + '"]');
+        var mb = mapPanel.querySelector('[data-map-cmd="' + which + '"]');
         ev.preventDefault();
         if (mb && !mb.disabled && !(ev.repeat && which === 'here')) mb.click();
         return;

@@ -61,10 +61,11 @@
                         }
                     </optgroup>
                 </select>
-                <button type="button" class="secondary" title="缩小（−）" disabled="@(G.MapZoom <= 1)" @onclick="() => Zoom(G.MapZoom - 1)">−</button>
-                <button type="button" class="secondary" title="放大（+）" disabled="@(G.MapZoom >= Zooms.Length - 1)" @onclick="() => Zoom(G.MapZoom + 1)">+</button>
+                @* B43（S14「地图放大／缩小」「地图定位」）：键值写在按钮上「缩小 -」「放大 +」「回到当前位置 0」；键盘由 app.js 按 data-map-cmd 点同一按钮（禁用时键也无效） *@
+                <button type="button" class="secondary" data-map-cmd="out" aria-keyshortcuts="-" title="缩小（−）" disabled="@(G.MapZoom <= 1)" @onclick="() => Zoom(G.MapZoom - 1)">@ShellKeys.ZoomOut <kbd class="kc">@ShellKeys.ZoomOutCap</kbd></button>
+                <button type="button" class="secondary" data-map-cmd="in" aria-keyshortcuts="+" title="放大（+）" disabled="@(G.MapZoom >= Zooms.Length - 1)" @onclick="() => Zoom(G.MapZoom + 1)">@ShellKeys.ZoomIn <kbd class="kc">@ShellKeys.ZoomInCap</kbd></button>
                 <button type="button" class="secondary @(overview ? "on" : "")" title="总览：只画点，悬停看地名" @onclick="() => Zoom(overview ? GameSession.MapDefaultZoom : 0)">总览</button>
-                <button type="button" class="secondary" title="视口回到当前位置（只平移，不移动，0）" @onclick="BackToHere">回到当前位置</button>
+                <button type="button" class="secondary" data-map-cmd="here" aria-keyshortcuts="0" title="视口回到当前位置（只平移，不移动，0）" @onclick="BackToHere">@ShellKeys.BackToHere <kbd class="kc">@ShellKeys.BackToHereCap</kbd></button>
                 @if (G.E.BuiltSafehouses(G.S).Count > 0)
                 {
                     @* B17 试玩修复 B2（S09 X2.5）：任意地点打开安全屋面板看返程路线与合计分钟，只定位、不传送 *@
@@ -103,7 +104,7 @@
             </div>
         }
             <div class="map-viewport" @ref="_vp" tabindex="0" aria-label="@($"{v.LayerName}，已知{v.Nodes.Count}处；拖动平移，+ − 缩放，0 回到当前位置")"
-                 data-map-key="@MapKey(v.LayerKey)" @onkeydown="Key">
+                 data-map-key="@MapKey(v.LayerKey)">
                 <svg class="map-canvas" width="@F(w)" height="@F(h)" viewBox="@($"0 0 {F(w)} {F(h)}")" role="img" aria-label="地点与路线">
                     <defs><marker id="oneway" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#e2c27e" /></marker></defs>
                     @foreach (var ed in v.Edges)
@@ -454,13 +455,6 @@ else
     {
         G.MapLegend = !G.MapLegend;
         G.Notify();
-    }
-
-    private async Task Key(KeyboardEventArgs ev)
-    {
-        if (ev.Key is "+" or "=") await Zoom(G.MapZoom + 1);
-        else if (ev.Key is "-" or "_") await Zoom(Math.Max(1, G.MapZoom - 1));
-        else if (ev.Key == "0") BackToHere();
     }
 
     private void NodeKey(KeyboardEventArgs ev, string id)

@@ -189,6 +189,47 @@ public class B43KeyHintTests : TestBase
         Assert.That(drag, Does.Contain("' · 按住 Shift 松手可选数量'"), "原解释保留");
     }
 
+    // ───────────── 地图与战斗（KEYHINT-A04） ─────────────
+
+    /// <summary>A04：地图「缩小 -」「放大 +」「回到当前位置 0」键值写在按钮上；键盘只走 app.js 点同一按钮（视口不再另挂 Blazor 键处理，避免一次按键缩放两级）。</summary>
+    [Test]
+    public void A04_MapKeysOnButtons()
+    {
+        Assert.That($"{ShellKeys.ZoomOut} {ShellKeys.ZoomOutCap}|{ShellKeys.ZoomIn} {ShellKeys.ZoomInCap}|{ShellKeys.BackToHere} {ShellKeys.BackToHereCap}", Is.EqualTo("缩小 -|放大 +|回到当前位置 0"));
+        var map = Web("Components/MapOverlay.razor");
+        Assert.That(map, Does.Contain("data-map-cmd=\"out\"").And.Contain("@ShellKeys.ZoomOut <kbd class=\"kc\">@ShellKeys.ZoomOutCap</kbd>"));
+        Assert.That(map, Does.Contain("data-map-cmd=\"in\"").And.Contain("@ShellKeys.ZoomIn <kbd class=\"kc\">@ShellKeys.ZoomInCap</kbd>"));
+        Assert.That(map, Does.Contain("data-map-cmd=\"here\"").And.Contain("@ShellKeys.BackToHere <kbd class=\"kc\">@ShellKeys.BackToHereCap</kbd>"));
+        Assert.That(map, Does.Not.Contain("@onkeydown=\"Key\""), "视口不再自己处理 +/-/0");
+        var js = Web("wwwroot/js/app.js");
+        Assert.That(js, Does.Contain("mapPanel.querySelector('[data-map-cmd=\"' + which + '\"]')"));
+        Assert.That(js, Does.Contain("if (mb && !mb.disabled && !(ev.repeat && which === 'here')) mb.click();"), "按钮禁用时键也无效；放缩按住连续，定位不连发");
+        Assert.That(Web("wwwroot/css/fourrows.css"), Does.Not.Contain(".map-tools kbd { display: none; }"), "窄屏不藏地图键帽");
+    }
+
+    /// <summary>
+    /// A04：武器页签「武器Ⅰ Q／武器Ⅱ E」；技能卡位键帽 1—5 按卡位序号（不是等级），主动、被动、灰卡都有；
+    /// 目标预测区「上一目标 ←」「下一目标 →」走 BattleCycleTarget；底部确认「{原名} Enter」与按钮同一可用条件。
+    /// </summary>
+    [Test]
+    public void A04_BattleKeys()
+    {
+        Assert.That(ShellKeys.WeaponPage1 + " " + ShellKeys.WeaponPage1Cap + "／" + ShellKeys.WeaponPage2 + " " + ShellKeys.WeaponPage2Cap, Is.EqualTo("武器Ⅰ Q／武器Ⅱ E"));
+        Assert.That(ShellKeys.SkillSlotLevels.Select(ShellKeys.SkillSlotCap), Is.EqualTo(new[] { "1", "2", "3", "4", "5" }));
+        Assert.That(ShellKeys.SkillSlotCap(2), Is.EqualTo(""), "不是卡位等级的没有键帽");
+        var bs = Web("Components/BattleScreen.razor");
+        Assert.That(bs, Does.Contain("@(page == 1 ? ShellKeys.WeaponPage1 : ShellKeys.WeaponPage2) <kbd class=\"kc\">@pageCap</kbd> @(pi == null ? \"拳\" : pw.Name)"));
+        Assert.That(Regex.Matches(bs, "@SlotCap\\(").Count, Is.EqualTo(3), "已解锁主动、被动、灰卡三处");
+        Assert.That(bs, Does.Contain("var cap = ShellKeys.SkillSlotCap(level);"));
+        Assert.That(Web("Services/GameSession.cs"), Does.Contain("var lv = ShellKeys.SkillSlotLevels[slot - 1];"), "按键与键帽同一张表");
+        Assert.That(bs, Does.Contain("<EnterCap On=\"@(p.Ok && !locked)\" /></button>").And.Contain("id=\"bt-confirm\" disabled=\"@(!p.Ok || locked)\""));
+        var bp = Web("Components/BattlePanel.razor");
+        Assert.That(Regex.Matches(bp, "TargetCycle\\(aimSet.Count\\)").Count, Is.EqualTo(2), "瞄准中两种预测区都有");
+        Assert.That(bp, Does.Contain("@onclick=\"() => G.BattleCycleTarget(-1)\">@ShellKeys.PrevTarget <kbd class=\"kc\">@ShellKeys.PrevTargetCap</kbd></button>"));
+        Assert.That(bp, Does.Contain("@onclick=\"() => G.BattleCycleTarget(1)\">@ShellKeys.NextTarget <kbd class=\"kc\">@ShellKeys.NextTargetCap</kbd></button>"));
+        Assert.That(bp, Does.Contain("if (!G.BattleFullscreen) return;"), "方向键只在全屏战斗路由，按钮也只在那里给");
+    }
+
     // ───────────── 按键路由（KEYHINT-A02、A05） ─────────────
 
     /// <summary>A02、A05：顶栏字母表含 11 个字母、不含 F；输入法组合、组合键、输入控件不触发；按住重复不重复开关；Enter/Space 重复在捕获阶段挡住。</summary>
