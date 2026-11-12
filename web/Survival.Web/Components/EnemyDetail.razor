@@ -6,8 +6,69 @@
     var e = G.E;
     var wid = (Sel ?? G.Selected).InstanceId ?? 0;   // B42：悬停查看传入悬停的敌踪
     var w = e.FindWorldEnemy(s, wid);
+    // B41e1：新版敌踪（开关 encounters.enemyCardsV2）按卡键读当前地点、当前区域的可操作卡
+    var cardsV2 = e.CardsV2(s);
+    var card = cardsV2 ? e.EnemyCardHere(s, (Sel ?? G.Selected).Id) : null;
 }
-@if (w == null || w.LocationId != s.CurrentLocation)
+@if (cardsV2)
+{
+    @* B41e1 敌踪详情（逐字稿「右栏原「接敌还是绕行？」标题」→「敌踪详情」；Q446 ④：删旧「不受随机接敌保护期限制」，保留真实受惊预览，单卡／固定名单按真实卡写参战范围，
+       组卡不写「只与这一只交战」；脚注与固定关键敌人补句复用逐字稿原句）。组卡、固定战按锁定名单原顺序逐个成员列原详情行。 *@
+    @if (card == null)
+    {
+        <div class="empty-detail">这个敌人已经离开。<br />选择地点、路线、资源或物品查看信息</div>
+    }
+    else
+    {
+        var members = e.EnemyCardPreviewMembers(s, card);
+        var why = e.CanApproachCard(s, card.Key);
+        var weapon = e.CurrentWeapon(s, out var wi);
+        var page = e.DefaultWeaponPage(s);
+        var pageName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page)!);
+        var otherName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page == 1 ? 2 : 1)!);
+        var range = card.Kind is "single" or "elite" ? "只与这一只交战" : card.Kind == "fixed" ? "全名单一起入场（从1号位起）" : null;
+        var anyBite = members.Any(m => e.CanBite(e.Enemy(m.EnemyId)));
+        <div class="detail-scroll">
+            <div class="op-head">
+                <div class="eyebrow">@GameEngine.EnemyCardDetailTitle · @e.LocName(card.LocationId)</div>
+                <h2>@card.Title</h2>
+                <p>@card.Badge · @GameEngine.VigilanceText(card.Vigilance)</p>
+            </div>
+            <div class="detail-icon">@Icons.Markup("enemy_" + card.EnemyIds[0])</div>
+            @foreach (var m in members)
+            {
+                var ec = e.Enemy(m.EnemyId);
+                var hit = e.OutOfBattleHit(s, ec);
+                <div class="lines enemy-lines">
+                    <div><span>@ec.Name</span><b>@ec.FamilyName@(ec.Elite ? "精英" : "")@(m.Enemy == null || m.Enemy.Hostile ? "" : " · 中立（被攻击才转敌对）") · 稀有层级@(ec.Rarity switch { "common" => "普通", "rare" => "稀有", _ => "强敌" }) · @(ec.Ap)AP · 己位@(ec.OwnSlots)→目标@(ec.TargetSlots) · 控制抗性@(Ui.T(ec.ControlResist))%</b></div>
+                    <div><span>健康</span><b>@Ui.N(m.Enemy?.Hp ?? ec.Hp)/@Ui.N(ec.Hp)</b></div>
+                    <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.Speed(ec.Speed)</b></div>
+                    <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
+                    <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
+                    <div title="开战默认页普通攻击：(武器命中+3×熟练等级+8+装备命中)×疲劳；恐慌、失衡开战后才计"><span>你的命中率</span><b>@Ui.Pct(hit.HitChance)（命中能力@(Ui.N(hit.Accuracy))）</b></div>
+                </div>
+                @if (!e.CanBite(ec) && ec.IsZombie) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
+            }
+            <div class="lines"><div><span>开战武器</span><b>@(wi == null ? $"{pageName}空（拳）" : $"{pageName} {weapon.Name}")（战前可在右栏人物“装备”区调整，战斗中可切到@(otherName)页）</b></div></div>
+            @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
+            {
+                <div class="risk">@($"{weapon.Name}")弹仓为0：开战后需先装填（1AP），或在右栏人物“装备”区换一把再接近。</div>
+            }
+            @if (anyBite) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div> }
+            <ul class="notes">
+                <li>@GameEngine.ApproachCardButton：@e.EnemyCardFearNote(s, card, false)@(range != null ? "；" + range : "")。</li>
+                <li>每轮推进5分钟世界时间；@e.RetreatOutlookHere(s)。</li>
+                @if (card.KeyEnemy) { <li>@GameEngine.KeyEnemyDetailNote</li> }
+            </ul>
+            @if (why != null) { <div class="risk">@why</div> }
+            @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
+        </div>
+        <div class="detail-foot">
+            <div class="under">@GameEngine.EnemyCardFootnote</div>
+        </div>
+    }
+}
+else if (w == null || w.LocationId != s.CurrentLocation)
 {
     <div class="empty-detail">这个敌人已经离开。<br />选择地点、路线、资源或物品查看信息</div>
 }
