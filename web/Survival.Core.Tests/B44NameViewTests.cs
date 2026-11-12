@@ -66,7 +66,7 @@ public class B44NameViewTests : TestBase
         var c = Web("Components/CharacterPanel.razor");
         Assert.That(c, Does.Contain("<div class=\"equip-row @(it == null ? \"empty\" : \"\")\" data-slot=\"@slot\">"), "槽行不带悬停键、不可聚焦");
         Assert.That(c, Does.Not.Contain("data-peek=").And.Not.Contain("data-peek-rail"));
-        Assert.That(c, Does.Contain("<button type=\"button\" class=\"eq-name peek-name q-@(it.Quality ?? \"white\")\" data-peek-name=\"@Peek.Worn(it.InstanceId)\" aria-label=\"@PeekNameView.Label(name)\" @onclick=\"() => G.ViewByName(Peek.Worn(it.InstanceId))\" @onclick:stopPropagation>@name<kbd class=\"kc peek-name-cap\" aria-hidden=\"true\">@PeekNameView.Cap</kbd></button>"));
+        Assert.That(c, Does.Contain("<button type=\"button\" class=\"eq-name peek-name q-@(it.Quality ?? \"white\")\" data-peek-name=\"@Peek.Worn(it.InstanceId)\" aria-label=\"@PeekNameView.Label(name)\" @onclick=\"() => G.ViewByName(Peek.Worn(it.InstanceId))\" @onclick:stopPropagation><span class=\"peek-name-text\">@name</span><kbd class=\"kc peek-name-cap\" aria-hidden=\"true\">@PeekNameView.Cap</kbd></button>"));
         Assert.That(c, Does.Contain(">空</span>"), "空槽仍写「空」");
         Assert.That(c.IndexOf("ViewByName", StringComparison.Ordinal), Is.GreaterThan(c.IndexOf("@if (it == null)", StringComparison.Ordinal)), "名称入口只在有装备的分支里");
         Assert.That(c, Does.Contain("<span class=\"eq-btns\">"), "卸下、维修、现场修补、放当前地面按钮照旧、与名称分开");
@@ -90,7 +90,7 @@ public class B44NameViewTests : TestBase
         Assert.That(hot, Does.Contain("if (el.closest('[data-detail-rail]')) return null;"));
         Assert.That(js, Does.Not.Contain("data-peek-rail"));
         var css = Web("wwwroot/css/cards.css");
-        Assert.That(css, Does.Contain(".detail :is(.equip-row:not(.empty), .party-row):is(:hover, :focus-within) { background: #ffffff0f; }"), "悬停／聚焦只高亮所在行");
+        Assert.That(css, Does.Contain(".detail :is(.equip-row:not(.empty), .party-row):is(:hover, :focus-within) { background: #ffffff1f; }"), "悬停／聚焦只高亮所在行");
         Assert.That(css, Does.Contain(".detail .peek-name .peek-name-cap { display: none;").And.Contain(".detail .peek-name:focus .peek-name-cap { display: inline-block; }"), "焦点在名称上才显示 ENTER");
     }
 

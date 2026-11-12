@@ -424,9 +424,15 @@
 .member-peek .member-lines { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-aux); line-height: 1.45; }
 /* B44（S14 Q492 选 B，取代 BM1 Q483 的整行悬停即切）：人物页已穿戴槽行、队员行悬停或其中控件有焦点时只高亮所在行，不换页；
    实际物品名／姓名是查看控件（.peek-name）：外观沿原名称文字（品质色、粗细不变），指着时下划线，聚焦时描框并在名称旁显示「ENTER」键帽 */
-.detail :is(.equip-row:not(.empty), .party-row):is(:hover, :focus-within) { background: #ffffff0f; }
+.detail :is(.equip-row:not(.empty), .party-row):is(:hover, :focus-within) { background: #ffffff1f; }
 .detail .peek-name { display: inline; margin: 0; padding: 0; min-height: 0; background: none; border: 0; border-radius: 2px; box-shadow: none; text-align: left; line-height: inherit; cursor: pointer; }
 .detail .equip-row .peek-name { padding-top: 2px; }
+/* B44 试玩修复：装备行名称在 1280 窄右栏被图标与重量挤成 0 宽、1600 聚焦时 ENTER 被裁。名称一行内省略（不两字一行撑高），至少留约 3.5 字可点宽度，
+   重量放不下时整块换到下一行靠右；ENTER 键帽在名称按钮内与名称同排，放不下时折到名称下方，不再被裁 */
+.detail .equip-row .eq-item { flex-wrap: wrap; overflow: visible; row-gap: 0; }
+.detail .equip-row .peek-name { display: inline-flex; flex: 1 1 0; min-width: 3.5em; flex-wrap: wrap; align-items: baseline; column-gap: 4px; overflow: visible; white-space: nowrap; }
+.detail .equip-row .peek-name-text { flex: 1 1 auto; min-width: 2em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detail .equip-row .peek-name .peek-name-cap { flex: 0 0 auto; margin-left: 0; }
 .detail .peek-name:hover { text-decoration: underline; text-underline-offset: 3px; }
 .detail .peek-name .peek-name-cap { display: none; margin-left: 4px; }
 .detail .peek-name:focus .peek-name-cap { display: inline-block; }
