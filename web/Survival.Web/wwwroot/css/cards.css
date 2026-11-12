@@ -465,6 +465,11 @@
 .fire-menu .fm-max { font-size: var(--fs-aux); color: var(--muted); align-self: center; }
 .fire-menu .fm-go { flex-wrap: wrap; }
 .fire-menu .fm-go .tbar-go { flex: 1 1 0; }
+/* B45 试玩修复（FACPROC-A11）：数量与提交按钮固定在菜单底部，三档分辨率下不滚动即可见；中间内容区自己滚动 */
+.fire-menu .fm-foot { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 8px 14px 10px; border-top: 1px solid var(--line); background: var(--surface); }
+.fire-menu .fm-foot:focus { outline: none; }
+.fire-menu .fm-foot .ca-note { margin: 0; }
+.fire-menu .fm-foot > .fm-go { width: 100%; }
 /* B45（Q542／Q559／Q560）：工坊汇总卡「选择设施」盘的设施行 */
 .apop.stations .st-pick { display: flex; justify-content: space-between; width: 100%; min-height: 40px; padding: 4px 10px; text-align: left; }
 .apop.stations .st-list { display: flex; flex-direction: column; gap: 6px; }

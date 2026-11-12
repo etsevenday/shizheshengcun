@@ -24,6 +24,10 @@ public sealed partial class GameSession
         public int? Slot { get; set; }
         /// <summary>进入该加工位时位里的实例（空位为 null），用来发现位里内容变了。</summary>
         public int? SlotItem { get; set; }
+        /// <summary>
+        /// 已进入位里的内容（锅这一层，或直烤食材／煅烧批这一层）；false = 停在「加工位{序号}」这一层（S14 层级「{设施名} › 加工位{序号} › {锅名} › {内容}」逐级返回）。
+        /// </summary>
+        public bool Open { get; set; }
         /// <summary>锅里明确点开的水（PotLiquid）或食材（Tool）；null = 锅这一层。</summary>
         public Selection? Inner { get; set; }
         /// <summary>明确选中的原料来源实例（随身或当前地面）。</summary>
@@ -40,8 +44,8 @@ public sealed partial class GameSession
 
     public FireMenuContext? FireMenu { get; private set; }
 
-    /// <summary>当前菜单层级：0 设施主层、1 加工位（空位／直烤／煅烧批）或锅、2 锅里的水或食材。</summary>
-    public int FireMenuLevel => FireMenu is not { } m ? 0 : m.Inner != null ? 2 : m.Slot != null ? 1 : 0;
+    /// <summary>当前菜单层级：0 设施主层、1 加工位、2 位里的内容（锅，或直烤食材／煅烧批）、3 锅里的水或食材（路径「{设施名} › 加工位{序号} › {锅名} › {内容}」）。</summary>
+    public int FireMenuLevel => FireMenu is not { } m ? 0 : m.Inner != null ? 3 : m.Slot == null ? 0 : m.Open && m.SlotItem != null ? 2 : 1;
 
     /// <summary>关闭菜单后待恢复焦点的元素 id（GameScreen 渲染后读一次即清）。</summary>
     public string? FocusIdPending { get; set; }
@@ -118,6 +122,7 @@ public sealed partial class GameSession
         if (m.Slot != k) m.Qty = "1";
         m.Slot = k;
         m.SlotItem = slots[k]?.InstanceId;
+        m.Open = slots[k] != null;   // 点有内容的加工位直接进入位里的内容；Esc／路径「加工位{序号}」再退回这一位
         m.Inner = null;
         m.Lost = null;
         SyncRight(slots[k] is ItemInstance it ? ItemSel(E, it) : FireSelection);
@@ -127,12 +132,13 @@ public sealed partial class GameSession
     public void FireMenuPickInner(Selection sel)
     {
         if (FireMenu is not { Dead: false } m || m.Slot == null) return;
+        m.Open = true;
         m.Inner = sel;
         m.Lost = null;
         SyncRight(sel);
     }
 
-    /// <summary>菜单层级路径：点前面的层级回到那一层（0 主层、1 加工位／锅）。</summary>
+    /// <summary>菜单层级路径：点前面的层级回到那一层（0 主层、1 加工位、2 锅／位里的内容）。</summary>
     public void FireMenuGoLevel(int level)
     {
         if (FireMenu is not { } m || State == null) return;
@@ -141,14 +147,16 @@ public sealed partial class GameSession
             if (m.Slot != null) m.Qty = "1";
             m.Slot = null;
             m.SlotItem = null;
+            m.Open = false;
             m.Inner = null;
         }
-        else if (level == 1) m.Inner = null;
+        else if (level == 1) { m.Open = false; m.Inner = null; }
+        else if (level == 2) m.Inner = null;
         m.Lost = null;
         SyncRight(CurrentFireMenuObject());
     }
 
-    /// <summary>Esc／「返回」：退一层（内容→锅／加工位→主层）。</summary>
+    /// <summary>Esc／「返回」：退一层（锅里内容→锅→加工位→主层）。</summary>
     public void FireMenuBack() => FireMenuGoLevel(FireMenuLevel - 1);
 
     /// <summary>当前层对应的真实对象（右栏同步用）：主层与空位为设施本身。</summary>
@@ -217,6 +225,7 @@ public sealed partial class GameSession
                 // 位里原有的内容没了（取出、吃完、腐败清理）：留在这个加工位（现为空位或新内容）；新放进来的内容直接显示
                 if (m.SlotItem != null && passive) m.Lost = GameEngine.ContentChangedText;
                 m.SlotItem = occ?.InstanceId;
+                m.Open = occ != null;
                 m.Inner = null;
             }
             if (m.Inner is { } inner && occ != null && E.IsPot(occ))
@@ -294,6 +303,8 @@ public sealed partial class GameSession
         if (InBattleUi || DialogueLocked) return;
         CollapseCardPopForPanel(CardPopShown);
         OpenPop(StationsPop, S.Ground, "fac-workshops");
+        // FACPROC 第 4 条：焦点进首个操作（第一座设施行）
+        if (Pop is { Kind: StationsPop } && E.ProcessingStationChoices(S).FirstOrDefault() is { } first) FocusIdPending = $"st-pick-{first.StationId}";
     }
 
     /// <summary>选择层明确点一座：提交前重验真实身份／位置／状态，再进入该座原制作面板分类，并记住返回来源（Q560）。</summary>
@@ -303,10 +314,11 @@ public sealed partial class GameSession
         if (E.ProcessingStationChoices(S).All(c => c.StationId != stationId)) { Notify(); return; }
         Pop = null;
         OpenCraftStation(stationId);
-        if (Panel == "craft") { CraftFromChooser = true; Notify(); }
+        // Q560：记住这次明确点的那一座（之后在制作面板换分类／配方也不丢），返回时焦点回它的行
+        if (Panel == "craft") { CraftFromChooser = true; ChooserReturnStation = stationId; Notify(); }
     }
 
-    /// <summary>选择层回来后焦点要回的原设施行（Q560）。</summary>
+    /// <summary>经选择层进入时明确点的那一座；回到选择层后焦点要回它的行（Q560）。</summary>
     public string? ChooserReturnStation { get; private set; }
 
     /// <summary>一级面板的 Esc／关闭按钮：经选择层进入的制作面板回到实时选择列表（不自动跳），其余照原关闭。</summary>
@@ -314,7 +326,7 @@ public sealed partial class GameSession
     {
         if (Panel == "craft" && CraftFromChooser && State != null)
         {
-            var station = CraftTab;
+            var station = ChooserReturnStation ?? CraftTab;
             OpenPanel(null);
             ChooserReturnStation = station;
             OpenPop(StationsPop, S.Ground, "fac-workshops");

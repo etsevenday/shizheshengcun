@@ -46,10 +46,13 @@
                 var hot = e.FireHot(s, here);
                 int? k = m.Slot is int mk && mk < slots.Count ? mk : null;
                 var occ = k is int kk ? slots[kk] : null;
-                var pot = occ != null && e.IsPot(occ) ? occ : null;
+                // 层级（S14「{设施名} › 加工位{序号} › {锅名} › {内容}」）：停在「加工位{序号}」时位里的内容只在加工位卡上，进入后才是锅／内容这一层
+                var entered = occ != null && m.Open;
+                var pot = entered && e.IsPot(occ!) ? occ : null;
                 var busy = e.IsBusy(s) || G.Running || G.CityBrowsing;
+                var src = m.Inner == null && (occ == null || pot != null) ? SourceState(here, k, pot, busy) : null;
                 <nav class="fire-crumbs fm-crumbs" aria-label="层级路径">
-                    @{ var path = Path(name, k, occ, pot, m.Inner); }
+                    @{ var path = Path(name, k, entered ? occ : null, pot, m.Inner); }
                     @for (var i = 0; i < path.Count; i++)
                     {
                         var c = path[i];
@@ -58,6 +61,7 @@
                         else { <button type="button" class="linkish" @onclick="() => G.FireMenuGoLevel(c.level)">@c.label</button> }
                     }
                 </nav>
+                @* FACPROC-A11：标题、路径、关闭在上，放入数量与提交按钮固定在菜单底部（不随内容滚动），中间内容区内部滚动 *@
                 <div class="sub-body fm-body" data-wheel="y">
                     @if (m.Lost != null) { <div class="risk fm-lost">@m.Lost</div> }
                     <div class="fm-fire fire-detail" data-drop="@($"fire:{here}")" data-drop-level="card">
@@ -101,8 +105,10 @@
                                 else
                                 {
                                     var heating = e.FireSlotHeating(s, here, si);
-                                    <div @key="it.InstanceId" class="fire-slot fm-slot @(e.IsPot(it) ? "pot" : "food") @(on ? "on" : "") @(heating ? "st-busy" : "") @(lit ? "fresh" : "")"
-                                         role="button" tabindex="0" aria-pressed="@on" @onclick="() => G.FireMenuPickSlot(si)" @onkeydown="ev => Key(ev, () => G.FireMenuPickSlot(si))">
+                                    @* Q557：占用的加工位同样是明确工位落点（fslot），非木材拖到这里只看这一位——被占即拒绝「加工位{序号}已被占用，请重新选择。」，不改投另一空位；
+                                   卡面级落点，锅卡自己的卡面／水量条／食材区落点在里层优先 *@
+                                <div @key="it.InstanceId" class="fire-slot fm-slot @(e.IsPot(it) ? "pot" : "food") @(on ? "on" : "") @(heating ? "st-busy" : "") @(lit ? "fresh" : "")"
+                                         data-drop="@($"fslot:{si}:{here}")" data-drop-level="card" role="button" tabindex="0" aria-pressed="@on" @onclick="() => G.FireMenuPickSlot(si)" @onkeydown="ev => Key(ev, () => G.FireMenuPickSlot(si))">
                                         <div class="fs-head"><b>@slotName</b><span class="muted">@e.FireSlotStatus(s, it)</span></div>
                                         @if (e.IsPot(it))
                                         {
@@ -118,7 +124,7 @@
                         </div>
                     </div>
 
-                    @if (k is int sk && (m.Inner != null || occ != null))
+                    @if (k is int sk && entered)
                     {
                         @* 内容层（直烤食材／煅烧批、锅里的水或食材）与锅这一层：原选卡操作（取出、取下、食用／饮用……），锚点 fm-obj *@
                         var objSel = m.Inner ?? ObjSel(occ!);
@@ -131,11 +137,15 @@
                         </div>
                     }
 
-                    @if (m.Inner == null && (pot != null || occ == null))
+                    @if (src is { Show: true })
                     {
-                        @Sources(here, k, pot, busy)
+                        @Sources(src)
                     }
                 </div>
+                @if (src is { Show: true })
+                {
+                    @Foot(src)
+                }
             }
         </div>
     </div>
@@ -177,16 +187,16 @@
         list.Add((CardStates.FireSlotName(kk), 1));
         if (pot != null)
         {
-            list.Add((e.ItemName(pot.ItemId), 1));
+            list.Add((e.ItemName(pot.ItemId), 2));
             if (inner != null)
             {
                 var label = inner.Kind == SelectionKind.PotLiquid ? e.ItemName(inner.Id)
                     : inner.InstanceId is int iid && e.FindItem(G.S, iid) is ItemInstance f ? (f.Count > 1 ? $"{e.ItemName(f.ItemId)}×{f.Count}" : e.ItemName(f.ItemId)) : e.ItemName(inner.Id);
-                list.Add((label, 2));
+                list.Add((label, 3));
             }
         }
         else if (occ != null)
-            list.Add((occ.Count > 1 ? $"{e.ItemName(occ.ItemId)}×{occ.Count}" : e.ItemName(occ.ItemId), 1));
+            list.Add((occ.Count > 1 ? $"{e.ItemName(occ.ItemId)}×{occ.Count}" : e.ItemName(occ.ItemId), 2));
         return list;
     }
 
@@ -223,7 +233,23 @@
         return 0;
     }
 
-    private RenderFragment Sources(string here, int? slot, ItemInstance? pot, bool busy) => __builder =>
+    /// <summary>来源区与底部提交条共用的同源计算（Q544／Q545／Q557／Q562）。</summary>
+    private sealed class Src
+    {
+        public int? Slot;
+        public ItemInstance? Pot;
+        public List<Row> Carried = new();
+        public List<Row> Ground = new();
+        public ItemInstance? It;
+        public int Max;
+        public bool Ready, QtyOk, Water;
+        public string Text = "";
+        public int Parsed;
+        public string? Reason;
+        public bool Show;
+    }
+
+    private Src SourceState(string here, int? slot, ItemInstance? pot, bool busy)
     {
         var s = G.S;
         var e = G.E;
@@ -249,72 +275,96 @@
         var text = m.Qty ?? "";
         var parsed = text.Length > 0 && text.All(char.IsDigit) && int.TryParse(text, out var pv) ? pv : -1;
         var qtyOk = ready && parsed >= 1 && parsed <= max;
-        var editable = ready;
-        var water = srcIt != null && e.IsLiquid(srcIt);
-        string? reason = !hasTarget ? GameEngine.PickTargetText
-            : srcIt == null ? GameEngine.PickSourceText
-            : srcWhy != null ? srcWhy
-            : max <= 0 ? GameEngine.NoQtyText
-            : !qtyOk ? GameEngine.QtyRangeText(max) : null;
-        var carried = rows.Where(r => r.It.IsCarried).ToList();
-        var ground = rows.Where(r => !r.It.IsCarried).ToList();
-        if (rows.Count > 0 || srcIt != null)
+        return new Src
         {
-            <section class="fm-src" data-enter-scope tabindex="-1" aria-label="@GameEngine.SourceTitle">
-                <h3>@GameEngine.SourceTitle</h3>
-                @foreach (var (label, list) in new[] { (GameEngine.SourceCarried, carried), (GameEngine.SourceGround, ground) })
+            Slot = slot, Pot = pot,
+            Carried = rows.Where(r => r.It.IsCarried).ToList(),
+            Ground = rows.Where(r => !r.It.IsCarried).ToList(),
+            It = srcIt, Max = max, Ready = ready, QtyOk = qtyOk, Text = text, Parsed = parsed,
+            Water = srcIt != null && e.IsLiquid(srcIt),
+            Reason = !hasTarget ? GameEngine.PickTargetText
+                : srcIt == null ? GameEngine.PickSourceText
+                : srcWhy != null ? srcWhy
+                : max <= 0 ? GameEngine.NoQtyText
+                : !qtyOk ? GameEngine.QtyRangeText(max) : null,
+            Show = rows.Count > 0 || srcIt != null,
+        };
+    }
+
+    private RenderFragment Sources(Src st) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var m = G.FireMenu!;
+        <section class="fm-src" aria-label="@GameEngine.SourceTitle">
+            <h3>@GameEngine.SourceTitle</h3>
+            @foreach (var (label, list) in new[] { (GameEngine.SourceCarried, st.Carried), (GameEngine.SourceGround, st.Ground) })
+            {
+                if (list.Count == 0) continue;
+                <div class="fm-src-group">
+                    <div class="fm-src-label">@label</div>
+                    @foreach (var r in list)
+                    {
+                        var it = r.It;
+                        var on = m.SourceId == it.InstanceId;
+                        var nm = e.ItemName(it.ItemId);
+                        var sel = new Selection { Kind = SelectionKind.Tool, Id = it.ItemId, Owner = it.Owner, InstanceId = it.InstanceId };
+                        var peek = e.Item(it.ItemId).IsStackable ? Peek.Sel(SelectionKind.ItemGroup, it.ItemId, it.Owner, null, GameEngine.BatchKeyOf(it)) : Peek.Sel(sel);
+                        <div class="fm-src-row @(on ? "on" : "") @(r.Why != null ? "no" : "")" role="button" tabindex="0" aria-pressed="@on"
+                             data-peek="@peek" data-drag="@($"card:{it.Owner}|{it.ItemId}|{it.InstanceId}")" data-drag-title="@nm" data-drag-from="@label"
+                             title="@($"{nm}×{it.Count}（{label}）：点击选为原料来源（不转移）；也可以直接拖到上面的加工位或锅")"
+                             @onclick="() => PickSource(it)" @onkeydown="ev => Key(ev, () => PickSource(it))">
+                            <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
+                            <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
+                            @if (r.Why != null) { <span class="fm-src-why" title="@r.Why">@r.Why</span> }
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+    };
+
+    /// <summary>
+    /// 底部提交条（FACPROC-A11 主要动作常驻可见）：数量步进器、「放入加工位{序号}」／「装水」／「放入食材」与原因。
+    /// 自成确认区（data-enter-scope）：框内 Enter 提交；焦点不在控件上时，只有它一个确认区（加工位层）才是唯一明确确认，
+    /// 锅层另有对象操作区时不设无焦点默认 Enter（FACPROC 第 4 条）。
+    /// </summary>
+    private RenderFragment Foot(Src st) => __builder =>
+    {
+        var e = G.E;
+        var pot = st.Pot;
+        var slot = st.Slot;
+        var editable = st.Ready;
+        <div class="fm-foot" data-enter-scope tabindex="-1" aria-label="@ShellKeys.Qty">
+            <div class="tbar-row fm-qty">
+                <span class="tbar-qlabel">@ShellKeys.Qty <kbd class="kc">@ShellKeys.Digits</kbd></span>
+                <button type="button" class="tbar-step" aria-label="减少数量" disabled="@(!editable || st.Parsed <= 1)" @onclick="() => Step(-1, st.Max)">−</button>
+                <input type="text" inputmode="numeric" data-qty-jump aria-label="@ShellKeys.Qty" value="@(st.Ready ? st.Text : "1")" disabled="@(!editable)"
+                       @oninput="ev => G.FireMenuSetQty(ev.Value?.ToString() ?? string.Empty)" />
+                <button type="button" class="tbar-step" aria-label="增加数量" disabled="@(!editable || st.Parsed >= st.Max)" @onclick="() => Step(1, st.Max)">＋</button>
+                @if (st.Ready) { <span class="fm-max">最多@(st.Max)份@(st.Water && pot != null ? $" · 每份{e.PotConfig(pot).UnitMl}毫升" : "")</span> }
+            </div>
+            <div class="tbar-row fm-go">
+                @if (pot != null)
                 {
-                    if (list.Count == 0) continue;
-                    <div class="fm-src-group">
-                        <div class="fm-src-label">@label</div>
-                        @foreach (var r in list)
-                        {
-                            var it = r.It;
-                            var on = m.SourceId == it.InstanceId;
-                            var nm = e.ItemName(it.ItemId);
-                            var sel = new Selection { Kind = SelectionKind.Tool, Id = it.ItemId, Owner = it.Owner, InstanceId = it.InstanceId };
-                            var peek = e.Item(it.ItemId).IsStackable ? Peek.Sel(SelectionKind.ItemGroup, it.ItemId, it.Owner, null, GameEngine.BatchKeyOf(it)) : Peek.Sel(sel);
-                            <div class="fm-src-row @(on ? "on" : "") @(r.Why != null ? "no" : "")" role="button" tabindex="0" aria-pressed="@on"
-                                 data-peek="@peek" data-drag="@($"card:{it.Owner}|{it.ItemId}|{it.InstanceId}")" data-drag-title="@nm" data-drag-from="@label"
-                                 title="@($"{nm}×{it.Count}（{label}）：点击选为原料来源（不转移）；也可以直接拖到上面的加工位或锅")"
-                                 @onclick="() => PickSource(it)" @onkeydown="ev => Key(ev, () => PickSource(it))">
-                                <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
-                                <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
-                                @if (r.Why != null) { <span class="fm-src-why" title="@r.Why">@r.Why</span> }
-                            </div>
-                        }
-                    </div>
+                    @if (st.It == null)
+                    {
+                        <button type="button" class="tbar-go" disabled>装水</button>
+                        <button type="button" class="tbar-go" disabled>放入食材</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="tbar-go" data-enter disabled="@(!st.QtyOk)" @onclick="ev => Put(ev, slot, pot, st.It)">@(st.Water ? "装水" : "放入食材")<EnterCap On="@st.QtyOk" /></button>
+                    }
                 }
-                <div class="tbar-row fm-qty">
-                    <span class="tbar-qlabel">@ShellKeys.Qty <kbd class="kc">@ShellKeys.Digits</kbd></span>
-                    <button type="button" class="tbar-step" aria-label="减少数量" disabled="@(!editable || parsed <= 1)" @onclick="() => Step(-1, max)">−</button>
-                    <input type="text" inputmode="numeric" data-qty-jump aria-label="@ShellKeys.Qty" value="@(ready ? text : "1")" disabled="@(!editable)"
-                           @oninput="ev => G.FireMenuSetQty(ev.Value?.ToString() ?? string.Empty)" />
-                    <button type="button" class="tbar-step" aria-label="增加数量" disabled="@(!editable || parsed >= max)" @onclick="() => Step(1, max)">＋</button>
-                    @if (ready) { <span class="fm-max">最多@(max)份@(water && pot != null ? $" · 每份{e.PotConfig(pot).UnitMl}毫升" : "")</span> }
-                </div>
-                <div class="tbar-row fm-go">
-                    @if (pot != null)
-                    {
-                        @if (srcIt == null)
-                        {
-                            <button type="button" class="tbar-go" disabled>装水</button>
-                            <button type="button" class="tbar-go" disabled>放入食材</button>
-                        }
-                        else
-                        {
-                            <button type="button" class="tbar-go" data-enter disabled="@(!qtyOk)" @onclick="ev => Put(ev, slot, pot, srcIt)">@(water ? "装水" : "放入食材")<EnterCap On="@qtyOk" /></button>
-                        }
-                    }
-                    else if (slot is int sk)
-                    {
-                        <button type="button" class="tbar-go" data-enter disabled="@(!qtyOk)" @onclick="ev => Put(ev, slot, null, srcIt)">放入@(CardStates.FireSlotName(sk))<EnterCap On="@qtyOk" /></button>
-                    }
-                </div>
-                @if (reason != null) { <div class="ca-note bad">@reason</div> }
-                @if (_fail != null) { <div class="ca-note bad">@_fail</div> }
-            </section>
-        }
+                else if (slot is int sk)
+                {
+                    <button type="button" class="tbar-go" data-enter disabled="@(!st.QtyOk)" @onclick="ev => Put(ev, slot, null, st.It)">放入@(CardStates.FireSlotName(sk))<EnterCap On="@st.QtyOk" /></button>
+                }
+            </div>
+            @if (st.Reason != null) { <div class="ca-note bad">@st.Reason</div> }
+            @if (_fail != null) { <div class="ca-note bad">@_fail</div> }
+        </div>
     };
 
     private void PickSource(ItemInstance it)

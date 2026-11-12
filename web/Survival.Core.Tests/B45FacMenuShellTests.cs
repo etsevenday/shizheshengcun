@@ -130,6 +130,56 @@ public class B45FacMenuShellTests : TestBase
         Assert.That(fac, Does.Contain("if (Selected.Kind == SelectionKind.None) SyncRightSilently(FireSelection);"));
     }
 
+    // ───────────── B45 试玩修复（M818） ─────────────
+
+    /// <summary>Q557-A02：占用的加工位也是明确工位落点（fslot），被占即内核拒绝「加工位{序号}已被占用，请重新选择。」，不落到整卡自动空位。</summary>
+    [Test]
+    public void Q557_A02_OccupiedSlotIsExplicitDropTarget()
+    {
+        var menu = Web("Components", "FireMenu.razor");
+        Assert.That(menu, Does.Contain("data-drop=\"@($\"fslot:{si}:{here}\")\" data-drop-level=\"card\""), "占用位卡面级落点");
+        Assert.That(menu, Does.Contain("data-drop=\"@($\"fslot:{si}:{here}\")\" data-drop-level=\"hot\""), "空位热区落点");
+
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId is "raw_root" or "pot");
+        var roots = E.CreateItems(s, "raw_root", 3, ItemInstance.Carried).Single();
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFireSlot(roots.InstanceId, 0)).Ok, Is.True);
+        var src = DropSource.Parse($"card:{ItemInstance.Carried}|raw_root|{roots.InstanceId}")!;
+        var r = E.ResolveDrop(s, src, DropTarget.Parse("fslot:0:camp")!);
+        Assert.That(r.Ok, Is.False);
+        Assert.That(r.Reason, Is.EqualTo("加工位1已被占用，请重新选择。"));
+        Assert.That(E.FireSlots(s, "camp")[1], Is.Null, "另一空位不被改投");
+    }
+
+    /// <summary>FACPROC-A11：数量与提交按钮在菜单底部固定条（内容区之外），自成确认区。</summary>
+    [Test]
+    public void FacProc_A11_FootBarOutsideScroll()
+    {
+        var menu = Web("Components", "FireMenu.razor");
+        Assert.That(menu, Does.Contain("<div class=\"fm-foot\" data-enter-scope"));
+        Assert.That(menu, Does.Contain("@Foot(src)"));
+        Assert.That(Web("wwwroot", "css", "cards.css"), Does.Contain(".fire-menu .fm-foot { flex: none;"));
+    }
+
+    /// <summary>S14 层级「{设施名} › 加工位{序号} › {锅名} › {内容}」逐级返回：加工位与锅是两层。</summary>
+    [Test]
+    public void FacProc_LevelsSlotThenPot()
+    {
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        Assert.That(fac, Does.Contain("m.Inner != null ? 3 : m.Slot == null ? 0 : m.Open && m.SlotItem != null ? 2 : 1"));
+        Assert.That(fac, Does.Contain("else if (level == 1) { m.Open = false; m.Inner = null; }"));
+    }
+
+    /// <summary>FACPROC 第 4 条、Q560：选择设施打开时焦点进第一座设施行；返回时焦点回明确点过的那一座（换过分类也不丢）。</summary>
+    [Test]
+    public void Q560_ChooserFocus()
+    {
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        Assert.That(fac, Does.Contain("FocusIdPending = $\"st-pick-{first.StationId}\""));
+        Assert.That(fac, Does.Contain("CraftFromChooser = true; ChooserReturnStation = stationId;"));
+        Assert.That(fac, Does.Contain("var station = ChooserReturnStation ?? CraftTab;"));
+    }
+
     private static string Root()
     {
         var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
