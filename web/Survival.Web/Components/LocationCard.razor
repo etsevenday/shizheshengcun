@@ -23,7 +23,8 @@
     var fireOn = lc.HasFire && s.Locations[LocationId].Facility.FireLit && lc.SceneFireX.HasValue && lc.SceneFireY.HasValue;
     var picked = sel.Kind is SelectionKind.Location or SelectionKind.Clear;
     @* 试玩修复 M298：主目标的下一段还没发现时点亮当前地点卡（探索入口），不泄露未发现的地点 *@
-    <div class="map-card @(picked ? "selected" : "") @(lc.IsIndoor ? "indoor" : "") @(G.TutorialFocus == "loc:" + LocationId ? "tut-lit" : "")" data-drop="@($"loc:{LocationId}")" data-drop-level="card"
+    @* B42：当前地图卡本体是悬停热区，右栏读与点击同一份探索预估（不选中、不推进） *@
+    <div data-peek="@Peek.Sel(SelectionKind.Location, LocationId)" class="map-card @(picked ? "selected" : "") @(lc.IsIndoor ? "indoor" : "") @(G.TutorialFocus == "loc:" + LocationId ? "tut-lit" : "")" data-drop="@($"loc:{LocationId}")" data-drop-level="card"
          role="button" tabindex="0" aria-label="@($"当前地点{lc.Name}，探索{ls.Progress}%")"
          title="当前地点：点卡片查看探索预估；把建材拖到营地地点卡可查看营地设施" @onclick="SelectLocation" @onkeydown="CardKey">
         <div class="mc-art" style="background-image:url('@scene');filter:brightness(@F(light.Brightness)) saturate(@F(light.Saturate))" role="img" aria-label="@($"{lc.Name}场景图")"></div>
@@ -143,7 +144,7 @@ else
     var dirHint = GameEngine.DirectionHint(dir);
     var open = G.Pop?.Kind == "travel" && G.Pop.Id == LocationId;
     @* B32a（Q340、Q345）：重墨 V2 卡模板——副标方向箭头与单程时间（室内/露天写在悬停），主操作「前往 ▸」仍在卡上；正在前往这里时为加工中 *@
-    <ObjectCard Ink2="true" Id="@AnchorId" CssClass="@($"k2-route{(G.TutorialFocus == "loc:" + LocationId ? " tut-lit" : "")}")" Title="@lc.Name" Badge="@(ls.Visited ? "已访问" : "待访问")" BadgeClass="@(ls.Visited ? "" : "new")"
+    <ObjectCard Ink2="true" Id="@AnchorId" PeekId="@Peek.Sel(SelectionKind.Entrance, LocationId)" CssClass="@($"k2-route{(G.TutorialFocus == "loc:" + LocationId ? " tut-lit" : "")}")" Title="@lc.Name" Badge="@(ls.Visited ? "已访问" : "待访问")" BadgeClass="@(ls.Visited ? "" : "new")"
                 Selected="selected" Fresh="@(edge != null && G.Highlights.Contains(edge.Id))" Busy="@CardStates.BusyRoute(s, LocationId)"
                 AriaLabel="@($"{lc.Name}，{(dir == MapDirection.None ? "" : dirHint + "，")}单程{edge?.BaseMinutes ?? 0}分钟")"
                 SubTitle="@($"{(dir == MapDirection.None ? "" : dirHint + " · ")}单程{edge?.BaseMinutes ?? 0}分钟 · {(lc.IsIndoor ? "室内" : "露天")}")"

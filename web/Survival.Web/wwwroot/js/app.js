@@ -799,3 +799,53 @@ window.survivalFx = (function () {
   }
   return { note: note, swap: swap, lit: lit, sceneSync: sceneSync, mark: mark, fly: fly, litIfVisible: litIfVisible };
 })();
+
+// B42（S14「2026-11-12 悬停卡片／条目立即显示右栏详情」，HOVER-A01—A08）：悬停即看右栏。
+// 页面上带 data-peek="对象键" 的卡片本体或条目整行是热区；鼠标（或笔）真实移动进入热区时把键交给 .NET（PeekController），
+// 嵌套热区按指针所在最内层（closest）。移到空白、右栏正文、页签与普通按钮不发送（右栏保留最后一项）；同一热区内移动不重复发送；
+// 指针没动而 DOM 重排、滚动换了脚下元素时没有 pointermove，不会连锁切换；按着键（拖拽、拖图、选字）与拖拽进行中不发送；
+// 触屏不走悬停（原点击入口不变）；被 inert 遮挡（对白、全屏战斗下层、局部盘遮罩）的热区不发送。键盘焦点到达热区（:focus-visible）给同样的只读信息，焦点不执行。
+window.survivalPeek = (function () {
+  var net = null, lastKey = null, lx = null, ly = null;
+  function hotOf(t) {
+    var el = t && t.closest ? t.closest('[data-peek]') : null;
+    if (!el || el.closest('[inert]')) return null;
+    return el;
+  }
+  function busy() {
+    return document.body.classList.contains('dragging') || !!(window.FeedbackWidget && FeedbackWidget.isOpen());
+  }
+  function send(k) {
+    if (!net || !k) return;
+    try { var pr = net.invokeMethodAsync('PeekEnter', k); if (pr && pr.catch) pr.catch(function () { }); } catch (e) { }
+  }
+  function onMove(ev) {
+    if (ev.pointerType === 'touch' || ev.buttons) return;
+    if (ev.clientX === lx && ev.clientY === ly) return;
+    lx = ev.clientX; ly = ev.clientY;
+    if (busy()) return;
+    var el = hotOf(ev.target);
+    var k = el ? el.getAttribute('data-peek') : null;
+    if (k === lastKey) return;
+    lastKey = k;
+    send(k);
+  }
+  function onFocus(ev) {
+    var t = ev.target, fv = false;
+    try { fv = !!(t && t.matches && t.matches(':focus-visible')); } catch (e) { }
+    if (!fv || busy()) return;
+    var el = hotOf(t);
+    if (!el) return;
+    lastKey = el.getAttribute('data-peek');
+    send(lastKey);
+  }
+  return {
+    init: function (ref) {
+      net = ref;
+      if (window.__survivalPeekHooked) return;
+      window.__survivalPeekHooked = true;
+      document.addEventListener('pointermove', onMove, true);
+      document.addEventListener('focusin', onFocus, true);
+    }
+  };
+})();

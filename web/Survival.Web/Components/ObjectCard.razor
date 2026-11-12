@@ -1,3 +1,5 @@
+@inject GameSession G
+@implements IDisposable
 @* 统一卡框（卡片统一与设施烹饪 v0.4 · 01 案第 2 节）：地点、设施、资源与地面/随身物品共用同一圆角、描边、标题与图片区。
    Wide 为左图右文（当前地图卡）；Dashed 为未建造；落点与拖拽键原样透传给 drag.js。
    B32a（逐字稿 §1.2 Q340、Q345；v0.9 06 §1—§4）：Ink2 为重墨 V2 卡模板——上部主图（右上角标），下部信息条「名称 + 一行副标」，
@@ -7,7 +9,7 @@
 {
     <div id="@Id" class="ocard k2 @CssClass @(Selected ? "selected" : "") @(Dashed ? "dashed" : "") @(Dim ? "dim" : "") @(Blocked ? "st-disabled" : "") @(Danger ? "st-danger" : "") @(Busy ? "st-busy" : "") @(Fresh ? "fresh" : "") @(Footer != null ? "has-act" : "")"
          data-drop="@DataDrop" data-drop-level="@(DataDrop == null ? null : DropLevel)"
-         data-drag="@DataDrag" data-drag-from="@DragFrom" data-drag-title="@DragTitle" data-card="@DataCard"
+         data-drag="@DataDrag" data-drag-from="@DragFrom" data-drag-title="@DragTitle" data-card="@DataCard" data-peek="@EffPeek"
          role="button" tabindex="0" title="@Tooltip" aria-label="@(AriaLabel ?? Title)" aria-describedby="@DescribedBy"
          @onclick="Click" @onkeydown="Key">
         <div class="k2-art">
@@ -28,7 +30,7 @@ else
 {
 <div id="@Id" class="ocard @CssClass @(Selected ? "selected" : "") @(Dashed ? "dashed" : "") @(Dim ? "dim" : "") @(Wide ? "wide" : "") @(Fresh ? "fresh" : "")"
      data-drop="@DataDrop" data-drop-level="@(DataDrop == null ? null : DropLevel)"
-     data-drag="@DataDrag" data-drag-from="@DragFrom" data-drag-title="@DragTitle" data-card="@DataCard"
+     data-drag="@DataDrag" data-drag-from="@DragFrom" data-drag-title="@DragTitle" data-card="@DataCard" data-peek="@EffPeek"
      role="button" tabindex="0" title="@Tooltip" aria-label="@(AriaLabel ?? Title)" aria-describedby="@DescribedBy"
      @onclick="Click" @onkeydown="Key">
     <div class="oc-head">
@@ -89,6 +91,45 @@ else
     [Parameter] public bool Busy { get; set; }
     /// <summary>Q345 不可用（对象自身阻断，Q252 资源自身原因）：与 Dim 同一叠层，单列参数方便与库存为 0 分开写。</summary>
     [Parameter] public bool Blocked { get; set; }
+
+    // ───── B42 悬停即看右栏（S14 2026-11-12） ─────
+    /// <summary>卡片本体的悬停热区键：有点击选择对象的卡传与点击同一身份（Peek.Sel…）；不传时按 Id 用公开条目键（Peek.Card），右栏显示本卡原公开内容。</summary>
+    [Parameter] public string? PeekId { get; set; }
+    /// <summary>不作悬停热区（极少数纯装饰卡）。</summary>
+    [Parameter] public bool NoPeek { get; set; }
+
+    private string? EffPeek => NoPeek ? null : PeekId ?? (Id != null ? Peek.Card(Id) : null);
+    private string? _peekReg;
+
+    /// <summary>公开条目键：每次参数刷新登记本卡原公开标题、角标状态、悬停说明、主图与副标／第二行／正文（不含执行按钮），右栏读当前这份。</summary>
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        var k = EffPeek;
+        if (_peekReg != null && _peekReg != k) { G.DropPeekFacts(_peekReg, this); _peekReg = null; }
+        if (k == null || PeekKey.KindOf(k) != PeekKey.Card) return;
+        G.SetPeekFacts(k, this, new PeekFacts
+        {
+            Title = Title,
+            State = string.Join(" · ", new[] { Badge, Badge2 }.Where(x => !string.IsNullOrEmpty(x))) is { Length: > 0 } st ? st : null,
+            Desc = Tooltip ?? SubTitle,
+            Art = Art,
+            Body = PeekBody,
+        });
+        _peekReg = k;
+    }
+
+    private RenderFragment PeekBody => @<div class="peek-lines">
+        @if (SubContent != null) { <div class="k2-sub @SubClass">@SubContent</div> }
+        else if (!string.IsNullOrEmpty(Sub)) { <div class="k2-sub @SubClass">@Sub</div> }
+        @if (Line2 != null) { <div class="k2-l2">@Line2</div> }
+        @if (ChildContent != null) { <div class="oc-body">@ChildContent</div> }
+    </div>;
+
+    public void Dispose()
+    {
+        if (_peekReg != null) G.DropPeekFacts(_peekReg, this);
+    }
 
     private Task Click() => OnClick.InvokeAsync();
 

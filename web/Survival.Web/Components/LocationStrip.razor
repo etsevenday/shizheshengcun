@@ -113,7 +113,7 @@
                     @if (tarp != null)
                     {
                         var packWhy = G.Running || s.Main != null ? "行动进行中" : e.CanStart(s, GameEngine.Pack(tarp));
-                        <ObjectCard Ink2="true" @key="@("tarp")" CssClass="k2-fac" Title="野营遮雨布" Badge="已铺开" BadgeClass="built" Sub="睡眠遮蔽 · 不挡遭遇" Tooltip="铺开期间在这里睡眠算遮蔽（至多4人）；不挡遭遇，没有安全屋休息加成">
+                        <ObjectCard Ink2="true" @key="@("tarp")" PeekId="@Peek.Card("tarp")" CssClass="k2-fac" Title="野营遮雨布" Badge="已铺开" BadgeClass="built" Sub="睡眠遮蔽 · 不挡遭遇" Tooltip="铺开期间在这里睡眠算遮蔽（至多4人）；不挡遭遇，没有安全屋休息加成">
                             <Art>@Icons.Markup("field_tarp")</Art>
                             <Footer>
                                 <button type="button" class="loc-btn res-btn" disabled="@(packWhy != null)" title="@(packWhy ?? $"收起野营遮雨布（{e.Config.Safehouse.Camping.TarpPackMinutes}分钟）")"
@@ -311,7 +311,7 @@
                         var open = G.Pop?.Kind == "approach" && G.Pop.Id == wid.ToString();
                         @* B32a（Q340、Q357、Q360）：重墨 V2 卡模板——副标健康数值、第二行健康条，伤害与速度收进悬停（详情点卡看右栏）；
                            角标沿真实关系「敌对」「中立」；普通常驻敌踪不挂危险叠层，配置为精英的挂 *@
-                        <ObjectCard Ink2="true" @key="@("we" + wid)" Id="@($"en-{wid}")" CssClass="k2-enemy" Title="@ec.Name" Badge="@(w.Hostile ? "敌对" : "中立")" BadgeClass="@(w.Hostile ? "new" : "")"
+                        <ObjectCard Ink2="true" @key="@("we" + wid)" Id="@($"en-{wid}")" PeekId="@Peek.Sel(SelectionKind.Enemy, wid.ToString(), "", wid)" CssClass="k2-enemy" Title="@ec.Name" Badge="@(w.Hostile ? "敌对" : "中立")" BadgeClass="@(w.Hostile ? "new" : "")"
                                     Danger="@ec.Elite" Sub="@($"健康 {Ui.N(w.Hp)}/{Ui.N(ec.Hp)}")" SubClass="hp"
                                     Selected="@(sel.Kind == SelectionKind.Enemy && sel.InstanceId == wid)" Fresh="@G.Highlights.Contains($"enemy:{wid}")"
                                     Tooltip="@($"敌人：点击查看详情；点“接近”在卡旁预览并确认开战。伤害{Ui.N(ec.DamageMin)}—{Ui.N(ec.DamageMax)} · 速度{Ui.Speed(ec.Speed)}")" OnClick="() => SelectEnemy(wid)">
@@ -349,7 +349,7 @@
                     var noOutputLine = e.NoOutputYieldLine(r);   // Q254：没有确定产出的资源点
                     @* B32a（Q340、Q345）：重墨 V2 卡模板——副标＝账短标 · 每次产量（日补写在悬停与右栏），第二行＝风险行与资源自身原因；
                        库存为 0（Dim）与资源自身阻断（Blocked）为不可用，当前采集对象为加工中 *@
-                    <ObjectCard Ink2="true" @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="k2-res" Title="@r.Name" AriaLabel="@(noOutputLine == null ? null : $"{r.Name}：{noOutputLine}")" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
+                    <ObjectCard Ink2="true" @key="r.NodeId" Id="@($"res-{nodeId}")" PeekId="@Peek.Sel(SelectionKind.Resource, nodeId)" CssClass="k2-res" Title="@r.Name" AriaLabel="@(noOutputLine == null ? null : $"{r.Name}：{noOutputLine}")" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
                                 Blocked="@(cardWhy != null)" Busy="@CardStates.BusyResource(s, nodeId)"
                                 Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
                                 DataDrop="@($"res:{nodeId}")" Tooltip="@(r.IsRecord ? "核心记录：点击查看领取预估" : r.IsCampaign ? "本局唯一领取：点击查看领取预估" : toolNames != null ? $"{(r.ToolBonus!.LockedSearch ? "锁闭储物点" : "资源点")}：点击查看采集预估；可用工具：{toolNames}（把它拖到这里指定使用）{(r.ToolBonus.LockedSearch ? "；" + e.ConditionalToolHint(r) : "")}" : "资源点：点击查看采集预估；这里没有可用工具，徒手进行")" OnClick="() => SelectResource(nodeId)">

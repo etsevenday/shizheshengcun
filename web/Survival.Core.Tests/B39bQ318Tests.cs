@@ -189,7 +189,8 @@ public class B39bQ318Tests : TestBase
         Assert.That(session, Does.Contain("else if (!BusyNoticeTracker.IsBusyNotice(Notice)) Notice = null;"), "退出");
         Assert.That(session, Does.Contain("public string? RightNotice => BusyNoticeTracker.RightColumnNotice(Notice, State, Panel);"));
 
-        foreach (var f in new[] { "DetailPanel", "CharacterPanel", "PreviewView", "ItemDetail", "FireDetail", "EnemyDetail", "BattlePanel" })
+        // B42：右栏选中分支（含空态「当前位置」与其反馈）移到 SelectionDetail，点击与悬停共用
+        foreach (var f in new[] { "SelectionDetail", "CharacterPanel", "PreviewView", "ItemDetail", "FireDetail", "EnemyDetail", "BattlePanel" })
         {
             var src = Web("Components", f + ".razor");
             Assert.That(src, Does.Contain("G.RightNotice"), f);

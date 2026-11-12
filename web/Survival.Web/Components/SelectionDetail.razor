@@ -1,0 +1,87 @@
+@inherits GameComponent
+
+@* 右栏主界面对象详情（原 DetailPanel 选中分支）。B42（S14「2026-11-12 悬停卡片／条目立即显示右栏详情」）：点击选中与悬停查看共用这一个组件，
+   同一对象两种方式读同一事实来源；Peek=true 时只读——眉标去掉「已选中 · 」（悬停不是选中），路线进入预告不给确认键，物品批次只读不可点。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var sel = Sel;
+    var mark = Peek ? "" : "已选中 · ";
+}
+@switch (sel.Kind)
+{
+    case SelectionKind.Location when s.Locations[s.CurrentLocation].Progress < 100:
+        <PreviewView Request="ActionRequest.Explore()" Eyebrow="@($"{mark}{e.LocName(s.CurrentLocation)}")" Title="探索周边" Confirmable="false"
+                     Subtitle="探索推进地块调查，并有机会取得零散物资；探索度达到100%后不再探索。" />
+        break;
+    case SelectionKind.Location:
+        @* 已充分探索：不把选中态转给清理（试玩修复 B4），清理要新的点击或悬停 *@
+        <div class="empty-detail">@e.LocName(s.CurrentLocation)已充分探索<br />点清理按钮或资源卡查看预测</div>
+        break;
+    case SelectionKind.Clear:
+        <PreviewView Request="ActionRequest.Clear()" Eyebrow="@($"{mark}{e.LocName(s.CurrentLocation)}")" Title="@e.ClearLabelAt(s.CurrentLocation)" Confirmable="false"
+                     Subtitle="@(e.Location(s.CurrentLocation).ClearPerGeneration ? "翻找地牢房间里的零散物资。每代只能做1次，不随时间恢复；不领物资箱、守卫或核心记录，不增加探索度。" : "翻找、整理地块表层的零散基础物资。每地有独立次数，随游戏世界时间恢复；不增加探索度。")" />
+        break;
+    case SelectionKind.Entrance:
+        @* B21（R03 D3）：去地牢入口缓冲或从 01 去危险房间时，右栏先给完整进入预告 *@
+        // B21 试玩修复 M399：完整预告放进预估的滚动区里（原来放在滚动区外撑高右栏，页面一闪滚动条、相邻卡浮窗被收起）；
+        // 01→危险房间时右栏也给“确认开始远征并前往”，不依赖卡旁浮窗（B42：悬停查看只读，不给这个确认键）
+        var dEnt = e.DungeonAt(sel.Id);
+        var needExp = e.NeedsExpeditionConfirm(s, sel.Id);
+        var showExp = dEnt != null && e.ExpeditionEnabled(dEnt) && (needExp || (e.BufferNodeOf(dEnt) == sel.Id && e.DungeonAt(s.CurrentLocation) != dEnt));
+        <PreviewView Request="ActionRequest.Travel(sel.Id, needExp)" Eyebrow="@($"{mark}前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")" Confirmable="@(needExp && !Peek)"
+                     ConfirmLabel="@(needExp && !Peek ? "确认开始远征并前往" : null)"
+                     FootNote="在相邻地图卡旁的浮窗确认移动；时间为预计值"
+                     Subtitle="位置在到达时一次更新；途中不能取用两端的物资。">
+            <Extra>
+                @if (showExp)
+                {
+                    <div class="exp-detail"><div class="eyebrow">进入预告 · 只读，不建实例、不抽物资</div><ExpeditionInfo Info="@e.ExpeditionPreview(s, dEnt!)" /></div>
+                }
+            </Extra>
+        </PreviewView>
+        break;
+    case SelectionKind.Resource:
+        var r = e.Resource(sel.Id);
+        <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"{mark}{r.Name}")" Title="@($"{e.GatherVerbNow(s, r)}{r.Name}")" Confirmable="false"
+                     Subtitle="工具与成本已计入本次预估。">
+            <Extra>
+                @* B32a Q351：来源行「{资源所在地点名} · {资源账短标}」，地名与账短标取当前配置与现行资源显示口径 *@
+                <div class="facts res-source"><div class="fact"><span>来源</span><strong>@CardStates.ResourceSource(e, r)</strong></div></div>
+            </Extra>
+        </PreviewView>
+        break;
+    case SelectionKind.ItemGroup:
+    case SelectionKind.Tool:
+    case SelectionKind.PotLiquid:
+        @* B32b（Q339）：火堆里的锅、水或食材在右栏顶部给层级路径，可逐级点回所在锅与火堆详情 *@
+        @if (G.InFireCrumbs(sel) is { } crumbs) { <FireCrumbs Path="crumbs" /> }
+        <ItemDetail Sel="sel" ReadOnly="Peek" PeekBatch="@Batch" />
+        break;
+    case SelectionKind.Facility:
+        <FireDetail />
+        break;
+    case SelectionKind.Enemy:
+        <EnemyDetail Sel="sel" />
+        break;
+    default:
+        @* Q328：读当前实际地点（不跟随选中的地图节点或未抵达的目的地），字段缺失时省略该行；下面保留当前有效的原反馈 *@
+        <div class="empty-detail place-summary">
+            <h3>@ShellText.PlaceTitle</h3>
+            <ul class="ps-lines">
+                @foreach (var line in e.CurrentPlaceSummary(s)) { <li>@line</li> }
+            </ul>
+            <p class="ps-hint">@ShellText.ObjectEmptyHint</p>
+            @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
+        </div>
+        break;
+}
+
+@code {
+    /// <summary>要显示的对象：真正选中（G.Selected）或悬停查看的对象。</summary>
+    [Parameter, EditorRequired] public Selection Sel { get; set; } = new();
+    /// <summary>B42：悬停查看（只读，不是选中）。</summary>
+    [Parameter] public bool Peek { get; set; }
+    /// <summary>B42：悬停的卡片代表的批次（叠卡后层、分卡一侧）；null 按原规则。</summary>
+    [Parameter] public string? Batch { get; set; }
+}

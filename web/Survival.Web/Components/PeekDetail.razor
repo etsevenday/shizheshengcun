@@ -1,0 +1,52 @@
+@inherits GameComponent
+
+@* B42（S14「2026-11-12 悬停卡片／条目立即显示右栏详情」）：右栏「对象」区的悬停只读详情。按对象键分派到点击时用的同一组件、同一事实来源；
+   没有独立详情组件的公开条目（PeekKey.Card）显示它自己登记的原公开标题、状态、说明与卡面内容，不另写句子。
+   全部只读：不改真正选中、批次、草稿与任务，不提供批次点选与操作页脚。 *@
+@{
+    PeekKey.TryParse(Key, out var kind, out var parts);
+    var first = parts.Length > 0 ? parts[0] : "";
+}
+<div class="peek-detail" data-peek-shown="@Key">
+@switch (kind)
+{
+    case PeekKey.Sel:
+        if (Peek.ParseSel(Key) is Selection sel)
+        {
+            <SelectionDetail Sel="sel" Peek="true" Batch="@PeekKey.Part(Key, 4)" />
+        }
+        break;
+    case PeekKey.Card:
+        if (G.PeekFactsOf(Key) is PeekFacts f)
+        {
+            <div class="detail-scroll peek-card">
+                <div class="op-head">
+                    <h2>@f.Title@if (!string.IsNullOrEmpty(f.State)) { <small class="muted"> @f.State</small> }</h2>
+                    @if (!string.IsNullOrEmpty(f.Desc)) { <p>@f.Desc</p> }
+                </div>
+                @if (f.Art != null) { <div class="detail-icon peek-art">@f.Art</div> }
+                @if (f.Body != null) { <div class="peek-body">@f.Body</div> }
+            </div>
+        }
+        break;
+}
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Key { get; set; } = "";
+
+    // 登记内容变了（卡片随状态重绘）时立即重绘，不保留过期快照
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        G.PeekFactsChanged += OnFacts;
+    }
+
+    private void OnFacts() => InvokeAsync(StateHasChanged);
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        G.PeekFactsChanged -= OnFacts;
+    }
+}

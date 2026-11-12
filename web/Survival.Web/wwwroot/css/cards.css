@@ -386,3 +386,15 @@
 /* B32b 安全屋面板 P02d：当前位置与休息条件 */
 .safehouse-panel .sh-here { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
 .safehouse-panel .sh-rest-line { display: block; }
+
+/* B42（S14 2026-11-12 悬停卡片／条目立即显示右栏详情）：右栏悬停只读详情。外层包装不参与右栏的纵向弹性布局；
+   公开条目把卡面主图、副标、第二行与正文放进右栏（不另写文字），主图在右栏里给固定高度；只读批次行不可点。卡面本身尺寸不变。 */
+.peek-detail { display: contents; }
+.peek-card .peek-art { justify-content: flex-start; }
+.peek-card .peek-art .loc-art { width: 100%; height: 110px; min-height: 0; border-radius: 3px; }
+.peek-card .peek-art img { max-width: 96px; max-height: 96px; }
+.peek-card .peek-body .peek-lines { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-aux); }
+.peek-card .peek-body .oc-line, .peek-card .peek-body .k2-sub, .peek-card .peek-body .k2-l2 { white-space: normal; overflow: visible; text-overflow: clip; }
+.peek-card .peek-body .track, .peek-card .peek-body .fuel-track { max-width: 220px; }
+.batch.readonly { cursor: default; }
+.peek-status .st-ico { display: inline-flex; vertical-align: middle; }

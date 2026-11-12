@@ -18,7 +18,7 @@
     var badge = Kind == "workshops" ? $"已建{builtWs.Count}/{stations.Count}" : built ? "已建成" : "未建造";
 }
 @* B32a（Q340、Q345）：重墨 V2 卡模板，副标一行写效果或建造条件；正在建这张卡的设施时为加工中 *@
-<ObjectCard Ink2="true" CssClass="k2-fac" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
+<ObjectCard Ink2="true" PeekId="@Peek.Card("fac-" + Kind)" CssClass="k2-fac" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
             Busy="@(Kind != "workshops" && CardStates.BusyBuild(s, Kind))"
             Sub="@(built ? effect : need)" Tooltip="@(built ? effect : $"{title}未建造：{need}")" OnClick="Open">
     <Art>@Icons.Markup(Kind == "workshops" ? "parts" : Kind)</Art>

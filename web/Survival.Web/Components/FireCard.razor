@@ -30,7 +30,7 @@
         : fac.FireBuilt ? "野外固定火堆（不能拾取或拆除，不挡遭遇）。点卡查看两个加工位；木材、打火器、锅和生块根可拖到卡上"
         : "点卡查看两个加工位；木材、打火器、锅和生块根可拖到卡上";
 }
-<ObjectCard Ink2="true" Id="@(childSelected ? "card-sel" : "fire-card")" CssClass="@(fac.FireLit ? "k2-fire lit" : "k2-fire")" Title="@name"
+<ObjectCard Ink2="true" Id="@(childSelected ? "card-sel" : "fire-card")" PeekId="@Peek.Sel(SelectionKind.Facility, GameEngine.FireIdOf(here))" CssClass="@(fac.FireLit ? "k2-fire lit" : "k2-fire")" Title="@name"
             Badge="@state" BadgeClass="@(fac.FireLit ? "lit" : "")" Badge2="@(full ? CardStates.FireSlotsFull : null)"
             Selected="@(selected || childSelected)" Busy="@e.FireHeating(s, here)" Fresh="@fresh"
             Sub="@CardStates.FireFuelSub(e, fac)" Tooltip="@tip" AriaLabel="@($"{name}，{state}，燃料{fac.FuelMinutes}分钟")"

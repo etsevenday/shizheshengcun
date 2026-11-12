@@ -3,7 +3,8 @@
 @{
     var s = G.S;
     var e = G.E;
-    var sel = G.Selected;
+    // B42：悬停查看传入悬停对象（只读）；点击选中沿 G.Selected
+    var sel = Sel ?? G.Selected;
     var cfg = e.Item(sel.Id);
     var here = s.Ground;
     var carried = sel.Owner == ItemInstance.Carried;
@@ -28,7 +29,8 @@
 }
 else
 {
-    var groupKey = group ? G.CurrentBatch(sel.Owner, sel.Id)?.Key : null;
+    // B42：悬停的是叠卡后层或分卡一侧时按那张卡代表的批次显示；否则沿已点选的批次或默认批次（只读，不改所选批次）
+    var groupKey = group ? (ReadOnly && PeekBatch != null && batches.Any(b => b.Key == PeekBatch) ? PeekBatch : G.CurrentBatch(sel.Owner, sel.Id)?.Key) : null;
     var chosen = (group ? batches.FirstOrDefault(b => b.Key == groupKey) : batches.FirstOrDefault(b => b.Key == batchKey && batchPicked))
                  ?? batches.FirstOrDefault(b => !b.Reserved && !Spoiled(b)) ?? batches[0];
     var inst = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null) ?? chosen.Stacks[0];
@@ -177,11 +179,20 @@ else
                 @foreach (var b in batches)
                 {
                     var key = b.Key;
-                    <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key, group)">
+                    RenderFragment batchText = @<text>
                         <span>×@b.Count@(b.Reserved ? " · 预留" : "")@(b.Stacks[0].RewardOrigin != null ? " · 本实例战利品（可封存）" : "")@(e.IsIdentifiedWhite(b.Stacks[0]) || e.IsIdentifiedTutorial(b.Stacks[0]) ? " · 已鉴定" : "")@(e.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")@(e.PatchDurabilitySuffix(b.Stacks[0]))</span>
                         @* 试玩修复 M77-B9：受本次烹饪保护的食材不显示普通倒计时，写“受热保护中（原期限N小时）” *@
                         <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(!b.ExpiresAt.HasValue ? "不会腐败" : b.Stacks.Count == 1 && e.IsHeatProtected(s, b.Stacks[0]) ? Ui.FreshOf(e, s, b.Stacks[0]) : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute))</span>
-                    </button>
+                    </text>;
+                    @if (ReadOnly)
+                    {
+                        @* B42：悬停查看只读列出批次，不可点选（不改所选批次） *@
+                        <div class="batch readonly @(b == chosen ? "on" : "")">@batchText</div>
+                    }
+                    else
+                    {
+                        <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key, group)">@batchText</button>
+                    }
                 }
             </div>
         }
@@ -240,11 +251,19 @@ else
     private bool batchPicked;
     private string lastSelection = "";
 
+    /// <summary>B42：要显示的对象（悬停查看时传入）；null 为真正选中的 G.Selected。</summary>
+    [Parameter] public Selection? Sel { get; set; }
+    /// <summary>B42：悬停查看只读——批次不可点选。</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+    /// <summary>B42：悬停的卡片代表的批次（叠卡后层、分卡一侧）。</summary>
+    [Parameter] public string? PeekBatch { get; set; }
+
     protected override void OnParametersSet()
     {
-        if (G.Selected.Key != lastSelection)
+        var k = (Sel ?? G.Selected).Key;
+        if (k != lastSelection)
         {
-            lastSelection = G.Selected.Key;
+            lastSelection = k;
             batchPicked = false;
         }
     }
@@ -255,6 +274,7 @@ else
     {
         if (group)
         {
+            if (ReadOnly) return;
             G.PickBatch(G.Selected.Owner, G.Selected.Id, key);
             return;
         }

@@ -78,7 +78,7 @@
                         var b = kb[k];
                         var bk = b.Key;
                         var fresh = b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute);
-                        <button type="button" class="stack-layer @(pickedKey == bk ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" style="--i:@k"
+                        <button type="button" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, bk)" class="stack-layer @(pickedKey == bk ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" style="--i:@k"
                                 title="@($"第{k + 1}批×{b.Count}：{fresh}{e.PatchDurabilitySuffix(b.Stacks[0])}{(b.Reserved ? " · 预留" : "")}（点选这一批）")" aria-label="@($"选择第{k + 1}批，{b.Count}份，{fresh}")"
                                 @onclick="() => G.PickBatch(Owner, id, bk)">
                             <span class="sl-art">@Icons.Markup(id)</span>
@@ -100,7 +100,8 @@
                     var line2Danger = line2 is "已腐败" or "已损坏";
                 }
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@
-                <div id="@(gSel ? "card-sel" : null)" data-tip="@($"{title} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drag-title="@title" data-drop="@($"card:{key}")" data-drop-level="card"
+                @* B42：卡片本体是悬停热区（与点击同一物品身份；分卡时带这一侧的批次） *@
+                <div id="@(gSel ? "card-sel" : null)" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, split ? (sideKb.FirstOrDefault(b => !b.Reserved && !b.Spoiled) ?? sideKb.FirstOrDefault())?.Key : null)" data-tip="@($"{title} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drag-title="@title" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item k2i @(spoiledFront ? "st-danger" : "") @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
                      role="button" tabindex="0" @onclick="() => SelectSide(id, kb, split ? sideKb : null)" @onkeydown="ev => OnCardKey(ev, () => SelectSide(id, kb, split ? sideKb : null))" title="@(dr ? "本实例战利品：这次地牢里领到的奖励，可以封存；成功离开地牢后并回同名物品。" + e.Item(id).Desc : e.Item(id).Desc)">
                     @{ var qtyTip = stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null; }
@@ -135,7 +136,7 @@
                 // B32a 试玩修复（Q345）：不可堆叠的有保质物品（各类尸体）腐败后同样挂危险叠层
                 var spoiledT = e.IsSpoiled(s, t);
                 <div @key="@("t:" + inst)" class="card-col @(tSel ? "open" : "")">
-                <div id="@(tSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(t.ItemId)} · {Ui.ItemLine(e, s, t)}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drag-title="@e.ItemName(t.ItemId)" data-drop="@($"card:{key}")" data-drop-level="card"
+                <div id="@(tSel ? "card-sel" : null)" data-peek="@Peek.Sel(SelectionKind.Tool, toolId, Owner, inst)" data-tip="@($"{e.ItemName(t.ItemId)} · {Ui.ItemLine(e, s, t)}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drag-title="@e.ItemName(t.ItemId)" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item k2i @(t.Quality is "green" or "blue" ? "q-" + t.Quality : "") @(broken || CardStates.BrokenTool(t) ? "broken st-danger" : "") @(spoiledT ? "spoiled st-danger" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
                     @* B32a（Q345、Q356）：独立工具/单件卡副标固定「×{数量}」（B32c Q361：被预留时写「×1（预留1）」）；第二行先写已部署（自身阻断）、已腐败、已损坏（后两者挂危险叠层），

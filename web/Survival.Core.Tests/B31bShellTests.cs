@@ -240,7 +240,8 @@ public class B31bShellTests : TestBase
     [Test]
     public void R54_RightPanel()
     {
-        var d = Web("Components", "DetailPanel.razor");
+        // B42：选中分支移到 SelectionDetail（点击与悬停共用），两处合看
+        var d = Web("Components", "DetailPanel.razor") + Web("Components", "SelectionDetail.razor");
         Assert.That(d, Does.Contain("ShellText.ObjectTab").And.Contain("ShellText.CharacterTab").And.Contain("ShellText.ObjectTitle"));
         Assert.That(d, Does.Contain("e.CurrentPlaceSummary(s)").And.Contain("ShellText.PlaceTitle").And.Contain("ShellText.ObjectEmptyHint"));
         Assert.That(d, Does.Not.Contain("未选中对象").And.Not.Contain(">对象信息<"));

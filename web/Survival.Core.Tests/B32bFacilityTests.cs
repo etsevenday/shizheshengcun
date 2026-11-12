@@ -322,7 +322,7 @@ public class B32bFacilityTests : TestBase
         Assert.That(d, Does.Contain("e.FireSlotHeating(s, here, k)"));
         Assert.That(d, Does.Contain("id=\"fc-charcoal\""));
         Assert.That(d, Does.Contain("CardStates.CharcoalRuleTitle"));
-        Assert.That(Web("Components/DetailPanel.razor"), Does.Contain("G.SelectedInFire is { } crumbs"));
+        Assert.That(Web("Components/SelectionDetail.razor"), Does.Contain("G.InFireCrumbs(sel) is { } crumbs"));   // B42：选中分支移到 SelectionDetail
     }
 
     /// <summary>Q344、Q366：点火盘打开时不预选，未选写提示；按「点火（{时长}）」提交。</summary>

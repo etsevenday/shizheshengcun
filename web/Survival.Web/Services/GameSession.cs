@@ -324,6 +324,8 @@ public sealed partial class GameSession
     {
         DetailTab = tab;
         HoverPreview = null;
+        // B42（S14 2026-11-12）：明确点右栏页签结束本次悬停覆盖，执行页签原功能；下次进入真实对象热区前不再切走
+        PeekClear();
         // 点“人物”页签回到一级简表（二级说明页只由属性入口打开）
         CharPage = null;
         Notify();
@@ -344,6 +346,7 @@ public sealed partial class GameSession
         {
             DetailTab = DetailTab.Character;
             HoverPreview = null;
+            PeekClear();   // B42：属性入口明确打开人物二级页，结束悬停覆盖
         }
         Notify();
     }
@@ -1258,6 +1261,7 @@ public sealed partial class GameSession
         CloseStaleFormation();
         ClearStaleFormationNotice();
         ClearEndedBusyNotice();
+        ReconcilePeek();
         Version++;
         Changed?.Invoke();
     }
@@ -1425,6 +1429,7 @@ public sealed partial class GameSession
         HelpTopic = null;
         HelpEntry = null;
         DialogLogPick = null;
+        ResetPeek();   // B42：读档、新局、回标题清依附旧界面的悬停上下文
         _uiLocation.Reset();
         _skip = false;
         Running = false;
@@ -1440,6 +1445,7 @@ public sealed partial class GameSession
         Selected = sel;
         CardPopCovered = false;   // B32d（Q378）：玩家重新点来源，操作盘照原条件再打开
         Pop = null;
+        PeekClear();   // B42：明确点选回到原点击详情（悬停只是临时覆盖）
         if (sel.Kind != SelectionKind.None) DetailTab = DetailTab.Object;
         Notice = null;
         // 选中卡片后卡下会出现操作条：旧的结果提示收起，不遮挡操作（试玩修复 G5）；内容仍在页脚与行动日志里
@@ -1533,17 +1539,16 @@ public sealed partial class GameSession
     /// B32b（逐字稿 §1.2 Q339）：当前选中的是当前区火堆里的锅、锅里的水或食材、直烤食材时，返回右栏层级路径
     /// 「{火堆名} › 加工位{序号} › {锅名} › {内容}」；否则 null。火堆卡据此作为选卡操作盘的来源。
     /// </summary>
-    public List<FireCrumb>? SelectedInFire
+    public List<FireCrumb>? SelectedInFire => InFireCrumbs(Selected);
+
+    /// <summary>某个对象（真正选中或 B42 悬停的对象）在当前区火堆里时的层级路径；否则 null。</summary>
+    public List<FireCrumb>? InFireCrumbs(Selection sel)
     {
-        get
-        {
-            if (State == null) return null;
-            var sel = Selected;
-            if (sel.Kind == SelectionKind.PotLiquid && sel.InstanceId is int pid)
-                return E.FindItem(S, pid) is ItemInstance pot ? E.FireCrumbs(S, pot, sel.Id) : null;
-            if (sel.Kind != SelectionKind.Tool || sel.InstanceId is not int id) return null;
-            return E.FindItem(S, id) is ItemInstance it ? E.FireCrumbs(S, it) : null;
-        }
+        if (State == null) return null;
+        if (sel.Kind == SelectionKind.PotLiquid && sel.InstanceId is int pid)
+            return E.FindItem(S, pid) is ItemInstance pot ? E.FireCrumbs(S, pot, sel.Id) : null;
+        if (sel.Kind != SelectionKind.Tool || sel.InstanceId is not int id) return null;
+        return E.FindItem(S, id) is ItemInstance it ? E.FireCrumbs(S, it) : null;
     }
 
     public void SelectFire()
@@ -2367,6 +2372,7 @@ public sealed partial class GameSession
         BattleAllyView = BattleAllyView == actorId ? null : actorId;
         Notice = null;   // 试玩修复 B9-3；B9 遗留 3：瞄准中点队列/锚点换查看对象也清掉旧“射程不足”
         if (BattleAllyView != null) BattleTarget = null;
+        PeekClear();   // B42：明确点选查看对象，结束战斗右侧的悬停覆盖
         Notify();
     }
 
@@ -2703,6 +2709,7 @@ public sealed partial class GameSession
         BattleAllyView = null;
         Notice = null;   // 试玩修复 B9-3：换查看对象时不留旧原因（B9 遗留 3：瞄准中点队列里别的对象也清）
         DetailTab = DetailTab.Object;
+        PeekClear();   // B42：明确点选查看对象，结束战斗右侧的悬停覆盖
         Notify();
     }
 

@@ -213,7 +213,7 @@ public class B32aCardTests : TestBase
     {
         foreach (var r in Cfg.Resources.Take(40))
             Assert.That(CardStates.ResourceSource(E, r), Is.EqualTo($"{E.LocName(r.LocationId)} · {GameEngine.AccountLabel(r)}"), r.NodeId);
-        Assert.That(Web("Components", "DetailPanel.razor"), Does.Contain("<span>来源</span><strong>@CardStates.ResourceSource(e, r)</strong>"));
+        Assert.That(Web("Components", "SelectionDetail.razor"), Does.Contain("<span>来源</span><strong>@CardStates.ResourceSource(e, r)</strong>"));   // B42：选中分支移到 SelectionDetail
     }
 
     // ───────────── Q352 加载 ─────────────

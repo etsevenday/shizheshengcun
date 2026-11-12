@@ -92,6 +92,7 @@ public sealed partial class GameSession
         GearSourceId = instanceId;
         GearSlot = E.DefaultCompareSlot(it.ItemId);
         GearPeekId = instanceId;
+        PeekClear();   // B42：明确点卡回到原点击整备详情（Q450），悬停覆盖结束
         Notify();
     }
 
@@ -102,6 +103,7 @@ public sealed partial class GameSession
     public void GearClickSlot(string slot)
     {
         if (State == null) return;
+        PeekClear();   // B42：明确点槽结束悬停覆盖，按原规则显示
         var src = GearSource;
         if (src != null && GearSlot != null && GivePending == null && E.SlotsFor(src.ItemId).Contains(slot))
         {
