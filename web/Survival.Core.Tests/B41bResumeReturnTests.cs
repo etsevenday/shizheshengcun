@@ -156,7 +156,7 @@ public class B41bResumeReturnTests : B41bTestBase
     }
 
     [Test]
-    public void Q465_SubRunning_GeneralReason_TravelKeepsOldGeneralText()
+    public void Q465_Q491_SubRunning_GeneralReason_TravelSameText()
     {
         var s = Field(3);
         var id = KeptCraft(s);
@@ -170,7 +170,7 @@ public class B41bResumeReturnTests : B41bTestBase
         s.Main!.Status = ActionStatus.Paused;
         s.Main.PauseReason = PauseReason.StatAlert;
         Start(s, ActionRequest.Rest(30));
-        Assert.That(E.ResumeBlockReason(s), Is.EqualTo("请等待当前补给或维护完成"), "Q474：移动沿现有通用原因");
+        Assert.That(E.ResumeBlockReason(s), Is.EqualTo("当前行动还没结束。"), "Q491：移动有未结束子行动也统一用此句");
     }
 
     [Test]

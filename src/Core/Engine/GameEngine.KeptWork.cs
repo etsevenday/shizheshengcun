@@ -32,7 +32,8 @@ namespace Survival.Core.Engine
             var v2 = CardsV2(s);
             // B41b：敌方接近打断后，战斗中不能继续原行动（战后按当前合法条件继续或退出）
             if (v2 && s.Battle != null) return "战斗中：请使用战斗指令";
-            if (s.Sub != null) return v2 && a.Type != ActionType.Travel ? "当前行动还没结束。" : "请等待当前补给或维护完成";
+            // B41c（R05 Q491）：新版下已开始的移动有未结束子行动也统一用「当前行动还没结束。」
+            if (s.Sub != null) return v2 ? "当前行动还没结束。" : "请等待当前补给或维护完成";
             if (!v2 || a.Type == ActionType.Travel) return null;   // Q474：已开始的移动只验通用状态
             if (KeptWorkResumeBlock(s, a) is string where) return where;
             return WorkResumeBlock(s, a);
@@ -67,6 +68,9 @@ namespace Survival.Core.Engine
                     if (!_recipes.TryGetValue(a.TargetId, out var rc)) return ResumeTargetGone;
                     // 维护／拆解的锁定目标、现场修补的包、锅与催化物：原实例不在就不能继续，不暗换另一件
                     if ((rc.IsRepair || rc.IsSalvage) && a.ToolInstanceId is int target && FindItem(s, target) == null) return ResumeTargetGone;
+                    // B41c（R05 Q490）：维护、现场修补与拆解在原目标资格阶段复核当前目标（真实归属、用途资格、耐久），跳过本行动自己的锁与预留
+                    if ((rc.IsRepair || rc.IsSalvage) && a.ToolInstanceId is int tid2 && FindItem(s, tid2) is ItemInstance tgt
+                        && ResumeTargetDurabilityBlock(s, a, rc, tgt) is string tgtWhy) return tgtWhy;
                     if (a.PatchInstanceId is int patch && FindItem(s, patch) == null) return ResumeToolGone;
                     if (a.LockedItemIds.Any(id => FindItem(s, id) == null)) return ResumeToolGone;
                     if (ReservationChanged(s, a)) return ResumeReserveChanged;
@@ -132,6 +136,71 @@ namespace Survival.Core.Engine
                 default:
                     return null;
             }
+        }
+
+        /// <summary>这件物品被本行动以外的行动预留或锁住（本行动自己的目标锁／预留不算占用）。</summary>
+        private bool OccupiedByOther(GameState s, ItemInstance i, ActionState a) =>
+            (i.ReservedBy != null && i.ReservedBy != a.ActionId)
+            || new[] { s.Main, s.Sub, s.StashedWork }.Any(x => x != null && !ReferenceEquals(x, a) && (x.LockedItemIds.Contains(i.InstanceId) || x.ToolInstanceId == i.InstanceId));
+
+        /// <summary>
+        /// Q490：维护（含现场修补）与拆解「继续行动」时的当前目标复核（只读，取第一条真实原因）。耐久与开工时不同本身不拒绝；
+        /// 非有限的耐久按目标失效。维护：仍有耐久且未满（0 可维护）；现场修补：未满且缺损至少 0.1，原包仍须够恢复 0.1；拆解：仍符合拆解用途，耐久不限。
+        /// </summary>
+        private string? ResumeTargetDurabilityBlock(GameState s, ActionState a, RecipeConfig rc, ItemInstance target)
+        {
+            var cfg = _items[target.ItemId];
+            if ((target.Durability is double d0 && !double.IsFinite(d0)) || (target.MaxDurability is double m0 && !double.IsFinite(m0))) return ResumeTargetGone;
+            if (rc.IsSalvage)
+            {
+                if (!cfg.IsEquipment) return $"{cfg.Name}不是装备，不能拆解";
+                if (target.LoanSlot != null) return $"借用的{cfg.Name}不能拆解（RB01 借用物，不产出材料）";
+                if (target.IsWorn) return target.IsWornBy(GameState.PlayerId) ? "穿戴中：先在装备区卸下再拆解" : "穿在别人身上，不能拆解";
+                if (!(target.IsCarried || target.Owner == s.Ground)) return "只能拆解随身或当前地面的装备";
+                if (OccupiedByOther(s, target, a)) return "行动占用：这件装备正被使用";
+                if (target.LoadedAmmo > 0) return $"弹仓里还有{target.LoadedAmmo}发{ItemName(target.LoadedAmmoId ?? "")}，打空后再拆解";
+                if (SalvageOutput(target) == null) return $"{cfg.Name}没有拆解表，暂不能拆解";
+                var tier = EquipTier(target.ItemId);
+                if (tier == null) return $"{cfg.Name}没有装备阶级，不能拆解";
+                var need = SalvageCraftingLevel(tier.Value);
+                if (need == null) return $"{cfg.Name}（{tier}阶）暂无可拆解的制造等级";
+                var lv = SkillLevel(s, Crafting);
+                if (lv < need) return $"拆解{tier}阶装备需要{SkillName(Crafting)}{need}级（当前{lv}级）";
+                return null;
+            }
+            var patch = IsFieldPatchRecipe(rc) || a.PatchInstanceId != null;
+            if (!patch)
+            {
+                if (IsFieldPatch(target)) return ResumeTargetGone;
+                if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，无法继续维护，请退出行动。";
+                if (!(OnPlayer(target) || target.Owner == s.Ground))
+                    return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能维护随身或当前地面的工具";
+                if (OccupiedByOther(s, target, a)) return "行动占用：这件工具正被使用";
+                if (!RepairFilterOk(rc, target.ItemId)) return $"{rc.Name}只修有金属制作或拆解依据的武器、工具或防具，{cfg.Name}不能用它修（枪械、锅、打火器和木石布皮制品不修）";
+                if (target.Durability.Value >= target.MaxDurability.Value - 1e-9) return $"{cfg.Name}耐久已满，无法继续维护，请退出行动。";
+                if (IsPot(target) && PotContents(s, target.InstanceId).Count > 0 && RepairRecipe?.RequireEmptyDetachedPotWhenTargetIsPot == true)
+                    return "锅须先取下并清空才能维护";
+                return null;
+            }
+            if (IsFieldPatch(target)) return ResumeTargetGone;
+            if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，无法继续修补，请退出行动。";
+            if (!(OnPlayer(target) || target.Owner == s.Ground))
+                return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能修补本人随身、穿戴中或当前地面的物品";
+            if (OccupiedByOther(s, target, a)) return "行动占用：这件物品正被使用";
+            // 旧档进行中的 B16 小修（没有绑定修补包）按 Q168 保留旧快照的范围，只复核耐久
+            if (a.PatchInstanceId != null)
+            {
+                if (!FieldPatchEligible(target.ItemId))
+                    return $"{rc.Name}只修有金属制作或拆解依据的武器、工具或防具，{cfg.Name}不能用它修（枪械、锅、打火器和木石布皮制品不修）";
+                if (EquipmentRank(target.Quality) == null) return $"{cfg.Name}的品质不明，不能修补";
+            }
+            var d = target.Durability.Value;
+            var m = target.MaxDurability.Value;
+            if (d >= m - 1e-9) return $"{cfg.Name}耐久已满，无法继续修补，请退出行动。";
+            if (System.Math.Floor((m - d) * 10 + 1e-6) < 1) return $"{cfg.Name}缺损不足0.1，无需修补，请退出行动。";
+            if (a.PatchInstanceId is int pid && FindItem(s, pid) is ItemInstance pack && FieldPatchQuote(target, pack).restoreTenths < 1)
+                return $"{ItemName(pack.ItemId)}剩余耐久{PatchRemaining(pack)}，不够恢复0.1";
+            return null;
         }
 
         /// <summary>本行动的预留批次还在、仍标记为本行动（数量随整批实例保存，实例不在或标记被改即视为变化）。</summary>
