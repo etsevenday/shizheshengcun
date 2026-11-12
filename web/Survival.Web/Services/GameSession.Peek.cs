@@ -83,7 +83,7 @@ public sealed partial class GameSession
     {
         if (PeekLocked || PendingDrop != null || string.IsNullOrEmpty(key)) return;
         if (!PeekValid(key)) return;
-        if (_peek.Enter(key, PeekContext())) Notify();
+        if (_peek.Enter(key, PeekContext())) { PeekSerial++; Notify(); }
     }
 
     /// <summary>结束悬停覆盖（明确点选、点右栏页签或返回控件）。不通知界面，由调用方统一 Notify。</summary>
@@ -112,8 +112,35 @@ public sealed partial class GameSession
     /// <summary>Notify 前校验：上下文变了、对象失效或整局输入锁定时立即清掉（不按同一位置改指别物）。</summary>
     private void ReconcilePeek()
     {
-        if (State == null || PeekLocked) { _peek.Clear(); return; }
+        if (State == null || PeekLocked) { _peek.Clear(); _peekItems.Clear(); return; }
+        FollowPeekItem();
         _peek.Reconcile(PeekContext(), PeekValid);
+        _peekItems = PeekItemOf(_peek.Key) is PeekItemRef r ? PeekItems.Members(S, r) : new List<int>();
+    }
+
+    /// <summary>悬停换成另一对象的次数（右栏据此把滚动回到顶部；物品挪走后跟到新归属是同一对象，不加）。</summary>
+    public int PeekSerial { get; private set; }
+
+    /// <summary>悬停物品此刻代表的真实实例（上次刷新时记下）；物品被挪走后据此跟到新归属（B42 试玩修复 BUG-1）。</summary>
+    private List<int> _peekItems = new();
+
+    /// <summary>键是主界面物品（物品组或单件）时的身份；其他对象为 null。</summary>
+    private static PeekItemRef? PeekItemOf(string? key) =>
+        Peek.ParseSel(key) is { Kind: SelectionKind.ItemGroup or SelectionKind.Tool } sel
+            ? new PeekItemRef(sel.Kind.ToString(), sel.Id, sel.Owner, sel.InstanceId, PeekKey.Part(key!, 4))
+            : null;
+
+    /// <summary>
+    /// B42 试玩修复（BUG-1；S14「可见对象数量、归属……变化时以同一真实引用更新」「对象被移除、隐藏、失效时立即清」）：
+    /// 悬停的物品放下、拾起、放进火堆加工位或取出后，原「物品+归属」已不在：同一批实例仍在随身或当前地点就把悬停跟到新归属
+    /// （与点击选中随状态校正同一口径），找不到或不可见留给下面的有效性校验清掉。界面上下文变了不跟随，按原规则清。
+    /// </summary>
+    private void FollowPeekItem()
+    {
+        if (PeekItemOf(_peek.Key) is not PeekItemRef r || _peek.Context != PeekContext() || BattleFullscreen) return;
+        if (PeekItems.Shown(E, S, r)) return;
+        if (PeekItems.Follow(E, S, r, _peekItems) is PeekItemRef n && Enum.TryParse<SelectionKind>(n.Kind, out var k))
+            _peek.Enter(Peek.Sel(k, n.Id, n.Owner, n.Inst, n.Batch), PeekContext());
     }
 
     /// <summary>对象仍在、仍可见且属于当前界面（键里是真实身份，不是列表序号）。</summary>
@@ -124,6 +151,8 @@ public sealed partial class GameSession
         switch (kind)
         {
             case PeekKey.Sel:
+                // 物品按原归属、实例与所指批次核对（与右栏物品详情同源），不只看实例还在不在
+                if (PeekItemOf(key) is PeekItemRef ir) return !BattleFullscreen && PeekItems.Shown(E, S, ir);
                 return Peek.ParseSel(key) is Selection sel && !BattleFullscreen && SelectionAlive(sel);
             case PeekKey.Gear:
                 return Panel == "gear" && int.TryParse(first, out var gid) && E.FindItem(S, gid) != null;

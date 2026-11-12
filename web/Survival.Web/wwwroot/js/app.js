@@ -840,6 +840,16 @@ window.survivalPeek = (function () {
     send(lastKey);
   }
   return {
+    /* B42 试玩修复：悬停换成另一对象时，右栏详情区（含其中的滚动区）回到顶部；同一对象刷新不调用 */
+    top: function (sel) {
+      try {
+        document.querySelectorAll(sel).forEach(function (root) {
+          var host = root.closest('.detail-body') || root;
+          if (host.scrollTop > 0) host.scrollTop = 0;
+          host.querySelectorAll('*').forEach(function (el) { if (el.scrollTop > 0) el.scrollTop = 0; });
+        });
+      } catch (e) { }
+    },
     init: function (ref) {
       net = ref;
       if (window.__survivalPeekHooked) return;

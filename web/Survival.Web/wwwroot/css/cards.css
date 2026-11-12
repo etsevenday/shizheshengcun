@@ -405,3 +405,17 @@
 .growth-peek .growth-detail { overflow: visible; }
 .growth-peek .growth-track { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .growth-peek .growth-nodes { grid-template-columns: minmax(0, 1fr); }
+/* B42 试玩修复：卡面的副标、第二行与方位标原来只在卡框（.ocard.k2）里有样式，搬到右栏后方位箭头按容器宽度放大成黑色大箭头、
+   纸色卡用的深色行字（.oc-line、.warn-line）落在深色右栏上看不清。这里给右栏悬停版补上与卡面信息条同一套浅色字与方位标尺寸；
+   主图与正文不再被压缩叠在一起。只影响右栏悬停详情，卡面本身不变。 */
+.peek-card .peek-art, .peek-card .peek-body { flex: 0 0 auto; }
+.peek-card .peek-art { margin-bottom: 2px; }
+.peek-card .peek-body :is(.oc-line, .k2-sub, .k2-l2, .k2-subtext) { color: var(--ink2-light); }
+.peek-card .peek-body .oc-line.muted { color: var(--muted); }
+.peek-card .peek-body :is(.warn-line, .oc-line.warn-line) { color: #e7b46d; }
+.peek-card .peek-body :is(.danger-line, .k2-sub.danger) { color: var(--k2-danger); }
+.peek-card .peek-body .oc-body { padding: 0; border-top: 0; }
+.peek-card .peek-body .k2-sub { display: flex; align-items: center; gap: 6px; }
+.peek-card .peek-body .dir-mark { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; border-radius: 50%; border: 1px solid var(--k2-bar-line); background: #20271d; }
+.peek-card .peek-body .k2-sub :is(svg, .acct-ico) { flex: 0 0 auto; width: 1.05em; height: 1.05em; }
+.peek-card .peek-body .k2-sub .dir-mark svg, .peek-card .peek-body .dir-mark svg { width: .8em; height: .8em; fill: #f0d9a0; }

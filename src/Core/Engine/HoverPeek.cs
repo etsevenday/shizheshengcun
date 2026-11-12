@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Survival.Core.State;
 
 namespace Survival.Core.Engine
 {
@@ -111,5 +113,67 @@ namespace Survival.Core.Engine
         /// <summary>第 i 段（不存在或为空串时为 null）。</summary>
         public static string? Part(string? key, int i) =>
             TryParse(key, out _, out var p) && i < p.Length && p[i].Length > 0 ? p[i] : null;
+    }
+
+    /// <summary>B42 悬停的物品对象（与点击选择同一身份：种类 ItemGroup／Tool、物品、归属、实例、可选批次）。</summary>
+    public readonly struct PeekItemRef
+    {
+        public PeekItemRef(string kind, string id, string owner, int? inst, string? batch)
+        {
+            Kind = kind; Id = id; Owner = owner; Inst = inst; Batch = batch;
+        }
+
+        public string Kind { get; }
+        public string Id { get; }
+        public string Owner { get; }
+        public int? Inst { get; }
+        public string? Batch { get; }
+    }
+
+    /// <summary>
+    /// B42 试玩修复（BUG-1，S14「数量、归属变化时以同一真实引用更新」「对象被移除、隐藏、失效时立即清」）：
+    /// 悬停的物品被挪走（放下、拾起、放进火堆加工位、取出）后，按同一批真实实例跟到新归属；实例不在了或不在随身／当前地点就清。
+    /// 跟随后的身份与点击选中随状态校正（GameSession.ReconcileSelection）同一口径：可堆叠且不在设施／锅里按「物品+归属」，否则按实例。
+    /// </summary>
+    public static class PeekItems
+    {
+        public const string Group = "ItemGroup";
+        public const string Tool = "Tool";
+
+        private static bool Visible(GameEngine e, GameState s, ItemInstance i)
+        {
+            var place = e.PlaceOf(s, i);
+            return place == ItemInstance.Carried || place == s.Ground;
+        }
+
+        private static IEnumerable<ItemInstance> At(GameState s, PeekItemRef r) =>
+            s.Items.Where(i => i.Owner == r.Owner && i.ItemId == r.Id && (r.Inst == null || i.InstanceId == r.Inst)
+                               && (r.Kind != Group || r.Batch == null || GameEngine.BatchKeyOf(i) == r.Batch));
+
+        /// <summary>右栏物品详情此刻能按这个身份显示（与物品详情的判断同源：原归属里还有、根位置在随身或当前地点、所指批次还在）。</summary>
+        public static bool Shown(GameEngine e, GameState s, PeekItemRef r)
+        {
+            var first = At(s, r).FirstOrDefault();
+            return first != null && Visible(e, s, first);
+        }
+
+        /// <summary>这个身份此刻代表的真实实例号（悬停有效时记下，挪走后据此跟随）。</summary>
+        public static List<int> Members(GameState s, PeekItemRef r) => At(s, r).Select(i => i.InstanceId).OrderBy(x => x).ToList();
+
+        /// <summary>原身份不能再显示时，按记下的实例找新归属；都不在或都不可见返回 null（清悬停，不改指别的物品）。</summary>
+        public static PeekItemRef? Follow(GameEngine e, GameState s, PeekItemRef r, IEnumerable<int> members)
+        {
+            foreach (var id in members.OrderBy(x => x))
+            {
+                var it = e.FindItem(s, id);
+                if (it == null || !Visible(e, s, it)) continue;
+                var group = e.Item(it.ItemId).IsStackable && !it.InFacility && !it.InContainer;
+                var next = group
+                    ? new PeekItemRef(Group, it.ItemId, it.Owner, null, r.Batch != null ? GameEngine.BatchKeyOf(it) : null)
+                    : new PeekItemRef(Tool, it.ItemId, it.Owner, it.InstanceId, null);
+                if (Shown(e, s, next)) return next;
+            }
+            return null;
+        }
     }
 }

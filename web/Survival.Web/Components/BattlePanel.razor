@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @* 战斗右栏“对象信息”（v0.6 §07；S14 §18.4、R03 §7.4）：只读，不执行。
    瞄准中悬停合法目标 → 对该目标的实际预测（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）；
@@ -210,6 +211,19 @@ else if (b != null)
 }
 
 @code {
+    // B42 试玩修复：悬停换成另一名敌人或队友时对象信息区滚动回到顶部；同一对象刷新不复位
+    private string? _shownPeek;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var k = G.State != null && G.S.Battle != null && PeekKey.KindOf(G.PeekKeyNow) is PeekKey.Foe or PeekKey.Ally ? G.PeekKeyNow : null;
+        if (k == _shownPeek) return;
+        _shownPeek = k;
+        if (k == null) return;
+        try { await JS.InvokeVoidAsync("survivalPeek.top", ".bfs-info .detail-body"); }
+        catch (JSException) { /* 旧缓存 app.js 没有 top：只是不复位 */ }
+    }
+
     /// <summary>丧尸的咬击口径（A09 §1 意图循环）：抓击类的咬击改判概率，或循环里固定的一次咬击；没有咬击写明。</summary>
     private static string BiteText(EnemyConfig ec)
     {

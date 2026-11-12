@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @* B42（S14「2026-11-12 悬停卡片／条目立即显示右栏详情」）：右栏「对象」区的悬停只读详情。按对象键分派到点击时用的同一组件、同一事实来源；
    没有独立详情组件的公开条目（PeekKey.Card）显示它自己登记的原公开标题、状态、说明与卡面内容，不另写句子。
@@ -75,6 +76,18 @@
     }
 
     private void OnFacts() => InvokeAsync(StateHasChanged);
+
+    // B42 试玩修复：换成另一对象时右栏滚动回到顶部（原来沿用上一对象的滚动位置，名称被滚出可视区）；
+    // 同一对象刷新、物品挪走后跟到新归属（同一对象）不复位
+    private int? _shownSerial;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_shownSerial == G.PeekSerial) return;
+        _shownSerial = G.PeekSerial;
+        try { await JS.InvokeVoidAsync("survivalPeek.top", "[data-peek-shown]"); }
+        catch (JSException) { /* 旧缓存 app.js 没有 top：只是不复位 */ }
+    }
 
     public override void Dispose()
     {
