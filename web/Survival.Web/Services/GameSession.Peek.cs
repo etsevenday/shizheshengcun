@@ -38,6 +38,10 @@ public static class Peek
     public static string Status(string statusId) => PeekKey.Make(PeekKey.Status, statusId);
     public static string Foe(int index) => PeekKey.Make(PeekKey.Foe, index.ToString());
     public static string Ally(string actorId) => PeekKey.Make(PeekKey.Ally, actorId);
+    /// <summary>BM1（Q483）：右栏人物页已穿戴装备槽行。</summary>
+    public static string Worn(int instanceId) => PeekKey.Make(PeekKey.Worn, instanceId.ToString());
+    /// <summary>BM1（Q483）：右栏人物页队员行。</summary>
+    public static string Member(string actorId) => PeekKey.Make(PeekKey.Member, actorId);
 
     /// <summary>从键还原主界面对象身份；不是 sel 键或种类不认识时为 null。</summary>
     public static Selection? ParseSel(string? key)
@@ -172,10 +176,20 @@ public sealed partial class GameSession
                 return S.Battle != null && int.TryParse(first, out var fi) && E.BattleEnemyAt(S.Battle, fi) is { Alive: true };
             case PeekKey.Ally:
                 return S.Battle != null && GameEngine.AlliesOnField(S.Battle).Contains(first);
+            case PeekKey.Worn:
+                // BM1（Q483）：仍穿在同行或候补身上才算有效；来源行因右栏临时换页卸载不算失效（只看对象本身）
+                return !BattleFullscreen && int.TryParse(first, out var wid) && E.FindItem(S, wid) is ItemInstance wi
+                       && ItemInstance.TryEquip(wi.Owner, out var wearer, out _) && MemberShown(wearer);
+            case PeekKey.Member:
+                return !BattleFullscreen && MemberShown(first);
             default:
                 return false;
         }
     }
+
+    /// <summary>BM1（Q483）：该成员仍在右栏人物页的队伍里（同行或存活候补）；已故、退役或离队即失效。</summary>
+    private bool MemberShown(string actorId) =>
+        S.Party.Contains(actorId) || E.Reserves(S).Any(r => r.ActorId == actorId);
 
     /// <summary>手工制作「自动加工说明」条目的配方键前缀（与 CraftOverlay.ProcPrefix 同值）。</summary>
     public const string CraftProcPrefix = "proc:";

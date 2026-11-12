@@ -810,6 +810,9 @@ window.survivalPeek = (function () {
   function hotOf(t) {
     var el = t && t.closest ? t.closest('[data-peek]') : null;
     if (!el || el.closest('[inert]')) return null;
+    // BM1（Q485）：右栏（data-detail-rail）里内嵌的对象卡（锅、水、食材等）悬停或键盘聚焦都不替换整页，只按原点击进入；
+    // 右栏「人物」页的已穿戴装备槽行与队员行（data-peek-rail）按 Q483 例外。右栏之外的嵌套对象仍按最内层
+    if (el.closest('[data-detail-rail]') && !el.hasAttribute('data-peek-rail')) return null;
     return el;
   }
   function busy() {

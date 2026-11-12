@@ -29,7 +29,7 @@
     var shownTab = gearPeek != null || peekShown || (!battlePanel && hover != null && G.Panel == null) ? DetailTab.Object : tab;
 }
 
-<aside class="panel detail" aria-label="@($"{ShellText.ObjectTab}与{ShellText.CharacterTab}")" inert="@G.DialogueLocked">
+<aside class="panel detail" data-detail-rail aria-label="@($"{ShellText.ObjectTab}与{ShellText.CharacterTab}")" inert="@G.DialogueLocked">
     @* 开始后的执行进度、剩余时间与退出统一在屏幕中央（S14 §5.1、§11.1），右栏不再重复显示；开始前悬停/选中的预估照常在下方显示 *@
     <div class="detail-tabs" role="tablist" aria-label="右栏页签">
         <button type="button" role="tab" aria-selected="@(shownTab == DetailTab.Object)" class="@(shownTab == DetailTab.Object ? "on" : "")"

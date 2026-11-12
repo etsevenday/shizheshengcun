@@ -419,3 +419,8 @@
 .peek-card .peek-body .dir-mark { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; border-radius: 50%; border: 1px solid var(--k2-bar-line); background: #20271d; }
 .peek-card .peek-body .k2-sub :is(svg, .acct-ico) { flex: 0 0 auto; width: 1.05em; height: 1.05em; }
 .peek-card .peek-body .k2-sub .dir-mark svg, .peek-card .peek-body .dir-mark svg { width: .8em; height: .8em; fill: #f0d9a0; }
+
+/* BM1（Q483）：右栏人物页队员行悬停的只读队员详情——沿队伍行原有文字逐行排列 */
+.member-peek .member-lines { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-aux); line-height: 1.45; }
+/* BM1（Q483）：人物页装备槽行、队员行可键盘聚焦（同悬停入口），聚焦时只描框 */
+.detail .equip-row[data-peek-rail]:focus-visible, .detail .party-row[data-peek-rail]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }

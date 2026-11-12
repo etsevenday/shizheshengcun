@@ -24,6 +24,17 @@
             <GearPeekDetail Item="git" />
         }
         break;
+    case PeekKey.Worn:
+        @* BM1（Q483）：右栏人物页已穿戴装备槽行——与整备同一只读事实（Q462），不带卸下、维修等按钮 *@
+        if (int.TryParse(first, out var wid) && G.E.FindItem(G.S, wid) is ItemInstance wit)
+        {
+            <GearPeekDetail Item="wit" />
+        }
+        break;
+    case PeekKey.Member:
+        @* BM1（Q483）：右栏人物页队员行——该队员自己的公开身份、状态与属性事实，不带编入、留守、展开随身等控件 *@
+        <MemberPeekDetail ActorId="@first" />
+        break;
     case PeekKey.Node:
         @* 地图已公开节点：与点选同一份右栏地点信息、相邻预估或远处路线（只读，不选中、不开移动盘） *@
         <MapOverlay Part="detail" PeekNode="@first" />

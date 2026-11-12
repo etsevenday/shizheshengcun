@@ -91,6 +91,10 @@ namespace Survival.Core.Engine
         public const string Foe = "foe";
         /// <summary>全屏战斗我方锚点（成员 ID）。</summary>
         public const string Ally = "ally";
+        /// <summary>BM1（Q483）：右栏「人物」页已穿戴装备槽行（实例号）；显示与整备同一只读事实（Q462）。</summary>
+        public const string Worn = "worn";
+        /// <summary>BM1（Q483）：右栏「人物」页队伍里的队员行（成员 ID）；显示该队员自己的公开事实。</summary>
+        public const string Member = "member";
 
         public static string Make(string kind, params string?[] parts) =>
             parts.Length == 0 ? kind : kind + "|" + string.Join("|", parts.Select(p => Uri.EscapeDataString(p ?? "")));

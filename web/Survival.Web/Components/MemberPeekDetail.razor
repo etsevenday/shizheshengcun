@@ -1,0 +1,51 @@
+@inherits GameComponent
+
+@* BM1（S14「B42 Q483—Q487 悬停范围与详情补充」Q483 选 B；逐字稿同批表）：右栏「人物」页队员行悬停时，右栏「对象」临时显示该队员的只读事实。
+   只复用队伍行（PartyPanel.Row）已有的公开文字与数值：号位／候补、姓名、类别与所属、背景句（原悬停说明）、速度、健饱水体醒精与病毒、
+   候补照护、身份摘要、武器——全部读该队员自己的数据，不借主角数值；不另加标题或提示句，不带编入同行／留作候补／留守此屋／展开随身物品等控件。
+   悬停不切当前成员、不展开队伍、不卸装、不打开整备。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var id = ActorId;
+    var a = s.Actor(id);
+    var st = a.Stats;
+    var isMe = id == GameState.PlayerId;
+    var name = isMe ? "你" : e.ActorDisplayName(s, id);
+    var slotsNow = e.RepairedFormation(s, s.FormationPreset);
+    var k = slotsNow.IndexOf(id);
+    var active = s.Party.Contains(id);
+    var where = active && k >= 0 ? $"{k + 1}号位" : "候补";
+    var w1 = e.WornItem(s, id, EquipSlots.Weapon1);
+    var w2 = e.WornItem(s, id, EquipSlots.Weapon2);
+    var weapons = string.Join(" / ", new[] { w1, w2 }.Select(w => w == null ? "空" : e.ItemName(w.ItemId) + (w.LoanSlot != null ? "（借用）" : "")));
+    var roster = e.RosterOf(s, id);
+    var named = isMe ? null : e.Config.Party.NamedCompanions.FirstOrDefault(n => n.ActorId == id);
+    var kind = isMe ? "" : roster?.IsEscort == true ? "同行补员" : roster?.IsRandom == true ? "周期候选" : named != null ? "固定队友" : "";
+    var kindTip = named == null ? kind : $"{kind}{(named.Affiliation != "" ? " · " + named.Affiliation : "")}{(named.Background != "" ? "：" + named.Background : "")}";
+}
+
+<div class="detail-scroll member-peek" data-member-peek="@id">
+    <div class="op-head">
+        <div class="eyebrow">@where</div>
+        <h2>@name@if (kind != "") { <small class="muted"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</small> }</h2>
+        @if (named != null && named.Background != "") { <p>@kindTip</p> }
+    </div>
+    <div class="member-lines">
+        <div>速度@(Fmt.Speed(e.ActorBaseSpeed(s, id)))</div>
+        <div title="健康/饱食/水分/体力/清醒/精神/病毒">健@(Fmt.T(st.Health)) 饱@(Fmt.T(st.Satiety)) 水@(Fmt.T(st.Hydration)) 体@(Fmt.T(st.Energy)) 醒@(Fmt.T(st.Wakefulness)) 精@(Fmt.T(st.Morale))@(a.Body.Infected ? $" 病毒{Fmt.N(a.Body.VirusLoad)}" : "")</div>
+        @if (!active)
+        {
+            <div>@e.ReserveCareLabel(s, a) · 在@(roster != null ? e.ReserveWhereName(s, roster) : e.LocName(e.HubLocation(s)))</div>
+        }
+        @if (roster != null && e.IdentityText(roster) is string ident)
+        {
+            <div class="muted">@ident</div>
+        }
+        <div class="muted">武器：@weapons</div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string ActorId { get; set; } = "";
+}

@@ -129,12 +129,14 @@
         var kind = isMe ? "" : roster?.IsEscort == true ? "同行补员" : roster?.IsRandom == true ? "周期候选" : named != null ? "固定队友" : "";
         // B14b（Q143 选 B）：固定队友的正式背景句从配置读（旧档同样显示新句；名字、数值、技能、装备不变），放在悬停说明里
         var kindTip = named == null ? kind : $"{kind}{(named.Affiliation != "" ? " · " + named.Affiliation : "")}{(named.Background != "" ? "：" + named.Background : "")}";
-        <div class="party-row @(active ? "" : "reserve") @(G.FedActor == id ? "fed" : "")" data-actor="@id">
+        @* BM1（Q483 选 B）：队员行是悬停／键盘聚焦入口（data-peek-rail），右栏临时显示该队员的只读事实；不切当前成员、不展开队伍。
+           行内按钮与展开的随身物品不算热区（data-peek=""），沿原按钮与操作权限。 *@
+        <div class="party-row @(active ? "" : "reserve") @(G.FedActor == id ? "fed" : "")" data-actor="@id" data-peek="@Peek.Member(id)" data-peek-rail tabindex="0">
             @* M191（B8 试玩）：按钮并到姓名行右侧（窄时折到下一行），每人少占一行，1280×720 下最后一人的按钮不再落到右栏底部说明条下面 *@
             <div class="party-name"><span class="party-pos">@where</span> <b>@name</b>@if (kind != "") {<span class="muted tiny party-kind" title="@kindTip" data-background="@(named?.Background)"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</span>} <span class="muted tiny">速度@(Fmt.Speed(e.ActorBaseSpeed(s, id)))</span>
             @if (!isMe)
             {
-                <span class="party-acts">
+                <span class="party-acts" data-peek="">
                     @if (active && inHouse)
                     {
                         <button type="button" class="eq-btn" disabled="@(stayWhy != null)" title="@(stayWhy ?? $"留守{e.SafehouseName(s, s.CurrentLocation)}屋内作候补（0分钟；下一段起自主休息/睡眠，按屋内遮蔽与床照护，饱食/水分/精神慢慢回到80，伤病照常；留守不释放名额）")" @onclick="() => G.StayInSafehouse(id)">留守此屋</button>
@@ -163,11 +165,11 @@
             {
                 @* B29（Q265）：当前同地点同区存活同行者的随身物品，同一时刻最多展开一人；展开只读，食饮入口与物品卡同一判定 *@
                 var open = G.PartyItemsOpen == id;
-                <button type="button" class="eq-btn party-items-btn" aria-expanded="@(open ? "true" : "false")" data-party-toggle="@id" @onclick="() => G.TogglePartyItems(id)">@(open ? FeedPanelCopy.CollapseItems : FeedCopy.Fill(FeedPanelCopy.ExpandItems, ("数量", e.RootCardCountOf(s, id).ToString())))</button>
+                <button type="button" class="eq-btn party-items-btn" data-peek="" aria-expanded="@(open ? "true" : "false")" data-party-toggle="@id" @onclick="() => G.TogglePartyItems(id)">@(open ? FeedPanelCopy.CollapseItems : FeedCopy.Fill(FeedPanelCopy.ExpandItems, ("数量", e.RootCardCountOf(s, id).ToString())))</button>
                 @if (open)
                 {
                     var rows = e.CompanionCarried(s, id);
-                    <div class="party-items" data-wheel="y" data-party-items="@id">
+                    <div class="party-items" data-wheel="y" data-party-items="@id" data-peek="">
                         @if (rows.Count == 0) { <div class="muted tiny">@FeedPanelCopy.EmptyItems</div> }
                         @foreach (var r in rows)
                         {

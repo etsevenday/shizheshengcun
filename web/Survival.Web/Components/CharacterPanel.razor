@@ -57,7 +57,10 @@ else
                     {
                         var it = e.WornItem(s, GameState.PlayerId, slot);
                         var weaponSlot = EquipSlots.IsWeaponSlot(slot);
-                        <div class="equip-row @(it == null ? "empty" : "")" data-slot="@slot">
+                        @* BM1（Q483 选 B）：有实际装备的槽行是悬停／键盘聚焦入口（data-peek-rail：右栏里只放行人物页这两类行，Q485），
+                           右栏临时显示该件装备的只读事实；空槽不造对象。行内按钮区不算热区（沿原按钮预演与操作权限）。 *@
+                        <div class="equip-row @(it == null ? "empty" : "")" data-slot="@slot"
+                             data-peek="@(it != null ? Peek.Worn(it.InstanceId) : null)" data-peek-rail="@(it != null ? "" : null)" tabindex="@(it != null ? "0" : null)">
                             <span class="eq-slot">@EquipSlots.Name(slot)</span>
                             @if (it == null)
                             {
@@ -75,7 +78,7 @@ else
                                     <small class="eq-stat">@stat</small>
                                     @if (s.Battle == null)
                                     {
-                                        <span class="eq-btns">
+                                        <span class="eq-btns" data-peek="">
                                             <button type="button" class="eq-btn" disabled="@(why != null)" title="@(why ?? $"卸下{name}，放回随身（占一张物资卡）")" @onclick="() => QuickUnequip(slot, false)">卸下</button>
                                             @if (it.MaxDurability.HasValue && e.RepairRecipe is RecipeConfig rrc)
                                             {
