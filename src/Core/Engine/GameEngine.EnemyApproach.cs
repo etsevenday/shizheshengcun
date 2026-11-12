@@ -126,6 +126,33 @@ namespace Survival.Core.Engine
             if (had != null && s.Battle == null && !s.Progress.Dead) EnemyApproachBoundary(s);
         }
 
+        // ───────────── 同卡撤退保护（R05 Q416、Q442、Q443） ─────────────
+
+        /// <summary>某个世界敌人现在所属的卡键：组员是组卡，固定战／可选强敌实例是各自的卡，其余是普通单卡。</summary>
+        public static string CardKeyOfEnemy(WorldEnemy w) =>
+            w.GroupId is int gid ? GroupCardKey(gid) : w.FixedOf ?? SingleCardKey(w.Id);
+
+        /// <summary>
+        /// 成功撤退后的同卡保护（Q416）：这次交战的同一张敌踪卡获得 encounters.cardRetreatGuardMinutes 的主动接近保护，从撤退结算时刻起算，
+        /// 重复撤退取新的截止；离开地点仍按世界时钟走。该卡计时照走，到期后等待保护结束；玩家仍可主动处理。不新增全地点保护。
+        /// 无对应卡的旧在途战斗（Q443）：每个参战幸存敌人所属的真实卡各得一份同样的保护（同卡只记一次），不创建全地点保护、不生成敌人。
+        /// 可选强敌不主动开战，不记保护。本事件随这次撤退结算只提交一次。
+        /// </summary>
+        private void GrantRetreatGuard(GameState s, BattleState b)
+        {
+            var until = s.GameMinute + Config.Encounters.CardRetreatGuardMinutes;
+            var keys = new List<string>();
+            if (b.CardKey != null) keys.Add(b.CardKey);
+            else
+                foreach (var e in b.Enemies.Where(e => !e.Dead))
+                    if (FindWorldEnemy(s, e.WorldId) is WorldEnemy w) keys.Add(CardKeyOfEnemy(w));
+            foreach (var key in keys.Distinct())
+            {
+                if (!(FindEnemyCard(s, key, out _) is EnemyCardView card) || card.Optional) continue;
+                TimerFor(s, key).GuardUntil = until;
+            }
+        }
+
         // ───────────── 到期队列与敌方主动开战（R05 Q416、Q441、Q467—Q470） ─────────────
 
         /// <summary>同刻到期的先后：固定卡→随机组卡→普通单卡（Q468）。</summary>

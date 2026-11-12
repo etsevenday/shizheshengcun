@@ -1528,6 +1528,8 @@ namespace Survival.Core.Engine
             else if (TutorialEnemyKilled(s, b) && GrantTutorialReward(s, b) is string rr) lines.Add(rr);
             // B20：固定战/旧精英挑战最终胜利结固定账（守卫门、检查哨路线、挑战奖励）
             var fixedLines = outcome == "victory" ? FixedVictory(s, b) : new List<string>();
+            // B41b（R05 Q416、Q443）：成功撤退给这次交战的同一张敌踪卡（无卡旧战斗：各参战幸存敌人所属的卡）60 世界分钟主动接近保护，从撤退结算时刻起算
+            if (outcome == "retreat" && CardsV2(s) && !s.Progress.Dead) GrantRetreatGuard(s, b);
             // B21（R03 D4）：地牢远征里撤退成功，全队沿来路退到第一个没有敌人的房间（首个危险房间退回 01，不出地牢），含在本场唯一 tick 里
             if (outcome == "retreat" && DungeonRetreatLanding(s, b) is string landed) fixedLines.Add(landed);
             // B22h（Q196 选 C）：普通主世界撤退成功退回开战快照锁定的来处（0 额外分钟，不是常规移动）；没有可返回的来路就留在原地并写明
