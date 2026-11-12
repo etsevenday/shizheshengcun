@@ -152,7 +152,8 @@
                         <div class="k2-sub is-qty" title="@tLine">@CardStates.ItemQtyText(t.Count, t.ReservedBy != null ? t.Count : 0)</div>
                         @if (tLine2 != null) { <div class="k2-l2 @(deployed ? "warn" : tLine2 is "已腐败" or "已损坏" ? "danger" : "")" title="@tLine">@tLine2</div> }
                     </div>
-                    <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy && !deployed)" Title="@(deployed ? "已部署 · 先收起才能拾取" : null)" />
+                    @* B41c2（Q523）：锁定暂停行动的原工具（本行动锁住、在当前地面）按例外可拾取，与操作条、拖放同源 *@
+                    <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@((t.ReservedBy == null && !locked && !busy && !deployed) || (!carried && !G.Running && !G.CityBrowsing && e.LockedToolPickupOpen(s, t)))" Title="@(deployed ? "已部署 · 先收起才能拾取" : null)" />
                 </div>
                 </div>
             }

@@ -118,8 +118,11 @@
             @if (e.IgniteNoToolReason(s) is string noTool) { <div class="risk none">@noTool</div> }
         }
 
-        @* 继续/退出统一在中间的中央推进条（S14 §11.2）；这里只写清退出后果 *@
-        <div class="tiny muted">退出：@CancelHint(main)</div>
+        @* 继续/退出统一在中间的中央推进条（S14 §11.2）；这里只写清退出后果。B41c2（Q506）：锁定行动不写退出后果行 *@
+        @if (!GameEngine.ExitLocked(main))
+        {
+            <div class="tiny muted">退出：@CancelHint(main)</div>
+        }
     }
     @if (G.Notice != null) { <div class="notice" style="max-width:720px">@G.Notice</div> }
     </div>

@@ -134,7 +134,7 @@
                                 {
                                     <div class="ci-line ci-leg">@CityCopy.Confirm(focusB.Path.Count, e.LocName(first.From), e.LocName(first.To))</div>
                                 }
-                                <button type="button" class="primary" disabled="@(why != null || est?.Ok == false)" title="@(why ?? (est?.Ok == false ? est.Reason : "按真实路线移动，中途可退出"))"
+                                <button type="button" class="primary" disabled="@(why != null || est?.Ok == false)" title="@(why ?? (est?.Ok == false ? est.Reason : est?.NoExit == true ? GameEngine.LockedTravelHover : "按真实路线移动，中途可退出"))"
                                         @onclick="() => Go(focusB.NodeId)">前往@(est?.Ok == true ? $" · 预计{est.EstimatedMinutes}分钟" : "")</button>
                                 if (why != null) { <div class="ci-line warn">@why</div> }
                                 else if (est?.Ok == false) { <div class="ci-line warn">@est.Reason</div> }

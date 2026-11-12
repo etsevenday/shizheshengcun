@@ -12,8 +12,6 @@ namespace Survival.Core.Engine
         None,
         /// <summary>在当前 5 分钟段边界停止，不再调度下一段；已发生的保留、未发生的不结算。</summary>
         StopAtBoundary,
-        /// <summary>单段事务（点火、自用、融合）开始时已提交，只能如实等它完成，不退还、不撤销。</summary>
-        CompletesCurrentTransaction,
     }
 
     /// <summary>

@@ -4,7 +4,10 @@
    在中部正中显示「行动进行中」浮窗——行动名、「已推进{已耗时} / {计划时长}」与「剩余{时长}」（工作量型与等待烹饪为「已推进{已耗时}」与
    「预计剩余{时长}」，算不出时剩余行让位给实际原因）、进度条、「退出行动」。暂停时同一组件嵌在「行动暂停中」居中弹窗里，给「暂停原因」与
    「继续行动」「退出行动」。150ms 淡入淡出只是表现（不推进 tick、不延迟退出、淡出期间不拦截操作）。数据全部来自内核 ActionProgress。
-   InFlow：嵌在暂停弹窗中间行；Docked：中部开着一级面板时收成底部窄条，不盖面板里的按钮（修 1280 下浮窗盖住城市面板「接取」）。 *@
+   InFlow：嵌在暂停弹窗中间行；Docked：中部开着一级面板时收成底部窄条，不盖面板里的按钮（修 1280 下浮窗盖住城市面板「接取」）。
+   B41c2（S01 Q506、S14 Q506／Q514）：开工 5 分钟锁定的行动（p.Locked）浮窗、暂停弹窗、窄条与子行动一律不放「退出行动」按钮、焦点与后果行
+   （不留灰色占位），只写「本次行动不可中途退出。」；锁定行动暂停时写复核原因，永久失效再加「本次行动无法继续，点击「继续行动」后将自动中止。」，
+   「继续行动」仍可点（受理复核／系统收尾），只受原更高输入锁限制。 *@
 @{
     var p = Info ?? G.ProgressInfo();
 }
@@ -14,7 +17,6 @@
     var (advanced, remain) = ShellText.ProgressLines(p);
     var pct = Math.Clamp(p.Fraction, 0, 1) * 100;
     var busy = G.Running || G.S.Sub != null;
-    var exitNote = G.ExitNote != null && G.ExitNoteAction == p.ActionId ? G.ExitNote : null;
     <div class="cprog @(InFlow ? "inflow" : Docked ? "float docked" : "float") @(Fading ? "fading" : "") @(p.Paused ? "paused" : "") @(dlg ? "dlg" : "")"
          role="status" aria-live="polite" aria-label="@($"{p.Label}：{(dlg ? "对话中，时间未推进" : remain ?? advanced)}")" inert="@(Fading || G.DialogueLocked)">
         <div class="cp-head">
@@ -36,6 +38,14 @@
         @if (p.Paused && !string.IsNullOrEmpty(p.PauseText))
         {
             <div class="cp-reason">@ShellText.PauseReason：@p.PauseText</div>
+        }
+        @if (p.Paused && !string.IsNullOrEmpty(p.ResumeNote))
+        {
+            <div class="cp-note cp-resume-note warn-text">@p.ResumeNote</div>
+        }
+        @if (p.Paused && p.ResumeAborts)
+        {
+            <div class="cp-note cp-resume-abort warn-text">@GameEngine.LockedAbortNote</div>
         }
         @if (!string.IsNullOrEmpty(p.StopNote) && p.StopNote != remain)
         {
@@ -61,8 +71,15 @@
                 <button type="button" class="secondary cp-skip" data-skip-anim aria-keyshortcuts="Space" @onclick="G.SkipAnimation" title="@ShellKeys.SkipAnimTitle">@ShellKeys.SkipAnim <kbd class="kc">@ShellKeys.SpaceCap</kbd></button>
             }
             @* 附带小改：退出会作废本次成果的行动（探索/清理/采集/制作/处理尸体/移动）在退出旁常驻写明后果 *@
-            <span class="cp-exit-note @(p.ExitForfeits ? "forfeit" : "")">@(exitNote ?? (p.Exit == ExitKind.None || p.Exit == ExitKind.CompletesCurrentTransaction || p.ExitForfeits ? p.ExitNote : ""))</span>
-            <button type="button" class="secondary danger cp-exit" disabled="@(p.Exit == ExitKind.None)" title="@p.ExitNote" @onclick="G.Exit">@ShellText.ExitAction</button>
+            @if (p.Locked)
+            {
+                <span class="cp-exit-note cp-noexit">@GameEngine.NoExitNote</span>
+            }
+            else
+            {
+                <span class="cp-exit-note @(p.ExitForfeits ? "forfeit" : "")">@(p.Exit == ExitKind.None || p.ExitForfeits ? p.ExitNote : "")</span>
+                <button type="button" class="secondary danger cp-exit" disabled="@(p.Exit == ExitKind.None)" title="@p.ExitNote" @onclick="G.Exit">@ShellText.ExitAction</button>
+            }
         </div>
     </div>
 }

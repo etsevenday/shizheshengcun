@@ -1804,7 +1804,8 @@ public sealed partial class GameSession
         Notice = res.Ok ? null : res.Reason;
         if (res.Ok)
         {
-            if (movedId != null && !res.Duplicate) QueueSwap(r.Kind == InstantKind.Pickup ? ItemInstance.Carried : S.Ground, movedId);
+            // B41c2（Q523）：锁定行动原工具拾取超容量时是自动中止，物品没有移动，不放交换高亮
+            if (movedId != null && !res.Duplicate && !res.Aborted) QueueSwap(r.Kind == InstantKind.Pickup ? ItemInstance.Carried : S.Ground, movedId);
             Drain();
             MergeSwapHighlight();
             ReconcileSelection();
@@ -2007,18 +2008,17 @@ public sealed partial class GameSession
     /// <summary>
     /// 中央推进条“退出”（S01 §9、S14 §11.2）：走内核 RequestExit——内核每次推进都是完整 5 分钟原子段，收到即在段边界停止，
     /// 不再调度下一段；未发生的时长/工作不结算、按各玩法释放预留，已提交的不回滚；子行动退出回原主行动暂停态。
-    /// 点火、自用、融合（单段事务）已开始结算：如实提示“本段完成后结束”，不撤销。对话中、战斗中、死亡后拒绝并说明原因。
+    /// B41c2（S01 Q506）：开工 5 分钟锁定的行动（含点火、自用、融合）界面不放退出入口；旧调用由内核拒绝「该行动不可中途取消」。
+    /// 对话中、战斗中、死亡后拒绝并说明原因。
     /// </summary>
     public void Exit()
     {
         if (State == null) return;
         var res = E.RequestExit(S);
-        ExitNote = res.Ok && res.Deferred ? res.Reason : null;
-        ExitNoteAction = res.ActionId ?? 0;
-        // Q318：事项盘忙碌句不随“退出”一并清掉——退出尚待段边界或只退了补给子行动时按实际占用保留，行动真正停止后由 Notify 清
+        // Q318：事项盘忙碌句不随“退出”一并清掉——只退了补给子行动时按实际占用保留，行动真正停止后由 Notify 清
         if (!res.Ok) Notice = res.Reason;
         else if (!BusyNoticeTracker.IsBusyNotice(Notice)) Notice = null;
-        if (res.Ok && !res.Deferred)
+        if (res.Ok)
         {
             Drain();
             ReconcileSelection();
@@ -2026,10 +2026,6 @@ public sealed partial class GameSession
         }
         Notify();
     }
-
-    /// <summary>单段事务点“退出”后的说明（“已开始结算，本段完成后结束”），只对同一行动显示。</summary>
-    public string? ExitNote { get; private set; }
-    public int ExitNoteAction { get; private set; }
 
     private (int ver, ActionProgressInfo? info) _progressCache = (-1, null);
 
@@ -2100,6 +2096,16 @@ public sealed partial class GameSession
         if (!res.Ok)
         {
             Notice = res.Reason;
+            Notify();
+            return;
+        }
+        // B41c2（Q514、Q515）：锁定行动复核为永久失效时这一次「继续行动」就是系统收尾（自动中止），等待加工全部完成时只完成不 tick——都不再推进
+        if (res.Aborted || S.Main == null || S.Main.Status != ActionStatus.Running)
+        {
+            Notice = null;
+            Drain();
+            ReconcileSelection();
+            Commit();
             Notify();
             return;
         }

@@ -167,7 +167,7 @@
             var tooHeavy = !invalid && m.ToCarried && n > m.Max;
             var unit = m.UnitGrams;
             var after = e.CarriedGrams(s) + (m.ToCarried ? 1 : -1) * unit * (invalid ? 0 : n);
-            if (moveBusy)
+            if (moveBusy && !m.LockedPick)
             {
                 <div class="ca-note">@(s.Battle != null ? "战斗中不能拾取、放下或投放物品" : s.Encounter != null ? "发现敌踪：先选择接敌或绕行" : "行动进行中，暂不能整理物品")</div>
             }
@@ -411,6 +411,8 @@
         public List<ItemBatch>? Batches { get; init; }
         /// <summary>B22d 试玩修复 M418：物品组卡所在的“卡片侧”（apr 已鉴定白色、dr 战利品、普通 null）；操作窗只列这一侧。</summary>
         public string? Side { get; init; }
+        /// <summary>B41c2（Q523）：锁定暂停行动的原工具例外拾取（行动占用中也开放这一件的拾取）。</summary>
+        public bool LockedPick { get; init; }
     }
 
     private string BatchFresh(ItemBatch b) =>
@@ -459,10 +461,12 @@
                 var toCarried = it.Owner != ItemInstance.Carried;
                 // B17 试玩修复 E3：已部署的野营布/柴炉不能拾取（先收起）
                 var deployedIt = e.IsDeployed(s, it);
-                var free = it.ReservedBy == null && !e.IsLocked(s, it) && !deployedIt ? 1 : 0;
+                // B41c2（S07／S14 Q523）：锁定主行动暂停时，本行动锁住、在当前地面的原工具可按例外整件拾取到随身（与箭头、拖放同源判断）
+                var lockedPick = toCarried && e.LockedToolPickupOpen(s, it);
+                var free = (it.ReservedBy == null && !e.IsLocked(s, it) && !deployedIt) || lockedPick ? 1 : 0;
                 return new Model($"one:{id}", it.ItemId, it.ItemId, name, deployedIt ? "已部署 · 先收起才能拾取" : e.WherePath(s, it), free, Mode.Single)
                 {
-                    Instance = it, Owner = it.Owner, ToCarried = toCarried, UnitGrams = e.ItemGrams(s, it),
+                    LockedPick = lockedPick, Instance = it, Owner = it.Owner, ToCarried = toCarried, UnitGrams = e.ItemGrams(s, it),
                     Max = toCarried ? G.MaxPickup(it.ItemId, free, it) : free, PotInstance = e.IsPot(it) ? it : null, UseId = UseOf(it),
                 };
             }
@@ -540,7 +544,7 @@
     private void Go(Model m, int n)
     {
         var s = G.S;
-        if (G.E.IsBusy(s) || G.Running) return;
+        if ((G.E.IsBusy(s) || G.Running) && !m.LockedPick) return;
         if (n < 1 || n > m.Available || (m.ToCarried && n > m.Max)) return;
         if (m.Instance != null) G.TransferOne(m.Instance.Owner, m.Instance.ItemId, m.Instance.InstanceId);
         else G.TransferBatch(m.Owner, m.ItemId, m.ExpiresAt, n, m.ToCarried, batchKey: m.BatchKey);
