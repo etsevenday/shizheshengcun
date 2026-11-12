@@ -1745,6 +1745,9 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .practice-actors { display: flex; flex-wrap: wrap; gap: 6px; }
 .practice-actors .choice, .fm-leader .choice { padding: 4px 10px; }
 .practice-actions { display: flex; gap: 8px; }
+/* B41e3 试玩修复：.primary 自带 width:100%，同排时把「返回」挤成竖排两字；开始练习占余宽，「返回」按内容宽不换行 */
+.practice-actions .practice-start { flex: 1 1 auto; width: auto; min-width: 0; }
+.practice-actions .practice-back { flex: 0 0 auto; white-space: nowrap; }
 .fm-leader { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .fm-leader-note { flex-basis: 100%; }
 .cp-stash { display: flex; flex-direction: column; gap: 2px; }

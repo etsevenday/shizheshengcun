@@ -280,7 +280,7 @@ else
             <div class="tiny muted">在地图上点选相邻地点：地点旁出现移动确认，这里显示详细预估。点远处地点可看实际路线。</div>
         </div>
     }
-    else if (adjacent.Contains(target) && !e.IsBusy(s))
+    else if (adjacent.Contains(target) && (!e.IsBusy(s) || e.PausedTravelOpen(s)))
     {
         <PreviewView Request="ActionRequest.Travel(target, e.NeedsExpeditionConfirm(s, target))" Eyebrow="@($"区域地图 · {tl.Name} · {(ts.Visited ? $"探索度{ts.Progress}%" : "待访问")}")" Title="@($"前往{tl.Name}")"
                      Confirmable="false" FootNote="在地图上该地点旁的浮窗确认移动；时间为预计值"
@@ -296,7 +296,7 @@ else
                 <h2>@tl.Name</h2>
                 <p>@(tl.IsIndoor ? "室内" : "露天")@(tl.Danger is int dg ? $" · 危险{dg}" : "") · @e.RegionName(e.RegionOf(target)) · @e.MapLayerName(e.MapLayerOf(target))</p>
             </div>
-            @if (e.IsBusy(s))
+            @if (e.IsBusy(s) && !e.PausedTravelOpen(s))
             {
                 <div class="blocked">行动进行中，地图只能浏览</div>
             }
@@ -527,7 +527,8 @@ else
         G.Guide("location", id);   // B13d（Q128）：在地图上查看外出/返营/出区路线是操作前引导的上下文
         var s = G.S;
         var adjacent = G.E.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == id);
-        if (adjacent && !G.E.IsBusy(s) && !G.Running && !G.DialogueLocked) G.OpenPop("mapnode", id, $"mn-{id}");
+        // B41e3 试玩修复（R05 Q464、Q473）：撤退离地保留的暂停期间照常在节点旁打开移动确认
+        if (adjacent && (!G.E.IsBusy(s) || G.E.PausedTravelOpen(s)) && !G.Running && !G.DialogueLocked) G.OpenPop("mapnode", id, $"mn-{id}");
         else G.ClosePop();
         G.Notify();
     }

@@ -13,6 +13,9 @@
     var s = G.S;
     var e = G.E;
     var busy = e.IsBusy(s) || G.Running || G.BattleBusy || _go;
+    // B41e3 试玩修复（R05 Q464、Q473；逐字稿「原暂停层需允许进入既有地图和合法返程移动入口」）：撤退离地保留的暂停期间，
+    // 移动确认不按“行动进行中”锁住，能否走仍看移动预览（与内核 Validate 的移动例外同源）
+    var moveBusy = (e.IsBusy(s) && !e.PausedTravelOpen(s)) || G.Running || G.BattleBusy || _go;
     switch (pop.Kind)
     {
         case "travel":
@@ -76,7 +79,7 @@
                     }
                     else
                     {
-                        <button type="button" class="primary apop-go" data-enter disabled="@(!p.Ok || busy)" @onclick='() => Travel(req, pop.Kind == "mapnode")'>@(p.Ok ? (needExp ? "确认开始远征并前往" : "确认移动") : "无法移动")<EnterCap On="@(p.Ok && !busy)" /></button>
+                        <button type="button" class="primary apop-go" data-enter disabled="@(!p.Ok || moveBusy)" @onclick='() => Travel(req, pop.Kind == "mapnode")'>@(p.Ok ? (needExp ? "确认开始远征并前往" : "确认移动") : "无法移动")<EnterCap On="@(p.Ok && !moveBusy)" /></button>
                     }
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
                 </Actions>

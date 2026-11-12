@@ -92,6 +92,14 @@ namespace Survival.Core.Engine
         public bool IsBusy(GameState s) => s.Main != null || s.Sub != null || s.Battle != null;
 
         /// <summary>
+        /// B41b（R05 Q464、Q472、Q473；逐字稿「原暂停层需允许进入既有地图和合法返程移动入口」）：战后撤退离地保留的暂停期间，
+        /// 地图「前往」与移动确认照常可用（不限方向、回到原地也不收回；没有子行动、没有暂存工作、不在战斗中）。
+        /// 与 <see cref="Validate"/> 的移动例外同源；界面据此不把移动入口当作“行动进行中”锁住，具体能否走仍由移动预览／开工校验决定。
+        /// </summary>
+        public bool PausedTravelOpen(GameState s) =>
+            s.Battle == null && s.Sub == null && s.StashedWork == null && s.Main is { Status: ActionStatus.Paused, RetreatMoveOpen: true };
+
+        /// <summary>
         /// 当前状态异常（v0.7 第 6.1 节）：腹泻剩余时间、绷带冷却剩余。右栏人物页与左栏 HUD 读同一份数据，不各自维护。
         /// </summary>
         public List<ActiveCondition> ActiveConditions(GameState s)
@@ -333,8 +341,7 @@ namespace Survival.Core.Engine
             {
                 plan.IsSub = false;
             }
-            else if (r.Type == ActionType.Travel && s.Main.Status == ActionStatus.Paused && s.Main.RetreatMoveOpen && s.Sub == null
-                     && s.StashedWork == null)
+            else if (r.Type == ActionType.Travel && PausedTravelOpen(s))
             {
                 // B41b（R05 Q464、Q472、Q473）：战后撤退离地保留的暂停期间，地图上已发现、已开通的合法「前往」持续可走（不限方向、回到原地也不收回）；
                 // 移动按原规则校验，通过并开工时才把原工作整份暂存，移动作为当前普通主行动
