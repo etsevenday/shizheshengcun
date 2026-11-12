@@ -39,13 +39,13 @@
         {
             <div class="cp-reason">@ShellText.PauseReason：@p.PauseText</div>
         }
-        @if (p.Paused && !string.IsNullOrEmpty(p.ResumeNote))
+        @* B41c2 试玩修复（P2）：复核原因与系统收尾说明合在一块（完整弹窗里各占一行，窄条里接排一行），窄条按内容放高，不裁字 *@
+        @if (p.Paused && (!string.IsNullOrEmpty(p.ResumeNote) || p.ResumeAborts))
         {
-            <div class="cp-note cp-resume-note warn-text">@p.ResumeNote</div>
-        }
-        @if (p.Paused && p.ResumeAborts)
-        {
-            <div class="cp-note cp-resume-abort warn-text">@GameEngine.LockedAbortNote</div>
+            <div class="cp-note cp-resume warn-text">
+                @if (!string.IsNullOrEmpty(p.ResumeNote)) { <span class="cp-resume-note">@p.ResumeNote</span> }
+                @if (p.ResumeAborts) { <span class="cp-resume-abort">@GameEngine.LockedAbortNote</span> }
+            </div>
         }
         @if (!string.IsNullOrEmpty(p.StopNote) && p.StopNote != remain)
         {

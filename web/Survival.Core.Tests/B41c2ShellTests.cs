@@ -59,4 +59,17 @@ public class B41c2ShellTests
         Assert.That(Web("Components/ItemShelf.razor"), Does.Contain("e.LockedToolPickupOpen(s, t)"));
         Assert.That(Web("Components/CityOverview.razor"), Does.Contain("est?.NoExit == true ? GameEngine.LockedTravelHover"));
     }
+
+    /// <summary>B41c2 试玩修复 P2／P3／P5／P6：窄条不裁复核原因；原工具可拾取时遮罩让出③④；右栏原因不叠标点；接近悬停用锁定版原因。</summary>
+    [Test]
+    public void Fix_P2_P3_P5_P6_ShellLayoutAndTexts()
+    {
+        var css = Web("wwwroot/css/shell.css");
+        Assert.That(css, Does.Contain(".wasteland .pause-dock:has(.cp-resume) { max-height: none; }"));
+        Assert.That(css, Does.Contain(".pause-scrim.pick-open { bottom: calc(50% + var(--sh-gap) / 2); }"));
+        Assert.That(Web("Components/CentralProgress.razor"), Does.Contain("<div class=\"cp-note cp-resume warn-text\">"));
+        Assert.That(Web("Components/PauseLayer.razor"), Does.Contain("e.LockedToolPickupOpen(s, pickTool) ? \"pick-open\""));
+        Assert.That(Web("Components/EnemyDetail.razor"), Does.Contain("@(lead.EndsWith(\"。\") ? \"\" : \"；\")ESC 不能关掉战斗"));
+        Assert.That(Web("Components/LocationStrip.razor"), Does.Contain("GameEngine.LockedMainPaused(s) && s.Sub == null ? e.CanApproach(s, wid)"));
+    }
 }

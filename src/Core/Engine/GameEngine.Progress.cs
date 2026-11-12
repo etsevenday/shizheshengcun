@@ -61,6 +61,48 @@ namespace Survival.Core.Engine
 
     public sealed partial class GameEngine
     {
+        /// <summary>等待加工的中央条数据：目标行、预计剩余、燃料说明与进度（已有完成回执的目标按已完成）。只读。</summary>
+        private void FillCookProgress(GameState s, ActionState a, ActionProgressInfo info)
+        {
+            var plan = new CookWaitPlan { LocationId = a.TargetId };
+            // B41c2 试玩修复（P1）：暂停期间（休息、补给等）已完成的目标有完成回执但还没登记进 CookDone，同样算已完成——
+            // 不再交给 AnalyzeCook 模拟（否则按内部编号显示、并把它算进预计剩余）
+            var cookFac = FacOf(s, a.TargetId);
+            bool Receipted(string pid) => a.CookDone.Contains(pid)
+                || (cookFac != null && !cookFac.Processes.Any(x => x.ProcessId == pid) && cookFac.Completed.Any(x => x.StartsWith(pid + "@")));
+            var open = a.CookTargets.Where(p => !Receipted(p)).ToList();
+            AnalyzeCook(s, a.TargetId, open, plan);
+            info.CookTargets = a.CookTargets.Select((pid, k) => (open.Contains(pid) ? plan.Targets.FirstOrDefault(t => t.ProcessId == pid) : null)
+                ?? new CookTargetInfo { ProcessId = pid, TargetInstanceId = k < a.CookTargetItems.Count ? a.CookTargetItems[k] : 0, Done = true,
+                                        Label = CookDoneLabel(s, a, pid, k) })
+                .Select(t => { if (Receipted(t.ProcessId)) { t.Done = true; t.EtaMinutes = 0; } return t; }).ToList();
+            info.Estimated = true;
+            info.RemainingMinutes = open.Count == 0 ? 0 : plan.EstimatedMinutes;
+            info.StopNote = plan.FuelNote;
+            var total = a.ElapsedMinutes + (info.RemainingMinutes ?? plan.NeededEffectiveMinutes);
+            info.Fraction = total <= 0 ? 0 : Math.Min(1, a.ElapsedMinutes / (double)total);
+        }
+
+        /// <summary>B41c2 试玩修复（P1）：暂停层「剩余时长」用的等待加工预计剩余（与中央条同源；补给子行动进行中也取主行动）；不是等待加工或算不出时为 null。</summary>
+        public int? MainCookRemainingMinutes(GameState s)
+        {
+            if (s.Main is not ActionState a || a.Type != ActionType.WaitCook) return null;
+            var info = new ActionProgressInfo();
+            FillCookProgress(s, a, info);
+            return info.RemainingMinutes;
+        }
+
+        /// <summary>
+        /// 等待加工已完成目标在中央条上的名字：原目标物品（成品与原料同一实例）的名字；实例已不在（合并或被取走）时用该加工的名字。
+        /// 不显示内部进程编号（逐字稿 Q517 节）。
+        /// </summary>
+        private string CookDoneLabel(GameState s, ActionState a, string pid, int k)
+        {
+            if (k < a.CookTargetItems.Count && FindItem(s, a.CookTargetItems[k]) is ItemInstance t) return ItemName(t.ItemId);
+            var id = pid.Split('#')[0];
+            return Config.Processes.FirstOrDefault(p => p.Id == id)?.Name ?? "";
+        }
+
         /// <summary>只有一个 5 分钟原子事务、开始时就提交效果的行动（S01 §9）。</summary>
         public static bool IsSingleTransaction(ActionType t) => t == ActionType.Use || t == ActionType.Ignite || t == ActionType.Fuse;
 
@@ -88,18 +130,7 @@ namespace Survival.Core.Engine
             };
             if (a.Type == ActionType.WaitCook)
             {
-                var plan = new CookWaitPlan { LocationId = a.TargetId };
-                var open = a.CookTargets.Where(p => !a.CookDone.Contains(p)).ToList();
-                AnalyzeCook(s, a.TargetId, open, plan);
-                info.CookTargets = a.CookTargets.Select((pid, k) => plan.Targets.FirstOrDefault(t => t.ProcessId == pid)
-                    ?? new CookTargetInfo { ProcessId = pid, TargetInstanceId = k < a.CookTargetItems.Count ? a.CookTargetItems[k] : 0, Done = true,
-                                            Label = k < a.CookTargetItems.Count && FindItem(s, a.CookTargetItems[k]) is ItemInstance t ? $"{ItemName(t.ItemId)}" : pid })
-                    .Select(t => { if (a.CookDone.Contains(t.ProcessId)) { t.Done = true; t.EtaMinutes = 0; } return t; }).ToList();
-                info.Estimated = true;
-                info.RemainingMinutes = open.Count == 0 ? 0 : plan.EstimatedMinutes;
-                info.StopNote = plan.FuelNote;
-                var total = a.ElapsedMinutes + (info.RemainingMinutes ?? plan.NeededEffectiveMinutes);
-                info.Fraction = total <= 0 ? 0 : Math.Min(1, a.ElapsedMinutes / (double)total);
+                FillCookProgress(s, a, info);
             }
             else if (IsFixedDuration(a.Type))
             {

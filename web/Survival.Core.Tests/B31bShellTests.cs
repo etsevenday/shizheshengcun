@@ -260,7 +260,8 @@ public class B31bShellTests : TestBase
             .And.Contain("ShellText.PauseReason").And.Contain("ShellText.ResumeAction").And.Contain("ShellText.ExitAction"));
         Assert.That(cp, Does.Not.Contain(">退出</button>").And.Not.Contain(">继续</button>").And.Not.Contain("\"进行中\""));
         var pause = Web("Components", "PauseLayer.razor");
-        Assert.That(pause, Does.Contain("<div class=\"pause-scrim\">").And.Contain("<div class=\"pause-dock\""));
+        // B41c2 试玩修复（P3）：遮罩在原工具可拾取时另挂 pick-open（只盖①②）
+        Assert.That(pause, Does.Contain("<div class=\"pause-scrim @(").And.Contain("<div class=\"pause-dock\""));
         Assert.That(pause, Does.Contain("@if (G.Notice != null) { <div class=\"notice\">@G.Notice</div> }"), "收成窄条时 Q318 忙碌句仍在暂停条下");
         var screen = Web("Components", "GameScreen.razor");
         Assert.That(screen, Does.Contain("var dockProgress = centerPanel && G.Panel != \"citymap\";"));

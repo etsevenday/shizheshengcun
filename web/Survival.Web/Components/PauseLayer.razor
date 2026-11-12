@@ -10,7 +10,10 @@
     var stat = main.PauseStat;
     var zero = main.PauseReason == PauseReason.StatZero;
     var work = main.IsWorkType;
-    var remaining = work ? Math.Max(0, main.BaseWorkMinutes - main.CarryReserved - main.WorkDone) : Math.Max(0, main.PlannedMinutes - main.ElapsedMinutes);
+    // B41c2 试玩修复（P1）：等待加工的剩余时长取与中央条同源的预计（已完成目标按已完成），不再用计划分钟减已耗；算不出（燃料不足）时不写这一行
+    var cookWait = main.Type == ActionType.WaitCook;
+    double? remaining = cookWait ? e.MainCookRemainingMinutes(s)
+        : work ? Math.Max(0, main.BaseWorkMinutes - main.CarryReserved - main.WorkDone) : Math.Max(0, main.PlannedMinutes - main.ElapsedMinutes);
     var supplies = new[] { "clean_water", "boiled_root", "cooked_root", "boiled_meat", "cooked_meat", "canned_food", "berry", "bandage", "antibiotics" };
     var busy = sub != null || G.Running;
 }
@@ -27,7 +30,8 @@
     </div>
     return;
 }
-<div class="pause-scrim">
+@* B41c2 试玩修复（P3，S14 Q523）：原工具可按例外拾取时，遮罩与弹窗只占①②两行，③当前地面、④随身露出来，拾取箭头、操作条与拖放可点 *@
+<div class="pause-scrim @(sub == null && e.LockedPickupTool(s) is ItemInstance pickTool && e.LockedToolPickupOpen(s, pickTool) ? "pick-open" : "")">
 <div class="center-layer pause-grid" role="alertdialog" aria-label="@ShellText.ActionPaused" inert="@G.DialogueLocked">
     <div class="pg-top" data-wheel="y">
     @if (sub != null)
@@ -51,7 +55,10 @@
     }
 
     <div class="lines" style="max-width:520px">
-        <div><span>@(work ? "剩余工作量" : "剩余时长")</span><b>@(Ui.T(remaining))分钟</b></div>
+        @if (remaining is double rem)
+        {
+            <div><span>@(work ? "剩余工作量" : "剩余时长")</span><b>@(Ui.T(rem))分钟</b></div>
+        }
         @if (main.ReservedItemIds.Count > 0)
         {
             var res = s.Items.Where(i => main.ReservedItemIds.Contains(i.InstanceId)).GroupBy(i => i.ItemId).Select(g => $"{e.ItemName(g.Key)}{g.Sum(i => i.Count)}");

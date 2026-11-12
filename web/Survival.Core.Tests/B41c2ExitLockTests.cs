@@ -311,4 +311,37 @@ public class B41c2ExitLockTests : TestBase
         Pause(s2);
         Assert.That(GameEngine.ManualSaveBlockText(E.ManualSaveBlocked(s2)), Is.EqualTo("行动暂停中，先继续或退出行动再存档。"));
     }
+
+    // ───────────── B41c2 试玩修复 ─────────────
+
+    /// <summary>P1：等待加工暂停期间（补给子行动推进时间）目标已完成——中央条按已完成显示原物品名，不露内部进程编号；剩余时长如实为 0，暂停层同源。</summary>
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Fix_P1_CookDoneDuringPause_NoInternalId_RemainingZero(bool locked)
+    {
+        var s = New();
+        var pot = First(s, "pot");
+        E.DebugGive(s, "dirty_water", 1, "camp");
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 1)).Ok, Is.True);
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true;
+        fac.FuelMinutes = 600;
+        Start(s, ActionRequest.WaitCook());
+        s.Main!.NoExit = locked;
+        Pause(s);
+        var pid = s.Main.CookTargets.Single();
+        Assert.That(E.ActionProgress(s)!.RemainingMinutes, Is.GreaterThan(0));
+        // 暂停期间补给子行动推进时间，直到这项加工完成（不登记进等待行动）
+        Start(s, ActionRequest.Rest(60));
+        for (var k = 0; k < 40 && s.Sub != null; k++) E.Advance(s);
+        Assert.That(fac.Processes.Any(x => x.ProcessId == pid), Is.False, "加工已在暂停期间完成");
+        Assert.That(s.Main!.CookDone, Does.Not.Contain(pid), "还没登记进等待行动");
+        var p = E.ActionProgress(s)!;
+        var t = p.CookTargets.Single();
+        Assert.That((t.Done, t.Label.Contains('#'), t.Label.Contains(pid)), Is.EqualTo((true, false, false)), t.Label);
+        Assert.That(t.Label, Is.EqualTo(E.ItemName(pot.ItemId)));
+        Assert.That(p.RemainingMinutes, Is.EqualTo(0));
+        Assert.That(E.MainCookRemainingMinutes(s), Is.EqualTo(0), "暂停层剩余时长与中央条同源");
+    }
 }

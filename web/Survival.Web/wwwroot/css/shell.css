@@ -525,3 +525,14 @@ button:is(:disabled, .gate-off, .off) .kc, button[aria-disabled="true"] .kc { co
 button .kc, .wasteland button kbd.kc { color: inherit; border-color: currentColor; }
 /* 确认区容器（tabindex=-1）接过焦点只为让回车归它，不画焦点框 */
 [data-enter-scope]:focus, [data-enter-scope]:focus-visible { outline: none; }
+
+/* ═════ B41c2 试玩修复（线上构建 95f7eba）═════ */
+/* P2：锁定行动暂停的复核原因与「本次行动无法继续…」——完整弹窗里各占一行；窄条里接排成一行，窄条按内容放高（不再裁掉），
+   一级面板按窄条实际高度让位（--dock-live，不小于原 --dock-h） */
+.cprog .cp-resume > span { display: block; }
+.pause-dock .cprog .cp-resume > span { display: inline; }
+.pause-dock .cprog .cp-resume > span + span { margin-left: .5em; }
+.wasteland .pause-dock:has(.cp-resume) { max-height: none; }
+.center-scroll.four.full-panel.docked-prog .panel-host { bottom: calc(max(var(--dock-h), var(--dock-live, 0px)) + var(--sh-gap)); }
+/* P3：原工具例外拾取开放时，暂停遮罩只盖①②两行，③当前地面、④随身不被挡住（弹窗在上半区内滚动，中间行动位仍吸附可见） */
+.pause-scrim.pick-open { bottom: calc(50% + var(--sh-gap) / 2); }

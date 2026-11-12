@@ -319,7 +319,7 @@
                             <Line2><div class="track"><i style="width:@Ui.Bar(w.Hp, ec.Hp)%"></i></div></Line2>
                             <Footer>
                                 @* R05 §7、S14 §14.2：点“接近”只在卡旁打开对象/风险预览，点浮窗里的“接近并开战”才接敌 *@
-                                <button type="button" class="loc-btn res-btn @(open ? "on" : "")" disabled="@(busy)" aria-expanded="@open" title="@(busy ? "行动进行中" : "在卡旁预览风险并确认接近")"
+                                <button type="button" class="loc-btn res-btn @(open ? "on" : "")" disabled="@(busy)" aria-expanded="@open" title="@(busy ? (GameEngine.LockedMainPaused(s) && s.Sub == null ? e.CanApproach(s, wid) ?? "行动进行中" : "行动进行中") : "在卡旁预览风险并确认接近")"
                                         @onclick="() => OpenApproach(wid)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                                     <strong>接近 ▸</strong>
                                 </button>

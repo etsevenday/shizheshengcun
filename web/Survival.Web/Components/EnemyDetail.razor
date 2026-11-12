@@ -51,7 +51,9 @@ else
     </div>
     <div class="detail-foot">
         @* S14 §14.1：右栏只作可选详细阅读，接近的确认在敌踪卡旁（R05 §7），不在这里重复执行按钮 *@
-        <div class="under">@(why != null ? why : "点敌踪卡上的“接近”，在卡旁确认“接近并开战”")；ESC 不能关掉战斗</div>
+        @* B41c2 试玩修复（P5）：原因句自带句号（如「行动暂停中，请先继续行动。」）时直接接后缀，不再叠「；」 *@
+        @{ var lead = why ?? "点敌踪卡上的“接近”，在卡旁确认“接近并开战”"; }
+        <div class="under">@lead@(lead.EndsWith("。") ? "" : "；")ESC 不能关掉战斗</div>
     </div>
 }
 
