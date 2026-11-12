@@ -187,7 +187,8 @@ namespace Survival.Core.Engine
             if (st.Kind == SneakKind)
             {
                 Emit(s, GameEventKind.ActionCompleted, (ok ? $"{leader}潜行接近{card.Title}成功，获得先手。" : $"{leader}潜行接近{card.Title}失败，进入战斗。") + xp);
-                StartCardBattle(s, card, ok ? "潜行成功" : "潜行失败", FearApproach, ok ? FirstStrikeAlly : null);
+                // R05 Q444：战报入战方式前缀 潜行成功「潜行接近」、潜行失败「潜行失败」、躲避失败「躲避失败」
+                StartCardBattle(s, card, ok ? "潜行接近" : "潜行失败", FearApproach, ok ? FirstStrikeAlly : null);
             }
             else if (ok)
             {

@@ -48,6 +48,7 @@ public class B41cStealthCheckTests : B41cTestBase
         Assert.That(s.Battle, Is.Not.Null);
         Assert.That(s.Battle!.FirstStrike, Is.EqualTo("ally"));
         Assert.That(s.Battle.Context, Is.EqualTo(GameEngine.FearApproach), "潜行成功受惊 0.5");
+        Assert.That(s.Battle.Log.First(), Does.Contain(" · 潜行接近："), "Q444 战报前缀");
         Assert.That(s.Battle.CardKey, Is.EqualTo(key));
         Assert.That(Stealth(s), Is.EqualTo((1, 20L)));
         Assert.That(s.EnemyCards.StealthXpClaims, Is.EqualTo(new[] { key + "@0" }));
@@ -64,6 +65,7 @@ public class B41cStealthCheckTests : B41cTestBase
         Assert.That(s.Log.Select(l => l.Text), Does.Contain($"你潜行接近{title}失败，进入战斗。你潜行经验+10。"));
         Assert.That(s.Battle!.FirstStrike, Is.Null);
         Assert.That(s.Battle.Context, Is.EqualTo(GameEngine.FearApproach), "潜行失败受惊 0.5");
+        Assert.That(s.Battle.Log.First(), Does.Contain(" · 潜行失败："), "Q444 战报前缀");
         Assert.That(Stealth(s), Is.EqualTo((1, 10L)));
     }
 
@@ -99,6 +101,7 @@ public class B41cStealthCheckTests : B41cTestBase
         AdvanceUntil(s, Lost);
         Assert.That(s.Log.Select(l => l.Text), Does.Contain($"你未能避开{title}，进入战斗。你潜行经验+10。"));
         Assert.That(s.Battle!.Context, Is.EqualTo(GameEngine.FearEncounter), "躲避失败受惊 1.0");
+        Assert.That(s.Battle.Log.First(), Does.Contain(" · 躲避失败："), "Q444 战报前缀");
         Assert.That(s.Battle.FirstStrike, Is.Null);
     }
 
