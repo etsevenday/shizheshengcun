@@ -25,12 +25,16 @@
     var showSafehouse = e.SafehousePermissionBlocked(here) == null || e.SafehouseBuilt(s, here);
     var tarp = !inside && zfac.TarpInstanceId is int tarpId ? e.FindItem(s, tarpId) : null;
     var hasFacilities = e.HasFireAt(s, place) || (!inside && lc.CanBuildShelter) || (!inside && publicStations.Count > 0) || showSafehouse || tarp != null || e.DryingRackHere(s);
-    var enemies = inside ? new List<WorldEnemy>() : e.VisibleEnemiesAt(s, here);
+    // B41e1：新版敌踪（开关 encounters.enemyCardsV2）开着时，单卡、随机组卡、固定战、可选强敌并成一个「敌踪」分组，读内核 EnemyCardsHere；
+    // 开关关着时下面三组旧卡原样（旧代码在 B41e3 删）
+    var cardsV2 = e.CardsV2(s);
+    var cards = cardsV2 && !inside ? e.EnemyCardsHere(s) : new List<EnemyCardView>();
+    var enemies = inside || cardsV2 ? new List<WorldEnemy>() : e.VisibleEnemiesAt(s, here);
     if (inside) resources = new List<ResourceConfig>();
     // B20：本地固定战（地牢房间/检查哨，首次揭示时按容量 C 截定的名单）与旧精英可选挑战告示（Q81）
-    var fixedHere = inside ? new List<WorldEnemy>() : e.FixedEnemiesAt(s, here);
+    var fixedHere = inside || cardsV2 ? new List<WorldEnemy>() : e.FixedEnemiesAt(s, here);
     var fixedCfg = e.FixedBattleAt(here);
-    var elites = e.EliteChallengesHere(s);
+    var elites = cardsV2 ? new List<LegacyEliteConfig>() : e.EliteChallengesHere(s);
     // B21（R03 D5、A10 §7）：本次远征的安全点（safeNodes）给“终止本次远征”明显入口
     // 试玩修复 M399：撤出中不显示（按钮本就不可用，且会被中央撤出进度条盖住）
     var expHere = s.Expedition != null && !s.Expedition.IsExtracting && !inside && e.DungeonAt(here) == s.Expedition.DungeonId
@@ -329,6 +333,40 @@
                 </div>
             </div>
         }
+        @if (cards.Count > 0)
+        {
+            @* B41e1（逐字稿「B41 Q426–Q428 正式文案」卡片与倒计时、Q427 卡名与角标、Q446 ⑥ 三类卡悬停）：一个「敌踪」分组，按内核 EnemyCardsHere 的顺序排；
+               标题、角标、危险叠层取卡视图；第二行放卡面接近状态句（CardApproachStatus）。点卡选中（右栏敌踪详情）并打开居中操作盘，处理按钮都在盘里。 *@
+            <div class="desk-group enemies">
+                <div class="dg-title">敌踪</div>
+                <div class="dg-cards">
+                    @foreach (var c in cards)
+                    {
+                        var key = c.Key;
+                        var anchor = EnemyCardAnchor(key);
+                        var lead = e.Enemy(c.EnemyIds[0]);
+                        var one = c.Kind is "single" or "elite" ? c.Members.FirstOrDefault() : null;
+                        var status = e.CardApproachStatus(s, c);
+                        var hover = e.EnemyCardHoverLines(s, c);
+                        var names = c.Kind == "fixed" ? string.Join("、", c.Members.Select(w => e.Enemy(w.EnemyId).Name)) : null;
+                        // 副标沿旧卡：常驻／可选强敌写健康数值，固定战写名单；随机组卡 Q539 未答，不写副标（TODO Q539）
+                        var sub = c.Kind is "single" or "elite" ? $"健康 {Ui.N(one?.Hp ?? lead.Hp)}/{Ui.N(lead.Hp)}" : names;
+                        <ObjectCard Ink2="true" Danger="@c.Danger" @key="@("ecard-" + key)" Id="@anchor" PeekId="@Peek.Sel(SelectionKind.Enemy, key)"
+                                    CssClass="@(c.Kind == "fixed" ? "k2-enemy fixed" : c.Kind == "elite" ? "k2-enemy elite" : "k2-enemy")" Title="@c.Title"
+                                    Badge="@c.Badge" BadgeClass="@(c.Badge == "中立" ? "" : "new")" Sub="@sub" SubClass="@(one != null || c.Kind == "elite" ? "hp" : "")"
+                                    Selected="@(sel.Kind == SelectionKind.Enemy && sel.Id == key)" Fresh="@c.Members.Any(w => G.Highlights.Contains($"enemy:{w.Id}"))"
+                                    Tooltip="@(hover.Count > 0 ? string.Join("\n", hover) : null)" OnClick="() => OpenEnemyCard(key)">
+                            <Art>@Icons.Markup("enemy_" + lead.Id)</Art>
+                            <Line2>
+                                @if (one != null) { <div class="track"><i style="width:@Ui.Bar(one.Hp, lead.Hp)%"></i></div> }
+                                @if (c.Kind == "fixed" && e.FixedHurtNote(s, here) is string hurt) { <div class="oc-line" title="@hurt">@hurt</div> }
+                                @if (status != null) { <div class="oc-line ecard-status" title="@status">@status</div> }
+                            </Line2>
+                        </ObjectCard>
+                    }
+                </div>
+            </div>
+        }
         @* B17 试玩修复 B1：屋内不采集，整组不显示（让出宽度，避免设施行横向滚动） *@
         @if (!inside)
         {
@@ -428,6 +466,12 @@
     private void SelectResource(string id) => G.Select(new Selection { Kind = SelectionKind.Resource, Id = id });
 
     private void SelectEnemy(int worldId) => G.Select(new Selection { Kind = SelectionKind.Enemy, Id = worldId.ToString(), InstanceId = worldId });
+
+    /// <summary>B41e1：敌踪卡的 DOM id（居中操作盘关闭后焦点回到它；卡键里的冒号换成连字符）。</summary>
+    public static string EnemyCardAnchor(string cardKey) => "ecard-" + cardKey.Replace(':', '-');
+
+    /// <summary>B41e1：点敌踪卡——选中（右栏敌踪详情）并打开居中操作盘。</summary>
+    private void OpenEnemyCard(string cardKey) => G.OpenEnemyCard(cardKey, EnemyCardAnchor(cardKey));
 
     private void OpenApproach(int worldId)
     {

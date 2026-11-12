@@ -1897,7 +1897,9 @@ public sealed partial class GameSession
                 if (E.FacilityLocation(Selected.Id) != S.Ground) ClearSelectionSilently();
                 return;
             case SelectionKind.Enemy:
-                if (!(Selected.InstanceId is int wid && E.VisibleEnemiesAt(S, S.CurrentLocation).Any(w => w.Id == wid))) ClearSelectionSilently();
+                // B41e1（R05 Q457）：新版敌踪按卡键重验，卡已不在当前地点、当前区域的可操作卡里就清掉选中，不改选别的敌人
+                if (E.CardsV2(S) ? E.EnemyCardHere(S, Selected.Id) == null
+                    : !(Selected.InstanceId is int wid && E.VisibleEnemiesAt(S, S.CurrentLocation).Any(w => w.Id == wid))) ClearSelectionSilently();
                 return;
         }
     }
@@ -2984,6 +2986,22 @@ public sealed partial class GameSession
         Commit();
         Notify();
         await BattleLoop();
+    }
+
+    // ───────────── B41e1 新版敌踪卡（开关 encounters.enemyCardsV2） ─────────────
+
+    /// <summary>B41e1：敌踪卡居中操作盘的浮窗种类（G.Pop.Kind；Id 为卡键）。</summary>
+    public const string EnemyCardPop = "enemycard";
+
+    /// <summary>
+    /// B41e1：点敌踪卡——按卡键选中（右栏敌踪详情）并打开居中操作盘。卡已不在当前地点、当前区域的可操作卡里时什么都不做（R05 Q457：不为失效卡开盘）。
+    /// 单卡另记世界敌人号（InstanceId），其余卡为 null。
+    /// </summary>
+    public void OpenEnemyCard(string cardKey, string anchorId)
+    {
+        if (State == null || DialogueLocked || E.EnemyCardHere(S, cardKey) is not EnemyCardView c) return;
+        Select(new Selection { Kind = SelectionKind.Enemy, Id = cardKey, InstanceId = c.Kind == "single" ? c.Members[0].Id : null });
+        OpenPop(EnemyCardPop, cardKey, anchorId);
     }
 
     /// <summary>主动接近地块上的敌人卡。</summary>

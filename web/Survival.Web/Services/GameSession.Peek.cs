@@ -263,6 +263,8 @@ public sealed partial class GameSession
             case SelectionKind.Facility:
                 return E.HasFireAt(S, S.Ground) && sel.Id == GameEngine.FireIdOf(S.Ground);
             case SelectionKind.Enemy:
+                // B41e1：新版敌踪按卡键（当前地点、当前区域可操作的卡）
+                if (E.CardsV2(S)) return E.EnemyCardHere(S, sel.Id) != null;
                 return S.CurrentZone != GameState.SafehouseZone && sel.InstanceId is int wid && E.VisibleEnemiesAt(S, here).Any(w => w.Id == wid);
             default:
                 return false;
