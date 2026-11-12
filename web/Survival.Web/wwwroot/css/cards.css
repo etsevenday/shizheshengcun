@@ -425,19 +425,20 @@
 /* B44（S14 Q492 选 B，取代 BM1 Q483 的整行悬停即切）：人物页已穿戴槽行、队员行悬停或其中控件有焦点时只高亮所在行，不换页；
    实际物品名／姓名是查看控件（.peek-name）：外观沿原名称文字（品质色、粗细不变），指着时下划线，聚焦时描框并在名称旁显示「ENTER」键帽 */
 .detail :is(.equip-row:not(.empty), .party-row):is(:hover, :focus-within) { background: #ffffff1f; }
-.detail .peek-name { display: inline; margin: 0; padding: 0; min-height: 0; background: none; border: 0; border-radius: 2px; box-shadow: none; text-align: left; line-height: inherit; cursor: pointer; }
-.detail .equip-row .peek-name { padding-top: 2px; }
-/* B44 试玩修复：装备行名称在 1280 窄右栏被图标与重量挤成 0 宽、1600 聚焦时 ENTER 被裁。名称一行内省略（不两字一行撑高），至少留约 3.5 字可点宽度，
-   重量放不下时整块换到下一行靠右；ENTER 键帽在名称按钮内与名称同排，放不下时折到名称下方，不再被裁 */
-.detail .equip-row .eq-item { flex-wrap: wrap; overflow: visible; row-gap: 0; }
-.detail .equip-row .peek-name { display: inline-flex; flex: 1 1 0; min-width: 3.5em; flex-wrap: wrap; align-items: baseline; column-gap: 4px; overflow: visible; white-space: nowrap; }
-.detail .equip-row .peek-name-text { flex: 1 1 auto; min-width: 2em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.detail .equip-row .peek-name .peek-name-cap { flex: 0 0 auto; margin-left: 0; }
+.detail .peek-name { position: relative; display: inline; margin: 0; padding: 0; min-height: 0; background: none; border: 0; border-radius: 2px; box-shadow: none; text-align: left; line-height: inherit; cursor: pointer; }
 .detail .peek-name:hover { text-decoration: underline; text-underline-offset: 3px; }
-.detail .peek-name .peek-name-cap { display: none; margin-left: 4px; }
+/* B44 试玩修复 2：ENTER 键帽绝对定位，浮在名称左上方（带底色），显示／隐藏都不改变任何布局——聚焦名称后再点同一行按钮，按钮不会因行高变化移走 */
+.detail .peek-name .peek-name-cap { display: none; position: absolute; left: 0; bottom: 100%; margin: 0 0 2px; z-index: 3; background: var(--surface, #1d2119); pointer-events: none; }
 .detail .peek-name:focus .peek-name-cap { display: inline-block; }
 .detail .peek-name:focus, .wasteland .detail .peek-name:focus { outline: 2px solid var(--ink2-light, #e0b979); outline-offset: 1px; }
 .detail .peek-detail h2[tabindex]:focus:not(:focus-visible) { outline: none; }
+/* B44 试玩修复：装备名称不再被图标与重量挤成 0 宽。图标与名称成一组（.eq-head，按名称实际长度占宽，最少约 3.5 字可点），
+   与重量同排放不下时重量整块换到下一行靠右，名称拿到整行宽度（宽屏长名称不再被重量压窄）；名称单行省略，不两字一行 */
+.detail .equip-row .eq-item { flex-wrap: wrap; overflow: visible; row-gap: 0; }
+.detail .equip-row .eq-head { display: flex; align-items: flex-start; gap: 4px; flex: 1 1 auto; min-width: calc(26px + 3.5em); max-width: 100%; }
+.detail .equip-row .eq-head .eq-ico { flex: 0 0 22px; }
+.detail .equip-row .peek-name { display: block; flex: 1 1 auto; min-width: 3.5em; padding-top: 2px; overflow: visible; white-space: nowrap; }
+.detail .equip-row .peek-name-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* BM1（Q487）：未建设施悬停——原标题、角标与说明在上（不伸缩），下接与点击同源的建造条件详情（自带滚动区） */
 .peek-card-head { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
 .peek-card-head .op-head p { margin: 0; }

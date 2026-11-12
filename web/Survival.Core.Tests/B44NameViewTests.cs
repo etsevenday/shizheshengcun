@@ -92,6 +92,8 @@ public class B44NameViewTests : TestBase
         var css = Web("wwwroot/css/cards.css");
         Assert.That(css, Does.Contain(".detail :is(.equip-row:not(.empty), .party-row):is(:hover, :focus-within) { background: #ffffff1f; }"), "悬停／聚焦只高亮所在行");
         Assert.That(css, Does.Contain(".detail .peek-name .peek-name-cap { display: none;").And.Contain(".detail .peek-name:focus .peek-name-cap { display: inline-block; }"), "焦点在名称上才显示 ENTER");
+        Assert.That(css, Does.Contain(".detail .peek-name .peek-name-cap { display: none; position: absolute; left: 0; bottom: 100%;"), "M756：键帽显示／隐藏不改变布局（绝对定位），聚焦后再点同一行按钮不会移走");
+        Assert.That(Web("Components/CharacterPanel.razor"), Does.Contain("<span class=\"eq-item\"><span class=\"eq-head\"><span class=\"eq-ico\""), "图标与名称成一组，重量放不下时整块换行");
     }
 
     /// <summary>Q492：名称激活与悬停同一受理条件、同一只读详情（PeekDetail 的 Worn／Member 分支），焦点交给详情标题；不改真正选中、页签记忆、当前成员与草稿。</summary>

@@ -74,7 +74,7 @@ else
                                 var groundWhy = e.UnequipBlocked(s, GameState.PlayerId, slot, true);
                                 var stat = EquipStat(it);
                                 <div class="eq-main" title="@($"{name} · {(e.WeaponKindOf(it.ItemId) is string wk ? WeaponKinds.Name(wk) : EquipSlots.Name(slot))} · {e.QualityName(it)}色 · {stat} · {Ui.KgText(e.ItemGrams(s, it))}（计入本人重量，不占物资卡）")">
-                                    <span class="eq-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span><button type="button" class="eq-name peek-name q-@(it.Quality ?? "white")" data-peek-name="@Peek.Worn(it.InstanceId)" aria-label="@PeekNameView.Label(name)" @onclick="() => G.ViewByName(Peek.Worn(it.InstanceId))" @onclick:stopPropagation><span class="peek-name-text">@name</span><kbd class="kc peek-name-cap" aria-hidden="true">@PeekNameView.Cap</kbd></button><span class="eq-kg">@Ui.KgText(e.ItemGrams(s, it))</span></span>
+                                    <span class="eq-item"><span class="eq-head"><span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span><button type="button" class="eq-name peek-name q-@(it.Quality ?? "white")" data-peek-name="@Peek.Worn(it.InstanceId)" aria-label="@PeekNameView.Label(name)" @onclick="() => G.ViewByName(Peek.Worn(it.InstanceId))" @onclick:stopPropagation><span class="peek-name-text">@name</span><kbd class="kc peek-name-cap" aria-hidden="true">@PeekNameView.Cap</kbd></button></span><span class="eq-kg">@Ui.KgText(e.ItemGrams(s, it))</span></span>
                                     <small class="eq-stat">@stat</small>
                                     @if (s.Battle == null)
                                     {
