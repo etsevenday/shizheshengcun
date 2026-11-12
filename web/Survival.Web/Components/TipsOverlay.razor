@@ -36,7 +36,8 @@
                 <ol>
                     @for (var k = 0; k < tips.Count; k++)
                     {
-                        <li class="@(k == cur ? "now" : "")">@Ui.TipText(e, tips[k])</li>
+                        @* B41e2（Q446 ⑩）：新版敌踪下第13条旧「接敌／绕行10分钟」换成「主动接近、潜行接近或躲避」（内核 TipForState） *@
+                        <li class="@(k == cur ? "now" : "")">@Ui.TipText(e, e.TipForState(s, tips[k]))</li>
                     }
                 </ol>
             </section>

@@ -43,7 +43,7 @@
                     title="@(G.DialogueLocked ? NavTitle("编队", -1) : formWhy != null ? $"现在不能编队：{formWhy}" : navOff ? NavTitle("编队", -1) : NavTitle("编队：安排开战号位（前排1→后排4），保存不花时间", 4))"
                     @onclick="() => ActivateTop(4)">@TopFace(4)</button>
             <button class="@(G.Panel == "gear" ? "on" : "")" disabled="@navOff" data-nav="gear" aria-keyshortcuts="G" title="@NavTitle("整备：七槽装备、随身五卡与队员交接（不花时间）", 5)" @onclick="() => ActivateTop(5)">@TopFace(5)</button>
-            <button class="@(G.Panel == "growth" ? "on" : "")" disabled="@navOff" data-nav="growth" aria-keyshortcuts="K" title="@NavTitle("成长：十五门熟练度的十级轨道与技能节点（只浏览）", 6)" @onclick="() => ActivateTop(6)">@TopFace(6)</button>
+            <button class="@(G.Panel == "growth" ? "on" : "")" disabled="@navOff" data-nav="growth" aria-keyshortcuts="K" title="@NavTitle(G.State != null && G.E.CardsV2(G.S) ? "成长：十六门熟练度的十级轨道与技能节点" : "成长：十五门熟练度的十级轨道与技能节点（只浏览）", 6)" @onclick="() => ActivateTop(6)">@TopFace(6)</button>
             <button class="@(G.Panel == "goals" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="J" title="@NavTitle("序章任务册：主目标、建议与完整18项", 7)" @onclick="() => ActivateTop(7)">@TopFace(7)</button>
             <button class="@(G.Panel == "tips" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="T" title="@NavTitle("当前求生建议", 8)" @onclick="() => ActivateTop(8)">@TopFace(8)</button>
             <button class="@(G.Panel == "dialogs" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="D" title="@NavTitle("已经展示过的人物对话", 9)" @onclick="() => ActivateTop(9)">@TopFace(9)</button>

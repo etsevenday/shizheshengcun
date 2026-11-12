@@ -97,12 +97,16 @@
                 var done = k < b.Cursor && !now;
                 var qName = qi <= 0 ? (qAlly == GameState.PlayerId ? "你" : $"{GameEngine.AllyPos(b, qAlly!)}号 {e.ActorDisplayName(s, qAlly!)}") : $"{be!.Pos}号 {e.EnemyName(be)}";
                 var qSpeed = Ui.Speed(b.Initiative.ElementAtOrDefault(k));
+                // B41e2（R05 Q537）：第一完整回合先手方开场参战者的轮初速度已含×1.5（与队列同源），悬停括注追加「先手×1.5」；已有构成说明的只在其中追加，不另开括注
+                var qFs = qi <= 0 ? e.FirstStrikeRoundSpeedFactor(b, qAlly!) : e.FirstStrikeRoundSpeedFactor(b, GameEngine.FirstStrikeKeyOf(be!));
+                var qFsTag = qFs > 1 ? GameEngine.FirstStrikeTag(qFs) : null;
+                var qSrc = qi <= 0 && qAlly == actorId ? $"（{SpeedSource(mySpeed)}{(qFsTag != null ? "、" + qFsTag : "")}）" : qFsTag != null ? $"（含{qFsTag}）" : "";
                 if (shown >= 8) { hidden.Add($"{(chase ? "追击·" : "")}{qName}（速度{qSpeed}）"); continue; }
                 if (shown > 0) { <span class="bq-arrow" aria-hidden="true">→</span> }
                 shown++;
                 var qIdx = qi;
                 <button type="button" role="listitem" class="q-av @(now ? "now" : "") @(done ? "done" : "") @(qi <= 0 ? "me" : "q-foe") @(chase ? "chase" : "")" data-peek="@(qi <= 0 ? Peek.Ally(qAlly!) : Peek.Foe(qi))"
-                        title="@($"{qName}：轮初有效速度{qSpeed}{(qi <= 0 && qAlly == actorId ? $"（{SpeedSource(mySpeed)}）" : "")}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
+                        title="@($"{qName}：轮初有效速度{qSpeed}{qSrc}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
                         aria-label="@($"{(chase ? "追击 " : "")}{qName}{(now ? "，行动中" : done ? "，已行动" : "")}")"
                         @onclick="() => QueueClick(qIdx)">
                     <span class="q-art" aria-hidden="true">@if (qi <= 0) {<img src="img/portraits/protagonist.svg" alt="" />} else { @Icons.Markup("enemy_" + be!.EnemyId) }</span>

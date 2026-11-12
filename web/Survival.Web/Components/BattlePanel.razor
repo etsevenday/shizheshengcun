@@ -144,7 +144,9 @@ else if (b != null)
         // B9a：按被查看的那名成员本人取数（不是当前行动者）；B42：悬停的成员优先于点选查看的成员
         var vid = (peekAlly ?? G.BattleAllyView)!;
         (double Speed, double Base, double Gear, List<string> Status) mySpeed;
-        using (e.FocusOn(s, vid)) mySpeed = e.PlayerSpeedParts(s, b);
+        // B41e2（R05 Q537）：本轮有效速度含第一完整回合的先手×1.5（与行动队列同源），构成说明里追加「先手×1.5」
+        var vFs = e.FirstStrikeRoundSpeedFactor(b, vid);
+        using (e.FocusOn(s, vid)) mySpeed = e.PlayerSpeedParts(s, b, null, vFs);
         var vf = b.Fighter(vid);
         var va = s.Actor(vid);
         var vAct = GameEngine.ActingAlly(b) == vid;
@@ -158,13 +160,15 @@ else if (b != null)
             <div class="lines">
                 <div><span>健康 / 体力</span><b>@Ui.N(va.Stats.Health)/@Ui.T(va.Stats.HealthMax) · @Ui.N(va.Stats.Energy)/@Ui.T(va.Stats.EnergyMax)</b></div>
                 <div><span>行动点</span><b>@(vAct ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{vf.Ap}/{apMax}" : $"等待；每次普通激活{e.NormalActivationAp(va)}AP（战术训练阶位{va.TacticalTier}）")</b></div>
-                <div><span>有效速度</span><b>@Ui.Speed(mySpeed.Speed)（基础@(Ui.Speed(mySpeed.Base))、装备@(Ui.SignedT(mySpeed.Gear))@(mySpeed.Status.Count > 0 ? "、" + string.Join("、", mySpeed.Status) : "")）</b></div>
+                <div><span>有效速度</span><b>@Ui.Speed(mySpeed.Speed)（基础@(Ui.Speed(mySpeed.Base))、装备@(Ui.SignedT(mySpeed.Gear))@(mySpeed.Status.Count > 0 ? "、" + string.Join("、", mySpeed.Status) : "")@(vFs > 1 ? "、" + GameEngine.FirstStrikeTag(vFs) : "")）</b></div>
                 <div><span>追击进度</span><b>@Ui.T(vf.Pursuit)/100</b></div>
                 <div><span>恐慌</span><b>@Ui.N(vf.Panic)@(vf.Frightened ? "（受惊）" : "")</b></div>
                 @if (va.Body.Infected) { <div><span>感染</span><b>病毒@(Ui.N(va.Body.VirusLoad))</b></div> }
                 @if (va.Body.BleedTriggers > 0) { <div><span>出血</span><b>@Ui.T(va.Body.BleedDamage)×@va.Body.BleedTriggers</b></div> }
                 @if (GameEngine.AllyProtector(b, vid) is string pg) { <div><span>保护</span><b>@(pg == GameState.PlayerId ? "你" : e.ActorDisplayName(s, pg))护着（接下一次单体攻击）</b></div> }
             </div>
+            @* B41e2（R05 Q537；逐字稿「角色仍有伤害资格的状态」）：本场真实未消耗先手伤害资格的成员才显示 *@
+            @if (e.FirstStrikeReady(b, vid)) { <div class="risk none fs-ready">@GameEngine.FirstStrikeReadyText</div> }
         </div>
         <div class="detail-foot"><div class="under">点己方只查看；行动顺序由队列决定</div></div>
     }
@@ -188,7 +192,7 @@ else if (b != null)
                     <div><span>健康</span><b>@Ui.N(t.Hp)/@Ui.N(ec.Hp)</b></div>
                     @{ var brk = t.ArmorBreak > 0 && t.ArmorBreakUntilRound >= b.Round ? t.ArmorBreak : 0; }
                     @* 试玩修复 M150 UX9：被破甲时写有效护甲（基础与破甲量在括号里） *@
-                    <div><span>护甲 / 闪避 / 速度</span><b>@(brk > 0 ? $"{Ui.T(Math.Max(0, ec.Armor - brk))}（基础{Ui.T(ec.Armor)}，破甲−{Ui.T(brk)}）" : Ui.T(ec.Armor)) / @Ui.T(ec.Dodge) / @Ui.Speed(e.EnemyEffectiveSpeed(t))</b></div>
+                    <div><span>护甲 / 闪避 / 速度</span><b>@(brk > 0 ? $"{Ui.T(Math.Max(0, ec.Armor - brk))}（基础{Ui.T(ec.Armor)}，破甲−{Ui.T(brk)}）" : Ui.T(ec.Armor)) / @Ui.T(ec.Dodge) / @(Ui.Speed(e.EnemyRoundSpeed(b, t).Speed))@(e.EnemyRoundSpeed(b, t).Note)</b></div>
                     <div><span>行动点 / 站位</span><b>@(ec.Ap)AP@(ec.Elite ? "（精英）" : "") · 己位@(ec.OwnSlots)→目标@(ec.TargetSlots) · 控制抗性@(Ui.T(ec.ControlResist))%</b></div>
                     <div><span>攻击能力 / 对@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))</b></div>
                     @{ var plan = G.E.PlanFor(G.S.Battle!, t, G.E.StepOf(t)); var approach = plan is GameEngine.ReachPlan.Approach or GameEngine.ReachPlan.AdvanceThenApproach; }
@@ -203,6 +207,8 @@ else if (b != null)
                 else if (ec.IsHuman) { <div class="risk none">敌对人类的攻击不会传染僵尸病毒。</div> }
                 else { <div class="risk none">动物撕咬不会传染僵尸病毒，@(ec.Intents.Cycle.Any(x => x.BleedPct > 0) ? "但命中有概率出血" : "但仍会造成伤害")。</div> }
                 @if (B7Status(b, t) is string est) { <div class="risk none">@est</div> }
+                @* B41e2（R05 Q537）：敌方先手时，真实未消耗伤害资格的敌人显示「先手伤害加成可用。」 *@
+                @if (e.FirstStrikeReady(b, GameEngine.FirstStrikeKeyOf(t))) { <div class="risk none fs-ready">@GameEngine.FirstStrikeReadyText</div> }
             }
             <div class="lines">
                 <div><span>恐慌</span><b>@Ui.N(b.Panic)@(e.Config.Panic.PenaltyFor(b.Panic) is PanicPenaltyConfig pp ? $"（≥{Ui.T(pp.Minimum)}：命中能力×{Ui.T(pp.AccuracyRatingFactor)}、撤退×{Ui.T(pp.RetreatFactor)}）" : "")</b></div>

@@ -40,6 +40,16 @@
         {
             <div class="cp-reason">@ShellText.PauseReason：@p.PauseText</div>
         }
+        @* B41e2（逐字稿「B41b Q472—Q476 暂存与移动」、Q440「行动地点」）：移动时暂存的原工作只读摘要与暂存说明；撤退离地保留的原行动在暂停信息旁写原地点。
+           只读，不放第二套继续／退出按钮（数据来自内核 ActionProgressInfo.StashedLabel／WorkPlace，只在新版敌踪下有值）。 *@
+        @if (!string.IsNullOrEmpty(p.StashedLabel) || !string.IsNullOrEmpty(p.WorkPlace))
+        {
+            <div class="cp-note cp-stash">
+                @if (!string.IsNullOrEmpty(p.StashedLabel)) { <span class="cp-stash-label">@GameEngine.StashedWorkText(p.StashedLabel)</span> }
+                @if (!string.IsNullOrEmpty(p.WorkPlace)) { <span class="cp-stash-place">@GameEngine.WorkPlaceText(p.WorkPlace)</span> }
+                @if (!string.IsNullOrEmpty(p.StashedLabel)) { <span class="cp-stash-note">@GameEngine.StashedWorkNote</span> }
+            </div>
+        }
         @* B41c2 试玩修复（P2）：复核原因与系统收尾说明合在一块（完整弹窗里各占一行，窄条里接排一行），窄条按内容放高，不裁字 *@
         @if (p.Paused && (!string.IsNullOrEmpty(p.ResumeNote) || p.ResumeAborts))
         {
@@ -64,7 +74,9 @@
         <div class="cp-ctrl">
             @if (p.Paused && !p.IsSub)
             {
-                <button type="button" class="primary cp-go" disabled="@busy" @onclick="G.Resume">@ShellText.ResumeAction</button>
+                @* B41e2（Q440）：撤退离地保留的原工作在异地／原地点失效时禁用「继续行动」，原因写在按钮旁并作悬停 *@
+                <button type="button" class="primary cp-go" disabled="@(busy || p.KeptResumeBlock != null)" title="@p.KeptResumeBlock" @onclick="G.Resume">@ShellText.ResumeAction</button>
+                @if (p.KeptResumeBlock != null) { <span class="cp-exit-note cp-resume-block warn-text">@p.KeptResumeBlock</span> }
             }
             else if (G.Running && !dlg)
             {

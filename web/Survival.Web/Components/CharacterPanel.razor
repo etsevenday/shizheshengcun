@@ -137,7 +137,8 @@ else
                 @* B5（A06 §1/§4、开发计划 v0.9 B5 H10）：十五门按战斗/医疗/求生分组，等级/上限、本级经验或“满级”；悬停一门看它的 5 个专属技能。
                    完整 75 节点的成长页在 B10。 *@
                 <div class="skill-list">
-                    @foreach (var grp in new[] { ("combat", "战斗"), ("both", "医疗（战内外）"), ("survival", "求生") })
+                    @* B41e2（Q446 ⑨、Q428）：新版敌踪下「求生」组改「求生与行动」（潜行也归此组） *@
+                    @foreach (var grp in new[] { ("combat", "战斗"), ("both", "医疗（战内外）"), ("survival", G.E.CardsV2(G.S) ? "求生与行动" : "求生") })
                     {
                         <div class="skill-group muted">@grp.Item2</div>
                         @foreach (var sk in skills.Where(x => x.Category == grp.Item1))
