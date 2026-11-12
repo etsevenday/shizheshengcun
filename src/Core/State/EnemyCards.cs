@@ -18,13 +18,34 @@ namespace Survival.Core.State
         public int NextGroupId { get; set; } = 1;
         /// <summary>存续中的随机组卡（成员全灭即移除）。</summary>
         public List<EnemyGroupCard> Groups { get; set; } = new List<EnemyGroupCard>();
+        /// <summary>
+        /// B41b 每张卡的接近时限与撤退保护（卡键 → 记录；R05 Q416、Q439—Q443）。没有记录 = 本次现身还没抽接近时间、也没有撤退保护。
+        /// 卡失效（敌人死亡、组散、单卡入组、固定战已胜）即移除。
+        /// </summary>
+        public Dictionary<string, EnemyCardTimer> Timers { get; set; } = new Dictionary<string, EnemyCardTimer>();
 
         public EnemyCardsState Clone() => new EnemyCardsState
         {
             ModelVersion = ModelVersion,
             NextGroupId = NextGroupId,
             Groups = Groups.Select(g => g.Clone()).ToList(),
+            Timers = Timers.ToDictionary(kv => kv.Key, kv => kv.Value.Clone()),
         };
+    }
+
+    /// <summary>
+    /// 一张敌踪卡的接近时限与撤退保护（B41b；R05 Q416、Q421、Q439—Q443、Q468）。
+    /// </summary>
+    public sealed class EnemyCardTimer
+    {
+        /// <summary>本次现身剩余接近分钟（首次同地同区可操作时从 20／25／30／35／40 等概率抽一次；同地同区非战斗每推进一段减 5，最低 0）。还没抽为 null。</summary>
+        public int? Left { get; set; }
+        /// <summary>减到 0 的世界时刻（同刻多卡先后按它，Q468）；未到期为 null。</summary>
+        public int? DueMinute { get; set; }
+        /// <summary>同卡撤退保护截止（世界分钟，撤退结算时刻 + 60；重复撤退取新截止，Q416、Q443）。没有为 null。</summary>
+        public int? GuardUntil { get; set; }
+
+        public EnemyCardTimer Clone() => (EnemyCardTimer)MemberwiseClone();
     }
 
     /// <summary>

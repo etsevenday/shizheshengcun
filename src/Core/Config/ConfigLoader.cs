@@ -494,6 +494,9 @@ namespace Survival.Core.Config
             if (we.PatrolCheckIntervalMinutes <= 0 || we.PatrolCheckIntervalMinutes % tick != 0) e.Add($"巡游检查间隔须为{tick}的正倍数");
             foreach (var sl in c.Encounters.SafeLocations) if (!locs.Contains(sl)) e.Add($"安全地点 {sl} 不存在");
             if (c.Encounters.BypassMinutes <= 0 || c.Encounters.BypassMinutes % tick != 0) e.Add($"绕行时长须为{tick}的正倍数");
+            // B41b：接近时间候选与同卡撤退保护（R05 Q416）
+            if (c.Encounters.ApproachMinutes.Count == 0 || c.Encounters.ApproachMinutes.Any(m => m <= 0 || m % tick != 0)) e.Add($"敌踪接近时间候选须非空且都是{tick}的正倍数");
+            if (c.Encounters.CardRetreatGuardMinutes <= 0 || c.Encounters.CardRetreatGuardMinutes % tick != 0) e.Add($"敌踪撤退保护时长须为{tick}的正倍数");
             if (!c.HourlyRates.ContainsKey(c.Encounters.BypassRateCategory)) e.Add($"绕行速率类别 {c.Encounters.BypassRateCategory} 不存在");
             if (c.BattleTime.RoundWorldMinutes != tick) e.Add("战斗每轮世界分钟须等于时间段长度");
 

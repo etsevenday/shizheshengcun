@@ -828,6 +828,10 @@ namespace Survival.Core.Config
         /// 关：旧版接敌／绕行流程原样；开：且存档已采纳新版卡模型（EnemyCardsState.ModelVersion）时走新分支。
         /// </summary>
         public bool EnemyCardsV2 { get; set; }
+        /// <summary>B41b 计时卡每次现身的接近时间候选（世界分钟，等概率抽一次；R05 Q416：20、25、30、35、40）。</summary>
+        public List<int> ApproachMinutes { get; set; } = new List<int>();
+        /// <summary>B41b 成功撤退后同一张敌踪卡的主动接近保护（世界分钟；R05 Q416：60）。</summary>
+        public int CardRetreatGuardMinutes { get; set; }
     }
 
     public sealed class ZombieLootConfig

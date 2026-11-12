@@ -82,6 +82,7 @@ namespace Survival.Core.Save
         public const string Schema43 = "43";
         public const string Schema44 = "44";
         public const string Schema45 = "45";
+        public const string Schema46 = "46";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -142,6 +143,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema43) From43To44(s, config);
             if (s.SchemaVersion == Schema44) From44To45(s);
             if (s.SchemaVersion == Schema45) From45To46(s);
+            if (s.SchemaVersion == Schema46) From46To47(s);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             return notes;
@@ -1397,6 +1399,20 @@ namespace Survival.Core.Save
         private static void From45To46(GameState s)
         {
             s.EnemyCards ??= new EnemyCardsState();
+            s.SchemaVersion = Schema46;
+        }
+
+        // ───────────────────────── 46 → 47 ─────────────────────────
+
+        /// <summary>
+        /// B41b 敌踪接近时限、撤退保护与战后撤退离地保留的存档结构（R05 Q416、Q439—Q443、Q463—Q476，开发记录 B41b）：只补默认值——
+        /// 没有任何卡的时限／保护记录（首次可操作现身时才抽，Q425）、行动没有敌方接近原因与保留标记、没有开工来源记录（首次采纳 Q466 时按真实归属补）、
+        /// 没有暂存工作（Q472「旧档无暂存记录即按无暂存处理」）。不改敌人、行动、保护期，不抽随机，静默。幂等。
+        /// </summary>
+        private static void From46To47(GameState s)
+        {
+            s.EnemyCards ??= new EnemyCardsState();
+            s.EnemyCards.Timers ??= new Dictionary<string, EnemyCardTimer>();
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

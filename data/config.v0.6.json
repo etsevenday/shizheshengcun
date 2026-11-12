@@ -24591,7 +24591,15 @@
     "bypassLeavesWorldEnemiesAlive": true,
     "defeatRemovesOnlyKilledWorldIds": true,
     "combatSurvivorsKeepHpAndXpCountersOnWorldId": true,
-    "enemyCardsV2": false
+    "enemyCardsV2": false,
+    "approachMinutes": [
+      20,
+      25,
+      30,
+      35,
+      40
+    ],
+    "cardRetreatGuardMinutes": 60
   },
   "zombieLoot": {
     "rollAtFirstEnemyDeath": true,

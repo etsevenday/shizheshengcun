@@ -17,7 +17,8 @@ namespace Survival.Core.State
 
     public enum ActionStatus { Running, Paused }
 
-    public enum PauseReason { None, StatAlert, StatZero, FireOut }
+    /// <summary>EnemyApproach：B41b 敌方接近到期打断（R05 Q416、Q444、Q470；原因字段见 ActionState.PauseNote）。</summary>
+    public enum PauseReason { None, StatAlert, StatZero, FireOut, EnemyApproach }
 
     /// <summary>整局唯一的可序列化状态。内核不持有其他可变数据。</summary>
     public sealed class GameState
@@ -54,8 +55,10 @@ namespace Survival.Core.State
         /// "45" 起陶窑与固定净水台多批排队：被动批次带排队标记 StationBatch.Queued，同一座工坊的批次按列表先后为队列顺序（策划答复 Q380，开发计划 B32e）。
         /// "46" 起新版敌踪卡模型：随机组卡与采纳标记 GameState.EnemyCards、世界敌人所属组 WorldEnemy.GroupId、战斗所属卡 BattleState.CardKey
         /// （R05 文首 Q342 定稿与 Q425、Q436—Q438，开发记录 B41a；开关 encounters.enemyCardsV2 关着时只补空结构）。
+        /// "47" 起敌踪接近时限与撤退保护 EnemyCardsState.Timers、行动的敌方接近原因与战后撤退离地保留标记（ActionState.PauseNote、RetreatKept 等）、
+        /// 开工来源 ActionState.ReserveSources、暂存工作 GameState.StashedWork（R05 Q416、Q439—Q443、Q463—Q476，开发记录 B41b；46→47 只补默认值）。
         /// </summary>
-        public const string CurrentSchema = "46";
+        public const string CurrentSchema = "47";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -203,6 +206,11 @@ namespace Survival.Core.State
 
         public ActionState? Main { get; set; }
         public ActionState? Sub { get; set; }
+        /// <summary>
+        /// B41b（R05 Q472）：战后撤退离地保留的原工作在发起地图移动时完整暂存在这里，移动作为当前主行动；到达或取消移动后放回主行动位、仍暂停。
+        /// 只有一份；没有为 null（旧档即无暂存）。
+        /// </summary>
+        public ActionState? StashedWork { get; set; }
 
         public ProgressState Progress { get; set; } = new ProgressState();
         public List<LogEntry> Log { get; set; } = new List<LogEntry>();
@@ -253,6 +261,12 @@ namespace Survival.Core.State
 
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
+        /// <summary>
+        /// 不存档：这份状态里敌踪不抽接近时限、不扣时、不主动开战（B41b）。预览与估时的模拟副本置 true（不能在模拟里开战），
+        /// 测试也可用它冻结接近余量；正式状态恒为 false。
+        /// </summary>
+        [JsonIgnore] public bool SuppressEnemyApproach { get; set; }
+
         public GameState Clone()
         {
             var c = (GameState)MemberwiseClone();
@@ -277,6 +291,7 @@ namespace Survival.Core.State
             c.Items = Items.Select(i => i.Clone()).ToList();
             c.Main = Main?.Clone();
             c.Sub = Sub?.Clone();
+            c.StashedWork = StashedWork?.Clone();
             c.Progress = Progress.Clone();
             c.Log = new List<LogEntry>(Log);
             c.Layout = Layout.ToDictionary(kv => kv.Key, kv => new List<string>(kv.Value));
@@ -1289,6 +1304,25 @@ namespace Survival.Core.State
         /// <summary>等待烹饪：已完成的绑定进程。</summary>
         public List<string> CookDone { get; set; } = new List<string>();
 
+        // ───── B41b 新版敌踪（R05 Q416、Q440、Q444、Q463—Q472；开关 encounters.enemyCardsV2，关着时全部保持默认值） ─────
+
+        /// <summary>敌方接近打断时在开战瞬间快照的暂停原因字段「{敌踪名}主动接近」（取不到名为「敌人主动接近」，Q444、Q470）；其他暂停为 null。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? PauseNote { get; set; }
+        /// <summary>开工时所在区（外部区／安全屋屋内）；B41b 前开工或开关关着为 null，按外部区。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? StartZone { get; set; }
+        /// <summary>开工时所在地牢的世代（不在地牢或开关关着为 null）。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public int? StartGeneration { get; set; }
+        /// <summary>Q440／Q463：已暂停后因战斗撤退离开原地点而保留。退出按开工来源返还（Q466），之后走回原处也不改；继续成功也不清。</summary>
+        public bool RetreatKept { get; set; }
+        /// <summary>Q473：本次战后保留暂停期间，地图合法前往一直放行（回原点也不收回）；成功继续原工作即关闭。</summary>
+        public bool RetreatMoveOpen { get; set; }
+        /// <summary>Q466：每个预留批次的开工来源（实例 ID → 开工时的真实 owner：物主或地面），随存档保存；旧档缺的在首次采纳时按仍在原处的真实归属补齐。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<int, string>? ReserveSources { get; set; }
+
         public bool IsWorkType => IsWork(Type);
 
         /// <summary>工作动作吃工作倍率与 0 体力工作伤害；清理也是工作（00 案第 3 节）。</summary>
@@ -1305,6 +1339,7 @@ namespace Survival.Core.State
             c.CookTargets = new List<string>(CookTargets);
             c.CookTargetItems = new List<int>(CookTargetItems);
             c.CookDone = new List<string>(CookDone);
+            c.ReserveSources = ReserveSources == null ? null : new Dictionary<int, string>(ReserveSources);
             return c;
         }
     }
