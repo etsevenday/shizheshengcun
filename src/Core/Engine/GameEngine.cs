@@ -1062,13 +1062,16 @@ namespace Survival.Core.Engine
             if (a.TargetId.StartsWith(CityServicePrefix)) ReleaseCityService(s, a);
             if (a.TargetId.StartsWith(RecruitTargetPrefix)) ReleaseRecruit(s, a);   // B19：只释放候选与名额锁，已耗时间不退
             var stagedNote = _stagedCancelNote = new List<string>();
+            // B41b（R05 Q466、Q471）：撤退离地保留的制作／建造／维护／拆解／处理尸体退出时按开工来源返还，结果用单套完整句
+            var keptExit = KeptExitApplies(s, a);
+            var keptSrc = keptExit ? KeptSources(s, a) : default;
             try { Release(s, a, s.Ground); }
             finally { _stagedCancelNote = null; }
             if (a.IsSub) s.Sub = null; else s.Main = null;
             // B41b（R05 Q472 第 5 条）：退出暂存期间的当前移动只取消移动；原工作随后放回主行动位、仍暂停，预留不被移动取消释放
             var keptWork = a.IsSub ? null : RestoreStashedWork(s);
 
-            string text = a.Type switch
+            string text = keptExit ? KeptExitText(s, a, keptSrc, true) : a.Type switch
             {
                 ActionType.Travel => $"已取消移动，留在{LocName(a.SourceLocation)}；已经流逝的时间与身体消耗保留。",
                 ActionType.Explore => "已取消探索，探索度不变，未获得物资；已消耗的时间保留。",
@@ -1141,14 +1144,9 @@ namespace Survival.Core.Engine
         /// <summary>暂停中的主行动继续推进。</summary>
         public ActionResult Resume(GameState s)
         {
-            if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
-            if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
-            if (s.Main == null || s.Main.Status != ActionStatus.Paused) return ActionResult.Fail("没有暂停中的行动");
-            // B41b：敌方接近打断后，战斗中不能继续原行动（战后按当前合法条件继续或退出）
-            if (CardsV2(s) && s.Battle != null) return ActionResult.Fail("战斗中：请使用战斗指令");
-            if (s.Sub != null) return ActionResult.Fail("请等待当前补给或维护完成");
-            if (KeptWorkResumeBlock(s, s.Main) is string keptWhy) return ActionResult.Fail(keptWhy);
-            s.Main.RetreatMoveOpen = false;   // B41b（R05 Q473）：成功继续原工作即结束本次暂停的移动例外
+            // B41b（R05 Q465、Q474）：检查与正式提交共用同一只读判定；失败不改任何状态
+            if (ResumeBlockReason(s) is string why) return ActionResult.Fail(why);
+            s.Main!.RetreatMoveOpen = false;   // B41b（R05 Q473）：成功继续原工作即结束本次暂停的移动例外
             s.Main.Status = ActionStatus.Running;
             s.Main.PauseReason = PauseReason.None;
             s.Main.PauseStat = null;
@@ -1157,7 +1155,10 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>释放行动的全部预留：资源库存归还，预留的物品返还指定地点地面。</summary>
-        private void Release(GameState s, ActionState a, string groundLocation)
+        /// <param name="bySource">
+        /// B41b（R05 Q466）：撤退离地保留的行动退出／终局时按开工来源返还（默认）；运行中段前腐败中止、完工位置失效等原真实结算传 false，沿原返还当前地面。
+        /// </param>
+        private void Release(GameState s, ActionState a, string groundLocation, bool bySource = true)
         {
             RestoreCarry(s, a);   // Q61：取消/中断/死亡退回原锁余额，本次不结新余额
             KeepStagedClaim(s, a);   // B23（EXQ-A05）：可选地牢记录保留已提交的整段
@@ -1168,7 +1169,7 @@ namespace Survival.Core.Engine
                 rs.Available = (rs.Available ?? 0) + a.ReservedResourceUnits;
                 a.ReservedResourceUnits = 0;
             }
-            if (a.ReservedItemIds.Count > 0 && a.RetreatKept && CardsV2(s))
+            if (a.ReservedItemIds.Count > 0 && bySource && a.RetreatKept && CardsV2(s))
             {
                 ReleaseToSources(s, a);   // B41b（R05 Q466）：本批因撤退离地保留的行动按开工来源返还
             }

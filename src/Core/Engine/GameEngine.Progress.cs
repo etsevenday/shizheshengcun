@@ -26,6 +26,10 @@ namespace Survival.Core.Engine
         public ActionType Type { get; set; }
         public string Label { get; set; } = "";
         public bool IsSub { get; set; }
+        /// <summary>B41b（R05 Q472）：暂存中的原工作名（只读摘要；没有暂存为 null）。</summary>
+        public string? StashedLabel { get; set; }
+        /// <summary>B41b（R05 Q440、Q472）：撤退离地保留的原工作的行动地点／区域公开名（当前行动或暂存的原工作；没有为 null）。</summary>
+        public string? WorkPlace { get; set; }
         /// <summary>主行动暂停中（危险阈值、熄火等）：中央条显示“继续/退出”与真实原因。</summary>
         public bool Paused { get; set; }
         public string? PauseText { get; set; }
@@ -105,7 +109,11 @@ namespace Survival.Core.Engine
             }
             var why = ExitBlocked(s);
             info.Exit = why != null ? ExitKind.None : IsSingleTransaction(a.Type) ? ExitKind.CompletesCurrentTransaction : ExitKind.StopAtBoundary;
-            var forfeit = info.Exit == ExitKind.StopAtBoundary ? ExitForfeitText(a) : null;
+            var forfeit = info.Exit == ExitKind.StopAtBoundary ? ExitForfeitText(s, a) : null;
+            // B41b（R05 Q472 第 6 条）：暂存的原工作只读摘要与撤退离地保留行动的原地点（界面文字在 B41e 接）
+            info.StashedLabel = s.StashedWork?.Label;
+            var kept = s.StashedWork ?? (a.RetreatKept && CardsV2(s) ? a : null);
+            info.WorkPlace = kept != null ? WorkPlaceName(s, kept) : null;
             info.ExitForfeits = forfeit != null;
             // B21：撤出不可取消（R03 D5.2、A10 §7“已经提交的撤出进程不可取消，UI 显示原因”）
             if (a.Type == ActionType.Extract && s.Expedition?.IsExtracting == true)
@@ -123,7 +131,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>中途退出会作废成果的行动：退出后果短提示（与 Cancel 的实际结算一致，已耗时间不退）。其余行动返回 null。</summary>
-        private string? ExitForfeitText(ActionState a) => a.Type switch
+        private string? ExitForfeitText(GameState s, ActionState a) => KeptExitApplies(s, a) ? KeptExitText(s, a, KeptSources(s, a), false) : a.Type switch
         {
             ActionType.Explore => "退出将放弃本次探索：探索度不变、不获得物资（已耗时间不退）",
             ActionType.Clear => "退出将放弃本次清理：不获得物资，已扣的1次清理机会不返还（已耗时间不退）",

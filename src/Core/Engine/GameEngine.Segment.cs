@@ -478,7 +478,7 @@ namespace Survival.Core.Engine
 
         private void AbortSpoiled(GameState s, ActionState a)
         {
-            Release(s, a, s.Ground);
+            Release(s, a, s.Ground, bySource: false);
             if (a.IsSub) s.Sub = null; else s.Main = null;
             Emit(s, GameEventKind.ActionAborted, $"{a.Label}中止：原料已腐败，预留物返还当前地面，未生成产物。");
         }
@@ -535,7 +535,7 @@ namespace Survival.Core.Engine
                     // B17（Q107、S09 X2.4）：建造完工时重验地点与所在区，失败不扣料、不多建、不给经验，预留材料返回当前地面
                     if (rc.FacilityResult != null && BuildSiteBlockedAtCompletion(s, rc) is string siteWhy)
                     {
-                        Release(s, a, s.Ground);
+                        Release(s, a, s.Ground, bySource: false);
                         if (a.IsSub) s.Sub = null; else s.Main = null;
                         Emit(s, GameEventKind.ActionAborted, $"{rc.Name}没有完成：{siteWhy}；预留材料已返还当前地面，没有经验。");
                         return true;

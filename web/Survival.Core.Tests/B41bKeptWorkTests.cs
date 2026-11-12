@@ -11,46 +11,6 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B41bKeptWorkTests : B41bTestBase
 {
-    /// <summary>
-    /// 农野荒地（上一次从营地走来）开工做石刀：石头在随身、纤维在荒地地面；一只游荡尸到期接近，制作在首段后暂停开战，撤退成功退回营地。
-    /// 返回原制作的行动号。
-    /// </summary>
-    private int KeptCraft(GameState s, bool pauseFirstByAlert = false)
-    {
-        TravelTo(s, "camp");
-        TravelTo(s, "field");
-        E.DebugSpawnEnemy(s, "shambler", "field");
-        E.DebugGive(s, "stone", 1);
-        E.DebugGive(s, "fiber", 1, "field");
-        var key = GameEngine.SingleCardKey(s.WorldEnemies.Single().Id);
-        Start(s, ActionRequest.Craft("knife"));
-        var id = s.Main!.ActionId;
-        if (pauseFirstByAlert)
-        {
-            // 状态提醒先把制作停下（Q463：不看最初暂停原因）
-            s.Main.Status = ActionStatus.Paused;
-            s.Main.PauseReason = PauseReason.StatAlert;
-            SetLeft(s, key, 0);
-            Assert.That(E.CheckEnemyApproach(s), Is.True);
-            Assert.That(s.Main.PauseReason, Is.EqualTo(PauseReason.StatAlert), "原本已暂停的不伪造第二次暂停");
-        }
-        else
-        {
-            SetLeft(s, key, 0);
-            Assert.That(Step(s), Is.EqualTo(SegmentStatus.Paused));
-            Assert.That(s.Battle, Is.Not.Null);
-        }
-        RetreatOk(s);
-        Assert.That(s.CurrentLocation, Is.EqualTo("camp"), "撤退退回最近一次走来的地点");
-        Assert.That(s.Main!.ActionId, Is.EqualTo(id));
-        Assert.That(s.Main.Status, Is.EqualTo(ActionStatus.Paused));
-        Assert.That(s.Main.RetreatKept && s.Main.RetreatMoveOpen, Is.True);
-        return id;
-    }
-
-    private ItemInstance Reserved(GameState s, string itemId, int actionId) =>
-        s.Items.Single(i => i.ItemId == itemId && i.ReservedBy == actionId);
-
     [Test]
     public void Q463_StatAlertPauseThenEnemyRetreat_KeepsWork_MayTravel()
     {
