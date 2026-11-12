@@ -104,13 +104,154 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 敌踪接近的检查边界（Q416 第 4 条：空闲、到达、强制对白结束、战后回到非战斗；以及每个行动段提交后）：
-        /// 修剪失效卡的记录，给首次可操作现身的卡抽接近时间。
+        /// 修剪失效卡的记录，给首次可操作现身的卡抽接近时间，再看有没有已到期且此刻合法入战的卡（一次只开一场）。返回是否开了战。
         /// </summary>
-        private void EnemyApproachBoundary(GameState s)
+        private bool EnemyApproachBoundary(GameState s, bool allowStart = true)
         {
-            if (!ApproachLive(s)) return;
+            if (!ApproachLive(s)) return false;
             PruneCardTimers(s);
             DrawCardTimers(s);
+            return allowStart && TryEnemyApproach(s);
+        }
+
+        /// <summary>
+        /// 敌踪接近的空闲边界（Q416 第 4 条），给壳层与测试在“战后回到非战斗”等时刻显式调用：抽时限，到期且合法就开一场。返回是否开了战。
+        /// 开关关着时什么都不做。
+        /// </summary>
+        public bool CheckEnemyApproach(GameState s) => EnemyApproachBoundary(s);
+
+        /// <summary>一次战斗指令／推进让战斗结束、回到非战斗时（不在结算途中）：敌踪接近边界，其他到期卡可在此接战（Q416）。</summary>
+        private void AfterBattleBoundary(GameState s, BattleState? had)
+        {
+            if (had != null && s.Battle == null && !s.Progress.Dead) EnemyApproachBoundary(s);
+        }
+
+        // ───────────── 到期队列与敌方主动开战（R05 Q416、Q441、Q467—Q470） ─────────────
+
+        /// <summary>同刻到期的先后：固定卡→随机组卡→普通单卡（Q468）。</summary>
+        private static int CardKindRank(string kind) => kind == "fixed" ? 0 : kind == "group" ? 1 : 2;
+
+        /// <summary>同类稳定编号：数字编号按数值，固定节点等字符串稳定键按序数（Q468；不依赖界面排序、语言或刷新）。</summary>
+        private static int CompareStableKey(string a, string b)
+        {
+            var ia = a.IndexOf(':');
+            var ib = b.IndexOf(':');
+            var ra = ia < 0 ? a : a.Substring(ia + 1);
+            var rb = ib < 0 ? b : b.Substring(ib + 1);
+            if (long.TryParse(ra, out var na) && long.TryParse(rb, out var nb)) return na.CompareTo(nb);
+            return string.CompareOrdinal(ra, rb);
+        }
+
+        /// <summary>
+        /// 当前地点、当前区域已到期且没有被保护挡住的计时卡，按 Q468 排好：到期时刻早的在前；同刻固定卡→组卡→单卡；同类稳定编号升序。
+        /// 同卡撤退保护未结束、或旧档历史全地点保护未结束（Q425：计时卡到期后等待该期限结束）时不在列。可选强敌不进队列。只读。
+        /// </summary>
+        public List<EnemyCardView> DueCardsHere(GameState s)
+        {
+            var list = new List<EnemyCardView>();
+            if (!CardsV2(s) || s.GameMinute < s.EncounterGraceUntil) return list;
+            foreach (var card in EnemyCardsHere(s))
+            {
+                if (!CardTimed(card) || !(CardTimer(s, card.Key) is EnemyCardTimer t) || t.Left != 0) continue;
+                if (t.GuardUntil is int g && g > s.GameMinute) continue;
+                list.Add(card);
+            }
+            list.Sort((x, y) =>
+            {
+                var tx = CardTimer(s, x.Key)!.DueMinute ?? int.MinValue;
+                var ty = CardTimer(s, y.Key)!.DueMinute ?? int.MinValue;
+                if (tx != ty) return tx.CompareTo(ty);
+                var kx = CardKindRank(x.Kind);
+                var ky = CardKindRank(y.Kind);
+                return kx != ky ? kx.CompareTo(ky) : CompareStableKey(x.Key, y.Key);
+            });
+            return list;
+        }
+
+        /// <summary>
+        /// 主行动的普通休息、普通等待与原子事务（城市服务、招募登记、单段事务）：按本次指定时长整次结束（或合法退出）后才开战（Q467）。
+        /// 野营布等部署／收起按可暂停多段处理（段后暂停）。
+        /// </summary>
+        private static bool WholeBeforeEnemyApproach(ActionState a) =>
+            a.Type == ActionType.Rest || (a.Type == ActionType.Wait && !IsCampingTarget(a.TargetId)) || IsSingleTransaction(a.Type);
+
+        /// <summary>
+        /// 此刻的行动边界要不要推迟敌方开战（Q416、Q441、Q467）：有未结束的子行动（暂停中的休息整次做完；补给、点火本就单段）、
+        /// 正在移动或撤出（途中不拦截，也不回起点拦截）、主行动是普通休息／等待／原子事务且还没结束（暂停中也算没结束），都推迟。
+        /// </summary>
+        private static bool EnemyApproachDeferred(GameState s)
+        {
+            if (s.Sub != null) return true;
+            var m = s.Main;
+            if (m == null) return false;
+            if (m.Type == ActionType.Travel || m.Type == ActionType.Extract) return true;
+            return WholeBeforeEnemyApproach(m);
+        }
+
+        /// <summary>
+        /// 到期卡在当前边界主动开战（Q416、Q468）：已在战斗、主角终局、未读强制对白、撤出途中都不开；行动边界要推迟的不开（到期卡挂起等待交战）。
+        /// 否则取队列第一张开一场，下一张等下一边界重验。
+        /// </summary>
+        private bool TryEnemyApproach(GameState s)
+        {
+            if (!ApproachLive(s) || s.Progress.Dead || DialogueLocked(s) || s.Battle != null || s.Expedition?.IsExtracting == true) return false;
+            if (EnemyApproachDeferred(s)) return false;
+            var card = DueCardsHere(s).FirstOrDefault();
+            if (card == null) return false;
+            StartEnemyApproach(s, card);
+            return true;
+        }
+
+        /// <summary>被敌方打断的暂停原因字段（Q444、Q470）：「{敌踪名}主动接近」，取不到名时「敌人主动接近」。</summary>
+        public static string EnemyApproachPauseNote(string? cardTitle) =>
+            string.IsNullOrEmpty(cardTitle) ? "敌人主动接近" : $"{cardTitle}主动接近";
+
+        /// <summary>
+        /// 敌方主动开战（逐字稿「结果、取消与队长回退」：「{敌踪名}主动接近了。」，原行动因此暂停时追加「{原行动名}已暂停，战后可以继续或退出。」）：
+        /// 正在进行的可暂停多段主行动在本段已完整提交后暂停，进度、余额、预留与工具锁原样保留（Q416 第 2 条），暂停原因在开战瞬间快照卡名（Q470）；
+        /// 原本已经暂停的行动不伪造第二次暂停，原原因保留。战报入战方式前缀一律「敌方接近」（Q444、Q469），受惊情境系数 1.0（Q422）；
+        /// 首战、固定战、守卫战的身份留在战斗记录（教学标记、固定战键）与关卡回执里。
+        /// </summary>
+        private void StartEnemyApproach(GameState s, EnemyCardView card)
+        {
+            var m = s.Main;
+            var text = $"{card.Title}主动接近了。";
+            if (m != null && m.Status == ActionStatus.Running)
+            {
+                m.Status = ActionStatus.Paused;
+                m.PauseReason = PauseReason.EnemyApproach;
+                m.PauseStat = null;
+                m.PauseNote = EnemyApproachPauseNote(card.Title);
+                Emit(s, GameEventKind.ActionPaused, text + $"{m.Label}已暂停，战后可以继续或退出。");
+            }
+            else Emit(s, GameEventKind.Encounter, text, null, card.Members.Select(w => $"enemy:{w.Id}"));
+            switch (card.Kind)
+            {
+                case "single":
+                {
+                    var tutorial = IsTutorialEnemy(s, card.Members[0].Id);
+                    StartBattle(s, card.Members, false, EnemyApproachSource, FearEncounter, tutorial, cardKey: card.Key);
+                    if (tutorial) TutorialBattleStarted(s);
+                    break;
+                }
+                case "group":
+                    StartBattle(s, card.Members.Where(w => !Hidden(s, w)).ToList(), false, EnemyApproachSource, FearEncounter, cardKey: card.Key);
+                    break;
+                case "fixed":
+                    StartBattle(s, card.Members, false, EnemyApproachSource, FearEncounter, fixedKey: card.Key, cardKey: card.Key);
+                    break;
+            }
+        }
+
+        /// <summary>敌方到期主动开战的战报入战方式前缀（Q444、Q469）。</summary>
+        public const string EnemyApproachSource = "敌方接近";
+
+        /// <summary>
+        /// 教学首战实际开始（主动接近或敌方到期）：记教学战斗号。B41b 起首次真正开战时才播饱饱警告与序章引导（R05 Q421、S15 B41），在 M6 接入。
+        /// </summary>
+        private void TutorialBattleStarted(GameState s)
+        {
+            s.Story.TutorialBattleId = s.Battle?.BattleId;
         }
     }
 }

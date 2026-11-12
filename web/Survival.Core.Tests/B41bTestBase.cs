@@ -12,6 +12,7 @@ public abstract class B41bTestBase : B41aTestBase
     protected GameState Field(int capacity, params string[] enemyIds)
     {
         var s = V2Field();
+        s.SuppressEnemyApproach = false;
         UnlockCapacity(s, capacity);
         foreach (var id in enemyIds) E.DebugSpawnEnemy(s, id, "field");
         return s;

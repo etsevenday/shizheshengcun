@@ -41,6 +41,7 @@ public class B41bTimerTests : B41bTestBase
         for (uint seed = 1; seed <= 80; seed++)
         {
             var s = V2Field(seed);
+            s.SuppressEnemyApproach = false;
             E.DebugSpawnEnemy(s, "shambler", "field");
             Start(s, ActionRequest.Wait(30));
             Step(s);

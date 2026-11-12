@@ -264,12 +264,14 @@ namespace Survival.Core.Engine
                 if (ok) CheckRandomEncounter(s, a);
             }
 
-            // B41b：段提交后的敌踪接近边界（抽首次可操作现身的接近时间）
+            // B41b（R05 Q416、Q467、Q470）：段提交后的敌踪接近边界——抽首次可操作现身的接近时间；已到期且边界合法的卡开战，
+            // 正在进行的可暂停多段主行动先暂停（在阈值提醒之前：同段的状态提醒照常写提醒日志，但不再重复一条状态造成的「已暂停」）
             EnemyApproachBoundary(s);
 
             // 6. 阈值提醒
             if (CheckAlerts(s, a, done) && status == SegmentStatus.Running)
                 status = SegmentStatus.Paused;
+            if (status == SegmentStatus.Running && !a.IsSub && a.Status == ActionStatus.Paused) status = SegmentStatus.Paused;
 
             // B13：七日检查退役（S15 §7），不再弹七日成功窗；序章边界在 UpdateFlags 末尾
             UpdateFlags(s);

@@ -735,6 +735,14 @@ namespace Survival.Core.Engine
         /// </summary>
         public BattleStepResult BattleStep(GameState s)
         {
+            var had = s.Battle;
+            var r = BattleStepCore(s);
+            AfterBattleBoundary(s, had);
+            return r;
+        }
+
+        private BattleStepResult BattleStepCore(GameState s)
+        {
             var b = s.Battle;
             if (b == null || s.Progress.Dead) return new BattleStepResult { Kind = BattleStepKind.None };
             // 对白安全边界（R03 §7.1）：已提交的原子事务保留，下一条动作等对话读完再开始
@@ -1256,6 +1264,14 @@ namespace Survival.Core.Engine
         /// <summary>执行战斗指令：带 requestId 幂等；先原子扣 AP、体力、弹药与耐久，再结算命中。</summary>
         public ActionResult ExecuteCommand(GameState s, BattleCommand c)
         {
+            var had = s.Battle;
+            var r = ExecuteCommandCore(s, c);
+            AfterBattleBoundary(s, had);
+            return r;
+        }
+
+        private ActionResult ExecuteCommandCore(GameState s, BattleCommand c)
+        {
             if (SeenRequest(s, c.RequestId)) return ActionResult.Repeated();
             // 切换武器页：0AP，不结束激活、不推进队列（B3 H6）
             if (c.Action == "switch_weapon") return c.ItemInstanceId.HasValue ? SelectWeaponPage(s, c.ItemInstanceId.Value, c.RequestId) : ActionResult.Fail("请选择武器页（1或2）");
@@ -1542,7 +1558,9 @@ namespace Survival.Core.Engine
             s.Battle = null;
             Emit(s, GameEventKind.BattleEnd, text, null, outcome == "victory" ? b.Loot.Where(l => l.ItemId != null).Select(l => l.ItemId!) : null);
             UpdateFlags(s);
-            if (!DialogueLocked(s)) EnemyApproachBoundary(s);   // B41b（R05 Q416 第 4 条）：战后回到非战斗是敌踪接近边界
+            // B41b（R05 Q416 第 4 条）：战后回到非战斗是敌踪接近边界——这里只修剪与抽时限；下一场到期战由本次战斗指令／推进结束后
+            // 在 AfterBattleBoundary 里开（不在结算途中换掉 s.Battle）
+            if (!DialogueLocked(s)) EnemyApproachBoundary(s, false);
         }
 
         /// <summary>狼/鹿自行逃离：迁到合法相邻地（非营地、有空位），没有空位则原地隐藏60分钟；不删除、不补刷、不给尸体。</summary>

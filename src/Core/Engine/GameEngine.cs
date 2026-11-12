@@ -1124,10 +1124,13 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
             if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
             if (s.Main == null || s.Main.Status != ActionStatus.Paused) return ActionResult.Fail("没有暂停中的行动");
+            // B41b：敌方接近打断后，战斗中不能继续原行动（战后按当前合法条件继续或退出）
+            if (CardsV2(s) && s.Battle != null) return ActionResult.Fail("战斗中：请使用战斗指令");
             if (s.Sub != null) return ActionResult.Fail("请等待当前补给或维护完成");
             s.Main.Status = ActionStatus.Running;
             s.Main.PauseReason = PauseReason.None;
             s.Main.PauseStat = null;
+            s.Main.PauseNote = null;
             return ActionResult.Success(s.Main.ActionId);
         }
 

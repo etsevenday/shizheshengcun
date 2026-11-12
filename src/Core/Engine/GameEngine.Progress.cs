@@ -140,6 +140,7 @@ namespace Survival.Core.Engine
             PauseReason.FireOut => "火堆熄灭",
             PauseReason.StatZero when a.PauseStat.HasValue => AlertText(a.PauseStat.Value, true),
             PauseReason.StatAlert when a.PauseStat.HasValue => AlertText(a.PauseStat.Value, false),
+            PauseReason.EnemyApproach => a.PauseNote ?? EnemyApproachPauseNote(null),   // B41b（Q444、Q470）：开战瞬间快照
             _ => "已暂停",
         };
 

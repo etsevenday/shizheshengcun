@@ -37,10 +37,14 @@ public abstract class B41aTestBase : BattleTestBase
         return s;
     }
 
-    /// <summary>新版（开关开）新局：同上布置。</summary>
+    /// <summary>
+    /// 新版（开关开）新局：同上布置。B41a 的用例按 B41a 口径写（没有接近时限与敌方开战），这里冻结敌踪接近（不存档的 SuppressEnemyApproach）；
+    /// B41b 的用例用 B41bTestBase 的布置放开。
+    /// </summary>
     protected GameState V2Field(uint seed = 7)
     {
         var s = New(seed);
+        s.SuppressEnemyApproach = true;
         PrepareField(E, s);
         Assert.That(E.CardsV2(s), Is.True);
         return s;
