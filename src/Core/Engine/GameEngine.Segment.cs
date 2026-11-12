@@ -264,6 +264,9 @@ namespace Survival.Core.Engine
                 if (ok) CheckRandomEncounter(s, a);
             }
 
+            // B41b：段提交后的敌踪接近边界（抽首次可操作现身的接近时间）
+            EnemyApproachBoundary(s);
+
             // 6. 阈值提醒
             if (CheckAlerts(s, a, done) && status == SegmentStatus.Running)
                 status = SegmentStatus.Paused;
@@ -344,6 +347,7 @@ namespace Survival.Core.Engine
             AdvanceFacilities(s, snap);
             AdvanceStationBatches(s);   // B17：陶窑、固定净水台的被动批次（同一世界时钟，离开也继续）
             AdvanceDrying(s);   // B22c（Q170）：晾制架八位被动晾制（同一世界时钟，离开也继续）
+            if (!battle) TickCardTimers(s);   // B41b（R05 Q416）：同地同区非战斗段扣敌踪接近余量（巡游前，按本段在场的卡）
             TickWorldEnemies(s);
             return true;
         }

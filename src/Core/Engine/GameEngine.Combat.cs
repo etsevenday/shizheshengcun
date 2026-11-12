@@ -1542,6 +1542,7 @@ namespace Survival.Core.Engine
             s.Battle = null;
             Emit(s, GameEventKind.BattleEnd, text, null, outcome == "victory" ? b.Loot.Where(l => l.ItemId != null).Select(l => l.ItemId!) : null);
             UpdateFlags(s);
+            if (!DialogueLocked(s)) EnemyApproachBoundary(s);   // B41b（R05 Q416 第 4 条）：战后回到非战斗是敌踪接近边界
         }
 
         /// <summary>狼/鹿自行逃离：迁到合法相邻地（非营地、有空位），没有空位则原地隐藏60分钟；不删除、不补刷、不给尸体。</summary>

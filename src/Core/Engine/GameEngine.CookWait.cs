@@ -81,6 +81,7 @@ namespace Survival.Core.Engine
         private void AnalyzeCook(GameState s, string loc, IReadOnlyCollection<string>? bound, CookWaitPlan plan)
         {
             var c = s.Clone();
+            c.SuppressEnemyApproach = true;   // B41b：模拟副本里敌踪不抽、不扣、不开战
             SimReadDialogues(c);
             SyncFacility(c, loc);
             var fac = FacOf(c, loc)!;
@@ -145,6 +146,7 @@ namespace Survival.Core.Engine
             fail = new Dictionary<string, string>();
             if (pids.Count == 0) return done;
             var c = src.Clone();
+            c.SuppressEnemyApproach = true;   // B41b：模拟副本里敌踪不抽、不扣、不开战
             var fac = FacOf(c, loc)!;
             if (infiniteFuel) { fac.FireLit = true; fac.FuelMinutes = Config.Fire.MaxFuelMinutes * 1000; }
             c.Sub = null;

@@ -205,6 +205,7 @@ namespace Survival.Core.Engine
             Emit(s, GameEventKind.Info, $"走出{SafehouseName(s, s.CurrentLocation)}，回到{LocName(s.CurrentLocation)}外部（0分钟）" +
                 (hostiles > 0 ? $"；外面有{hostiles}个敌踪。" : "。"));
             UpdateFlags(s);
+            EnemyApproachBoundary(s);   // B41b：出门回到外部区即与外部敌踪同地同区（空闲边界）
             return ActionResult.Success();
         }
 

@@ -171,6 +171,8 @@ namespace Survival.Core.Engine
                 Capacity = BattleCapacity(s),
             };
             foreach (var w in members) w.GroupId = g.Id;
+            // B41b（R05 Q442）：单卡进入新组后原单卡的接近时限与撤退保护随之失效，组卡在首次可操作时新抽时限，不继承最晚保护
+            foreach (var w in members) s.EnemyCards.Timers.Remove(SingleCardKey(w.Id));
             s.EnemyCards.Groups.Add(g);
             return g;
         }

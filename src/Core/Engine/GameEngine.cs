@@ -1073,6 +1073,7 @@ namespace Survival.Core.Engine
             Emit(s, GameEventKind.ActionCancelled, text);
             if (apTxn != null) AppraisalServiceEnd(s, apTxn.NpcId);   // B22d Q177：鉴定/换物开工后取消，播一次陶岑原结束句
             UpdateFlags(s);
+            EnemyApproachBoundary(s);   // B41b（R05 Q416、Q467）：主动合法退出也是行动结束边界
             return ActionResult.Success(a.ActionId);
         }
 
