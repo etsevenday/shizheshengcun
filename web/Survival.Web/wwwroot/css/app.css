@@ -898,8 +898,8 @@ kbd { font-size: var(--fs-aux); }
 .fc-foot > .fc-btn { flex: 1 1 100px; padding: 3px 8px; font-size: var(--fs-body); }
 .fc-slots > .slot-empty { flex: 0 0 132px; min-height: 96px; }
 .fc-slot.pot { flex: 0 0 290px; }
-/* 顶栏：按钮多时紧凑排布，窄宽度局部换行；1440 以下不显示快捷键提示（悬停提示仍写明） */
-@media (max-width: 1439px) { .nav kbd { display: none; } .brand b { letter-spacing: 3px; } }
+/* 顶栏：按钮多时紧凑排布，窄宽度局部换行；B43 起顶栏键帽三档都常驻显示（原「1440 以下不显示快捷键提示」取消） */
+@media (max-width: 1439px) { .brand b { letter-spacing: 3px; } }
 
 /* 左栏状态图标（S14 §12.2）：图形可辨、不只靠颜色；可视 32px，点击热区扩到 40px */
 .st-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 6px; }

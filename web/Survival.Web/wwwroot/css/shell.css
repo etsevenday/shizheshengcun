@@ -442,3 +442,20 @@ button { transition-duration: var(--mo-hover); }
   .end-card .confirm-box .row { margin-top: 8px; }
   .end-card .checklist { line-height: 1.8; }
 }
+
+/* ───── B43 快捷键常驻键帽（S14 2026-11-12「快捷键在对应按钮常驻显示」） ─────
+   键帽 <kbd class="kc"> 是所在按钮的一部分（不是第二个按钮），沿现有可读文字风格，辅助字号 14（--fs-aux）不缩；
+   顶栏三档都显示 12 个「功能名＋键帽」：一排放得下就一排，名称不截断，放不下时按钮内名称与键帽上下两行（键行高沿 40 触控下限）。 */
+.kc, .wasteland kbd.kc {
+  display: inline-block; margin: 0 0 0 6px; padding: 0 2px; text-align: center;
+  font-family: inherit; font-size: var(--fs-aux); line-height: 1.35; color: var(--ink2-gold, var(--accent));
+  border: 1px solid currentColor; border-radius: 3px; white-space: nowrap; vertical-align: baseline;
+}
+button:is(:disabled, .gate-off, .off) .kc, button[aria-disabled="true"] .kc { color: inherit; opacity: .85; }
+.wasteland .top .nav button {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; column-gap: 4px; row-gap: 0;
+  padding: 0 2px; text-overflow: clip; line-height: 1.15;
+}
+.wasteland .top .nav button .nk-name { white-space: nowrap; }
+.wasteland .top .nav button .kc { margin: 0; }
+.wasteland .top .nav kbd { display: inline-block; }

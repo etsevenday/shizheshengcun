@@ -176,71 +176,174 @@ window.survival = {
   openFeedback: function () { if (window.FeedbackWidget) FeedbackWidget.open(); },
   // B31d（Q336）：实际构建（发布流程把 <meta name="app-build"> 写成「日期 · 提交短号」，本地为「本地开发版」）
   appBuild: function () { var m = document.querySelector('meta[name="app-build"]'); return m && m.content ? String(m.content) : ''; },
+  // B43（S14 2026-11-12「按键路由与防止重复执行」）：键盘快捷键的统一路由。顺序：输入法组合 → 反馈窗 → 游戏菜单 → 对白层 → 局部唯一确认（Enter）
+  // → 就近浮窗 → 数量框 → 输入控件 → 组合键 → 全屏战斗 → 模态层（数量框、强制整理、确认窗、居中局部盘）→ 地图局部键 → 顶栏字母 → Esc。
+  // 规则：最上层先处理自己的键；输入框、下拉、可编辑文字区与输入法组合中普通字母不生效；Ctrl/Alt/Meta 组合不当单键；
+  // 已聚焦的按钮上 Enter/Space 走原生语义；按住键的重复 keydown 不重复确认、推进对白、开关顶栏（地图缩放、战斗目标方向键的连续调节沿原规则）。
+  TOP_LETTERS: ['M', 'C', 'R', 'L', 'P', 'G', 'K', 'J', 'T', 'D', 'H'],
   hookKeys: function (dotnet) {
     if (window.__survivalKeys) document.removeEventListener('keydown', window.__survivalKeys);
+    if (window.__survivalKeyGuard) window.removeEventListener('keydown', window.__survivalKeyGuard, true);
+    var TOP = window.survival.TOP_LETTERS;
+    function editable(el) {
+      if (!el || !el.tagName) return false;
+      var tg = el.tagName;
+      if (tg === 'TEXTAREA' || tg === 'SELECT' || el.isContentEditable) return true;
+      if (tg !== 'INPUT') return false;
+      var ty = (el.type || 'text').toLowerCase();
+      return ['button', 'submit', 'reset', 'checkbox', 'radio', 'range', 'color', 'file', 'image'].indexOf(ty) < 0;
+    }
+    // 已聚焦的具体控件（按钮、链接、可点卡、单选、页签、复选框等）：Enter/Space 交给它自己的原生语义
+    function control(el) {
+      if (!el || el === document.body || !el.closest) return false;
+      if (editable(el)) return false;
+      return !!el.closest('button, a[href], [role=button], [role=radio], [role=tab], [role=checkbox], [role=option], input, summary');
+    }
+    function shown(el) { return !!(el && (el.offsetWidth || el.offsetHeight)); }
+    // 当前最上层的模态层（数量框、强制整理与确认窗、居中局部盘）；没有时为 null
+    function topModal() {
+      var sels = ['.modal-back', '.overflow-layer', '.disk-scrim'];
+      for (var i = 0; i < sels.length; i++) {
+        var m = document.querySelector(sels[i]);
+        if (m) return m;
+      }
+      return null;
+    }
+    // 局部唯一主确认（S14「局部盘唯一主确认」「物品转移条唯一提交按钮」）：焦点所在的活动盘／工作区（data-enter-scope），
+    // 焦点不在任何控件上（如点过盘内空白、盘刚打开）时取最上层模态里可见的那一个；该区内只认恰好一个可用的 [data-enter]。
+    function enterScope(ae) {
+      if (ae && ae !== document.body && ae.closest) {
+        var s = ae.closest('[data-enter-scope]');
+        if (s) return s;
+        // 焦点在别处（背后四轨、顶栏等）：不从那里抢走按键
+        if (!ae.closest('.apop, .modal, .overflow-layer')) return null;
+      }
+      var hosts = ['.modal', '.overflow-layer', '.apop-c'];
+      for (var i = 0; i < hosts.length; i++) {
+        var list = document.querySelectorAll(hosts[i]);
+        for (var j = list.length - 1; j >= 0; j--) {
+          if (!shown(list[j])) continue;
+          if (list[j].matches('[data-enter-scope]')) return list[j];
+          var inner = Array.prototype.filter.call(list[j].querySelectorAll('[data-enter-scope]'), shown);
+          if (inner.length === 1) return inner[0];
+          if (inner.length) return null;
+        }
+      }
+      return null;
+    }
+    function uniqueEnter(scope) {
+      var own = Array.prototype.filter.call(scope.querySelectorAll('[data-enter]'), function (b) {
+        return b.closest('[data-enter-scope]') === scope && shown(b);
+      });
+      return own.length === 1 && !own[0].disabled ? own[0] : null;
+    }
+    // 按住 Enter／Space 的重复 keydown：一律不再触发（浏览器原生按钮激活、卡片的回车选择、对白继续、局部确认都不重复）。
+    // 捕获阶段最先执行，连同组件自己的按键处理一起挡住；可编辑文字区里的空格照常。
+    window.__survivalKeyGuard = function (ev) {
+      if (!ev.repeat) return;
+      if (ev.key === 'Enter' || (ev.key === ' ' && !editable(ev.target))) {
+        if (window.FeedbackWidget && FeedbackWidget.isOpen()) return;
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+      }
+    };
+    window.addEventListener('keydown', window.__survivalKeyGuard, true);
     window.__survivalKeys = function (ev) {
-      var t = ev.target && ev.target.tagName;
+      var tgt = ev.target, t = tgt && tgt.tagName, k = ev.key;
+      // 输入法组合输入中：一律不处理
+      if (ev.isComposing || ev.keyCode === 229) return;
+      var mod = ev.ctrlKey || ev.altKey || ev.metaKey;
+      var send = function (key) { ev.preventDefault(); dotnet.invokeMethodAsync('OnKey', key); };
       // 反馈与留言窗口开着：按键归窗口自己（它的 Esc 只关窗口，关掉后回到游戏菜单，Q322）
       if (window.FeedbackWidget && FeedbackWidget.isOpen()) return;
       // B31b（Q322）：游戏菜单／战斗菜单打开时，只有 Esc 交给游戏（收起菜单）；回车、空格、数字留给菜单里的按钮，不落到背后的操作条、对白或战斗指令
       if (document.querySelector('.menu-modal')) {
-        if (ev.key === 'Escape' && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
-          ev.preventDefault();
-          dotnet.invokeMethodAsync('OnKey', 'Escape');
+        if (k === 'Escape' && !mod) send('Escape');
+        return;
+      }
+      // 人物对话读完锁（Q10、S14 §10.1）：数字、字母一律不转给游戏；Esc 不结束对白，交给游戏打开当前情境的菜单（B31b，Q322）。
+      // B43：唯一无分支的「继续／结束对话」（data-dlg-next）在焦点不在具体控件上时收 Enter，一次只确认当前行一次；招募等分支不由 Enter 代选。
+      if (document.querySelector('.dlg-layer')) {
+        if (mod) return;
+        if (k === 'Escape') { send('Escape'); return; }
+        if (k === 'Enter' && !control(document.activeElement)) {
+          var nx = document.querySelector('.dlg-layer [data-dlg-next]');
+          if (nx && !nx.disabled && !(nx.closest && nx.closest('[inert]'))) { ev.preventDefault(); nx.click(); }
         }
         return;
       }
-      // 人物对话读完锁（Q10、S14 §10.1）：数字跳数量框、回车执行操作条、M/C/R/L 一律不转给游戏；对话层自己的按钮仍可用键盘聚焦后按回车/空格（浏览器原生行为）。
-      // Esc 不结束对白，交给游戏打开当前情境的游戏菜单（B31b，Q322）
-      if (document.querySelector('.dlg-layer')) {
-        if (ev.key === 'Escape' && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
-          ev.preventDefault();
-          dotnet.invokeMethodAsync('OnKey', 'Escape');
+      // 局部唯一主确认（B43）：数量框、转移条、整备比较／交接、就近盘、强制整理与确认窗……
+      if (k === 'Enter' && !mod && !control(document.activeElement)) {
+        var sc = enterScope(document.activeElement);
+        if (sc) {
+          var go = uniqueEnter(sc);
+          if (go) { ev.preventDefault(); go.click(); return; }
         }
-        return;
       }
       // 就近操作浮窗（S14 §14.1）里的按钮：回车/空格/数字只作用于浮窗自身，不转给卡下操作条；Esc 照常交给 Esc 栈（先收起浮窗）
-      if (ev.target && ev.target.closest && ev.target.closest('.apop') && ev.key !== 'Escape') return;
-      var inBar = ev.target && ev.target.closest && ev.target.closest('.tbar');
-      // 选中物品卡后直接按数字：跳进卡片下方操作条的数量框（v0.7 起操作条在卡下文档流里）
-      if (/^[0-9]$/.test(ev.key) && t !== 'INPUT' && t !== 'TEXTAREA' && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
-        var inp = document.querySelector('.tbar input');
-        if (inp) { inp.focus(); inp.select(); return; }
+      if (tgt && tgt.closest && tgt.closest('.apop') && k !== 'Escape' && !tgt.closest('.tbar')) return;
+      var inBar = tgt && tgt.closest && tgt.closest('.tbar');
+      // 数量框等弹窗自己处理 Esc（取消）；回车已由上面的局部确认处理；其余键不触发游戏快捷键
+      if (tgt && tgt.closest && tgt.closest('.modal')) return;
+      if (editable(tgt)) {
+        // 输入框、数字框、下拉与可编辑文字区：普通字母、数字导航不生效（S14）；
+        // Esc 在转移条数量框里先只退出输入框（Esc 栈第一级），再按一次才交给 GameScreen 清选中（复验新发现 1）；其他输入框的 Esc 交给 Esc 栈
+        if (k !== 'Escape' || mod) return;
+        if (inBar) { ev.preventDefault(); tgt.blur(); return; }
       }
-      // 拾取条已弹出但光标不在条内（例如刚用鼠标点完卡片）时按回车：按条上当前数量直接拾取/放下
-      if (ev.key === 'Enter' && !inBar && t !== 'INPUT' && t !== 'TEXTAREA' && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
-        var go = document.querySelector('.tbar .tbar-go');
-        if (go && !go.disabled) { ev.preventDefault(); go.click(); return; }
-      }
-      if (t === 'INPUT' || t === 'TEXTAREA') {
-        // 拾取条输入框只收数字：字母快捷键照常生效，回车与 Esc 由拾取条自己处理
-        if (!inBar && ev.key !== 'Escape') return;
-        // 回车由操作条自己处理；Esc 在数量框里先只退出输入框（Esc 栈第一级），再按一次才交给 GameScreen 清选中（复验新发现 1）
-        if (inBar && ev.key === 'Enter') return;
-        if (inBar && ev.key === 'Escape') { ev.preventDefault(); ev.target.blur(); return; }
-      }
-      if (ev.ctrlKey || ev.altKey || ev.metaKey) return;
-      var k = ev.key;
+      if (mod) return;
       // 全屏战斗（A10 §6.4）：1—5 只选本页技能位、Q/E 切武器Ⅰ/Ⅱ页（0AP）、←/→ 在合法目标间移动预测、回车提交当前预测的目标；
       // 焦点在按钮或可点锚点上时回车/空格交给它自己（浏览器原生），不重复提交
-      if (document.querySelector('.bfs') && t !== 'INPUT' && t !== 'TEXTAREA') {
+      if (document.querySelector('.bfs')) {
         var onCtl = document.activeElement && document.activeElement.closest && document.activeElement.closest('button, [role=button]');
         // 试玩修复 B9-7：刚点过的技能/指令按钮仍带焦点时，已有待确认指令或正在瞄准，回车是“提交”而不是再点一次该按钮（会把选择收起）
         if (k === 'Enter' && onCtl && onCtl.closest('.bfs-console') && document.querySelector('#bt-confirm, .bfs .anc.targetable')) onCtl = null;
         if (/^[1-5]$/.test(k) || k === 'q' || k === 'Q' || k === 'e' || k === 'E' || k === 'ArrowLeft' || k === 'ArrowRight' || (k === 'Enter' && !onCtl)) {
           ev.preventDefault();
-          dotnet.invokeMethodAsync('OnKey', k.length === 1 ? k.toUpperCase() : k);
+          // 方向键沿原规则可连续移动预测；技能位、切页与回车按住不重复
+          if (ev.repeat && k !== 'ArrowLeft' && k !== 'ArrowRight') return;
+          send(k.length === 1 ? k.toUpperCase() : k);
           return;
         }
       }
-      // 数量框等弹窗自己处理按键（回车确认、Esc 取消），不再触发游戏快捷键
-      if (ev.target && ev.target.closest && ev.target.closest('.modal')) return;
-      // B31b（Q322）：反馈只从游戏菜单进入，F 不再直达
-      if (['m', 'M', 'c', 'C', 'r', 'R', 'l', 'L', 'Escape'].indexOf(k) >= 0) {
+      var modal = topModal();
+      var mapPanel = document.querySelector('.map-panel');
+      var inMap = !!(mapPanel && tgt && tgt.closest && tgt.closest('.map-panel'));
+      // 选中物品卡后直接按数字：跳进选卡操作盘里转移条的数量框（数量框、强制整理、确认窗开着时不跳到背后；焦点在地图里时数字归地图）
+      if (/^[0-9]$/.test(k) && !inMap && (!modal || modal.classList.contains('disk-scrim'))) {
+        var inp = Array.prototype.filter.call(document.querySelectorAll('.tbar input'), function (x) { return shown(x) && !(x.closest && x.closest('[inert]')); })[0];
+        if (inp) { inp.focus(); inp.select(); return; }
+      }
+      // 当前最上层是模态层（数量框、强制整理、确认窗、居中局部盘）：只有 Esc 交给 Esc 栈（先收这一层），字母、数字不触发背后的顶栏或转移条
+      if (modal) {
+        if (k === 'Escape') {
+          ev.preventDefault();
+          if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
+          dotnet.invokeMethodAsync('OnKey', 'Escape');
+        }
+        return;
+      }
+      // 地图局部键（S14「地图放大／缩小」「地图定位」）：区域地图开着时 +/= 放大、-/_ 缩小（按住连续）、0 回到当前位置；
+      // 与地图上同名按钮同一入口（按钮禁用时键也无效）。转移条数量框开着且焦点不在地图里时，数字留给数量框（地图局部键不抢数量输入）。
+      if (mapPanel && ['+', '=', '-', '_', '0'].indexOf(k) >= 0) {
+        var which = k === '+' || k === '=' ? 'in' : k === '0' ? 'here' : 'out';
+        var mb = mapPanel.querySelector('[data-map-key="' + which + '"]');
+        ev.preventDefault();
+        if (mb && !mb.disabled && !(ev.repeat && which === 'here')) mb.click();
+        return;
+      }
+      // 顶栏字母（B43：M C R L P G K J T D H，不区分大小写、不要求 Shift）：按一次触发同一按钮一次，按住不重复开关；F 不直达反馈（B31b Q322）
+      var up = k && k.length === 1 ? k.toUpperCase() : k;
+      if (TOP.indexOf(up) >= 0) {
+        ev.preventDefault();
+        if (!ev.repeat) dotnet.invokeMethodAsync('OnKey', up);
+        return;
+      }
+      if (k === 'Escape') {
         ev.preventDefault();
         // Esc 收起预览/选中后，焦点仍留在刚点过的按钮上会被画成键盘焦点框，看起来像“仍选中”（试玩修复 L6）
-        if (k === 'Escape' && document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
-        dotnet.invokeMethodAsync('OnKey', k.length === 1 ? k.toUpperCase() : k);
+        if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
+        dotnet.invokeMethodAsync('OnKey', 'Escape');
       }
     };
     document.addEventListener('keydown', window.__survivalKeys);

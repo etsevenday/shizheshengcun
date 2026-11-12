@@ -28,25 +28,27 @@
             <em>第@(Clock.Day(s.GameMinute))日 · @e.LocName(s.CurrentLocation)@(main?.Type == ActionType.Travel ? $" → {e.LocName(main.TargetId)}" : "")</em>
         </div>
         <nav class="nav" aria-label="主菜单">
-            @* 顶栏 12 键一排（Q292、§2「顶栏从左到右」，B31b R51）：战斗/敌踪中与对话读完锁期间，导航与浏览入口按同一规则禁用（S14 §7、§12.3、§13.3）；
-               反馈只在游戏菜单里（Q322），「菜单」在对白锁、战斗与敌踪中也能打开。快捷键写在悬停提示里。 *@
-            <button class="@(G.Panel == "map" ? "on" : "")" disabled="@navOff" title="@NavTitle(ShellText.TopKeys[0], "M")" @onclick='() => Toggle("map")'>@ShellText.TopKeys[0]</button>
-            <button class="@(G.Panel == "craft" ? "on" : "")" disabled="@navOff" title="@NavTitle(ShellText.TopKeys[1], "C")" @onclick='() => Toggle("craft")'>@ShellText.TopKeys[1]</button>
-            <button class="@(G.Panel == "rest" ? "on" : "")" disabled="@navOff" title="@NavTitle(ShellText.TopKeys[2], "R")" @onclick='() => Toggle("rest")'>@ShellText.TopKeys[2]</button>
-            <button class="@(G.Panel == "log" ? "on" : "")" disabled="@navOff" title="@NavTitle(ShellText.TopKeys[3], "L")" @onclick='() => Toggle("log")'>@ShellText.TopKeys[3]</button>
+            @* 顶栏 12 键（Q292、§2「顶栏从左到右」，B31b R51）：战斗/敌踪中与对话读完锁期间，导航与浏览入口按同一规则禁用（S14 §7、§12.3、§13.3）；
+               反馈只在游戏菜单里（Q322），「菜单」在对白锁、战斗与敌踪中也能打开。
+               B43（S14 2026-11-12）：按钮内常驻「功能名＋键帽」（ShellKeys.TopCaps），键帽是按钮的一部分、不是第二个按钮；禁用时键帽随按钮一同变灰。
+               键盘与鼠标走同一个 ActivateTop（OnKey 按 ShellKeys.TopIndexOf 找到同一按钮），可用条件相同。 *@
+            <button class="@(G.Panel == "map" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="M" title="@NavTitle(ShellText.TopKeys[0], 0)" @onclick="() => ActivateTop(0)">@TopFace(0)</button>
+            <button class="@(G.Panel == "craft" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="C" title="@NavTitle(ShellText.TopKeys[1], 1)" @onclick="() => ActivateTop(1)">@TopFace(1)</button>
+            <button class="@(G.Panel == "rest" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="R" title="@NavTitle(ShellText.TopKeys[2], 2)" @onclick="() => ActivateTop(2)">@TopFace(2)</button>
+            <button class="@(G.Panel == "log" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="L" title="@NavTitle(ShellText.TopKeys[3], 3)" @onclick="() => ActivateTop(3)">@TopFace(3)</button>
             @* Q86（S14 本轮章）：顶栏“编队”只在空白操作时期可用；不可用时不打开，点击/悬停写具体原因（战斗与对白锁同其他入口）。
                敌踪/战斗中按钮照样禁用，但悬停写内核 FormationEditBlocked 的原因（“先处理眼前的敌踪”），不用统一的“战斗中锁定”（试玩修复 B8a 第 1 轮 B1） *@
             @{ var formWhy = G.Panel == "formation" ? null : G.FormationBlocked; }
-            <button class="@(G.Panel == "formation" ? "on" : "") @(formWhy != null ? "off" : "")" disabled="@navOff" aria-disabled="@(formWhy != null)" data-nav="formation"
-                    title="@(G.DialogueLocked ? NavTitle("编队", null) : formWhy != null ? $"现在不能编队：{formWhy}" : navOff ? NavTitle("编队", null) : "编队：安排开战号位（前排1→后排4），保存不花时间")"
-                    @onclick="ToggleFormation">@ShellText.TopKeys[4]</button>
-            <button class="@(G.Panel == "gear" ? "on" : "")" disabled="@navOff" data-nav="gear" title="@NavTitle("整备：七槽装备、随身五卡与队员交接（不花时间）", null)" @onclick='() => Toggle("gear")'>@ShellText.TopKeys[5]</button>
-            <button class="@(G.Panel == "growth" ? "on" : "")" disabled="@navOff" data-nav="growth" title="@NavTitle("成长：十五门熟练度的十级轨道与技能节点（只浏览）", null)" @onclick='() => Toggle("growth")'>@ShellText.TopKeys[6]</button>
-            <button class="@(G.Panel == "goals" ? "on" : "")" disabled="@navOff" title="@NavTitle("序章任务册：主目标、建议与完整18项", null)" @onclick='() => Toggle("goals")'>@ShellText.TopKeys[7]</button>
-            <button class="@(G.Panel == "tips" ? "on" : "")" disabled="@navOff" title="@NavTitle("当前求生建议", null)" @onclick='() => Toggle("tips")'>@ShellText.TopKeys[8]</button>
-            <button class="@(G.Panel == "dialogs" ? "on" : "")" disabled="@navOff" title="@NavTitle("已经展示过的人物对话", null)" @onclick='() => Toggle("dialogs")'>@ShellText.TopKeys[9]</button>
-            <button class="@(G.Panel == "help" ? "on" : "")" disabled="@navOff" title="@NavTitle("各系统通用规则说明", null)" @onclick='() => Toggle("help")'>@ShellText.TopKeys[10]</button>
-            <button class="@(G.MenuOpen || G.BattleMenuOpen ? "on" : "")" data-menu-key title="菜单（Esc）" @onclick="ToggleMenu">@ShellText.TopKeys[11]</button>
+            <button class="@(G.Panel == "formation" ? "on" : "") @(formWhy != null ? "off" : "")" disabled="@navOff" aria-disabled="@(formWhy != null)" data-nav="formation" aria-keyshortcuts="P"
+                    title="@(G.DialogueLocked ? NavTitle("编队", -1) : formWhy != null ? $"现在不能编队：{formWhy}" : navOff ? NavTitle("编队", -1) : NavTitle("编队：安排开战号位（前排1→后排4），保存不花时间", 4))"
+                    @onclick="() => ActivateTop(4)">@TopFace(4)</button>
+            <button class="@(G.Panel == "gear" ? "on" : "")" disabled="@navOff" data-nav="gear" aria-keyshortcuts="G" title="@NavTitle("整备：七槽装备、随身五卡与队员交接（不花时间）", 5)" @onclick="() => ActivateTop(5)">@TopFace(5)</button>
+            <button class="@(G.Panel == "growth" ? "on" : "")" disabled="@navOff" data-nav="growth" aria-keyshortcuts="K" title="@NavTitle("成长：十五门熟练度的十级轨道与技能节点（只浏览）", 6)" @onclick="() => ActivateTop(6)">@TopFace(6)</button>
+            <button class="@(G.Panel == "goals" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="J" title="@NavTitle("序章任务册：主目标、建议与完整18项", 7)" @onclick="() => ActivateTop(7)">@TopFace(7)</button>
+            <button class="@(G.Panel == "tips" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="T" title="@NavTitle("当前求生建议", 8)" @onclick="() => ActivateTop(8)">@TopFace(8)</button>
+            <button class="@(G.Panel == "dialogs" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="D" title="@NavTitle("已经展示过的人物对话", 9)" @onclick="() => ActivateTop(9)">@TopFace(9)</button>
+            <button class="@(G.Panel == "help" ? "on" : "")" disabled="@navOff" aria-keyshortcuts="H" title="@NavTitle("各系统通用规则说明", 10)" @onclick="() => ActivateTop(10)">@TopFace(10)</button>
+            <button class="@(G.MenuOpen || G.BattleMenuOpen ? "on" : "")" data-menu-key aria-keyshortcuts="Escape" title="@($"{ShellText.Menu}（{ShellKeys.Esc}）")" @onclick="ToggleMenu">@TopFace(11)</button>
         </nav>
     </header>
 
@@ -304,11 +306,40 @@
         else G.OpenFormation();
     }
 
-    private string NavTitle(string what, string? key)
+    /// <summary>悬停提示：原说明后接同一键位（与按钮上的键帽同源 ShellKeys.TopCaps）；i&lt;0 不带键。</summary>
+    private string NavTitle(string what, int i)
     {
         if (G.DialogueLocked) return "请先读完对话";
         if (G.InBattleUi) return "战斗中锁定";
-        return key == null ? what : $"{what}（{key}）";
+        return i < 0 ? what : $"{what}（{ShellKeys.TopCaps[i]}）";
+    }
+
+    /// <summary>B43：顶栏按钮面——功能名与键帽同时常驻（读屏名「功能名 键位」）。</summary>
+    private RenderFragment TopFace(int i) => __builder =>
+    {
+        <span class="nk-name">@ShellText.TopKeys[i]</span> <kbd class="kc">@ShellKeys.TopCaps[i]</kbd>
+    };
+
+    /// <summary>
+    /// B43：顶栏第 i 个功能（0—10），鼠标点按钮与键盘快捷键共用：编队沿原编队流程（开着就取消草稿关闭，不保存、不提交），其余打开／收起对应面板。
+    /// 可用条件由调用方保证与按钮一致（按钮 disabled；OnKey 在对白锁、菜单、战斗与敌踪、死亡结算时不调用）。
+    /// </summary>
+    private void ActivateTop(int i)
+    {
+        switch (i)
+        {
+            case 0: Toggle("map"); break;
+            case 1: Toggle("craft"); break;
+            case 2: Toggle("rest"); break;
+            case 3: Toggle("log"); break;
+            case 4: ToggleFormation(); break;
+            case 5: Toggle("gear"); break;
+            case 6: Toggle("growth"); break;
+            case 7: Toggle("goals"); break;
+            case 8: Toggle("tips"); break;
+            case 9: Toggle("dialogs"); break;
+            case 10: Toggle("help"); break;
+        }
     }
 
     /// <summary>顶栏「菜单」：战斗与敌踪开战斗菜单，其余（含对白锁、行动推进、暂停）开游戏菜单（Q322）。</summary>
@@ -341,15 +372,11 @@
             }
             return;
         }
-        // 敌踪选择中：M/C/R/L 锁定
+        // 敌踪选择中：顶栏字母锁定（同按钮禁用）
         if (G.InBattleUi) return;
-        switch (key)
-        {
-            case "M": Toggle("map"); break;
-            case "C": Toggle("craft"); break;
-            case "R": Toggle("rest"); break;
-            case "L": Toggle("log"); break;
-        }
+        // B43：顶栏 11 个字母键（M C R L P G K J T D H）各触发同一按钮一次；F 不绑定
+        var top = ShellKeys.TopIndexOf(key);
+        if (top >= 0) ActivateTop(top);
     }
 
     /// <summary>

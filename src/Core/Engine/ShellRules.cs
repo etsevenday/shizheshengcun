@@ -86,6 +86,74 @@ namespace Survival.Core.Engine
         }
     }
 
+    /// <summary>
+    /// B43（S14 2026-11-12「快捷键在对应按钮常驻显示」，需求 R170）：按钮与控件上常驻显示的键帽和顶栏键位。
+    /// 顶栏 12 键与 <see cref="ShellText.TopKeys"/> 一一对应、同一顺序；字母不区分大小写，F 不绑定（反馈只从游戏菜单进入）。
+    /// 键帽文字、局部控件名都照 S14 同日两张表逐字；网页壳只从这里取，按钮、悬停提示与键表同源。
+    /// </summary>
+    public static class ShellKeys
+    {
+        /// <summary>顶栏 12 键的键帽（S14「顶栏12个功能的固定键位与按钮原文」「按键显示」列）。最后一个是菜单的「ESC」，实际绑定 Escape。</summary>
+        public static readonly IReadOnlyList<string> TopCaps = new[] { "M", "C", "R", "L", "P", "G", "K", "J", "T", "D", "H", Esc };
+
+        /// <summary>ESC 键帽（S14：ESC 显示为「ESC」，实际绑定仍为 Escape）。</summary>
+        public const string Esc = "ESC";
+        public const string Enter = "Enter";
+        public const string Shift = "Shift";
+        /// <summary>数量输入旁的键帽（S14「数量 0–9」）。</summary>
+        public const string Digits = "0–9";
+        public const string Qty = "数量";
+        public const string DragQty = "选数量";
+
+        // 地图（S14「地图放大／缩小」「地图定位」）
+        public const string ZoomIn = "放大";
+        public const string ZoomOut = "缩小";
+        public const string ZoomInCap = "+";
+        public const string ZoomOutCap = "-";
+        public const string BackToHere = "回到当前位置";
+        public const string BackToHereCap = "0";
+
+        // 战斗（S14「战斗武器页」「战斗五个技能位」「战斗目标预测切换」）
+        public const string WeaponPage1Cap = "Q";
+        public const string WeaponPage2Cap = "E";
+        public const string PrevTarget = "上一目标";
+        public const string NextTarget = "下一目标";
+        public const string PrevTargetCap = "←";
+        public const string NextTargetCap = "→";
+
+        /// <summary>顶栏第 i 个按钮的常驻原文「功能名＋键帽」（如「区域地图 M」「菜单 ESC」），也是读屏名称。</summary>
+        public static string TopLabel(int i) => $"{ShellText.TopKeys[i]} {TopCaps[i]}";
+
+        /// <summary>键表（游戏菜单与标题页「玩法说明」里的快捷键行）：顶栏 12 个按钮原文按顺序以「 · 」相连，与按钮上的写法同源。</summary>
+        public static string TopTable()
+        {
+            var parts = new string[TopCaps.Count];
+            for (var i = 0; i < parts.Length; i++) parts[i] = TopLabel(i);
+            return string.Join(" · ", parts);
+        }
+
+        /// <summary>
+        /// 一个单字母按键对应顶栏第几个按钮（0—10；不区分大小写）；不是顶栏字母时为 -1。菜单（第 12 个）走 Escape 层级，不在这里。
+        /// </summary>
+        public static int TopIndexOf(string? key)
+        {
+            if (string.IsNullOrEmpty(key) || key!.Length != 1) return -1;
+            var k = key.ToUpperInvariant();
+            for (var i = 0; i < TopCaps.Count - 1; i++) if (TopCaps[i] == k) return i;
+            return -1;
+        }
+
+        /// <summary>战斗技能卡位的固定键帽：本页第 n 个卡位（1—5，对应 1/3/5/7/10 级）。不是该门等级。</summary>
+        public static string SkillSlotCap(int level)
+        {
+            var i = System.Array.IndexOf(SkillSlotLevels, level);
+            return i < 0 ? "" : (i + 1).ToString();
+        }
+
+        /// <summary>本页五个技能位对应的等级（A10 §6.4，与网页壳 BattleHotkeySkill 同一张表）。</summary>
+        public static readonly int[] SkillSlotLevels = { 1, 3, 5, 7, 10 };
+    }
+
     /// <summary>Esc 这一下该做什么（Q322「Esc」「菜单内」「返回」）。</summary>
     public enum ShellEscRoute
     {
