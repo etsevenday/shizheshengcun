@@ -100,7 +100,7 @@
                 if (shown > 0) { <span class="bq-arrow" aria-hidden="true">→</span> }
                 shown++;
                 var qIdx = qi;
-                <button type="button" role="listitem" class="q-av @(now ? "now" : "") @(done ? "done" : "") @(qi <= 0 ? "me" : "q-foe") @(chase ? "chase" : "")"
+                <button type="button" role="listitem" class="q-av @(now ? "now" : "") @(done ? "done" : "") @(qi <= 0 ? "me" : "q-foe") @(chase ? "chase" : "")" data-peek="@(qi <= 0 ? Peek.Ally(qAlly!) : Peek.Foe(qi))"
                         title="@($"{qName}：轮初有效速度{qSpeed}{(qi <= 0 && qAlly == actorId ? $"（{SpeedSource(mySpeed)}）" : "")}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
                         aria-label="@($"{(chase ? "追击 " : "")}{qName}{(now ? "，行动中" : done ? "，已行动" : "")}")"
                         @onclick="() => QueueClick(qIdx)">
@@ -380,7 +380,7 @@
         // 整队（Q105）：已选的 A/B 带角标，不算“非目标”变灰
         var pairMark = G.BattlePairAiming ? (G.BattleAllyTarget == id ? "A" : G.BattleAllyTarget2 == id ? "B" : null) : null;
         var notTarget = allyAim && !targetable && pairMark == null;
-        <div class="anc ally @(acting ? "acting" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" role="button" tabindex="0" aria-pressed="@viewing"
+        <div class="anc ally @(acting ? "acting" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" data-peek="@Peek.Ally(id)" role="button" tabindex="0" aria-pressed="@viewing"
              aria-label="@($"我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(acting ? "，行动中" : "")}{(targetable ? "，可作为目标" : "")}")"
              title="@(pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, token, locked)" @onkeydown="ev => AllyKey(ev, id)"
              @onmouseenter="() => G.HoverBattleAlly(targetable ? id : null)" @onmouseleave="() => G.HoverBattleAlly(null)">
@@ -461,7 +461,7 @@
         var note = e.IntentTargetNote(s, b, en);
         var (ico, brief, range, kind) = IntentBrief(en, shown);
         var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
-        <div @key="@("foe" + idx)" id="@($"foe-{idx}")" data-slot="@pos" class="anc foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx ? "hover" : "")"
+        <div @key="@("foe" + idx)" id="@($"foe-{idx}")" data-slot="@pos" data-peek="@Peek.Foe(idx)" class="anc foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx ? "hover" : "")"
              role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))"
              aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{shown}{(note != null ? "；" + note : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
              title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"

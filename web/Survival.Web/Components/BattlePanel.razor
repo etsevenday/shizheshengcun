@@ -7,6 +7,12 @@
     var s = G.S;
     var e = G.E;
     var b = s.Battle;
+    // B42（S14 2026-11-12 悬停卡片／条目立即显示右栏详情）：全屏战斗沿用这里的对象信息区。悬停或聚焦敌方锚点、我方锚点或队列头像，
+    // 这里临时显示它（与点选查看同一份内容，只读，不改目标、瞄准与行动顺序）；离开保留最后一个，点选查看或换对象即替换；
+    // 瞄准预测与指令预览（具体操作）优先。
+    var peekKey = b == null ? null : G.PeekKeyNow;
+    int? peekFoe = PeekKey.KindOf(peekKey) == PeekKey.Foe && int.TryParse(PeekKey.Part(peekKey!, 0), out var pf) ? pf : null;
+    var peekAlly = PeekKey.KindOf(peekKey) == PeekKey.Ally ? PeekKey.Part(peekKey!, 0) : null;
 }
 
 @if (b == null && s.Encounter != null)
@@ -125,11 +131,11 @@ else if (b != null)
             <div class="under">@(aiming ? "点击亮起的目标即执行；右键/Esc 取消" : $"在操作台点“确认 · {p.Title} · {p.Ap}AP”才提交；Esc 取消")</div>
         </div>
     }
-    else if (G.BattleAllyView != null && G.BattleHover == null)
+    else if ((peekAlly ?? G.BattleAllyView) != null && G.BattleHover == null && peekFoe == null)
     {
         @* B9（A10 §4.1）：点我方锚点/队列头像只查看状态，不夺回合、不替换当前行动者 *@
-        // B9a：按被查看的那名成员本人取数（不是当前行动者）
-        var vid = G.BattleAllyView;
+        // B9a：按被查看的那名成员本人取数（不是当前行动者）；B42：悬停的成员优先于点选查看的成员
+        var vid = (peekAlly ?? G.BattleAllyView)!;
         (double Speed, double Base, double Gear, List<string> Status) mySpeed;
         using (e.FocusOn(s, vid)) mySpeed = e.PlayerSpeedParts(s, b);
         var vf = b.Fighter(vid);
@@ -157,7 +163,7 @@ else if (b != null)
     }
     else
     {
-        var focus = G.BattleHover ?? G.BattleTarget;
+        var focus = G.BattleHover ?? peekFoe ?? G.BattleTarget;
         var t = focus.HasValue ? e.BattleEnemyAt(b, focus.Value) : null;
         <div class="detail-scroll">
             @* 试玩修复 B7d-6：点了不可用的技能/指令，原因放在最上面（原先在最近战斗记录下面，常常看不到）；

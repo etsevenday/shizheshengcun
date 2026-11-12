@@ -247,4 +247,19 @@ public class B42HoverPeekTests
         foreach (var f in new[] { "MapOverlay", "CraftOverlay", "GrowthOverlay" })
             Assert.That(Web($"Components/{f}.razor"), Does.Contain("G.PeekClear();"), f + " 明确点选要结束悬停查看");
     }
+
+    /// <summary>HOVER-A01、A07：全屏战斗沿用战斗右侧对象信息区——敌我锚点与队列头像带键；悬停敌人／队友临时显示，离开保留，瞄准预测与指令预览优先，点选查看结束覆盖。</summary>
+    [Test]
+    public void Battle_UsesBattlePanel()
+    {
+        var bs = Web("Components/BattleScreen.razor");
+        Assert.That(bs, Does.Contain("data-peek=\"@Peek.Foe(idx)\"").And.Contain("data-peek=\"@Peek.Ally(id)\"").And.Contain("data-peek=\"@(qi <= 0 ? Peek.Ally(qAlly!) : Peek.Foe(qi))\""));
+        var bp = Web("Components/BattlePanel.razor");
+        Assert.That(bp, Does.Contain("var focus = G.BattleHover ?? peekFoe ?? G.BattleTarget;"));
+        Assert.That(bp, Does.Contain("var vid = (peekAlly ?? G.BattleAllyView)!;"));
+        // 瞄准与指令预览分支排在悬停查看之前
+        Assert.That(bp.IndexOf("else if (G.BattleAction != null)", StringComparison.Ordinal), Is.LessThan(bp.IndexOf("(peekAlly ?? G.BattleAllyView) != null", StringComparison.Ordinal)));
+        var d = Web("Components/DetailPanel.razor");
+        Assert.That(d, Does.Contain("if (PeekKey.KindOf(peekKey) is PeekKey.Foe or PeekKey.Ally) peekKey = null;"));
+    }
 }
