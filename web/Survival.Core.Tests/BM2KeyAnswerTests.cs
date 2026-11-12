@@ -332,4 +332,22 @@ public class BM2KeyAnswerTests : TestBase
         // 按住：捕获阶段挡掉非编辑区的重复空格
         Assert.That(js, Does.Contain("if (ev.key === 'Enter' || (ev.key === ' ' && !editable(ev.target)))"));
     }
+
+    [Test]
+    public void M761_AimPanelLayout_PredictionKeepsRoom()
+    {
+        // BM2 试玩修复（纯排版）：瞄准时 foot 限高自身可滚、预测区与系统提示显示滚动条、原因与指引句同为左对齐；不删不折叠文字
+        var css = Web("wwwroot/css/shell.css");
+        Assert.That(css, Does.Contain(".bfs-info .detail-body:has(.bp-cycle) > .detail-foot { flex: 0 0 auto; min-height: 0; overflow-y: auto;"), "foot 不压缩按钮、超出在自身内滚动");
+        Assert.That(css, Does.Contain(".bfs-info .detail-body:has(.bp-cycle):has(.pv-route) > .detail-foot { max-height: var(--bp-foot-max); }"), "已指定目标时 foot 限高，把高度让给预测");
+        foreach (var tier in new[] { "--bp-foot-max: 92px;", "--bp-foot-max: 78px;", "--bp-foot-max: 134px;" })
+            Assert.That(css, Does.Contain(tier), tier);
+        Assert.That(css, Does.Contain(".bfs-info:has(.bp-cycle) :is(.detail-scroll, .detail-foot, .bfs-hint) { scrollbar-width: thin; scrollbar-color:"), "滚动条可见");
+        Assert.That(css, Does.Contain(".bfs-info:has(.bp-cycle) > .bfs-hint .tc-hint-btns { position: sticky; bottom: 0;"), "系统提示限高后两个按钮常驻");
+        Assert.That(css, Does.Contain(".bfs-info .detail-body:has(.bp-cycle) > .detail-foot .under { margin-top: 3px; font-size: var(--fs-aux); line-height: 1.35; text-align: left; }"));
+        Assert.That(css, Does.Contain(".bfs-info .detail-body:has(.bp-cycle) .bp-confirm .bp-why { text-align: left; }"), "「请先指定目标。」与下一行对齐统一");
+        // 不用隐藏/折叠：新增块里没有 display:none、line-clamp、text-overflow
+        var block = css.Substring(css.IndexOf("/* BM2 试玩修复（M761"), css.IndexOf("/* 方向键帽") - css.IndexOf("/* BM2 试玩修复（M761"));
+        Assert.That(block, Does.Not.Contain("display: none").And.Not.Contain("line-clamp").And.Not.Contain("text-overflow").And.Not.Contain("overflow: hidden"));
+    }
 }
