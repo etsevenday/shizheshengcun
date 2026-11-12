@@ -63,8 +63,9 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 旧 8 地点全局种群的存活敌数（含交战中、中立鹿；R05 全局 12）。B20 起只数旧 8 地点的种群：9 个人口区各有自己的上限
         /// （<see cref="RegionLiveCount"/>），固定战与旧精英挑战不计（取代原“全世界只算一个 12”的口径）。
+        /// B41c（Q503）：躲避隐藏过的敌人按首次隐藏时锁定的原人口账计（隐藏期间与重现到别处后都不改账），其余按所在地点。
         /// </summary>
-        public int LiveCount(GameState s) => s.WorldEnemies.Count(w => w.FixedOf == null && InLegacyPopulation(w.LocationId));
+        public int LiveCount(GameState s) => s.WorldEnemies.Count(w => w.PopAccount != null ? w.PopAccount == PopAccountLegacy : w.FixedOf == null && InLegacyPopulation(w.LocationId));
 
         /// <summary>某地的种群敌数（B20：固定战与旧精英挑战的固定实例不计种群上限）。</summary>
         public int LocalCount(GameState s, string loc) => s.WorldEnemies.Count(w => w.LocationId == loc && w.FixedOf == null);
@@ -137,6 +138,7 @@ namespace Survival.Core.Engine
         {
             if (!Config.CombatEnabled) return;
             foreach (var w in s.WorldEnemies.Where(w => w.HiddenUntil.HasValue && w.HiddenUntil.Value <= s.GameMinute)) w.HiddenUntil = null;
+            ReappearEvaded(s);   // B41c（R05 Q420）：躲避隐藏到点重现（在刷新与巡游之前，重现当刻不查目标人口上限）
             if (s.GameMinute >= s.SpawnNextCheck)
             {
                 SpawnCheck(s);

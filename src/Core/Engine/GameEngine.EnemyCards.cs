@@ -353,6 +353,9 @@ namespace Survival.Core.Engine
             var keys = new List<string>();
             if (FixedBattleAt(here) != null) keys.Add(FixedCardKey(here));
             keys.AddRange(EliteChallengesHere(s).Select(c => EliteCardKey(c.Id)));
+            // B41c（R05 Q420）：躲避后重现到别处的可选强敌，卡在实际所在地点显示（原告示处不另补敌人）
+            keys.AddRange(s.WorldEnemies.Where(w => w.LocationId == here && w.FixedOf != null && w.FixedOf.StartsWith(ElitePrefix)).Select(w => w.FixedOf!)
+                .Where(k => !keys.Contains(k)).ToList());
             keys.AddRange(s.EnemyCards.Groups.Where(g => g.LocationId == here).OrderBy(g => g.Id).Select(g => GroupCardKey(g.Id)));
             keys.AddRange(VisibleEnemiesAt(s, here).Where(w => w.GroupId == null).Select(w => SingleCardKey(w.Id)));
             foreach (var k in keys)

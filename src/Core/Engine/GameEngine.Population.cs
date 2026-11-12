@@ -25,9 +25,9 @@ namespace Survival.Core.Engine
             _locs.TryGetValue(loc, out var lc) && lc.PopulationRegionId != null && lc.PopulationWeights != null && lc.PopulationWeights.Count > 0
             && Regions.TryGetValue(lc.PopulationRegionId, out var r) && r.Nodes.Contains(loc) ? r : null;
 
-        /// <summary>某人口区里的种群敌数（含交战中；固定战与旧精英挑战不计）。</summary>
+        /// <summary>某人口区里的种群敌数（含交战中；固定战与旧精英挑战不计）。B41c（Q503）：有原人口账的按原账计。</summary>
         public int RegionLiveCount(GameState s, PopulationRegionConfig r) =>
-            s.WorldEnemies.Count(w => w.FixedOf == null && r.Nodes.Contains(w.LocationId));
+            s.WorldEnemies.Count(w => w.PopAccount != null ? w.PopAccount == PopAccountRegion + r.Id : w.FixedOf == null && r.Nodes.Contains(w.LocationId));
 
         /// <summary>按节点池内部权重抽一种敌人（r∈[0,1)；权重不是刷新概率）。</summary>
         private string PickWeighted(Dictionary<string, int> weights, double r)
