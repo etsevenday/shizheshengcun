@@ -556,6 +556,7 @@ namespace Survival.Core.Engine
             var sp = new AttackSpec { Action = label, Weapon = w, Page = page, DamageFactor = factor, Reaction = true };
             var cfg = _enemies[t.EnemyId];
             var pv = TargetCalc(s, b, sp, t, s.Stats.Energy);
+            ConsumeFirstStrike(b, MeId(s));   // B41c（Q422）：一次反击／迎击是独立出手，未命中也消耗
             if (s.Rng.NextDouble() >= pv.HitChance) { BattleLog(s, $"{Who(s)}{label}{cfg.Name}未命中（{Fmt.Pct(pv.HitChance)}）。"); return; }
             var crit = s.Rng.NextDouble() < pv.CritChance;
             var raw = w.DamageMin + s.Rng.NextDouble() * (w.DamageMax - w.DamageMin);

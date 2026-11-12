@@ -425,7 +425,8 @@ namespace Survival.Core.Engine
             buff = DamageBuffCurve(rawBuff);   // Q82：同名取强、不同来源先乘成 rawB，再走递减曲线（取代旧硬上限×1.5）
             var execF = sp.Exec?.ExecuteHpRatio is double r && t.Hp <= cfg.Hp * r + 1e-9 ? sp.Exec.ExecuteFactor : 1;
             var weak = PlayerWeakActive(b) ? b.PlayerWeakFactor : 1;
-            var mult = SkillDamageFactor(lv) * sp.FactorFor(t) * buff * execF * weak;
+            // B41c（R05 Q422）：先手首次攻击伤害×1.5，独立倍率、不进正伤害增益递减曲线，在平加、护甲、格挡之前
+            var mult = SkillDamageFactor(lv) * sp.FactorFor(t) * buff * execF * weak * FirstStrikeDamageFactor(b, MeId(s));
             var pen = gear.ArmorIgnore + (sp.Desperate ? 0 : w.ArmorIgnore) + sp.ExtraPen;
             var baseArmor = Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, cfg.Armor) - ActiveArmorBreak(b, t));
             var armor = Math.Max(0, baseArmor - pen);
@@ -488,6 +489,8 @@ namespace Survival.Core.Engine
                 foreach (var note in SkillNotes(s, b, sp, targets)) p.Notes.Add(note);
             }
             else p.Notes.Add("用拳头勉强一击：不磨损原武器，伤害×0.5，命中能力×0.65，没有技能附加控制");
+            if (FirstStrikeDamageFactor(b, MeId(s)) > 1)
+                p.Notes.Add(sp.DamageFactor > 0 && sp.Weapon.DamageMax > 0 ? "本次攻击伤害×1.5，出手后消耗先手加成。" : "本次攻击将消耗先手加成。");
             var lv = SkillLevel(s, sp.Weapon.SkillId);
             p.Notes.Add($"{SkillName(sp.Weapon.SkillId)}{lv}级：伤害×{Fmt.T(SkillDamageFactor(lv))}，命中能力+{Fmt.T(SkillAccuracyBonus(lv))}；" +
                 (SkillMaxed(s, sp.Weapon.SkillId) ? XpText(s, sp.Weapon.SkillId, 0)

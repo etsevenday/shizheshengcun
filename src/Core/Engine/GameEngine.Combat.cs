@@ -160,7 +160,7 @@ namespace Survival.Core.Engine
             PlayerSpeedParts(s, b, energy).Speed;
 
         /// <summary>速度的组成（预览与说明用）：基础、装备、状态各项与合计。</summary>
-        public (double Speed, double Base, double Gear, List<string> Status) PlayerSpeedParts(GameState s, BattleState? b, double? energy = null)
+        public (double Speed, double Base, double Gear, List<string> Status) PlayerSpeedParts(GameState s, BattleState? b, double? energy = null, double firstStrike = 1)
         {
             var m = Config.CombatMath;
             var e = energy ?? s.Stats.Energy;
@@ -171,12 +171,16 @@ namespace Survival.Core.Engine
             if (e < m.LowEnergyExclusive) { sp -= m.LowEnergySpeedPenalty; status.Add($"体力<{Fmt.T(m.LowEnergyExclusive)} −{Fmt.T(m.LowEnergySpeedPenalty)}"); }
             if (s.Stats.Wakefulness < m.LowWakefulnessSpeedExclusive) { sp -= m.LowWakefulnessSpeedPenalty; status.Add($"清醒<{Fmt.T(m.LowWakefulnessSpeedExclusive)} −{Fmt.T(m.LowWakefulnessSpeedPenalty)}"); }
             if (b != null && b.PlayerSlowActive) { sp -= Config.Statuses.Slow.NextRoundSpeedPenalty; status.Add($"减速 −{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}"); }
+            sp *= firstStrike;   // B41c（Q422）：先手第一完整回合×1.5，乘在基础、装备与状态合计之后，再量化
             return (QuantizeSpeed(sp), baseSp, gear, status);
         }
 
         /// <summary>敌人有效速度：max(1, 四舍五入到0.01(A09 面板速度 − 减速))（Q71）。</summary>
-        public double EnemyEffectiveSpeed(BattleEnemy e) =>
-            QuantizeSpeed(_enemies[e.EnemyId].Speed - (e.SlowActive ? Config.Statuses.Slow.NextRoundSpeedPenalty : 0) - e.SlowExtraActive);
+        public double EnemyEffectiveSpeed(BattleEnemy e) => EnemySpeedWithFirstStrike(e, 1);
+
+        /// <summary>B41c：带先手速度倍率的有效速度（倍率乘在面板速度与减速合计之后，再量化）。</summary>
+        public double EnemySpeedWithFirstStrike(BattleEnemy e, double firstStrike) =>
+            QuantizeSpeed((_enemies[e.EnemyId].Speed - (e.SlowActive ? Config.Statuses.Slow.NextRoundSpeedPenalty : 0) - e.SlowExtraActive) * firstStrike);
 
         /// <summary>
         /// 有效速度的统一量化（Q71）：max(1, 四舍五入到 0.01(基础+装备+状态))，不先取整；只在这里量化一次，排序按整数百分速度比较。
@@ -582,11 +586,14 @@ namespace Survival.Core.Engine
             }
             b.RetreatUsed = false;
             var entries = new List<(int idx, double speed, double u, int actor)>();
+            // B41c（R05 Q422）：先手方开场参战者第一完整回合有效速度×1.5（行动队列与追击基线都用它）；中途增援不享受
+            var allyFs = FirstStrikeSpeedFactor(b, FirstStrikeAlly);
+            var enemyFs = FirstStrikeSpeedFactor(b, FirstStrikeEnemy);
             foreach (var id in allies)
                 using (FocusOn(s, id))
-                    entries.Add((QueueCode(b, id), PlayerEffectiveSpeed(s, b), b.PlayerTieRoll, QueueCode(b, id)));
+                    entries.Add((QueueCode(b, id), PlayerSpeedParts(s, b, null, allyFs).Speed, b.PlayerTieRoll, QueueCode(b, id)));
             var allyCount = entries.Count;
-            foreach (var e in b.Alive.OrderBy(e => e.Index)) entries.Add((e.Index, EnemyEffectiveSpeed(e), e.TieRoll, e.WorldId));
+            foreach (var e in b.Alive.OrderBy(e => e.Index)) entries.Add((e.Index, EnemySpeedWithFirstStrike(e, e.JoinRound <= 1 ? enemyFs : 1), e.TieRoll, e.WorldId));
             List<(int idx, double speed, double u, int actor)> Sort(IEnumerable<(int idx, double speed, double u, int actor)> xs) =>
                 xs.OrderByDescending(x => SpeedHundredths(x.speed)).ThenByDescending(x => x.u).ThenBy(x => x.actor).ToList();   // Q71：百分速度降序→u降序→ID升序
             var ordered = Sort(entries);
@@ -1294,7 +1301,11 @@ namespace Survival.Core.Engine
                 var node = SkillOf(c.Action, sw);
                 b.PlayerAp -= node?.Ap ?? Act(DesperatePunch)!.ApCost;
                 if (node != null && !_exec[node.Id].IsAttack) ExecuteNonAttack(s, b, c, node, _exec[node.Id], sw, swi);
-                else PlayerSkillAttack(s, b, c, sw, swi);
+                else
+                {
+                    PlayerSkillAttack(s, b, c, sw, swi);
+                    ConsumeFirstStrike(b, actor);   // B41c（Q422）：本次主动攻击的多目标、多段共享一次先手伤害，出手后消耗
+                }
                 if (!StillActing()) return ActionResult.Success();
                 if (b.PlayerAp <= 0) EndPlayerActivation(s);
                 return ActionResult.Success();

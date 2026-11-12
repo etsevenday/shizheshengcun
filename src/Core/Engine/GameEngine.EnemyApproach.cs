@@ -257,15 +257,15 @@ namespace Survival.Core.Engine
                 case "single":
                 {
                     var tutorial = IsTutorialEnemy(s, card.Members[0].Id);
-                    StartBattle(s, card.Members, false, EnemyApproachSource, FearEncounter, tutorial, cardKey: card.Key);
+                    StartBattle(s, card.Members, false, EnemyApproachSource, FearEncounter, tutorial, cardKey: card.Key, firstStrike: FirstStrikeEnemy);
                     if (tutorial) TutorialBattleStarted(s);
                     break;
                 }
                 case "group":
-                    StartBattle(s, card.Members.Where(w => !Hidden(s, w)).ToList(), false, EnemyApproachSource, FearEncounter, cardKey: card.Key);
+                    StartBattle(s, card.Members.Where(w => !Hidden(s, w)).ToList(), false, EnemyApproachSource, FearEncounter, cardKey: card.Key, firstStrike: FirstStrikeEnemy);
                     break;
                 case "fixed":
-                    StartBattle(s, card.Members, false, EnemyApproachSource, FearEncounter, fixedKey: card.Key, cardKey: card.Key);
+                    StartBattle(s, card.Members, false, EnemyApproachSource, FearEncounter, fixedKey: card.Key, cardKey: card.Key, firstStrike: FirstStrikeEnemy);
                     break;
             }
         }

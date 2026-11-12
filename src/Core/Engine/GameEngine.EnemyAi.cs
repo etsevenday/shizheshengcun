@@ -742,6 +742,8 @@ namespace Survival.Core.Engine
             if (shoot && e.Mag <= 0) { BattleLog(s, $"{EnemyName(e)}没有子弹了。"); return; }
             var verb = (pursuit ? "追击" : "") + (bite ? "咬击" : approach ? st.Verb : factorOverride < 1 ? "弱攻击" : st.Verb != "" ? st.Verb : AttackVerb(cfg));
             var factor = plain ? factorOverride : st.Factor * factorOverride;
+            // B41c（R05 Q422）：敌方先手的开场参战者第一次攻击伤害×1.5（扫击多目标共享；落在空处也消耗）
+            factor *= TakeFirstStrike(b, FirstStrikeEnemyKey(e.WorldId));
             // Q91：先定这次攻击打谁。扫击是范围攻击，按原范围（我方 1、2 号位）全体逐个判，不抽签；
             // 其余每次独立单体攻击在提交时（成本已付）从当前合法存活目标里等概率抽一名（迫近只有最前那一名；只有 1 名也抽一次；0 名不抽）
             var sweep = !plain && kind == "sweep";
