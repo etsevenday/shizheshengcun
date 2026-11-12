@@ -79,6 +79,44 @@ public class B43KeyHintTests : TestBase
         Assert.That(Web("wwwroot/css/shell.css"), Does.Contain(".wasteland .top .nav kbd { display: inline-block; }"));
     }
 
+    // ───────────── ESC 层级（KEYHINT-A03、A06） ─────────────
+
+    /// <summary>
+    /// A03、A06：ESC 键帽只显示在承接本次 Esc 的那个控件上——判定与 GameScreen 实际执行同源（GameSession.EscOwner／NormalEscOwner／EncounterEscOwner），
+    /// 面板关闭、整备返回、说明返回、局部盘取消、数量框取消、人物二级页返回、鸟瞰返回、战斗抽屉关闭各按自己那一层；菜单关闭键与「菜单」键常驻 ESC。
+    /// </summary>
+    [Test]
+    public void A03_A06_EscCapFollowsEscOwner()
+    {
+        Assert.That(Web("Components/EscCap.razor"), Does.Contain("@if (On) {<kbd class=\"kc\">@ShellKeys.Esc</kbd>}"));
+        var screen = Web("Components/GameScreen.razor");
+        Assert.That(screen, Does.Contain("switch (G.NormalEscOwner())").And.Contain("switch (G.EncounterEscOwner())"), "Esc 执行与键帽同一判定");
+        Assert.That(screen, Does.Not.Contain("private bool NormalLayer()"));
+        var panel = "<EscCap On=\"@(G.EscOwner == EscOwner.Panel)\" />";
+        foreach (var f in new[] { "MapOverlay", "CraftOverlay", "RestOverlay", "LogOverlay", "GoalsOverlay", "TipsOverlay", "DialogueLogOverlay", "GearOverlay", "GrowthOverlay",
+                                  "FormationOverlay", "SafehouseOverlay", "DryingOverlay", "JourneyOverlay", "CityServiceOverlay", "ExpeditionAbort", "ExpeditionSeal", "DungeonReset" })
+        {
+            var src = Web($"Components/{f}.razor");
+            Assert.That(src, Does.Contain(panel), f);
+            Assert.That(src, Does.Not.Contain("<kbd>Esc</kbd>"), f + "：旧的常驻 Esc 换成按层显示的 ESC");
+        }
+        Assert.That(Web("Components/HelpOverlay.razor"), Does.Contain("关闭<EscCap On=\"@G.EscOnHelpClose\" />").And.Contain("‹ 返回<EscCap On=\"@G.EscOnHelpBack\" />"));
+        Assert.That(Web("Components/GearCompare.razor") + Web("Components/GearGive.razor"), Does.Contain("@GearPanelCopy.Back<EscCap On=\"@(G.EscOwner == EscOwner.GearSub)\" />"));
+        Assert.That(Web("Components/AttrDetail.razor"), Does.Contain("‹ 人物<EscCap On=\"@(G.EscOwner == EscOwner.CharPage)\" />"));
+        Assert.That(Web("Components/CityOverview.razor"), Does.Contain("返回当前地点<EscCap On=\"@(G.EscOwner == EscOwner.CityMap)\" />"));
+        Assert.That(Web("Components/DropQuantity.razor"), Does.Contain("取消<EscCap On=\"@(G.EscOwner == EscOwner.DropQty)\" />"));
+        var disk = "<EscCap On=\"@G.EscOnDisk\" />";
+        Assert.That(Regex.Matches(Web("Components/ActionPops.razor"), Regex.Escape(disk)).Count, Is.GreaterThanOrEqualTo(5), "就近盘的取消／关闭");
+        Assert.That(Web("Components/IgniteMenu.razor") + Web("Components/FeedPop.razor"), Does.Contain("取消" + disk).And.Contain("@FeedPanelCopy.Cancel" + disk));
+        var battle = Web("Components/BattleScreen.razor");
+        Assert.That(battle, Does.Contain("关闭<EscCap On=\"@(G.EscOwner == EscOwner.BattleDrawer)\" />"));
+        Assert.That(battle, Does.Contain(">@ShellText.Menu <kbd class=\"kc\">@ShellKeys.Esc</kbd></button>"), "战斗区「菜单 ESC」");
+        var keys = Web("Services/GameSession.Keys.cs");
+        Assert.That(keys, Does.Contain("if (DialogueLocked) return EscOwner.OpenMenu;"), "对白锁：Esc 不收背后子层，也就不在那些控件上标 ESC");
+        // 中央「退出行动」不标 ESC（S14：不能把中央「退出行动」标成ESC）
+        Assert.That(Web("Components/CentralProgress.razor") + Web("Components/PauseLayer.razor"), Does.Not.Contain("ShellKeys.Esc").And.Not.Contain("EscCap"));
+    }
+
     // ───────────── 按键路由（KEYHINT-A02、A05） ─────────────
 
     /// <summary>A02、A05：顶栏字母表含 11 个字母、不含 F；输入法组合、组合键、输入控件不触发；按住重复不重复开关；Enter/Space 重复在捕获阶段挡住。</summary>

@@ -1,0 +1,6 @@
+@* B43（S14 2026-11-12）：承接本次 Esc 的那个控件内常驻「ESC」键帽（On 由调用方按 GameSession.EscOwner 判断）；不承接时不显示，避免同屏多处都写 ESC。 *@
+@if (On) {<kbd class="kc">@ShellKeys.Esc</kbd>}
+
+@code {
+    [Parameter] public bool On { get; set; }
+}

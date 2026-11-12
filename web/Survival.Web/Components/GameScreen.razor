@@ -394,7 +394,7 @@
             BattleUi = G.InBattleUi,
             MenuOpen = G.MenuOpen,
             BattleMenuOpen = G.BattleMenuOpen,
-            HasClosableLayer = dead ? G.DeathLogOpen : full ? G.BattleHasEscLayer : G.InBattleUi ? EncounterLayer() : NormalLayer(),
+            HasClosableLayer = dead ? G.DeathLogOpen : full ? G.BattleHasEscLayer : G.InBattleUi ? G.EncounterEscOwner() != EscOwner.OpenMenu : G.NormalEscOwner() != EscOwner.OpenMenu,
         });
         // B31d（Q333）：死亡结算页上 Esc 只在结算页这几层之间走：先收「查看记录」，再开／关结算菜单
         if (dead)
@@ -418,50 +418,46 @@
         }
     }
 
-    private bool ShelfSelection => G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid;
-
-    /// <summary>敌踪选择中可关闭的子层：拖拽（drag.js 先拦截）→ 数量框 → 状态浮层 → 人物二级页 → 就近浮窗 → 指令预览 → ③④物品选中（①②被敌踪层替换，那里的残留选中看不见，不吃 Esc）。</summary>
-    private bool EncounterLayer() =>
-        G.PendingDrop != null || G.StatusPinned != null || (G.CharPage != null && G.DetailTab == DetailTab.Character) || G.Pop != null
-        || G.BattleAction != null || ShellEsc.BattleSelectionVisible(false, ShelfSelection);
-
+    /// <summary>敌踪选择中逐层收（顺序在 GameSession.EncounterEscOwner，B43 起与界面上的 ESC 键帽同源）：拖拽由 drag.js 先拦截。</summary>
     private void EncounterStep()
     {
-        if (G.PendingDrop != null) G.CancelDropQuantity();
-        else if (G.StatusPinned != null) G.PinStatus(null);
-        else if (G.CharPage != null && G.DetailTab == DetailTab.Character) G.OpenCharPage(null);
-        else if (G.Pop != null) G.ClosePop();
-        else if (G.BattleAction != null) G.ClearBattleAction();
-        else if (ShelfSelection) G.ClearSelection();
+        switch (G.EncounterEscOwner())
+        {
+            case EscOwner.DropQty: G.CancelDropQuantity(); break;
+            case EscOwner.Status: G.PinStatus(null); break;
+            case EscOwner.CharPage: G.OpenCharPage(null); break;
+            case EscOwner.Pop: G.ClosePop(); break;
+            case EscOwner.EncounterAction: G.ClearBattleAction(); break;
+            case EscOwner.Selection: G.ClearSelection(); break;
+        }
     }
 
-    /// <summary>常态可关闭的子层，每次只退一级：数量框 → 状态浮层 → 就近操作浮窗（只收起、不提交） → 鸟瞰说明/鸟瞰 → 点火工具菜单 → 食饮与交接浮窗 → 面板里的选中 → 系统说明逐层 → 面板 → 人物二级页 → 清选中。</summary>
-    private bool NormalLayer() =>
-        G.PendingDrop != null || G.StatusPinned != null || G.Pop != null || G.Panel != null || G.IgniteMenuOpen || G.FeedPending != null || G.GearHasSubLayer
-        || (G.CharPage != null && G.DetailTab == DetailTab.Character) || G.Selected.Kind != SelectionKind.None;
-
+    /// <summary>常态逐层收，每次只退一级（顺序在 GameSession.NormalEscOwner，B43 起与界面上的 ESC 键帽同源）。</summary>
     private void NormalStep()
     {
-        if (G.PendingDrop != null) G.CancelDropQuantity();
-        else if (G.StatusPinned != null) G.PinStatus(null);
-        // B31d（Q338）：居中局部盘是当前操作层，Esc 先撤回本盘（同点遮罩），焦点回到触发控件
-        else if (G.DiskMaskShown) CancelDisk();
-        else if (G.Pop != null) G.ClosePop();
-        // B24（A10-CITY §7）：鸟瞰里 Esc 先收固定说明/确认窗，再关鸟瞰；不撤销已发生的移动
-        else if (G.Panel == "citymap" && G.CityPick != null) G.PickCity(null);
-        else if (G.Panel == "citymap") G.OpenPanel(null);
-        else if (G.IgniteMenuOpen) { G.Hover(null); G.CloseIgniteMenu(); }
-        // B10 试玩修复 2/6：最上层先退——交接确认浮窗、面板开着时选中卡的操作浮窗，再到面板本身
-        else if (G.FeedPending != null && G.Panel != "help") G.CancelFeed();
-        // B33（Q453-8、Q460）：整备交接盘→比较／来源工作区→空态逐层退回，空态时下一步才关整备
-        else if (G.GearHasSubLayer) G.GearBack();
-        // B32d（Q378）：选卡盘已因来源被面板盖住收起时，Esc 直接退面板（焦点已交给面板），不先清选中
-        else if (G.Panel != null && G.Panel != "help" && !G.CardPopCovered && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid) G.ClearSelection();
-        else if (G.Panel == "help") G.HelpBack();
-        else if (G.Panel != null) G.OpenPanel(null);
-        else if (G.CharPage != null && G.DetailTab == DetailTab.Character) G.OpenCharPage(null);
-        else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
-        else if (G.FeedPending != null) G.CancelFeed();
+        switch (G.NormalEscOwner())
+        {
+            case EscOwner.DropQty: G.CancelDropQuantity(); break;
+            case EscOwner.Status: G.PinStatus(null); break;
+            // B31d（Q338）：居中局部盘是当前操作层，Esc 先撤回本盘（同点遮罩），焦点回到触发控件
+            case EscOwner.Disk: CancelDisk(); break;
+            case EscOwner.Pop: G.ClosePop(); break;
+            // B24（A10-CITY §7）：鸟瞰里 Esc 先收固定说明/确认窗，再关鸟瞰；不撤销已发生的移动
+            case EscOwner.CityPick: G.PickCity(null); break;
+            case EscOwner.CityMap: G.OpenPanel(null); break;
+            case EscOwner.Ignite: G.Hover(null); G.CloseIgniteMenu(); break;
+            // B10 试玩修复 2/6：最上层先退——交接确认浮窗、面板开着时选中卡的操作浮窗，再到面板本身
+            case EscOwner.Feed: G.CancelFeed(); break;
+            // B33（Q453-8、Q460）：整备交接盘→比较／来源工作区→空态逐层退回，空态时下一步才关整备
+            case EscOwner.GearSub: G.GearBack(); break;
+            // B32d（Q378）：选卡盘已因来源被面板盖住收起时，Esc 直接退面板（焦点已交给面板），不先清选中
+            case EscOwner.PanelSelection: G.ClearSelection(); break;
+            case EscOwner.HelpBack: G.HelpBack(); break;
+            case EscOwner.Panel: G.OpenPanel(null); break;
+            case EscOwner.CharPage: G.OpenCharPage(null); break;
+            case EscOwner.Selection: G.ClearSelection(); break;
+            case EscOwner.FeedTail: G.CancelFeed(); break;
+        }
     }
 
     /// <summary>B31d（Q338）：点遮罩或 Esc 撤回本盘——先告诉 survivalPop 这是取消（收盘后把焦点还给触发控件），再按该盘自己的取消处理。</summary>

@@ -18,7 +18,7 @@
     <div class="g3-give" data-gear-give>
         <div class="g3-whead">
             <h3>@GearPanelCopy.GiveTitle</h3>
-            <button type="button" class="secondary" @onclick="G.GearBack">@GearPanelCopy.Back</button>
+            <button type="button" class="secondary" @onclick="G.GearBack">@GearPanelCopy.Back<EscCap On="@(G.EscOwner == EscOwner.GearSub)" /></button>
         </div>
         @* 试玩修复 P1：标题与「返回」固定在上，双方预演、原因与确认固定在下，中间来源／接收人／数量独立滚动 *@
         <div class="g3-wbody">

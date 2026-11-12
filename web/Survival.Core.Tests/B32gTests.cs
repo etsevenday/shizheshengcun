@@ -96,7 +96,7 @@ public class B32gTests : TestBase
         Assert.That(screen, Does.Contain("if (G.PanelFocusPending)"));
         Assert.That(screen, Does.Contain("G.PanelFocusPending = false;"));
         Assert.That(screen, Does.Contain("await JS.InvokeVoidAsync(\"survivalPop.focusPanel\");"));
-        Assert.That(screen, Does.Contain("else if (G.Panel != null && G.Panel != \"help\" && !G.CardPopCovered && G.Selected.Kind is"), "盘已收起时 Esc 退面板（沿 Q378）");
+        Assert.That(Web("Services", "GameSession.Keys.cs"), Does.Contain("if (Panel != null && Panel != \"help\" && !CardPopCovered && ShelfSelectionKind) return EscOwner.PanelSelection;"), "盘已收起时 Esc 退面板（沿 Q378）");
 
         var js = Web("wwwroot", "js", "app.js");
         var fp = js.Substring(js.IndexOf("focusPanel: function () {"));

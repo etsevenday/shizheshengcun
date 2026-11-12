@@ -46,7 +46,7 @@
         <Actions>
             @* B31c 试玩修复（B2，Q324）：第四区“确认操作”整区固定在盘底（不随正文滚走）：区名一行，取消在左、说明居中、主动作在右 *@
             <b class="fp-foot-label">@FeedPanelCopy.SectionConfirm</b>
-            <button type="button" class="secondary" data-feed-cancel @onclick="G.CancelFeed">@FeedPanelCopy.Cancel</button>
+            <button type="button" class="secondary" data-feed-cancel @onclick="G.CancelFeed">@FeedPanelCopy.Cancel<EscCap On="@G.EscOnDisk" /></button>
             <button type="button" class="secondary" data-feed-help @onclick="G.OpenFeedHelp">@FeedPanelCopy.Help</button>
             <button type="button" class="apop-go fp-go" data-feed-confirm disabled="@(why != null)" title="@why" @onclick="() => Confirm(v.Request)">@v.ConfirmText</button>
         </Actions>

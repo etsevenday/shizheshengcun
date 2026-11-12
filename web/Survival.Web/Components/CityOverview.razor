@@ -41,7 +41,7 @@
         <div class="city-head-btns">
             @* B24 试玩修复（M493，A10-CITY §3“再次按同一打开按钮只退浏览层”）：鸟瞰盖住当前地点卡，这里放同一个“主城鸟瞰”按钮（按下态） *@
             <button type="button" class="loc-btn city-btn on" aria-pressed="true" title="主城鸟瞰（再按一次只退浏览层，不移动）" @onclick="Close"><strong>主城鸟瞰</strong></button>
-            <button class="secondary" title="关闭鸟瞰，留在当前真实地点（不移动）" @onclick="Close">返回当前地点<kbd>Esc</kbd></button>
+            <button class="secondary" title="关闭鸟瞰，留在当前真实地点（不移动）" @onclick="Close">返回当前地点<EscCap On="@(G.EscOwner == EscOwner.CityMap)" /></button>
         </div>
     </div>
     @if (G.CityLegacyNote)

@@ -118,7 +118,7 @@ public class B32dTests : TestBase
         Assert.That(pick.Substring(0, pick.IndexOf("Notify();")), Does.Contain("CardPopCovered = false;"), "点同一张叠卡也算重新打开");
 
         var screen = Web("Components", "GameScreen.razor");
-        Assert.That(screen, Does.Contain("else if (G.Panel != null && G.Panel != \"help\" && !G.CardPopCovered && G.Selected.Kind is"), "盘已收起时 Esc 退面板");
+        Assert.That(Web("Services", "GameSession.Keys.cs"), Does.Contain("if (Panel != null && Panel != \"help\" && !CardPopCovered && ShelfSelectionKind) return EscOwner.PanelSelection;"), "盘已收起时 Esc 退面板");
     }
 
     // ───────────── Q390—Q392 B32d 实装后定稿 ─────────────

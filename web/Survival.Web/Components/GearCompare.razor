@@ -16,7 +16,7 @@
     <div class="g3-compare" data-gear-compare>
         <div class="g3-whead">
             <h3>@GearPanelCopy.CompareTitle</h3>
-            <button type="button" class="secondary" @onclick="G.GearBack">@GearPanelCopy.Back</button>
+            <button type="button" class="secondary" @onclick="G.GearBack">@GearPanelCopy.Back<EscCap On="@(G.EscOwner == EscOwner.GearSub)" /></button>
         </div>
         @* 试玩修复 P1：标题与「返回」固定在上；两列比较与效果在中间独立滚动；旧物去向、最终卡位／负重、原因与确认固定在下 *@
         <div class="g3-wbody">

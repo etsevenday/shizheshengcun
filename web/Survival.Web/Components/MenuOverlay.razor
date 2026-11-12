@@ -50,7 +50,7 @@
             <ExitSaveStatus />
             <div class="mm-foot">
                 <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked) || G.Saves?.WriteBlockedText != null)" title="@(lockTip ?? G.Saves?.WriteBlockedText)" @onclick="ToTitle">@ShellText.SaveToTitle</button>
-                <button class="primary" @ref="_first" @onclick="() => G.ToggleBattleMenu(false)">@(inBattle ? ShellText.BackToBattle : ShellText.ContinueGame)</button>
+                <button class="primary" @ref="_first" @onclick="() => G.ToggleBattleMenu(false)">@(inBattle ? ShellText.BackToBattle : ShellText.ContinueGame) <kbd class="kc">@ShellKeys.Esc</kbd></button>
             </div>
         </div>
     </div>
@@ -487,7 +487,7 @@
     <div class="mm-foot">
         <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked) || G.Saves?.WriteBlockedText != null)" title="@(lockTip ?? G.Saves?.WriteBlockedText)" @onclick="ToTitle">@ShellText.SaveToTitle</button>
         @* B31e（§1.3 Q353 选 A）：死亡结算页打开的菜单底部写「返回结算」，只收起菜单回到同一结算 *@
-        <button class="primary" @ref="_first" @onclick="Close">@(dead ? ShellText.BackToSettlement : ShellText.ContinueGame)</button>
+        <button class="primary" @ref="_first" @onclick="Close">@(dead ? ShellText.BackToSettlement : ShellText.ContinueGame) <kbd class="kc">@ShellKeys.Esc</kbd></button>
     </div>
 </div>
 </div>

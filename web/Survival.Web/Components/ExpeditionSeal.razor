@@ -52,7 +52,7 @@
                 }
             }
         </div>
-        <div class="ov-foot"><span></span><button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">关闭</button></div>
+        <div class="ov-foot"><span></span><button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button></div>
         @if (G.Notice != null)
         {
             <div class="notice">@G.Notice</div>

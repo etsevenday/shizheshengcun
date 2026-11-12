@@ -17,18 +17,18 @@
             {
                 @if (G.HelpFromFeed)
                 {
-                    <button type="button" class="secondary help-back" data-help-feed-back @onclick="G.CloseHelp">‹ @FeedPanelCopy.HelpBack</button>
+                    <button type="button" class="secondary help-back" data-help-feed-back @onclick="G.CloseHelp">‹ @FeedPanelCopy.HelpBack<EscCap On="@G.EscOnHelpBack" /></button>
                 }
                 else
                 {
-                    <button type="button" class="secondary help-back" @onclick="G.HelpBack">‹ 返回</button>
+                    <button type="button" class="secondary help-back" @onclick="G.HelpBack">‹ 返回<EscCap On="@G.EscOnHelpBack" /></button>
                 }
             }
             <h2>系统说明</h2>
             @if (topic != null) { <span class="sub">@topic.Title@(entry != null ? $" · {entry.Title}" : "")</span> }
             else { <span class="sub">通用规则 · 只读浏览，不消耗时间</span> }
         </div>
-        <button class="secondary" @onclick="G.CloseHelp">关闭<kbd>Esc</kbd></button>
+        <button class="secondary" @onclick="G.CloseHelp">关闭<EscCap On="@G.EscOnHelpClose" /></button>
     </div>
     <div class="sub-body help-body" data-wheel="y">
         @if (topic == null)

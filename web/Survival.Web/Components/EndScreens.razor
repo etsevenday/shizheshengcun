@@ -69,7 +69,7 @@
                 <button class="secondary" @onclick="ShowLog">查看记录</button>
                 <button class="secondary" @onclick="G.BackToTitle">返回标题</button>
                 @* B31d（逐字稿 §1.2 Q333 选 A）：结算页「菜单」，Esc 同效；菜单只开放阅读字体、动画速度与「反馈与留言」 *@
-                <button class="secondary" @ref="_menuBtn" title="菜单（Esc）" @onclick="() => G.SetMenu(true)">@ShellText.Menu</button>
+                <button class="secondary" @ref="_menuBtn" title="菜单（ESC）" aria-keyshortcuts="Escape" @onclick="() => G.SetMenu(true)">@ShellText.Menu<EscCap On="@(G.EscOwner == EscOwner.OpenMenu)" /></button>
             </div>
             <div class="under">原型不提供跨局继承，重新开始会完整重置世界与角色。</div>
         </div>

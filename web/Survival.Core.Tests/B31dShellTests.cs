@@ -51,8 +51,8 @@ public class B31dShellTests : TestBase
     {
         Assert.That(ShellText.BackToSettlement, Is.EqualTo("返回结算"));
         var menu = Web("Components", "MenuOverlay.razor");
-        Assert.That(menu, Does.Contain("<button class=\"primary\" @ref=\"_first\" @onclick=\"() => G.ToggleBattleMenu(false)\">@(inBattle ? ShellText.BackToBattle : ShellText.ContinueGame)</button>"));
-        Assert.That(menu, Does.Contain("<button class=\"primary\" @ref=\"_first\" @onclick=\"Close\">@(dead ? ShellText.BackToSettlement : ShellText.ContinueGame)</button>"));
+        Assert.That(menu, Does.Contain("<button class=\"primary\" @ref=\"_first\" @onclick=\"() => G.ToggleBattleMenu(false)\">@(inBattle ? ShellText.BackToBattle : ShellText.ContinueGame) <kbd class=\"kc\">@ShellKeys.Esc</kbd></button>"), "B43：关闭键常驻 ESC");
+        Assert.That(menu, Does.Contain("<button class=\"primary\" @ref=\"_first\" @onclick=\"Close\">@(dead ? ShellText.BackToSettlement : ShellText.ContinueGame) <kbd class=\"kc\">@ShellKeys.Esc</kbd></button>"), "B43：关闭键常驻 ESC");
         Assert.That(menu, Does.Not.Contain(": \"继续\")"));
     }
 
@@ -87,7 +87,7 @@ public class B31dShellTests : TestBase
     public void Q333_ShellWiring()
     {
         var end = Web("Components", "EndScreens.razor");
-        Assert.That(end, Does.Contain("@onclick=\"() => G.SetMenu(true)\">@ShellText.Menu</button>"));
+        Assert.That(end, Does.Contain("@onclick=\"() => G.SetMenu(true)\">@ShellText.Menu<EscCap On=\"@(G.EscOwner == EscOwner.OpenMenu)\" /></button>"), "B43：结算页「菜单」在 Esc 打开菜单时带 ESC");
         Assert.That(end, Does.Contain("inert=\"@(G.MenuOpen || G.DeathLogOpen)\""), "菜单开着时结算层不可操作");
         Assert.That(end, Does.Contain("await _menuBtn.FocusAsync();"));
         Assert.That(end, Does.Not.Contain("openFeedback"), "反馈仍只从菜单进入（Q322）");
@@ -226,9 +226,12 @@ public class B31dShellTests : TestBase
         Assert.That(screen, Does.Contain("<div class=\"disk-scrim\" aria-hidden=\"true\" @onclick=\"CancelDisk\"></div>"));
         Assert.That(screen, Does.Contain("_diskMask = G.DiskMaskShown;"));
         Assert.That(screen.IndexOf("<div class=\"disk-scrim\""), Is.LessThan(screen.IndexOf("<PauseLayer Docked=")), "遮罩在窄条之前（窄条 z 更高，在遮罩之上）");
-        var step = screen.Substring(screen.IndexOf("private void NormalStep()"));
-        Assert.That(step.IndexOf("else if (G.DiskMaskShown) CancelDisk();"), Is.LessThan(step.IndexOf("else if (G.Pop != null) G.ClosePop();")), "Esc 先撤回本盘");
-        Assert.That(step.IndexOf("if (G.PendingDrop != null) G.CancelDropQuantity();"), Is.LessThan(step.IndexOf("else if (G.DiskMaskShown) CancelDisk();")), "盘上再开的数量框先收");
+        // B43：Esc 逐层顺序移到 GameSession.NormalEscOwner（界面 ESC 键帽同源），GameScreen.NormalStep 按它分派
+        Assert.That(screen.Substring(screen.IndexOf("private void NormalStep()")), Does.Contain("case EscOwner.Disk: CancelDisk(); break;"));
+        var step = Web("Services", "GameSession.Keys.cs");
+        step = step.Substring(step.IndexOf("public EscOwner NormalEscOwner()"));
+        Assert.That(step.IndexOf("if (DiskMaskShown) return EscOwner.Disk;"), Is.LessThan(step.IndexOf("if (Pop != null) return EscOwner.Pop;")), "Esc 先撤回本盘");
+        Assert.That(step.IndexOf("if (PendingDrop != null) return EscOwner.DropQty;"), Is.LessThan(step.IndexOf("if (DiskMaskShown) return EscOwner.Disk;")), "盘上再开的数量框先收");
         Assert.That(screen, Does.Contain("ip.InvokeVoid(\"survivalPop.markCancel\");"));
 
         var js = Web("wwwroot", "js", "app.js");

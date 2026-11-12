@@ -72,7 +72,7 @@
             </span>
             <span class="bfs-top-btns">
                 <button type="button" class="secondary" @onclick='() => G.OpenBattleDrawer("help")' title="系统说明（只读，阅读时敌方行动暂停）">系统说明</button>
-                <button type="button" class="secondary @(G.BattleMenuOpen ? "on" : "")" @onclick="() => G.ToggleBattleMenu()" title="战斗菜单（Esc）：继续、系统说明、保存并返回标题；不能脱战">菜单<kbd>Esc</kbd></button>
+                <button type="button" class="secondary @(G.BattleMenuOpen ? "on" : "")" @onclick="() => G.ToggleBattleMenu()" aria-keyshortcuts="Escape" title="战斗菜单（ESC）：继续、系统说明、保存并返回标题；不能脱战">@ShellText.Menu <kbd class="kc">@ShellKeys.Esc</kbd></button>
             </span>
         </header>
 
@@ -294,7 +294,7 @@
                 @if (G.BattleDrawer == "help") { <HelpOverlay /> }
                 else
                 {
-                    <div class="bfs-drawer-head"><h2>@DrawerTitle(G.BattleDrawer)</h2><button type="button" class="secondary" @onclick="() => G.OpenBattleDrawer(null)">关闭<kbd>Esc</kbd></button></div>
+                    <div class="bfs-drawer-head"><h2>@DrawerTitle(G.BattleDrawer)</h2><button type="button" class="secondary" @onclick="() => G.OpenBattleDrawer(null)">关闭<EscCap On="@(G.EscOwner == EscOwner.BattleDrawer)" /></button></div>
                     <div class="bfs-drawer-body" data-wheel="y">
                         @if (G.BattleDrawer == "supplies") { <BattleSupplies /> }
                         else if (G.BattleDrawer == "equip") { <BattleEquip /> }

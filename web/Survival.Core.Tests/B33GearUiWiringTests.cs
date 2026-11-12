@@ -53,7 +53,8 @@ public class B33GearUiWiringTests
         Assert.That(entry, Does.Contain("e.GiveEntryBlocked(s, me, src.InstanceId)").And.Contain("disabled=\"@(why != null)\""));
         Assert.That(entry, Does.Contain("src.Owner == ItemInstance.CarriedOwner(me)"), "地面候选不给交接入口");
         var screen = Web("Components/GameScreen.razor");
-        Assert.That(screen, Does.Contain("else if (G.GearHasSubLayer) G.GearBack();"));
+        Assert.That(screen, Does.Contain("case EscOwner.GearSub: G.GearBack(); break;"));
+        Assert.That(Web("Services/GameSession.Keys.cs"), Does.Contain("if (GearHasSubLayer) return EscOwner.GearSub;"), "B43：顺序在 NormalEscOwner");
         var s = Web("Services/GameSession.Gear.cs");
         Assert.That(s, Does.Contain("if (GearSource == null) ClearGearWork();"), "来源失效直接回空态");
     }
