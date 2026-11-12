@@ -167,7 +167,9 @@ public class B32fTests : TestBase
         Assert.That(E.CharcoalLoadPreview(s).Ok, Is.True);
         Ok(s, InstantRequest.LoadCharcoal());
         Assert.That(Fac(s).Processes.Where(p => p.RecipeId == "fire_charcoal").ToList(), Has.Count.EqualTo(1));
-        Assert.That(Web("Components", "FireDetail.razor"), Does.Contain("@onclick=\"ToggleCharcoal\">煅烧木炭</button>"), "右栏空位入口仍在");
+        // B45：空位「煅烧木炭」入口从右栏移到中央加工菜单（右栏只读）
+        Assert.That(Web("Components", "FireMenu.razor"), Does.Contain("@onclick=\"ToggleCharcoal\" @onclick:stopPropagation=\"true\" @onkeydown:stopPropagation=\"true\">煅烧木炭</button>"), "加工菜单空位入口");
+        Assert.That(Web("Components", "FireDetail.razor"), Does.Not.Contain("ToggleCharcoal"), "右栏只读");
 
         var drop = File.ReadAllText(Path.Combine(Root(), "src", "Core", "Engine", "GameEngine.Drop.cs"));
         var instant = File.ReadAllText(Path.Combine(Root(), "src", "Core", "Engine", "GameEngine.Instant.cs"));

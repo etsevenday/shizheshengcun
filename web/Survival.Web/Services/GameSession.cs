@@ -618,8 +618,10 @@ public sealed partial class GameSession
     public bool IgniteMenuOpen { get; private set; }
 
     /// <summary>选卡操作盘（CardPop）是否显示：选中地面/随身物品、工具或锅内液体，且没有别的局部盘、整理窗、菜单或对白锁让它让位。</summary>
+    /// B45（FACPROC 第 3 条、Q548）：火堆加工菜单开着时不弹（菜单内有自己的操作区）；火堆里的锅、水、食材不再用选卡盘执行（只读右栏，操作在中央加工菜单）。
     public bool CardPopShown => State != null && Pop == null && FeedPending == null && !IgniteMenuOpen && !DialogueLocked && !OverflowPending && !DuplicateWeaponsPending
-        && !MenuOpen && !BattleMenuOpen && !CardPopCovered && Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid;
+        && !MenuOpen && !BattleMenuOpen && !CardPopCovered && Panel != FireMenuPanel && Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid
+        && InFireCrumbs(Selected) == null;
 
     /// <summary>
     /// B32d（逐字稿 §1.5 Q378）：选卡操作盘的来源卡被新开的面板实际盖住（app.js survivalPop 按覆盖范围判断），已按来源失效收盘。
@@ -772,6 +774,10 @@ public sealed partial class GameSession
         if (IsTopPanel(panel) && InBattleUi) return;
         // 对话读完锁（Q10）：不打开任何面板；关闭（null）仍允许，便于对话出现时收起菜单
         if (panel != null && DialogueLocked) return;
+        // B45：离开火堆加工菜单（关闭或换面板）丢未提交草稿，关闭时焦点回原火堆卡；经「选择设施」进入的返回来源随任何面板切换结束（Q560）
+        if (Panel == FireMenuPanel && panel != FireMenuPanel) LeaveFireMenu(panel == null);
+        CraftFromChooser = false;
+        ChooserReturnStation = null;
         // B23：查来源时关掉地图（关闭按钮、Esc）回制作面板并恢复原选择；切到别的面板就结束这次查询
         if (SourceItem != null && Panel == "map" && panel == null) { ReturnFromSources(); return; }
         if (panel != "map") { SourceItem = null; _craftReturn = null; }
@@ -789,7 +795,7 @@ public sealed partial class GameSession
         FeedPending = null;
         HelpFromFeed = false;
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
-        if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest") DetailTab = DetailTab.Object; }
+        if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest" or FireMenuPanel) DetailTab = DetailTab.Object; }
         if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; _helpReturnStatus = null; }
         if (panel == "dialogs") DialogLogPick = null;
         // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）。
@@ -963,7 +969,7 @@ public sealed partial class GameSession
     }
 
     public static bool IsTopPanel(string? panel) =>
-        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city" or "safehouse" or "drying" or "citymap";
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city" or "safehouse" or "drying" or "citymap" or FireMenuPanel;
 
     // ───────────── 新手序章（B13，S15 §3—§8、A10-TUTOR） ─────────────
 
@@ -1299,6 +1305,7 @@ public sealed partial class GameSession
         SyncUnsaved();
         SyncCommitMark();
         ResetOnLocationChange();
+        ReconcileFireMenu();
         ReconcileFeed();
         ReconcileGear();
         OnDialogueOnset();
@@ -1463,6 +1470,10 @@ public sealed partial class GameSession
         FormationPick = null;
         DetailTab = DetailTab.Character;
         Panel = null;
+        FireMenu = null;   // B45：读档、新开、回标题清加工菜单与选择设施返回来源
+        CraftFromChooser = false;
+        ChooserReturnStation = null;
+        FocusIdPending = null;
         MenuOpen = false;
         ManualPageOpen = false;   // BM2（Q500）
         ManualConfirmKey = null;
@@ -1763,6 +1774,8 @@ public sealed partial class GameSession
         Notice = null;
         // 就近确认浮窗已完成使命（S14 §14.1：执行后不留下可再次点击的旧按钮）
         Pop = null;
+        // B45（FACPROC-A09）：耗时行动成功开始后收起火堆加工菜单，交给中央行动进度层
+        CloseFireMenuForAction();
         // 开始新行动：上一条结果提示与悬停预测作废（试玩修复 G5、L6：按钮开始后消失或禁用，收不到离开事件）
         Toast = null;
         ClearHoverNow();

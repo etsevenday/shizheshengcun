@@ -5,7 +5,9 @@
    锅在火堆内时只在火堆卡内渲染，地面/随身栏不出现副本。
    点击：标题行选中整口锅，液体行选中该锅该液体（PotLiquid），食材行选中该份食材；每次点击都阻止冒泡，不同时选中父火堆。
    拖拽把手：标题行（整锅，全部内容随行）、液体图标、食材图标；水量条、按钮、箭头不起拖。
-   落点：卡面 card:（等同装水区）、水量条 potfill:、食材区 potfood:（热区优先于卡面，锅满不冒泡成火堆直烤）。 *@
+   落点：卡面 card:（等同装水区）、水量条 potfill:、食材区 potfood:（热区优先于卡面，锅满不冒泡成火堆直烤）。
+   B45（FACPROC 第 3 条、Q548）：ReadOnly＝右栏火堆详情里的只读锅卡——没有拖拽把手、落点、取到随身箭头与锅食谱按钮，点击只换右栏显示；
+   OnPick＝中央火堆加工菜单里的锅卡——执行入口照旧，点击改为菜单内的明确选择（不走全局选中）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -28,6 +30,8 @@
     var hot = loc != null && e.FireHot(s, loc);
     var locked = e.IsLocked(s, Pot) || Pot.ReservedBy != null;
     var busy = e.IsBusy(s) || G.Running || G.CityBrowsing;   // B24：主城鸟瞰浏览中锅卡转移/取出灰掉
+    var act = !ReadOnly;   // B45：可执行（地面／随身栏与中央加工菜单）
+    var selId = act && !OnPick.HasDelegate;
 }
 @if (!Expanded)
 {
@@ -42,14 +46,15 @@
     var potTip = $"{name} · {Ui.Kg(e.ItemGrams(s, Pot))}公斤{(foods.Count > 0 || units > 0 ? "（含锅内）" : "")} · {where}{(potSlot is int ps ? $"／加工位{ps}" : "")}";
     @* B42：锅卡各区是悬停热区，按指针所在最内层显示锅、锅里的水或食材 *@
     <div data-peek="@PotPeek" class="pot-card compact @(Pot.InFacility ? "in-fire" : "in-shelf") @(potSelected || childSel ? "selected" : "") @(locked ? "reserved" : "")"
-         data-card="@key" data-drop="@($"card:{key}")" data-drop-level="card" @onclick:stopPropagation="true">
-        <div class="pc-head" data-peek="@PotPeek" id="@(potSelected || childSel ? "card-sel" : null)" role="button" tabindex="0" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@where"
-             title="@($"{potTip}：点击展开锅里的水与食材并操作；按住标题拖动整锅（水与食材随行）")" data-tip="@potTip"
+         data-card="@key" data-drop="@(act ? $"card:{key}" : null)" data-drop-level="@(act ? "card" : null)" @onclick:stopPropagation="true">
+        <div class="pc-head" data-peek="@PotPeek" id="@(selId && (potSelected || childSel) ? "card-sel" : null)" role="button" tabindex="0" data-drag="@(act ? $"card:{key}" : null)" data-drag-title="@name" data-drag-from="@where"
+             title="@(act ? $"{potTip}：点击展开锅里的水与食材并操作；按住标题拖动整锅（水与食材随行）" : $"{potTip}：点击查看这口锅（只读）")" data-tip="@potTip"
              @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, SelectPot)" @onkeydown:stopPropagation="true">
             <span class="pc-icon">@Icons.Markup(Pot.ItemId)</span>
             @* 卡面窄：名称不带实例号，实例号与重量放第二行（M78：1280 随身行锅名被截成“金…”）；火堆加工位里也写单锅重量（含锅内，M95：Q35“≥801 照常显示”） *@
             <span class="pc-title"><b>@e.ItemName(Pot.ItemId)</b><small>@(Ui.Kg(e.ItemGrams(s, Pot)))公斤</small></span>
-            @if (Pot.InFacility)
+            @if (!act) { }
+            else if (Pot.InFacility)
             {
                 <button type="button" class="row-arrow" aria-label="@($"把整口{name}取到随身")" title="取到随身：整锅连同水与食材（不打开操作窗；点标题可选目的地）"
                         disabled="@(locked || busy)" @onclick="TakePot" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
@@ -59,14 +64,14 @@
                 <TransferArrow Owner="@Pot.Owner" ItemId="@Pot.ItemId" InstanceId="@Pot.InstanceId" Enabled="@(!locked && !busy)" />
             }
         </div>
-        <div data-peek="@(liquid != null ? LiquidPeek(liquid) : PotPeek)" class="pot-fill @(liquid == "clean_water" ? "clean" : liquid == "dirty_water" ? "dirty" : "")" data-drop="@($"potfill:{Pot.InstanceId}")" data-drop-level="hot"
-             title="@($"水量：{e.PotLabel(s, Pot)}{(reservedMl > 0 ? $"，已预留{reservedMl}毫升" : "")}。把净水或脏水卡拖到这里装入1份；按住 Shift 可选数量；点击展开")"
+        <div data-peek="@(liquid != null ? LiquidPeek(liquid) : PotPeek)" class="pot-fill @(liquid == "clean_water" ? "clean" : liquid == "dirty_water" ? "dirty" : "")" data-drop="@(act ? $"potfill:{Pot.InstanceId}" : null)" data-drop-level="@(act ? "hot" : null)"
+             title="@(act ? $"水量：{e.PotLabel(s, Pot)}{(reservedMl > 0 ? $"，已预留{reservedMl}毫升" : "")}。把净水或脏水卡拖到这里装入1份；按住 Shift 可选数量；点击展开" : $"水量：{e.PotLabel(s, Pot)}{(reservedMl > 0 ? $"，已预留{reservedMl}毫升" : "")}")"
              @onclick="() => { if (liquid != null) SelectLiquid(liquid); else SelectPot(); }" @onclick:stopPropagation="true">
             <div class="pot-fill-head"><b>@(liquid == null ? "空锅" : e.ItemName(liquid)) @(ml)/@(c.CapacityMl)</b>@if (batch != null) {<em>@(hot ? "" : "火灭·")@e.Process(batch.RecipeId).Name @(batch.HeatDoneMinutes)/@(batch.RequiredHeatMinutes)</em>}</div>
             <div class="pot-track"><i style="width:@(pct)%"></i></div>
         </div>
-        <div class="pc-sum" data-peek="@(foods.Count > 0 ? FoodPeek(foods[0]) : PotPeek)" data-drop="@($"potfood:{Pot.InstanceId}")" data-drop-level="hot" role="button" tabindex="0"
-             title="@($"食材区：生块根、生肉、烤肉拖到这里放进锅（水煮肉只存放），{e.PotFoodHint(s, Pot)}。点击展开")"
+        <div class="pc-sum" data-peek="@(foods.Count > 0 ? FoodPeek(foods[0]) : PotPeek)" data-drop="@(act ? $"potfood:{Pot.InstanceId}" : null)" data-drop-level="@(act ? "hot" : null)" role="button" tabindex="0"
+             title="@(act ? $"食材区：生块根、生肉、烤肉拖到这里放进锅（水煮肉只存放），{e.PotFoodHint(s, Pot)}。点击展开" : $"食材区：{e.PotFoodHint(s, Pot)}")"
              @onclick="() => { if (foods.Count > 0) SelectFood(foods[0]); else SelectPot(); }" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, SelectPot)" @onkeydown:stopPropagation="true">
             <span class="pc-sum-label">食材@(foods.Count)/@(c.FoodSlots)</span>
             @foreach (var (f, fp) in foodHeat)
@@ -165,6 +170,10 @@ else
     [Parameter, EditorRequired] public ItemInstance Pot { get; set; } = null!;
     /// <summary>true：选卡浮窗里的展开内容（液体行、食材行）；false：行内卡面摘要。</summary>
     [Parameter] public bool Expanded { get; set; }
+    /// <summary>B45：右栏只读锅卡（无拖拽、落点、箭头与执行按钮；点击只换右栏显示）。</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+    /// <summary>B45：中央火堆加工菜单里的锅卡——点击锅、水或食材改为菜单内明确选择。</summary>
+    [Parameter] public EventCallback<Selection> OnPick { get; set; }
 
     // B42：悬停键与点击选择同一身份（锅＝真实实例；锅里的水＝锅＋液体种类；食材＝真实实例）
     private string PotPeek => Peek.Sel(SelectionKind.Tool, Pot.ItemId, Pot.Owner, Pot.InstanceId);
@@ -172,13 +181,21 @@ else
     private string FoodPeek(ItemInstance f) => Peek.Sel(SelectionKind.Tool, f.ItemId, f.Owner, f.InstanceId);
 
     private void SelectPot() =>
-        G.Select(new Selection { Kind = SelectionKind.Tool, Id = Pot.ItemId, Owner = Pot.Owner, InstanceId = Pot.InstanceId });
+        Pick(new Selection { Kind = SelectionKind.Tool, Id = Pot.ItemId, Owner = Pot.Owner, InstanceId = Pot.InstanceId });
 
     private void SelectLiquid(string liquidId) =>
-        G.Select(new Selection { Kind = SelectionKind.PotLiquid, Id = liquidId, Owner = ItemInstance.ContainerOwner(Pot.InstanceId), InstanceId = Pot.InstanceId });
+        Pick(new Selection { Kind = SelectionKind.PotLiquid, Id = liquidId, Owner = ItemInstance.ContainerOwner(Pot.InstanceId), InstanceId = Pot.InstanceId });
 
     private void SelectFood(ItemInstance f) =>
-        G.Select(new Selection { Kind = SelectionKind.Tool, Id = f.ItemId, Owner = f.Owner, InstanceId = f.InstanceId });
+        Pick(new Selection { Kind = SelectionKind.Tool, Id = f.ItemId, Owner = f.Owner, InstanceId = f.InstanceId });
+
+    /// <summary>B45：菜单里交给菜单；右栏只读只换右栏显示；其余照原全局选中。</summary>
+    private void Pick(Selection sel)
+    {
+        if (OnPick.HasDelegate) _ = OnPick.InvokeAsync(sel);
+        else if (ReadOnly) G.ReadOnlyCrumb(sel);
+        else G.Select(sel);
+    }
 
     // 箭头直接转移（系统策划总册 v1.0 Q5-2，S10 §6、S14 §9.2）：失败整次拒绝、不换目的地，原因写在右栏提示
     /// <summary>B16 试玩修复 M351：浮窗里的箭头/锅食谱失败时（例如随身5/5满）在浮窗内写原因，不再“没反应”。</summary>

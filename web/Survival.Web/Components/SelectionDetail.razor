@@ -56,7 +56,8 @@
     case SelectionKind.PotLiquid:
         @* B32b（Q339）：火堆里的锅、水或食材在右栏顶部给层级路径，可逐级点回所在锅与火堆详情 *@
         @if (G.InFireCrumbs(sel) is { } crumbs) { <FireCrumbs Path="crumbs" /> }
-        <ItemDetail Sel="sel" ReadOnly="Peek" PeekBatch="@Batch" />
+        @* B45（Q548）：火堆里的内容在右栏只读（批次不可点，操作在中央加工菜单） *@
+        <ItemDetail Sel="sel" ReadOnly="@(Peek || G.InFireCrumbs(sel) != null)" PeekBatch="@Batch" />
         break;
     case SelectionKind.Facility:
         <FireDetail />

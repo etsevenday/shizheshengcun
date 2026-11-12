@@ -69,7 +69,7 @@
         @* 固定四行（S14 §18.1）：中部净高均分四份——①地图/场景 ②设施/资源 ③当前地面 ④随身；选卡、展开锅、悬停、开面板、对白、
            战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。对白/战斗/面板只占①②合并区域。 *@
         <section class="center @(G.Panel == "citymap" ? "city-open" : "")" aria-label="当前地点">
-            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(G.Panel is "gear" or "growth" ? "full-panel" : G.Panel is "craft" or "safehouse" or "drying" or "citymap" || (G.Panel == "city" && G.CityPanelTall) ? "tall-panel" : "") @(battleUi ? "battle" : "") @(dockProgress && (G.PauseLayerShown || progress != null) ? "docked-prog" : "")">
+            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(G.Panel is "gear" or "growth" or GameSession.FireMenuPanel ? "full-panel" : G.Panel is "craft" or "safehouse" or "drying" or "citymap" || (G.Panel == "city" && G.CityPanelTall) ? "tall-panel" : "") @(battleUi ? "battle" : "") @(dockProgress && (G.PauseLayerShown || progress != null) ? "docked-prog" : "")">
                 <div class="rows2" data-row="1-2">
                     <div class="rows2-inner" inert="@dlgLock">
                         @* 全屏战斗时地块栏两行换成空白（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
@@ -98,6 +98,7 @@
                                 case "growth": <GrowthOverlay /> break;
                                 case "safehouse": <SafehouseOverlay /> break;
                                 case "drying": <DryingOverlay /> break;
+                                case GameSession.FireMenuPanel: <FireMenu /> break;
                                 case "citymap": <CityOverview /> break;
                             }
                         </div>
@@ -264,6 +265,13 @@
             catch (JSException) { /* 旧缓存 app.js：只少了表现，结果照常 */ }
         }
         // B32g（逐字稿 §1.5 Q401 选 C）：新开的一级浏览／工具面板已收起原物品操作盘；盘卸下、遮罩解除后焦点交给新面板第一个可用控件
+        // B45：关闭火堆加工菜单后焦点回原火堆卡（卡已失效则不动）
+        if (G.FocusIdPending is string fid)
+        {
+            G.FocusIdPending = null;
+            try { await JS.InvokeVoidAsync("survivalPop.focusId", fid); }
+            catch (JSException) { /* 旧缓存 app.js：焦点留在原处 */ }
+        }
         if (G.PanelFocusPending)
         {
             G.PanelFocusPending = false;
@@ -441,7 +449,9 @@
             // B32d（Q378）：选卡盘已因来源被面板盖住收起时，Esc 直接退面板（焦点已交给面板），不先清选中
             case EscOwner.PanelSelection: G.ClearSelection(); break;
             case EscOwner.HelpBack: G.HelpBack(); break;
-            case EscOwner.Panel: G.OpenPanel(null); break;
+            case EscOwner.FacBack: G.FireMenuBack(); break;
+            // B45（Q560）：经「选择设施」进入的制作面板先回选择层
+            case EscOwner.Panel: G.PanelEscape(); break;
             case EscOwner.CharPage: G.OpenCharPage(null); break;
             case EscOwner.Selection: G.ClearSelection(); break;
             case EscOwner.FeedTail: G.CancelFeed(); break;

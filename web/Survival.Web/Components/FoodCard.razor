@@ -1,7 +1,8 @@
 @inherits GameComponent
 
 @* 火堆直烤位里的一份食材（v0.7 第 3.1 节），或 Q111 煅烧的一批木材/成品木炭（名称带×份数）：真实实例卡——图标（拖拽把手）、名称#实例、加工状态与受热进度、三角箭头。
-   点击只选中这份食材（不冒泡选中火堆）；已完成的成品仍占原加工位并保持可见。 *@
+   点击只选中这份食材（不冒泡选中火堆）；已完成的成品仍占原加工位并保持可见。
+   B45（FACPROC 第 3 条）：ReadOnly＝右栏只读（无拖拽把手与箭头，点击只换右栏显示）；OnPick＝中央火堆加工菜单（点击改为菜单内明确选择）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -14,14 +15,17 @@
     // Q35：紧凑模式卡面不常驻“加工位N”，悬停/键盘聚焦提示写等价全文（名称#实例、所在加工位、加工状态、保质）
     var tip = $"{name} · {where}{(Slot.HasValue ? $"／加工位{Slot}" : "")}：{e.ContentStatus(s, Item)}{(Item.ExpiresAt.HasValue ? " · " + Ui.FreshOf(e, s, Item) : "")}{(proc != null && e.CookXpNote(s, proc) is string cx ? " · " + cx : "")}";
 }
-<div data-peek="@Peek.Sel(SelectionKind.Tool, Item.ItemId, Item.Owner, Item.InstanceId)" class="fc-food @(selected ? "selected" : "") @(spoiled ? "spoiled" : "")" id="@(selected ? "card-sel" : null)" data-card="@key" role="button" tabindex="0"
+<div data-peek="@Peek.Sel(SelectionKind.Tool, Item.ItemId, Item.Owner, Item.InstanceId)" class="fc-food @(selected ? "selected" : "") @(spoiled ? "spoiled" : "")" id="@(selected && !ReadOnly && !OnPick.HasDelegate ? "card-sel" : null)" data-card="@key" role="button" tabindex="0"
      title="@tip" data-tip="@tip"
      @onclick="Select" @onclick:stopPropagation="true" @onkeydown="Key" @onkeydown:stopPropagation="true">
     <div class="ff-head">
-        <span class="pc-ico" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@where">@Icons.Markup(Item.ItemId)</span>
+        <span class="pc-ico" data-drag="@(ReadOnly ? null : $"card:{key}")" data-drag-title="@name" data-drag-from="@where">@Icons.Markup(Item.ItemId)</span>
         <span class="pc-text"><span class="pc-name">@name</span>@if (Slot.HasValue) {<span class="pc-status">加工位@(Slot)</span>}</span>
+        @if (!ReadOnly)
+        {
         <button type="button" class="row-arrow" aria-label="@($"把{name}取到随身")" title="取到随身（不打开操作窗；点图标可选目的地）"
                 disabled="@(G.E.IsBusy(s) || G.Running)" @onclick="Take" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
+        }
     </div>
     @* B10b 试玩修复：1280×720 加工位只有一行，状态另备短写（“煅烧暂停 0/60（未燃）”），全文在悬停提示与宽屏 *@
     @{
@@ -47,9 +51,18 @@
     [Parameter, EditorRequired] public ItemInstance Item { get; set; } = null!;
     /// <summary>火堆加工位序号。</summary>
     [Parameter] public int? Slot { get; set; }
+    /// <summary>B45：右栏只读。</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+    /// <summary>B45：中央火堆加工菜单里的明确选择。</summary>
+    [Parameter] public EventCallback<Selection> OnPick { get; set; }
 
-    private void Select() =>
-        G.Select(new Selection { Kind = SelectionKind.Tool, Id = Item.ItemId, Owner = Item.Owner, InstanceId = Item.InstanceId });
+    private void Select()
+    {
+        var sel = new Selection { Kind = SelectionKind.Tool, Id = Item.ItemId, Owner = Item.Owner, InstanceId = Item.InstanceId };
+        if (OnPick.HasDelegate) _ = OnPick.InvokeAsync(sel);
+        else if (ReadOnly) G.ReadOnlyCrumb(sel);
+        else G.Select(sel);
+    }
 
     private void Take() => G.TransferOne(Item.Owner, Item.ItemId, Item.InstanceId, ItemInstance.Carried);
 

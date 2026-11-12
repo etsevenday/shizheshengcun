@@ -28,6 +28,8 @@ public enum EscOwner
     GearSub,
     /// <summary>面板开着时选中卡的操作（先清选中）。</summary>
     PanelSelection,
+    /// <summary>B45：火堆加工菜单的内容层／加工位层「返回」（退回父层，主层才由 Panel 关闭）。</summary>
+    FacBack,
     /// <summary>系统说明内退一级：「‹ 返回」（目录层时等于关闭）。</summary>
     HelpBack,
     /// <summary>一级面板本身：「关闭／取消／返回」。</summary>
@@ -96,7 +98,8 @@ public sealed partial class GameSession
         if (IgniteMenuOpen) return EscOwner.Ignite;
         if (FeedPending != null && Panel != "help") return EscOwner.Feed;
         if (GearHasSubLayer) return EscOwner.GearSub;
-        if (Panel != null && Panel != "help" && !CardPopCovered && ShelfSelectionKind) return EscOwner.PanelSelection;
+        if (Panel == FireMenuPanel && FireMenuLevel > 0) return EscOwner.FacBack;
+        if (Panel != null && Panel != "help" && Panel != FireMenuPanel && !CardPopCovered && ShelfSelectionKind) return EscOwner.PanelSelection;
         if (Panel == "help") return EscOwner.HelpBack;
         if (Panel != null) return EscOwner.Panel;
         if (CharPage != null && DetailTab == DetailTab.Character) return EscOwner.CharPage;

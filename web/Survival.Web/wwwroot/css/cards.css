@@ -426,3 +426,45 @@
 /* BM1（Q487）：未建设施悬停——原标题、角标与说明在上（不伸缩），下接与点击同源的建造条件详情（自带滚动区） */
 .peek-card-head { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
 .peek-card-head .op-head p { margin: 0; }
+
+/* B45（S14「设施加工改在中央次级菜单操作」、FACPROC-A11）：火堆／柴炉中央加工菜单——一级面板 fire 盖住中部四轨，暗底上居中一个框；
+   标题、路径与关闭固定，正文在框内滚动；两加工位并排，原料来源与数量在下方。三档（1280×720／1600×900／1920×1080）同一结构、不缩字 */
+.panel-host > .fire-menu-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 8px; background: #000a; }
+.fire-menu-wrap > .sub-panel.fire-menu { position: relative; inset: auto; width: min(900px, 100%); height: auto; max-height: 100%; }
+.fire-menu .fm-title h2 { margin: 0; }
+.fire-menu .fm-title h2 small { margin-left: 6px; font-size: var(--fs-aux); font-weight: 400; }
+.fire-menu .fm-title .sub { display: block; }
+.fire-menu .fm-head-btns { display: flex; gap: 6px; flex: none; }
+.fire-menu .fm-crumbs { padding: 4px 14px; border-bottom: 1px solid var(--line); flex: none; }
+.fire-menu .fm-body { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.fire-menu .fm-fire { display: flex; flex-direction: column; gap: 6px; }
+.fire-menu .fm-facts { margin: 0; }
+.fire-menu .fm-quick { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.fire-menu .fm-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.fire-menu .fm-slot { cursor: pointer; min-width: 0; }
+.fire-menu .fm-slot.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.fire-menu .fm-slot:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.fire-menu .fm-obj { display: flex; flex-direction: column; gap: 6px; }
+.fire-menu .fm-obj > .tbar { box-shadow: none; }
+.fire-menu .fm-src { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #00000022; }
+.fire-menu .fm-src:focus { outline: none; }
+.fire-menu .fm-src h3 { margin: 0; font-size: var(--fs-body); }
+.fire-menu .fm-src-group { display: flex; flex-direction: column; gap: 4px; }
+.fire-menu .fm-src-label { font-size: var(--fs-aux); color: var(--muted); }
+.fire-menu .fm-src-row { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; min-width: 0; }
+.fire-menu .fm-src-row.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.fire-menu .fm-src-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.fire-menu .fm-src-row .pc-ico { flex: none; width: 28px; height: 28px; }
+.fire-menu .fm-src-row .pc-ico svg { width: 100%; height: 100%; }
+.fire-menu .fm-src-name { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fire-menu .fm-src-name b { margin-left: 2px; }
+.fire-menu .fm-src-name small { margin-left: 6px; color: var(--muted); font-size: var(--fs-aux); }
+.fire-menu .fm-src-why { flex: 1 1 0; min-width: 0; font-size: var(--fs-aux); color: #f0c7b9; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fire-menu .fm-qty { align-items: center; flex-wrap: wrap; }
+.fire-menu .fm-qty input:disabled { opacity: .6; }
+.fire-menu .fm-max { font-size: var(--fs-aux); color: var(--muted); align-self: center; }
+.fire-menu .fm-go { flex-wrap: wrap; }
+.fire-menu .fm-go .tbar-go { flex: 1 1 0; }
+/* B45（Q542／Q559／Q560）：工坊汇总卡「选择设施」盘的设施行 */
+.apop.stations .st-pick { display: flex; justify-content: space-between; width: 100%; min-height: 40px; padding: 4px 10px; text-align: left; }
+.apop.stations .st-list { display: flex; flex-direction: column; gap: 6px; }

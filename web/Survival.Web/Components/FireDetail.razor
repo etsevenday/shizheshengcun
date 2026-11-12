@@ -5,7 +5,9 @@
    工位和锅内容的执行入口与合法落点在这里（Q323 的局部例外）：空位是 fireslot: 落点，锅行沿锅卡的拖拽把手、取到随身箭头与装水／食材落点，
    直烤与煅烧行沿原取到随身箭头；点锅、水或食材行选中该对象，操作在原选卡盘里。第一处可用空位的行有「煅烧木炭」（打开居中投料盘）。
    「木炭工位」是煅烧规则说明行，真实占用仍是两位之一。实际受热的加工位行挂加工中（Q362）；成品落在可见加工位时亮该行一次（Q368）。
-   燃料、点燃／熄灭、等待加工仍在火堆卡上。 *@
+   燃料、点燃／熄灭、等待加工仍在火堆卡上。
+   B45（S14「设施加工改在中央次级菜单操作」第 3 条、Q548）：本详情只读——移除空位落点、「煅烧木炭」入口、锅卡与直烤食材的拖拽把手、落点与取到随身箭头；
+   工位与锅、水、食材的执行全部在点击火堆／柴炉卡打开的中央加工菜单里。这里点锅、水或食材只换右栏显示（只读层级），不开操作盘、不改中央菜单。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -15,8 +17,6 @@
     var state = CardStates.FireStateText(fac);
     var hot = e.FireHot(s, here);
     var charcoal = G.CharcoalPreview();
-    var charcoalOpen = G.Pop is { Kind: "charcoal" };
-    var firstEmpty = slots.FindIndex(x => x == null);
 }
 <div class="detail-scroll fire-detail">
     <FireCrumbs Path="@e.FireCrumbs(s, null)" />
@@ -39,15 +39,8 @@
             var heating = e.FireSlotHeating(s, here, k);
             if (it == null)
             {
-                <div @key="@("empty" + k)" class="fire-slot empty @(lit ? "fresh" : "")" data-drop="@($"fireslot:{here}")" data-drop-level="hot"
-                     title="空加工位：拖入锅（最多1口）或生块根（每份占1位）">
+                <div @key="@("empty" + k)" class="fire-slot empty @(lit ? "fresh" : "")">
                     <div class="fs-head"><b>@slotName</b><span class="muted">空位</span></div>
-                    @if (k == firstEmpty && charcoal.InputCount > 0)
-                    {
-                        @* Q111／Q339：只在第一处可用空位出现（投料进的就是这一位）；点开居中投料盘确认，按钮本身不投料 *@
-                        <button type="button" id="fc-charcoal" class="secondary slot-charcoal @(charcoalOpen ? "on" : "")" aria-haspopup="dialog" aria-expanded="@charcoalOpen"
-                                title="@($"煅烧木炭：{e.CharcoalRuleText()}。点开看原料来源与燃料，确认后投料{(charcoal.Ok ? "" : "（现在不能：" + charcoal.Reason + "）")}")" @onclick="ToggleCharcoal">煅烧木炭</button>
-                    }
                 </div>
             }
             else
@@ -56,11 +49,11 @@
                     <div class="fs-head"><b>@slotName</b><span class="muted">@SlotState(it)</span></div>
                     @if (e.IsPot(it))
                     {
-                        <PotCard Pot="it" />
+                        <PotCard Pot="it" ReadOnly="true" />
                     }
                     else
                     {
-                        <FoodCard Item="it" Slot="@(k + 1)" />
+                        <FoodCard Item="it" Slot="@(k + 1)" ReadOnly="true" />
                     }
                 </div>
             }
@@ -71,7 +64,7 @@
         <div class="lines">
             <div><span>@CardStates.CharcoalRuleTitle</span><b>@e.CharcoalRuleText()</b></div>
         </div>
-        <div class="risk @(charcoal.FuelWoodShort > 0 ? "" : "none")">煅烧燃料：@charcoal.FuelNote。拖木材到火堆仍是添加燃料；煅烧要点空加工位的“煅烧木炭”投一批。</div>
+        <div class="risk @(charcoal.FuelWoodShort > 0 ? "" : "none")">煅烧燃料：@charcoal.FuelNote。拖木材到火堆仍是添加燃料；点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」投一批。</div>
     }
     @if (!fac.FireLit)
     {
@@ -83,10 +76,4 @@
 @code {
     /// <summary>加工位行的状态短句（内核 FireSlotStatus：锅为水量、食材数与加工状态，其余为加工状态；煅烧批写「煅烧木炭 · 」，Q343）。</summary>
     private string SlotState(ItemInstance it) => G.E.FireSlotStatus(G.S, it);
-
-    private void ToggleCharcoal()
-    {
-        if (G.Pop is { Kind: "charcoal" }) G.ClosePop();
-        else G.OpenPop("charcoal", G.S.Ground, "fc-charcoal");
-    }
 }

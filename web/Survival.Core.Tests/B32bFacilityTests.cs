@@ -310,17 +310,22 @@ public class B32bFacilityTests : TestBase
         Assert.That(css, Does.Contain(".fire-detail .fs-head > b { flex: none; white-space: nowrap; }"));
     }
 
-    /// <summary>Q339、Q343：右栏火堆详情有层级路径、剩余燃料、两行加工位（空位是落点、第一处空位有煅烧木炭）；选中锅或食材时路径仍在。</summary>
+    /// <summary>
+    /// Q339、Q343：右栏火堆详情有层级路径、剩余燃料、两行加工位；选中锅或食材时路径仍在。
+    /// B45（FACPROC 第 3 条）起右栏只读：空位落点与「煅烧木炭」入口移到中央加工菜单 FireMenu（明确工位落点 fslot:{序号}:{地点}）。
+    /// </summary>
     [Test]
     public void Q339_A02_FireDetailSlotsAndCrumbs()
     {
         var d = Web("Components/FireDetail.razor");
         Assert.That(d, Does.Contain("<FireCrumbs"));
         Assert.That(d, Does.Contain("剩余燃料"));
-        Assert.That(d, Does.Contain("data-drop=\"@($\"fireslot:{here}\")\""));
+        Assert.That(d, Does.Not.Contain("data-drop=").And.Not.Contain("fc-charcoal"), "B45：右栏只读，没有落点与煅烧入口");
         Assert.That(d, Does.Contain("CardStates.FireSlotName(k)"));
         Assert.That(d, Does.Contain("e.FireSlotHeating(s, here, k)"));
-        Assert.That(d, Does.Contain("id=\"fc-charcoal\""));
+        var menu = Web("Components/FireMenu.razor");
+        Assert.That(menu, Does.Contain("data-drop=\"@($\"fslot:{si}:{here}\")\""));
+        Assert.That(menu, Does.Contain("id=\"fc-charcoal\""));
         Assert.That(d, Does.Contain("CardStates.CharcoalRuleTitle"));
         Assert.That(Web("Components/SelectionDetail.razor"), Does.Contain("G.InFireCrumbs(sel) is { } crumbs"));   // B42：选中分支移到 SelectionDetail
     }

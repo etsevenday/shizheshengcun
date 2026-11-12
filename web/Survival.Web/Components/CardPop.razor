@@ -8,9 +8,11 @@
 @* M120：菜单（含战斗菜单）打开时让位，浮窗不压在菜单遮罩之上。B32d（逐字稿 §1.5 Q390）起菜单期间只隐藏（menu-hidden，display:none）、不卸载，
    盘内数量、去向等状态保留，关菜单后仍有效的原盘原样恢复，不用重新点来源卡（显示条件 CardPopShown 仍不含菜单期间） *@
 @* B31c：同一显示条件另有 GameSession.CardPopShown（中央行动位据此判断有没有居中局部盘），两处须一致 *@
+@* B45（FACPROC 第 3 条、Q548）：火堆加工菜单开着时不弹；火堆里的锅、水、食材只在右栏只读，执行在中央加工菜单（同 CardPopShown） *@
 @* B32d（逐字稿 §1.5 Q378）：来源卡被新开的面板盖住时按来源失效收盘但保留选中（CardPopCovered）；玩家重新点来源卡（Select/PickBatch）再打开 *@
 @if (G.State != null && G.Pop == null && G.FeedPending == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending && !G.DuplicateWeaponsPending
-     && !G.CardPopCovered && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid)
+     && !G.CardPopCovered && G.Panel != GameSession.FireMenuPanel && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid
+     && G.InFireCrumbs(G.Selected) == null)
 {
     var pot = PotOf();
     var menuHide = G.MenuOpen || G.BattleMenuOpen ? " menu-hidden" : "";

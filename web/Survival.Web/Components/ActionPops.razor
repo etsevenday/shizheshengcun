@@ -291,7 +291,8 @@
             "mapnode" => G.Panel == "map" && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
             // B41e1（R05 Q457）：卡键仍在当前地点、当前区域的可操作卡里；失效即收盘（DropPop 一并清该卡详情），不改选别的敌人
             GameSession.EnemyCardPop => s.Battle == null && e.EnemyCardHere(s, pop.Id) != null,
-            "charcoal" => s.Battle == null && G.Panel == null && pop.Id == s.Ground && e.HasFireAt(s, s.Ground),
+            // B45：煅烧投料盘从中央火堆加工菜单的空加工位打开（盘叠在菜单之上）
+            "charcoal" => s.Battle == null && (G.Panel == null || G.Panel == GameSession.FireMenuPanel) && pop.Id == s.Ground && e.HasFireAt(s, s.Ground),
             "lockstack" => s.Battle == null && G.Panel == null && e.AdjacentLockedGroups(s).Any(g => g.Routes.Count >= 3),
             "harvest" => s.Battle == null && G.Panel == "drying" && e.DryingRackHere(s) && int.TryParse(pop.Id, out var hk) && e.DryingSlotAt(s, s.Ground, hk)?.Status == DryingSlot.Done,
             "gather" => G.Selected.Kind == SelectionKind.Action && G.PendingAction != null && G.PendingAction.Type == ActionType.Gather && G.PendingAction.TargetId == pop.Id,
@@ -346,7 +347,8 @@
             // Q113：带上浮窗展示的明细确认；来源已变化时整条拒绝，浮窗留着、刷新明细并显示原因，玩家再点确认
             var res = G.ConfirmCharcoal();
             // B10b 试玩修复：投料后收起浮窗并清掉选中（被取走一部分的木材堆不再弹操作窗盖住火堆）
-            if (res.Ok) G.ClearSelection();
+            // B45（FACPROC 第 5 条）：从加工菜单进入的确认支路成功后只收起该支路、回菜单父层，不清菜单的设施上下文
+            if (res.Ok) { if (G.Panel == GameSession.FireMenuPanel) G.ClosePop(); else G.ClearSelection(); }
         }
         finally { _go = false; }
     }

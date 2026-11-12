@@ -183,7 +183,8 @@ public class B42HoverPeekTests
         var sd = Web("Components/SelectionDetail.razor");
         Assert.That(sd, Does.Contain("var mark = Peek ? \"\" : \"已选中 · \";"));
         Assert.That(sd, Does.Contain("Confirmable=\"@(needExp && !Peek)\""));
-        Assert.That(sd, Does.Contain("<ItemDetail Sel=\"sel\" ReadOnly=\"Peek\" PeekBatch=\"@Batch\" />"));
+        // B45（Q548）：火堆里的内容在右栏同样只读
+        Assert.That(sd, Does.Contain("<ItemDetail Sel=\"sel\" ReadOnly=\"@(Peek || G.InFireCrumbs(sel) != null)\" PeekBatch=\"@Batch\" />"));
         Assert.That(sd, Does.Contain("<EnemyDetail Sel=\"sel\" />"));
         Assert.That(Web("Components/DetailPanel.razor"), Does.Contain("<SelectionDetail Sel=\"sel\" />"));
         Assert.That(Web("Components/PeekDetail.razor"), Does.Contain("<SelectionDetail Sel=\"sel\" Peek=\"true\""));

@@ -4,7 +4,9 @@
    副标「燃料{当前}/{上限}分钟」，角标燃烧状态「燃烧中／熄灭／未点燃」，两个加工位都占用时另加「加工位满」；任一加工位实际受热时挂加工中。
    卡上保留设施级入口：投入木材、点燃（打开点火盘）／熄灭、等待加工。点卡查看右栏火堆详情：两个加工位、锅及其水和食材从右栏进入（Q323 的局部例外）。
    整张卡面仍是 fire: 落点（木材投料、打火器直接点火、锅和生块根进空加工位）。
-   选中火堆里的锅、水或食材时，本卡带 id="card-sel" 作为选卡操作盘的来源（原先锅卡嵌在火堆卡里，来源滚出或消失时照原规则收盘）。 *@
+   选中火堆里的锅、水或食材时，本卡带 id="card-sel" 作为选卡操作盘的来源（原先锅卡嵌在火堆卡里，来源滚出或消失时照原规则收盘）。
+   B45（S14「设施加工改在中央次级菜单操作」、Q546）：点卡主体打开中央加工菜单（G.OpenFireMenu），悬停仍只看右栏；卡上投木／点燃／熄灭／等待加工
+   阻止冒泡、语义不变。火堆内容不再用选卡盘执行，本卡 id 固定 fire-card（关闭菜单后焦点回这里）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -17,24 +19,24 @@
     var selected = G.Selected.Kind == SelectionKind.Facility && G.Selected.Id == fireId;
     var childSelected = G.SelectedInFire != null;
     // 火堆维护（投料、熄灭、点火）：空闲或主行动暂停时可做，移动途中与执行中不可（拖拽与容器案 8）
-    var maintBlocked = G.Running || s.Sub != null || (s.Main != null && (s.Main.Status != ActionStatus.Paused || s.Main.Type == ActionType.Travel));
-    var wood = e.AvailableCount(s, "wood", true);
-    var room = e.MaxWoodForFire(fac);
+    var maintBlocked = G.FireMaintBlocked;
     var hasContent = slots.Any(x => x != null);
     var full = slots.Count > 0 && slots.All(x => x != null);
-    var woodWhy = maintBlocked ? "行动进行中，暂不能维护火堆" : room < 1 ? $"至少需要{e.Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{e.FuelCapOf(fac)}分钟）" : wood < 1 ? "随身和当前地面没有木材" : null;
+    // B45（Q556）：与中央加工菜单主层「投入木材」同源
+    var woodWhy = G.FireWoodWhy(out var wood);
     // Q368：成品落在加工位而右栏没在看这只火堆时，亮火堆卡一次
     var fresh = !selected && !childSelected && G.Highlights.Any(h => h.StartsWith($"slot:fire:{here}:", StringComparison.Ordinal));
-    var tip = fac.StoveInstanceId.HasValue ? "折叠柴炉：收起请选中地面上的柴炉卡（先取空、熄火；剩余燃料要明确放弃）。点卡查看两个加工位"
-        : s.CurrentZone == GameState.SafehouseZone ? "安全屋屋内火堆（与外部火堆分开）。点卡查看两个加工位；木材、打火器、锅和生块根可拖到卡上"
-        : fac.FireBuilt ? "野外固定火堆（不能拾取或拆除，不挡遭遇）。点卡查看两个加工位；木材、打火器、锅和生块根可拖到卡上"
-        : "点卡查看两个加工位；木材、打火器、锅和生块根可拖到卡上";
+    // B45（逐字稿 Q546 火堆卡悬停全文）
+    var tip = fac.StoveInstanceId.HasValue ? "折叠柴炉：收起请选中地面上的柴炉卡（先取空、熄火；剩余燃料要明确放弃）。悬停查看信息，点击打开加工菜单。"
+        : s.CurrentZone == GameState.SafehouseZone ? "安全屋屋内火堆（与外部火堆分开）。悬停查看信息，点击打开加工菜单。木材、打火器、锅和生块根可拖到卡上。"
+        : fac.FireBuilt ? "野外固定火堆（不能拾取或拆除，不挡遭遇）。悬停查看信息，点击打开加工菜单。木材、打火器、锅和生块根可拖到卡上。"
+        : "悬停查看信息，点击打开加工菜单。木材、打火器、锅和生块根可拖到卡上。";
 }
-<ObjectCard Ink2="true" Id="@(childSelected ? "card-sel" : "fire-card")" PeekId="@Peek.Sel(SelectionKind.Facility, GameEngine.FireIdOf(here))" CssClass="@(fac.FireLit ? "k2-fire lit" : "k2-fire")" Title="@name"
+<ObjectCard Ink2="true" Id="fire-card" PeekId="@Peek.Sel(SelectionKind.Facility, GameEngine.FireIdOf(here))" CssClass="@(fac.FireLit ? "k2-fire lit" : "k2-fire")" Title="@name"
             Badge="@state" BadgeClass="@(fac.FireLit ? "lit" : "")" Badge2="@(full ? CardStates.FireSlotsFull : null)"
             Selected="@(selected || childSelected)" Busy="@e.FireHeating(s, here)" Fresh="@fresh"
             Sub="@CardStates.FireFuelSub(e, fac)" Tooltip="@tip" AriaLabel="@($"{name}，{state}，燃料{fac.FuelMinutes}分钟")"
-            DataDrop="@($"fire:{here}")" OnClick="G.SelectFire">
+            DataDrop="@($"fire:{here}")" OnClick="G.OpenFireMenu">
     <Art>@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</Art>
     <Line2><div class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, e.FuelCapOf(fac)))%"></i></div></Line2>
     <Footer>

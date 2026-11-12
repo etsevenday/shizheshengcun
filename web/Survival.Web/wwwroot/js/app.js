@@ -408,7 +408,11 @@ window.survival = {
       var inMap = !!(mapPanel && tgt && tgt.closest && tgt.closest('.map-panel'));
       // 选中物品卡后直接按数字：跳进选卡操作盘里转移条的数量框（数量框、强制整理、确认窗开着时不跳到背后；焦点在地图里时数字归地图）
       if (/^[0-9]$/.test(k) && !inMap && (!modal || modal.classList.contains('disk-scrim'))) {
-        var inp = Array.prototype.filter.call(document.querySelectorAll('.tbar input'), function (x) { return shown(x) && !(x.closest && x.closest('[inert]')); })[0];
+        // B45（Q562）：中央加工菜单通用来源的「数量」框（data-qty-jump，可编辑时）优先；焦点本已在框里时数字照常编辑、不再全选
+        var okInp = function (x) { return shown(x) && !x.disabled && !(x.closest && x.closest('[inert]')); };
+        var inp = Array.prototype.filter.call(document.querySelectorAll('input[data-qty-jump]'), okInp)[0]
+          || Array.prototype.filter.call(document.querySelectorAll('.tbar input'), okInp)[0];
+        if (inp && inp === document.activeElement) return;
         if (inp) { inp.focus(); inp.select(); return; }
       }
       // 当前最上层是模态层（数量框、强制整理、确认窗、居中局部盘）：只有 Esc 交给 Esc 栈（先收这一层），字母、数字不触发背后的顶栏或转移条
@@ -707,6 +711,16 @@ window.survivalPop = (function () {
     },
     // B31d（Q338）：点遮罩或 Esc 撤回本盘前由 GameScreen 调用，收盘后把焦点还给触发控件
     markCancel: function () { if (cur) cur.restore = true; },
+    // B45：关闭火堆加工菜单后把焦点交回原火堆卡（等面板卸下；元素不存在、被禁用或在 inert 里就不动）
+    focusId: function (id) {
+      var tries = 0;
+      function go() {
+        var c = document.getElementById(id);
+        if (!c || (c.closest && c.closest('[inert]')) || !(c.offsetWidth || c.offsetHeight)) { if (++tries < 20) requestAnimationFrame(go); return; }
+        try { c.focus({ preventScroll: true }); } catch (e) { try { c.focus(); } catch (e2) { } }
+      }
+      setTimeout(go, 0);
+    },
     // B32g（逐字稿 §1.5 Q401 选 C）：打开新的一级浏览／工具面板时 .NET 已一律收起物品操作盘（不论是否盖住来源）；等盘卸下、四轨遮罩（inert）解除后，
     // 焦点交给新面板（.panel-host；全屏确认层 .overflow-layer）第一个可用控件。焦点已在该面板里就不动；盘仍在（未卸下）时逐帧再等，最多约 20 帧。
     focusPanel: function () {

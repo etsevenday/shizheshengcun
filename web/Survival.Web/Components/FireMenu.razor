@@ -1,0 +1,353 @@
+@inherits GameComponent
+
+@* B45「设施加工移至中央次级菜单、右栏只读」（S14「2026-11-12 用户直接裁定：设施加工改在中央次级菜单操作」、Q543—Q548、Q556—Q557、Q561、Q562）：
+   点击火堆／柴炉卡打开的中央加工菜单（一级面板 "fire"，盖住中部四轨，居中框）。标题「{设施名}」+ 状态，位置行（Q543），层级路径
+   「{设施名} › 加工位{序号} › {锅名} › {内容}」；固定两行「加工位1」「加工位2」（空位为 fslot 明确工位落点，整块为 fire: 整卡落点）；
+   第一处可用空位有「煅烧木炭」（打开原居中投料盘）；主层「投入木材」与卡面同源（每次1份）。点工位进入该位：空位是放入目标，
+   直烤／煅烧批与锅里的水、食材是内容层（原选卡操作，收起来源区），锅这一层可装水／放入食材并显示锅食谱与内容行。
+   原料来源：随身／当前地面里能投向本设施任一合法落点的真实实例，点行只选来源；「数量 0–9」步进器 + 「放入加工位{序号}」／「装水」／「放入食材」
+   同一事务提交，唯一可提交时带 Enter 键帽（数量框里 Enter 也提交，Q562）。菜单上下文在 GameSession.FireMenu，右栏只读同步、互不改写。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var m = G.FireMenu;
+}
+@if (m != null)
+{
+    var here = m.Ground;
+    var fac = e.FacOf(s, here);
+    var name = fac != null ? CardStates.FireName(fac) : "火堆";
+    var level = G.FireMenuLevel;
+    <div class="fire-menu-wrap">
+        <div class="sub-panel fire-menu" role="dialog" aria-label="@($"{name}加工菜单")">
+            <div class="sub-head">
+                <div class="fm-title">
+                    <h2>@name @if (fac != null && !m.Dead) {<small class="muted">@CardStates.FireStateText(fac)</small>}</h2>
+                    <span class="sub">@e.FacMenuPlaceLine(s)</span>
+                </div>
+                <div class="fm-head-btns">
+                    @if (level > 0 && !m.Dead)
+                    {
+                        <button type="button" class="secondary" @onclick="G.FireMenuBack">返回<EscCap On="@(G.EscOwner == EscOwner.FacBack)" /></button>
+                    }
+                    <button type="button" class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+                </div>
+            </div>
+            @if (m.Dead || fac == null)
+            {
+                <div class="sub-body fm-body"><div class="risk">@GameEngine.FacGoneText</div></div>
+            }
+            else
+            {
+                var slots = e.FireSlots(s, here);
+                var firstEmpty = slots.FindIndex(x => x == null);
+                var charcoal = G.CharcoalPreview();
+                var charcoalOpen = G.Pop is { Kind: "charcoal" };
+                var hot = e.FireHot(s, here);
+                int? k = m.Slot is int mk && mk < slots.Count ? mk : null;
+                var occ = k is int kk ? slots[kk] : null;
+                var pot = occ != null && e.IsPot(occ) ? occ : null;
+                var busy = e.IsBusy(s) || G.Running || G.CityBrowsing;
+                <nav class="fire-crumbs fm-crumbs" aria-label="层级路径">
+                    @{ var path = Path(name, k, occ, pot, m.Inner); }
+                    @for (var i = 0; i < path.Count; i++)
+                    {
+                        var c = path[i];
+                        @if (i > 0) { <span class="fc-sep" aria-hidden="true">›</span> }
+                        @if (i == path.Count - 1) { <b aria-current="location">@c.label</b> }
+                        else { <button type="button" class="linkish" @onclick="() => G.FireMenuGoLevel(c.level)">@c.label</button> }
+                    }
+                </nav>
+                <div class="sub-body fm-body" data-wheel="y">
+                    @if (m.Lost != null) { <div class="risk fm-lost">@m.Lost</div> }
+                    <div class="fm-fire fire-detail" data-drop="@($"fire:{here}")" data-drop-level="card">
+                        <div class="lines fm-facts">
+                            <div><span>剩余燃料</span><b>@(fac.FuelMinutes)/@(e.FuelCapOf(fac))分钟</b></div>
+                            <div><span>本段受热</span><b class="@(hot ? "" : "warn-text")">@(hot ? "可以" : "火堆未燃烧，加工暂停")</b></div>
+                        </div>
+                        @if (level == 0)
+                        {
+                            @* Q556：主层「投入木材」与卡面同源——每次1份、原合法取料与燃料上限，不读通用来源／数量草稿 *@
+                            var woodWhy = G.FireWoodWhy(out var wood);
+                            <div class="btn-row fm-quick">
+                                <button type="button" class="secondary" disabled="@(woodWhy != null)" title="@(woodWhy ?? $"投入1木材，燃料+{e.Config.Fire.BurnMinutesPerWood}分钟，不耗时（可用{wood}）")"
+                                        @onclick="AddFuel">投入木材 <small>余@(wood)</small></button>
+                                @if (woodWhy != null) { <span class="tiny muted">@woodWhy</span> }
+                            </div>
+                        }
+                        <div class="fire-slots fm-slots">
+                            @for (var i = 0; i < slots.Count; i++)
+                            {
+                                var si = i;
+                                var it = slots[si];
+                                var slotName = CardStates.FireSlotName(si);
+                                var lit = G.Highlights.Contains(GameEngine.FireSlotHighlight(here, si));
+                                var on = k == si;
+                                if (it == null)
+                                {
+                                    <div @key="@("empty" + si)" class="fire-slot empty fm-slot @(on ? "on" : "") @(lit ? "fresh" : "")" data-drop="@($"fslot:{si}:{here}")" data-drop-level="hot"
+                                         role="button" tabindex="0" aria-pressed="@on" title="@($"{slotName}：空位。点击选为放入目标；可拖入锅（最多1口）或可直烤的食材（只放这一位、1份）")"
+                                         @onclick="() => G.FireMenuPickSlot(si)" @onkeydown="ev => Key(ev, () => G.FireMenuPickSlot(si))">
+                                        <div class="fs-head"><b>@slotName</b><span class="muted">空位</span></div>
+                                        @if (si == firstEmpty && charcoal.InputCount > 0)
+                                        {
+                                            @* Q111／Q339：只在第一处可用空位出现（投料进的就是这一位）；点开原居中投料盘确认，按钮本身不投料 *@
+                                            <button type="button" id="fc-charcoal" class="secondary slot-charcoal @(charcoalOpen ? "on" : "")" aria-haspopup="dialog" aria-expanded="@charcoalOpen"
+                                                    title="@($"煅烧木炭：{e.CharcoalRuleText()}。点开看原料来源与燃料，确认后投料{(charcoal.Ok ? "" : "（现在不能：" + charcoal.Reason + "）")}")"
+                                                    @onclick="ToggleCharcoal" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">煅烧木炭</button>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    var heating = e.FireSlotHeating(s, here, si);
+                                    <div @key="it.InstanceId" class="fire-slot fm-slot @(e.IsPot(it) ? "pot" : "food") @(on ? "on" : "") @(heating ? "st-busy" : "") @(lit ? "fresh" : "")"
+                                         role="button" tabindex="0" aria-pressed="@on" @onclick="() => G.FireMenuPickSlot(si)" @onkeydown="ev => Key(ev, () => G.FireMenuPickSlot(si))">
+                                        <div class="fs-head"><b>@slotName</b><span class="muted">@e.FireSlotStatus(s, it)</span></div>
+                                        @if (e.IsPot(it))
+                                        {
+                                            <PotCard Pot="it" OnPick="sel => PickInSlot(si, it, sel)" />
+                                        }
+                                        else
+                                        {
+                                            <FoodCard Item="it" Slot="@(si + 1)" OnPick="_ => G.FireMenuPickSlot(si)" />
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    @if (k is int sk && (m.Inner != null || occ != null))
+                    {
+                        @* 内容层（直烤食材／煅烧批、锅里的水或食材）与锅这一层：原选卡操作（取出、取下、食用／饮用……），锚点 fm-obj *@
+                        var objSel = m.Inner ?? ObjSel(occ!);
+                        <div class="fm-obj" id="fm-obj">
+                            <CardActions Sel="objSel" AnchorId="fm-obj" />
+                            @if (pot != null && m.Inner == null)
+                            {
+                                <PotCard Pot="pot" Expanded="true" OnPick="sel => G.FireMenuPickInner(sel)" />
+                            }
+                        </div>
+                    }
+
+                    @if (m.Inner == null && (pot != null || occ == null))
+                    {
+                        @Sources(here, k, pot, busy)
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string? _fail;
+
+    private void Close() => G.OpenPanel(null);
+
+    private void AddFuel() => G.Instant(InstantRequest.AddFuel());
+
+    private void ToggleCharcoal()
+    {
+        if (G.Pop is { Kind: "charcoal" }) G.ClosePop();
+        else G.OpenPop("charcoal", G.S.Ground, "fc-charcoal");
+    }
+
+    private static void Key(KeyboardEventArgs ev, Action act)
+    {
+        if (ev.Key is "Enter" or " ") act();
+    }
+
+    private Selection ObjSel(ItemInstance it) =>
+        new() { Kind = SelectionKind.Tool, Id = it.ItemId, Owner = it.Owner, InstanceId = it.InstanceId };
+
+    /// <summary>工位里的锅卡：点锅标题＝进入锅这一层；点水或食材＝再进入该内容层。</summary>
+    private void PickInSlot(int slot, ItemInstance pot, Selection sel)
+    {
+        G.FireMenuPickSlot(slot);
+        if (sel.Kind == SelectionKind.PotLiquid || sel.InstanceId != pot.InstanceId) G.FireMenuPickInner(sel);
+    }
+
+    private List<(string label, int level)> Path(string name, int? k, ItemInstance? occ, ItemInstance? pot, Selection? inner)
+    {
+        var e = G.E;
+        var list = new List<(string, int)> { (name, 0) };
+        if (k is not int kk) return list;
+        list.Add((CardStates.FireSlotName(kk), 1));
+        if (pot != null)
+        {
+            list.Add((e.ItemName(pot.ItemId), 1));
+            if (inner != null)
+            {
+                var label = inner.Kind == SelectionKind.PotLiquid ? e.ItemName(inner.Id)
+                    : inner.InstanceId is int iid && e.FindItem(G.S, iid) is ItemInstance f ? (f.Count > 1 ? $"{e.ItemName(f.ItemId)}×{f.Count}" : e.ItemName(f.ItemId)) : e.ItemName(inner.Id);
+                list.Add((label, 2));
+            }
+        }
+        else if (occ != null)
+            list.Add((occ.Count > 1 ? $"{e.ItemName(occ.ItemId)}×{occ.Count}" : e.ItemName(occ.ItemId), 1));
+        return list;
+    }
+
+    // ───────────── 原料来源（Q544）、数量（Q545／Q562）与放入（Q556／Q557） ─────────────
+
+    private sealed record Row(ItemInstance It, string? Why);
+
+    private static DropSource SrcOf(ItemInstance it) =>
+        DropSource.Parse($"card:{it.Owner}|{it.ItemId}|{it.InstanceId}")!;
+
+    /// <summary>主层候选：经原预演能投向本设施至少一个真实合法落点（整卡燃料／加工位、锅装水、锅食材）；打火器等行动工具不算原料。</summary>
+    private bool MainOk(ItemInstance it, string here, ItemInstance? firePot)
+    {
+        var e = G.E;
+        var s = G.S;
+        var src = SrcOf(it);
+        var f = e.ResolveDrop(s, src, DropTarget.Parse($"fire:{here}")!);
+        if (f.Ok && f.Verb is DropVerb.AddFuel or DropVerb.PutInFire) return true;
+        if (firePot == null) return false;
+        var w = e.ResolveDrop(s, src, DropTarget.Parse($"potfill:{firePot.InstanceId}")!);
+        if (w.Ok && w.Verb == DropVerb.FillPot) return true;
+        var p = e.ResolveDrop(s, src, DropTarget.Parse($"potfood:{firePot.InstanceId}")!);
+        return p.Ok && p.Verb == DropVerb.PutFood;
+    }
+
+    /// <summary>明确目标下这份来源的最大可提交量与原因（同源预演：工位 MaxPutInFire(明确位)、锅 MaxFill／MaxPutFood）。</summary>
+    private int MaxFor(ItemInstance it, int? slot, ItemInstance? pot, out string? why)
+    {
+        var e = G.E;
+        var s = G.S;
+        if (pot != null) return e.IsLiquid(it) ? e.MaxFill(s, it, pot, out why) : e.MaxPutFood(s, it, pot, out why);
+        if (slot is int k) return e.MaxPutInFire(s, it, out why, k);
+        why = null;
+        return 0;
+    }
+
+    private RenderFragment Sources(string here, int? slot, ItemInstance? pot, bool busy) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var m = G.FireMenu!;
+        var firePot = e.FirePot(s, here);
+        var hasTarget = slot.HasValue;
+        var all = s.Items.Where(i => (i.IsCarried || i.Owner == here) && !i.InFacility && !i.InContainer && i.Count > 0)
+            .OrderBy(i => i.IsCarried ? 0 : 1).ThenBy(i => i.ItemId).ThenBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+        var rows = new List<Row>();
+        foreach (var it in all)
+        {
+            if (!MainOk(it, here, firePot)) continue;
+            string? why = null;
+            if (hasTarget) { MaxFor(it, slot, pot, out why); }
+            rows.Add(new Row(it, why));
+        }
+        var srcIt = m.SourceId is int sid ? e.FindItem(s, sid) : null;
+        if (srcIt != null && !(srcIt.IsCarried || srcIt.Owner == here)) srcIt = null;
+        string? srcWhy = null;
+        var max = srcIt != null && hasTarget ? MaxFor(srcIt, slot, pot, out srcWhy) : 0;
+        if (busy) srcWhy = "行动进行中，暂不能整理物品";
+        var ready = hasTarget && srcIt != null && srcWhy == null && max > 0;
+        var text = m.Qty ?? "";
+        var parsed = text.Length > 0 && text.All(char.IsDigit) && int.TryParse(text, out var pv) ? pv : -1;
+        var qtyOk = ready && parsed >= 1 && parsed <= max;
+        var editable = ready;
+        var water = srcIt != null && e.IsLiquid(srcIt);
+        string? reason = !hasTarget ? GameEngine.PickTargetText
+            : srcIt == null ? GameEngine.PickSourceText
+            : srcWhy != null ? srcWhy
+            : max <= 0 ? GameEngine.NoQtyText
+            : !qtyOk ? GameEngine.QtyRangeText(max) : null;
+        var carried = rows.Where(r => r.It.IsCarried).ToList();
+        var ground = rows.Where(r => !r.It.IsCarried).ToList();
+        if (rows.Count > 0 || srcIt != null)
+        {
+            <section class="fm-src" data-enter-scope tabindex="-1" aria-label="@GameEngine.SourceTitle">
+                <h3>@GameEngine.SourceTitle</h3>
+                @foreach (var (label, list) in new[] { (GameEngine.SourceCarried, carried), (GameEngine.SourceGround, ground) })
+                {
+                    if (list.Count == 0) continue;
+                    <div class="fm-src-group">
+                        <div class="fm-src-label">@label</div>
+                        @foreach (var r in list)
+                        {
+                            var it = r.It;
+                            var on = m.SourceId == it.InstanceId;
+                            var nm = e.ItemName(it.ItemId);
+                            var sel = new Selection { Kind = SelectionKind.Tool, Id = it.ItemId, Owner = it.Owner, InstanceId = it.InstanceId };
+                            var peek = e.Item(it.ItemId).IsStackable ? Peek.Sel(SelectionKind.ItemGroup, it.ItemId, it.Owner, null, GameEngine.BatchKeyOf(it)) : Peek.Sel(sel);
+                            <div class="fm-src-row @(on ? "on" : "") @(r.Why != null ? "no" : "")" role="button" tabindex="0" aria-pressed="@on"
+                                 data-peek="@peek" data-drag="@($"card:{it.Owner}|{it.ItemId}|{it.InstanceId}")" data-drag-title="@nm" data-drag-from="@label"
+                                 title="@($"{nm}×{it.Count}（{label}）：点击选为原料来源（不转移）；也可以直接拖到上面的加工位或锅")"
+                                 @onclick="() => PickSource(it)" @onkeydown="ev => Key(ev, () => PickSource(it))">
+                                <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
+                                <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
+                                @if (r.Why != null) { <span class="fm-src-why" title="@r.Why">@r.Why</span> }
+                            </div>
+                        }
+                    </div>
+                }
+                <div class="tbar-row fm-qty">
+                    <span class="tbar-qlabel">@ShellKeys.Qty <kbd class="kc">@ShellKeys.Digits</kbd></span>
+                    <button type="button" class="tbar-step" aria-label="减少数量" disabled="@(!editable || parsed <= 1)" @onclick="() => Step(-1, max)">−</button>
+                    <input type="text" inputmode="numeric" data-qty-jump aria-label="@ShellKeys.Qty" value="@(ready ? text : "1")" disabled="@(!editable)"
+                           @oninput="ev => G.FireMenuSetQty(ev.Value?.ToString() ?? string.Empty)" />
+                    <button type="button" class="tbar-step" aria-label="增加数量" disabled="@(!editable || parsed >= max)" @onclick="() => Step(1, max)">＋</button>
+                    @if (ready) { <span class="fm-max">最多@(max)份@(water && pot != null ? $" · 每份{e.PotConfig(pot).UnitMl}毫升" : "")</span> }
+                </div>
+                <div class="tbar-row fm-go">
+                    @if (pot != null)
+                    {
+                        @if (srcIt == null)
+                        {
+                            <button type="button" class="tbar-go" disabled>装水</button>
+                            <button type="button" class="tbar-go" disabled>放入食材</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="tbar-go" data-enter disabled="@(!qtyOk)" @onclick="ev => Put(ev, slot, pot, srcIt)">@(water ? "装水" : "放入食材")<EnterCap On="@qtyOk" /></button>
+                        }
+                    }
+                    else if (slot is int sk)
+                    {
+                        <button type="button" class="tbar-go" data-enter disabled="@(!qtyOk)" @onclick="ev => Put(ev, slot, null, srcIt)">放入@(CardStates.FireSlotName(sk))<EnterCap On="@qtyOk" /></button>
+                    }
+                </div>
+                @if (reason != null) { <div class="ca-note bad">@reason</div> }
+                @if (_fail != null) { <div class="ca-note bad">@_fail</div> }
+            </section>
+        }
+    };
+
+    private void PickSource(ItemInstance it)
+    {
+        _fail = null;
+        G.FireMenuPickSource(it);
+    }
+
+    private void Step(int d, int max)
+    {
+        if (G.FireMenu is not { } m || max < 1) return;
+        var v = int.TryParse(m.Qty, out var n) && n >= 1 ? n : 1;
+        G.FireMenuSetQty(Math.Clamp(v + d, 1, max).ToString());
+    }
+
+    /// <summary>
+    /// 通用放入（Q545／Q557／Q562）：按钮与数量框里的 Enter 走这同一处——读最新数量原文、同源重验后一次提交（工位定点 PutInFireSlot、锅 FillPot／PutFoodInPot），
+    /// 失败原子不扣；双击的第二下不再提交。成功 0 分钟保留菜单与草稿，库存／容量随刷新重算。
+    /// </summary>
+    private void Put(MouseEventArgs ev, int? slot, ItemInstance? pot, ItemInstance? src)
+    {
+        if (ev.Detail > 1 || src == null || G.FireMenu is not { } m) return;
+        var e = G.E;
+        var s = G.S;
+        if (e.IsBusy(s) || G.Running) return;
+        var text = m.Qty ?? "";
+        var live = MaxFor(src, slot, pot, out var why);
+        if (why != null) { _fail = why; return; }
+        if (!(text.Length > 0 && text.All(char.IsDigit) && int.TryParse(text, out var n)) || n < 1 || n > live) return;
+        var req = pot != null
+            ? (e.IsLiquid(src) ? InstantRequest.FillPot(src.InstanceId, pot.InstanceId, n) : InstantRequest.PutFoodInPot(src.InstanceId, pot.InstanceId, n))
+            : InstantRequest.PutInFireSlot(src.InstanceId, slot!.Value, n);
+        var res = G.Instant(req);
+        _fail = res.Ok ? null : res.Reason;
+    }
+}
