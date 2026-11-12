@@ -197,7 +197,9 @@ namespace Survival.Core.Engine
                     p.ConfirmText = "确认移动";
                     var tb = Config.Story.TutorialBattle;
                     if (TutorialGateOpen(s) && !s.Story.TutorialTriggered && s.CurrentLocation == tb.FromLocationId && r.TargetId == tb.LocationId)
-                        p.Warnings.Add($"第一次到达{LocName(tb.LocationId)}会遇到一只{_enemies[tb.EnemyId].Name}（首战，到达后直接进入战斗）");
+                        p.Warnings.Add(CardsV2(s)
+                            ? $"第一次到达{LocName(tb.LocationId)}会遇到一只{_enemies[tb.EnemyId].Name}（首战）"   // B41b（R05 Q421 第 3 项）：到达不再直接开战
+                            : $"第一次到达{LocName(tb.LocationId)}会遇到一只{_enemies[tb.EnemyId].Name}（首战，到达后直接进入战斗）");
                     break;
                 }
                 case ActionType.Explore:

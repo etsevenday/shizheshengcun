@@ -409,7 +409,7 @@ namespace Survival.Core.Engine
                     // 首战撤退后再接近同一保留游荡尸：仍是教学首战（胜利才发教学物质）
                     var tutorial = IsTutorialEnemy(s, card.Members[0].Id);
                     StartBattle(s, card.Members, false, tutorial ? "首战" : "主动接近", FearApproach, tutorial, cardKey: cardKey);
-                    if (tutorial) s.Story.TutorialBattleId = s.Battle?.BattleId;
+                    if (tutorial) TutorialBattleStarted(s);   // B41b（R05 Q421）：教学战真正开始时才播警告与引导
                     break;
                 }
                 case "group":

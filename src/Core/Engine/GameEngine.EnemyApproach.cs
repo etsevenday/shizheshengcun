@@ -274,10 +274,16 @@ namespace Survival.Core.Engine
         public const string EnemyApproachSource = "敌方接近";
 
         /// <summary>
-        /// 教学首战实际开始（主动接近或敌方到期）：记教学战斗号。B41b 起首次真正开战时才播饱饱警告与序章引导（R05 Q421、S15 B41），在 M6 接入。
+        /// 教学首战实际开始（主动接近、潜行接近或敌方到期；R05 Q421、S15 B41 首战入口）：记教学战斗号；第一次真正开战时播原首战警告对白与
+        /// PRO04 序章引导（顺序同旧到达开战：战斗建立后先展示警告，读完才接受第一条战斗指令），撤退后再进教学战不重播。
         /// </summary>
         private void TutorialBattleStarted(GameState s)
         {
+            if (!s.Story.DialogueLog.Any(d => d.EventId == DialogueTutorialArrive))
+            {
+                OpenDialogue(s, EventOf(DialogueTutorialArrive));
+                TutorialBattleGuide(s);
+            }
             s.Story.TutorialBattleId = s.Battle?.BattleId;
         }
 

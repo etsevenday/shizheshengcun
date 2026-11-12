@@ -196,6 +196,9 @@ namespace Survival.Core.Engine
             var w = st.TutorialEnemyId.HasValue ? FindWorldEnemy(s, st.TutorialEnemyId.Value) : null;
             if (w == null || w.LocationId != tb.LocationId || w.Engaged || InCombatFlow(s)) return;
             w.HiddenUntil = null;
+            // B41b（R05 Q421，S15 首战入口）：新版敌踪下首次实到荒地只让原教学游荡尸作为敌踪卡现身，到达时不开战；
+            // 主动接近、潜行接近或敌方到期真正进入教学战时才播饱饱警告与序章引导（TutorialBattleStarted）
+            if (CardsV2(s)) return;
             StartBattle(s, new List<WorldEnemy> { w }, false, "首战", FearTutorial, tutorial: true);
             // 首战建立并保存后先展示警告对白，读完才接受第一条战斗指令（R03 §7.1）
             OpenDialogue(s, EventOf(DialogueTutorialArrive));
