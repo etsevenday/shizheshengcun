@@ -219,7 +219,7 @@ namespace Survival.Core.Engine
                     new KeyHelpRow($"{ShellKeys.WeaponPage1} {ShellKeys.WeaponPage1Cap}／{ShellKeys.WeaponPage2} {ShellKeys.WeaponPage2Cap}", "切换武器页，不提交攻击。"),
                     new KeyHelpRow($"技能卡位 1–{ShellKeys.SkillSlotLevels.Length}", "数字对应当前武器页的五个技能卡位，不是所需等级。"),
                     new KeyHelpRow($"{ShellKeys.PrevTarget} {ShellKeys.PrevTargetCap}／{ShellKeys.NextTarget} {ShellKeys.NextTargetCap}", "只切换合法目标的预测，不执行指令。"),
-                    new KeyHelpRow($"{ShellAim.ConfirmLabel("{指令名}")} {ShellKeys.Enter}", "提交当前指令与已指定的合法目标。"),
+                    new KeyHelpRow($"{ShellAim.ConfirmLabel(ShellAim.HelpCommand)} {ShellKeys.Enter}", "提交当前指令与已指定的合法目标。"),   // BM3（Q509）：帮助表固定泛称，不显示花括号
                 }),
                 new KeyHelpGroup("动画跳过", new[]
                 {
@@ -252,6 +252,9 @@ namespace Survival.Core.Engine
         /// <summary>按钮业务名「执行{指令名}」（指令名取本次所选指令的公开业务名，与预测标题同一指令）；键帽 Enter 在同一按钮里。</summary>
         public static string ConfirmLabel(string command) => $"执行{command}";
 
+        /// <summary>BM3（Q509；S14「Q509 帮助行与真实按钮」、逐字稿同日表）：系统说明键表「战斗」区第四行的固定泛称——「执行（当前指令） Enter」；真实战斗按钮仍取所选指令名。</summary>
+        public const string HelpCommand = "（当前指令）";
+
         public const string NeedTarget = "请先指定目标。";
         public const string NoTargets = "没有可用目标。";
         public const string TargetChanged = "目标已变化，请重新选择。";
@@ -264,8 +267,14 @@ namespace Survival.Core.Engine
         /// <summary>目标预测区下方只读提示。</summary>
         public const string ReadOnly = "查看预测不扣费、不抽随机。";
 
-        /// <summary>无目标类指令的原控制台说明（Q501 按键词写 ESC）。</summary>
-        public static string ConsoleGuide(string command, int ap) => $"在操作台点“确认 · {command} · {ap}AP”才提交；ESC 取消";
+        /// <summary>
+        /// BM3（Q512；S14「Q512 无目标指引引用实际按钮」、逐字稿同日表）：操作台「确认」按钮的业务文字（不含 Enter 键帽）。
+        /// 结束行动「确认结束行动 · 剩余{剩余AP}AP清零」，其他无目标指令「确认 · {指令名} · {AP}AP」；按钮与指引都从这里取，不另拼第二份。
+        /// </summary>
+        public static string ConsoleConfirmText(bool endTurn, string command, int ap) => endTurn ? $"确认结束行动 · 剩余{ap}AP清零" : $"确认 · {command} · {ap}AP";
+
+        /// <summary>BM3（Q512）：无目标类指令的指引模板「在操作台点“{确认按钮业务文字}”才提交；ESC 取消。」，变量取同一按钮的 <see cref="ConsoleConfirmText"/>。</summary>
+        public static string ConsoleGuide(string confirmText) => $"在操作台点“{confirmText}”才提交；ESC 取消。";
 
         /// <summary>
         /// 「执行{指令名}」此刻为什么不可用（null 为可用）。顺序：战斗通用锁（未轮到、对白等，<paramref name="lockWhy"/>，空串表示锁定但无原句）→

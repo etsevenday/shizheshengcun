@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @* 全屏四对四战斗（A10 §1.2/§2.2/§3，S14「2026-10-30 全系统更新目标」，R03 §7；开发计划 v0.9 批次 B9）：
    战斗覆盖整个应用内容区，取代两行战斗（S14 §18.1/§18.4、R03 §7/§7.2/§7.4 的冲突展示条款）。外层顶栏、左右栏、地面/随身与底栏留在下面不可操作（inert），
@@ -267,7 +268,7 @@
                     <span class="bx-hint @(p.Ok ? "" : "warn")" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">@(p.Ok ? (p.RetreatChance.HasValue ? $"成功率{Ui.Pct(p.RetreatChance.Value)}" : p.Notes.FirstOrDefault() ?? ShortName(sel)) : p.Reason)</span>
                 }
                 <button type="button" class="bx-go" id="bt-confirm" disabled="@(!p.Ok || locked)" title="@(p.Ok ? "点击确认才提交；同一指令只提交一次" : p.Reason)"
-                        aria-keyshortcuts="Enter" @onclick="() => Exec(token)">@(sel.Action == "end_turn" ? $"确认结束行动 · 剩余{p.Ap}AP清零" : $"确认 · {ShortName(sel)} · {p.Ap}AP")<EnterCap On="@(p.Ok && !locked)" /></button>
+                        aria-keyshortcuts="Enter" @onclick="() => Exec(token)">@G.BattleConsoleConfirmText()<EnterCap On="@(p.Ok && !locked)" /></button>
                 <button type="button" class="bx-x" aria-label="取消（ESC）" title="取消（ESC/右键），不执行" @onclick="G.ClearBattleAction">×</button>
             }
             else
@@ -466,7 +467,7 @@
              role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))"
              aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{shown}{(note != null ? "；" + note : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
              title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"
-             @onmouseenter="() => G.HoverBattleTarget(idx)" @onmouseleave="() => G.HoverBattleTarget(null)">
+             @onmouseenter="() => G.HoverBattleTarget(idx)" @onmouseleave="() => G.HoverBattleTarget(null)" @onfocus="() => G.FocusBattleTarget(idx)">
             <div class="anc-top anc-intent @kind" title="@($"本轮公开意图（轮初锁定，不公开伤害抽值）：{shown}{(note != null ? "；" + note : "")}")">
                 <span class="anc-brief-row"><span class="intent-ico" aria-hidden="true">@ico</span><b class="anc-brief">@brief</b></span>@if (range != null) {<span class="anc-intent-row"><small>@range</small></span>}
             </div>
@@ -577,9 +578,15 @@
         return "追击条件：每轮初按“自己的轮初速度÷对方最快者−1”×50 攒进度，满100在本轮正常激活之后多一次2AP（每轮至多一次）；速度变化从下轮起算。现在进度：" + string.Join("，", parts);
     }
 
+    /// <summary>
+    /// 焦点在敌人锚点上按 Enter／空格。BM3（Q511）：瞄准中走与「执行{指令名}」、全局回车同一瞄准确认（提交本次明确目标，与预测、按钮一致），
+    /// 不按锚点旧的原生激活去打焦点所在的那只——目标已换成别的敌人、残留焦点不改打；无明确合法目标或不可提交时什么也不做。未瞄准仍只选中查看。
+    /// </summary>
     private async Task FoeKey(KeyboardEventArgs ev, int idx, string token, bool locked)
     {
-        if (ev.Key is "Enter" or " ") await ClickFoe(idx, token, locked);
+        if (ev.Key is not ("Enter" or " ")) return;
+        if (G.BattleAiming) { if (!locked && !ev.Repeat) await G.BattleAimSubmit(token); return; }
+        await ClickFoe(idx, token, locked);
     }
 
     /// <summary>瞄准中点合法目标=提交（执行锁期间不受理）；未瞄准只选中查看。</summary>
@@ -665,9 +672,31 @@
         if (!locked) G.ExplainBlocked(name, why);
     }
 
+    /// <summary>正在读页面的瞄准上下文（同一次瞄准只读一次）。</summary>
+    private string? _aimProbing;
+
+    /// <summary>
+    /// BM3（Q510、Q511）：新一次敌方瞄准成立后（数字键、点技能卡等任一入口），读一次页面上当下真实的键盘焦点敌人与鼠标所在敌人，
+    /// 交给会话按「合法焦点敌人 → 合法鼠标所在敌人 → 不指定」初始化本次明确目标。只读，不提交；读不到（断线等）按都没有处理。
+    /// </summary>
+    private async Task InitAim()
+    {
+        if (!G.AimInitPending) return;
+        var ctx = G.AimInitKey;
+        if (_aimProbing == ctx) return;
+        _aimProbing = ctx;
+        int?[]? r = null;
+        try { r = await JS.InvokeAsync<int?[]>("survivalAim.probe"); }
+        catch (JSException) { }
+        catch (InvalidOperationException) { }
+        catch (TaskCanceledException) { }
+        G.InitAimTarget(ctx, r is { Length: > 0 } ? r[0] : null, r is { Length: > 1 } ? r[1] : null);
+    }
+
     /// <summary>快捷键 1—5 落在灰卡上：焦点移到那张卡，说明与右栏原因写的是同一张（试玩修复 M503）。</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await InitAim();
         if (G.BattleFocusNode is not string id) return;
         G.BattleFocusNode = null;
         if (!_lockRefs.TryGetValue(id, out var el)) return;
@@ -775,19 +804,8 @@
         };
     }
 
-    private static string ShortName(BattleCommandOption o) => o.Action switch
-    {
-        "bandage" => "包扎",
-        "breathe" => "调息",
-        "use_antibiotics" => "抗生素",
-        "use_antiviral_cure" => "特效药",
-        "tactic_flash_marker" => "闪光标记器",   // B22 战术品
-        "tactic_brace_pack" => "支撑护带包",
-        "tactic_rally_patch" => "鼓舞提示贴",
-        "swap" => o.ItemInstanceId is int to ? $"→{to}号位" : "调整站位",   // Q80：每个相邻目的槽一条
-        _ when o.NodeId != null => o.Label,   // B7：拳击/斩击/割伤……（1级攻击技能即普通攻击）
-        _ => GameEngine.ActionName(o.Action),
-    };
+    // BM3（Q512）：短名表移到会话（GameSession.BattleShortName），确认按钮与右栏指引同一命名结果
+    private static string ShortName(BattleCommandOption o) => GameSession.BattleShortName(o);
 
     private static string ApText(int ap) => ap < 0 ? "剩余AP" : $"{ap}AP";
 

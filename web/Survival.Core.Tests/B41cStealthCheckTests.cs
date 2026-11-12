@@ -220,6 +220,21 @@ public class B41cStealthCheckTests : B41cTestBase
         Assert.That(E.CanStealthCard(s, tut.Key, "sneak"), Is.Null);
     }
 
+    /// <summary>BM3（Q520 选 A，验收 Q520-A01）：潜行接近／躲避成功开工都不写开始日志、不补通用「开始……」句；中央行动名分别「潜行接近」「躲避」。</summary>
+    [Test]
+    public void Q520_A01_SneakAndEvade_NoStartLog()
+    {
+        foreach (var (kind, label) in new[] { ("sneak", "潜行接近"), ("evade", "躲避") })
+        {
+            var (s, key) = OneShambler();
+            var n = s.Log.Count;
+            Assert.That(E.StartStealth(s, key, kind, "req-" + kind).Ok, Is.True, kind);
+            Assert.That(s.Main!.Label, Is.EqualTo(label));
+            Assert.That(s.Log.Count, Is.EqualTo(n), kind + "：开工不写开始日志");
+            Assert.That(s.Log.Select(l => l.Text), Has.None.StartWith("开始"), kind);
+        }
+    }
+
     [Test]
     public void SwitchOff_NoStealthActions()
     {

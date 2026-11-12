@@ -2646,6 +2646,48 @@ public sealed partial class GameSession
         _aimTargetWasLegal = AimTargets().Contains(index);
     }
 
+    // ───── BM3（Q510、Q511）：新瞄准成立时一次性初始化明确目标；之后真实焦点／鼠标／方向键更新同一目标 ─────
+    private string? _aimInitCtx;
+
+    /// <summary>
+    /// 新一次敌方单体瞄准已成立、还没做过初始化（每个瞄准上下文只做一次；DOM 刷新、按钮重绘不再触发）。群体按真实受影响集合，不初始化单个目标。
+    /// 由全屏战斗渲染后读一次页面上当下真实的键盘焦点敌人与鼠标所在敌人，交给 <see cref="InitAimTarget"/>。
+    /// </summary>
+    public bool AimInitPending => State != null && S.Battle != null && BattleAiming && !AreaAction && _aimInitCtx != AimCtx();
+
+    /// <summary>本次待初始化的瞄准上下文（读页面前记下，回来时上下文变了就不用这次读数）。</summary>
+    public string AimInitKey => State != null && S.Battle != null ? AimCtx() : "";
+
+    /// <summary>
+    /// BM3（Q510 选 A、Q511 选 B2 及补问裁定；S14「Q510—Q511 新瞄准初始化与同一明确目标」）：新瞄准只初始化一次——
+    /// 当前真实键盘焦点所在的合法敌人 → 无合法焦点敌人时当前真实鼠标所在的合法敌人 → 都没有则不指定。
+    /// 只同步目标、预测、预计条纹／高亮与「执行{指令名}」状态：不攻击、不扣费、不抽随机、不写战报；不取旧悬停缓存（<see cref="BattleHover"/>）、不默认首敌。
+    /// 读数期间已有真实鼠标进入／方向键／焦点指定了目标时不覆盖。<paramref name="focus"/>、<paramref name="mouse"/> 为敌人本场序号（页面读不到为 null）。
+    /// </summary>
+    public void InitAimTarget(string ctx, int? focus, int? mouse)
+    {
+        if (State == null || S.Battle == null || !BattleAiming || AreaAction || ctx != AimCtx() || _aimInitCtx == ctx) return;
+        _aimInitCtx = ctx;
+        if (BattleAimTarget != null) return;
+        var set = AimTargets();
+        int? pick = focus is int f && set.Contains(f) ? f : mouse is int m && set.Contains(m) ? m : null;
+        if (pick is not int p) return;
+        SetAimTarget(p);
+        Notify();
+    }
+
+    /// <summary>
+    /// BM3（Q511）：键盘焦点主动到达某个敌人锚点（Tab、点击聚焦）就是明确指定——瞄准中改为它并更新预测（不合法的也记下，显示其原因并禁用）。
+    /// 只在焦点真实移动时由 focus 事件调用；焦点留在原锚点、DOM 重排不会再触发，不把目标抢回。不提交。
+    /// </summary>
+    public void FocusBattleTarget(int index)
+    {
+        if (State == null || S.Battle == null || !BattleAiming || AreaAction) return;
+        if (!S.Battle.Enemies.Any(x => x.Index == index && x.Alive) || BattleAimTarget == index) return;
+        SetAimTarget(index);
+        Notify();
+    }
+
     /// <summary>「执行{指令名} Enter」此刻的状态：可否提交、第一条真实原因、提交给谁、指令名（与预测标题同一指令）。</summary>
     public sealed record AimConfirmState(bool Ok, string? Why, int? Target, string Name);
 
@@ -2763,6 +2805,33 @@ public sealed partial class GameSession
     {
         var o = E.BattleOptions(S).FirstOrDefault(x => x.Action == BattleAction && (BattleItem == null || x.ItemInstanceId == BattleItem));
         return o != null && (o.NeedsTarget || o.TargetMode == "area") ? o : null;
+    }
+
+    /// <summary>操作台上的指令短名（确认按钮、药品盘、目标位图等同一张表）。</summary>
+    public static string BattleShortName(BattleCommandOption o) => o.Action switch
+    {
+        "bandage" => "包扎",
+        "breathe" => "调息",
+        "use_antibiotics" => "抗生素",
+        "use_antiviral_cure" => "特效药",
+        "tactic_flash_marker" => "闪光标记器",   // B22 战术品
+        "tactic_brace_pack" => "支撑护带包",
+        "tactic_rally_patch" => "鼓舞提示贴",
+        "swap" => o.ItemInstanceId is int to ? $"→{to}号位" : "调整站位",   // Q80：每个相邻目的槽一条
+        _ when o.NodeId != null => o.Label,   // B7：拳击/斩击/割伤……（1级攻击技能即普通攻击）
+        _ => GameEngine.ActionName(o.Action),
+    };
+
+    /// <summary>
+    /// BM3（Q512）：操作台「确认」按钮此刻的完整业务文字（不含 Enter 键帽）——按钮本身与右栏无目标指引都取这一个结果。
+    /// 只在按钮真实存在时有值（已选非敌方瞄准的指令、轮到玩家、非对白锁）；纯浏览、敌方瞄准时为 null，指引不伪造。
+    /// </summary>
+    public string? BattleConsoleConfirmText()
+    {
+        if (State == null || S.Battle == null || BattleAction == null || BattleAiming || DialogueLocked || !E.AwaitingPlayer(S)) return null;
+        var sel = E.BattleOptions(S).FirstOrDefault(o => o.Action == BattleAction && (BattleItem == null || o.ItemInstanceId == BattleItem));
+        if (sel == null) return null;
+        return ShellAim.ConsoleConfirmText(sel.Action == "end_turn", BattleShortName(sel), E.PreviewCommand(S, CurrentBattleCommand()).Ap);
     }
 
     /// <summary>所选指令是群攻（不带目标提交；B7 霰弹专长射击）。</summary>

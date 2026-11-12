@@ -1061,3 +1061,31 @@ window.survivalPeek = (function () {
     }
   };
 })();
+
+// BM3（S14「Q510—Q511 新瞄准初始化与同一明确目标」）：新一次敌方瞄准成立时，只读地报告此刻真实的键盘焦点敌人与鼠标所在敌人（全屏战斗敌方锚点 #foe-{序号}）。
+// 鼠标按最近一次真实指针位置取当下最上层元素（被菜单、对白、遮罩等更高层盖住时取不到锚点；指针离开窗口后为空）；触屏不记指针、不伪造悬停。
+// 不读任何旧悬停缓存；在 inert 里的锚点不算。合法与否由 .NET 按当前指令目标范围核验，这里只给候选。
+window.survivalAim = (function () {
+  var pt = null;
+  function foeOf(el) {
+    var a = el && el.closest ? el.closest('.bfs .anc.foe[id^="foe-"]') : null;
+    if (!a || a.closest('[inert]')) return null;
+    var n = parseInt(a.id.substring(4), 10);
+    return isNaN(n) ? null : n;
+  }
+  function track(ev) {
+    if (ev.pointerType === 'touch') { pt = null; return; }
+    pt = { x: ev.clientX, y: ev.clientY };
+  }
+  document.addEventListener('pointermove', track, true);
+  document.addEventListener('pointerdown', track, true);
+  document.addEventListener('mouseout', function (ev) { if (!ev.relatedTarget) pt = null; }, true);
+  return {
+    probe: function () {
+      var ae = document.activeElement;
+      var focus = ae && ae !== document.body ? foeOf(ae) : null;
+      var mouse = pt ? foeOf(document.elementFromPoint(pt.x, pt.y)) : null;
+      return [focus, mouse];
+    }
+  };
+})();

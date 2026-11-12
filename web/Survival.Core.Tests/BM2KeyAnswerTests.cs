@@ -48,7 +48,8 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(groups[0].Rows.Select(r => r.Label), Is.EqualTo(Enumerable.Range(0, 12).Select(ShellKeys.TopLabel)), "顶栏 12 行与按钮原文同源");
         Assert.That(groups[0].Rows.All(r => r.Note == null));
         var all = groups.SelectMany(g => g.Rows).ToList();
-        Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("执行{指令名} Enter"));
+        Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("执行（当前指令） Enter"), "BM3（Q509）：帮助表固定泛称");
+        Assert.That(all.Select(r => r.Label), Has.None.Contain("{"), "BM3（Q509）：不显示花括号占位符");
         Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("跳过动画 空格"));
         Assert.That(all.Select(r => r.Label), Has.None.Contain("跳到结果").And.None.Contain("跳过余下"), "战斗两级跳过未交付，不列为可用");
         Assert.That(all.Select(r => r.Label), Has.None.Contain(" F"), "F 不恢复");
@@ -67,7 +68,7 @@ public class BM2KeyAnswerTests : TestBase
         var doc = Verbatim();
         foreach (var g in ShellKeyHelp.Groups().Skip(1))
             foreach (var r in g.Rows)
-                Assert.That(doc, Does.Contain($"| {g.Title} | {r.Label} | {r.Note} |"), r.Label);
+                Assert.That(doc, Does.Contain($"| {g.Title} | {r.Label} | {r.Note} |"), r.Label);   // BM3（Q509）：战斗区第四行逐字稿已改「执行（当前指令） Enter」
         Assert.That(doc, Does.Contain($"> {ShellKeyHelp.Lead}"));
         foreach (var n in ShellKeyHelp.Notes) Assert.That(doc, Does.Contain($"「{n}」"), n);
     }
@@ -117,7 +118,8 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(ShellAim.TargetChanged, Is.EqualTo("目标已变化，请重新选择。"));
         Assert.That(ShellAim.Guide("拳击"), Is.EqualTo("指定目标后，可点击亮起的目标或“执行拳击”按钮，也可按 Enter 执行；右键/ESC 取消。"));
         Assert.That(ShellAim.ReadOnly, Is.EqualTo("查看预测不扣费、不抽随机。"));
-        Assert.That(ShellAim.ConsoleGuide("防御", 1), Is.EqualTo("在操作台点“确认 · 防御 · 1AP”才提交；ESC 取消"));
+        // BM3（Q512）取代原「确认 · {指令名} · {AP}AP」另拼写法：指引引用真实按钮业务文字（见 BM3AimAnswerTests）
+        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(false, "防御", 1)), Is.EqualTo("在操作台点“确认 · 防御 · 1AP”才提交；ESC 取消。"));
     }
 
     /// <summary>Q497-A01：原因顺序——通用锁优先；无目标看候选数；失效目标具体句优先、否则「目标已变化」；从未合法的候选沿锚点原句；合法再看成本等预览；群体按真实集合。</summary>
@@ -156,7 +158,7 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(panel, Does.Contain("<div class=\"bp-why warn-text\" role=\"status\">@st.Why</div>"), "禁用时显示第一条真实原因");
         Assert.That(Regex.Matches(panel, "@AimConfirm\\(").Count, Is.EqualTo(2), "未指定目标与已有预测两种情况都在预测区底部");
         Assert.That(panel, Does.Contain("int? hoverTarget = aiming && G.BattleAimTarget is int hv && aimSet.Contains(hv) ? hv : null;"), "预测跟随本次明确目标");
-        Assert.That(panel, Does.Contain("@ShellAim.Guide(aimName)").And.Contain("@ShellAim.ReadOnly").And.Contain("ShellAim.ConsoleGuide(p.Title, p.Ap)"));
+        Assert.That(panel, Does.Contain("@ShellAim.Guide(aimName)").And.Contain("@ShellAim.ReadOnly").And.Contain("ShellAim.ConsoleGuide(confirmText)"));
         Assert.That(panel, Does.Not.Contain("点击亮起的目标即执行；右键/Esc 取消"));
 
         var g = Web("Services/GameSession.cs");

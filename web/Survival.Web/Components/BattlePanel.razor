@@ -108,9 +108,10 @@ else if (b != null)
                     <div class="fact"><span>命中能力 / 对方闪避</span><strong>@Ui.N(t.AccuracyRating) / @Ui.T(t.Evasion)</strong></div>
                     <div class="fact"><span>暴击（命中后）</span><strong>@Ui.Pct(t.CritChance)</strong></div>
                 </div>
-                @if (t.AccuracyText != "") { <div class="lines"><div><span>命中能力构成</span><b>@t.AccuracyText</b></div></div> }
+                @* BM3（Q513）：每目标「伤害（未暴击）」排在「命中能力构成」之前（构成为空不显示、不留空行）；其余行与相对顺序、数值不变 *@
                 <div class="lines">
                     <div><span>伤害（未暴击）</span><b>@Ui.N(t.DamageMin)—@Ui.N(t.DamageMax)</b></div>
+                    @if (t.AccuracyText != "") { <div><span>命中能力构成</span><b>@t.AccuracyText</b></div> }
                     <div><span>伤害（暴击×@(Ui.T(e.Config.CombatMath.CritFactor))）</span><b>@Ui.N(t.CritDamageMin)—@Ui.N(t.CritDamageMax)</b></div>
                     <div><span>目标健康</span><b>@Ui.N(t.Hp)@(t.Armor > 0 ? $" · 护甲{Ui.T(t.Armor)}{(t.Penetration > 0 ? $"−穿透{Ui.T(t.Penetration)}" : "")}（已扣）" : "")@(t.Guarded ? " · 防御中×0.5" : "")@(t.DamageBuff > 1 + 1e-9 ? $" · 伤害增益×{Ui.T(t.DamageBuff)}{(t.RawDamageBuff > t.DamageBuff + 1e-9 ? $"（合计×{Ui.T(t.RawDamageBuff)}，超过×1.35的部分递减）" : "")}" : "")</b></div>
                 </div>
@@ -132,7 +133,9 @@ else if (b != null)
         <div class="detail-foot">
             @* S14 §18.4、R03 §7.4：无目标类指令的提交入口在战斗区操作台“确认”，这里只作完整预测；BM2（Q497）瞄准中补「执行{指令名} Enter」 *@
             @if (aiming) { @TargetCycle(aimSet.Count) @AimConfirm(p.Ok ? null : p.Reason) }
-            <div class="under">@(aiming ? ShellAim.Guide(aimName) : ShellAim.ConsoleGuide(p.Title, p.Ap))</div>
+            @* BM3（Q512）：无目标类指令的指引引用操作台真实确认按钮的同一业务文字（不含 Enter 键帽）；没有该按钮时不显示 *@
+            @if (aiming) { <div class="under">@ShellAim.Guide(aimName)</div> }
+            else if (G.BattleConsoleConfirmText() is string confirmText) { <div class="under">@ShellAim.ConsoleGuide(confirmText)</div> }
         </div>
     }
     else if ((peekAlly ?? G.BattleAllyView) != null && G.BattleHover == null && peekFoe == null)
