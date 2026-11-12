@@ -583,6 +583,8 @@ namespace Survival.Core.Engine
                     }
                     // B17 野营布/折叠柴炉部署与收起（A07 X1.6）：按等待结算身体消耗
                     if (IsCampingTarget(r.TargetId)) return ValidateCamping(s, r, plan);
+                    // B41c 潜行接近／躲避（5 分钟）与练习潜行（30 分钟）：由 StartStealth／StartPractice 校验后发起，按等待结算身体
+                    if (IsStealthTarget(r.TargetId)) return ValidateStealth(s, r, plan);
                     if (!Config.Actions.WaitMinutes.Contains(r.Minutes)) return "等待时长无效";
                     plan.Planned = r.Minutes;
                     plan.Label = $"等待{Clock.Duration(r.Minutes)}";
@@ -1040,7 +1042,7 @@ namespace Survival.Core.Engine
             if (a.IsWorkType && !a.FixedWait) ReserveCarry(s, a, p.BaseWork);
             if (!p.IsSub && CardsV2(s)) RecordWorkOrigin(s, a);   // B41b（R05 Q440、Q466）：开工所在区、地牢世代与预留来源
             if (p.IsSub) s.Sub = a; else s.Main = a;
-            if (p.Type != ActionType.Use && p.Type != ActionType.Fuse)
+            if (p.Type != ActionType.Use && p.Type != ActionType.Fuse && !IsStealthCheck(a))   // B41c：潜行接近／躲避只写判定结果句
                 Emit(s, GameEventKind.ActionStarted, $"开始{a.Label}。");
             // Q128：PRO12 引导在打开恢复面板/选睡眠时（提交前），开始睡眠时不再播
             if (p.Type == ActionType.Use) PrologueBoundary(s);
@@ -1054,7 +1056,7 @@ namespace Survival.Core.Engine
             if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
             var a = s.Sub ?? s.Main;
             if (a == null) return ActionResult.Fail("没有进行中的行动");
-            if (a.Type == ActionType.Use || a.Type == ActionType.Ignite || a.Type == ActionType.Fuse) return ActionResult.Fail("该行动不可中途取消");
+            if (NotCancellable(a)) return ActionResult.Fail("该行动不可中途取消");
             if (a.Type == ActionType.Extract) return ActionResult.Fail("撤出已经开始，不能取消（会一直走到外部入口）");   // B21（R03 D5.2）
 
             // B14 城市计时服务：预留的材料原物原处（不搬到地面）、配额预留随事务作废（city-services common.cancel）

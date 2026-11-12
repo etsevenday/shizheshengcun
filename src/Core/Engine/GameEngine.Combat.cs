@@ -382,7 +382,11 @@ namespace Survival.Core.Engine
         public const string FearEncounter = "encounter";
         public const string FearTutorial = "tutorial";
 
-        private void StartBattle(GameState s, List<WorldEnemy> group, bool surprise, string source, string context, bool tutorial = false, string? fixedKey = null, string? cardKey = null)
+        /// <summary>B41c 先手方（R03／R05 Q422）：潜行成功我方先手，敌方主动开战敌方先手。</summary>
+        public const string FirstStrikeAlly = "ally";
+        public const string FirstStrikeEnemy = "enemy";
+
+        private void StartBattle(GameState s, List<WorldEnemy> group, bool surprise, string source, string context, bool tutorial = false, string? fixedKey = null, string? cardKey = null, string? firstStrike = null)
         {
             var b = new BattleState
             {
@@ -451,6 +455,7 @@ namespace Survival.Core.Engine
             }).ToList();
             BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。" + (mates.Count > 0 ? $"同行入场：{string.Join("、", mates)}。" : "") + (left > 0 ? $"本场容量C{b.Capacity}，另有{left}只留在原地。" : "") + (shaken.Count > 0 ? $"惊魂未定：{string.Join("、", shaken)}恐慌+{Fmt.T(DX.ShakenPanic)}（只这一场）。" : ""));
             Emit(s, GameEventKind.Battle, $"战斗开始：{names}。", null, b.Enemies.Select(e => $"enemy:{e.WorldId}"));
+            if (firstStrike != null && CardsV2(s)) GrantFirstStrike(s, b, firstStrike);
             // 同速排序用的锁定随机数 u（R03 §2）：入场时各抽一次并存档（在受惊判定之后抽，不改受惊结果）
             b.PlayerTieRoll = s.Rng.NextDouble();
             foreach (var be in b.Enemies) be.TieRoll = s.Rng.NextDouble();

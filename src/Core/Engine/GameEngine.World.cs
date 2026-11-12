@@ -57,7 +57,8 @@ namespace Survival.Core.Engine
 
         // ───────────── 查询 ─────────────
 
-        public bool Hidden(GameState s, WorldEnemy w) => w.HiddenUntil.HasValue && w.HiddenUntil.Value > s.GameMinute;
+        /// <summary>暂时不可见：旧版逃走隐藏（到点自动解除），或 B41c 躲避隐藏（到点由重现处理清除，R05 Q420）。</summary>
+        public bool Hidden(GameState s, WorldEnemy w) => (w.HiddenUntil.HasValue && w.HiddenUntil.Value > s.GameMinute) || w.EvadeHiddenUntil.HasValue;
 
         /// <summary>
         /// 旧 8 地点全局种群的存活敌数（含交战中、中立鹿；R05 全局 12）。B20 起只数旧 8 地点的种群：9 个人口区各有自己的上限

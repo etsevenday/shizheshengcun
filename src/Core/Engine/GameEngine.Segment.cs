@@ -597,6 +597,7 @@ namespace Survival.Core.Engine
                     if (a.TargetId.StartsWith(RecruitTargetPrefix)) { CompleteRecruit(s, a); return true; }
                     if (a.TargetId.StartsWith(CityServicePrefix)) { CompleteCityService(s, a); return true; }
                     if (IsCampingTarget(a.TargetId)) { CompleteCamping(s, a); return true; }
+                    if (IsStealthCheck(a) && a.Stealth != null) return CompleteStealthCheck(s, a);
                     Emit(s, GameEventKind.ActionCompleted, $"等待结束（{Clock.Duration(a.PlannedMinutes)}）。");
                     return true;
                 case ActionType.Butcher:

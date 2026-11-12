@@ -60,6 +60,9 @@ namespace Survival.Core.Engine
         /// <summary>只有一个 5 分钟原子事务、开始时就提交效果的行动（S01 §9）。</summary>
         public static bool IsSingleTransaction(ActionType t) => t == ActionType.Use || t == ActionType.Ignite || t == ActionType.Fuse;
 
+        /// <summary>开工后不可中途取消的行动：单段事务与 B41c 潜行接近／躲避（R05 Q506；通用 5 分钟规则另见 S01，不在这里）。</summary>
+        public static bool NotCancellable(ActionState a) => IsSingleTransaction(a.Type) || IsStealthCheck(a);
+
         private static bool IsFixedDuration(ActionType t) =>
             t == ActionType.Wait || t == ActionType.Rest || t == ActionType.Sleep || t == ActionType.Bypass || t == ActionType.Extract || IsSingleTransaction(t);
 
@@ -108,7 +111,7 @@ namespace Survival.Core.Engine
                 info.Fraction = a.BaseWorkMinutes <= 0 ? 0 : Math.Min(1, (a.CarryReserved + a.WorkDone) / a.BaseWorkMinutes);
             }
             var why = ExitBlocked(s);
-            info.Exit = why != null ? ExitKind.None : IsSingleTransaction(a.Type) ? ExitKind.CompletesCurrentTransaction : ExitKind.StopAtBoundary;
+            info.Exit = why != null ? ExitKind.None : NotCancellable(a) ? ExitKind.CompletesCurrentTransaction : ExitKind.StopAtBoundary;
             var forfeit = info.Exit == ExitKind.StopAtBoundary ? ExitForfeitText(s, a) : null;
             // B41b（R05 Q472 第 6 条）：暂存的原工作只读摘要与撤退离地保留行动的原地点（界面文字在 B41e 接）
             info.StashedLabel = s.StashedWork?.Label;
@@ -172,7 +175,7 @@ namespace Survival.Core.Engine
             var why = ExitBlocked(s);
             if (why != null) return ActionResult.Fail(why);
             var a = (s.Sub ?? s.Main)!;
-            if (IsSingleTransaction(a.Type))
+            if (NotCancellable(a))
                 return new ActionResult { Ok = true, Deferred = true, ActionId = a.ActionId, Reason = $"{a.Label}已开始结算，本段完成后结束（已提交的消耗与效果不撤销）" };
             return Cancel(s);
         }
