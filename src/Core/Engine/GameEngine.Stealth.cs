@@ -41,6 +41,7 @@ namespace Survival.Core.Engine
                 s.SquadLeader = null;
                 if (!s.Progress.Dead && CardsV2(s)) Emit(s, GameEventKind.Info, "原队长已无法带队，小队队长已改为你。");
             }
+            if (!SquadMemberValid(s, actorId)) EndPracticeOf(s, actorId);
         }
 
         // ───────────── 潜行接近／躲避（R05「潜行与躲避判定」「Q420」「Q505」「Q506」；逐字稿 B41「结果、取消与队长回退」「新操作的禁用与拒绝」） ─────────────
@@ -285,6 +286,103 @@ namespace Survival.Core.Engine
                 w.EvadeHiddenUntil = until;
             }
             s.EnemyCards.Timers.Remove(card.Key);
+        }
+
+        // ───────────── 练习潜行（R05「队长、潜行与 Q424 练习」「Q504」「Q507—Q508」；逐字稿 B41「队长与练习潜行」） ─────────────
+
+        /// <summary>
+        /// 当前区域有没有可行动的敌对敌踪（Q424、Q504）：同地同区未隐藏、未交战、玩家此刻可处理的卡——首战门控卡与普通中立单卡不算；
+        /// 固定关键敌、可选强敌告示（尚未生成敌人实例也算）都算。只读卡视图，不创建实例、不抽签。
+        /// </summary>
+        public bool ActionableHostileCardHere(GameState s) =>
+            EnemyCardsHere(s).Any(c => !c.TutorialGated && !(c.Kind == "single" && !c.KeyEnemy && c.Members.Count > 0 && !c.Members[0].Hostile));
+
+        /// <summary>
+        /// 练习潜行的拒绝原因（逐字稿「新操作的禁用与拒绝」表自上而下，取与练习有关的行）。可以开始为 null。只读、不抽签。
+        /// </summary>
+        public string? CanPracticeStealth(GameState s, string? actorId)
+        {
+            if (!CardsV2(s)) return "未知行动";
+            if (s.Progress.Dead) return "本局已结束。";
+            if (DialogueLocked(s)) return DialogueLockedReason;
+            if (s.Battle != null) return "当前正在战斗。";
+            if (s.Expedition?.IsExtracting == true) return "撤出途中无法开始这项行动。";
+            if (s.Sub != null || (s.Main != null && s.Main.Status != ActionStatus.Paused)) return "当前行动还没结束。";
+            if (s.Main != null) return "行动暂停中，请先继续或退出行动。";
+            if (DuplicateWeaponsIllegal(s) || CarriedOverflow(s)) return "请先完成随身物品整理。";
+            if (s.Recruit.Pending?.AwaitingPlacement == true) return "请先办完当前事务。";
+            if (string.IsNullOrEmpty(actorId) || !s.Actors.ContainsKey(actorId!)) return "请选择练习者。";
+            if (actorId != GameState.PlayerId)
+            {
+                if (s.Actors[actorId!].Stats.Health <= 0 || RosterOf(s, actorId!)?.Dead == true) return "练习者已死亡，请重新选择。";
+                if (!s.Party.Contains(actorId!)) return "练习者已不在同行队伍中，请重新选择。";
+            }
+            if (ActionableHostileCardHere(s)) return "当前区域有可行动的敌对敌踪，无法练习潜行。";
+            return null;
+        }
+
+        /// <summary>
+        /// 开始练习潜行（30 世界分钟，按等待身体费率，无材料）：明确选练习者（主角或同地同区存活同行者）。开工日志「开始练习潜行。」。
+        /// 条件只在开工检查；途中巡入敌踪不取消，继续时也不重查（Q504）。
+        /// </summary>
+        public ActionResult StartPractice(GameState s, string? actorId, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            var why = CanPracticeStealth(s, actorId);
+            if (why != null) return ActionResult.Fail(why);
+            var req = ActionRequest.Wait(Config.Encounters.Stealth.PracticeMinutes);
+            req.TargetId = StealthTargetPrefix + PracticeKind + ":" + actorId;
+            req.RequestId = requestId;
+            var res = Start(s, req);
+            if (!res.Ok) return res;
+            s.Main!.Stealth = new StealthCheck { Kind = PracticeKind, ActorId = actorId! };
+            return res;
+        }
+
+        /// <summary>练习盘的经验预览（逐字稿：「完成后{练习者}潜行经验+{实际预估经验}。」／满级句）；练习者不存在为 null。</summary>
+        public string? PracticeXpPreview(GameState s, string actorId)
+        {
+            if (!s.Actors.TryGetValue(actorId, out var a)) return null;
+            var who = ActorDisplayName(s, actorId);
+            var actual = Math.Min(Config.Encounters.Stealth.PracticeXp, XpRoomToCap(a, StealthSkill));
+            return actual > 0 ? $"完成后{who}潜行经验+{actual}。" : $"{who}的潜行已满级，完成后不再获得经验。";
+        }
+
+        /// <summary>累计实际完成 30 分钟：给练习者 20 潜行经验（按原成长封顶，满级不另加）。</summary>
+        private bool CompletePractice(GameState s, ActionState a)
+        {
+            var id = a.Stealth?.ActorId ?? "";
+            if (!s.Actors.TryGetValue(id, out var actor)) return false;
+            var who = ActorDisplayName(s, id);
+            var actual = Math.Min(Config.Encounters.Stealth.PracticeXp, XpRoomToCap(actor, StealthSkill));
+            if (actual > 0)
+            {
+                GainXp(s, actor, StealthSkill, actual);
+                Emit(s, GameEventKind.ActionCompleted, $"{who}完成潜行练习，潜行经验+{actual}。");
+            }
+            else Emit(s, GameEventKind.ActionCompleted, $"{who}完成潜行练习，潜行已满级。");
+            return true;
+        }
+
+        /// <summary>练习退出／中止句（Q508）：时长只算已实际提交的练习段。</summary>
+        private string PracticeEndText(GameState s, ActionState a) =>
+            $"{ActorDisplayName(s, a.Stealth?.ActorId ?? "")}的潜行练习已结束。已耗时{Clock.Duration(a.ElapsedMinutes)}，未获得经验。";
+
+        /// <summary>
+        /// 练习者死亡／离队（Q508）：主角尚未终局时，在原结果之后收束他正在进行（运行、暂停或暂存）的那次练习——释放占用、不再恢复、不给经验，
+        /// 追加一次中止句。主角终局只走终局呈现。
+        /// </summary>
+        private void EndPracticeOf(GameState s, string actorId)
+        {
+            if (s.Progress.Dead) return;
+            foreach (var a in new[] { s.Main, s.StashedWork })
+            {
+                if (a == null || !IsStealthPractice(a) || a.Stealth?.ActorId != actorId) continue;
+                Release(s, a, s.Ground);
+                if (ReferenceEquals(s.Main, a)) s.Main = null;
+                else s.StashedWork = null;
+                Emit(s, GameEventKind.ActionCancelled, PracticeEndText(s, a));
+            }
         }
 
         public const string PopAccountLegacy = "legacy";

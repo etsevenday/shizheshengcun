@@ -1089,6 +1089,7 @@ namespace Survival.Core.Engine
                 // B15 试玩修复 M333：城市事项/委托工作写实际进行的时长，不写计划工时
                 _ when apTxn != null => AppraisalCancelText(a, apTxn),
                 _ when a.TargetId.StartsWith(RecruitTargetPrefix) => RecruitCancelText(a),
+                _ when IsStealthPractice(a) => PracticeEndText(s, a),   // B41c（Q508）：主动退出练习沿中止句
                 _ when a.TargetId.StartsWith(CityServicePrefix) =>
                     $"已停止{CityService(a.TargetId.Substring(CityServicePrefix.Length))?.Title ?? a.Label}（实际进行了{Clock.Duration(a.ElapsedMinutes)}）。",
                 _ => $"已结束{a.Label}。",

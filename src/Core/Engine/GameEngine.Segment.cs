@@ -227,6 +227,8 @@ namespace Survival.Core.Engine
             var ctx = ComputeSegment(s, a);
             var companion = CompanionAction(a);
             if (!WorldTick(s, actor => actor.IsPlayer ? ctx : ComputeSegment(s, companion, actor), a, false)) return new SegmentResult(SegmentStatus.Dead);
+            // B41c（Q508）：练习者在本段世界 tick 里死亡，这次练习已收束，本段不再累计
+            if (IsStealthPractice(a) && !ReferenceEquals(s.Main, a)) { UpdateFlags(s); return new SegmentResult(SegmentStatus.Aborted); }
 
             // 4. 累积进度
             bool done;
@@ -598,6 +600,7 @@ namespace Survival.Core.Engine
                     if (a.TargetId.StartsWith(CityServicePrefix)) { CompleteCityService(s, a); return true; }
                     if (IsCampingTarget(a.TargetId)) { CompleteCamping(s, a); return true; }
                     if (IsStealthCheck(a) && a.Stealth != null) return CompleteStealthCheck(s, a);
+                    if (IsStealthPractice(a)) return CompletePractice(s, a);
                     Emit(s, GameEventKind.ActionCompleted, $"等待结束（{Clock.Duration(a.PlannedMinutes)}）。");
                     return true;
                 case ActionType.Butcher:

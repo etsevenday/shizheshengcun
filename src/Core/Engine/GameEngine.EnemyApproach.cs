@@ -197,10 +197,10 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 主行动的普通休息、普通等待与原子事务（城市服务、招募登记、单段事务）：按本次指定时长整次结束（或合法退出）后才开战（Q467）。
-        /// 野营布等部署／收起按可暂停多段处理（段后暂停）。
+        /// 野营布等部署／收起与 B41c 练习潜行按可暂停多段处理（段后暂停，Q507）。
         /// </summary>
         private static bool WholeBeforeEnemyApproach(ActionState a) =>
-            a.Type == ActionType.Rest || (a.Type == ActionType.Wait && !IsCampingTarget(a.TargetId)) || IsSingleTransaction(a.Type);
+            a.Type == ActionType.Rest || (a.Type == ActionType.Wait && !IsCampingTarget(a.TargetId) && !IsStealthPractice(a)) || IsSingleTransaction(a.Type);
 
         /// <summary>
         /// 此刻的行动边界要不要推迟敌方开战（Q416、Q441、Q467）：有未结束的子行动（暂停中的休息整次做完；补给、点火本就单段）、
