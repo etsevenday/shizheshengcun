@@ -57,8 +57,11 @@
             @if (anyBite) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div> }
             <ul class="notes">
                 <li>@GameEngine.ApproachCardButton：@e.EnemyCardFearNote(s, card, false)@(range != null ? "；" + range : "")。</li>
+                @* B41e2（Q538）：同卡撤退保护有效时写长句（到期即不再显示）；（Q551）可选强敌的特殊掉落说明，与卡悬停同源 *@
+                @if (e.CardGuardNote(s, card) is string guard) { <li class="ecard-guard">@guard</li> }
                 <li>每轮推进5分钟世界时间；@e.RetreatOutlookHere(s)。</li>
                 @if (card.KeyEnemy) { <li>@GameEngine.KeyEnemyDetailNote</li> }
+                @if (e.EliteDropNote(card) is string drop) { <li class="ecard-drop">@drop</li> }
             </ul>
             @if (why != null) { <div class="risk">@why</div> }
             @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }

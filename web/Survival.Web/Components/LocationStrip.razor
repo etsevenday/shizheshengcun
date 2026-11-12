@@ -348,8 +348,9 @@
                         var one = c.Kind is "single" or "elite" ? c.Members.FirstOrDefault() : null;
                         var status = e.CardApproachStatus(s, c);
                         var hover = e.EnemyCardHoverLines(s, c);
-                        var names = c.Kind == "fixed" ? string.Join("、", c.Members.Select(w => e.Enemy(w.EnemyId).Name)) : null;
-                        // 副标沿旧卡：常驻／可选强敌写健康数值，固定战写名单；随机组卡 Q539 未答，不写副标（TODO Q539）
+                        // B41e2（Q539）：随机组卡第一副标照固定卡格式，列锁定名单原序的存活成员公开名（「、」连接、同名不合并；长名单由卡的副标悬停读全文）
+                        var names = e.EnemyCardMemberNames(c);
+                        // 副标沿旧卡：常驻／可选强敌写健康数值，固定战、随机组卡写名单
                         var sub = c.Kind is "single" or "elite" ? $"健康 {Ui.N(one?.Hp ?? lead.Hp)}/{Ui.N(lead.Hp)}" : names;
                         <ObjectCard Ink2="true" Danger="@c.Danger" @key="@("ecard-" + key)" Id="@anchor" PeekId="@Peek.Sel(SelectionKind.Enemy, key)"
                                     CssClass="@(c.Kind == "fixed" ? "k2-enemy fixed" : c.Kind == "elite" ? "k2-enemy elite" : "k2-enemy")" Title="@c.Title"

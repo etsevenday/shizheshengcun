@@ -62,6 +62,21 @@
                 </button>
             }
         </div>
+        @if (G.FormationLeader is string leader)
+        {
+            @* B41e2（逐字稿 B41「队长与练习潜行」：编队队长标签「小队队长」、队长说明；R08 Q342）：新版敌踪下从编队里的存活成员中选队长，
+               只改草稿，随「保存编队」一起提交（内核 SaveFormationBlocked／SaveFormation 的 leaderId）。 *@
+            <div class="fm-leader" role="group" aria-label="@GameEngine.SquadLeaderLabel">
+                <span class="fm-leader-label">@GameEngine.SquadLeaderLabel</span>
+                @foreach (var id in members)
+                {
+                    var aid = id;
+                    <button type="button" class="choice fm-leader-pick @(aid == leader ? "on" : "")" aria-pressed="@(aid == leader)" data-leader="@aid"
+                            @onclick="() => G.PickFormationLeader(aid)">@e.ActorDisplayName(s, aid)</button>
+                }
+                <div class="tiny muted fm-leader-note">@GameEngine.SquadLeaderNote</div>
+            </div>
+        }
         <div class="ca-note tiny">
             站位不会按武器自动更正：站在用不了的号位也能保存，进战后那页技能按真实号位禁用，可以在战斗里花1AP“调整站位”。
             战斗中的拉扯、击退、调整站位不会改这里的编队。@(s.Roster.Any(r => r.Present) ? $"编入同行/留作候补在{e.LocName(e.HubLocation(s))}办理（安全屋候补要进那间屋编入，屋里可留守此屋）；队友暂时还不会跟你进战斗，下一场只有你按这里的号位入场。" : "")

@@ -10,6 +10,8 @@
     var actor = s.Actors.TryGetValue(me, out var a) ? a : s.Player;
     var views = e.SkillViews(actor);
     var cur = views.FirstOrDefault(v => v.Id == G.GrowthSkill) ?? views.First();
+    // B41e2（逐字稿「Q427 卡名、角标与 Q428 成长页」、Q446 ⑧⑨）：新版敌踪下「求生」组改「求生与行动」，副标「{角色名} · 共16项熟练度」，潜行条目与练习入口
+    var cardsV2 = e.CardsV2(s);
 }
 
 @if (Part == "detail")
@@ -26,7 +28,14 @@
     <div class="sub-head">
         <div>
             <h2>成长</h2>
-            <span class="sub" title="熟练度属于每名角色，不是全队共享；这里可看全部门类的技能与解锁条件；战斗操作台显示当前门类五张，未解锁的置灰、不可执行（Q227）">@e.ActorDisplayName(s, me) · 十五门熟练度 · 只浏览 ⓘ</span>
+            @if (cardsV2)
+            {
+                <span class="sub">@e.ActorDisplayName(s, me) · 共@(views.Count)项熟练度</span>
+            }
+            else
+            {
+                <span class="sub" title="熟练度属于每名角色，不是全队共享；这里可看全部门类的技能与解锁条件；战斗操作台显示当前门类五张，未解锁的置灰、不可执行（Q227）">@e.ActorDisplayName(s, me) · 十五门熟练度 · 只浏览 ⓘ</span>
+            }
         </div>
         <button class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
@@ -42,7 +51,7 @@
     }
     <div class="sub-body growth-body">
         <div class="growth-list" data-wheel="y">
-            @foreach (var grp in new[] { ("combat", "战斗"), ("both", "医疗（战内外）"), ("survival", "求生") })
+            @foreach (var grp in new[] { ("combat", "战斗"), ("both", "医疗（战内外）"), ("survival", cardsV2 ? "求生与行动" : "求生") })
             {
                 <div class="skill-group muted">@grp.Item2</div>
                 @foreach (var sk in views.Where(x => x.Category == grp.Item1))
@@ -50,7 +59,7 @@
                     var sid = sk.Id;
                     var unlocked = sk.Nodes.Count(n => sk.Level >= n.Level);
                     <button type="button" class="growth-skill @(sid == cur.Id ? "on" : "")" data-skill="@sid" data-peek="@Peek.Skill(sid)" @onclick="() => PickSkill(sid)">
-                        <b>@sk.Name</b><span>@(sk.Level)/@(sk.Cap)级 · 技能@(unlocked)/@(sk.Nodes.Count)</span>
+                        <b>@sk.Name</b><span>@(sk.Level)/@(sk.Cap)级@(sk.Nodes.Count > 0 ? $" · 技能{unlocked}/{sk.Nodes.Count}" : "")</span>
                     </button>
                 }
             }
@@ -69,11 +78,12 @@
         var s = G.S;
         var e = G.E;
         var me = G.GearActorId;
+        var stealth = sk.Id == GameEngine.StealthSkill && e.CardsV2(s);
         <div class="growth-detail" data-wheel="y">
             <div class="eyebrow">@e.ActorDisplayName(s, me) · @sk.Name</div>
             <div class="growth-head">
                 <b>@(sk.Level)/@(sk.Cap)级</b>
-                <span class="muted">@(sk.Maxed ? "满级，不再获得经验" : $"经验{sk.Xp}/{sk.NextXp}，升到{sk.Level + 1}级")</span>
+                <span class="muted">@(sk.Maxed ? (stealth ? "潜行已满级" : "满级，不再获得经验") : $"经验{sk.Xp}/{sk.NextXp}，升到{sk.Level + 1}级")</span>
                 @if (NextNode(sk) is { } nx) { <span>下一节点：@(nx.Level)级 @nx.Name</span> }
             </div>
             @* 十级轨道：1—10 格，五个节点格有技能名；已达到的点亮 *@
@@ -87,6 +97,16 @@
                     </div>
                 }
             </div>
+            @if (stealth)
+            {
+                @* B41e2（Q428）：潜行说明与「练习潜行」入口；点入口在本页打开练习盘（逐字稿「队长与练习潜行」），盘的「返回」只放弃草稿 *@
+                <p class="growth-stealth-note">潜行提高接近和躲避的成功率，判定使用小队队长的等级与身体状态。</p>
+                @if (Part != "detail")
+                {
+                    @if (G.PracticeOpen) { @PracticeDisk() }
+                    else { <button type="button" class="secondary growth-practice" data-practice @onclick="G.OpenPractice">@GameEngine.PracticeTitle</button> }
+                }
+            }
             <div class="growth-nodes">
                 @foreach (var n in sk.Nodes)
                 {
@@ -102,6 +122,51 @@
             <div class="tiny muted">经验只给实际出手/工作的本人；两件同门类武器不叠经验、不多解锁技能。命中、伤害等公式见系统说明。</div>
         </div>
     };
+
+    /// <summary>
+    /// B41e2 练习潜行盘（逐字稿 B41「队长与练习潜行」；R05 Q424、Q540）：标题「练习潜行」；「练习者」从主角与同地同区存活同行者里明确选；
+    /// 「耗时30分钟」；经验或满级预览；「真实身体预估」下一行「等待期间每小时 …」（所选练习者本人）；练习说明；「开始练习」「返回」。
+    /// 「开始练习」禁用时原因来自内核 CanPracticeStealth（按逐字稿禁用表取第一条），写在盘内并作按钮悬停。
+    /// </summary>
+    private RenderFragment PracticeDisk() => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var who = G.PracticeActor;
+        var why = G.PracticeBlocked;
+        // 无选人／已失效的练习者不给预估（Q540：不用主角数据顶替）
+        var valid = who != null && e.PracticeCandidates(s).Contains(who);
+        var busy = G.Running || s.Sub != null;
+        <section class="practice-disk" role="group" aria-label="@GameEngine.PracticeTitle">
+            <header><b>@GameEngine.PracticeTitle</b></header>
+            <div class="lines practice-lines">
+                <div>
+                    <span>@GameEngine.PracticeActorLabel</span>
+                    <b class="practice-actors">
+                        @foreach (var id in e.PracticeCandidates(s))
+                        {
+                            var aid = id;
+                            <button type="button" class="choice @(aid == who ? "on" : "")" aria-pressed="@(aid == who)" data-practice-actor="@aid" @onclick="() => G.PickPracticeActor(aid)">@e.ActorDisplayName(s, aid)</button>
+                        }
+                    </b>
+                </div>
+                <div><span></span><b>@e.PracticeMinutesText</b></div>
+                @if (valid && e.PracticeXpPreview(s, who!) is string xp) { <div><span></span><b>@xp</b></div> }
+                @if (valid && e.PracticeBodyRateText(s, who!) is string body)
+                {
+                    <div><span>@GameEngine.PracticeBodyLabel</span><b>@body</b></div>
+                }
+            </div>
+            <div class="tiny muted">@GameEngine.PracticeNote</div>
+            @if (why != null) { <div class="risk practice-why">@why</div> }
+            <div class="practice-actions">
+                <button type="button" class="primary practice-start" disabled="@(why != null || busy)" title="@why" @onclick="StartPractice">@GameEngine.PracticeStart</button>
+                <button type="button" class="secondary practice-back" @onclick="G.ClosePractice">@GameEngine.EnemyDiskBack</button>
+            </div>
+        </section>
+    };
+
+    private async Task StartPractice() => await G.StartPractice();
 
     private void Close() => G.OpenPanel(null);
 

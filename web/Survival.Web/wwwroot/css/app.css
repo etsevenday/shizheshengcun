@@ -1736,3 +1736,15 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
     scroll-behavior: auto !important;
   }
 }
+
+/* B41e2 新版敌踪界面二：成长页练习潜行盘、编队页小队队长（开关 encounters.enemyCardsV2） */
+.growth-stealth-note { margin: 4px 0; }
+.growth-practice { align-self: flex-start; }
+.practice-disk { border: 1px solid var(--line); border-radius: 5px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.practice-disk header b { font-weight: 500; }
+.practice-actors { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-actors .choice, .fm-leader .choice { padding: 4px 10px; }
+.practice-actions { display: flex; gap: 8px; }
+.fm-leader { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.fm-leader-note { flex-basis: 100%; }
+.cp-stash { display: flex; flex-direction: column; gap: 2px; }

@@ -163,8 +163,11 @@
                     {
                         <div class="apop-risk">@($"{weapon.Name}")弹仓为0：开战后需先装填（1AP）</div>
                     }
+                    @* B41e2（Q549）：受惊整卡每情境一行——主动／潜行共用 0.5 情境一行；可躲避卡另一行「躲避失败时：{原受惊预览}」按 1.0。
+                       （Q538）同卡撤退保护有效时，主动接近风险区接写长句。 *@
                     <div class="apop-note">@e.EnemyCardFearNote(s, c, false)</div>
-                    @if (!c.KeyEnemy) { <div class="apop-note"><span class="ecard-cond">@GameEngine.EvadeFailFearPrefix</span>@e.EnemyCardFearNote(s, c, true)</div> }
+                    @if (e.CardGuardNote(s, c) is string guard) { <div class="apop-note ecard-guard">@guard</div> }
+                    @if (e.EvadeFailFearLine(s, c) is string evadeFear) { <div class="apop-note ecard-evadefear">@evadeFear</div> }
                     @foreach (var r in reasons) { <div class="apop-risk ecard-why">@r</div> }
                     @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
                 </ChildContent>

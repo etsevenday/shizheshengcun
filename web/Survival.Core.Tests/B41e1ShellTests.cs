@@ -56,7 +56,7 @@ public class B41e1ShellTests
         Assert.That(grp, Does.Contain("<div class=\"dg-title\">敌踪</div>"));
         Assert.That(grp, Does.Contain("Title=\"@c.Title\"").And.Contain("Badge=\"@c.Badge\"").And.Contain("Danger=\"@c.Danger\""), "Q427 标题、角标、危险");
         Assert.That(grp, Does.Contain("e.CardApproachStatus(s, c)").And.Contain("e.EnemyCardHoverLines(s, c)"), "第二行状态句、Q446 ⑥ 悬停");
-        Assert.That(grp, Does.Contain("TODO Q539"));
+        Assert.That(grp, Does.Contain("e.EnemyCardMemberNames(c)").And.Not.Contain("TODO Q539"), "B41e2（Q539）：组卡副标列成员名");
         Assert.That(grp, Does.Contain("OnClick=\"() => OpenEnemyCard(key)\""));
         Assert.That(grp, Does.Not.Contain("<Footer>"), "处理按钮都在操作盘里");
     }
@@ -71,7 +71,7 @@ public class B41e1ShellTests
         Assert.That(disk, Does.Contain("e.CanStealthCard(s, key, GameEngine.EvadeKind, leader, evadeRate)"));
         Assert.That(disk, Does.Contain("StealthCard(key, GameEngine.SneakKind, leader, sneakRate)").And.Contain("StealthCard(key, GameEngine.EvadeKind, leader, evadeRate)"));
         Assert.That(disk, Does.Contain("e.EnemyCardPreviewMembers(s, c)"), "逐成员预览");
-        Assert.That(disk, Does.Contain("e.EnemyCardFearNote(s, c, false)").And.Contain("GameEngine.EvadeFailFearPrefix</span>@e.EnemyCardFearNote(s, c, true)"));
+        Assert.That(disk, Does.Contain("e.EnemyCardFearNote(s, c, false)").And.Contain("e.EvadeFailFearLine(s, c)"), "B41e2（Q549）：躲避失败时：{原受惊预览}");
         Assert.That(disk, Does.Not.Contain("data-enter").And.Not.Contain("EnterCap"), "不贴 Enter 快捷（Q499）");
         Assert.That(disk, Does.Contain("GameEngine.EnemyDiskBack<EscCap"));
         Assert.That(ap, Does.Contain("GameSession.EnemyCardPop => s.Battle == null && s.Encounter == null && e.CardsV2(s) && e.EnemyCardHere(s, pop.Id) != null"), "Q457 收盘重验");

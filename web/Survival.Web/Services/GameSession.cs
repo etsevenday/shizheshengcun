@@ -783,7 +783,8 @@ public sealed partial class GameSession
         HoverPreview = null;
         Pop = null;
         // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）
-        if (panel != "formation") { FormationDraft = null; FormationPick = null; }
+        if (panel != "formation") { FormationDraft = null; FormationPick = null; FormationLeader = null; }
+        if (panel != "growth") ClosePracticeDraft();   // B41e2：离开成长页就丢弃练习盘草稿
         GivePending = null;
         FeedPending = null;
         HelpFromFeed = false;
@@ -3516,10 +3517,10 @@ public sealed partial class GameSession
     public string? FormationBlocked => State == null ? "没有进行中的游戏" : E.FormationEditBlocked(S);
 
     /// <summary>草稿是否与已保存的预设不同。</summary>
-    public bool FormationDirty => State != null && FormationDraft != null && !FormationDraft.SequenceEqual(S.FormationPreset);
+    public bool FormationDirty => State != null && FormationDraft != null && (!FormationDraft.SequenceEqual(S.FormationPreset) || LeaderDirty);
 
     /// <summary>“保存编队”禁用原因（无改动、草稿过期、不再空闲等，同内核保存校验）；null 为可保存。</summary>
-    public string? FormationSaveBlocked => State == null || FormationDraft == null ? "没有编队草稿" : E.SaveFormationBlocked(S, FormationDraft, FormationDraftVersion);
+    public string? FormationSaveBlocked => State == null || FormationDraft == null ? "没有编队草稿" : E.SaveFormationBlocked(S, FormationDraft, FormationDraftVersion, FormationLeader);
 
     /// <summary>打开编队面板：按已保存的合法预设建草稿。不在空白操作时期就不开、提示原因。</summary>
     public void OpenFormation()
@@ -3530,6 +3531,7 @@ public sealed partial class GameSession
         FormationDraft = E.RepairedFormation(S, S.FormationPreset);
         FormationDraftVersion = S.FormationVersion;
         FormationPick = null;
+        FormationLeader = E.CardsV2(S) ? E.SquadLeaderId(S) : null;   // B41e2：开关开时队长随编队草稿一起编辑
         OpenPanel("formation");
     }
 
@@ -3538,6 +3540,7 @@ public sealed partial class GameSession
     {
         FormationDraft = null;
         FormationPick = null;
+        FormationLeader = null;
         if (Panel == "formation") OpenPanel(null);
         else Notify();
     }
@@ -3571,7 +3574,7 @@ public sealed partial class GameSession
     public ActionResult SaveFormation()
     {
         if (State == null || FormationDraft == null) return ActionResult.Fail("没有编队草稿");
-        var res = Commit(E.SaveFormation(S, FormationDraft.ToList(), FormationDraftVersion, Guid.NewGuid().ToString("N")));
+        var res = Commit(E.SaveFormation(S, FormationDraft.ToList(), FormationDraftVersion, Guid.NewGuid().ToString("N"), FormationLeader));
         if (res.Ok) CancelFormation();
         return res;
     }
