@@ -1193,6 +1193,9 @@ kbd { font-size: var(--fs-aux); }
 .apop-risk { font-size: var(--fs-aux); line-height: 1.45; color: var(--warn); }
 .apop-risk.night { color: #b9c4e8; }
 .apop-note { font-size: var(--fs-aux); line-height: 1.45; color: var(--muted); }
+/* B41e1 敌踪卡盘：逐成员预览的名称行与「躲避失败时」条件前缀（只排版） */
+.apop-note.ecard-member { color: inherit; margin-top: 4px; }
+.ecard-cond { margin-right: .4em; color: var(--warn, inherit); }
 /* B29 食饮局部盘：四区竖排，窗内滚动；B31 换重墨样式前沿用锚定浮窗 */
 .apop.feed-pop { width: 380px; max-height: min(86vh, 640px); overflow-y: auto; }
 .fp-sec { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; border-top: 1px solid var(--line); }

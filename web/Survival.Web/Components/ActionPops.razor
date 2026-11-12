@@ -116,6 +116,67 @@
             </AnchorPop>
             break;
         }
+        case GameSession.EnemyCardPop:
+        {
+            @* B41e1 新版敌踪居中操作盘（逐字稿「B41 Q426–Q428 正式文案」卡片、操作盘与倒计时；Q447 逐成员预览与受惊情境；Q457 收盘重验）：
+               标题＝敌踪名；信息标签「警惕、接近、队长、成功率、耗时」；三种处理按钮「主动接近、潜行接近、躲避」，禁用时原因写在盘内（内核 CanApproachCard／CanStealthCard
+               按逐字稿禁用表取第一条）；「返回」只收盘。主动接近点击即提交，潜行／躲避点击提交 5 分钟行动，带上盘里显示的队长与成功率，不另加确认，也不贴 Enter（Q499）。
+               保留原命中、伤害、感染与受惊预览：组卡、固定战按锁定名单原顺序逐个成员；主动接近与潜行接近按 0.5 受惊情境，躲避按失败入战 1.0 并以「躲避失败时」开头。 *@
+            var c = e.EnemyCardHere(s, pop.Id)!;   // Valid 已重验
+            var key = c.Key;
+            var leader = e.SquadLeaderId(s);
+            var sneakRate = e.StealthRate(s, GameEngine.SneakKind, leader, c.Vigilance);
+            var evadeRate = e.StealthRate(s, GameEngine.EvadeKind, leader, c.Vigilance);
+            var whyApproach = e.CanApproachCard(s, key);
+            var whySneak = e.CanStealthCard(s, key, GameEngine.SneakKind, leader, sneakRate);
+            var whyEvade = e.CanStealthCard(s, key, GameEngine.EvadeKind, leader, evadeRate);
+            var status = e.CardApproachStatus(s, c);
+            var members = e.EnemyCardPreviewMembers(s, c);
+            var weapon = e.CurrentWeapon(s, out var wi);
+            var labels = GameEngine.EnemyDiskLabels;
+            var sneakName = GameEngine.StealthActionName(GameEngine.SneakKind);
+            var evadeName = GameEngine.StealthActionName(GameEngine.EvadeKind);
+            var reasons = new[] { whyApproach, whySneak, whyEvade }.Where(x => x != null).Distinct().ToList();
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@c.Title" Sub="@c.Badge" CssClass="@("approach enemycard" + G.MenuHideCss)" OnClose="G.ClosePop">
+                <Art>@Icons.Markup("enemy_" + c.EnemyIds[0])</Art>
+                <ChildContent>
+                    <div class="lines ecard-lines">
+                        <div><span>@labels[0]</span><b>@GameEngine.VigilanceText(c.Vigilance)</b></div>
+                        @if (status != null) { <div><span>@labels[1]</span><b>@status</b></div> }
+                        <div><span>@labels[2]</span><b>@e.SquadLeaderText(s)</b></div>
+                        <div><span>@labels[3]</span><b>@sneakName @GameEngine.StealthRateText(sneakRate)@if (!c.KeyEnemy) {<text> · @evadeName @GameEngine.StealthRateText(evadeRate)</text>}</b></div>
+                        <div><span>@labels[4]</span><b>@e.StealthCheckMinutesText</b></div>
+                    </div>
+                    @foreach (var m in members)
+                    {
+                        var ec = e.Enemy(m.EnemyId);
+                        var hit = e.OutOfBattleHit(s, ec);   // Q67：与战斗中同一公式（+8、疲劳一次×0.95）
+                        <div class="apop-note ecard-member"><b>@ec.Name</b> 健康@(Ui.N(m.Enemy?.Hp ?? ec.Hp))/@(Ui.N(ec.Hp))</div>
+                        <div class="apop-facts">
+                            <span title="敌人对你的命中率与伤害"><i class="pf-ico">⚔</i>对你@(Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))) · 伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax))</span>
+                            <span title="开战默认页（第一个有武器的页）的命中率（战斗中可切换武器页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(e.DefaultWeaponPage(s) == 1 ? "Ⅰ" : "Ⅱ") @(wi == null ? "拳" : weapon.Name) · 命中@(Ui.Pct(hit.HitChance))</span>
+                        </div>
+                        @if (e.CanBite(ec)) { <div class="apop-risk">咬伤可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）</div> }
+                        else if (ec.IsZombie) { <div class="apop-note">它的意图里没有咬击，不会咬伤（攻击不传播病毒）</div> }
+                    }
+                    @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
+                    {
+                        <div class="apop-risk">@($"{weapon.Name}")弹仓为0：开战后需先装填（1AP）</div>
+                    }
+                    <div class="apop-note">@e.EnemyCardFearNote(s, c, false)</div>
+                    @if (!c.KeyEnemy) { <div class="apop-note"><span class="ecard-cond">@GameEngine.EvadeFailFearPrefix</span>@e.EnemyCardFearNote(s, c, true)</div> }
+                    @foreach (var r in reasons) { <div class="apop-risk ecard-why">@r</div> }
+                    @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
+                </ChildContent>
+                <Actions>
+                    <button type="button" class="primary apop-go fight" disabled="@(whyApproach != null || busy)" title="@whyApproach" @onclick="() => ApproachCard(key)">@GameEngine.ApproachCardButton</button>
+                    <button type="button" class="secondary apop-go" disabled="@(whySneak != null || busy)" title="@whySneak" @onclick="() => StealthCard(key, GameEngine.SneakKind, leader, sneakRate)">@sneakName</button>
+                    <button type="button" class="secondary apop-go" disabled="@(whyEvade != null || busy)" title="@whyEvade" @onclick="() => StealthCard(key, GameEngine.EvadeKind, leader, evadeRate)">@evadeName</button>
+                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">@GameEngine.EnemyDiskBack<EscCap On="@G.EscOnDisk" /></button>
+                </Actions>
+            </AnchorPop>
+            break;
+        }
         case "lockstack":
         {
             @* B12（B11 遗留）：相邻栏未开通叠卡的逐条列表：按条件分组，原因写一次，每条写名称、方位、单程分钟；只看，不移动 *@
@@ -256,6 +317,8 @@
             "travel" => s.Battle == null && s.Encounter == null && G.Panel == null && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
             "mapnode" => G.Panel == "map" && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
             "approach" => s.Battle == null && s.Encounter == null && int.TryParse(pop.Id, out var wid) && e.VisibleEnemiesAt(s, s.CurrentLocation).Any(w => w.Id == wid),
+            // B41e1（R05 Q457）：卡键仍在当前地点、当前区域的可操作卡里；失效即收盘（DropPop 一并清该卡详情），不改选别的敌人
+            GameSession.EnemyCardPop => s.Battle == null && s.Encounter == null && e.CardsV2(s) && e.EnemyCardHere(s, pop.Id) != null,
             "charcoal" => s.Battle == null && s.Encounter == null && G.Panel == null && pop.Id == s.Ground && e.HasFireAt(s, s.Ground),
             "lockstack" => s.Battle == null && G.Panel == null && e.AdjacentLockedGroups(s).Any(g => g.Routes.Count >= 3),
             "harvest" => s.Battle == null && G.Panel == "drying" && e.DryingRackHere(s) && int.TryParse(pop.Id, out var hk) && e.DryingSlotAt(s, s.Ground, hk)?.Status == DryingSlot.Done,
@@ -287,6 +350,26 @@
         _go = true;
         _tried = true;
         try { await G.ApproachEnemy(wid); }
+        finally { _go = false; }
+    }
+
+    /// <summary>B41e1：敌踪卡盘「主动接近」（盘内点击即提交；执行中锁按钮，重复点击不重复提交）。</summary>
+    private async Task ApproachCard(string key)
+    {
+        if (_go) return;
+        _go = true;
+        _tried = true;
+        try { await G.ApproachEnemyCard(key); }
+        finally { _go = false; }
+    }
+
+    /// <summary>B41e1：敌踪卡盘「潜行接近」「躲避」（点击提交 5 分钟行动；带上盘里显示的队长与成功率，内核比对不一致时拒绝）。</summary>
+    private async Task StealthCard(string key, string kind, string leaderId, int rate)
+    {
+        if (_go) return;
+        _go = true;
+        _tried = true;
+        try { await G.StealthEnemyCard(key, kind, leaderId, rate); }
         finally { _go = false; }
     }
 

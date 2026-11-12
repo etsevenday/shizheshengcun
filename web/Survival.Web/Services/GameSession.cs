@@ -723,6 +723,9 @@ public sealed partial class GameSession
             ClearSelectionSilently();
             PendingAction = null;
         }
+        // B41e1（R05 Q457）：敌踪卡操作盘因目标失效收起时，一并清掉该卡的右栏详情，回原默认内容（不改选别的敌人）
+        if (Pop?.Kind == EnemyCardPop && State != null && Selected.Kind == SelectionKind.Enemy && Selected.Id == Pop.Id && E.EnemyCardHere(S, Pop.Id) == null)
+            ClearSelectionSilently();
         Pop = null;
     }
 
@@ -3002,6 +3005,60 @@ public sealed partial class GameSession
         if (State == null || DialogueLocked || E.EnemyCardHere(S, cardKey) is not EnemyCardView c) return;
         Select(new Selection { Kind = SelectionKind.Enemy, Id = cardKey, InstanceId = c.Kind == "single" ? c.Members[0].Id : null });
         OpenPop(EnemyCardPop, cardKey, anchorId);
+    }
+
+    /// <summary>
+    /// B41e1：操作盘「主动接近」——盘内点击即提交（0 分钟，逐字稿「主动接近在盘内点击即提交」）。内核 ApproachCard 按卡键重验，过期请求不执行（R05 Q457）；
+    /// 开战后按原入战流程收盘、清选中，接战斗循环。
+    /// </summary>
+    public async Task ApproachEnemyCard(string cardKey)
+    {
+        if (State == null || BattleBusy) return;
+        if (FormationOpen) { Notice = FormationOpenText; Notify(); return; }
+        var res = E.ApproachCard(S, cardKey, Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            ResetBattleUi();
+            Pop = null;
+            Selected = new Selection();
+            DetailTab = DetailTab.Object;
+            Toast = null;
+            ClearHoverNow();
+        }
+        Drain();
+        Commit();
+        Notify();
+        if (res.Ok) await BattleLoop();
+    }
+
+    /// <summary>
+    /// B41e1：操作盘「潜行接近」「躲避」——点击提交 5 分钟判定行动（不另加确认）。带上盘里显示的队长与成功率（leaderId／expectedRate），
+    /// 内核 StartStealth 比对后不一致时拒绝「当前情况已变化，请重新选择后再操作。」；开工后收盘、推进，判定入战时 RunLoop 接战斗。
+    /// </summary>
+    public async Task<ActionResult> StealthEnemyCard(string cardKey, string kind, string leaderId, int expectedRate)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (BattleBusy) return ActionResult.Fail("当前正在战斗。");
+        if (FormationOpen) { Notice = FormationOpenText; Notify(); return ActionResult.Fail(FormationOpenText); }
+        var res = E.StartStealth(S, cardKey, kind, Guid.NewGuid().ToString("N"), leaderId, expectedRate);
+        if (res.Duplicate) return res;
+        if (!res.Ok)
+        {
+            Notice = res.Reason;
+            Notify();
+            return res;
+        }
+        Notice = null;
+        Pop = null;
+        Toast = null;
+        ClearHoverNow();
+        ReconcileSelection();
+        Drain();
+        Commit();
+        Notify();
+        await RunLoop();
+        return res;
     }
 
     /// <summary>主动接近地块上的敌人卡。</summary>
