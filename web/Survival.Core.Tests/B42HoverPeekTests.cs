@@ -211,4 +211,40 @@ public class B42HoverPeekTests
         Assert.That(Web("Components/FacilityCard.razor"), Does.Contain("PeekId=\"@Peek.Card(\"fac-\" + Kind)\""));
         Assert.That(Web("Components/SafehouseCard.razor"), Does.Contain("PeekId=\"@Peek.Card(\"safehouse\")\""));
     }
+
+    /// <summary>HOVER-A01、A06：页面热区——地图公开节点、配方与处理说明、整备来源卡与已穿戴装备、熟练度门类、任务册与事项盘条目、生存状态图标。</summary>
+    [Test]
+    public void PanelHotZones()
+    {
+        var map = Web("Components/MapOverlay.razor");
+        Assert.That(map, Does.Contain("data-peek=\"@Peek.Node(id)\"").And.Contain("var target = PeekNode ?? picked ?? here;").And.Contain("@if (PeekNode == null)"));
+        var craft = Web("Components/CraftOverlay.razor");
+        Assert.That(craft, Does.Contain("data-peek=\"@Peek.Recipe(id)\"").And.Contain("data-peek=\"@Peek.Recipe(ProcPrefix + pid)\""));
+        Assert.That(craft, Does.Contain("var cur = peekOn ? PeekRecipe : G.CraftRecipe;").And.Contain("var batch = batchable && !other ? Math.Max(1, G.CraftBatch) : 1;"));
+        var gear = Web("Components/GearOverlay.razor");
+        Assert.That(gear, Does.Contain("data-peek=\"@Peek.Gear(inst.InstanceId)\"").And.Contain("data-peek=\"@(it != null ? Peek.Gear(it.InstanceId) : null)\""));
+        Assert.That(gear, Does.Not.Contain("data-gear-member=\"@aid\" data-peek"), "成员页签不是对象，不进右栏");
+        var growth = Web("Components/GrowthOverlay.razor");
+        Assert.That(growth, Does.Contain("data-peek=\"@Peek.Skill(sid)\"").And.Contain("@DetailOf(actor, cur)").And.Contain("@DetailOf(actor, pk)"));
+        var goals = Web("Components/GoalsOverlay.razor");
+        Assert.That(goals, Does.Contain("<PeekSource Key=\"@qkey\"").And.Contain("<PeekSource Key=\"@tkey\"").And.Contain("@QuestLines(v)").And.Contain("@TaskLines(t)"));
+        var city = Web("Components/CityServiceOverlay.razor");
+        Assert.That(city, Does.Contain("<PeekSource Key=\"@qkey\"").And.Contain("<PeekSource Key=\"@skey\" Title=\"@v.Title\" Body=\"@SvcLines(v)\" />"));
+        Assert.That(Web("Components/StatusIcons.razor"), Does.Contain("data-peek=\"@Peek.Status(c.Id)\""));
+        var src = Web("Components/PeekSource.razor");
+        Assert.That(src, Does.Contain("G.SetPeekFacts(Key, this, new PeekFacts").And.Contain("G.DropPeekFacts(_reg, this)"));
+    }
+
+    /// <summary>HOVER-A01、A03：右栏按对象种类分派到点击时用的同一组件；页内明确点选结束悬停查看；悬停版本不给「选中下一段」「查看火堆」等操作。</summary>
+    [Test]
+    public void PanelPeekDetail_SameSourceReadOnly()
+    {
+        var pd = Web("Components/PeekDetail.razor");
+        Assert.That(pd, Does.Contain("<GearPeekDetail Item=\"git\" />").And.Contain("<MapOverlay Part=\"detail\" PeekNode=\"@first\" />")
+            .And.Contain("<CraftOverlay Part=\"detail\" PeekRecipe=\"@first\" />").And.Contain("<GrowthOverlay Part=\"detail\" PeekSkill=\"@first\" />")
+            .And.Contain("StatusView.RemainingText(chip)"));
+        Assert.That(Web("Components/CraftOverlay.razor"), Does.Contain("@if (!peekOn) { <button type=\"button\"").Or.Contain("@if (!peekOn) { <button class=\"primary\""));
+        foreach (var f in new[] { "MapOverlay", "CraftOverlay", "GrowthOverlay" })
+            Assert.That(Web($"Components/{f}.razor"), Does.Contain("G.PeekClear();"), f + " 明确点选要结束悬停查看");
+    }
 }

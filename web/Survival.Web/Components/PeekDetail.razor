@@ -16,12 +16,44 @@
             <SelectionDetail Sel="sel" Peek="true" Batch="@PeekKey.Part(Key, 4)" />
         }
         break;
+    case PeekKey.Gear:
+        @* 整备来源卡与已穿戴装备：与页内点选同一只读整备详情（Q450、Q462 只列事实） *@
+        if (int.TryParse(first, out var gid) && G.E.FindItem(G.S, gid) is ItemInstance git)
+        {
+            <GearPeekDetail Item="git" />
+        }
+        break;
+    case PeekKey.Node:
+        @* 地图已公开节点：与点选同一份右栏地点信息、相邻预估或远处路线（只读，不选中、不开移动盘） *@
+        <MapOverlay Part="detail" PeekNode="@first" />
+        break;
+    case PeekKey.Recipe:
+        @* 配方或自动加工说明：与点选同一份右栏详细预估（只读，不换所选配方、份数与材料槽） *@
+        <CraftOverlay Part="detail" PeekRecipe="@first" />
+        break;
+    case PeekKey.Skill:
+        @* 熟练度门类：与成长页详情同一份内容（只读，不换所选门类） *@
+        <GrowthOverlay Part="detail" PeekSkill="@first" />
+        break;
+    case PeekKey.Status:
+        @* 生存状态项：与状态图标说明同源（名称、效果、剩余时间） *@
+        if (StatusView.All(G.E, G.S).FirstOrDefault(c => c.Id == first) is StatusChip chip)
+        {
+            <div class="detail-scroll peek-status">
+                <div class="op-head">
+                    <h2><span class="st-ico @(chip.Danger ? "danger" : chip.Harmful ? "bad" : "good")" aria-hidden="true">@Icons.Markup(chip.Icon)</span> @chip.Name</h2>
+                    <p>@chip.Effect</p>
+                    <p class="muted">@StatusView.RemainingText(chip)</p>
+                </div>
+            </div>
+        }
+        break;
     case PeekKey.Card:
         if (G.PeekFactsOf(Key) is PeekFacts f)
         {
             <div class="detail-scroll peek-card">
                 <div class="op-head">
-                    <h2>@f.Title@if (!string.IsNullOrEmpty(f.State)) { <small class="muted"> @f.State</small> }</h2>
+                    @if (!string.IsNullOrEmpty(f.Title)) { <h2>@f.Title@if (!string.IsNullOrEmpty(f.State)) { <small class="muted"> @f.State</small> }</h2> }
                     @if (!string.IsNullOrEmpty(f.Desc)) { <p>@f.Desc</p> }
                 </div>
                 @if (f.Art != null) { <div class="detail-icon peek-art">@f.Art</div> }

@@ -1,0 +1,30 @@
+@inject GameSession G
+@implements IDisposable
+
+@* B42（S14「2026-11-12 悬停卡片／条目立即显示右栏详情」）：没有独立详情组件的公开条目（任务、事项、服务等列表行）的右栏登记。
+   放在条目整行（带 data-peek="@Key" 的元素）里面，本身不渲染任何东西；每次随条目重绘登记条目原有的公开标题、状态、说明与正文片段，
+   条目移除即撤销（正被悬停时右栏立即清掉）。只用条目已有的文字，不另写句子、不含执行按钮。 *@
+
+@code {
+    /// <summary>对象键（Peek.Card(...)），与条目整行 data-peek 相同。</summary>
+    [Parameter, EditorRequired] public string Key { get; set; } = "";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? State { get; set; }
+    [Parameter] public string? Desc { get; set; }
+    /// <summary>条目原正文片段（与行内同一个片段，不含按钮）。</summary>
+    [Parameter] public RenderFragment? Body { get; set; }
+
+    private string? _reg;
+
+    protected override void OnParametersSet()
+    {
+        if (_reg != null && _reg != Key) G.DropPeekFacts(_reg, this);
+        G.SetPeekFacts(Key, this, new PeekFacts { Title = Title, State = State, Desc = Desc, Body = Body });
+        _reg = Key;
+    }
+
+    public void Dispose()
+    {
+        if (_reg != null) G.DropPeekFacts(_reg, this);
+    }
+}

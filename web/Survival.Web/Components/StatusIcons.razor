@@ -12,7 +12,7 @@
         {
             var chip = c;
             var domId = "st-" + c.Id;
-            <button type="button" role="listitem" id="@domId" class="st-ico @(c.Danger ? "danger" : c.Harmful ? "bad" : "good") @(G.StatusPinned == c.Id ? "on" : "")"
+            <button type="button" role="listitem" id="@domId" class="st-ico @(c.Danger ? "danger" : c.Harmful ? "bad" : "good") @(G.StatusPinned == c.Id ? "on" : "")" data-peek="@Peek.Status(c.Id)"
                     aria-label="@($"{c.Name}：{c.Effect}；{StatusView.RemainingText(c)}")"
                     @onmouseenter="() => Hover(chip.Id, domId)" @onfocus="() => Hover(chip.Id, domId)"
                     @onmouseleave="Unhover" @onblur="Unhover"

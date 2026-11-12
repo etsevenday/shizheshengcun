@@ -136,7 +136,7 @@
                         var state = n.IsHere || n.HereInside ? "here" : n.Visited ? "visited" : "known";
                         var status = n.IsHere ? "● 当前位置" : n.HereInside ? "● 你在城内" : n.Visited ? $"探索度{n.Progress}%" : "待访问";
                         var tip = $"{n.Name} · {status}{(n.Danger is int dg ? $" · 危险{dg}" : "")}{(n.Roles.Count > 0 ? " · " + string.Join("、", n.Roles) : "")}{(n.Water.Count > 0 ? " · " + string.Join("、", n.Water.Select(m => m.Title)) : "")}";
-                        <g class="map-node @state @(isPicked ? "picked" : "")" id="@($"mn-{id}")" tabindex="0" role="button" aria-label="@tip"
+                        <g class="map-node @state @(isPicked ? "picked" : "")" id="@($"mn-{id}")" tabindex="0" role="button" aria-label="@tip" data-peek="@Peek.Node(id)"
                            @onclick="() => Pick(id)" @onkeydown="ev => NodeKey(ev, id)" @onkeydown:stopPropagation="true">
                             <title>@tip</title>
                             @if (overview)
@@ -243,7 +243,8 @@
 }
 else
 {
-    var target = picked ?? here;
+    @* B42：悬停已公开节点时右栏临时读该节点（与点选同一份内容，只读）；离开保留，点选或切层后回到点选结果 *@
+    var target = PeekNode ?? picked ?? here;
     var tl = e.Location(target);
     var ts = s.Locations[target];
     if (target == here)
@@ -314,7 +315,10 @@ else
                 </div>
                 var next = path[0].To;
                 <div class="tiny muted">不提供自动寻路：一次只能确认下一段。</div>
-                <button type="button" class="primary small-btn" @onclick="() => PickNext(next)">选中下一段：前往@(e.LocName(next))</button>
+                @if (PeekNode == null)
+                {
+                    <button type="button" class="primary small-btn" @onclick="() => PickNext(next)">选中下一段：前往@(e.LocName(next))</button>
+                }
             }
             else
             {
@@ -326,6 +330,8 @@ else
 
 @code {
     [Parameter] public string Part { get; set; } = "center";
+    /// <summary>B42：右栏悬停查看的地图节点（只读，不选中、不开移动浮窗、不给「选中下一段」）。</summary>
+    [Parameter] public string? PeekNode { get; set; }
 
     /// <summary>缩放档：0 为“总览”（只画点，不画字），其余档地名 15px、状态 14px 固定，不随缩放变小。</summary>
     public static readonly double[] Zooms = { 0.3, 0.55, 0.75, 1.0 };
@@ -522,6 +528,7 @@ else
     /// <summary>点地图节点：右栏显示详细预估或远处路线；相邻且空闲时在节点旁打开移动确认浮窗（S02 §5、S14 §14.1），本身不移动。</summary>
     private void Pick(string id)
     {
+        G.PeekClear();   // B42：明确点选结束悬停查看，右栏回到点选结果
         G.MapPicked = id;
         G.Guide("location", id);   // B13d（Q128）：在地图上查看外出/返营/出区路线是操作前引导的上下文
         var s = G.S;

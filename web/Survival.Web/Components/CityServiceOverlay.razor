@@ -38,11 +38,13 @@
         {
             var qid = q.Id;
             var qbusy = G.Running ? GameEngine.CityBusyText : null;
-            <section class="city-svc city-quest @(q.Status)">
-                <h3>@q.Title <small>@q.KindLabel · @q.StatusText@(q.ChoiceLabel != null ? $" · {q.ChoiceLabel}" : "")@(q.Retro ? " · 旧档追认" : "")</small></h3>
-                <p class="city-summary">@(q.Status == "done" ? "结果：" : "下一步：")@q.Step</p>
-                @if (!string.IsNullOrEmpty(q.WorkHint)) { <p class="small muted">@q.WorkHint</p> }
-                @if (q.Status == "locked" && q.AcceptBlocked != null) { <p class="small muted">@q.AcceptBlocked</p> }
+            var qkey = Peek.Card("city-q-" + qid);
+            var qstate = $"{q.KindLabel} · {q.StatusText}{(q.ChoiceLabel != null ? $" · {q.ChoiceLabel}" : "")}{(q.Retro ? " · 旧档追认" : "")}";
+            <section class="city-svc city-quest @(q.Status)" data-peek="@qkey">
+                <h3>@q.Title <small>@qstate</small></h3>
+                @QuestLines(q)
+                @* B42：悬停事项时右栏显示同一事项的原公开内容（只读，不含接取／工作等按钮） *@
+                <PeekSource Key="@qkey" Title="@q.Title" State="@qstate" Body="@QuestLines(q)" />
                 <div class="btn-row">
                     @if (q.AcceptHere)
                     {
@@ -90,8 +92,10 @@
                       ?? (G.Running ? GameEngine.CityBusyText : null);
             @* B38b（N02 附录 §2、Q285 选 A）：服务名下依次为岗位短句、对象与选项、耗时与费用、完成结果（EffectText，缺失时才用 Summary，只出现一次）、
                实际限制与原确认区；普通按钮“{服务名}（{工时}）”，打开类沿原动词 *@
-            <section class="city-svc @(v.Implemented ? "" : "pending")">
+            var skey = Peek.Card("city-s-" + id);
+            <section class="city-svc @(v.Implemented ? "" : "pending")" data-peek="@skey">
                 <h3>@v.Title</h3>
+                <PeekSource Key="@skey" Title="@v.Title" Body="@SvcLines(v)" />
                 @if (!string.IsNullOrEmpty(v.NpcLine)) { <p class="city-line">“@v.NpcLine”</p> }
                 @if (v.NeedsTarget && v.Implemented)
                 {
@@ -120,9 +124,7 @@
                     </div>
                     @foreach (var ch in v.Choices.Where(x => x.Blocked != null)) { <p class="muted small">@ch.Label：@ch.Blocked</p> }
                 }
-                <p class="small city-cost">@v.TimeText · @v.CostText</p>
-                <p class="small city-effect">@(string.IsNullOrEmpty(v.EffectText) ? v.Summary : v.EffectText)</p>
-                @foreach (var line in v.Lines) { <p class="small city-line-extra">@line</p> }
+                @SvcFacts(v)
                 <div class="btn-row">
                     @{ var startLabel = v.StartLabel ?? (v.OpensCraft ? "打开制作" : $"{v.Title}（{v.TimeText}）"); }
                     <GateButton Class="primary" Name="@startLabel" Blocked="@why" Title="@($"办理：{v.Title}")" OnClick="() => Do(id, pickTarget, pickChoice)">
@@ -136,6 +138,29 @@
 </div>
 
 @code {
+    /// <summary>事项条目的原说明行（盘内与 B42 右栏悬停共用同一片段）。</summary>
+    private RenderFragment QuestLines(QuestView q) => __builder =>
+    {
+        <p class="city-summary">@(q.Status == "done" ? "结果：" : "下一步：")@q.Step</p>
+        @if (!string.IsNullOrEmpty(q.WorkHint)) { <p class="small muted">@q.WorkHint</p> }
+        @if (q.Status == "locked" && q.AcceptBlocked != null) { <p class="small muted">@q.AcceptBlocked</p> }
+    };
+
+    /// <summary>服务的耗时费用、完成结果与限制行（盘内与右栏共用）。</summary>
+    private RenderFragment SvcFacts(CityServiceView v) => __builder =>
+    {
+        <p class="small city-cost">@v.TimeText · @v.CostText</p>
+        <p class="small city-effect">@(string.IsNullOrEmpty(v.EffectText) ? v.Summary : v.EffectText)</p>
+        @foreach (var line in v.Lines) { <p class="small city-line-extra">@line</p> }
+    };
+
+    /// <summary>B42 右栏：岗位短句 + 原说明行；对象、选项与办理按钮不进右栏（只读）。</summary>
+    private RenderFragment SvcLines(CityServiceView v) => __builder =>
+    {
+        @if (!string.IsNullOrEmpty(v.NpcLine)) { <p class="city-line">“@v.NpcLine”</p> }
+        @SvcFacts(v)
+    };
+
     private readonly Dictionary<string, string> _target = new();
     private readonly Dictionary<string, string> _choice = new();
 

@@ -64,25 +64,16 @@
                         {
                             var qdone = v.Status == "done";
                             var qmark = qdone ? "✓" : v.Status == "locked" ? "·" : "○";
-                            <li class="@(qdone ? "done" : "") @(v.Status == "locked" ? "later" : "")">
+                            var qkey = Peek.Card("goal-q-" + v.Id);
+                            <li class="@(qdone ? "done" : "") @(v.Status == "locked" ? "later" : "")" tabindex="0" data-peek="@qkey">
                                 <span class="goal-mark" aria-hidden="true">@qmark</span>
                                 <span class="goal-task">
                                     <b>@v.Title</b><em class="goal-gate">@v.KindLabel</em>
-                                    <small>@v.NpcName · @v.LocationName · @v.StatusText@(v.ChoiceLabel != null ? $" · {v.ChoiceLabel}" : "")</small>
-                                    @if (qdone)
-                                    {
-                                        <small class="good-text">@(v.Retro ? "旧档追认" : $"{v.Step}{(v.CompletedAt is int at ? " · " + Clock.DayTime(at) : "")}")</small>
-                                    }
-                                    else
-                                    {
-                                        <small>下一步：@v.Step</small>
-                                        @* B15b（Q161 选 C）：进行中委托的工作提示与岗位事项同句（八条各自的定稿句） *@
-                                        @if (!string.IsNullOrEmpty(v.WorkHint)) { <small class="muted">@v.WorkHint</small> }
-                                        @if (v.Retro) { <small class="good-text">旧档追认（已接取）</small> }
-                                        @if (v.Status == "locked" && v.AcceptBlocked != null) { <small class="muted">@v.AcceptBlocked</small> }
-                                    }
+                                    @QuestLines(v)
                                 </span>
                                 <span class="sr-only">@(qdone ? "（已完成）" : "（未完成）")</span>
+                                @* B42：悬停或聚焦条目时右栏显示同一条目的原公开内容（只读） *@
+                                <PeekSource Key="@qkey" Title="@v.Title" State="@v.KindLabel" Body="@QuestLines(v)" />
                             </li>
                         }
                     </ul>
@@ -101,25 +92,15 @@
                         {
                             var c = t.Config;
                             var mark = t.Done ? "✓" : t.Relevant ? "○" : "·";
-                            <li class="@(t.Done ? "done" : "") @(t.Relevant || t.Done ? "" : "later")">
+                            var tkey = Peek.Card("goal-t-" + c.Id);
+                            <li class="@(t.Done ? "done" : "") @(t.Relevant || t.Done ? "" : "later")" tabindex="0" data-peek="@tkey">
                                 <span class="goal-mark" aria-hidden="true">@mark</span>
                                 <span class="goal-task">
                                     <b>@c.Title</b>@if (c.ExitGate) {<em class="goal-gate">出区相关</em>}
-                                    <small>@e.StepText(s, c)</small>
-                                    @if (t.Done)
-                                    {
-                                        <small class="good-text">@(t.Retro ? "旧档追认" : $"{c.Done} · {Clock.DayTime(t.CompletedAt ?? 0)}")</small>
-                                    }
-                                    else if (t.Note != null)
-                                    {
-                                        <small class="muted">@t.Note</small>
-                                    }
-                                    else
-                                    {
-                                        <small class="goal-hint"><span class="tc-sys">系统提示</span>@c.Hint@(t.HintDismissed ? "（已关闭，可在此回看）" : "")</small>
-                                    }
+                                    @TaskLines(t)
                                 </span>
                                 <span class="sr-only">@(t.Done ? "（已完成）" : "（未完成）")</span>
+                                <PeekSource Key="@tkey" Title="@c.Title" State="@(c.ExitGate ? "出区相关" : null)" Body="@TaskLines(t)" />
                             </li>
                         }
                     </ul>
@@ -137,6 +118,44 @@
 
 @code {
     private void Close() => G.OpenPanel(null);
+
+    private RenderFragment QuestLines(QuestView v) => __builder =>
+    {
+        var qdone = v.Status == "done";
+        <small>@v.NpcName · @v.LocationName · @v.StatusText@(v.ChoiceLabel != null ? $" · {v.ChoiceLabel}" : "")</small>
+        @if (qdone)
+        {
+            <small class="good-text">@(v.Retro ? "旧档追认" : $"{v.Step}{(v.CompletedAt is int at ? " · " + Clock.DayTime(at) : "")}")</small>
+        }
+        else
+        {
+            <small>下一步：@v.Step</small>
+            @* B15b（Q161 选 C）：进行中委托的工作提示与岗位事项同句（八条各自的定稿句） *@
+            @if (!string.IsNullOrEmpty(v.WorkHint)) { <small class="muted">@v.WorkHint</small> }
+            @if (v.Retro) { <small class="good-text">旧档追认（已接取）</small> }
+            @if (v.Status == "locked" && v.AcceptBlocked != null) { <small class="muted">@v.AcceptBlocked</small> }
+        }
+    };
+
+    private RenderFragment TaskLines(PrologueTaskView t) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var c = t.Config;
+        <small>@e.StepText(s, c)</small>
+        @if (t.Done)
+        {
+            <small class="good-text">@(t.Retro ? "旧档追认" : $"{c.Done} · {Clock.DayTime(t.CompletedAt ?? 0)}")</small>
+        }
+        else if (t.Note != null)
+        {
+            <small class="muted">@t.Note</small>
+        }
+        else
+        {
+            <small class="goal-hint"><span class="tc-sys">系统提示</span>@c.Hint@(t.HintDismissed ? "（已关闭，可在此回看）" : "")</small>
+        }
+    };
 
     private void RouteLog() => G.OpenRouteLog();
 

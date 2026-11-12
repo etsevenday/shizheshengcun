@@ -55,7 +55,7 @@
                     var it = e.WornItem(s, me, sl);
                     var target = src != null && G.GearSlot == sl && G.GivePending == null;
                     <div class="gear-slot @(it == null ? "empty" : "") @(target ? "target" : "") @(it != null && G.GearPeekId == it.InstanceId ? "peek" : "")"
-                         data-slot="@sl" data-gear-slot="@sl" data-drop="@($"gearslot:{sl}")" data-drop-level="hot" @onclick="() => G.GearClickSlot(sl)">
+                         data-slot="@sl" data-gear-slot="@sl" data-drop="@($"gearslot:{sl}")" data-drop-level="hot" data-peek="@(it != null ? Peek.Gear(it.InstanceId) : null)" @onclick="() => G.GearClickSlot(sl)">
                         <span class="gs-name">@EquipSlots.Name(sl)</span>
                         @if (it == null)
                         {
@@ -171,7 +171,7 @@
         if (carriedCard)
         {
             <div class="gear-card g3-card @(on ? "on" : "")" role="button" tabindex="0" data-item="@inst.ItemId"
-                 id="@($"feed-src-{inst.InstanceId}")" data-gear-src="@inst.InstanceId" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
+                 id="@($"feed-src-{inst.InstanceId}")" data-gear-src="@inst.InstanceId" data-peek="@Peek.Gear(inst.InstanceId)" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
                  @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
                 <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
                 @if (e.FeedEntry(s, inst.InstanceId) is { } fe)
@@ -187,7 +187,7 @@
         else
         {
             <div class="gear-card g3-card @(on ? "on" : "")" role="button" tabindex="0" data-ground-item="@inst.ItemId"
-                 data-gear-src="@inst.InstanceId" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
+                 data-gear-src="@inst.InstanceId" data-peek="@Peek.Gear(inst.InstanceId)" data-drag="@($"gear:{inst.InstanceId}")" data-drag-title="@e.InstanceName(inst)"
                  @onclick="() => G.GearPickSource(inst.InstanceId)" @onkeydown="ev => Key(ev, inst.InstanceId)">
                 <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>@Stat(inst)</small></span>
             </div>

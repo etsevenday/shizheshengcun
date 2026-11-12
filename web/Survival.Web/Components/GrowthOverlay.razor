@@ -12,6 +12,16 @@
     var cur = views.FirstOrDefault(v => v.Id == G.GrowthSkill) ?? views.First();
 }
 
+@if (Part == "detail")
+{
+    @* B42：右栏悬停查看熟练度门类，与成长页详情同一片段（只读，不换所选门类） *@
+    if (views.FirstOrDefault(v => v.Id == PeekSkill) is { } pk)
+    {
+        <div class="detail-scroll growth-peek">@DetailOf(actor, pk)</div>
+    }
+    return;
+}
+
 <div class="sub-panel growth-panel" role="dialog" aria-label="成长">
     <div class="sub-head">
         <div>
@@ -39,48 +49,60 @@
                 {
                     var sid = sk.Id;
                     var unlocked = sk.Nodes.Count(n => sk.Level >= n.Level);
-                    <button type="button" class="growth-skill @(sid == cur.Id ? "on" : "")" data-skill="@sid" @onclick="() => PickSkill(sid)">
+                    <button type="button" class="growth-skill @(sid == cur.Id ? "on" : "")" data-skill="@sid" data-peek="@Peek.Skill(sid)" @onclick="() => PickSkill(sid)">
                         <b>@sk.Name</b><span>@(sk.Level)/@(sk.Cap)级 · 技能@(unlocked)/@(sk.Nodes.Count)</span>
                     </button>
                 }
             }
         </div>
+        @DetailOf(actor, cur)
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Part { get; set; } = "center";
+    /// <summary>B42：右栏悬停查看的熟练度门类（Part="detail"）。</summary>
+    [Parameter] public string? PeekSkill { get; set; }
+
+    private RenderFragment DetailOf(ActorState actor, SkillView sk) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var me = G.GearActorId;
         <div class="growth-detail" data-wheel="y">
-            <div class="eyebrow">@e.ActorDisplayName(s, me) · @cur.Name</div>
+            <div class="eyebrow">@e.ActorDisplayName(s, me) · @sk.Name</div>
             <div class="growth-head">
-                <b>@(cur.Level)/@(cur.Cap)级</b>
-                <span class="muted">@(cur.Maxed ? "满级，不再获得经验" : $"经验{cur.Xp}/{cur.NextXp}，升到{cur.Level + 1}级")</span>
-                @if (NextNode(cur) is { } nx) { <span>下一节点：@(nx.Level)级 @nx.Name</span> }
+                <b>@(sk.Level)/@(sk.Cap)级</b>
+                <span class="muted">@(sk.Maxed ? "满级，不再获得经验" : $"经验{sk.Xp}/{sk.NextXp}，升到{sk.Level + 1}级")</span>
+                @if (NextNode(sk) is { } nx) { <span>下一节点：@(nx.Level)级 @nx.Name</span> }
             </div>
             @* 十级轨道：1—10 格，五个节点格有技能名；已达到的点亮 *@
             <div class="growth-track" aria-label="十级轨道">
-                @for (var lv = 1; lv <= Math.Min(10, cur.Cap); lv++)
+                @for (var lv = 1; lv <= Math.Min(10, sk.Cap); lv++)
                 {
                     var l = lv;
-                    var node = cur.Nodes.FirstOrDefault(n => n.Level == l);
-                    <div class="gt-cell @(cur.Level >= l ? "reached" : "") @(node != null ? "node" : "")" title="@(node == null ? $"{l}级" : $"{l}级 {node.Name}")">
+                    var node = sk.Nodes.FirstOrDefault(n => n.Level == l);
+                    <div class="gt-cell @(sk.Level >= l ? "reached" : "") @(node != null ? "node" : "")" title="@(node == null ? $"{l}级" : $"{l}级 {node.Name}")">
                         <span>@l</span>@if (node != null) { <small>@node.Name</small> }
                     </div>
                 }
             </div>
             <div class="growth-nodes">
-                @foreach (var n in cur.Nodes)
+                @foreach (var n in sk.Nodes)
                 {
-                    var on = cur.Level >= n.Level;
+                    var on = sk.Level >= n.Level;
                     <div class="growth-node @(on ? "unlocked" : "locked")" data-node="@n.Id">
                         <header><b>@(n.Level)级 · @n.Name</b><em class="@(on ? "ok" : "muted")">@(on ? "已解锁" : "未解锁")</em></header>
                         <p>@n.Text</p>
                         <small class="muted">@NodeMeta(n)</small>
-                        <small class="@(on ? "muted" : "warn-text")">@(on ? Status(actor, cur, n) : $"解锁条件：{cur.Name}达到{n.Level}级（当前{cur.Level}级）")</small>
+                        <small class="@(on ? "muted" : "warn-text")">@(on ? Status(actor, sk, n) : $"解锁条件：{sk.Name}达到{n.Level}级（当前{sk.Level}级）")</small>
                     </div>
                 }
             </div>
             <div class="tiny muted">经验只给实际出手/工作的本人；两件同门类武器不叠经验、不多解锁技能。命中、伤害等公式见系统说明。</div>
         </div>
-    </div>
-</div>
+    };
 
-@code {
     private void Close() => G.OpenPanel(null);
 
     private void PickActor(string id)
@@ -91,6 +113,7 @@
 
     private void PickSkill(string id)
     {
+        G.PeekClear();   // B42：明确点选结束悬停查看
         G.GrowthSkill = id;
         G.Notify();
     }

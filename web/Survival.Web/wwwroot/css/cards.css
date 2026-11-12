@@ -398,3 +398,10 @@
 .peek-card .peek-body .track, .peek-card .peek-body .fuel-track { max-width: 220px; }
 .batch.readonly { cursor: default; }
 .peek-status .st-ico { display: inline-flex; vertical-align: middle; }
+/* B42：任务册、事项盘条目进右栏时每行独立成行；成长详情在窄右栏里轨道两行、节点单列 */
+.peek-card .peek-body { display: flex; flex-direction: column; gap: 4px; }
+.peek-card .peek-body small { display: block; font-size: var(--fs-aux); line-height: 1.45; }
+.peek-card .peek-body p { margin: 0; line-height: 1.5; }
+.growth-peek .growth-detail { overflow: visible; }
+.growth-peek .growth-track { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.growth-peek .growth-nodes { grid-template-columns: minmax(0, 1fr); }
