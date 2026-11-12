@@ -57,8 +57,11 @@ namespace Survival.Core.State
         /// （R05 文首 Q342 定稿与 Q425、Q436—Q438，开发记录 B41a；开关 encounters.enemyCardsV2 关着时只补空结构）。
         /// "47" 起敌踪接近时限与撤退保护 EnemyCardsState.Timers、行动的敌方接近原因与战后撤退离地保留标记（ActionState.PauseNote、RetreatKept 等）、
         /// 开工来源 ActionState.ReserveSources、暂存工作 GameState.StashedWork（R05 Q416、Q439—Q443、Q463—Q476，开发记录 B41b；46→47 只补默认值）。
+        /// "48" 起小队队长 GameState.SquadLeader、潜行行动快照 ActionState.Stealth、躲避隐藏与种群归属 WorldEnemy.EvadeHiddenUntil／PopAccount、
+        /// 现身次数与潜行经验领取 EnemyCardsState.Appearances／StealthXpClaims、先手 BattleState.FirstStrike／FirstStrikeDamage
+        /// （R05 Q342、Q420—Q428、Q445、Q503—Q508，开发记录 B41c；47→48 只补默认值）。
         /// </summary>
-        public const string CurrentSchema = "47";
+        public const string CurrentSchema = "48";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -211,6 +214,13 @@ namespace Survival.Core.State
         /// 只有一份；没有为 null（旧档即无暂存）。
         /// </summary>
         public ActionState? StashedWork { get; set; }
+
+        /// <summary>
+        /// B41c 小队队长（R05 Q342／R08；开关 encounters.enemyCardsV2）：同行人员 ID；null = 主角（旧档与开关关着时都为 null）。
+        /// 队长死亡、离队或不再同行时立即改回主角。
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? SquadLeader { get; set; }
 
         /// <summary>占着主工作位的行动：主行动与 B41b 暂存的原工作（占用、预留、工具锁判定都要算上暂存工作，Q472 第 2 条）。</summary>
         public IEnumerable<ActionState> MainWorks()
@@ -1329,6 +1339,9 @@ namespace Survival.Core.State
         /// <summary>Q466：每个预留批次的开工来源（实例 ID → 开工时的真实 owner：物主或地面），随存档保存；旧档缺的在首次采纳时按仍在原处的真实归属补齐。</summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<int, string>? ReserveSources { get; set; }
+        /// <summary>B41c 潜行接近／躲避／练习潜行开工时的快照（R05 Q342、Q422、Q503—Q508）；其他行动为 null。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public StealthCheck? Stealth { get; set; }
 
         public bool IsWorkType => IsWork(Type);
 
@@ -1347,8 +1360,35 @@ namespace Survival.Core.State
             c.CookTargetItems = new List<int>(CookTargetItems);
             c.CookDone = new List<string>(CookDone);
             c.ReserveSources = ReserveSources == null ? null : new Dictionary<int, string>(ReserveSources);
+            c.Stealth = Stealth?.Clone();
             return c;
         }
+    }
+
+    /// <summary>
+    /// B41c 潜行行动的开工快照（R05 Q342、Q422）：成功率在开始那一刻按队长当时的潜行等级、清醒、精神与敌踪警觉锁定，
+    /// 完成时只掷骰不重算；练习潜行只记练习者。
+    /// </summary>
+    public sealed class StealthCheck
+    {
+        /// <summary>sneak = 潜行接近；evade = 躲避；practice = 练习潜行。</summary>
+        public string Kind { get; set; } = "";
+        /// <summary>目标敌踪卡键（练习为空）。</summary>
+        public string CardKey { get; set; } = "";
+        /// <summary>队长（潜行接近／躲避）或练习者的人员 ID。</summary>
+        public string ActorId { get; set; } = "";
+        /// <summary>目标敌踪名（开工时快照，用于结果与取消句）。</summary>
+        public string CardTitle { get; set; } = "";
+        public int Level { get; set; }
+        public double Wakefulness { get; set; }
+        public double Morale { get; set; }
+        public int Vigilance { get; set; }
+        /// <summary>锁定的成功率（整数百分比）。</summary>
+        public int Rate { get; set; }
+        /// <summary>目标敌踪本次现身序号（经验领取按「卡键@序号」去重）。</summary>
+        public int Appearance { get; set; }
+
+        public StealthCheck Clone() => (StealthCheck)MemberwiseClone();
     }
 
     public sealed class DeathInfo

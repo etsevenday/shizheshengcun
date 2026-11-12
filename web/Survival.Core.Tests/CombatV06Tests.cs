@@ -136,7 +136,7 @@ public class CombatV06Tests : BattleTestBase
 
         // B5（A06 §1，取代 v0.6“无10级上限”）：经验逐级扣门槛、可多级提升，到10级停；溢出报错不回零
         var s = New();
-        Assert.That(s.Skills.Keys, Is.EquivalentTo(Cfg.Skills.Select(x => x.Id)), "新局15门技能");
+        Assert.That(s.Skills.Keys, Is.EquivalentTo(E.SkillsInPlay.Select(x => x.Id)), "新局15门技能（开关开时 16 门）");
         Assert.That(s.Skills.Values.All(x => x.Level == 1 && x.Xp == 0), Is.True);
         E.GainXp(s, "blade", 100 + 150);      // 1→2 需100，2→3 需150
         Assert.That(s.Skills["blade"].Level, Is.EqualTo(3));

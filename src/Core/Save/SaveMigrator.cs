@@ -83,6 +83,7 @@ namespace Survival.Core.Save
         public const string Schema44 = "44";
         public const string Schema45 = "45";
         public const string Schema46 = "46";
+        public const string Schema47 = "47";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -144,6 +145,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema44) From44To45(s);
             if (s.SchemaVersion == Schema45) From45To46(s);
             if (s.SchemaVersion == Schema46) From46To47(s);
+            if (s.SchemaVersion == Schema47) From47To48(s);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             return notes;
@@ -663,7 +665,7 @@ namespace Survival.Core.Save
                     sk.Xp = 0;
                 }
                 var added = 0;
-                foreach (var sc in config.Skills)
+                foreach (var sc in config.Skills.Where(x => !x.EnemyCardsV2Only))   // B41c：第 16 门潜行不属于这次迁移，开关开时读档另补（AdoptEnemyCards）
                 {
                     if (actor.Skills.ContainsKey(sc.Id)) continue;
                     actor.Skills[sc.Id] = new SkillState { Level = sc.InitialLevel, Xp = 0 };
@@ -1413,6 +1415,21 @@ namespace Survival.Core.Save
         {
             s.EnemyCards ??= new EnemyCardsState();
             s.EnemyCards.Timers ??= new Dictionary<string, EnemyCardTimer>();
+            s.SchemaVersion = Schema47;
+        }
+
+        // ───────────────────────── 47 → 48 ─────────────────────────
+
+        /// <summary>
+        /// B41c 小队队长、潜行行动、躲避隐藏与先手的存档结构（R05 Q342、Q420—Q428、Q445、Q503—Q508，开发记录 B41c）：只补默认值——
+        /// 队长为主角、没有隐藏中的敌人、所有卡现身次数为 0、没有领过潜行经验、进行中的战斗没有先手。第 16 门潜行在采纳新版敌踪时补（1 级 0 经验）。
+        /// 不改敌人、行动、技能，不抽随机，静默。幂等。
+        /// </summary>
+        private static void From47To48(GameState s)
+        {
+            s.EnemyCards ??= new EnemyCardsState();
+            s.EnemyCards.Appearances ??= new Dictionary<string, int>();
+            s.EnemyCards.StealthXpClaims ??= new List<string>();
             s.SchemaVersion = GameState.CurrentSchema;
         }
 
@@ -1424,6 +1441,8 @@ namespace Survival.Core.Save
         {
             if (!config.Encounters.EnemyCardsV2) return;
             s.EnemyCards ??= new EnemyCardsState();
+            // B41c：开关开着时每次读档都给所有人补第 16 门潜行（缺才补，1 级 0 经验；R05 Q342 / R01），已有的不动
+            new Engine.GameEngine(config).InitSkills(s);
             if (s.EnemyCards.ModelVersion >= Engine.GameEngine.EnemyCardsModelV2) return;
             new Engine.GameEngine(config).AdoptEnemyCards(s);
         }

@@ -20869,6 +20869,16 @@
       "initialLevel": 1,
       "nextLevelXpFormula": "50*(L+1)",
       "levelCap": 10
+    },
+    {
+      "id": "stealth",
+      "name": "潜行",
+      "category": "survival",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": 10,
+      "trackOnly": true,
+      "enemyCardsV2Only": true
     }
   ],
   "weapons": [
@@ -24599,7 +24609,34 @@
       35,
       40
     ],
-    "cardRetreatGuardMinutes": 60
+    "cardRetreatGuardMinutes": 60,
+    "stealth": {
+      "source": "R05 Q342「队长、潜行与 Q424 练习」「潜行与躲避判定」「Q420 躲避重现」、Q505",
+      "checkMinutes": 5,
+      "levelFactor": 5,
+      "wakefulnessFactor": 0.25,
+      "wakefulnessRef": 90,
+      "moraleFactor": 0.2,
+      "moraleRef": 60,
+      "sneakBase": 50,
+      "sneakMin": 10,
+      "sneakMax": 90,
+      "evadeBase": 60,
+      "evadeMin": 15,
+      "evadeMax": 95,
+      "xpSuccess": 20,
+      "xpFail": 10,
+      "practiceMinutes": 30,
+      "practiceXp": 20,
+      "hideMinMinutes": 720,
+      "hideMaxMinutes": 1440,
+      "hideStepMinutes": 5
+    },
+    "firstStrike": {
+      "source": "R05 Q422、R03 Q342",
+      "speedFactor": 1.5,
+      "damageFactor": 1.5
+    }
   },
   "zombieLoot": {
     "rollAtFirstEnemyDeath": true,

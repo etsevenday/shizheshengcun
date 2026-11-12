@@ -23,7 +23,7 @@ public class B5SkillTests : BattleTestBase
     {
         var ids = new[] { "unarmed", "blade", "axe", "spear", "blunt", "archery", "firearms", "shield", "command", "medicine",
                           "crafting", "gathering", "scavenging", "cooking", "athletics" };
-        Assert.That(Cfg.Skills.Select(x => x.Id), Is.EqualTo(ids), "A06 §4 十五门");
+        Assert.That(Cfg.Skills.Where(x => !x.EnemyCardsV2Only).Select(x => x.Id), Is.EqualTo(ids), "A06 §4 十五门（B41c 第 16 门潜行只在 enemyCardsV2 开时生效）");
         Assert.That(Cfg.Skills.Single(x => x.Id == "blade").Name, Is.EqualTo("刀剑"));
         Assert.That(Cfg.Skills.Single(x => x.Id == "archery").Name, Is.EqualTo("弓弩"));
         Assert.That(Cfg.SkillNodes, Has.Count.EqualTo(75));
@@ -36,7 +36,8 @@ public class B5SkillTests : BattleTestBase
         Assert.That(Cfg.SkillNodes.Single(n => n.Id == "axe_10").BaseEnergy, Is.EqualTo(1.15));
         Assert.That(Cfg.SkillKindBaseEnergy["axe"], Is.EqualTo(0.65));
         var s = New();
-        Assert.That(s.Skills.Keys, Is.EquivalentTo(ids), "新局 15 门");
+        Assert.That(s.Skills.Keys, Is.EquivalentTo(E.SkillsInPlay.Select(k => k.Id)), "新局 15 门（B41c 开关开时另有潜行）");
+        Assert.That(s.Skills.Keys, Is.SupersetOf(ids));
         Assert.That(s.Skills.Values.All(x => x.Level == 1 && x.Xp == 0), Is.True, "全部 1 级 0 经验");
     }
 
@@ -215,7 +216,7 @@ public class B5SkillTests : BattleTestBase
         var m = Survival.Core.Save.SaveSerializer.Deserialize(json, Cfg, out var notes);
         Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "11 之后继续升到当前版本");
         var p = m.Player.Skills;
-        Assert.That(p.Keys, Is.EquivalentTo(Cfg.Skills.Select(x => x.Id)), "十五门");
+        Assert.That(p.Keys, Is.EquivalentTo(E.SkillsInPlay.Select(x => x.Id)), "十五门（开关开时读档另补潜行）");
         Assert.That((p["blade"].Level, p["blade"].Xp), Is.EqualTo((7, 123L)), "刀剑沿用旧刀斧");
         Assert.That((p["axe"].Level, p["axe"].Xp), Is.EqualTo((7, 123L)), "斧复制旧刀斧");
         Assert.That((p["crafting"].Level, p["crafting"].Xp, p["crafting"].LegacyLevel, p["crafting"].LegacyXp), Is.EqualTo((10, 0L, (int?)13, (long?)40)), "超过10截到10，原值只作历史");
@@ -413,8 +414,8 @@ public class B5SkillTests : BattleTestBase
     {
         var s = New();
         var v = E.SkillViews(s);
-        Assert.That((v.Count(x => x.Category == "combat"), v.Count(x => x.Category == "both"), v.Count(x => x.Category == "survival")), Is.EqualTo((9, 1, 5)));
-        Assert.That(v.All(x => x.Nodes.Count == 5 && x.Cap == 10 && x.NextXp == 100), Is.True);
+        Assert.That((v.Count(x => x.Category == "combat"), v.Count(x => x.Category == "both"), v.Count(x => x.Category == "survival")), Is.EqualTo((9, 1, E.SkillsInPlay.Any(k => k.EnemyCardsV2Only) ? 6 : 5)), "B41c 开关开时求生类另有潜行");
+        Assert.That(v.All(x => x.Nodes.Count == (x.Id == "stealth" ? 0 : 5) && x.Cap == 10 && x.NextXp == 100), Is.True, "潜行没有专属节点");
         Assert.That(E.DebugSetSkillLevels(s, 10, true), Does.Contain("求生五门"));
         Assert.That(s.Skills["athletics"].Level, Is.EqualTo(10));
         Assert.That(s.Skills["blade"].Level, Is.EqualTo(1), "只改求生五门");

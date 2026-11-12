@@ -183,13 +183,13 @@ namespace Survival.Core.Engine
 
         public string DebugSetSkillLevels(GameState s, int level, bool survivalOnly)
         {
-            var ids = Config.Skills.Where(k => !survivalOnly || k.Category == "survival").Select(k => k.Id).ToList();
+            var ids = SkillsInPlay.Where(k => !survivalOnly || (k.Category == "survival" && !k.EnemyCardsV2Only)).Select(k => k.Id).ToList();
             foreach (var id in ids)
             {
                 var lv = Math.Max(1, Math.Min(SkillCap(id), level));
                 s.Skills[id] = new SkillState { Level = lv, Xp = 0 };
             }
-            return $"{(survivalOnly ? "求生五门（制造、采集、搜集、烹饪、行旅）" : "全部十五门")}熟练度设为{level}级（开发用）。";
+            return $"{(survivalOnly ? "求生五门（制造、采集、搜集、烹饪、行旅）" : (ids.Count == 16 ? "全部十六门" : "全部十五门"))}熟练度设为{level}级（开发用）。";
         }
 
         /// <summary>开发入口“技能器具一组”的清单（B7）：每类武器各一件（含盾、指挥、医疗器具）与技能耗材。</summary>

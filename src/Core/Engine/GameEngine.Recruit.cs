@@ -659,7 +659,7 @@ namespace Survival.Core.Engine
             var tpl = Rc.Template(c.TemplateId);
             // M381：本批里已招入后又退役的人，卡头写已退役（同周期不能再招回），不再显示“已招入名册”
             var retired = c.Status == RecruitCandidate.Recruited && c.ActorId != null && RosterOf(s, c.ActorId)?.Retired == true;
-            var others = Config.Skills.Where(sk => sk.Id != c.MainSkill && sk.Id != c.SubSkill).Select(sk => sk.Name);
+            var others = SkillsInPlay.Where(sk => sk.Id != c.MainSkill && sk.Id != c.SubSkill).Select(sk => sk.Name);
             return new RecruitCandidateView
             {
                 CandidateId = c.CandidateId,

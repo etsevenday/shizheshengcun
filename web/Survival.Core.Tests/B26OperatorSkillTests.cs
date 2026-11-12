@@ -111,7 +111,7 @@ public class B26OperatorSkillTests : BattleTestBase
         _ = Cards(s);
         Assert.That(Survival.Core.Save.SaveSerializer.Serialize(s), Is.EqualTo(json), "只读");
         var views = E.SkillViews(s);
-        Assert.That(views.Count, Is.EqualTo(15));
+        Assert.That(views.Count, Is.EqualTo(E.SkillsInPlay.Count()), "15 门（B41c 开关开时 16 门，潜行没有节点）");
         Assert.That(views.Sum(v => v.Nodes.Count), Is.EqualTo(75));
     }
 }

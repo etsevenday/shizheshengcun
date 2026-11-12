@@ -839,7 +839,7 @@ public class B7CombatTests : BattleTestBase
         Assert.That(text, Does.Contain("信号哨").And.Contain("创伤救护包").And.Contain("医用纱布×3"));
         var kinds = s.Items.Where(i => i.Owner == "field" && E.Weapon(i.ItemId) != null).Select(i => E.Weapon(i.ItemId)!.WeaponKind).Distinct();
         Assert.That(kinds, Is.SupersetOf(new[] { "blade", "axe", "spear", "blunt", "archery", "firearms", "shield", "command", "medical" }));
-        Assert.That(E.DebugSetSkillLevels(s, 7, false), Does.Contain("全部十五门"));
+        Assert.That(E.DebugSetSkillLevels(s, 7, false), Does.Contain(E.SkillsInPlay.Any(k => k.EnemyCardsV2Only) ? "全部十六门" : "全部十五门"));
         Assert.That(s.Skills["shield"].Level, Is.EqualTo(7));
     }
 

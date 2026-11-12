@@ -357,7 +357,7 @@ namespace Survival.Core.Config
             {
                 Dup(c.SkillNodes, x => x.Id, "技能节点", e);
                 foreach (var n in c.SkillNodes.Where(n => !skills.Contains(n.SkillId))) e.Add($"技能节点 {n.Id} 的门类 {n.SkillId} 不存在");
-                foreach (var sk in c.Skills)
+                foreach (var sk in c.Skills.Where(x => !x.TrackOnly))
                 {
                     var lv = c.SkillNodes.Where(n => n.SkillId == sk.Id).Select(n => n.Level).OrderBy(x => x).ToList();
                     if (!lv.SequenceEqual(new[] { 1, 3, 5, 7, 10 })) e.Add($"技能 {sk.Id} 须恰好有 1/3/5/7/10 级五个节点（现有 {string.Join("/", lv)}）");
@@ -497,6 +497,18 @@ namespace Survival.Core.Config
             // B41b：接近时间候选与同卡撤退保护（R05 Q416）
             if (c.Encounters.ApproachMinutes.Count == 0 || c.Encounters.ApproachMinutes.Any(m => m <= 0 || m % tick != 0)) e.Add($"敌踪接近时间候选须非空且都是{tick}的正倍数");
             if (c.Encounters.CardRetreatGuardMinutes <= 0 || c.Encounters.CardRetreatGuardMinutes % tick != 0) e.Add($"敌踪撤退保护时长须为{tick}的正倍数");
+            // B41c：潜行判定、练习与躲避隐藏（R05 Q342 定稿）
+            var stl = c.Encounters.Stealth;
+            if (c.Skills.Any(x => x.EnemyCardsV2Only))
+            {
+                if (stl.CheckMinutes <= 0 || stl.CheckMinutes % tick != 0) e.Add($"潜行判定时长须为{tick}的正倍数");
+                if (stl.PracticeMinutes <= 0 || stl.PracticeMinutes % tick != 0) e.Add($"练习潜行时长须为{tick}的正倍数");
+                if (stl.SneakMin > stl.SneakMax || stl.EvadeMin > stl.EvadeMax || stl.SneakMin < 0 || stl.EvadeMax > 100) e.Add("潜行／躲避成功率上下限无效");
+                if (stl.XpSuccess < 0 || stl.XpFail < 0 || stl.PracticeXp < 0) e.Add("潜行经验不能为负");
+                if (stl.HideStepMinutes <= 0 || stl.HideStepMinutes % tick != 0 || stl.HideMinMinutes <= 0 || stl.HideMaxMinutes < stl.HideMinMinutes
+                    || (stl.HideMaxMinutes - stl.HideMinMinutes) % stl.HideStepMinutes != 0 || stl.HideMinMinutes % tick != 0) e.Add("躲避隐藏时长档位无效");
+                if (c.Encounters.FirstStrike.SpeedFactor <= 0 || c.Encounters.FirstStrike.DamageFactor <= 0) e.Add("先手倍率须为正");
+            }
             if (!c.HourlyRates.ContainsKey(c.Encounters.BypassRateCategory)) e.Add($"绕行速率类别 {c.Encounters.BypassRateCategory} 不存在");
             if (c.BattleTime.RoundWorldMinutes != tick) e.Add("战斗每轮世界分钟须等于时间段长度");
 

@@ -327,7 +327,7 @@ public class B19RecruitTests : TestBase
         Assert.That(E.Reserves(s).Select(x => x.ActorId), Does.Contain(r.ActorId));
         var a = s.Actors[r.ActorId];
         Assert.That(a.Name, Is.EqualTo(c.Name));
-        foreach (var sk in Cfg.Skills)
+        foreach (var sk in E.SkillsInPlay)
         {
             var want = sk.Id == c.MainSkill ? c.MainLevel : sk.Id == c.SubSkill ? c.SubLevel : 1;
             Assert.That(a.Skills[sk.Id].Level, Is.EqualTo(want), sk.Id);

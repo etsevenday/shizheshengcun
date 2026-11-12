@@ -419,7 +419,7 @@ public static class HelpCatalog
                     Id = "skills", Title = "熟练度与经验", Icon = "stone_knife",
                     Paragraphs = (e, s) => new[]
                     {
-                        $"共有{e.Config.Skills.Count}门熟练度（{string.Join("、", e.Config.Skills.Select(k => k.Name))}），都从1级开始，最高10级；升到下一级要50×(当前等级+1)经验，1级到10级共{e.TotalXpToCap("crafting")}经验，到10级后这一门不再获得经验。",
+                        $"共有{e.SkillsInPlay.Count()}门熟练度（{string.Join("、", e.SkillsInPlay.Select(k => k.Name))}），都从1级开始，最高10级；升到下一级要50×(当前等级+1)经验，1级到10级共{e.TotalXpToCap("crafting")}经验，到10级后这一门不再获得经验。",
                         $"经验来源：攻击命中每个目标+{e.Config.Xp.DamagingAttackCommand}（同一个敌人对同一门最多{e.Config.Xp.MaxHitsPerEncounterEnemySkill}次）；有效医疗+{e.Config.Xp.Medical}；制作、建造、维护完成按配方时间给制造经验；采集或搜集每成功一次+{e.Config.Xp.GatherSubmit}（同一资源点每天最多{e.Config.Xp.GatherDailyPerNode}次计经验，箱子练搜集，其余练采集）；每走完一段路+{e.Config.Xp.TravelEdge}行旅（同一方向每天一次）。预估、取消不给经验。",
                         "武器熟练度提高伤害与命中能力、减少技能体力。制造熟练度不改变制作工时，按等级开放拆解（制造1/3/7/10级可拆0/1/2/3阶装备，每件制造经验+2），10级回收专家。每门在1/3/5/7/10级各有一个专属技能：制造、采集、搜集、烹饪、行旅五门的是求生被动（如采集7级工作量×0.9），达到等级自动生效；拳、刀剑、斧、矛、钝器、弓弩、枪械、盾、指挥、医疗十门的是战斗技能，装上这一类武器（空手即拳）后出现在该武器页，1级攻击技能就是普通攻击，其余随等级解锁。人物页“熟练度”悬停一门可看它的五个技能。",
                     },

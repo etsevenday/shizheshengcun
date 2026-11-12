@@ -54,7 +54,7 @@ public class B8PartyTests : TestBase
             Assert.That(a.Stats.Energy, Is.EqualTo(18)); Assert.That(a.Stats.Wakefulness, Is.EqualTo(90));
             Assert.That(a.Stats.Morale, Is.EqualTo(70)); Assert.That(a.Body.Immunity, Is.EqualTo(70));
             Assert.That(a.Body.VirusLoad, Is.EqualTo(0)); Assert.That(a.Body.Infected, Is.False);
-            Assert.That(a.Skills.Count, Is.EqualTo(15));
+            Assert.That(a.Skills.Count, Is.EqualTo(E.SkillsInPlay.Count()), "15 门（B41c 开关开时 16 门）");
             Assert.That(a.Skills.Values.All(x => x.Xp == 0), Is.True);
             var named = Cfg.Party.Named(id)!;
             foreach (var kv in a.Skills)

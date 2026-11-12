@@ -23,6 +23,10 @@ namespace Survival.Core.State
         /// 卡失效（敌人死亡、组散、单卡入组、固定战已胜）即移除。
         /// </summary>
         public Dictionary<string, EnemyCardTimer> Timers { get; set; } = new Dictionary<string, EnemyCardTimer>();
+        /// <summary>B41c 每张卡因躲避隐藏后重现的次数（卡键 → 次数；没有记录 = 0）。「卡键@次数」就是本次现身的身份，潜行经验按它每次现身只领一次（Q342、Q505）。</summary>
+        public Dictionary<string, int> Appearances { get; set; } = new Dictionary<string, int>();
+        /// <summary>B41c 已实际获得过潜行经验的现身（"卡键@次数"）；实际经验为 0 不记（Q505 B）。</summary>
+        public List<string> StealthXpClaims { get; set; } = new List<string>();
 
         public EnemyCardsState Clone() => new EnemyCardsState
         {
@@ -30,6 +34,8 @@ namespace Survival.Core.State
             NextGroupId = NextGroupId,
             Groups = Groups.Select(g => g.Clone()).ToList(),
             Timers = Timers.ToDictionary(kv => kv.Key, kv => kv.Value.Clone()),
+            Appearances = new Dictionary<string, int>(Appearances),
+            StealthXpClaims = new List<string>(StealthXpClaims),
         };
     }
 

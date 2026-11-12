@@ -45,6 +45,18 @@ namespace Survival.Core.State
         /// （R05「Q417–Q419」）。动物（family=animal）永远为 null（R05「B41a Q436 动物单卡」）。
         /// </summary>
         public int? GroupId { get; set; }
+        /// <summary>
+        /// B41c 躲避成功后的隐藏截止（世界分钟；R05 Q342、Q424）：到点在原地点或相邻合法地点重现，不发消息。没有为 null。
+        /// 与旧版逃走隐藏 HiddenUntil 分开记。
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int? EvadeHiddenUntil { get; set; }
+        /// <summary>
+        /// B41c 种群上限归属（Q503 A）：首次躲避隐藏时按当时所在地点锁定——"legacy" 计入旧八个地点总数，"region:&lt;区域ID&gt;" 计入该区域，
+        /// "none" 不计；之后重现到别处仍按它计。没有为 null（按所在地点判定）。
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? PopAccount { get; set; }
 
         public WorldEnemy Clone()
         {
@@ -395,6 +407,12 @@ namespace Survival.Core.State
         public List<string> CommandXp { get; set; } = new List<string>();
         /// <summary>鼓舞/总攻令的经验待发：增益被攻击实际用掉时才给（A06 §3“有增益后实际消耗”）。</summary>
         public List<string> PendingCommandXp { get; set; } = new List<string>();
+        /// <summary>B41c 先手方（R03 Q426—Q428）："ally" 我方、"enemy" 敌方；没有先手为 null。</summary>
+        [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? FirstStrike { get; set; }
+        /// <summary>B41c 还没用掉首次攻击伤害加成的开场参战者（我方人员 ID，敌方 "e:&lt;世界ID&gt;"）；没有先手为 null。</summary>
+        [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public List<string>? FirstStrikeDamage { get; set; }
         /// <summary>便携指挥终端“每场首次号令”已用。</summary>
         public bool FirstCommandUsed { get; set; }
 
@@ -522,6 +540,7 @@ namespace Survival.Core.State
             c.Fighters = Fighters.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.CommandXp = new List<string>(CommandXp);
             c.PendingCommandXp = new List<string>(PendingCommandXp);
+            c.FirstStrikeDamage = FirstStrikeDamage == null ? null : new List<string>(FirstStrikeDamage);
             c.Loot = Loot.Select(l => l.Clone()).ToList();
             c.Log = new List<string>(Log);
             return c;

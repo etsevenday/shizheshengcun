@@ -123,6 +123,10 @@ namespace Survival.Core.Config
         public int? LevelCap { get; set; }
         /// <summary>combat 战斗门类、survival 求生门类、both 医疗（战内外都有用途，A06 §4）。</summary>
         public string Category { get; set; } = "combat";
+        /// <summary>只有等级和经验轨、没有招式节点（B41c：第 16 门潜行，R05「队长、潜行与 Q424 练习」）。</summary>
+        public bool TrackOnly { get; set; }
+        /// <summary>只在新版敌踪开关 encounters.enemyCardsV2 打开时存在（B41c：潜行；开关关时不进角色、成长页、招募说明）。</summary>
+        public bool EnemyCardsV2Only { get; set; }
 
         [JsonIgnore] public double XpBase => Formula.Num(NextLevelXpFormula, 0);
         [JsonIgnore] public double XpOffset => Formula.Num(NextLevelXpFormula, 1);
@@ -832,6 +836,46 @@ namespace Survival.Core.Config
         public List<int> ApproachMinutes { get; set; } = new List<int>();
         /// <summary>B41b 成功撤退后同一张敌踪卡的主动接近保护（世界分钟；R05 Q416：60）。</summary>
         public int CardRetreatGuardMinutes { get; set; }
+        /// <summary>B41c 潜行接近、躲避、练习潜行与躲避隐藏（R05「队长、潜行与 Q424 练习」「潜行与躲避判定」「Q420」）。</summary>
+        public StealthConfig Stealth { get; set; } = new StealthConfig();
+        /// <summary>B41c 先手（R05 Q422、R03 Q342）。</summary>
+        public FirstStrikeConfig FirstStrike { get; set; } = new FirstStrikeConfig();
+    }
+
+    /// <summary>
+    /// B41c 潜行数值（R05「潜行与躲避判定」：Δ=5×(队长潜行−警惕)+0.25×(清醒−90)+0.20×(精神−60)，潜行接近 round(clamp(50+Δ,10,90))%、
+    /// 躲避 round(clamp(60+Δ,15,95))%；判定 5 世界分钟；成功 20／失败 10 经验；练习 30 分钟 20 经验；躲避隐藏 720—1440 分钟按 5 分钟一档）。
+    /// </summary>
+    public sealed class StealthConfig
+    {
+        public string Source { get; set; } = "";
+        public int CheckMinutes { get; set; }
+        public double LevelFactor { get; set; }
+        public double WakefulnessFactor { get; set; }
+        public double WakefulnessRef { get; set; }
+        public double MoraleFactor { get; set; }
+        public double MoraleRef { get; set; }
+        public double SneakBase { get; set; }
+        public double SneakMin { get; set; }
+        public double SneakMax { get; set; }
+        public double EvadeBase { get; set; }
+        public double EvadeMin { get; set; }
+        public double EvadeMax { get; set; }
+        public int XpSuccess { get; set; }
+        public int XpFail { get; set; }
+        public int PracticeMinutes { get; set; }
+        public int PracticeXp { get; set; }
+        public int HideMinMinutes { get; set; }
+        public int HideMaxMinutes { get; set; }
+        public int HideStepMinutes { get; set; }
+    }
+
+    /// <summary>B41c 先手：开场参战成员第一完整回合有效速度×、每人首次实际攻击的原倍率伤害项×（R05 Q422）。</summary>
+    public sealed class FirstStrikeConfig
+    {
+        public string Source { get; set; } = "";
+        public double SpeedFactor { get; set; } = 1;
+        public double DamageFactor { get; set; } = 1;
     }
 
     public sealed class ZombieLootConfig

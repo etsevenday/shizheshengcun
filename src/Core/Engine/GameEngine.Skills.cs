@@ -54,6 +54,12 @@ namespace Survival.Core.Engine
 
         public SkillConfig? SkillCfg(string id) => Config.Skills.FirstOrDefault(x => x.Id == id);
 
+        /// <summary>
+        /// 当前生效的技能门类：B41c 第 16 门潜行（enemyCardsV2Only）只在开关 encounters.enemyCardsV2 开着时出现（R05 Q342、R01），
+        /// 关着时仍是原来 15 门（人物页、新人、招募、帮助都不变）。
+        /// </summary>
+        public IEnumerable<SkillConfig> SkillsInPlay => Config.Skills.Where(k => !k.EnemyCardsV2Only || Config.Encounters.EnemyCardsV2);
+
         public string SkillName(string id) => SkillCfg(id)?.Name ?? id;
 
         /// <summary>该门等级上限：技能自身 levelCap，否则 skillGrowth.skillLevelCap，都没有则不封顶。</summary>
@@ -93,7 +99,7 @@ namespace Survival.Core.Engine
 
         public void InitSkills(ActorState actor)
         {
-            foreach (var sk in Config.Skills)
+            foreach (var sk in SkillsInPlay)
                 if (!actor.Skills.ContainsKey(sk.Id)) actor.Skills[sk.Id] = new SkillState { Level = sk.InitialLevel, Xp = 0 };
         }
 
@@ -162,7 +168,7 @@ namespace Survival.Core.Engine
         /// <summary>人物页技能区：15 门的名称、类别、等级/上限、当前经验与下级门槛、已获得的专属节点。</summary>
         public List<SkillView> SkillViews(GameState s) => SkillViews(s.Player);
 
-        public List<SkillView> SkillViews(ActorState actor) => Config.Skills.Select(c =>
+        public List<SkillView> SkillViews(ActorState actor) => SkillsInPlay.Select(c =>
         {
             var lv = SkillLevel(actor, c.Id);
             var cap = SkillCap(c.Id);

@@ -129,7 +129,7 @@ namespace Survival.Core.Engine
             };
             foreach (var st in Stats.All) { a.AlertLatched[st] = false; a.ZeroLatched[st] = false; }
             // 未列出的技能 defaultLevel 级、级内经验 0；列出等级的经验置该级起点（级内 0，开发假设 B8-3）
-            foreach (var sk in Config.Skills)
+            foreach (var sk in SkillsInPlay)
                 a.Skills[sk.Id] = new SkillState { Level = skills != null && skills.TryGetValue(sk.Id, out var lv) ? lv : defaultLevel, Xp = 0 };
             return a;
         }
