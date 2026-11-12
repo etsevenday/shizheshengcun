@@ -11,7 +11,8 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B32dTests : TestBase
 {
-    private const string Guide = "要煅烧木炭，请在右栏空加工位点「煅烧木炭」（每批木材×4）。";
+    // B45（逐字稿 Q546「内核通用煅烧引导」）取代 Q377 的「右栏空加工位」版
+    private const string Guide = "要煅烧木炭，请点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」（每批木材×4）。";
 
     private static FacilityState Fac(GameState s) => s.Locations["camp"].Facility;
 
@@ -138,14 +139,14 @@ public class B32dTests : TestBase
         Assert.That(Web("wwwroot", "js", "app.js"), Does.Contain("if (document.querySelector('.menu-modal')) {"), "菜单期间按键不落到隐藏的操作条");
     }
 
-    /// <summary>Q391-A01：木炭物品说明与系统说明两处入口指向右栏空加工位；煅烧条仍带实际配方规则。</summary>
+    /// <summary>Q391-A01：木炭物品说明与系统说明两处入口；B45（逐字稿 Q546 关联表）起改指火堆／柴炉卡的加工菜单；煅烧条仍带实际配方规则。</summary>
     [Test]
     public void Q391_A01_CharcoalEntryTexts()
     {
-        Assert.That(E.Item("charcoal").Desc, Is.EqualTo("锻炉燃料与材料。在右栏空加工位点「煅烧木炭」：木材×4→木炭×3，占1个加工位、需60有效受热分钟，火堆燃料另计。"));
+        Assert.That(E.Item("charcoal").Desc, Is.EqualTo("锻炉燃料与材料。点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」：木材×4→木炭×3，占1个加工位、需60有效受热分钟，火堆燃料另计。"));
         var help = Web("Services", "HelpCatalog.cs");
-        Assert.That(help, Does.Contain("$\"在右栏空加工位点「煅烧木炭」，看清后点「确认投料」：{e.CharcoalRuleText()}。原料只取你随身和当前地面的木材，投料不耗时间；火堆熄灭时也能先投，点燃后才开始计热。\""));
-        Assert.That(help, Does.Contain("\"转移、食用、点火、等待加工这些直接操作不额外弹确认；在右栏空加工位点「煅烧木炭」，看清原料与燃料后点「确认投料」。\""));
+        Assert.That(help, Does.Contain("$\"点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」，看清后点「确认投料」：{e.CharcoalRuleText()}。原料只取你随身和当前地面的木材，投料不耗时间；火堆熄灭时也能先投，点燃后才开始计热。\""));
+        Assert.That(help, Does.Contain("\"转移、食用、点火、等待加工这些直接操作不额外弹确认；点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」，看清原料与燃料后点「确认投料」。\""));
         Assert.That(help, Does.Not.Contain("火堆卡上点“煅烧木炭”").And.Not.Contain("火堆“煅烧木炭”在卡旁浮窗"));
     }
 

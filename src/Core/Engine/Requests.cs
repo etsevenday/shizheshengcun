@@ -173,6 +173,8 @@ namespace Survival.Core.Engine
         public string? RequestId { get; set; }
         /// <summary>Q113 煅烧投料：玩家在浮窗里看到并确认的逐堆明细；带上时确认前重验，来源有任何变化整条拒绝。null = 内部/旧调用，按当时自动分配。</summary>
         public CharcoalPlan? CharcoalPlan { get; set; }
+        /// <summary>B45（S14 Q557）：放进火堆时明确的加工位（0 起）。带上时只放这一位、最多 1 份／1 口锅，被占用整单拒绝；null = 整卡原规则（自动第一空位）。</summary>
+        public int? Slot { get; set; }
 
         public static InstantRequest Pickup(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Pickup, InstanceId = instanceId, Count = count };
         public static InstantRequest Drop(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Drop, InstanceId = instanceId, Count = count };
@@ -184,6 +186,8 @@ namespace Survival.Core.Engine
             new InstantRequest { Kind = InstantKind.Decant, InstanceId = potWaterInstanceId, Zone = zone, Count = count };
         /// <summary>锅或直烤食材放进当前火堆的空加工位（食材每份占一位）。</summary>
         public static InstantRequest PutInFire(int instanceId, int count = 1) => new InstantRequest { Kind = InstantKind.PutInFire, InstanceId = instanceId, Count = count };
+        /// <summary>B45（Q557）：放进当前火堆指定加工位（0 起），数量必须是 1。</summary>
+        public static InstantRequest PutInFireSlot(int instanceId, int slot, int count = 1) => new InstantRequest { Kind = InstantKind.PutInFire, InstanceId = instanceId, Count = count, Slot = slot };
         /// <summary>食材放进指定锅的食材区。</summary>
         public static InstantRequest PutFoodInPot(int foodInstanceId, int potInstanceId, int count = 1) =>
             new InstantRequest { Kind = InstantKind.PutFoodInPot, InstanceId = foodInstanceId, TargetInstanceId = potInstanceId, Count = count };

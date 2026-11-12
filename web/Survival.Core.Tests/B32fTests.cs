@@ -246,15 +246,16 @@ public class B32fTests : TestBase
 
     // ───────────── Q396 系统说明「就近执行与浮窗」 ─────────────
 
-    /// <summary>Q396-A01：同条首段最后一句换成新句，后文 Q391 的煅烧入口与「确认投料」保留。</summary>
+    /// <summary>Q396-A01：同条首段最后一句换成新句，后文 Q391 的煅烧入口与「确认投料」保留。B45（Q558 统一 Q546 版）起两句改指加工菜单。</summary>
     [Test]
     public void Q396_A01_NearbyHelpSentence()
     {
         var help = Web("Services", "HelpCatalog.cs");
         var nearby = help.Substring(help.IndexOf("Id = \"nearby\", Title = \"就近执行与浮窗\""));
         nearby = nearby.Substring(0, nearby.IndexOf("new HelpEntry"));
-        Assert.That(nearby, Does.Contain("在所选时长旁“开始”。右栏显示对象详情和行动预估。选中火堆或柴炉后，可以在右栏操作加工位。\","));
-        Assert.That(nearby, Does.Contain("在右栏空加工位点「煅烧木炭」，看清原料与燃料后点「确认投料」。"));
+        Assert.That(nearby, Does.Contain("在所选时长旁“开始”。右栏显示对象详情和行动预估。点击火堆或柴炉卡，打开加工菜单后操作加工位。\","));
+        Assert.That(nearby, Does.Contain("点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」，看清原料与燃料后点「确认投料」。"));
+        Assert.That(help, Does.Not.Contain("右栏操作加工位").And.Not.Contain("在右栏空加工位"), "B45 Q558：同处只留一版");
         Assert.That(help, Does.Not.Contain("右栏只看信息和预测，没有执行按钮。"));
     }
 

@@ -379,13 +379,23 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// Q377（逐字稿 §1.5）：煅烧指引——「要煅烧木炭，请在右栏空加工位点「煅烧木炭」（每批{原料}×{份数}）。」，原料与份数沿当前煅烧配方。
+        /// Q377（逐字稿 §1.5）：煅烧指引，原料与份数沿当前煅烧配方。B45（逐字稿 Q546「内核通用煅烧引导」）起入口改为中央加工菜单：
+        /// 「要煅烧木炭，请点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」（每批{原料名}×{原料数}）。」
         /// B32f（Q393）起加燃料的落点预览、成功日志与容量拒绝不再附这句；只留在把木材当加工位物品放进火堆（PutInFire 内核兜底）的拒绝原因里。
         /// </summary>
-        public string CharcoalSlotGuide(ProcessConfig cp) => $"要煅烧木炭，请在右栏空加工位点「煅烧木炭」（每批{ItemName(cp.InputId)}×{cp.InputCount}）。";
+        public string CharcoalSlotGuide(ProcessConfig cp) => $"要煅烧木炭，请点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」（每批{ItemName(cp.InputId)}×{cp.InputCount}）。";
+
+        /// <summary>Q377／Q556：木材作为加工位物品放入时的拒绝前句（没有煅烧配方时只有这一句）。</summary>
+        public const string WoodIsFuelNote = "拖木材到火堆卡是添加燃料。";
 
         /// <summary>Q377：木材不能作为加工位物品放进火堆时的说明「拖木材到火堆卡是添加燃料。」＋煅烧指引（不用于加燃料提示，Q393）。</summary>
-        public string CharcoalFuelDragNote(ProcessConfig cp) => "拖木材到火堆卡是添加燃料。" + CharcoalSlotGuide(cp);
+        public string CharcoalFuelDragNote(ProcessConfig cp) => WoodIsFuelNote + CharcoalSlotGuide(cp);
+
+        /// <summary>B45（逐字稿 Q557）：明确的加工位已被占用（序号从 1 起）。</summary>
+        public static string SlotTakenText(int slotNo) => $"加工位{slotNo}已被占用，请重新选择。";
+
+        /// <summary>B45（逐字稿 Q545）：通用来源数量不合法。</summary>
+        public static string QtyRangeText(int max) => $"请输入 1 到 {max} 之间的整数。";
 
         /// <summary>燃料空余容量不足一份木材时的原阻断句（拖入与「投入木材」共用）。</summary>
         private string FuelRoomText(FacilityState fac) => $"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{FuelCapOf(fac)}分钟）";
@@ -397,8 +407,12 @@ namespace Survival.Core.Engine
             return $"火堆加工位已满（{n}/{n}：{names}），请先取出";
         }
 
-        /// <summary>最多还能放进当前火堆几份（锅只能 1）；不能放时给出原因，不偷偷改投别处。</summary>
-        public int MaxPutInFire(GameState s, ItemInstance inst, out string? reason)
+        /// <summary>
+        /// 最多还能放进当前火堆几份（锅只能 1）；不能放时给出原因，不偷偷改投别处。
+        /// B45（S14 Q557）：slot 给出明确加工位（0 起）时只看这一位——被占用即「加工位{序号}已被占用，请重新选择。」（另一位空也不改投），
+        /// 可放时最多 1 份／1 口锅；其他原资格阻断仍按原顺序在前。slot 为 null 是整张火堆卡的原规则（全部空位、自动第一空位）。
+        /// </summary>
+        public int MaxPutInFire(GameState s, ItemInstance inst, out string? reason, int? slot = null)
         {
             var here = s.Ground;
             reason = HolderBlocked(s);
@@ -414,18 +428,29 @@ namespace Survival.Core.Engine
             if (inst.ReservedBy != null) { reason = "该物品已被预留"; return 0; }
             if (IsLocked(s, inst)) { reason = "行动占用：该物品正被当前行动使用"; return 0; }
             var free = FireFreeSlots(s, here);
+            if (slot is int bad && (bad < 0 || bad >= Config.Fire.ProcessingSlots)) { reason = Unsupported; return 0; }
+            // B45（Q557）：明确加工位只看这一位是否空闲；整卡入口仍看全部空位
+            string? SlotFull() => slot is int k
+                ? (FireSlots(s, here)[k] != null ? SlotTakenText(k + 1) : null)
+                : free < 1 ? FireFullText(s, here) : null;
             if (IsPot(inst))
             {
                 var cur = FirePot(s, here);
                 if (cur != null) { reason = $"火堆已有{PotDesc(s, cur)}，最多放{Config.Fire.MaxPots}口锅；请先取下"; return 0; }
-                if (free < 1) { reason = FireFullText(s, here); return 0; }
+                if (SlotFull() is string pf) { reason = pf; return 0; }
                 return 1;
             }
             if (IsLiquid(inst)) { reason = $"{cfg.Name}不能直接倒进火堆（不会产生净水，也不会灭火），请拖进锅里"; return 0; }
-            // Q111：拖木材到火堆仍是添加燃料；煅烧木炭走右栏空加工位的显式「煅烧木炭」投料，不把同一拖动默默改成煅烧（指引句 Q377）
+            // Q111：拖木材到火堆仍是添加燃料；煅烧木炭走中央加工菜单空加工位的显式「煅烧木炭」投料，不把同一拖动默默改成煅烧（指引句 Q377／Q546）
             if (CharcoalProcess is ProcessConfig cp && inst.ItemId == cp.InputId)
             {
                 reason = CharcoalFuelDragNote(cp);
+                return 0;
+            }
+            // B45（Q556）：没有煅烧配方时只留前句，不编可用煅烧入口
+            if (CharcoalProcess == null && inst.ItemId == "wood")
+            {
+                reason = WoodIsFuelNote;
                 return 0;
             }
             if (!CanRoast(inst.ItemId))
@@ -434,25 +459,31 @@ namespace Survival.Core.Engine
                 return 0;
             }
             if (IsSpoiled(s, inst)) { reason = $"{cfg.Name}已腐败，不能再加工"; return 0; }
-            if (free < 1) { reason = FireFullText(s, here); return 0; }
-            return Math.Min(free, inst.Count);
+            if (SlotFull() is string ff) { reason = ff; return 0; }
+            return slot.HasValue ? Math.Min(1, inst.Count) : Math.Min(free, inst.Count);
         }
 
-        /// <summary>锅或直烤食材 → 当前火堆空加工位；一份食材占一位，不能用堆叠绕过（P402）。</summary>
+        /// <summary>
+        /// 锅或直烤食材 → 当前火堆空加工位；一份食材占一位，不能用堆叠绕过（P402）。
+        /// B45（S14 Q557）：r.Slot 给出明确加工位时同一事务重验这一位空闲，只放 1 份／1 口锅并真实落在该位（写进随存档保存的 ProcessingSlots）；
+        /// 数量不是 1 整单拒绝（Q545 原句），不改投第一空位。
+        /// </summary>
         private ActionResult PutInFire(GameState s, InstantRequest r)
         {
             var inst = FindItem(s, r.InstanceId);
             if (inst == null) return ActionResult.Fail("物品已不在");
-            var max = MaxPutInFire(s, inst, out var why);
+            var max = MaxPutInFire(s, inst, out var why, r.Slot);
             if (why != null) return ActionResult.Fail(why);
             var here = s.Ground;
             var n = IsPot(inst) ? 1 : r.Count;
+            if (r.Slot.HasValue && r.Count != 1) return ActionResult.Fail(QtyRangeText(max), max);
             if (n < 1) return ActionResult.Fail("数量无效");
             if (n > inst.Count) return ActionResult.Fail("数量无效", max);
             if (n > max) return ActionResult.Fail($"火堆只剩{max}个空加工位", max);
             var owner = FireOwner(here);
             var name = ItemName(inst.ItemId);
             string text;
+            var placed = inst;
             if (IsPot(inst))
             {
                 inst.Owner = owner;
@@ -461,8 +492,15 @@ namespace Survival.Core.Engine
             }
             else
             {
-                for (var k = 0; k < n; k++) MoveOne(s, inst, owner);
+                for (var k = 0; k < n; k++) placed = MoveOne(s, inst, owner);
                 text = $"把{n}份{name}放进{ZoneName(s, here)}火堆加工位直接烤制。";
+            }
+            if (r.Slot is int slotK)
+            {
+                // B45（Q557）：先占住指定位，SyncFacility 只给其余新内容分配第一空位，不会把这一份挪到别位
+                var fac = FacOf(s, here)!;
+                while (fac.ProcessingSlots.Count < Config.Fire.ProcessingSlots) fac.ProcessingSlots.Add(null);
+                fac.ProcessingSlots[slotK] = placed.InstanceId;
             }
             SyncFacility(s, here);
             Emit(s, GameEventKind.Info, text);

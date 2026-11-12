@@ -47,9 +47,12 @@ namespace Survival.Core.Engine
         public string Id { get; set; } = "";
         public string ItemId { get; set; } = "";
         public int Index { get; set; }
+        /// <summary>B45（Q557）：fslot: 落点的明确加工位（0 起）；其余落点为 null。</summary>
+        public int? Slot { get; set; }
 
         /// <summary>
         /// 解析网页落点键：zone:、card:、fuel:、potslot:（火堆加工位放锅）、fireslot:（火堆空加工位）、fire: 与 facility:（火堆卡面）、
+        /// fslot:{序号0起}:{地点}（B45 中央加工菜单的明确加工位）、
         /// potfill:（锅水量区）、potfood:（锅食材区）、res:、loc:、slot:recipe:item。旧的 self 已取消，解析为 null（无效落点）。
         /// </summary>
         public static DropTarget? Parse(string key, int index = 0)
@@ -64,6 +67,13 @@ namespace Survival.Core.Engine
                 case "fuel": return new DropTarget { Kind = DropTargetKind.FireFuel, Id = rest };
                 case "potslot": return new DropTarget { Kind = DropTargetKind.FirePotSlot, Id = rest };
                 case "fireslot": return new DropTarget { Kind = DropTargetKind.FireSlot, Id = rest };
+                case "fslot":
+                {
+                    // 地点 ID 可含冒号（安全屋屋内区），序号放在前面
+                    var j = rest.IndexOf(':');
+                    return j > 0 && int.TryParse(rest.Substring(0, j), out var k)
+                        ? new DropTarget { Kind = DropTargetKind.FireSlot, Id = rest.Substring(j + 1), Slot = k } : null;
+                }
                 case "fire":
                 case "facility": return new DropTarget { Kind = DropTargetKind.FireCard, Id = rest };
                 case "potfill": return new DropTarget { Kind = DropTargetKind.PotFill, Id = rest };
@@ -162,7 +172,7 @@ namespace Survival.Core.Engine
                 case DropTargetKind.FireFuel: intent = DropOnFuel(s, head, dst.Id); break;
                 case DropTargetKind.FireCard: intent = DropOnFire(s, src, head, dst.Id); break;
                 case DropTargetKind.FirePotSlot:
-                case DropTargetKind.FireSlot: intent = DropOnFire(s, src, head, dst.Id); break;
+                case DropTargetKind.FireSlot: intent = DropOnFire(s, src, head, dst.Id, dst.Slot); break;
                 case DropTargetKind.PotFill: intent = DropOnPot(s, src, head, int.TryParse(dst.Id, out var pid) ? FindItem(s, pid) : null); break;
                 case DropTargetKind.PotFood: intent = DropOnPotFood(s, src, head, int.TryParse(dst.Id, out var fid) ? FindItem(s, fid) : null); break;
                 case DropTargetKind.Resource: intent = DropOnResource(s, src, head, dst.Id); break;
@@ -310,27 +320,29 @@ namespace Survival.Core.Engine
         /// 火堆卡面与加工位：打火器 → 松手即点火；木材 → 投料；锅 → 放进空加工位；可直烤食材 → 放进空加工位烤制；
         /// 水 → 提示拖进锅（不产生净水、不灭火）；熟食 → 无处理配方。失败给原因，不回落成别的目标（统一卡片案第 5 节）。
         /// </summary>
-        private DropIntent DropOnFire(GameState s, DropSource src, ItemInstance head, string loc)
+        private DropIntent DropOnFire(GameState s, DropSource src, ItemInstance head, string loc, int? slot = null)
         {
             if (loc != s.Ground || !HasFireAt(s, loc)) return DropIntent.No("异地不能操作火堆");
             if (src.Kind == DropSourceKind.Card && IsLighter(head) && !head.InFacility) return IgniteFor(s, head);
             if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card && !head.InFacility)
                 // Q111：木材落在火堆／柴炉卡任何位置都是添加燃料，不默默改成煅烧。B32f（逐字稿 §1.5 Q393，取代 Q377、Q392 的煅烧附句）：
-                // 不论两个加工位空闲、加工中或待取，落点预览、成功日志与容量拒绝都只说燃料；煅烧从右栏空加工位的「煅烧木炭」进入
+                // 不论两个加工位空闲、加工中或待取，落点预览、成功日志与容量拒绝都只说燃料；煅烧从中央加工菜单空加工位的「煅烧木炭」进入（B45 Q546）
                 return DropOnFuel(s, head, loc);
-            var max = MaxPutInFire(s, head, out var why);
+            // B45（Q557）：明确加工位（中央加工菜单的工位落点）只看这一位、最多 1 份，真实落在该位；整卡落点仍原规则
+            var max = MaxPutInFire(s, head, out var why, slot);
             if (why != null) return DropIntent.No(why);
             var name = ItemName(head.ItemId);
+            var req = slot is int k ? InstantRequest.PutInFireSlot(head.InstanceId, k) : InstantRequest.PutInFire(head.InstanceId);
             if (IsPot(head))
             {
                 var dirty = PotLiquid(s, head.InstanceId) == "dirty_water";
                 var food = PotFood(s, head.InstanceId).Count;
                 var hint = dirty ? "，燃烧时自动烧水" : food > 0 ? $"，锅内食材{food}份{(PotLiquid(s, head.InstanceId) == null ? "（缺水，不加工）" : "")}" : "";
-                return Instant(DropVerb.PutInFire, $"把{name}放进火堆加工位{hint}", InstantRequest.PutInFire(head.InstanceId));
+                return Instant(DropVerb.PutInFire, $"把{name}放进火堆加工位{hint}", req);
             }
             var p = FireFoodProcess(head.ItemId)!;
             return Instant(DropVerb.PutInFire, $"放1份{name}进火堆加工位直接{p.Name}（{p.HeatMinutes}分钟）",
-                InstantRequest.PutInFire(head.InstanceId), Math.Min(max, CardBatchCount(s, head)));
+                req, Math.Min(max, CardBatchCount(s, head)));
         }
 
         private bool IsLighter(ItemInstance i) => _items[i.ItemId].ToolTag == "lighter";
