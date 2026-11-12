@@ -19,6 +19,8 @@ public sealed class PeekFacts
     public RenderFragment? Art { get; init; }
     /// <summary>卡面副标、第二行或条目正文（不含执行按钮）。</summary>
     public RenderFragment? Body { get; init; }
+    /// <summary>BM1（Q487）：原公开内容之后的同源只读详情（未建设施的建造条件与缺项）；没有时为 null。</summary>
+    public RenderFragment? Extra { get; init; }
 }
 
 /// <summary>B42：页面元素 data-peek 的键（内核 <see cref="PeekKey"/> 的壳层写法）。</summary>

@@ -61,7 +61,19 @@
         }
         break;
     case PeekKey.Card:
-        if (G.PeekFactsOf(Key) is PeekFacts f)
+        if (G.PeekFactsOf(Key) is PeekFacts fx && fx.Extra != null)
+        {
+            @* BM1（Q487）：未建设施——原公开标题、角标、说明（「点击查看建造条件」等原句保留）在上，下接与原点击同源的建造条件详情（只读、无开工键） *@
+            <div class="peek-card peek-card-head">
+                <div class="op-head">
+                    @if (!string.IsNullOrEmpty(fx.Title)) { <h2>@fx.Title@if (!string.IsNullOrEmpty(fx.State)) { <small class="muted"> @fx.State</small> }</h2> }
+                    @if (!string.IsNullOrEmpty(fx.Desc)) { <p>@fx.Desc</p> }
+                </div>
+                @if (fx.Body != null) { <div class="peek-body">@fx.Body</div> }
+            </div>
+            @fx.Extra
+        }
+        else if (G.PeekFactsOf(Key) is PeekFacts f)
         {
             <div class="detail-scroll peek-card">
                 <div class="op-head">

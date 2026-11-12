@@ -119,6 +119,22 @@ namespace Survival.Core.Engine
             TryParse(key, out _, out var p) && i < p.Length && p[i].Length > 0 ? p[i] : null;
     }
 
+    /// <summary>BM1（S14 Q486 选 A）：没有独立详情组件的公开条目在右栏的「说明」与「副标」去重。</summary>
+    public static class PeekText
+    {
+        /// <summary>
+        /// 副标是否与说明重复：两段各去首尾空白后都非空，且逐字相同或任一句整段包含另一句时为 true（只留说明行）。
+        /// 说明为空、副标为空或互不包含时为 false（副标照常显示）。不做近义推断、拆词或跨字段比较。
+        /// </summary>
+        public static bool SubRepeatsDesc(string? desc, string? sub)
+        {
+            var d = desc?.Trim() ?? "";
+            var b = sub?.Trim() ?? "";
+            if (d.Length == 0 || b.Length == 0) return false;
+            return d.Contains(b) || b.Contains(d);
+        }
+    }
+
     /// <summary>B42 悬停的物品对象（与点击选择同一身份：种类 ItemGroup／Tool、物品、归属、实例、可选批次）。</summary>
     public readonly struct PeekItemRef
     {

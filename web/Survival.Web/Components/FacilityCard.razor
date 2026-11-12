@@ -16,17 +16,24 @@
     var effect = Kind == "workshops" ? (batches.Count > 0 ? "加工中：" + string.Join("、", batches) : builtWs.Count == 0 ? $"{e.ZoneName(s, s.Ground)}还没有工坊" : $"已建{string.Join("、", builtWs)}") : Kind == "bed" ? "营地睡眠体力每小时额外+5" : "营地可遮蔽睡眠，休息额外恢复精神";
     var need = Kind == "workshops" ? "点击在“营地建造”里建" : Kind == "bed" && !fac.ShelterBuilt ? "需先建成遮蔽棚" : "点击查看建造条件";
     var badge = Kind == "workshops" ? $"已建{builtWs.Count}/{stations.Count}" : built ? "已建成" : "未建造";
+    // BM1（Q487 选 A）：未建时悬停在右栏直接显示与点击进入后同一份建造条件与当前缺项——按本卡原点击对应的设施配方
+    // （遮蔽棚、床垫各自配方，一座工坊都没有时为「营地建造」里的工作台）读当前地点／区域条件；只读，不打开制作、不改所选配方与材料、无开工键
+    var buildRecipe = built ? null : Kind == "workshops" ? "build_workbench" : Kind;
 }
 @* B32a（Q340、Q345）：重墨 V2 卡模板，副标一行写效果或建造条件；正在建这张卡的设施时为加工中 *@
 <ObjectCard Ink2="true" PeekId="@Peek.Card("fac-" + Kind)" CssClass="k2-fac" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
             Busy="@(Kind != "workshops" && CardStates.BusyBuild(s, Kind))"
-            Sub="@(built ? effect : need)" Tooltip="@(built ? effect : $"{title}未建造：{need}")" OnClick="Open">
+            Sub="@(built ? effect : need)" Tooltip="@(built ? effect : $"{title}未建造：{need}")" OnClick="Open"
+            PeekExtra="@(buildRecipe == null ? null : BuildConditions(buildRecipe))">
     <Art>@Icons.Markup(Kind == "workshops" ? "parts" : Kind)</Art>
 </ObjectCard>
 
 @code {
     /// <summary>shelter、bed 或 workshops（B10：本地已建工坊汇总）。</summary>
     [Parameter, EditorRequired] public string Kind { get; set; } = "shelter";
+
+    /// <summary>BM1（Q487）：与点击后右栏同一份制作详细预估（CraftOverlay 右栏部分，悬停只读：不改所选配方、份数与材料槽）。</summary>
+    private static RenderFragment BuildConditions(string recipeId) => @<CraftOverlay Part="detail" PeekRecipe="@recipeId" />;
 
     private void Open()
     {

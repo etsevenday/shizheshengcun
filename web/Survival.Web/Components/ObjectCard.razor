@@ -97,6 +97,8 @@ else
     [Parameter] public string? PeekId { get; set; }
     /// <summary>不作悬停热区（极少数纯装饰卡）。</summary>
     [Parameter] public bool NoPeek { get; set; }
+    /// <summary>BM1（Q487）：公开条目右栏在原公开内容之后另显示的同源详情（未建设施＝原点击对应设施配方的建造条件，只读）；没有时为 null。</summary>
+    [Parameter] public RenderFragment? PeekExtra { get; set; }
 
     private string? EffPeek => NoPeek ? null : PeekId ?? (Id != null ? Peek.Card(Id) : null);
     private string? _peekReg;
@@ -115,13 +117,16 @@ else
             Desc = Tooltip ?? SubTitle,
             Art = Art,
             Body = PeekBody,
+            Extra = PeekExtra,
         });
         _peekReg = k;
     }
 
+    // BM1（Q486 选 A）：右栏里说明（Tooltip ?? SubTitle）与文字副标去首尾空白后相同、或任一句整段包含另一句时只留说明行；
+    // 说明为空保留副标，互不包含各留。只比这两段原文，不改卡面副标，不动标题、角标、第二行与正文。图标片段副标（SubContent）不做文字比较
     private RenderFragment PeekBody => @<div class="peek-lines">
         @if (SubContent != null) { <div class="k2-sub @SubClass">@SubContent</div> }
-        else if (!string.IsNullOrEmpty(Sub)) { <div class="k2-sub @SubClass">@Sub</div> }
+        else if (!string.IsNullOrEmpty(Sub) && !PeekText.SubRepeatsDesc(Tooltip ?? SubTitle, Sub)) { <div class="k2-sub @SubClass">@Sub</div> }
         @if (Line2 != null) { <div class="k2-l2">@Line2</div> }
         @if (ChildContent != null) { <div class="oc-body">@ChildContent</div> }
     </div>;
