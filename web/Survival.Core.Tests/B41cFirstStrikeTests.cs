@@ -109,7 +109,7 @@ public class B41cFirstStrikeTests : B41cTestBase
     }
 
     [Test]
-    public void ActiveApproach_NoFirstStrike_SwitchOffUnchanged()
+    public void ActiveApproach_NoFirstStrike_PlainBattleNone()
     {
         var (s, key) = OneShambler();
         Assert.That(E.ApproachCard(s, key).Ok, Is.True);
