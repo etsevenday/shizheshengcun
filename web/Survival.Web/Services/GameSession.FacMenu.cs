@@ -246,6 +246,8 @@ public sealed partial class GameSession
                 if (passive) m.Lost = GameEngine.ContentChangedText;
             }
         }
+        // 右栏所看的来源被用完（如两份净水全部装进锅）而清空选中时，右栏回这处设施的只读摘要，不跳回人物页（FACPROC 第 2 条）
+        if (Selected.Kind == SelectionKind.None) SyncRightSilently(FireSelection);
     }
 
     /// <summary>主动耗时行动成功开始（食饮、点火、等待加工……）：收起加工菜单，交给中央行动进度层（FACPROC 第 5 条、FACPROC-A09）。</summary>
