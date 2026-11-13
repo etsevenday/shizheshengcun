@@ -30,7 +30,7 @@
                     {
                         <button type="button" class="secondary" @onclick="G.FireMenuBack">返回<EscCap On="@(G.EscOwner == EscOwner.FacBack)" /></button>
                     }
-                    <button type="button" class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+                    <button type="button" class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
                 </div>
             </div>
             @if (m.Dead || fac == null)

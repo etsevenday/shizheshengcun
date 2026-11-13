@@ -341,7 +341,7 @@
         {
             var t = G.StartAction(req);
             // 区域地图上确认后收起地图，让中央推进条与地块栏可见（原右栏确认的 OnStarted 行为）
-            if (fromMap && G.S.Main?.Type == ActionType.Travel) G.OpenPanel(null);
+            if (fromMap && G.S.Main?.Type == ActionType.Travel) G.CloseAllPanels();   // BM4a（Q590）：真实出发，返回链作废
             await t;
         }
         finally { _go = false; }

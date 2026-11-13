@@ -39,7 +39,7 @@ public class B41c2ShellTests
         }
         Assert.That(cat, Does.Not.Contain("可以随时从中央推进条退出"));
         Assert.That(cat, Does.Not.Contain("不改变任何结果，任何速度下都可以退出。"), "旧句已换成「允许退出的行动在任何速度下都可以退出」");
-        Assert.That(ShellKeyHelp.EscParagraphs[2], Does.Contain("允许退出的行动，请使用中央行动栏的“退出行动”；开工为5分钟的行动不可中途退出。"));
+        Assert.That(ShellKeyHelp.EscParagraphs[3], Does.Contain("允许退出的行动，请使用中央行动栏的“退出行动”；开工为5分钟的行动不可中途退出。"));
     }
 
     [Test]

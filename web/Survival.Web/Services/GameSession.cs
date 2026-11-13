@@ -420,8 +420,6 @@ public sealed partial class GameSession
     /// <summary>系统说明当前主题与条目（null 为目录 / 主题页）。Esc 每次返回一级：条目 → 主题 → 关闭（S14 §13.3）。</summary>
     public string? HelpTopic { get; private set; }
     public string? HelpEntry { get; private set; }
-    /// <summary>从对象/属性/状态详情定位打开时，关闭后要回到的原面板（null 为原主界面）。</summary>
-    private string? _helpReturn;
     private bool _helpDirect;
     /// <summary>从固定的状态说明浮层“相关说明”进入时，关闭说明后要恢复的那个浮层与锚点（试玩修复 B8：Esc 逐层回到来源）。</summary>
     private string? _helpReturnStatus;
@@ -438,13 +436,25 @@ public sealed partial class GameSession
         if (Panel == "help") { _helpReturnStatus = pinned; _helpReturnAnchor = anchor; }
     }
 
-    /// <summary>打开系统说明（可直接定位到某主题/条目）。只读浏览，不推进时间；战斗与对话锁期间不可打开。</summary>
+    /// <summary>
+    /// 打开系统说明（可直接定位到某主题/条目）。只读浏览，不推进时间；战斗与对话锁期间不可打开。
+    /// BM4a（Q590）：说明是顶栏面板，从详情、状态浮层或面板里定位打开时同样盖在原窗口之上，原窗口与未提交选择留在下层，关闭说明回原窗口。
+    /// </summary>
     public void OpenHelp(string? topic = null, string? entry = null)
     {
         if (InBattleUi || DialogueLocked) return;
         // B32g（Q401）：系统说明也是一级浏览面板，从别处直接定位打开时同样先收起正显示的物品操作盘（食饮盘的说明另有返回规则，盘不在显示，不受影响）
-        if (Panel != "help" && CardPopShown) CollapseCardPopForPanel(true);
-        _helpReturn = Panel is "help" ? _helpReturn : Panel;
+        if (Panel != "help")
+        {
+            if (Panel == null && CardPopShown) _cardPopBase = Selected.Key;
+            if (CardPopShown) CollapseCardPopForPanel(true);
+            if (Panel != null && IsChainPanel(Panel))
+            {
+                _chain.Cover(Panel, "help");
+                if (_chainAt == null && State != null) _chainAt = (S.CurrentLocation, S.Ground);
+            }
+            else _chain.Remove("help");
+        }
         _helpDirect = topic != null;
         _helpReturnStatus = null;
         HelpTopic = topic;
@@ -480,11 +490,22 @@ public sealed partial class GameSession
         HelpEntry = null;
         _helpDirect = false;
         if (BattleDrawer == "help") BattleDrawer = null;   // B9：战斗内的说明抽屉随之收起
-        var back = _helpReturn;
-        _helpReturn = null;
-        // B29：从食饮盘进来的回到原来的面板（整备也算），食饮盘由 FeedPop 重新校验后显示
-        Panel = HelpFromFeed || back is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" ? back : null;
+        // B29：从食饮盘进来的回到原来的面板（整备也算），食饮盘由 FeedPop 重新校验后显示；
+        // BM4a（Q590）：关说明只退这一层，下面有窗口（说明打开前的面板，或之前叠上的各层）就恢复紧挨着的那一层
+        var fromFeed = HelpFromFeed;
         HelpFromFeed = false;
+        if (Panel == "help" && _chain.Count > 0)
+        {
+            var back = PopRestorable();
+            Panel = back;
+            if (back != null) RestorePanel(back);
+        }
+        else if (Panel == "help") Panel = null;
+        if (Panel == null && !fromFeed && _cardPopBase != null)
+        {
+            if (_cardPopBase == Selected.Key) CardPopCovered = false;
+            _cardPopBase = null;
+        }
         // 来源是固定的状态浮层：恢复它（状态已消失时 StatusPop 渲染后自行收起）
         if (_helpReturnStatus != null)
         {
@@ -565,16 +586,17 @@ public sealed partial class GameSession
     public string? SourceItem { get; private set; }
     /// <summary>地图打开后要居中的地点（MapOverlay 渲染后取用一次）。</summary>
     public string? MapFocus { get; set; }
-    private (string? Recipe, string? Tab, int Batch, List<int> Preferred, int? Pot, int? Target, int? Patch, List<string>? Candidates)? _craftReturn;
 
-    /// <summary>从制作面板的缺料行打开来源查询：记下制作面板的选择，打开地图并定位到第一个可获取（或第一个）已知来源地点。只读、0 分钟。</summary>
+    /// <summary>
+    /// 从制作面板的缺料行打开来源查询：打开地图并定位到第一个可获取（或第一个）已知来源地点。只读、0 分钟。
+    /// BM4a（Q586、Q590）：地图覆盖在制作面板之上，制作面板连同配方、分类、份数、指定批次／锅／目标／修补包与「选择设施」父链留在下层，
+    /// 关地图（关闭、ESC、M）按返回链恢复并重验（<see cref="RestorePanel"/>）。
+    /// </summary>
     public void OpenSources(string itemId)
     {
         if (State == null) return;
-        _craftReturn = (CraftRecipe, CraftTab, CraftBatch, CraftPreferred.ToList(), CraftPot, CraftTarget, CraftPatch, CraftCandidates?.ToList());
-        SourceItem = null;
-        OpenPanel("map");
-        if (Panel != "map") { _craftReturn = null; return; }
+        SwitchPanel("map", null, true);
+        if (Panel != "map") return;
         SourceItem = itemId;
         var src = E.ItemSources(S, itemId).Where(x => x.LocationId != null).ToList();
         var loc = (src.FirstOrDefault(x => x.Usable) ?? src.FirstOrDefault())?.LocationId;
@@ -593,24 +615,12 @@ public sealed partial class GameSession
         Notify();
     }
 
-    /// <summary>结束来源查询，回到制作面板并恢复原来的配方、分类、份数、指定批次/锅/目标/修补包（再按新库存预览）。</summary>
+    /// <summary>来源列表「返回制作」：制作面板就在地图下面时同关闭地图（返回一层）；不在紧挨着的下层时把制作面板提到最上层（沿用原选择）。</summary>
     public void ReturnFromSources()
     {
-        var snap = _craftReturn;
-        SourceItem = null;
-        _craftReturn = null;
-        if (snap is not { } r) { OpenPanel(null); return; }
-        OpenPanel("craft", r.Recipe);
-        if (Panel != "craft") return;
-        CraftTab = r.Tab;
-        CraftBatch = r.Batch;
-        CraftPreferred.Clear();
-        CraftPreferred.AddRange(r.Preferred.Where(id => S.Items.Any(i => i.InstanceId == id)));
-        CraftPot = r.Pot;
-        CraftTarget = r.Target;
-        CraftPatch = r.Patch;
-        CraftCandidates = r.Candidates;
-        Notify();
+        if (_chain.Count > 0 && _chain.Under[_chain.Count - 1] == "craft") { OpenPanel(null); return; }
+        if (_chain.Contains("craft")) { SwitchPanel("craft", null, true); return; }
+        OpenPanel(null);
     }
 
 
@@ -777,8 +787,12 @@ public sealed partial class GameSession
     /// <summary>
     /// 打开或关闭二级面板（地图、加工、休息、日志）。二级面板只覆盖中部上方，
     /// 左侧状态、随身物品与右侧详情保持不动（试玩留言 8f9a7c9b 第 2 点）。
+    /// BM4a（Q590）：这里是“替换”打开（明确业务跳转，如 Q547「查看火堆」）——只换掉当前最上层，下层返回链保留；
+    /// 传 null 只关闭当前最上层，下面还有窗口就恢复紧挨着的那一层（一次一层）。顶栏按钮／快捷键走 <see cref="OpenTopPanel"/>（覆盖打开）。
     /// </summary>
-    public void OpenPanel(string? panel, string? recipe = null)
+    public void OpenPanel(string? panel, string? recipe = null) => SwitchPanel(panel, recipe, false);
+
+    private void SwitchPanel(string? panel, string? recipe, bool cover)
     {
         // B29：食饮说明开着时点顶栏“系统说明”关掉，同样回到原食饮窗口
         if (panel == null && Panel == "help" && HelpFromFeed) { CloseHelp(); return; }
@@ -786,42 +800,73 @@ public sealed partial class GameSession
         if (IsTopPanel(panel) && InBattleUi) return;
         // 对话读完锁（Q10）：不打开任何面板；关闭（null）仍允许，便于对话出现时收起菜单
         if (panel != null && DialogueLocked) return;
-        // B45：离开火堆加工菜单（关闭或换面板）丢未提交草稿，关闭时焦点回原火堆卡；经「选择设施」进入的返回来源随任何面板切换结束（Q560）
-        if (Panel == FireMenuPanel && panel != FireMenuPanel) LeaveFireMenu(panel == null);
-        CraftFromChooser = false;
-        ChooserReturnStation = null;
-        // B23：查来源时关掉地图（关闭按钮、Esc）回制作面板并恢复原选择；切到别的面板就结束这次查询
-        if (SourceItem != null && Panel == "map" && panel == null) { ReturnFromSources(); return; }
-        if (panel != "map") { SourceItem = null; _craftReturn = null; }
-        // B32g（逐字稿 §1.5 Q401 选 C）：打开新的一级浏览／工具面板时一律收起原物品操作盘（不论是否盖住来源卡），保留选中与右栏；焦点随后交给新面板
-        if (panel != null) CollapseCardPopForPanel(CardPopShown);
+        var from = Panel;
+        var next = panel;
+        // BM4a（Q590）：restore = 恢复一层原有窗口（关上层后的下一层，或已在下层、被提到最上层的同类页），沿用它原来的未提交状态；
+        // 否则是新开（按原规则初始化）。covered = 原最上层被盖住、留在下层。
+        var restore = false;
+        var covered = false;
+        if (panel == null)
+        {
+            if (from != null && _chain.Count > 0) { next = PopRestorable(); restore = next != null; }
+        }
+        else if (cover && from != null && from != panel && IsChainPanel(from) && IsChainPanel(panel))
+        {
+            restore = _chain.Cover(from, panel);
+            covered = true;
+            if (_chainAt == null && State != null) _chainAt = (S.CurrentLocation, S.Ground);
+        }
+        else if (panel != from)
+        {
+            // 替换跳转打开的面板若已在下层：下层那份作废（新开的这份由调用方刚建好的上下文接管，不复制两份）
+            _chain.Remove(panel);
+        }
+        bool InChainAfter(string p) => next == p || _chain.Contains(p);
+        // 该种面板的未提交状态这次要保留：仍在下层，或这次恢复的就是它
+        bool KeepState(string p) => _chain.Contains(p) || (restore && next == p);
+        // B45：离开火堆加工菜单（关闭或换面板）丢未提交草稿，关闭时焦点回原火堆卡（BM4a：盖在下层时保留）
+        if (from == FireMenuPanel && !InChainAfter(FireMenuPanel)) LeaveFireMenu(next == null);
+        // 经「选择设施」进入的返回来源随制作页真正关闭或重新打开结束（Q560；BM4a：制作页盖在下层或恢复时保留父链）
+        if (!KeepState("craft")) { CraftFromChooser = false; ChooserReturnStation = null; }
+        // B23：查来源的地图真正关闭即结束这次查询（BM4a：关地图回制作由返回链恢复，不再另存快照）
+        if (!InChainAfter("map")) SourceItem = null;
+        // B32g（逐字稿 §1.5 Q401 选 C）：打开新的一级浏览／工具面板时收起原物品操作盘，保留选中与右栏；焦点随后交给新面板。
+        // BM4a（Q590）：从没有面板的画面覆盖打开时记下这张盘，整条链按返回逐层关完后原样再显示（来源仍有效才显示）
+        if (panel != null)
+        {
+            if (from == null && cover && CardPopShown) _cardPopBase = Selected.Key;
+            CollapseCardPopForPanel(CardPopShown);
+        }
         // B24（A10-CITY §3/§7）：主城鸟瞰打开时记住右栏页签，关闭后原样恢复（不自动展开人物板块、不改折叠偏好）
-        var leavingCity = Panel == "citymap" && panel != "citymap";
-        if (panel == "citymap" && Panel != "citymap") { _cityTabBefore = DetailTab; CityPick = State != null ? E.CityDefaultPick(S, CityTarget) : null; CityHover = null; NewCityRequest(); }
+        var leavingCity = from == "citymap" && !InChainAfter("citymap");
+        if (next == "citymap" && !restore && from != "citymap") { _cityTabBefore = DetailTab; CityPick = State != null ? E.CityDefaultPick(S, CityTarget) : null; CityHover = null; NewCityRequest(); }
         HoverPreview = null;
         Pop = null;
-        // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）
-        if (panel != "formation") { FormationDraft = null; FormationPick = null; FormationLeader = null; }
-        if (panel != "growth") ClosePracticeDraft();   // B41e2：离开成长页就丢弃练习盘草稿
-        GivePending = null;
+        // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）；BM4a：盖在下层时保留草稿
+        if (!InChainAfter("formation")) { FormationDraft = null; FormationPick = null; FormationLeader = null; }
+        if (!InChainAfter("growth")) ClosePracticeDraft();   // B41e2：离开成长页就丢弃练习盘草稿
+        if (!KeepState("gear")) GivePending = null;
         FeedPending = null;
         HelpFromFeed = false;
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
-        if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest" or FireMenuPanel) DetailTab = DetailTab.Object; }
-        if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; _helpReturnStatus = null; }
-        if (panel == "dialogs") DialogLogPick = null;
+        if (next != null) { IgniteMenuOpen = false; if (next is "map" or "craft" or "rest" or FireMenuPanel) DetailTab = DetailTab.Object; }
+        if (next == "help" && !restore) { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturnStatus = null; }
+        if (next == "dialogs" && !restore) DialogLogPick = null;
         // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）。
         // 试玩修复 M77-B8：原来这句 else 挂在 dialogs 判断上，打开休息/制作/地图也会被切回人物页，右栏看不到“详细预估”
-        if (panel == null && Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
+        if (next == null && Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
         if (leavingCity) { if (Selected.Kind == SelectionKind.None) DetailTab = _cityTabBefore; CityPick = null; CityHover = null; CityLegacyNote = false; }
-        // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
-        CraftCandidates = null;
-        CraftPreferred.Clear();
-        CraftPot = null;
-        CraftBatch = 1;
-        CraftTarget = null;
-        CraftPatch = null;
-        if (panel == "craft" && State != null)
+        // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入（BM4a：制作页盖在下层或恢复时保留）
+        if (!KeepState("craft"))
+        {
+            CraftCandidates = null;
+            CraftPreferred.Clear();
+            CraftPot = null;
+            CraftBatch = 1;
+            CraftTarget = null;
+            CraftPatch = null;
+        }
+        if (next == "craft" && !restore && State != null)
         {
             CraftTab = null;
             var main = S.Main;
@@ -830,27 +875,40 @@ public sealed partial class GameSession
             else if (CraftRecipe == null || E.Config.Recipes.All(r => r.Id != CraftRecipe))
                 CraftRecipe = "knife";
         }
-        if (panel == "rest" && State != null)
+        if (next == "rest" && !restore && State != null)
         {
             var sleepy = S.Stats.Wakefulness < 50 || !E.IsDaylight(S.GameMinute);
             RestKind = sleepy ? "sleep" : "rest";
             RestMinutes = sleepy ? 480 : 60;
         }
-        if (panel == "map")
+        if (next == "map" && !restore)
         {
             MapPicked = null;
             MapLegend = false;
             // 阅读状态：当前位置没变就恢复上次的层与缩放，变了回默认层（EXUI13）
             if (State != null && MapAnchor != S.CurrentLocation) { MapLayer = null; MapZoom = MapDefaultZoom; MapAnchor = S.CurrentLocation; }
         }
-        Panel = panel;
-        // B13d（Q128）：打开相关面板即操作前引导的上下文（手工制作看当前配方、整备、恢复、远行准备）
-        switch (panel)
+        Panel = next;
+        if (_chain.Count == 0) _chainAt = null;
+        if (restore) RestorePanel(next!);
+        // BM4a（Q590）：覆盖打开后焦点进新面板首个合法控件（原层的焦点与滚动已由 app.js 按层记下）
+        if (covered && !restore) PanelFocusPending = true;
+        // BM4a：整条链关完回到原画面，覆盖打开前显示着的物品操作盘仍有效就原样再显示
+        if (next == null && from != null && _cardPopBase != null)
         {
-            case "craft": Guide("recipe", CraftRecipe); break;
-            case "gear": Guide("gear"); break;
-            case "rest": Guide("rest"); break;
-            case "journey": Guide("journey"); break;
+            if (_cardPopBase == Selected.Key) CardPopCovered = false;
+            _cardPopBase = null;
+        }
+        // B13d（Q128）：打开相关面板即操作前引导的上下文（手工制作看当前配方、整备、恢复、远行准备）；BM4a：恢复下层不再引导一次
+        if (!restore)
+        {
+            switch (next)
+            {
+                case "craft": Guide("recipe", CraftRecipe); break;
+                case "gear": Guide("gear"); break;
+                case "rest": Guide("rest"); break;
+                case "journey": Guide("journey"); break;
+            }
         }
         Notify();
     }
@@ -937,7 +995,7 @@ public sealed partial class GameSession
         Toast = null;
         Pop = null;
         ClearHoverNow();
-        OpenPanel(null);
+        CloseAllPanels();   // BM4a（Q590）：真实出发，返回链作废
         Drain();
         Commit();
         Notify();
@@ -1317,6 +1375,7 @@ public sealed partial class GameSession
         SyncUnsaved();
         SyncCommitMark();
         ResetOnLocationChange();
+        ReconcilePanelChain();   // BM4a（Q590）：换场、战斗、终局或原规则直接收盘时返回链作废
         ReconcileFireMenu();
         ReconcileFeed();
         ReconcileGear();
@@ -1482,6 +1541,9 @@ public sealed partial class GameSession
         FormationPick = null;
         DetailTab = DetailTab.Character;
         Panel = null;
+        ClearPanelChain();   // BM4a（Q590）：读档、新开、回标题清窗口返回链（不重放上次按键或未提交请求）
+        _cardPopBase = null;
+        PanelRestorePending = null;
         FireMenu = null;   // B45：读档、新开、回标题清加工菜单与选择设施返回来源
         CraftFromChooser = false;
         ChooserReturnStation = null;
@@ -2609,7 +2671,7 @@ public sealed partial class GameSession
         if (State == null || S.Battle == null) return;
         if (drawer != null && DialogueLocked) return;
         BattleDrawer = BattleDrawer == drawer ? null : drawer;
-        if (BattleDrawer == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; _helpReturnStatus = null; }
+        if (BattleDrawer == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturnStatus = null; }
         MedTrayOpen = false;
         Notify();
     }
@@ -3524,7 +3586,7 @@ public sealed partial class GameSession
         FormationDraftVersion = S.FormationVersion;
         FormationPick = null;
         FormationLeader = E.SquadLeaderId(S);   // B41e2：队长随编队草稿一起编辑
-        OpenPanel("formation");
+        SwitchPanel("formation", null, true);   // BM4a（Q590）：顶栏「编队」同样盖在原窗口上
     }
 
     /// <summary>取消（含 Esc）：丢弃草稿、关闭面板，已保存的预设不变。</summary>

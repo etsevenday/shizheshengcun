@@ -65,6 +65,8 @@ public sealed partial class GameSession
     {
         if (State == null || Panel != "gear")
         {
+            // BM4a（Q590）：整备页被顶栏面板盖在下层时保留来源、比较与交接草稿（恢复后按下面的有效性重验）
+            if (State != null && _chain.Contains("gear")) { GearPeekId = null; return; }
             ClearGearWork();
             GearPeekId = null;
             return;

@@ -479,6 +479,65 @@ window.survival = {
   }
 };
 
+// BM4a（S14 Q590「每层记住自己的……滚动和发起焦点」）：中部一级面板按面板种类（.panel-host[data-panel]）随时记下面板内各滚动区的位置与最后获得焦点的控件；
+// 该面板被顶栏面板盖住后再恢复时（.NET 渲染后调 restore）取回；控件已失效或不可用则落到该层标题。新开的面板先 forget，不沿用上一次的记忆。
+// 只动滚动与焦点，不点击、不确认任何东西。
+window.survivalPanels = (function () {
+  var mem = {};
+  var pending = false;
+  function host() { return document.querySelector('.panel-host[data-panel]'); }
+  function keyOf(h) { return h ? h.getAttribute('data-panel') || '' : ''; }
+  function slot(k) { return mem[k] || (mem[k] = { scroll: [], focus: null }); }
+  function snapScroll() {
+    pending = false;
+    var h = host(), k = keyOf(h);
+    if (!k) return;
+    var all = h.querySelectorAll('*'), list = [];
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (el.scrollTop > 0 || el.scrollLeft > 0) list.push([i, el.scrollTop, el.scrollLeft]);
+    }
+    slot(k).scroll = list;
+  }
+  document.addEventListener('scroll', function (ev) {
+    var t = ev.target;
+    if (!t || !t.closest || !t.closest('.panel-host[data-panel]') || pending) return;
+    pending = true;
+    requestAnimationFrame(snapScroll);
+  }, true);
+  document.addEventListener('focusin', function (ev) {
+    var h = host(), k = keyOf(h), t = ev.target;
+    if (!k || !t || !h.contains(t)) return;
+    slot(k).focus = t.id ? { id: t.id } : { idx: Array.prototype.indexOf.call(h.querySelectorAll('*'), t) };
+  }, true);
+  function usable(el) {
+    return !!(el && !el.disabled && !(el.closest && el.closest('[inert]')) && (el.offsetWidth || el.offsetHeight));
+  }
+  function focusEl(el) { try { el.focus({ preventScroll: true }); } catch (e) { try { el.focus(); } catch (e2) { } } }
+  function restore(k) {
+    var tries = 0;
+    function go() {
+      var h = host();
+      if (!h || keyOf(h) !== k) { if (++tries < 20) requestAnimationFrame(go); return; }
+      var m = mem[k] || { scroll: [], focus: null };
+      var all = h.querySelectorAll('*');
+      m.scroll.forEach(function (x) { var el = all[x[0]]; if (el) { el.scrollTop = x[1]; el.scrollLeft = x[2]; } });
+      var f = m.focus, el = null;
+      if (f) el = f.id ? document.getElementById(f.id) : all[f.idx];
+      if (el && h.contains(el) && usable(el)) { focusEl(el); if (document.activeElement === el) return; }
+      // 原焦点已失效：回该层安全标题（不自动确认任何动作）
+      var title = h.querySelector('#fm-title, h2, h3');
+      if (title) {
+        if (!title.hasAttribute('tabindex')) title.setAttribute('tabindex', '-1');
+        focusEl(title);
+      }
+    }
+    requestAnimationFrame(go);
+  }
+  function forget(k) { delete mem[k]; }
+  return { restore: restore, forget: forget };
+})();
+
 // 人物对话层的对话流（S14 §10.3）：停在底部时新句追加后跟随到最新；向上回看时保持阅读位置，亮出不含句数的“回到最新”。
 // 只改滚动位置，不推进对白；“回到最新”按钮所在的容器类名由这里切换（Blazor 不管理这个类）。
 window.survivalDlg = (function () {

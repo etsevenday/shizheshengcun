@@ -100,7 +100,7 @@ public class B43KeyHintTests : TestBase
             Assert.That(src, Does.Contain(panel), f);
             Assert.That(src, Does.Not.Contain("<kbd>Esc</kbd>"), f + "：旧的常驻 Esc 换成按层显示的 ESC");
         }
-        Assert.That(Web("Components/HelpOverlay.razor"), Does.Contain("关闭<EscCap On=\"@G.EscOnHelpClose\" />").And.Contain("‹ 返回<EscCap On=\"@G.EscOnHelpBack\" />"));
+        Assert.That(Web("Components/HelpOverlay.razor"), Does.Contain("@G.PanelCloseLabel<EscCap On=\"@G.EscOnHelpClose\" />").And.Contain("‹ 返回<EscCap On=\"@G.EscOnHelpBack\" />"));
         Assert.That(Web("Components/GearCompare.razor") + Web("Components/GearGive.razor"), Does.Contain("@GearPanelCopy.Back<EscCap On=\"@(G.EscOwner == EscOwner.GearSub)\" />"));
         Assert.That(Web("Components/AttrDetail.razor"), Does.Contain("‹ 人物<EscCap On=\"@(G.EscOwner == EscOwner.CharPage)\" />"));
         Assert.That(Web("Components/CityOverview.razor"), Does.Contain("返回当前地点<EscCap On=\"@(G.EscOwner == EscOwner.CityMap)\" />"));

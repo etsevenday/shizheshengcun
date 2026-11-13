@@ -14,7 +14,7 @@
     <div class="sub-head">
         @* Q315：有记录时副标题「已收录{数量}段 · 回看不消耗时间」（一组一段），无记录时省略副标题 *@
         <div><h2>对话记录</h2>@if (GameEngine.DialogueLogSubtitle(hist.Count) is string subtitle) {<span class="sub">@subtitle</span>}</div>
-        <button class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+        <button class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
     @if (hist.Count == 0)
     {

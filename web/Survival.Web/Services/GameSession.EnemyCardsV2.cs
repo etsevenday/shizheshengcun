@@ -26,11 +26,19 @@ public sealed partial class GameSession
         Notify();
     }
 
-    /// <summary>盘内「返回」：只放弃未提交草稿。</summary>
+    /// <summary>「练习潜行」入口按钮的 id（盘收起后焦点回这里）。</summary>
+    public const string PracticeEntryId = "growth-practice";
+
+    /// <summary>
+    /// 盘内「返回」与 ESC（BM4a，Q554 选 A：同一入口）：只放弃未提交草稿，成长页成员／门类／展开滚动保持，焦点回「练习潜行」入口；
+    /// 不关成长页、不取消已开工的练习。
+    /// </summary>
     public void ClosePractice()
     {
+        if (!PracticeOpen) return;
         PracticeOpen = false;
         PracticeActor = null;
+        if (Panel == "growth") FocusIdPending = PracticeEntryId;
         Notify();
     }
 
@@ -67,7 +75,7 @@ public sealed partial class GameSession
         Notice = null;
         PracticeOpen = false;
         PracticeActor = null;
-        if (Panel == "growth") OpenPanel(null);
+        if (Panel == "growth") CloseAllPanels();   // BM4a（Q590）：真实开工回中央进度，返回链作废
         Drain();
         Commit();
         Notify();

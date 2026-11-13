@@ -77,16 +77,18 @@ public class B32gTests : TestBase
         Assert.That(collapse, Does.Not.Contain("Selected =").And.Not.Contain("ClearSelection").And.Not.Contain("Instant(").And.Not.Contain("DetailTab"),
             "只收盘：不清选中、不提交、不动右栏");
 
-        var open = g.Substring(g.IndexOf("public void OpenPanel(string? panel, string? recipe = null)"));
-        open = open.Substring(0, open.IndexOf("\n    }"));
-        var at = open.IndexOf("if (panel != null) CollapseCardPopForPanel(CardPopShown);");
+        // BM4a（Q590）：OpenPanel 改由 SwitchPanel 实现；新面板仍先收盘（盖在下层，整条链按返回关完后原样再显示，见 BM4aPanelReturnTests）
+        var open = g.Substring(g.IndexOf("private void SwitchPanel(string? panel, string? recipe, bool cover)"));
+        open = open.Substring(0, open.IndexOf("public void Guide("));
+        var at = open.IndexOf("CollapseCardPopForPanel(CardPopShown);");
         Assert.That(at, Is.GreaterThan(0), "任意新面板都收盘，不看是否盖住来源");
+        Assert.That(open.LastIndexOf("if (panel != null)", at), Is.GreaterThan(0));
         Assert.That(at, Is.LessThan(open.IndexOf("Pop = null;")), "在清就近盘之前判断盘是否正显示");
         Assert.That(open.IndexOf("if (panel != null && DialogueLocked) return;"), Is.LessThan(at), "对白锁不开面板时不动盘");
 
         var help = g.Substring(g.IndexOf("public void OpenHelp(string? topic = null, string? entry = null)"));
         help = help.Substring(0, help.IndexOf("\n    }"));
-        Assert.That(help, Does.Contain("if (Panel != \"help\" && CardPopShown) CollapseCardPopForPanel(true);"), "系统说明直接定位打开同样收盘");
+        Assert.That(help, Does.Contain("if (Panel != \"help\")").And.Contain("if (CardPopShown) CollapseCardPopForPanel(true);"), "系统说明直接定位打开同样收盘");
 
         var setMenu = g.Substring(g.IndexOf("public void SetMenu(bool open)"));
         setMenu = setMenu.Substring(0, setMenu.IndexOf("\n    }"));

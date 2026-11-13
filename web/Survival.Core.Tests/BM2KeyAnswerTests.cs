@@ -259,10 +259,12 @@ public class BM2KeyAnswerTests : TestBase
     public void Q501_A01_EscHelpVerbatim()
     {
         Assert.That(ShellKeyHelp.EscTitle, Is.EqualTo("ESC 与界面层级"));
-        Assert.That(ShellKeyHelp.EscParagraphs.Count, Is.EqualTo(6));
+        // BM4a（Q590）：第一段后加入顶栏覆盖与逐层返回段落（逐字稿以引号给出，见 BM4aPanelReturnTests），原六段保持
+        Assert.That(ShellKeyHelp.EscParagraphs.Count, Is.EqualTo(7));
+        Assert.That(ShellKeyHelp.EscParagraphs[1], Is.EqualTo(PanelReturnChain.EscHelpParagraph));
         var s14 = S14();
         var verb = Verbatim();
-        foreach (var p in ShellKeyHelp.EscParagraphs)
+        foreach (var p in ShellKeyHelp.EscParagraphs.Where(x => x != PanelReturnChain.EscHelpParagraph))
         {
             Assert.That(s14, Does.Contain($"> {p}"), p);
             Assert.That(verb, Does.Contain($"> {p}"), p);

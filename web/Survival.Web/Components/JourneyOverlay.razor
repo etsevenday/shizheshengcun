@@ -12,7 +12,7 @@
 <div class="sub-panel journey-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="远行准备">
     <div class="sub-head">
         <div><h2>远行准备</h2><span class="sub">知情确认，不是出发门槛 · 浏览不耗时</span></div>
-        <button class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+        <button class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
     <div class="sub-body journey-body" data-wheel="y">
         <section class="jr-route">

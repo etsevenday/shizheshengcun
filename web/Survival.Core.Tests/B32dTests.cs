@@ -106,7 +106,7 @@ public class B32dTests : TestBase
         var cp = Web("Components", "CardPop.razor");
         Assert.That(cp, Does.Contain("OnClose=\"G.ClearSelection\" OnCovered=\"G.CoverCardPop\""));
         // B45：两处同加「火堆加工菜单开着时不弹、火堆里的内容不用选卡盘」
-        Assert.That(cp, Does.Contain("&& !G.CardPopCovered && G.Panel != GameSession.FireMenuPanel && G.Selected.Kind is"), "与 CardPopShown 同条件");
+        Assert.That(cp, Does.Contain("&& (!G.CardPopCovered || G.CardPopHeldUnderPanel) && G.Panel != GameSession.FireMenuPanel && G.Selected.Kind is"), "与 CardPopShown 同条件（BM4a：被顶栏面板盖住时保留挂载、只隐藏）");
 
         var g = Web("Services", "GameSession.cs");
         Assert.That(g, Does.Contain("&& !MenuOpen && !BattleMenuOpen && !CardPopCovered && Panel != FireMenuPanel && Selected.Kind is"));
@@ -134,7 +134,7 @@ public class B32dTests : TestBase
         cond = cond.Substring(0, cond.IndexOf("{"));
         Assert.That(cond, Does.Not.Contain("!G.MenuOpen").And.Not.Contain("!G.BattleMenuOpen"), "菜单期间不卸载");
         Assert.That(cond, Does.Contain("!G.CardPopCovered"), "面板覆盖仍收盘");
-        Assert.That(cp, Does.Contain("var menuHide = G.MenuOpen || G.BattleMenuOpen ? \" menu-hidden\" : \"\";"));
+        Assert.That(cp, Does.Contain("var menuHide = G.MenuOpen || G.BattleMenuOpen || G.CardPopHeldUnderPanel ? \" menu-hidden\" : \"\";"));   // BM4a（Q590）：被顶栏面板盖住时同样只隐藏
         Assert.That(Web("wwwroot", "css", "shell.css"), Does.Contain(".wasteland .apop.card-pop.menu-hidden { display: none !important; }"));
         Assert.That(Web("Services", "GameSession.cs"), Does.Contain("&& !MenuOpen && !BattleMenuOpen && !CardPopCovered && Panel != FireMenuPanel && Selected.Kind is"), "菜单期间不算显示（不加遮罩）");
         Assert.That(Web("wwwroot", "js", "app.js"), Does.Contain("if (document.querySelector('.menu-modal')) {"), "菜单期间按键不落到隐藏的操作条");

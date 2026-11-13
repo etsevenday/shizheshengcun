@@ -569,7 +569,7 @@
     private void DevDone(string text)
     {
         // B31b 线上复验遗留（B31c 修）：开发传送离开原地点后，收起留在原地点的一级面板（事项盘等），与正常出发时 OpenPanel(null) 一致
-        if (_locAtOpen != null && G.State != null && G.S.CurrentLocation != _locAtOpen && G.Panel != null) G.OpenPanel(null);
+        if (_locAtOpen != null && G.State != null && G.S.CurrentLocation != _locAtOpen && G.Panel != null) G.CloseAllPanels();
         // 试玩修复 M269 P8：先把内核事件（来客 Notice 等）送进结果提示，开发说明另写在 Notice，两条都能看到
         G.FlushEvents();
         G.Notice = text;

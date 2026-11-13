@@ -192,7 +192,7 @@ public class B31cShellTests : TestBase
         Assert.That(g, Does.Contain("public bool LocalDiskOpen => State != null && !InBattleUi && (Pop != null || FeedPending != null || IgniteMenuOpen || CardPopShown);"));
         // B32d（Q390）：菜单期间 CardPop 不卸载、只隐藏（menu-hidden），显示条件 CardPopShown 仍排除菜单期间
         Assert.That(Web("Components", "CardPop.razor"), Does.Contain("@if (G.State != null && G.Pop == null && G.FeedPending == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending && !G.DuplicateWeaponsPending"));
-        Assert.That(Web("Components", "CardPop.razor"), Does.Contain("var menuHide = G.MenuOpen || G.BattleMenuOpen ? \" menu-hidden\" : \"\";"));
+        Assert.That(Web("Components", "CardPop.razor"), Does.Contain("var menuHide = G.MenuOpen || G.BattleMenuOpen || G.CardPopHeldUnderPanel ? \" menu-hidden\" : \"\";"));   // BM4a（Q590）：被顶栏面板盖住时同样只隐藏
         Assert.That(g, Does.Contain("public bool CardPopShown => State != null && Pop == null && FeedPending == null && !IgniteMenuOpen && !DialogueLocked && !OverflowPending && !DuplicateWeaponsPending"),
             "CardPop 显示条件与 CardPopShown 一致");
         Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("if (!centerPanel && G.LocalDiskOpen) dockProgress = true;"));
@@ -234,7 +234,7 @@ public class B31cShellTests : TestBase
         Assert.That(css, Does.Contain("display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; gap: 10px;"), "暂停弹窗整窗一个滚动区");
         Assert.That(Block(css, ".pause-scrim > .center-layer.pause-grid > .pg-mid {"), Does.Contain("position: sticky"));
         var menu = Web("Components", "MenuOverlay.razor");
-        Assert.That(menu, Does.Contain("if (_locAtOpen != null && G.State != null && G.S.CurrentLocation != _locAtOpen && G.Panel != null) G.OpenPanel(null);"));
+        Assert.That(menu, Does.Contain("if (_locAtOpen != null && G.State != null && G.S.CurrentLocation != _locAtOpen && G.Panel != null) G.CloseAllPanels();"), "BM4a（Q590）：开发传送离开原地点＝真实换场，整条返回链一起收");
     }
 
     private static string Block(string css, string head)

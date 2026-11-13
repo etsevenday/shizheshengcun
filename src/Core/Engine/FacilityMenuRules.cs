@@ -28,6 +28,8 @@ namespace Survival.Core.Engine
         public const string ChooserEmpty = "当前区域没有可操作的加工设施。";
         /// <summary>FACPROC 第 5 条：菜单开启期间设施真实消失。</summary>
         public const string FacGoneText = "这处设施已无法操作，请关闭后重新选择。";
+        /// <summary>BM4a（Q586；逐字稿 Q586 行）：关上层窗口返回时原设施已无法操作、不再恢复加工窗口（原仍开着菜单时的关闭提示仍用 <see cref="FacGoneText"/>）。</summary>
+        public const string FacReturnGoneText = "这处设施已无法操作，请重新选择。";
         /// <summary>FACPROC／Q544：来源或目标失效（保持原句）。</summary>
         public const string ContentChangedText = "内容已变化，请重新选择。";
         public const string PickSourceText = "请选择原料来源。";

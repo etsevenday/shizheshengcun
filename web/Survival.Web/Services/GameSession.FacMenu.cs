@@ -322,7 +322,8 @@ public sealed partial class GameSession
     {
         if (Panel != FireMenuPanel)
         {
-            FireMenu = null;
+            // BM4a（Q590）：菜单被顶栏面板盖在下层时保留上下文，恢复时再核对
+            if (!_chain.Contains(FireMenuPanel)) FireMenu = null;
             return;
         }
         if (FireMenu is not { } m || State == null || S.Progress.Dead || InBattleUi || S.CurrentLocation != m.Location || S.Ground != m.Ground)
@@ -406,7 +407,8 @@ public sealed partial class GameSession
     /// <summary>主动耗时行动成功开始（食饮、点火、等待加工……）：收起加工菜单，交给中央行动进度层（FACPROC 第 5 条、FACPROC-A09）。</summary>
     private void CloseFireMenuForAction()
     {
-        if (Panel != FireMenuPanel) return;
+        // BM4a（Q590）：菜单盖在下层时同样收起（不在新面板关掉后又弹回旧菜单盖住进度）
+        if (Panel != FireMenuPanel) { if (_chain.Remove(FireMenuPanel)) FireMenu = null; return; }
         Panel = null;
         LeaveFireMenu(true);
     }
@@ -468,7 +470,8 @@ public sealed partial class GameSession
     /// <summary>一级面板的 Esc／关闭按钮：经选择层进入的制作面板回到实时选择列表（不自动跳），其余照原关闭。</summary>
     public void PanelEscape()
     {
-        if (Panel == "craft" && CraftFromChooser && State != null)
+        // BM4a（Q590）：制作页下面另有被盖住的窗口时（经「选择设施」进入后又被顶栏页叠过、再提到最上层），返回先回紧挨着的下层
+        if (Panel == "craft" && CraftFromChooser && State != null && _chain.Count == 0)
         {
             var station = ChooserReturnStation ?? CraftTab;
             OpenPanel(null);

@@ -80,7 +80,7 @@
                     @if (!G.BattleFullscreen) { <DialogueLayer /> }
                     @if (centerPanel)
                     {
-                        <div class="panel-host" inert="@dlgLock">
+                        <div class="panel-host" data-panel="@G.Panel" inert="@dlgLock">
                             @switch (G.Panel)
                             {
                                 case "map": <MapOverlay Part="center" /> break;
@@ -212,6 +212,8 @@
     private DotNetObjectReference<PeekController>? _peek;
 
     private string? _topKey;
+    /// <summary>BM4a：上一帧显示的面板（判断是新开还是恢复，新开的清掉 app.js 里的旧滚动／焦点记忆）。</summary>
+    private string? _panelSeen;
     private string? _selKey;
 
     private bool _lockSeen;
@@ -278,6 +280,27 @@
             try { await JS.InvokeVoidAsync("survivalPop.focusId", fid); }
             catch (JSException) { /* 旧缓存 app.js：焦点留在原处 */ }
         }
+        // BM4a（Q590）：关上层后恢复的那一层取回它自己的滚动与发起焦点（失效回该层标题）；新开的面板不沿用旧记忆
+        var shownPanel = GameSession.IsTopPanel(G.Panel) ? G.Panel : null;
+        if (G.PanelRestorePending is string rk)
+        {
+            G.PanelRestorePending = null;
+            _panelSeen = shownPanel;
+            if (rk == shownPanel)
+            {
+                try { await JS.InvokeVoidAsync("survivalPanels.restore", rk); }
+                catch (JSException) { /* 旧缓存 app.js：只是不恢复滚动与焦点 */ }
+            }
+        }
+        else if (shownPanel != _panelSeen)
+        {
+            _panelSeen = shownPanel;
+            if (shownPanel != null)
+            {
+                try { await JS.InvokeVoidAsync("survivalPanels.forget", shownPanel); }
+                catch (JSException) { }
+            }
+        }
         if (G.PanelFocusPending)
         {
             G.PanelFocusPending = false;
@@ -308,15 +331,15 @@
         }
     }
 
-    private void Toggle(string panel)
-    {
-        G.OpenPanel(G.Panel == panel ? null : panel);
-    }
+    /// <summary>BM4a（Q590）：顶栏按钮与快捷键——当前最上层就是它则关闭并返回下层，否则盖在原窗口上打开（原窗口留在下层，已在下层则提到最上层）。</summary>
+    private void Toggle(string panel) => G.OpenTopPanel(panel);
 
     /// <summary>编队按钮：开着就取消草稿关闭；不在空白操作时期就只提示原因（OpenFormation 内判断）。</summary>
     private void ToggleFormation()
     {
         if (G.Panel == "formation") G.CancelFormation();
+        // BM4a（Q590）：编队页已在下层（草稿未提交）时提到最上层，沿用原草稿，不另建一份
+        else if (G.PanelsUnder.Contains("formation")) G.OpenTopPanel("formation");
         else G.OpenFormation();
     }
 
@@ -456,6 +479,8 @@
             case EscOwner.PanelSelection: G.ClearSelection(); break;
             case EscOwner.HelpBack: G.HelpBack(); break;
             case EscOwner.FacBack: G.FireMenuBack(); break;
+            // BM4a（Q554）：成长页练习盘开着时 ESC 与盘内「返回」同效，只收盘、丢草稿，焦点回「练习潜行」入口；下一次 ESC 才关成长页
+            case EscOwner.PracticeBack: G.ClosePractice(); break;
             // B45（Q560）：经「选择设施」进入的制作面板先回选择层
             case EscOwner.Panel: G.PanelEscape(); break;
             case EscOwner.CharPage: G.OpenCharPage(null); break;

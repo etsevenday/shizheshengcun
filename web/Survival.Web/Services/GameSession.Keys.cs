@@ -28,6 +28,8 @@ public enum EscOwner
     GearSub,
     /// <summary>面板开着时选中卡的操作（先清选中）。</summary>
     PanelSelection,
+    /// <summary>BM4a（Q554）：成长页练习盘开着——盘内「返回」承接（只收盘、丢草稿），下一次 ESC 才关成长页。</summary>
+    PracticeBack,
     /// <summary>B45：火堆加工菜单的内容层／加工位层「返回」（退回父层，主层才由 Panel 关闭）。</summary>
     FacBack,
     /// <summary>系统说明内退一级：「‹ 返回」（目录层时等于关闭）。</summary>
@@ -99,6 +101,7 @@ public sealed partial class GameSession
         if (FeedPending != null && Panel != "help") return EscOwner.Feed;
         if (GearHasSubLayer) return EscOwner.GearSub;
         if (Panel == FireMenuPanel && FireMenuLevel > 0) return EscOwner.FacBack;
+        if (Panel == "growth" && PracticeOpen) return EscOwner.PracticeBack;
         if (Panel != null && Panel != "help" && Panel != FireMenuPanel && !CardPopCovered && ShelfSelectionKind) return EscOwner.PanelSelection;
         if (Panel == "help") return EscOwner.HelpBack;
         if (Panel != null) return EscOwner.Panel;

@@ -25,7 +25,7 @@
     <div class="sub-panel rest-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="休息与睡眠">
         <div class="sub-head">
             <div><h2>休息与睡眠</h2><span class="sub">@e.ZoneName(s, here) · @(sheltered ? "遮蔽" : tarpOnly ? "露天（野营布：睡眠算遮蔽）" : "露天")@(fac.BedBuilt ? " · 有床垫" : "") · 选时长后在下方开始，详细预估在右侧</span></div>
-            <button class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+            <button class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
         </div>
         <div class="sub-body rest-scroll">
             <div>
@@ -107,7 +107,7 @@ else
         try
         {
             var t = G.StartAction(G.RestKind == "sleep" ? ActionRequest.Sleep(G.RestMinutes) : ActionRequest.Rest(G.RestMinutes));
-            if (G.S.Main != null && G.Panel == "rest") G.OpenPanel(null);
+            if (G.S.Main != null && G.Panel == "rest") G.CloseAllPanels();   // BM4a（Q590）：真实开工回中央进度，返回链作废
             await t;
         }
         finally { _starting = false; }

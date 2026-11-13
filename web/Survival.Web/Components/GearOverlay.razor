@@ -21,7 +21,7 @@
 <div class="sub-panel gear-panel gear3" role="dialog" aria-label="@GearPanelCopy.Title">
     <div class="sub-head">
         <div><h2>@GearPanelCopy.Title</h2></div>
-        <button class="secondary" @onclick="Close">@GearPanelCopy.Close<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+        <button class="secondary" @onclick="Close">@(G.PanelHasUnder ? PanelReturnChain.ReturnLabel : GearPanelCopy.Close)<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
     <div class="sub-body g3-body" data-wheel="y">
         <section class="g3-col g3-members" aria-label="@GearPanelCopy.Members">

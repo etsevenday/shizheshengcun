@@ -72,7 +72,7 @@
                     <button type="button" class="secondary" title="回安全屋的已知路线与合计分钟（只定位，不自动寻路或传送）" @onclick='() => G.OpenPanel("safehouse")'>安全屋返程</button>
                 }
                 <button type="button" class="secondary @(G.MapLegend ? "on" : "")" aria-expanded="@G.MapLegend" @onclick="ToggleLegend">图例</button>
-                <button type="button" class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+                <button type="button" class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
             </div>
         </div>
         <div class="map-stage">

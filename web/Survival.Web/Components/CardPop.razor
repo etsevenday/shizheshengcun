@@ -11,11 +11,12 @@
 @* B45（FACPROC 第 3 条、Q548）：火堆加工菜单开着时不弹；火堆里的锅、水、食材只在右栏只读，执行在中央加工菜单（同 CardPopShown） *@
 @* B32d（逐字稿 §1.5 Q378）：来源卡被新开的面板盖住时按来源失效收盘但保留选中（CardPopCovered）；玩家重新点来源卡（Select/PickBatch）再打开 *@
 @if (G.State != null && G.Pop == null && G.FeedPending == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending && !G.DuplicateWeaponsPending
-     && !G.CardPopCovered && G.Panel != GameSession.FireMenuPanel && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid
+     && (!G.CardPopCovered || G.CardPopHeldUnderPanel) && G.Panel != GameSession.FireMenuPanel && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid
      && G.InFireCrumbs(G.Selected) == null)
 {
     var pot = PotOf();
-    var menuHide = G.MenuOpen || G.BattleMenuOpen ? " menu-hidden" : "";
+    @* BM4a（Q590）：顶栏面板覆盖打开时原物品操作盘同菜单一样只隐藏、不卸载（盘内数量、去向保留），整条链按返回关完后原样恢复 *@
+    var menuHide = G.MenuOpen || G.BattleMenuOpen || G.CardPopHeldUnderPanel ? " menu-hidden" : "";
     <AnchorPop AnchorId="card-sel" Title="" Place="below,above,right,left" Bound=".center" CssClass="@((pot != null ? "card-pop pot" : "card-pop") + menuHide)" OnClose="G.ClearSelection" OnCovered="G.CoverCardPop">
         @* 锅（或锅里的水/食材）：先放所选对象的操作（主按钮固定在浮窗上部可见，M78），再展开锅的完整内容（内容多时在自己的区内滚动；M77-B2） *@
         @if (G.CityBrowsing)

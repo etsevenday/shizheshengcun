@@ -231,10 +231,12 @@ namespace Survival.Core.Engine
         /// <summary>Q501：条目标题由「Esc 与界面层级」改为「ESC 与界面层级」。</summary>
         public const string EscTitle = "ESC 与界面层级";
 
-        /// <summary>Q501：「ESC 与界面层级」六段定稿（逐字替换原两段）。</summary>
+        /// <summary>Q501：「ESC 与界面层级」六段定稿（逐字替换原两段）；BM4a（Q590）在第一段后加入顶栏覆盖与逐层返回段落，共七段。</summary>
         public static readonly IReadOnlyList<string> EscParagraphs = new[]
         {
             "按 ESC 时，先返回或关闭当前最上层可关闭的界面；没有可关闭层时，打开当前场景的菜单。一次只处理一层。",
+            // BM4a（Q590；逐字稿同日节）：加入顶栏覆盖与逐层返回段落，其余原段保持
+            PanelReturnChain.EscHelpParagraph,
             "游戏菜单的手动存档页按 ESC 返回菜单首页；在菜单首页再按 ESC，回到原画面。覆盖确认打开时，先取消覆盖确认，不会保存或覆盖存档。",
             "ESC 不会退出正在进行或暂停的行动，也不会替你继续行动。允许退出的行动，请使用中央行动栏的“退出行动”；开工为5分钟的行动不可中途退出。强制整理等必须完成的步骤不能用 ESC 跳过。",
             "战斗中，ESC 先收起当前可关闭的说明、物资页、医疗盘或取消尚未提交的指令；没有这些界面时打开战斗菜单。选择“返回战斗”或再次按 ESC 只返回战场，不能脱战。菜单内的存档、系统说明和反馈按各自可用条件开放。",

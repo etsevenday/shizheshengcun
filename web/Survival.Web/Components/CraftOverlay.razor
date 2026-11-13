@@ -47,7 +47,7 @@
             @* 试玩修复 M77-B7（Q21）：材料来源等教学短文移进悬浮说明 *@
             <div><h2>手工制作</h2><span class="sub" title="@($"材料来自随身与{lc.Name}地面（火堆与锅里的物资要先取出）；按工坊分类；未掌握的做法也列出并写来源；在配方卡下方开始，详细预估在右栏对象信息。")">配方 · 详细预估在右栏 ⓘ</span></div>
             @* B45（Q560）：经「选择设施」明确点一座进入时为「返回 ESC」（回实时选择层），其余入口照原「关闭 ESC」 *@
-            <button class="secondary" @onclick="Close">@(G.CraftFromChooser ? "返回" : "关闭")<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+            <button class="secondary" @onclick="Close">@(G.CraftFromChooser && !G.PanelHasUnder ? "返回" : G.PanelCloseLabel)<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
         </div>
         <div class="sub-body craft-grid @(candidates == null ? "tabbed" : "")">
             @if (candidates == null)

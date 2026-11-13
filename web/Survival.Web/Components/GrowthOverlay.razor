@@ -29,7 +29,7 @@
             <h2>成长</h2>
             <span class="sub">@e.ActorDisplayName(s, me) · 共@(views.Count)项熟练度</span>
         </div>
-        <button class="secondary" @onclick="Close">关闭<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+        <button class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
     @if (s.Party.Count > 1)
     {
@@ -96,7 +96,7 @@
                 @if (Part != "detail")
                 {
                     @if (G.PracticeOpen) { @PracticeDisk() }
-                    else { <button type="button" class="secondary growth-practice" data-practice @onclick="G.OpenPractice">@GameEngine.PracticeTitle</button> }
+                    else { <button type="button" class="secondary growth-practice" id="@GameSession.PracticeEntryId" data-practice @onclick="G.OpenPractice">@GameEngine.PracticeTitle</button> }
                 }
             }
             <div class="growth-nodes">
@@ -153,7 +153,7 @@
             @if (why != null) { <div class="risk practice-why">@why</div> }
             <div class="practice-actions">
                 <button type="button" class="primary practice-start" disabled="@(why != null || busy)" title="@why" @onclick="StartPractice">@GameEngine.PracticeStart</button>
-                <button type="button" class="secondary practice-back" @onclick="G.ClosePractice">@GameEngine.EnemyDiskBack</button>
+                <button type="button" class="secondary practice-back" @onclick="G.ClosePractice">@GameEngine.EnemyDiskBack<EscCap On="@(G.EscOwner == EscOwner.PracticeBack)" /></button>
             </div>
         </section>
     };

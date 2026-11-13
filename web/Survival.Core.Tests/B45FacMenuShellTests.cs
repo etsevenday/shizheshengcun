@@ -59,7 +59,7 @@ public class B45FacMenuShellTests : TestBase
         Assert.That(pops, Does.Contain("case GameSession.StationsPop"));
         Assert.That(pops, Does.Contain("GameEngine.ChooserEmpty"));
         var craft = Web("Components", "CraftOverlay.razor");
-        Assert.That(craft, Does.Contain("G.CraftFromChooser ? \"返回\" : \"关闭\""));
+        Assert.That(craft, Does.Contain("G.CraftFromChooser && !G.PanelHasUnder ? \"返回\" : G.PanelCloseLabel"), "BM4a（Q590）：下面另有窗口时按返回链写「返回」");
         Assert.That(craft, Does.Contain("G.PanelEscape()"));
         Assert.That(Web("Components", "FacilityCard.razor"), Does.Contain("G.OpenWorkshops();"));
     }
