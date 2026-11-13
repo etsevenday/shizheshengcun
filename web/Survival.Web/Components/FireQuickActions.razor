@@ -1,0 +1,87 @@
+@inherits GameComponent
+
+@* 火堆／柴炉设施级快捷入口：投入木材、点燃（打开点火盘）／熄灭、等待加工。
+   原在 FireCard 卡面（B32b Q339／Q350、Q362、Q372；S14 §11.3、S09 §7、S11 §9），B45b（S14「2026-11-13 B45 Q581—Q590」Q581 选 A）起
+   火堆加工菜单主层也放这一组——同一个组件、同一套按钮原句、可用条件、具体原因、工具选择、耗时与结算，卡面与菜单只是两个挂载点，不复制一份：
+   - 点燃只打开原点火盘（选打火器、确认才开工），盘锚在发起它的那个按钮（卡面 fc-ignite／菜单 fm-ignite）；
+   - 熄灭、投入木材是 0 分钟即时操作，菜单留在原层；
+   - 等待加工点击直接开始；耗时行动成功开始后由 GameSession.BeginAction → CloseFireMenuForAction 收起菜单、交回中央进度条，未成功留在原层。
+   按钮阻止冒泡（卡面上不点穿成打开菜单）。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var here = s.Ground;
+    var fac = e.FacOf(s, here);
+}
+@if (fac != null)
+{
+    var slots = e.FireSlots(s, here);
+    // 火堆维护（投料、熄灭、点火）：空闲或主行动暂停时可做，移动途中与执行中不可（拖拽与容器案 8）
+    var maintBlocked = G.FireMaintBlocked;
+    var hasContent = slots.Any(x => x != null);
+    // B45（Q556）：与中央加工菜单主层「投入木材」同源
+    var woodWhy = G.FireWoodWhy(out var wood);
+    var igniteId = InMenu ? GameSession.IgniteAnchorMenu : GameSession.IgniteAnchorCard;
+    var igniteOpen = G.IgniteMenuOpen && G.IgniteAnchor == igniteId;
+    <button type="button" class="loc-btn res-btn fc-btn" disabled="@(woodWhy != null)" title="@(woodWhy ?? $"投入1木材，燃料+{e.Config.Fire.BurnMinutesPerWood}分钟，不耗时（可用{wood}）")"
+            @onclick="AddFuel" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>投入木材</strong><small>余@(wood)</small></button>
+    @if (fac.FireLit)
+    {
+        <button type="button" class="loc-btn res-btn fc-btn plain" disabled="@maintBlocked" title="熄灭火堆，剩余燃料保留"
+                @onclick="Extinguish" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>熄灭</strong></button>
+    }
+    else
+    {
+        <button type="button" id="@igniteId" class="loc-btn res-btn fc-btn ignite @(igniteOpen ? "on" : "")" aria-haspopup="dialog" aria-expanded="@igniteOpen"
+                title="打开点火盘：先选一把打火器，再点「点火」" @onclick="() => G.ToggleIgniteMenu(igniteId)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>点燃</strong></button>
+    }
+    @if (hasContent)
+    {
+        @* 等待加工（原“等待烹饪”，Q111 起含煅烧；S14 §11.3、S09 §7、S11 §9）：火堆里有内容时出现，绑定本火堆；悬停/聚焦在右栏预览；
+           点击直接开始，不另加确认；不可开始时禁用并在按钮上写明原因。不会自动点火、加木、补水或开第二个主行动。 *@
+        var plan = G.CookWaitPreview();
+        var cookWhy = plan.Ok ? null : plan.Reason;
+        <button type="button" class="loc-btn res-btn fc-btn cook" disabled="@(cookWhy != null || cooking)" title="@(cookWhy ?? "点击直接开始：等本火堆当前全部可加工内容完成；右侧显示预览")"
+                @onmouseenter="HoverCook" @onfocus="HoverCook" @onmouseleave="Unhover" @onblur="Unhover" @onclick="StartCook" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+            <strong>等待加工</strong><small>@(cookWhy != null ? ShortReason(cookWhy) : plan.EstimatedMinutes is int m ? $"预计{Clock.Duration(m)}" : "燃料耗尽时停止")</small>
+        </button>
+    }
+}
+
+@code {
+    /// <summary>true：挂在火堆加工菜单主层（点火盘锚 fm-ignite）；false：火堆卡面（锚 fc-ignite）。</summary>
+    [Parameter] public bool InMenu { get; set; }
+
+    private static readonly ActionRequest CookReq = ActionRequest.WaitCook();
+
+    /// <summary>按钮上只放原因主句（括号与冒号后的补充说明在悬停提示里看全文；B10b 试玩修复：1280 下“火堆未燃烧：请先点火”被截）。</summary>
+    private static string ShortReason(string why)
+    {
+        var k = why.IndexOf('（');
+        if (k > 0) why = why[..k];
+        var c = why.IndexOf('：');
+        return c > 0 ? why[..c] : why;
+    }
+    private bool cooking;
+
+    private void HoverCook() => G.Hover(CookReq, "等待加工");
+    private void Unhover() => G.Hover(null);
+
+    private async Task StartCook()
+    {
+        if (cooking || G.Running) return;
+        cooking = true;
+        try
+        {
+            G.Hover(null);
+            await G.StartAction(ActionRequest.WaitCook());
+        }
+        finally
+        {
+            cooking = false;
+        }
+    }
+
+    private void AddFuel() => G.Instant(InstantRequest.AddFuel());
+    private void Extinguish() => G.Instant(InstantRequest.Extinguish());
+}

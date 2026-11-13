@@ -440,6 +440,8 @@
 .fire-menu .fm-fire { display: flex; flex-direction: column; gap: 6px; }
 .fire-menu .fm-facts { margin: 0; }
 .fire-menu .fm-quick { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* B45b（Q581）：主层与卡面同源的投入木材／点燃／熄灭／等待加工按钮（FireQuickActions）按内容定宽，一行放不下就换行 */
+.fire-menu .fm-quick > .fc-btn { flex: 0 1 auto; min-width: 112px; }
 .fire-menu .fm-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .fire-menu .fm-slot { cursor: pointer; min-width: 0; }
 .fire-menu .fm-slot.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }

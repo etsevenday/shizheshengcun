@@ -8,7 +8,9 @@
    条件变化时按原真实原因禁用并重验选定的那一把。悬停工具时右栏仍显示对应预测。没有可用工具仍能打开，写“没有可用点火工具”及原因。
    直接把打火器拖到火堆仍走原直接点火，暂停层独立点火入口沿原规则。Esc、×、遮罩只收起。
    B32f（逐字稿 §1.5 Q395，同 Q390）：游戏菜单打开期间只隐藏（menu-hidden）、不卸载，所选工具保留；点顶栏「菜单」与菜单里的点按不算点盘外；
-   关菜单后按当前状态重算预演与按钮可用性（所选那把失效时按原原因禁用），火堆已燃或不在时照原条件不显示；恢复不提交。 *@
+   关菜单后按当前状态重算预演与按钮可用性（所选那把失效时按原原因禁用），火堆已燃或不在时照原条件不显示；恢复不提交。
+   B45b（Q581）：火堆加工菜单主层也有同源「点燃」（fm-ignite），盘锚在发起的那个按钮（G.IgniteAnchor）；点火开工成功由 BeginAction 收起加工菜单，
+   未选工具或开工失败时盘／菜单留在原处。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -20,7 +22,7 @@
     var minutes = p is { Ok: true } ? p.EstimatedMinutes : e.Config.Fire.IgniteMinutes;
     var why = picked == null ? null : !picked.Usable ? picked.Reason : p is { Ok: false } ? p.Reason : null;
 }
-<AnchorPop AnchorId="fc-ignite" Title="选择点火工具" Place="below,above,right,left" CssClass="@("ignite" + G.MenuHideCss)" OnClose="Close">
+<AnchorPop AnchorId="@G.IgniteAnchor" Title="选择点火工具" Place="below,above,right,left" CssClass="@("ignite" + G.MenuHideCss)" OnClose="Close">
     <Art>@Icons.Markup("fire_out")</Art>
     <ChildContent>
         <div @ref="box" class="ignite-menu in-pop" aria-label="选择点火工具">

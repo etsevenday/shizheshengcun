@@ -287,9 +287,12 @@ public class B32bFacilityTests : TestBase
         Assert.That(c, Does.Contain("Badge2=\"@(full ? CardStates.FireSlotsFull : null)\""));
         Assert.That(c, Does.Contain("Busy=\"@e.FireHeating(s, here)\""));
         Assert.That(c, Does.Contain("CardStates.FireFuelSub(e, fac)"));
-        Assert.That(c, Does.Contain("id=\"fc-ignite\""));
-        Assert.That(c, Does.Contain("投入木材"));
-        Assert.That(c, Does.Contain("等待加工"));
+        // B45b（Q581）：卡面快捷入口移到与加工菜单主层共用的 FireQuickActions（卡面仍挂载，点火盘锚 fc-ignite）
+        Assert.That(c, Does.Contain("<FireQuickActions />"));
+        var q = Web("Components/FireQuickActions.razor");
+        Assert.That(Web("Services/GameSession.cs"), Does.Contain("IgniteAnchorCard = \"fc-ignite\""));
+        Assert.That(q, Does.Contain("投入木材"));
+        Assert.That(q, Does.Contain("等待加工"));
         Assert.That(c, Does.Not.Contain("<PotCard"), "锅从右栏火堆详情进入，不再嵌在火堆卡里");
         Assert.That(Web("Components/ObjectCard.razor"), Does.Contain("k2-tag2"));
     }

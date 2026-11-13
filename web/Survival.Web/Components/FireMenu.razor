@@ -71,11 +71,12 @@
                         </div>
                         @if (level == 0)
                         {
-                            @* Q556：主层「投入木材」与卡面同源——每次1份、原合法取料与燃料上限，不读通用来源／数量草稿 *@
-                            var woodWhy = G.FireWoodWhy(out var wood);
+                            @* Q556：主层「投入木材」与卡面同源——每次1份、原合法取料与燃料上限，不读通用来源／数量草稿。
+                               B45b（Q581 选 A）：主层同时有「点燃」「熄灭」「等待加工」，与卡面是同一个组件 FireQuickActions（不复制一份）；
+                               点燃打开原点火盘（锚 fm-ignite），耗时行动成功开始才收起菜单交回中央进度条，未成功／仍在选工具时留在本层 *@
+                            var woodWhy = G.FireWoodWhy(out _);
                             <div class="btn-row fm-quick">
-                                <button type="button" class="secondary" disabled="@(woodWhy != null)" title="@(woodWhy ?? $"投入1木材，燃料+{e.Config.Fire.BurnMinutesPerWood}分钟，不耗时（可用{wood}）")"
-                                        @onclick="AddFuel">投入木材 <small>余@(wood)</small></button>
+                                <FireQuickActions InMenu="true" />
                                 @if (woodWhy != null) { <span class="tiny muted">@woodWhy</span> }
                             </div>
                         }
@@ -155,8 +156,6 @@
     private string? _fail;
 
     private void Close() => G.OpenPanel(null);
-
-    private void AddFuel() => G.Instant(InstantRequest.AddFuel());
 
     private void ToggleCharcoal()
     {

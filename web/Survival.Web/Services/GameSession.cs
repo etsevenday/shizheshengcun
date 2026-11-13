@@ -679,8 +679,20 @@ public sealed partial class GameSession
         if (CardPopShown) ClearSelection();
     }
 
-    public void ToggleIgniteMenu()
+    /// <summary>点火盘的发起按钮：火堆卡面「点燃」。</summary>
+    public const string IgniteAnchorCard = "fc-ignite";
+    /// <summary>B45b（Q581）：火堆加工菜单主层「点燃」（与卡面同一组件 FireQuickActions）。</summary>
+    public const string IgniteAnchorMenu = "fm-ignite";
+    /// <summary>当前点火盘锚在哪个「点燃」按钮上（盘的来源失效判定看它；卡面被加工菜单盖住时菜单里的按钮仍可见）。</summary>
+    public string IgniteAnchor { get; private set; } = IgniteAnchorCard;
+
+    public void ToggleIgniteMenu() => ToggleIgniteMenu(IgniteAnchorCard);
+
+    /// <summary>「点燃」：打开／收起点火盘，盘锚在发起的那个按钮（卡面或加工菜单主层）。</summary>
+    public void ToggleIgniteMenu(string anchor)
     {
+        if (IgniteMenuOpen && IgniteAnchor != anchor) { IgniteAnchor = anchor; Notify(); return; }
+        IgniteAnchor = anchor;
         IgniteMenuOpen = !IgniteMenuOpen;
         if (IgniteMenuOpen) Pop = null;
         if (!IgniteMenuOpen) HoverPreview = null;
