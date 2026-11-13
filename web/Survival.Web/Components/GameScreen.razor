@@ -237,6 +237,12 @@
             try { await JS.InvokeVoidAsync("survival.dialogueOnset"); }
             catch (JSException) { }
         }
+        // B45b（Q585 首段）：首次火堆引导等对白盖在火堆加工菜单上，读完回到同一菜单并恢复焦点（不再开一次引导、不执行）
+        else if (!locked && _lockSeen && G.Panel == GameSession.FireMenuPanel)
+        {
+            try { await JS.InvokeVoidAsync("survival.dialogueEnd", ".fire-menu"); }
+            catch (JSException) { }
+        }
         _lockSeen = locked;
         if (firstRender)
         {

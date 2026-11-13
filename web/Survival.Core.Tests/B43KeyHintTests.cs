@@ -136,7 +136,8 @@ public class B43KeyHintTests : TestBase
             Assert.That(src, Does.Contain(button), file);
         }
         Has("DropQuantity", "<EnterCap On=\"@(!invalid)\" />");
-        Has("CardActions", "<EnterCap On=\"@(why == null)\" />", 3);
+        // B45b（Q584）：加工菜单锅层多个可能动作时由 HideEnterCap 收起键帽，其余同 disabled 条件
+        Has("CardActions", "<EnterCap On=\"@(!HideEnterCap && why == null)\" />", 3);
         Has("GearCompare", "@GearPanelCopy.ConfirmEquip<EnterCap On=\"@(p.Blocked == null)\" />");
         Has("GearGive", "@GearPanelCopy.ConfirmGive<EnterCap On=\"@(p.Blocked == null)\" />");
         Has("OverflowOverlay", "<EnterCap On=\"@(!(over || _busy))\" />");

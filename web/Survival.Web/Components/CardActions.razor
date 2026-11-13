@@ -186,7 +186,7 @@
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1, m)">+</button>
                         <button type="button" class="tbar-max" @onclick="() => SetN(m.ToCarried ? m.Max : m.Available)">@(m.ToCarried ? $"最多{m.Max}" : "全部")</button>
                     }
-                    <button type="button" class="tbar-go" data-enter disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)<EnterCap On="@(!(invalid || tooHeavy || (m.ToCarried && m.Max < 1)))" /></button>
+                    <button type="button" class="tbar-go" data-enter disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)<EnterCap On="@(!HideEnterCap && !(invalid || tooHeavy || (m.ToCarried && m.Max < 1)))" /></button>
                 </div>
                 @if (m.Instance != null && e.CarcassOf(m.Instance.ItemId) != null)
                 {
@@ -339,7 +339,7 @@
             var verb = e.IsPot(it) ? (zone == ItemInstance.Carried ? "拾取" : "取下") : "取出";
             <TargetPicker Value="@zone" Here="@s.Ground" OnPick="v => target = v" />
             <div class="tbar-row">
-                <button type="button" class="tbar-go" data-enter disabled="@(why != null)" title="@why" @onclick="() => Take(it, zone)">@(verb)@(m.Name)@(e.IsPot(it) ? "（含内容）" : "")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(why == null)" /></button>
+                <button type="button" class="tbar-go" data-enter disabled="@(why != null)" title="@why" @onclick="() => Take(it, zone)">@(verb)@(m.Name)@(e.IsPot(it) ? "（含内容）" : "")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(!HideEnterCap && why == null)" /></button>
             </div>
             @if (why != null) { <div class="ca-note bad">@why</div> }
             else
@@ -366,7 +366,7 @@
                         <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" aria-label="转移数量" />
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => SetN(Math.Min(max, Parse() + 1))">+</button>
                     }
-                    <button type="button" class="tbar-go" data-enter disabled="@invalid" @onclick="() => Decant(water, zone, max > 1 ? n : 1)">取出@(e.ItemName(water.ItemId))@(max > 1 ? (invalid ? "" : $"{n}份") : "1份")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(!invalid)" /></button>
+                    <button type="button" class="tbar-go" data-enter disabled="@invalid" @onclick="() => Decant(water, zone, max > 1 ? n : 1)">取出@(e.ItemName(water.ItemId))@(max > 1 ? (invalid ? "" : $"{n}份") : "1份")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(!HideEnterCap && !invalid)" /></button>
                 </div>
                 <div class="ca-note">每份@(e.PotConfig(m.PotInstance!).UnitMl)毫升 · 可取@(max)份 · 不耗时</div>
             }
@@ -431,6 +431,8 @@
     [Parameter] public Selection? Sel { get; set; }
     /// <summary>B45：食饮盘等后续局部盘的锚点（原选卡盘为 card-sel）。</summary>
     [Parameter] public string AnchorId { get; set; } = "card-sel";
+    /// <summary>B45b（Q584）：所在页另有可提交的确认区（加工菜单锅层的装水／放入食材）、多个可能动作时，不标无焦点默认 Enter 键帽；按钮本身照常可点、聚焦时 Enter 照原生执行。</summary>
+    [Parameter] public bool HideEnterCap { get; set; }
 
     private Model? Build()
     {

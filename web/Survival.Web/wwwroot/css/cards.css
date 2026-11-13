@@ -432,6 +432,8 @@
 .panel-host > .fire-menu-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 8px; background: #000a; }
 .fire-menu-wrap > .sub-panel.fire-menu { position: relative; inset: auto; width: min(900px, 100%); height: auto; max-height: 100%; }
 .fire-menu .fm-title h2 { margin: 0; }
+/* B45b（Q583／Q585）：标题是焦点的安全落点（tabindex=-1），程序聚焦时不画鼠标态外框 */
+.fire-menu #fm-title:focus:not(:focus-visible) { outline: none; }
 .fire-menu .fm-title h2 small { margin-left: 6px; font-size: var(--fs-aux); font-weight: 400; }
 .fire-menu .fm-title .sub { display: block; }
 .fire-menu .fm-head-btns { display: flex; gap: 6px; flex: none; }

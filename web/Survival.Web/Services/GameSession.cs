@@ -2105,7 +2105,19 @@ public sealed partial class GameSession
     public ActionResult ConfirmCharcoal()
     {
         var shown = CharcoalShown();
-        var res = Instant(InstantRequest.LoadCharcoal(shown.Plan));
+        // B45b（Q582／Q583）：从加工菜单进入的确认是菜单自己的放入（不算“被别处占用”）；成功后焦点回到新内容所在加工位
+        var menu = Panel == FireMenuPanel && FireMenu != null;
+        var before = menu ? E.FireSlots(S, S.Ground).Select(x => x?.InstanceId).ToList() : null;
+        _fireMenuOwnPut = menu;
+        ActionResult res;
+        try { res = Instant(InstantRequest.LoadCharcoal(shown.Plan)); }
+        finally { _fireMenuOwnPut = false; }
+        if (res.Ok && before != null && Panel == FireMenuPanel)
+        {
+            var after = E.FireSlots(S, S.Ground);
+            var k = Enumerable.Range(0, Math.Min(before.Count, after.Count)).FirstOrDefault(i => after[i] != null && after[i]!.InstanceId != before[i], -1);
+            FocusIdPending = k >= 0 ? FireMenuSlotId(k) : FireMenuTitleId;
+        }
         if (!res.Ok && Pop is { Kind: "charcoal" } p)
         {
             _charcoalShown = (p, E.CharcoalLoadPreview(S));

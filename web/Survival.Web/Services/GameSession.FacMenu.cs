@@ -40,7 +40,24 @@ public sealed partial class GameSession
         public bool Dead { get; set; }
         /// <summary>上次核对时的世界分钟：不是 0 分钟自己操作造成的变化才提示内容已变化。</summary>
         public int Minute { get; set; }
+        /// <summary>
+        /// B45b（Q582 选 B）：先选空位与来源、该位随后被别处操作占用——保留这份未提交选择（目标仍是这个加工位、来源与数量原样），
+        /// 不跟随新内容、不换到另一空位；下一次真实提交才重验并提示「加工位{序号}已被占用，请重新选择。」。玩家明确改选或进入新内容即结束。
+        /// </summary>
+        public bool Taken { get; set; }
+        /// <summary>B45b：菜单里上一次提交被拒的真实原因（下一次明确选择或提交成功时清掉）。</summary>
+        public string? Fail { get; set; }
     }
+
+    /// <summary>B45b（Q582）：菜单自己的放入正在提交（放入加工位／装水／放入食材、煅烧确认），核对时把新内容认作本菜单的放入，不当成“被别处占用”。</summary>
+    private bool _fireMenuOwnPut;
+
+    /// <summary>B45b（Q584）：菜单底部数量框的 id（点选来源行后焦点进这里）。</summary>
+    public const string FireMenuQtyId = "fm-qty";
+    /// <summary>B45b（Q583）：菜单标题（焦点的安全落点）。</summary>
+    public const string FireMenuTitleId = "fm-title";
+    /// <summary>B45b（Q583）：菜单里加工位卡的 id（0 起）。</summary>
+    public static string FireMenuSlotId(int k) => $"fm-slot-{k}";
 
     public FireMenuContext? FireMenu { get; private set; }
 
@@ -125,6 +142,8 @@ public sealed partial class GameSession
         m.Open = slots[k] != null;   // 点有内容的加工位直接进入位里的内容；Esc／路径「加工位{序号}」再退回这一位
         m.Inner = null;
         m.Lost = null;
+        m.Taken = false;   // Q582：明确改选／进入新内容才换目标
+        m.Fail = null;
         SyncRight(slots[k] is ItemInstance it ? ItemSel(E, it) : FireSelection);
     }
 
@@ -135,6 +154,8 @@ public sealed partial class GameSession
         m.Open = true;
         m.Inner = sel;
         m.Lost = null;
+        m.Taken = false;
+        m.Fail = null;
         SyncRight(sel);
     }
 
@@ -142,6 +163,8 @@ public sealed partial class GameSession
     public void FireMenuGoLevel(int level)
     {
         if (FireMenu is not { } m || State == null) return;
+        var from = FireMenuLevel;
+        var left = m.Slot;
         if (level <= 0)
         {
             if (m.Slot != null) m.Qty = "1";
@@ -153,7 +176,23 @@ public sealed partial class GameSession
         else if (level == 1) { m.Open = false; m.Inner = null; }
         else if (level == 2) m.Inner = null;
         m.Lost = null;
+        m.Fail = null;
+        // Q583（选 A）：回父层后键盘焦点回到刚离开的加工位卡（锅里内容回锅这一层时回锅卡）；只聚焦、不执行
+        if (level < from && left is int k) FocusIdPending = FireMenuReturnFocus(Math.Max(0, level), k);
         SyncRight(CurrentFireMenuObject());
+    }
+
+    /// <summary>
+    /// Q583：回到第 level 层后焦点去哪——0／1 层回刚离开的加工位卡，2 层（锅这一层）回该位里的锅卡；对象已不在则回最近合法父层：
+    /// 加工位卡（菜单固定两个加工位），连加工位都没有时回菜单标题。不自动选相邻实例。
+    /// </summary>
+    private string FireMenuReturnFocus(int level, int k)
+    {
+        if (FireMenu is not { Dead: false } m) return FireMenuTitleId;
+        var slots = E.FireSlots(S, m.Ground);
+        if (k < 0 || k >= slots.Count) return FireMenuTitleId;
+        if (level >= 2 && slots[k] is ItemInstance it && E.IsPot(it)) return $"#{FireMenuSlotId(k)} .pc-head";
+        return FireMenuSlotId(k);
     }
 
     /// <summary>Esc／「返回」：退一层（锅里内容→锅→加工位→主层）。</summary>
@@ -175,9 +214,73 @@ public sealed partial class GameSession
         if (m.SourceId != it.InstanceId) m.Qty = "1";
         m.SourceId = it.InstanceId;
         m.Lost = null;
+        m.Fail = null;
         var sel = ItemSel(E, it);
         SyncRightSilently(sel);
         if (sel.Kind == SelectionKind.ItemGroup) SelectedBatchKey = GameEngine.BatchKeyOf(it);
+        // Q584（选 A）：明确点选来源行后，焦点进入当前动作的数量框（框可编辑时），Enter 按最新合法数量与该次投放按钮同源提交
+        if (FireMenuTarget(out var slot, out var pot) && slot != null && !(E.IsBusy(S) || Running)
+            && (m.Taken || FireMenuMaxFor(it, slot, pot, out var why) > 0 && why == null))
+            FocusIdPending = FireMenuQtyId;
+        Notify();
+    }
+
+    /// <summary>
+    /// 当前层来源区的放入目标：主层没有目标（slot＝null，仍列来源）；加工位层的空位（或 Q582 被别处占用、保留草稿的那一位）为 (k, null)；
+    /// 锅这一层为 (k, 锅)。其余层（停在有内容的加工位、直烤／煅烧内容、锅里的水或食材）没有来源区，返回 false。
+    /// </summary>
+    public bool FireMenuTarget(out int? slot, out ItemInstance? pot)
+    {
+        slot = null;
+        pot = null;
+        if (FireMenu is not { Dead: false } m || State == null || m.Inner != null) return false;
+        if (m.Slot is not int k) return true;
+        var slots = E.FireSlots(S, m.Ground);
+        var occ = k < slots.Count ? slots[k] : null;
+        slot = k;
+        if (occ == null || m.Taken) return true;
+        if (m.Open && E.IsPot(occ)) { pot = occ; return true; }
+        return false;
+    }
+
+    /// <summary>明确目标下这份来源的最大可提交量与原因（同源预演：工位 MaxPutInFire(明确位)、锅 MaxFill／MaxPutFood）。</summary>
+    public int FireMenuMaxFor(ItemInstance it, int? slot, ItemInstance? pot, out string? why)
+    {
+        if (pot != null) return E.IsLiquid(it) ? E.MaxFill(S, it, pot, out why) : E.MaxPutFood(S, it, pot, out why);
+        if (slot is int k) return E.MaxPutInFire(S, it, out why, k);
+        why = null;
+        return 0;
+    }
+
+    /// <summary>
+    /// 菜单的放入提交（放入加工位{序号}／装水／放入食材，Q545／Q557／Q562）：同一事务重验后一次提交，失败原子不扣、记下真实原因。
+    /// B45b（Q582 选 B）：成功后停在提交前的菜单层，按真实状态刷新，清空本次来源物品选择（数量文本不动）；不自动进入新物件子层。
+    /// </summary>
+    public ActionResult FireMenuSubmit(InstantRequest req)
+    {
+        _fireMenuOwnPut = true;
+        ActionResult res;
+        try { res = Instant(req); }
+        finally { _fireMenuOwnPut = false; }
+        if (FireMenu is { } m)
+        {
+            if (res.Ok)
+            {
+                m.SourceId = null;
+                m.Taken = false;
+                m.Fail = null;
+            }
+            else m.Fail = res.Reason;
+            Notify();
+        }
+        return res;
+    }
+
+    /// <summary>B45b（Q582-A02）：菜单提交前重验得到的拒绝原因（如加工位已被占用），不扣物、不改投。</summary>
+    public void FireMenuRefuse(string why)
+    {
+        if (FireMenu is not { } m) return;
+        m.Fail = why;
         Notify();
     }
 
@@ -220,13 +323,24 @@ public sealed partial class GameSession
         {
             var slots = E.FireSlots(S, m.Ground);
             var occ = k < slots.Count ? slots[k] : null;
+            if (occ == null) m.Taken = false;
             if (occ?.InstanceId != m.SlotItem)
             {
-                // 位里原有的内容没了（取出、吃完、腐败清理）：留在这个加工位（现为空位或新内容）；新放进来的内容直接显示
-                if (m.SlotItem != null && passive) m.Lost = GameEngine.ContentChangedText;
-                m.SlotItem = occ?.InstanceId;
-                m.Open = occ != null;
-                m.Inner = null;
+                if (m.SlotItem == null && occ != null && !_fireMenuOwnPut && m.SourceId != null)
+                {
+                    // Q582（选 B）：先选空位与来源、再由其他操作占用该位——保留未提交选择，不跟随新内容、不换空位；提交时重验出占位句
+                    m.Taken = true;
+                }
+                else
+                {
+                    // 位里原有的内容没了（取出、吃完、腐败清理）：留在这个加工位（现为空位或新内容）。
+                    // Q582（选 B）：新放进来的内容（本菜单放入成功或别处放入）只显示在加工位卡上，不自动进入新物件子层
+                    if (m.SlotItem != null && passive) m.Lost = GameEngine.ContentChangedText;
+                    m.SlotItem = occ?.InstanceId;
+                    m.Open = false;
+                    m.Inner = null;
+                    m.Taken = false;
+                }
             }
             if (m.Inner is { } inner && occ != null && E.IsPot(occ))
             {

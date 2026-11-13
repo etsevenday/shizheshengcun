@@ -88,7 +88,35 @@ window.survival = {
   dialogueOnset: function () {
     try { if (window.survivalDrag) survivalDrag.cancel(); } catch (e) { }
     var a = document.activeElement;
+    window.__survivalDlgPrev = a && a !== document.body && !(a.closest && a.closest('.dlg-layer')) ? a : null;
     if (a && a.blur && !(a.closest && a.closest('.dlg-layer'))) a.blur();
+  },
+  // B45b（Q585 首段）：引导对白读完、回到原火堆加工菜单时恢复焦点——对白前的焦点仍在该菜单里且可用就回它，
+  // 否则进菜单第一个可用控件（FACPROC 第 4 条「焦点进入菜单标题／首个操作」）。只聚焦、不执行；菜单已不在就不动。
+  dialogueEnd: function (hostSel) {
+    var prev = window.__survivalDlgPrev;
+    window.__survivalDlgPrev = null;
+    var tries = 0;
+    function ok(c) { return c && c.isConnected && !c.disabled && !(c.closest && c.closest('[inert]')) && (c.offsetWidth || c.offsetHeight); }
+    function go() {
+      var host = document.querySelector(hostSel);
+      if (!host) return;
+      if (host.closest && host.closest('[inert]')) { if (++tries < 20) requestAnimationFrame(go); return; }
+      var ae = document.activeElement;
+      if (ae && ae !== document.body && host.contains(ae)) return;
+      if (prev && host.contains(prev) && ok(prev)) {
+        try { prev.focus({ preventScroll: true }); } catch (e) { }
+        if (document.activeElement === prev) return;
+      }
+      var title = host.querySelector('#fm-title');
+      var list = [title].concat(Array.prototype.slice.call(host.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])')));
+      for (var i = 0; i < list.length; i++) {
+        if (!ok(list[i])) continue;
+        try { list[i].focus({ preventScroll: true }); } catch (e) { }
+        if (document.activeElement === list[i]) return;
+      }
+    }
+    setTimeout(go, 0);
   },
   // 元素在视口中的位置 [left, top, right, bottom]（状态图标浮层锚点）；找不到返回空数组
   rectById: function (id) {
@@ -712,10 +740,11 @@ window.survivalPop = (function () {
     // B31d（Q338）：点遮罩或 Esc 撤回本盘前由 GameScreen 调用，收盘后把焦点还给触发控件
     markCancel: function () { if (cur) cur.restore = true; },
     // B45：关闭火堆加工菜单后把焦点交回原火堆卡（等面板卸下；元素不存在、被禁用或在 inert 里就不动）
+    // B45b（Q583）：以 # 开头时按选择器找（如加工位卡里的锅卡「#fm-slot-0 .pc-head」）
     focusId: function (id) {
       var tries = 0;
       function go() {
-        var c = document.getElementById(id);
+        var c = id.charAt(0) === '#' ? document.querySelector(id) : document.getElementById(id);
         if (!c || (c.closest && c.closest('[inert]')) || !(c.offsetWidth || c.offsetHeight)) { if (++tries < 20) requestAnimationFrame(go); return; }
         try { c.focus({ preventScroll: true }); } catch (e) { try { c.focus(); } catch (e2) { } }
       }
