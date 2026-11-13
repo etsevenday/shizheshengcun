@@ -535,6 +535,8 @@ button .kc, .wasteland button kbd.kc { color: inherit; border-color: currentColo
 .center-scroll.four.full-panel.docked-prog .panel-host { bottom: calc(max(var(--dock-h), var(--dock-live, 0px)) + var(--sh-gap)); }
 /* P3：原工具例外拾取开放时，暂停遮罩只盖①②两行，③当前地面、④随身不被挡住（弹窗在上半区内滚动，中间行动位仍吸附可见） */
 .pause-scrim.pick-open { bottom: calc(50% + var(--sh-gap) / 2); }
+/* B41e4（S14 Q569）：撤退离地保留暂停、地图前往开放时，遮罩与弹窗让出①地图与场景行：遮罩从②顶开始（四轨等高：①高＝(100%-3gap)/4），弹窗居中在②③④内（1280 档整窗一个滚动区、行动位吸附，「继续行动」始终可达）；相邻地点卡「前往 ▸」不被盖住或截走点击。与 pick-open 同时成立时只盖②。 */
+.pause-scrim.travel-open { top: calc(25% + var(--sh-gap) / 4); }
 
 /* ═════ B46 试玩修复（线上构建 b6a1d4b）═════ */
 /* 中央行动位窄条不再限高：暂停原因、复核原因、中止说明（Q533）与等待加工的目标行都直接完整可见，不裁字；一级面板按窄条实际高度让位（--dock-live） */

@@ -32,7 +32,9 @@
     return;
 }
 @* B41c2 试玩修复（P3，S14 Q523）：原工具可按例外拾取时，遮罩与弹窗只占①②两行，③当前地面、④随身露出来，拾取箭头、操作条与拖放可点 *@
-<div class="pause-scrim @(sub == null && e.LockedPickupTool(s) is ItemInstance pickTool && e.LockedToolPickupOpen(s, pickTool) ? "pick-open" : "")">
+@* B41e4（S14 Q569）：撤退离地保留暂停、地图前往开放（与内核移动例外同一判定 PausedTravelOpen）时，遮罩与弹窗让出①地图与场景行，
+   相邻地点卡「前往 ▸」可见、可点、可聚焦，走原移动浮窗与确认；②③④仍被遮罩挡住，其他暂停限制不变 *@
+<div class="pause-scrim @(sub == null && e.LockedPickupTool(s) is ItemInstance pickTool && e.LockedToolPickupOpen(s, pickTool) ? "pick-open" : "") @(e.PausedTravelOpen(s) ? "travel-open" : "")">
 <div class="center-layer pause-grid" role="alertdialog" aria-label="@ShellText.ActionPaused" inert="@G.DialogueLocked">
     <div class="pg-top" data-wheel="y">
     @if (sub != null)
