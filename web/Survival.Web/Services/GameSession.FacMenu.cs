@@ -47,6 +47,11 @@ public sealed partial class GameSession
         public bool Taken { get; set; }
         /// <summary>B45b：菜单里上一次提交被拒的真实原因（下一次明确选择或提交成功时清掉）。</summary>
         public string? Fail { get; set; }
+        /// <summary>
+        /// B45b（Q588）：选目标或库存变化使已选来源对当前目标不可放入——来源已清掉，这里留该来源的真实拒绝句（显示在底部说明位），
+        /// 须另选可用材料；不自动换料／换批／换工位。下一次明确选择时清掉。
+        /// </summary>
+        public string? SrcWhy { get; set; }
     }
 
     /// <summary>B45b（Q582）：菜单自己的放入正在提交（放入加工位／装水／放入食材、煅烧确认），核对时把新内容认作本菜单的放入，不当成“被别处占用”。</summary>
@@ -144,6 +149,7 @@ public sealed partial class GameSession
         m.Lost = null;
         m.Taken = false;   // Q582：明确改选／进入新内容才换目标
         m.Fail = null;
+        m.SrcWhy = null;
         SyncRight(slots[k] is ItemInstance it ? ItemSel(E, it) : FireSelection);
     }
 
@@ -156,6 +162,7 @@ public sealed partial class GameSession
         m.Lost = null;
         m.Taken = false;
         m.Fail = null;
+        m.SrcWhy = null;
         SyncRight(sel);
     }
 
@@ -177,6 +184,7 @@ public sealed partial class GameSession
         else if (level == 2) m.Inner = null;
         m.Lost = null;
         m.Fail = null;
+        m.SrcWhy = null;
         // Q583（选 A）：回父层后键盘焦点回到刚离开的加工位卡（锅里内容回锅这一层时回锅卡）；只聚焦、不执行
         if (level < from && left is int k) FocusIdPending = FireMenuReturnFocus(Math.Max(0, level), k);
         SyncRight(CurrentFireMenuObject());
@@ -211,10 +219,13 @@ public sealed partial class GameSession
     public void FireMenuPickSource(ItemInstance it)
     {
         if (FireMenu is not { Dead: false } m) return;
+        // Q588：对当前目标不可放入的材料不能被设为来源（鼠标、触屏、键盘一律在这里同源拒绝），不选、不改已有合法来源
+        if (FireMenuBlockWhy(it) != null) return;
         if (m.SourceId != it.InstanceId) m.Qty = "1";
         m.SourceId = it.InstanceId;
         m.Lost = null;
         m.Fail = null;
+        m.SrcWhy = null;
         var sel = ItemSel(E, it);
         SyncRightSilently(sel);
         if (sel.Kind == SelectionKind.ItemGroup) SelectedBatchKey = GameEngine.BatchKeyOf(it);
@@ -243,6 +254,18 @@ public sealed partial class GameSession
         return false;
     }
 
+    /// <summary>
+    /// B45b（Q588）：这份材料对当前明确目标是否不可放入——不可放入时返回该行原真实拒绝句（同源预演 <see cref="FireMenuMaxFor"/>；
+    /// 预演没有原因但可放入量为 0 时用「当前没有可放入数量。」），可放入为 null。没有明确目标（主层，沿 Q544 列料）或
+    /// Q582 保留草稿（目标位已被别处占用，提交时才重验）时不判定，返回 null。
+    /// </summary>
+    public string? FireMenuBlockWhy(ItemInstance it)
+    {
+        if (FireMenu is not { } m || !FireMenuTarget(out var slot, out var pot) || slot == null || (m.Taken && pot == null)) return null;
+        var max = FireMenuMaxFor(it, slot, pot, out var why);
+        return why ?? (max <= 0 ? GameEngine.NoQtyText : null);
+    }
+
     /// <summary>明确目标下这份来源的最大可提交量与原因（同源预演：工位 MaxPutInFire(明确位)、锅 MaxFill／MaxPutFood）。</summary>
     public int FireMenuMaxFor(ItemInstance it, int? slot, ItemInstance? pot, out string? why)
     {
@@ -269,6 +292,7 @@ public sealed partial class GameSession
                 m.SourceId = null;
                 m.Taken = false;
                 m.Fail = null;
+                m.SrcWhy = null;
             }
             else m.Fail = res.Reason;
             Notify();
@@ -367,6 +391,12 @@ public sealed partial class GameSession
             {
                 m.SourceId = null;
                 if (passive) m.Lost = GameEngine.ContentChangedText;
+            }
+            else if (!_fireMenuOwnPut && FireMenuBlockWhy(src) is string why)
+            {
+                // Q588：选目标或库存／容量变化使已选来源对当前目标不可放入——清掉该来源、显示其真实原因、禁止提交；不自动换料／换批／换工位
+                m.SourceId = null;
+                m.SrcWhy = why;
             }
         }
         // 右栏所看的来源被用完（如两份净水全部装进锅）而清空选中时，右栏回这处设施的只读摘要，不跳回人物页（FACPROC 第 2 条）

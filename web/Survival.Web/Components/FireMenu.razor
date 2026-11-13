@@ -262,7 +262,8 @@
         {
             if (!MainOk(it, here, firePot)) continue;
             string? why = null;
-            if (hasTarget && !taken) { MaxFor(it, slot, pot, out why); }
+            // Q588：明确目标下用同一真实投放规则逐行判定（G.FireMenuBlockWhy）；未选目标沿 Q544 列料不判定
+            if (hasTarget && !taken) why = G.FireMenuBlockWhy(it);
             rows.Add(new Row(it, why));
         }
         var srcIt = m.SourceId is int sid ? e.FindItem(s, sid) : null;
@@ -283,7 +284,7 @@
             It = srcIt, Max = max, Ready = ready, QtyOk = qtyOk, Pending = pending, Text = text, Parsed = parsed,
             Water = srcIt != null && e.IsLiquid(srcIt),
             Reason = !hasTarget ? GameEngine.PickTargetText
-                : srcIt == null ? GameEngine.PickSourceText
+                : srcIt == null ? m.SrcWhy ?? GameEngine.PickSourceText
                 : pending ? null
                 : srcWhy != null ? srcWhy
                 : max <= 0 ? GameEngine.NoQtyText
@@ -311,14 +312,34 @@
                         var nm = e.ItemName(it.ItemId);
                         var sel = new Selection { Kind = SelectionKind.Tool, Id = it.ItemId, Owner = it.Owner, InstanceId = it.InstanceId };
                         var peek = e.Item(it.ItemId).IsStackable ? Peek.Sel(SelectionKind.ItemGroup, it.ItemId, it.Owner, null, GameEngine.BatchKeyOf(it)) : Peek.Sel(sel);
-                        <div class="fm-src-row @(on ? "on" : "") @(r.Why != null ? "no" : "")" role="button" tabindex="0" aria-pressed="@on"
-                             data-peek="@peek" data-drag="@($"card:{it.Owner}|{it.ItemId}|{it.InstanceId}")" data-drag-title="@nm" data-drag-from="@label"
-                             title="@($"{nm}×{it.Count}（{label}）：点击选为原料来源（不转移）；也可以直接拖到上面的加工位或锅")"
-                             @onclick="() => PickSource(it)" @onkeydown="ev => Key(ev, () => PickSource(it))">
-                            <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
-                            <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
-                            @if (r.Why != null) { <span class="fm-src-why" title="@r.Why">@r.Why</span> }
-                        </div>
+                        @if (r.Why != null)
+                        {
+                            var why = r.Why;
+                            var iid = it.InstanceId;
+                            @* B45b（Q588 用户自定）：对当前目标不可放入的材料保留行（名称、数量、真实来源），标灰并常驻短标「不可放入」；
+                               不能被鼠标、触屏、Enter／空格选为来源（行本身不可点、不可聚焦），也不从这行发起拖放（不带 data-drag）。
+                               行旁「原因」是独立只读控件（可聚焦）：悬停／聚焦／点按时在底部说明位显示该行原真实拒绝句，离开后恢复当前选择的说明；
+                               不选材料、不打开数量输入、不投放。悬停整行仍按全局合同只读查看该来源。 *@
+                            <div class="fm-src-row no" aria-disabled="true" data-peek="@peek" title="@($"{nm}×{it.Count}（{label}）：{why}")">
+                                <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
+                                <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
+                                <span class="fm-src-no">@NotPlaceable</span>
+                                <button type="button" class="fm-src-whybtn @(_whyId == iid ? "on" : "")" title="@why" aria-pressed="@(_whyId == iid)"
+                                        @onmouseenter="() => ShowWhy(iid)" @onfocus="() => ShowWhy(iid)" @onclick="() => ShowWhy(iid)"
+                                        @onmouseleave="() => HideWhy(iid)" @onblur="() => HideWhy(iid)"
+                                        @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@WhyLabel</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="fm-src-row @(on ? "on" : "")" role="button" tabindex="0" aria-pressed="@on"
+                                 data-peek="@peek" data-drag="@($"card:{it.Owner}|{it.ItemId}|{it.InstanceId}")" data-drag-title="@nm" data-drag-from="@label"
+                                 title="@($"{nm}×{it.Count}（{label}）：点击选为原料来源（不转移）；也可以直接拖到上面的加工位或锅")"
+                                 @onclick="() => PickSource(it)" @onkeydown="ev => Key(ev, () => PickSource(it))">
+                                <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
+                                <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
+                            </div>
+                        }
                     }
                 </div>
             }
@@ -367,12 +388,28 @@
                     <button type="button" class="tbar-go" data-enter disabled="@(!go)" @onclick="ev => Put(ev, slot, null, st.It)">放入@(CardStates.FireSlotName(sk))<EnterCap On="@(go && cap)" /></button>
                 }
             </div>
-            @if (st.Reason != null) { <div class="ca-note bad">@st.Reason</div> }
+            @* Q588：「原因」控件悬停／聚焦／点按时，这一位显示那一行的完整真实原因；离开后恢复当前有效选择的说明 *@
+            @{ var peekWhy = _whyId is int wid ? st.Carried.Concat(st.Ground).FirstOrDefault(r => r.It.InstanceId == wid)?.Why : null; }
+            @if ((peekWhy ?? st.Reason) is string note) { <div class="ca-note bad" role="status">@note</div> }
             @if (m.Fail != null) { <div class="ca-note bad">@m.Fail</div> }
         </div>
     };
 
     private void PickSource(ItemInstance it) => G.FireMenuPickSource(it);
+
+    /// <summary>Q588 正式短标与只读控件名（逐字稿「Q588 禁用材料」）。</summary>
+    private const string NotPlaceable = "不可放入";
+    private const string WhyLabel = "原因";
+
+    /// <summary>Q588：正在查看原因的那一行（实例号）；只是阅读状态，不改来源选择。显示时按该行当前的真实原因重读（行已恢复可用或消失就不再显示）。</summary>
+    private int? _whyId;
+
+    private void ShowWhy(int id) => _whyId = id;
+
+    private void HideWhy(int id)
+    {
+        if (_whyId == id) _whyId = null;
+    }
 
     private void Step(int d, int max)
     {

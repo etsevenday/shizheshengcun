@@ -152,6 +152,58 @@ public class B45bFacMenuTests : TestBase
         Assert.That(menu, Does.Contain("var list = new List<(string, int)> { (name, 0) };"), "子层路径仍从设施名起");
     }
 
+    // ───────────── Q588 不可放入的来源仍显示但不能选 ─────────────
+
+    /// <summary>
+    /// Q588-A01：选定目标后不兼容材料保留行、标灰、常驻「不可放入」；行不可点／不可聚焦／不可拖，鼠标·触屏·键盘都不能设为来源（会话层同源拒绝）；
+    /// 行旁「原因」只读控件在底部说明位显示该行原真实拒绝句，不选材料、不投放；条件恢复只解禁。
+    /// </summary>
+    [Test]
+    public void Q588_A01_DisabledRowsKeptGreyAndUnselectable()
+    {
+        var menu = Web("Components", "FireMenu.razor");
+        Assert.That(menu, Does.Contain("private const string NotPlaceable = \"不可放入\";"));
+        Assert.That(menu, Does.Contain("private const string WhyLabel = \"原因\";"));
+        var dis = Slice(menu, "<div class=\"fm-src-row no\"", "</div>");
+        Assert.That(dis, Does.Contain("aria-disabled=\"true\""));
+        Assert.That(dis, Does.Not.Contain("data-drag"), "禁用行不发起拖放");
+        Assert.That(dis, Does.Not.Contain("PickSource"), "禁用行不能选为来源");
+        Assert.That(dis, Does.Not.Contain("tabindex=\"0\""), "禁用行本身不可聚焦");
+        Assert.That(dis, Does.Contain("<span class=\"fm-src-no\">@NotPlaceable</span>"));
+        Assert.That(dis, Does.Contain("class=\"fm-src-whybtn"), "独立「原因」控件");
+        Assert.That(dis, Does.Contain("@onfocus=\"() => ShowWhy(iid)\""), "键盘可聚焦查看");
+        Assert.That(menu, Does.Contain("if ((peekWhy ?? st.Reason) is string note)"), "底部说明位显示，离开恢复当前说明");
+        Assert.That(menu, Does.Contain("if (hasTarget && !taken) why = G.FireMenuBlockWhy(it);"), "同一真实投放规则逐行判定");
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        Assert.That(fac, Does.Contain("if (FireMenuBlockWhy(it) != null) return;"), "会话层同源拒绝选为来源");
+        Assert.That(fac, Does.Contain("return why ?? (max <= 0 ? GameEngine.NoQtyText : null);"));
+    }
+
+    /// <summary>
+    /// Q588-A02：未选目标时沿 Q544 列料不判定；选目标或库存变化使已选来源失效即清来源、显示真实原因、禁止提交，不自动换料；
+    /// 木材对普通加工位的拒绝句仍是 Q556 原句（加煅烧引导），主层投入木材与煅烧入口保持。
+    /// </summary>
+    [Test]
+    public void Q588_A02_InvalidatedSourceClearedWithReason()
+    {
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        Assert.That(fac, Does.Contain("if (FireMenu is not { } m || !FireMenuTarget(out var slot, out var pot) || slot == null || (m.Taken && pot == null)) return null;"), "主层无目标不判定");
+        var rec = Slice(fac, "private void ReconcileFireMenu()", "private void CloseFireMenuForAction()");
+        Assert.That(rec, Does.Contain("else if (!_fireMenuOwnPut && FireMenuBlockWhy(src) is string why)"));
+        Assert.That(rec, Does.Contain("m.SrcWhy = why;"));
+        var menu = Web("Components", "FireMenu.razor");
+        Assert.That(menu, Does.Contain(": srcIt == null ? m.SrcWhy ?? GameEngine.PickSourceText"), "清源后显示真实原因、按钮禁用");
+        Assert.That(menu, Does.Contain("<FireQuickActions InMenu=\"true\" />"), "主层投入木材保持");
+        Assert.That(menu, Does.Contain("id=\"fc-charcoal\""), "煅烧入口保持");
+
+        // 内核：木材选明确加工位时同一预演给出 Q556 原句（没有煅烧配方时）
+        var s = New();
+        var wood = s.Items.FirstOrDefault(i => i.ItemId == "wood" && i.IsCarried) ?? E.CreateItems(s, "wood", 2, ItemInstance.Carried).Single();
+        var max = E.MaxPutInFire(s, wood, out var why, 0);
+        Assert.That(max, Is.EqualTo(0));
+        Assert.That(why, Does.StartWith("拖木材到火堆卡是添加燃料。"));
+    }
+
     private static string Slice(string text, string from, string to)
     {
         var a = text.IndexOf(from, StringComparison.Ordinal);

@@ -747,6 +747,8 @@ window.survivalPop = (function () {
         var c = id.charAt(0) === '#' ? document.querySelector(id) : document.getElementById(id);
         if (!c || (c.closest && c.closest('[inert]')) || !(c.offsetWidth || c.offsetHeight)) { if (++tries < 20) requestAnimationFrame(go); return; }
         try { c.focus({ preventScroll: true }); } catch (e) { try { c.focus(); } catch (e2) { } }
+        // B45b（Q584）：焦点交给数量框时同数字跳框（Q562）一样全选，接着输入数字即替换
+        if (c.tagName === 'INPUT' && c.select) { try { c.select(); } catch (e3) { } }
       }
       setTimeout(go, 0);
     },
