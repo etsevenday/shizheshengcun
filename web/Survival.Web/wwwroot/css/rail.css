@@ -78,3 +78,7 @@
 [data-detail-rail] .char-panel { gap: 6px; }
 [data-detail-rail] .char-panel .party-fold .party-block { border: 0; padding: 0; margin: 0; background: none; }
 [data-detail-rail] .rail-tools { display: flex; flex-direction: column; gap: 4px; }
+/* 数值连同单位不断行（Ui.KeepUnits） */
+[data-detail-rail] .nb { white-space: nowrap; }
+/* 敌踪接近状态／倒计时（卡面同源句）：表头下一行，正文色 */
+[data-detail-rail] .rail-status { font-size: var(--fs-aux); color: var(--accent); line-height: 1.4; }

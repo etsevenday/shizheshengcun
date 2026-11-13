@@ -53,7 +53,7 @@
         @if (e.IsPot(it))
         {
             var pc = e.PotConfig(it);
-            @if (CardStates.PotWaterLine(e, s, it) is string water) { <div><span>水量</span><b>@water</b></div> }
+            <div><span>水量</span><b>@(CardStates.PotWaterLine(e, s, it) ?? $"空锅 0/{pc.CapacityMl}毫升")</b></div>
             <div><span>食材</span><b>@potFoods.Count/@pc.FoodSlots</b></div>
             <div><span>处理进度</span><b>@e.ContentStatus(s, it)</b></div>
         }

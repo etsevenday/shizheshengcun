@@ -168,4 +168,57 @@ public class BM4bRailTests : TestBase
         Assert.That(html.IndexOf("css/rail.css", StringComparison.Ordinal), Is.GreaterThan(html.IndexOf("css/cards.css", StringComparison.Ordinal)));
         Assert.That(Web("Components", "DetailPanel.razor"), Does.Contain("data-detail-rail"));
     }
+
+    // ───────────── 试玩修复（M834） ─────────────
+
+    /// <summary>试玩修复 1、2、3：敌踪表头下有卡面同源接近状态；资源来源行带卡面同源可用量；路线来源行写当前地点而不重复「前往{目的地}」。</summary>
+    [Test]
+    public void Fix_EnemyStatus_ResourceStock_RouteSource()
+    {
+        var enemy = Web("Components", "EnemyDetail.razor");
+        Assert.That(enemy, Does.Contain("@if (e.CardApproachStatus(s, card) is string approach) { <div class=\"rail-status\" data-approach>@approach</div> }"));
+        Assert.That(enemy.IndexOf("CardApproachStatus", StringComparison.Ordinal), Is.LessThan(enemy.IndexOf("<RailFold", StringComparison.Ordinal)));
+        var sel = Web("Components", "SelectionDetail.razor");
+        Assert.That(sel, Does.Contain("var rStock = e.ResourceCardStock(s, r).Badge;"));
+        Assert.That(sel, Does.Not.Contain("Eyebrow=\"@($\"{mark}前往{e.LocName(sel.Id)}\")\""), "路线来源行不重复标题");
+        Assert.That(sel, Does.Contain("Eyebrow=\"@($\"{mark}{e.LocName(s.CurrentLocation)}\")\" Title=\"@($\"前往{e.LocName(sel.Id)}\")\""));
+        // 资源首屏：产出与风险排在身体变化之前
+        var pv = Web("Components", "PreviewView.razor");
+        var outputs = pv.IndexOf("@if (p.Ok && p.Outputs.Count > 0)", StringComparison.Ordinal);
+        var risk = pv.IndexOf("无随机伤害风险。", StringComparison.Ordinal);
+        var body = pv.IndexOf("@foreach (var id in Stats.All)", StringComparison.Ordinal);
+        Assert.That(outputs, Is.GreaterThan(0).And.LessThan(risk));
+        Assert.That(risk, Is.LessThan(body));
+    }
+
+    /// <summary>试玩修复 4、5、6：同伴详情用标签列；没有词条时不显示词条组；锅主区总有水量／容量行；成员组内不重复队伍人数。</summary>
+    [Test]
+    public void Fix_MemberLabels_EmptyTraits_PotWater_PartyHead()
+    {
+        var m = Web("Components", "MemberPeekDetail.razor");
+        Assert.That(m, Does.Contain("<div class=\"lines rail-main member-lines\">"));
+        Assert.That(m, Does.Contain("<div><span>速度</span>"));
+        Assert.That(m, Does.Not.Contain("健@(Fmt.T(st.Health))"), "不再用无标签串");
+        var c = Web("Components", "CharacterPanel.razor");
+        Assert.That(c, Does.Contain("@if (s.Traits.Count > 0)"));
+        Assert.That(c, Does.Not.Contain("还没有词条。"));
+        Assert.That(c, Does.Contain("<PartyPanel InFold=\"true\" />"));
+        Assert.That(Web("Components", "PartyPanel.razor"), Does.Contain("@if (!InFold) { <b>队伍 @s.Party.Count/@cap</b> }"));
+        foreach (var f in new[] { "ItemDetail.razor", "GearPeekDetail.razor" })
+            Assert.That(Web("Components", f), Does.Contain("?? $\"空锅 0/{pc.CapacityMl}毫升\")</b></div>"), f);
+    }
+
+    /// <summary>顺手修：任务角 aria-expanded 写 true/false；火堆工位摘要数值连同单位不断行；对白读完后清掉残留的「请先读完对话」反馈。</summary>
+    [Test]
+    public void Fix_AriaExpanded_UnitNoWrap_DialogueNotice()
+    {
+        var tc = Web("Components", "TaskCorner.razor");
+        Assert.That(tc, Does.Not.Contain("aria-expanded=\"@open\""));
+        Assert.That(tc, Does.Contain("aria-expanded=\"@(open ? \"true\" : \"false\")\""));
+        Assert.That(Web("Components", "FireDetail.razor"), Does.Contain("@Ui.KeepUnits(it == null ? \"空位\""));
+        Assert.That(Web("wwwroot", "css", "rail.css"), Does.Contain("[data-detail-rail] .nb { white-space: nowrap; }"));
+        var gs = Web("Services", "GameSession.cs");
+        Assert.That(gs, Does.Contain("_notice.EndsWith(GameEngine.DialogueLockedReason, StringComparison.Ordinal) && !DialogueLocked"));
+        Assert.That(gs, Does.Contain("ClearEndedDialogueNotice();"));
+    }
 }

@@ -349,6 +349,15 @@ public sealed partial class GameSession
         if (_busyNotice.Observe(_notice, State)) _notice = null;
     }
 
+    /// <summary>
+    /// BM4b 试玩修复：对白锁期间被拒时反馈位写的是内核原因「请先读完对话」（或「…：请先读完对话」）；对白读完、锁已解除后
+    /// 这条原因不再成立，清掉，避免右栏残留锁定提示。其他反馈不动。
+    /// </summary>
+    private void ClearEndedDialogueNotice()
+    {
+        if (_notice != null && _notice.EndsWith(GameEngine.DialogueLockedReason, StringComparison.Ordinal) && !DialogueLocked) _notice = null;
+    }
+
     public Selection Selected { get; private set; } = new();
 
     /// <summary>右栏当前页签：无选中时默认人物页，选中任何对象自动切到对象信息。</summary>
@@ -1405,6 +1414,7 @@ public sealed partial class GameSession
         CloseStaleFormation();
         ClearStaleFormationNotice();
         ClearEndedBusyNotice();
+        ClearEndedDialogueNotice();
         ReconcilePeek();
         Version++;
         Changed?.Invoke();

@@ -59,8 +59,9 @@ public class BM1B42HoverTests : TestBase
         foreach (var bad in new[] { "<button", "@onclick", "SetActive(", "StayInSafehouse(", "TogglePartyItems(", "GearPickActor(", "OpenPanel(", "FedActor", "s.Player.Stats", "s.Stats" })
             Assert.That(m, Does.Not.Contain(bad), bad);
         Assert.That(m, Does.Contain("var st = a.Stats;"), "读该队员自己的数值");
-        Assert.That(m, Does.Contain("健@(Fmt.T(st.Health)) 饱@(Fmt.T(st.Satiety)) 水@(Fmt.T(st.Hydration)) 体@(Fmt.T(st.Energy)) 醒@(Fmt.T(st.Wakefulness)) 精@(Fmt.T(st.Morale))"), "沿队伍行原写法");
-        Assert.That(m, Does.Contain("武器：@weapons"));
+        // BM4b 试玩修复：改为标签列＋数值列，标签沿原队伍行悬停说明的属性名
+        Assert.That(m, Does.Contain("(\"健康\", st.Health), (\"饱食\", st.Satiety), (\"水分\", st.Hydration), (\"体力\", st.Energy), (\"清醒\", st.Wakefulness), (\"精神\", st.Morale)"), "读该队员自己的六项");
+        Assert.That(m, Does.Contain("<div class=\"wide\"><span>武器</span><b>@weapons</b></div>"));
         // 右栏优先级与页签：悬停显示时页签高亮「对象」，人物页仍是底层页签；点「人物」结束覆盖
         var dp = Web("Components/DetailPanel.razor");
         Assert.That(dp, Does.Contain("var shownTab = gearPeek != null || peekShown ||"));

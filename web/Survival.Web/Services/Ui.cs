@@ -9,6 +9,16 @@ namespace Survival.Web.Services;
 /// </summary>
 public static class Ui
 {
+    /// <summary>
+    /// BM4b：窄栏里「数值＋单位」不断行（如「1000毫升」「0/1000毫升」「20分钟」）。文字先做 HTML 转义，
+    /// 再把数字连同紧跟的单位包进 <c>span.nb</c>（white-space: nowrap）；文字本身不改。
+    /// </summary>
+    public static Microsoft.AspNetCore.Components.MarkupString KeepUnits(string text)
+    {
+        var esc = System.Net.WebUtility.HtmlEncode(text);
+        return new(System.Text.RegularExpressions.Regex.Replace(esc, @"[0-9][0-9.]*(?:/[0-9][0-9.]*)?(?:毫升|分钟|小时|公斤|%)?", m => $"<span class=\"nb\">{m.Value}</span>"));
+    }
+
     /// <summary>状态当前值、成本：固定两位小数。</summary>
     public static string N(double v) => Fmt.N(v);
 

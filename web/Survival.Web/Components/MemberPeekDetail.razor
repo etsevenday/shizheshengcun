@@ -31,18 +31,23 @@
         <Name>@name@if (kind != "") { <small class="muted"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</small> }</Name>
         <Sub>@if (named != null && named.Background != "") { <p class="rail-note muted">@kindTip</p> }</Sub>
     </RailHead>
-    <div class="member-lines">
-        <div>速度@(Fmt.Speed(e.ActorBaseSpeed(s, id)))</div>
-        <div title="健康/饱食/水分/体力/清醒/精神/病毒">健@(Fmt.T(st.Health)) 饱@(Fmt.T(st.Satiety)) 水@(Fmt.T(st.Hydration)) 体@(Fmt.T(st.Energy)) 醒@(Fmt.T(st.Wakefulness)) 精@(Fmt.T(st.Morale))@(a.Body.Infected ? $" 病毒{Fmt.N(a.Body.VirusLoad)}" : "")</div>
+    @* BM4b 试玩修复（Q589「人物」标签列＋对齐数值列）：标签沿原队伍行悬停说明里的属性名（健康/饱食/水分/体力/清醒/精神/病毒）与原「速度」「武器」 *@
+    <div class="lines rail-main member-lines">
+        <div><span>速度</span><b>@(Fmt.Speed(e.ActorBaseSpeed(s, id)))</b></div>
+        @foreach (var (label, v) in new[] { ("健康", st.Health), ("饱食", st.Satiety), ("水分", st.Hydration), ("体力", st.Energy), ("清醒", st.Wakefulness), ("精神", st.Morale) })
+        {
+            <div><span>@label</span><b>@(Fmt.T(v))</b></div>
+        }
+        @if (a.Body.Infected) { <div><span>病毒</span><b>@(Fmt.N(a.Body.VirusLoad))</b></div> }
         @if (!active)
         {
-            <div>@e.ReserveCareLabel(s, a) · 在@(roster != null ? e.ReserveWhereName(s, roster) : e.LocName(e.HubLocation(s)))</div>
+            <div class="wide"><b>@e.ReserveCareLabel(s, a) · 在@(roster != null ? e.ReserveWhereName(s, roster) : e.LocName(e.HubLocation(s)))</b></div>
         }
         @if (roster != null && e.IdentityText(roster) is string ident)
         {
-            <div class="muted">@ident</div>
+            <div class="wide muted"><b>@ident</b></div>
         }
-        <div class="muted">武器：@weapons</div>
+        <div class="wide"><span>武器</span><b>@weapons</b></div>
     </div>
 </div>
 

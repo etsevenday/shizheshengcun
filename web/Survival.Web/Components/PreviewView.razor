@@ -36,8 +36,56 @@
         {
             <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @Ui.N(p.ToolDurabilityAfter ?? 0)/@Ui.N(p.ToolMaxDurability.Value)</b></div>
         }
-        @if (p.Ok)
+    </div>
+
+    @* BM4b 试玩修复（Q589 资源／操作预估在 1280×720 首屏）：耗时与工具 → 单次产出 → 当前风险／不可用原因 → 身体变化、负重与经验 → 可能物资等 *@
+    @if (p.Ok && p.Outputs.Count > 0)
+    {
+        <div class="outputs">
+            @foreach (var o in p.Outputs)
+            {
+                <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="@($"产出 · 留在{p.OutputPlace}")" />
+            }
+        </div>
+    }
+    else if (!p.Ok && p.Outputs.Count > 0)
+    {
+        <div class="outputs">
+            @foreach (var o in p.Outputs) { <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="产出" /> }
+        </div>
+    }
+    @* 当前风险／不可用原因：常驻首屏 *@
+    @if (!p.Ok)
+    {
+        <div class="blocked">@p.Reason</div>
+    }
+    @if (Request.Type == ActionType.Clear || Request.Type == ActionType.Explore)
+    {
+        <div class="risk none">无额外受伤风险；工具不改变耗时、概率与件数，也不磨损。</div>
+    }
+    @if (Request.Type == ActionType.Gather || Request.Type == ActionType.Survey)
+    {
+        @if (p.HazardProbability > 0)
         {
+            <div class="risk">⚠ @(p.HazardLabel)概率@(Ui.Pct(p.HazardProbability))<br />若发生，健康减少@(Ui.T(p.HazardHealthLoss))。</div>
+        }
+        else
+        {
+            <div class="risk none">无随机伤害风险。</div>
+        }
+    }
+    @foreach (var w in p.Warnings)
+    {
+        <div class="risk">@w</div>
+    }
+    @if (G.RightNotice != null)
+    {
+        <div class="notice">@G.RightNotice</div>
+    }
+
+    @if (p.Ok)
+    {
+        <div class="lines rail-main rail-body">
             @foreach (var id in Stats.All)
             {
                 var before = Ui.N(p.StatsBefore.Get(id));
@@ -55,24 +103,9 @@
             {
                 <div><span>完成后经验</span><b>@string.Join("、", p.XpGains)</b></div>
             }
-        }
-    </div>
+        </div>
+    }
 
-    @if (p.Ok && p.Outputs.Count > 0)
-    {
-        <div class="outputs">
-            @foreach (var o in p.Outputs)
-            {
-                <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="@($"产出 · 留在{p.OutputPlace}")" />
-            }
-        </div>
-    }
-    else if (!p.Ok && p.Outputs.Count > 0)
-    {
-        <div class="outputs">
-            @foreach (var o in p.Outputs) { <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="产出" /> }
-        </div>
-    }
     @if (p.LootOdds.Count > 0)
     {
         <div class="loot-odds">
@@ -111,35 +144,6 @@
             <div class="cook-row"><span>等待期间每小时</span><b>@string.Join(" ", new[] { ("饱食", cw.BodyRates.Satiety), ("水分", cw.BodyRates.Hydration), ("体力", cw.BodyRates.Energy), ("清醒", cw.BodyRates.Wakefulness), ("精神", cw.BodyRates.Morale) }.Where(x => x.Item2 != 0).Select(x => x.Item1 + Ui.SignedT(x.Item2)))</b></div>
             <div class="tiny muted">同普通等待的消耗；不自动点火、加木、补水，成品留在原位不自动食用。</div>
         </div>
-    }
-
-    @* 当前风险／不可用原因：常驻首屏 *@
-    @if (!p.Ok)
-    {
-        <div class="blocked">@p.Reason</div>
-    }
-    @if (Request.Type == ActionType.Clear || Request.Type == ActionType.Explore)
-    {
-        <div class="risk none">无额外受伤风险；工具不改变耗时、概率与件数，也不磨损。</div>
-    }
-    @if (Request.Type == ActionType.Gather || Request.Type == ActionType.Survey)
-    {
-        @if (p.HazardProbability > 0)
-        {
-            <div class="risk">⚠ @(p.HazardLabel)概率@(Ui.Pct(p.HazardProbability))<br />若发生，健康减少@(Ui.T(p.HazardHealthLoss))。</div>
-        }
-        else
-        {
-            <div class="risk none">无随机伤害风险。</div>
-        }
-    }
-    @foreach (var w in p.Warnings)
-    {
-        <div class="risk">@w</div>
-    }
-    @if (G.RightNotice != null)
-    {
-        <div class="notice">@G.RightNotice</div>
     }
 
     @if (p.ToolName != null)

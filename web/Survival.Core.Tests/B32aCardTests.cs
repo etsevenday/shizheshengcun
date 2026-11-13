@@ -194,7 +194,8 @@ public class B32aCardTests : TestBase
     {
         foreach (var r in Cfg.Resources.Take(40))
             Assert.That(CardStates.ResourceSource(E, r), Is.EqualTo($"{E.LocName(r.LocationId)} · {GameEngine.AccountLabel(r)}"), r.NodeId);
-        Assert.That(Web("Components", "SelectionDetail.razor"), Does.Contain("<span>来源</span><strong>@CardStates.ResourceSource(e, r)</strong>"));   // B42：选中分支移到 SelectionDetail
+        // B42：选中分支移到 SelectionDetail；BM4b：来源并入右栏表头来源行（同一 ResourceSource），后接卡面同源可用量
+        Assert.That(Web("Components", "SelectionDetail.razor"), Does.Contain("Eyebrow=\"@($\"{mark}{CardStates.ResourceSource(e, r)} · {rStock}\")\""));
     }
 
     // ───────────── Q352 加载 ─────────────

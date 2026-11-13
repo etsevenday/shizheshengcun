@@ -20,7 +20,8 @@
 {
     <section class="party-block" aria-label="队伍">
         <div class="party-head">
-            <b>队伍 @s.Party.Count/@cap</b>
+            @* BM4b：放在右栏「成员」组里时组头已有「队伍 n/容量」摘要，这里不再重复 *@
+            @if (!InFold) { <b>队伍 @s.Party.Count/@cap</b> }
             <span class="muted tiny">容量 C@(cap) 含你 · 名册 @alive.Count 人存活@(dead.Count > 0 ? $"、{dead.Count} 人已故" : "")@(retired > 0 ? $"、{retired} 人已退役" : "")</span>
         </div>
         <div class="party-list">
@@ -97,6 +98,9 @@
 }
 
 @code {
+    /// <summary>BM4b：放在右栏人物页「成员」折叠组里（组头已写队伍人数）。</summary>
+    [Parameter] public bool InFold { get; set; }
+
     /// <summary>B22 M408：回收箱卡“取出…”跳过来时滚到对应块并高亮一次。</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

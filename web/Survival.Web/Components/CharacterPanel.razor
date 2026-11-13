@@ -34,7 +34,7 @@ else
         @if (s.Roster.Count > 0 || e.RemainsHere(s).Count > 0)
         {
             <RailFold Group="@UiFoldPrefs.Party" Name="@RailText.Members" Summary="@($"队伍 {s.Party.Count}/{e.PartyCapacity(s)}")" Class="party-fold">
-                <PartyPanel />
+                <PartyPanel InFold="true" />
             </RailFold>
         }
         @* Q589：装备与生效效果摘要、当前异常在首屏，不随折叠藏掉 *@
@@ -148,11 +148,10 @@ else
                     }
                 </div>
         </RailFold>
-        <RailFold Group="@UiFoldPrefs.Traits" Name="@RailText.Traits" Summary="@(s.Traits.Count == 0 ? "暂无" : $"{s.Traits.Count}条")" Class="char-fold">
-                @if (s.Traits.Count == 0)
-                {
-                    <div class="risk none">还没有词条。</div>
-                }
+        @* Q589-A02：没有词条时整组不显示（空组隐藏） *@
+        @if (s.Traits.Count > 0)
+        {
+        <RailFold Group="@UiFoldPrefs.Traits" Name="@RailText.Traits" Summary="@($"{s.Traits.Count}条")" Class="char-fold">
                 @foreach (var t in s.Traits)
                 {
                     <div class="trait-row q-@t.Quality" title="直接攻击伤害平加（在技能/招式/站位/暴击乘算后、扣护甲前；推挡与出血不加）">
@@ -160,6 +159,7 @@ else
                     </div>
                 }
         </RailFold>
+        }
     </div>
     <div class="detail-foot">
         <div class="under">基础属性在左栏，点左栏属性看说明 · 查看不耗时</div>

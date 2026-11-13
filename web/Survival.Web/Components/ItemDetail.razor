@@ -159,8 +159,8 @@ else
             @if (potInfo)
             {
                 var pc = e.PotConfig(inst);
-                @* B32b P02b：「水量」「{水种} {当前}/{容量}毫升」（没有水时省略该行）、「食材」、「处理进度」 *@
-                @if (CardStates.PotWaterLine(e, s, inst) is string water) { <div><span>水量</span><b>@water</b></div> }
+                @* B32b P02b：「水量」「{水种} {当前}/{容量}毫升」、「食材」、「处理进度」。BM4b（Q589 锅行首屏要有水量／容量）：没有水时写卡面同源「空锅 0/{容量}毫升」，不再省略 *@
+                <div><span>水量</span><b>@(CardStates.PotWaterLine(e, s, inst) ?? $"空锅 0/{pc.CapacityMl}毫升")</b></div>
                 <div><span>食材</span><b>@potFoods.Count/@pc.FoodSlots</b></div>
                 <div><span>处理进度</span><b>@e.ContentStatus(s, inst)</b></div>
                 @if (e.CookXpLine(s, inst) is string pcx) { <div><span>净化经验</span><b>@pcx</b></div> }

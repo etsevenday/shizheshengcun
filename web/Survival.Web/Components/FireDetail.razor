@@ -37,7 +37,7 @@
         @for (var k = 0; k < slots.Count; k++)
         {
             var it = slots[k];
-            <div class="fire-sum @(e.FireSlotHeating(s, here, k) ? "st-busy" : "") @(G.Highlights.Contains(GameEngine.FireSlotHighlight(here, k)) ? "fresh" : "") @(it != null && SlotState(it).Length > 12 ? "wide" : "")"><span>@CardStates.FireSlotName(k)</span><b>@(it == null ? "空位" : $"{e.ItemName(it.ItemId)} · {SlotState(it)}")</b></div>
+            <div class="fire-sum @(e.FireSlotHeating(s, here, k) ? "st-busy" : "") @(G.Highlights.Contains(GameEngine.FireSlotHighlight(here, k)) ? "fresh" : "") @(it != null && SlotState(it).Length > 12 ? "wide" : "")"><span>@CardStates.FireSlotName(k)</span><b>@Ui.KeepUnits(it == null ? "空位" : $"{e.ItemName(it.ItemId)} · {SlotState(it)}")</b></div>
         }
     </div>
     @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }

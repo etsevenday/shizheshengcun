@@ -32,7 +32,7 @@
             {
                 <span class="tc-count" aria-label="@($"另有{sugg.Count}条建议")">建议 @(sugg.Count)</span>
             }
-            <button type="button" class="tc-min" title="@(open ? "收起任务框（真实危险提示不受影响）" : "展开任务框")" aria-label="@(open ? "收起任务框" : "展开任务框")" aria-expanded="@open" @onclick="Toggle">@(open ? "–" : "+")</button>
+            <button type="button" class="tc-min" title="@(open ? "收起任务框（真实危险提示不受影响）" : "展开任务框")" aria-label="@(open ? "收起任务框" : "展开任务框")" aria-expanded="@(open ? "true" : "false")" @onclick="Toggle">@(open ? "–" : "+")</button>
         </div>
         @if (open)
         {
@@ -45,7 +45,7 @@
                 <div class="tc-row">
                     @if (sugg.Count > 0)
                     {
-                        <button type="button" class="tc-link @(showSugg ? "on" : "")" aria-expanded="@showSugg" @onclick="() => { showSugg = !showSugg; showHint = false; }">建议 @(sugg.Count) @(showSugg ? "▾" : "▸")</button>
+                        <button type="button" class="tc-link @(showSugg ? "on" : "")" aria-expanded="@(showSugg ? "true" : "false")" @onclick="() => { showSugg = !showSugg; showHint = false; }">建议 @(sugg.Count) @(showSugg ? "▾" : "▸")</button>
                     }
                     <button type="button" class="tc-link" title="打开任务册（完整18项、已完成与提示）" disabled="@G.DialogueLocked" @onclick='() => G.OpenPanel("goals")'>任务册</button>
                     @if (routeKnown)
@@ -54,7 +54,7 @@
                     }
                     @if (hint is { } hh)
                     {
-                        <button type="button" class="tc-link tc-hint-link @(showHint ? "on" : "")" aria-expanded="@showHint" title="@hh.Text" @onclick="() => { showHint = !showHint; showSugg = false; }">系统提示 @(showHint ? "▾" : "▸")</button>
+                        <button type="button" class="tc-link tc-hint-link @(showHint ? "on" : "")" aria-expanded="@(showHint ? "true" : "false")" title="@hh.Text" @onclick="() => { showHint = !showHint; showSugg = false; }">系统提示 @(showHint ? "▾" : "▸")</button>
                     }
                 </div>
             }

@@ -29,7 +29,11 @@ else
         <RailHead Source="@($"{GameEngine.EnemyCardDetailTitle} · {e.LocName(card.LocationId)}")">
             <Thumb>@Icons.Markup("enemy_" + card.EnemyIds[0])</Thumb>
             <Name>@card.Title</Name>
-            <Sub><div class="rail-src">@card.Badge · @GameEngine.VigilanceText(card.Vigilance)</div></Sub>
+            <Sub>
+                <div class="rail-src">@card.Badge · @GameEngine.VigilanceText(card.Vigilance)</div>
+                @* Q589「敌踪」首屏：当前状态／倒计时或撤退保护，与卡面同源（CardApproachStatus） *@
+                @if (e.CardApproachStatus(s, card) is string approach) { <div class="rail-status" data-approach>@approach</div> }
+            </Sub>
         </RailHead>
         @* 1280×720 窄栏（约200px）里先放当前风险与原因，再放当前查看成员的核心值；成员类别长行与开战武器长句排在其后（仍在主区，不进折叠组） *@
         @if (e.CardGuardNote(s, card) is string guard) { <div class="risk none ecard-guard">@guard</div> }
