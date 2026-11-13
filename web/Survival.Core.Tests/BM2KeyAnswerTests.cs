@@ -151,12 +151,15 @@ public class BM2KeyAnswerTests : TestBase
     [Test]
     public void Q497_A01_A02_Wiring()
     {
+        // B34a（Q570）：「执行{指令名}」随右栏撤销移到底部反馈位（BattleScreen），阅读区不再有执行入口
         var panel = Web("Components/BattlePanel.razor");
-        Assert.That(panel, Does.Contain("if (!G.BattleFullscreen || !G.BattleAiming) return;"), "无所选瞄准指令不出现");
-        Assert.That(panel, Does.Contain("data-aim-confirm aria-keyshortcuts=\"Enter\" disabled=\"@(!st.Ok)\" title=\"@st.Why\""));
-        Assert.That(panel, Does.Contain("@onclick=\"() => G.BattleAimSubmit(token)\">@ShellAim.ConfirmLabel(st.Name)<EnterCap On=\"@st.Ok\" /></button>"));
-        Assert.That(panel, Does.Contain("<div class=\"bp-why warn-text\" role=\"status\">@st.Why</div>"), "禁用时显示第一条真实原因");
-        Assert.That(Regex.Matches(panel, "@AimConfirm\\(").Count, Is.EqualTo(2), "未指定目标与已有预测两种情况都在预测区底部");
+        var bs = Web("Components/BattleScreen.razor");
+        Assert.That(bs, Does.Contain("if (!G.BattleAiming) return;"), "无所选瞄准指令不出现");
+        Assert.That(bs, Does.Contain("data-aim-confirm aria-keyshortcuts=\"Enter\" disabled=\"@(!st.Ok)\" title=\"@st.Why\""));
+        Assert.That(bs, Does.Contain("@onclick=\"() => G.BattleAimSubmit(token)\">@ShellAim.ConfirmLabel(st.Name)<EnterCap On=\"@st.Ok\" /></button>"));
+        Assert.That(bs, Does.Contain("<span class=\"bp-why warn-text\" role=\"status\">@st.Why</span>"), "禁用时显示第一条真实原因");
+        Assert.That(Regex.Matches(bs, "@AimConfirm\\(").Count, Is.EqualTo(1), "瞄准中在底部反馈位");
+        Assert.That(panel, Does.Not.Contain("data-aim-confirm"), "阅读区里没有执行按钮");
         Assert.That(panel, Does.Contain("int? hoverTarget = aiming && G.BattleAimTarget is int hv && aimSet.Contains(hv) ? hv : null;"), "预测跟随本次明确目标");
         Assert.That(panel, Does.Contain("@ShellAim.Guide(aimName)").And.Contain("@ShellAim.ReadOnly").And.Contain("ShellAim.ConsoleGuide(confirmText)"));
         Assert.That(panel, Does.Not.Contain("点击亮起的目标即执行；右键/Esc 取消"));
@@ -197,7 +200,7 @@ public class BM2KeyAnswerTests : TestBase
         var crosses = new List<string>();
         foreach (var f in new[] { "AnchorPop", "StatusPop", "BattleScreen" })
             crosses.AddRange(Web($"Components/{f}.razor").Split('\n').Where(l => l.Contains(">×</button>")));
-        Assert.That(crosses.Count, Is.GreaterThanOrEqualTo(5), "选卡／就近浮窗×、状态浮窗×两处、战斗底部取消×、快捷医疗盘×");
+        Assert.That(crosses.Count, Is.GreaterThanOrEqualTo(4), "选卡／就近浮窗×、状态浮窗×两处、战斗底部取消×（B34a：「医疗与物品」盘按 P05d 改为「返回战斗」）");
         foreach (var l in crosses)
         {
             Assert.That(l, Does.Not.Contain("EscCap").And.Not.Contain("<kbd"), l.Trim());
@@ -340,18 +343,11 @@ public class BM2KeyAnswerTests : TestBase
     [Test]
     public void M761_AimPanelLayout_PredictionKeepsRoom()
     {
-        // BM2 试玩修复（纯排版）：瞄准时 foot 限高自身可滚、预测区与系统提示显示滚动条、原因与指引句同为左对齐；不删不折叠文字
-        var css = Web("wwwroot/css/shell.css");
-        Assert.That(css, Does.Contain(".bfs-info .detail-body:has(.bp-cycle) > .detail-foot { flex: 0 0 auto; min-height: 0; overflow-y: auto;"), "foot 不压缩按钮、超出在自身内滚动");
-        Assert.That(css, Does.Contain(".bfs-info .detail-body:has(.bp-cycle):has(.pv-route) > .detail-foot { max-height: var(--bp-foot-max); }"), "已指定目标时 foot 限高，把高度让给预测");
-        foreach (var tier in new[] { "--bp-foot-max: 92px;", "--bp-foot-max: 78px;", "--bp-foot-max: 134px;" })
-            Assert.That(css, Does.Contain(tier), tier);
-        Assert.That(css, Does.Contain(".bfs-info:has(.bp-cycle) :is(.detail-scroll, .detail-foot, .bfs-hint) { scrollbar-width: thin; scrollbar-color:"), "滚动条可见");
-        Assert.That(css, Does.Contain(".bfs-info:has(.bp-cycle) > .bfs-hint .tc-hint-btns { position: sticky; bottom: 0;"), "系统提示限高后两个按钮常驻");
-        Assert.That(css, Does.Contain(".bfs-info .detail-body:has(.bp-cycle) > .detail-foot .under { margin-top: 3px; font-size: var(--fs-aux); line-height: 1.35; text-align: left; }"));
-        Assert.That(css, Does.Contain(".bfs-info .detail-body:has(.bp-cycle) .bp-confirm .bp-why { text-align: left; }"), "「请先指定目标。」与下一行对齐统一");
-        // 不用隐藏/折叠：新增块里没有 display:none、line-clamp、text-overflow
-        var block = css.Substring(css.IndexOf("/* BM2 试玩修复（M761"), css.IndexOf("/* 方向键帽") - css.IndexOf("/* BM2 试玩修复（M761"));
-        Assert.That(block, Does.Not.Contain("display: none").And.Not.Contain("line-clamp").And.Not.Contain("text-overflow").And.Not.Contain("overflow: hidden"));
+        // B34a（Q570）：BM2 试玩修复 M761 的右栏瞄准排版随右栏撤销删除；目标切换与「执行{指令名}」在底部反馈位
+        Assert.That(Web("wwwroot/css/shell.css"), Does.Not.Match(@"\.bfs-info(?!area)"));
+        var css = Web("wwwroot/css/battle.css");
+        Assert.That(css, Does.Not.Match(@"\.bfs-info(?!area)"), "右栏规则已删（新阅读区是 .bfs-infoarea）");
+        Assert.That(css, Does.Contain(".bfs-feed .bp-confirm { flex: 0 1 auto;"));
+        Assert.That(css, Does.Contain(".bfs-feed .bp-cycle { flex: 0 0 auto;"));
     }
 }

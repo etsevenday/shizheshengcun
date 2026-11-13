@@ -44,6 +44,8 @@ public enum EscOwner
     MedTray,
     BattleHelp,
     BattleDrawer,
+    /// <summary>B34a：全屏战斗操作台下方展开的「战斗信息／战报」阅读区（Q570）。</summary>
+    BattleInfo,
     BattleAction,
     BattleView,
 }
@@ -81,6 +83,7 @@ public sealed partial class GameSession
         if (StatusPinned != null) return EscOwner.Status;
         if (BattleDrawer == "help") return EscOwner.BattleHelp;
         if (BattleDrawer != null) return EscOwner.BattleDrawer;
+        if (BattleInfoPage != null) return EscOwner.BattleInfo;
         if (BattleAction != null) return EscOwner.BattleAction;
         return EscOwner.OpenMenu;
     }

@@ -2701,7 +2701,9 @@ public sealed partial class GameSession
     {
         if (State == null || S.Battle == null) return;
         if (drawer != null && DialogueLocked) return;
+        var wasOpen = BattleDrawer != null;
         BattleDrawer = BattleDrawer == drawer ? null : drawer;
+        if (wasOpen && BattleDrawer == null) AfterBattleDrawerClosed();   // B34a：只读子页返回焦点回发起入口
         if (BattleDrawer == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturnStatus = null; }
         MedTrayOpen = false;
         Notify();
@@ -2726,7 +2728,7 @@ public sealed partial class GameSession
         State != null && S.Battle != null
         // B31b 试玩修复（M614）：右栏查看敌人（含执行指令后留下的目标、没选技能直接点敌卡）与查看队友
         // 只是右栏对象详情，不是带关闭入口的子层，不吃 Esc；开关菜单后原样保留
-        && (PendingDrop != null || MedTrayOpen || Pop != null || StatusPinned != null || BattleDrawer != null || BattleAction != null);
+        && (PendingDrop != null || MedTrayOpen || Pop != null || StatusPinned != null || BattleDrawer != null || BattleInfoPage != null || BattleAction != null);
 
     public void BattleEscape()
     {
@@ -2738,6 +2740,7 @@ public sealed partial class GameSession
         if (StatusPinned != null) { PinStatus(null); return; }
         if (BattleDrawer == "help") { HelpBack(); return; }
         if (BattleDrawer != null) { OpenBattleDrawer(null); return; }
+        if (BattleInfoPage != null) { CollapseBattleInfo(); return; }   // B34a（Q570）：展开的阅读区一次 Esc 只收起它
         if (BattleAction != null) { ClearBattleAction(); return; }
         if (BattleTarget != null || BattleAllyView != null)
         {
@@ -2922,6 +2925,7 @@ public sealed partial class GameSession
         BattleAllyView = null;
         ClearPairDraft();
         BattleShownActor = null;
+        ResetBattleInfoUi();   // B34a：阅读区回默认收起
     }
 
     /// <summary>当前所选指令（B9a：带下指令的成员 = 正在激活的那一名；友方目标技能带所点的我方成员）。</summary>
@@ -2971,6 +2975,8 @@ public sealed partial class GameSession
         ClearPairDraft();
         DetailTab = DetailTab.Object;
         Notice = null;
+        // B34a（Q529）：可确认的无目标指令新选中后，渲染完成把焦点交给实际确认按钮一次；友方／双目标／敌方瞄准不套用
+        BattleConfirmFocusPending = !BattleAiming && !BattleAllyAiming;
         Notify();
     }
 

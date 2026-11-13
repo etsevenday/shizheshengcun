@@ -4,7 +4,9 @@
 @* 全屏四对四战斗（A10 §1.2/§2.2/§3，S14「2026-10-30 全系统更新目标」，R03 §7；开发计划 v0.9 批次 B9）：
    战斗覆盖整个应用内容区，取代两行战斗（S14 §18.1/§18.4、R03 §7/§7.2/§7.4 的冲突展示条款）。外层顶栏、左右栏、地面/随身与底栏留在下面不可操作（inert），
    战后原样露出；对象信息改用战斗内右栏，地面与随身收进只读“物资查看”。
-   五条纵区：顶条（地点·轮次·当前激活·菜单）/ 行动队列 / 场景（八锚点）+ 右对象信息 / 操作台 + 右短战报 / 底部短反馈。 *@
+   五条纵区：顶条（地点·轮次·当前激活·菜单）/ 行动队列 / 场景（八锚点）/ 操作台 / 底部短反馈与阅读入口。
+   B34a（S14 2026-11-13 Q570 选 B；新稿 a9b93f0 P05a）：右栏撤掉，战场八站位与操作台三区用全宽；1600×900 站位足底 y=466、同队间距 169、敌我最近 360、人形高 244。
+   对象信息、关键预测与战报改到操作台下方默认收起的「战斗信息／战报」阅读区（底部两个入口展开），执行与目标切换留在底部反馈位。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -115,6 +117,14 @@
                 </button>
             }
             @if (hidden.Count > 0) { <span class="q-more bdg" tabindex="0" title="@string.Join("；", hidden)">+@hidden.Count</span> }
+            @* B34a（S14 Q528.3）：首战系统提示在主画面只占一行「系统提示」＋「查看提示」，全文与原两项操作在只读子页「操作提示」 *@
+            @if (G.E.BattleHint(s) is { } bh)
+            {
+                <div class="bfs-hintline" role="note">
+                    <span class="tc-sys">@BattleInfoCopy.HintLabel</span><span class="bfs-hintline-text" title="@bh.Text">@bh.Text</span>
+                    <button type="button" class="tc-link" id="bi-hint-open" @onclick='() => G.OpenBattleSub("hint", "bi-hint-open")'>@BattleInfoCopy.HintOpen</button>
+                </div>
+            }
             <span class="bq-cond" tabindex="0" title="@PursuitCondition(b)">追击条件</span>
         </div>
 
@@ -134,26 +144,30 @@
            中——武器Ⅰ/Ⅱ两页签（切页0AP）+ 本页五个技能位（对应 1/3/5/7/10 级；Q227 未解锁的是灰卡，写条件、不可执行）+ 敌方目标位图；
            右——通用动作与“医疗”入口（快捷医疗小盘）。“结束行动”在底部常驻。 *@
         <section class="bfs-console" inert="@dlg" aria-label="操作台">
-            <div class="bc-who" aria-label="当前角色">
+            <div class="bc-who" aria-label="@BattleInfoCopy.WhoPanel">
+                <h3 class="bc-title">@BattleInfoCopy.WhoPanel</h3>
                 <div class="bc-who-head">
                     <span class="bc-face" aria-hidden="true"><img src="img/portraits/protagonist.svg" alt="" /></span>
                     <span class="bc-who-name"><b>@meName · @(Math.Max(1, GameEngine.AllyPos(b, whoId)))号位</b><small class="@(actorWait ? "" : "now")">@(actorWait ? (GameEngine.AlliesOnField(b).Count > 1 ? "等待轮到我方" : "等待轮到你") : dlg ? "读完对话再行动" : $"{(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}")</small></span>
                 </div>
-                <div class="bc-who-lines">
-                    <span title="体力">体力 @Ui.N(s.Actor(whoId).Stats.Energy)/@Ui.T(s.Actor(whoId).Stats.EnergyMax)</span>
-                    <span title="恐慌越高命中能力越低">恐慌 @Ui.N(whoF.Panic)@(whoF.Frightened ? "·受惊" : "")</span>
-                    @if (whoF.Guard) { <span class="good" title="下一次直接伤害减免">@(whoF.GuardSourceId != null ? "盾格挡" : "防御")×@Ui.T(whoF.GuardFactor)</span> }
-                </div>
+                @* B34a（P05a）：当前行动者四行——行动点、体力、恐慌、当前武器 *@
+                <dl class="bc-who-lines">
+                    <div><dt>@BattleInfoCopy.WhoAp</dt><dd>@(actorWait || dlg ? "等待" : $"{b.PlayerAp}/{apMax}")</dd></div>
+                    <div><dt>@BattleInfoCopy.WhoEnergy</dt><dd>@Ui.N(s.Actor(whoId).Stats.Energy)/@Ui.T(s.Actor(whoId).Stats.EnergyMax)</dd></div>
+                    <div title="恐慌越高命中能力越低"><dt>@BattleInfoCopy.WhoPanic</dt><dd>@Ui.N(whoF.Panic)@(whoF.Frightened ? "·受惊" : "")</dd></div>
+                    <div><dt>@BattleInfoCopy.WhoWeapon</dt><dd>@(wi == null ? "拳" : w.Name)</dd></div>
+                    @if (whoF.Guard) { <div class="good" title="下一次直接伤害减免"><dt>@(whoF.GuardSourceId != null ? "盾格挡" : "防御")</dt><dd>×@Ui.T(whoF.GuardFactor)</dd></div> }
+                </dl>
                 <div class="bc-gear" aria-label="战斗装备">
                     @{ var armor = e.WornItem(s, GameEngine.MeId(s), EquipSlots.Armor); var trinket = e.WornItem(s, GameEngine.MeId(s), EquipSlots.CombatAccessory); }
                     <span class="bc-gear-slot" title="@(wi == null ? "本页：拳" : $"本页武器：{w.Name}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
                     <span class="bc-gear-slot @(armor == null ? "none" : "")" title="@(armor == null ? "防具：空" : $"防具：{e.ItemName(armor.ItemId)}{(armor.Durability != null ? $"，耐久{GameEngine.DurabilityText(armor)}" : "")}")">@if (armor != null) { @Icons.Markup(armor.ItemId) } else { <i class="bdg">甲</i> }</span>
                     <span class="bc-gear-slot @(trinket == null ? "none" : "")" title="@(trinket == null ? "战斗饰品：空" : $"战斗饰品：{e.ItemName(trinket.ItemId)}")">@if (trinket != null) { @Icons.Markup(trinket.ItemId) } else { <i class="bdg">饰</i> }</span>
-                    <button type="button" class="secondary bc-gear-btn" @onclick='() => G.OpenBattleDrawer("equip")' title="只读查看七个装备槽（战斗中不能换装或换入第三把武器）">装备</button>
                 </div>
             </div>
 
             <div class="bc-main">
+                <h3 class="bc-title">@BattleInfoCopy.SkillPanel</h3>
                 <div class="bc-tabs" role="tablist" aria-label="武器页（切页0AP）">
                     @for (var pg = 1; pg <= 2; pg++)
                     {
@@ -197,7 +211,7 @@
             </div>
 
             <div class="bc-side">
-                <span class="bc-label">通用</span>
+                <h3 class="bc-title">@BattleInfoCopy.GeneralPanel</h3>
                 <div class="bc-general" role="toolbar" aria-label="通用动作">
                     @foreach (var o in general.Where(x => x.Action != "end_turn")) { @Cmd(o, sel, wi, w, locked) }
                     @foreach (var o in skills.Where(x => x.NodeId == null)) { @Cmd(o, sel, wi, w, locked) }
@@ -205,14 +219,18 @@
                     <button type="button" class="cmdt med @(G.MedTrayOpen ? "on" : "") @(meds.Any(m => m.Available) ? "" : "off")" id="cmd-med" aria-expanded="@G.MedTrayOpen"
                             title="@($"快捷医疗与战术品：随身{medCount}份（绷带/抗生素/特效药，闪光标记器/支撑护带包/鼓舞提示贴）；点开看数量、成本与原因，选好后再确认（点敌人/友方的会进入瞄准）")" @onclick="() => G.ToggleMedTray()">
                         <span class="cmdt-art">@Icons.Markup("bandage")</span>
-                        <span class="cmdt-text"><span class="cmdt-name">医疗</span><small class="bdg">×@medCount</small></span>
+                        <span class="cmdt-text"><span class="cmdt-name">@BattleInfoCopy.MedEntry</span><small class="bdg">×@medCount</small></span>
                     </button>
                 </div>
                 @if (G.MedTrayOpen)
                 {
-                    <div class="bc-medtray" role="dialog" aria-label="快捷医疗">
-                        <div class="bc-medtray-head"><b>快捷医疗（药品只对自己）与战术品（每人每大回合1次）</b><button type="button" class="bx-x" aria-label="收起（ESC）" @onclick="() => G.ToggleMedTray(false)">×</button></div>
-                        @foreach (var m in meds)
+                    <div class="bc-medtray" role="dialog" aria-label="@BattleInfoCopy.MedEntry">
+                        <div class="bc-medtray-head"><b>@BattleInfoCopy.MedEntry</b><button type="button" class="secondary bc-medtray-back" @onclick="() => G.ToggleMedTray(false)">@BattleInfoCopy.BackToBattle<EscCap On="@(G.EscOwner == EscOwner.MedTray)" /></button></div>
+                        @* B34a（Q298、P05d）：上段「药品」（当前行动者自用），下段「战术物品」（每人每完整回合共 1 次） *@
+                        @foreach (var grp in meds.GroupBy(m => G.E.TacticalItemOf(m.Action) != null).OrderBy(g => g.Key))
+                        {
+                            <div class="bc-medtray-sec"><b>@(grp.Key ? BattleInfoCopy.MedTactical : BattleInfoCopy.MedDrugs)</b><small>@(grp.Key ? BattleInfoCopy.MedTacticalNote : BattleInfoCopy.MedDrugsNote)</small></div>
+                        @foreach (var m in grp)
                         {
                             var mo = m;
                             var have = CarriedFor(m);
@@ -223,33 +241,24 @@
                                 <span class="bc-med-text"><b>@G.E.ItemName(MedItem(m.Action)) ×@have</b><small>@(m.Available ? ApText(m.Ap) : ShortWhy(m.Reason))</small></span>
                             </button>
                         }
+                        }
                     </div>
                 }
+                @* B34a（P05a／P05c／P05f）：通用行动区底行——「查看物资」「查看装备」「结束行动」 *@
+                <div class="bc-side-btns">
+                    <button type="button" class="secondary @(G.BattleDrawer == "supplies" ? "on" : "")" @onclick='() => G.OpenBattleDrawer("supplies")' title="只读查看随身五卡、容器内容与当前地面；战斗中不能吃喝、拾取、转移或换入第三把武器">@BattleInfoCopy.SuppliesEntry</button>
+                    <button type="button" class="secondary @(G.BattleDrawer == "equip" ? "on" : "")" @onclick='() => G.OpenBattleDrawer("equip")' title="只读查看七个装备槽（战斗中不能换装或换入第三把武器）">@BattleInfoCopy.EquipEntry</button>
+                    @if (general.FirstOrDefault(x => x.Action == "end_turn") is BattleCommandOption endOpt)
+                    {
+                        <button type="button" class="secondary bfs-end @(sel?.Action == "end_turn" ? "on" : "")" id="cmd-end_turn" disabled="@locked" title="@(endOpt.Reason ?? "结束本次行动：剩余AP清零，不积攒到下轮（点后再确认）")"
+                                @onclick='() => { if (endOpt.Available) G.PickBattleAction("end_turn"); else G.ExplainBlocked(endOpt.Label, endOpt.Reason); }'>结束行动</button>
+                    }
+                </div>
             </div>
         </section>
 
-        <aside class="bfs-info detail" inert="@dlg" aria-label="对象信息">
-            @* B13d（Q128 PRO04）：首战教学上下文的系统提示放在战内对象信息区顶部（常态任务框被全屏战斗盖住）；不给 AP、不替你行动 *@
-            @if (G.E.BattleHint(s) is { } bh)
-            {
-                <div class="tc-hint bfs-hint" role="note">
-                    <span class="tc-sys">系统提示</span><span class="tc-hint-text" title="@bh.Text">@bh.Text</span>
-                    <span class="tc-hint-btns">
-                        <button type="button" class="tc-link" @onclick="() => G.DismissHint(bh.TaskId)">关闭这条</button>
-                        <button type="button" class="tc-link" title="只关闭中性操作提示与教学短句；剧情、危险提示与任务不受影响，可在任务册恢复" @onclick="() => G.SetHintsPaused(true)">暂停后续提示</button>
-                    </span>
-                </div>
-            }
-            <div class="detail-body"><BattlePanel /></div>
-        </aside>
-
-        <aside class="bfs-log" inert="@dlg" aria-label="短战报">
-            <div class="bfs-log-head"><b>战报</b><button type="button" class="secondary" @onclick='() => G.OpenBattleDrawer("log")'>查看记录</button></div>
-            <ul class="bfs-log-list">@foreach (var line in Enumerable.Reverse(b.Log).Take(4)) { <li>@line</li> }</ul>
-        </aside>
-
         @* 底部：一条最新短反馈/瞄准提示 + 物资查看 + 结束行动（A10 §2.2、§5） *@
-        <footer class="bfs-feed" inert="@dlg" aria-live="polite">
+        <footer class="bfs-feed" inert="@(dlg || G.BattleDrawer != null)" aria-live="polite">
             @if (dlg)
             {
                 <span class="bx-hint">对话中，时间未推进；读完后@(allyTurn ? $"轮到{meName}行动" : $"{turnName}继续行动")</span>
@@ -261,6 +270,9 @@
             else if (sel != null && aiming)
             {
                 <span class="bx-hint">@AimHint(sel) · 右键/ESC 取消</span>
+                @* B34a（Q570）：目标切换与「执行{指令名}」留在原操作台／目标处（底部反馈位），不进阅读区 *@
+                @TargetCycle(aimSet.Count)
+                @AimConfirm()
             }
             else if (sel != null)
             {
@@ -279,15 +291,41 @@
             {
                 <span class="bx-last">@(b.Log.LastOrDefault() ?? "选一个技能，再点亮起的目标")</span>
             }
-            <span class="bfs-feed-btns">
-                <button type="button" class="secondary @(G.BattleDrawer == "supplies" ? "on" : "")" @onclick='() => G.OpenBattleDrawer("supplies")' title="只读查看随身五卡、容器内容与当前地面；战斗中不能吃喝、拾取、转移或换入第三把武器">物资查看</button>
-                @if (general.FirstOrDefault(x => x.Action == "end_turn") is BattleCommandOption endOpt)
+            @* B34a（Q570）：主画面两个阅读入口——只展开对应页并聚焦页签，不选人、不确认 *@
+            <span class="bfs-feed-btns" role="group" aria-label="阅读区入口">
+                @foreach (var (pg, label) in InfoPages)
                 {
-                    <button type="button" class="secondary bfs-end @(sel?.Action == "end_turn" ? "on" : "")" disabled="@locked" title="@(endOpt.Reason ?? "结束本次行动：剩余AP清零，不积攒到下轮（点后再确认）")"
-                            @onclick='() => { if (endOpt.Available) G.PickBattleAction("end_turn"); else G.ExplainBlocked(endOpt.Label, endOpt.Reason); }'>结束行动</button>
+                    var page = pg;
+                    <button type="button" class="secondary bi-entry @(G.BattleInfoPage == page ? "on" : "")" id="@("bi-entry-" + page)" aria-expanded="@(G.BattleInfoPage == page)" aria-controls="bfs-infoarea"
+                            @onclick="() => G.OpenBattleInfo(page)">@label</button>
                 }
             </span>
         </footer>
+
+        @* B34a（S14 Q570）：操作台下方全宽阅读区，默认收起；页签「战斗信息」「战报」单一内容区切换，「收起」或一次 Esc 只收起它。只读，不新增模态锁。 *@
+        @if (G.BattleInfoPage is string infoPage)
+        {
+            <section class="bfs-infoarea" id="bfs-infoarea" inert="@dlg" aria-label="@($"{BattleInfoCopy.InfoTab}／{BattleInfoCopy.LogTab}")">
+                <div class="bi-head">
+                    <div class="bi-tabs" role="tablist">
+                        @foreach (var (pg, label) in InfoPages)
+                        {
+                            var page = pg;
+                            <button type="button" role="tab" class="bi-tab @(infoPage == page ? "on" : "")" id="@("bi-tab-" + page)" aria-selected="@(infoPage == page)" @onclick="() => G.OpenBattleInfo(page)">@label</button>
+                        }
+                    </div>
+                    @if (infoPage == "info")
+                    {
+                        <button type="button" class="secondary" id="bi-detail" @onclick='() => G.OpenBattleSub("detail", "bi-detail")'>@BattleInfoCopy.Detail</button>
+                    }
+                    <button type="button" class="secondary bi-collapse" @onclick="G.CollapseBattleInfo">@BattleInfoCopy.Collapse<EscCap On="@(G.EscOwner == EscOwner.BattleInfo)" /></button>
+                </div>
+                <div class="bi-body detail" data-wheel="y">
+                    @if (infoPage == "info") { <div class="detail-body"><BattlePanel Mode="info" /></div> }
+                    else { @RecentLog(b) }
+                </div>
+            </section>
+        }
 
         @* 战斗对白（A10 §6.2）：在战场内上层覆盖场景与操作台的主要阅读区；读完前战斗不接受输入、不推进 *@
         @if (dlg)
@@ -300,15 +338,24 @@
                 @if (G.BattleDrawer == "help") { <HelpOverlay /> }
                 else
                 {
-                    <div class="bfs-drawer-head"><h2>@DrawerTitle(G.BattleDrawer)</h2><button type="button" class="secondary" @onclick="() => G.OpenBattleDrawer(null)">关闭<EscCap On="@(G.EscOwner == EscOwner.BattleDrawer)" /></button></div>
-                    <div class="bfs-drawer-body" data-wheel="y">
+                    <div class="bfs-drawer-head">
+                        <h2>@DrawerTitle(G.BattleDrawer)@if (G.BattleDrawer == "log") {<small class="bfs-drawer-sub">@BattleInfoCopy.LogSubtitle(b.Log.Count, b.LogMayBeIncomplete)</small>}</h2>
+                        <button type="button" class="secondary" @onclick="() => G.OpenBattleDrawer(null)">@BattleInfoCopy.BackToBattle<EscCap On="@(G.EscOwner == EscOwner.BattleDrawer)" /></button>
+                    </div>
+                    <div class="bfs-drawer-body" id="bfs-drawer-body" data-wheel="y">
                         @if (G.BattleDrawer == "supplies") { <BattleSupplies /> }
                         else if (G.BattleDrawer == "equip") { <BattleEquip /> }
-                        else if (G.BattleDrawer == "log")
-                        {
-                            <ul class="notes bfs-full-log">@foreach (var line in Enumerable.Reverse(b.Log)) { <li>@line</li> }</ul>
-                        }
+                        else if (G.BattleDrawer == "detail") { <div class="detail bi-detail-wrap"><BattlePanel Mode="detail" /></div> }
+                        else if (G.BattleDrawer == "hint") { @HintPage() }
+                        else if (G.BattleDrawer == "log") { @FullLog(b) }
                     </div>
+                    @if (G.BattleDrawer == "log" && b.Log.Count > 0)
+                    {
+                        <div class="blog-foot">
+                            @if (_logNew > 0) { <button type="button" class="secondary blog-new" @onclick="LogToLatest">@BattleInfoCopy.NewRecords(_logNew)</button> }
+                            <button type="button" class="secondary" @onclick="LogToLatest">@BattleInfoCopy.BackToLatest</button>
+                        </div>
+                    }
                 }
             </div>
         }
@@ -333,9 +380,11 @@
 
     private static string DrawerTitle(string? d) => d switch
     {
-        "supplies" => "物资查看（只读）",
-        "log" => "战斗记录",
-        "equip" => "装备查看（只读）",
+        "supplies" => BattleInfoCopy.SuppliesTitle,
+        "log" => BattleInfoCopy.LogTitle,
+        "equip" => BattleInfoCopy.EquipTitle,
+        "detail" => BattleInfoCopy.Detail,
+        "hint" => BattleInfoCopy.HintTitle,
         "help" => "系统说明",
         _ => "",
     };
@@ -701,6 +750,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await InitAim();
+        await AfterRenderInfo();
         if (G.BattleFocusNode is not string id) return;
         G.BattleFocusNode = null;
         if (!_lockRefs.TryGetValue(id, out var el)) return;
@@ -848,6 +898,151 @@
     }
 
     private async Task Exec(string token) => await G.ExecuteBattleCommand(token);
+
+    // ───── B34a（S14 Q570、Q528.2/Q528.3、Q529）：阅读区、只读子页与确认焦点 ─────
+
+    private static readonly (string Page, string Label)[] InfoPages = { ("info", BattleInfoCopy.InfoTab), ("log", BattleInfoCopy.LogTab) };
+
+    /// <summary>
+    /// 阅读区「战报」页：标题、计数「最近{n}条 · 共{N}条」（旧档可能缺早段时「已保存」）与「全记录」；最近 5 条按发生顺序、最新在底，
+    /// 每条一行原文（视觉超长才省略），点开定位到战斗记录里的同一条（按本场日志下标，不按可见第几行）。0 条只写空态，不补假条。
+    /// </summary>
+    private RenderFragment RecentLog(BattleState b) => __builder =>
+    {
+        var recent = BattleInfoCopy.Recent(b.Log);
+        <div class="bi-log">
+            <div class="bi-loghead">
+                <b id="bi-log-title" tabindex="-1">@BattleInfoCopy.LogTab</b>
+                <span class="bi-count">@BattleInfoCopy.RecentCount(recent.Count, b.Log.Count, b.LogMayBeIncomplete)</span>
+                <button type="button" class="secondary" id="bi-fulllog" @onclick='() => G.OpenBattleSub("log", "bi-fulllog")'>@BattleInfoCopy.FullLog</button>
+            </div>
+            @if (recent.Count == 0) { <p class="bi-empty">@BattleInfoCopy.LogEmpty</p> }
+            else
+            {
+                <ol class="bi-recent">
+                    @foreach (var (idx, line) in recent)
+                    {
+                        var at = idx;
+                        <li @key="@($"{b.BattleId}-{at}")"><button type="button" class="bi-rec" id="@($"bi-rec-{at}")" title="@line" @onclick='() => G.OpenBattleSub("log", $"bi-rec-{at}", at)'>@line</button></li>
+                    }
+                </ol>
+            }
+        </div>
+    };
+
+    /// <summary>战斗记录子页（Q528.2）：本场全部已提交记录按发生顺序从早到晚完整换行；旧档可能缺早段时页首提示，不补造。</summary>
+    private RenderFragment FullLog(BattleState b) => __builder =>
+    {
+        if (b.LogMayBeIncomplete) { <p class="blog-legacy" role="note">@BattleInfoCopy.LegacyMissing</p> }
+        if (b.Log.Count == 0) { <p class="bi-empty">@BattleInfoCopy.LogEmpty</p> return; }
+        <ol class="notes bfs-full-log" id="blog-list">
+            @for (var i = 0; i < b.Log.Count; i++)
+            {
+                <li @key="i" id="@($"blog-{i}")" tabindex="-1">@b.Log[i]</li>
+            }
+        </ol>
+    };
+
+    /// <summary>操作提示子页（Q528.3）：原提示全文与原「关闭这条」「暂停后续提示」；只有明确点这两个才改变原回执。没有提示时写空态。</summary>
+    private RenderFragment HintPage() => __builder =>
+    {
+        if (G.E.BattleHint(G.S) is not { } bh) { <p class="bi-empty">@BattleInfoCopy.HintEmpty</p> return; }
+        <div class="tc-hint bfs-hint" role="note">
+            <span class="tc-sys">@BattleInfoCopy.HintLabel</span><span class="tc-hint-text">@bh.Text</span>
+            <span class="tc-hint-btns">
+                <button type="button" class="tc-link" @onclick="() => G.DismissHint(bh.TaskId)">关闭这条</button>
+                <button type="button" class="tc-link" title="只关闭中性操作提示与教学短句；剧情、危险提示与任务不受影响，可在任务册恢复" @onclick="() => G.SetHintsPaused(true)">暂停后续提示</button>
+            </span>
+        </div>
+    };
+
+    /// <summary>
+    /// B43（S14「战斗目标预测切换」）：瞄准中「上一目标 ←」「下一目标 →」，与方向键同一入口 BattleCycleTarget——只在合法目标间移动预测，不提交攻击；
+    /// 没有合法目标时禁用。B34a 起放在底部反馈位（原右栏撤销）。
+    /// </summary>
+    private RenderFragment TargetCycle(int legal) => __builder =>
+    {
+        <span class="bp-cycle" role="group" aria-label="切换预测目标">
+            <button type="button" class="secondary" aria-keyshortcuts="ArrowLeft" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(-1)">@ShellKeys.PrevTarget <kbd class="kc kc-sym">@ShellKeys.PrevTargetCap</kbd></button>
+            <button type="button" class="secondary" aria-keyshortcuts="ArrowRight" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(1)">@ShellKeys.NextTarget <kbd class="kc kc-sym">@ShellKeys.NextTargetCap</kbd></button>
+        </span>
+    };
+
+    /// <summary>
+    /// BM2（Q497）：瞄准中「执行{指令名} Enter」——业务名与键帽同一按钮；不可用时禁用并在旁写第一条真实原因。点击与回车同一入口 BattleAimSubmit。
+    /// B34a 起放在底部反馈位（原右栏撤销），阅读区里不再有执行入口。
+    /// </summary>
+    private RenderFragment AimConfirm() => __builder =>
+    {
+        if (!G.BattleAiming) return;
+        var st = G.BattleAimConfirm();
+        var token = G.BattleExecToken();
+        <span class="bp-confirm">
+            <button type="button" class="primary bp-go" data-aim-confirm aria-keyshortcuts="Enter" disabled="@(!st.Ok)" title="@st.Why"
+                    @onclick="() => G.BattleAimSubmit(token)">@ShellAim.ConfirmLabel(st.Name)<EnterCap On="@st.Ok" /></button>
+            @if (!string.IsNullOrEmpty(st.Why)) { <span class="bp-why warn-text" role="status">@st.Why</span> }
+        </span>
+    };
+
+    /// <summary>战斗记录子页：阅读旧段时新增的条数（只存界面）；点「有{n}条新记录」或「回到最新」才回到末尾。</summary>
+    private int _logNew;
+    private int _logSeenCount = -1;
+    private string? _logOpenKey;
+
+    private async Task LogToLatest()
+    {
+        _logNew = 0;
+        try { await JS.InvokeVoidAsync("survivalBattleUi.logBottom", "bfs-drawer-body"); } catch (JSException) { } catch (InvalidOperationException) { }
+    }
+
+    /// <summary>
+    /// 渲染后：Q529 新选无目标指令把焦点交给实际确认按钮一次；阅读区展开滚进视野／收起滚回顶部；子页返回把焦点交回发起入口（已不在时回战报标题）；
+    /// 战斗记录打开时定位最新或所点的那一条，之后在末尾时跟随新记录，阅读旧段时只累计「有{n}条新记录」不抢滚动。
+    /// </summary>
+    private async Task AfterRenderInfo()
+    {
+        try
+        {
+            if (G.BattleConfirmFocusPending)
+            {
+                G.BattleConfirmFocusPending = false;
+                await JS.InvokeVoidAsync("survivalBattleUi.focus", "bt-confirm", null, true);
+            }
+            if (G.BattleScrollTo is string where)
+            {
+                G.BattleScrollTo = null;
+                await JS.InvokeVoidAsync("survivalBattleUi.scroll", where);
+            }
+            if (G.BattleFocusId is string fid)
+            {
+                G.BattleFocusId = null;
+                await JS.InvokeVoidAsync("survivalBattleUi.focus", fid, fid.StartsWith("bi-rec-") ? "bi-log-title" : null, false);
+            }
+            var b = G.S.Battle;
+            if (G.BattleDrawer == "log" && b != null)
+            {
+                var key = $"{b.BattleId}:{G.BattleLogLocate}";
+                if (_logOpenKey != key)
+                {
+                    _logOpenKey = key;
+                    _logNew = 0;
+                    _logSeenCount = b.Log.Count;
+                    await JS.InvokeVoidAsync("survivalBattleUi.logOpen", "bfs-drawer-body", G.BattleLogLocate is int at ? $"blog-{at}" : null);
+                }
+                else if (b.Log.Count > _logSeenCount)
+                {
+                    var added = b.Log.Count - _logSeenCount;
+                    _logSeenCount = b.Log.Count;
+                    var followed = await JS.InvokeAsync<bool>("survivalBattleUi.logFollow", "bfs-drawer-body");
+                    if (!followed) { _logNew += added; StateHasChanged(); }
+                }
+            }
+            else { _logOpenKey = null; _logNew = 0; }
+        }
+        catch (JSException) { }
+        catch (InvalidOperationException) { }
+        catch (TaskCanceledException) { }
+    }
 
     private static string IntentIcon(string intent) => intent switch
     {

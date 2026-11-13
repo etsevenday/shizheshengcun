@@ -109,7 +109,7 @@ public class B43KeyHintTests : TestBase
         Assert.That(Regex.Matches(Web("Components/ActionPops.razor"), Regex.Escape(disk)).Count, Is.GreaterThanOrEqualTo(5), "就近盘的取消／关闭");
         Assert.That(Web("Components/IgniteMenu.razor") + Web("Components/FeedPop.razor"), Does.Contain("取消" + disk).And.Contain("@FeedPanelCopy.Cancel" + disk));
         var battle = Web("Components/BattleScreen.razor");
-        Assert.That(battle, Does.Contain("关闭<EscCap On=\"@(G.EscOwner == EscOwner.BattleDrawer)\" />"));
+        Assert.That(battle, Does.Contain("@BattleInfoCopy.BackToBattle<EscCap On=\"@(G.EscOwner == EscOwner.BattleDrawer)\" />"), "B34a：子页关闭键改「返回战斗」（P05c／P05f／P05h）");
         Assert.That(battle, Does.Contain(">@ShellText.Menu <kbd class=\"kc\">@ShellKeys.Esc</kbd></button>"), "战斗区「菜单 ESC」");
         var keys = Web("Services/GameSession.Keys.cs");
         Assert.That(keys, Does.Contain("if (DialogueLocked) return EscOwner.OpenMenu;"), "对白锁：Esc 不收背后子层，也就不在那些控件上标 ESC");
@@ -224,11 +224,12 @@ public class B43KeyHintTests : TestBase
         Assert.That(bs, Does.Contain("var cap = ShellKeys.SkillSlotCap(level);"));
         Assert.That(Web("Services/GameSession.cs"), Does.Contain("var lv = ShellKeys.SkillSlotLevels[slot - 1];"), "按键与键帽同一张表");
         Assert.That(bs, Does.Contain("<EnterCap On=\"@(p.Ok && !locked)\" /></button>").And.Contain("id=\"bt-confirm\" disabled=\"@(!p.Ok || locked)\""));
-        var bp = Web("Components/BattlePanel.razor");
-        Assert.That(Regex.Matches(bp, "TargetCycle\\(aimSet.Count\\)").Count, Is.EqualTo(2), "瞄准中两种预测区都有");
+        // B34a（Q570）：目标切换随右栏撤销移到底部反馈位（BattleScreen 只在全屏战斗渲染）
+        var bp = bs;
+        Assert.That(Regex.Matches(bp, "@TargetCycle\\(aimSet.Count\\)").Count, Is.EqualTo(1), "瞄准中在底部反馈位");
         Assert.That(bp, Does.Contain("@onclick=\"() => G.BattleCycleTarget(-1)\">@ShellKeys.PrevTarget <kbd class=\"kc kc-sym\">@ShellKeys.PrevTargetCap</kbd></button>"));
         Assert.That(bp, Does.Contain("@onclick=\"() => G.BattleCycleTarget(1)\">@ShellKeys.NextTarget <kbd class=\"kc kc-sym\">@ShellKeys.NextTargetCap</kbd></button>"));
-        Assert.That(bp, Does.Contain("if (!G.BattleFullscreen) return;"), "方向键只在全屏战斗路由，按钮也只在那里给");
+        Assert.That(Web("Components/BattlePanel.razor"), Does.Not.Contain("TargetCycle"), "阅读区里没有目标切换");
     }
 
     /// <summary>

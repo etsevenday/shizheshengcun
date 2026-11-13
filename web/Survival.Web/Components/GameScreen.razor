@@ -398,6 +398,8 @@
         if (G.BattleFullscreen)
         {
             // 全屏战斗（A10 §6.3）：M/C/R/L 锁定
+            // B34a（S14 Q528.2／Q570）：只读子页（物资、装备、战斗记录、预测详情、操作提示、说明）开着时背后的数字指令、切页与回车确认都不受理
+            if (G.BattleDrawer != null) return;
             switch (key)
             {
                 case "1" or "2" or "3" or "4" or "5": G.BattleHotkeySkill(key[0] - '0'); break;

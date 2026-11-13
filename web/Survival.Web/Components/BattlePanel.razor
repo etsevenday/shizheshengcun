@@ -1,8 +1,9 @@
 @inherits GameComponent
 @inject IJSRuntime JS
 
-@* 战斗右栏“对象信息”（v0.6 §07；S14 §18.4、R03 §7.4）：只读预测；BM2（Q497）起瞄准中目标预测区底部另有「执行{指令名} Enter」，
-   与 Enter、点亮起的合法目标同一校验与去重（取代旧「右栏绝不保留执行按钮」）。
+@* 战斗“对象信息／指令预测”（v0.6 §07；S14 §18.4、R03 §7.4）：只读。
+   B34a（S14 Q570）：右栏撤掉，改在操作台下方阅读区「战斗信息」页（Mode="info"：Q528 五行关键预测或对象事实）与只读子页「预测详情」
+   （Mode="detail"：原全部字段、构成、注记与原因）。「执行{指令名}」与目标切换移回底部反馈位（BattleScreen），不再在这里。
    瞄准中本次明确查看的合法目标（BattleAimTarget：悬停或 ←/→ 指定，移出锚点保留）→ 对该目标的实际预测（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）；
    未瞄准时显示悬停或选中的敌人详情，移开恢复已选对象；另列最近战斗记录。 *@
 @{
@@ -17,7 +18,11 @@
     var peekAlly = PeekKey.KindOf(peekKey) == PeekKey.Ally ? PeekKey.Part(peekKey!, 0) : null;
 }
 
-@if (b != null)
+@if (b != null && Mode == "detail")
+{
+    @DetailView()
+}
+else if (b != null)
 {
     var awaiting = e.AwaitingPlayer(s);
     var aiming = G.BattleAiming;
@@ -37,69 +42,34 @@
     else if (G.BattleAction != null && aiming && hoverTarget == null && !G.AreaAction)
     {
         var o = e.BattleOptions(s).FirstOrDefault(x => x.Action == G.BattleAction);
+        var st = G.BattleAimConfirm();
         <div class="detail-scroll">
+            @if (G.RightNotice != null) { <div class="blocked pin">@G.RightNotice</div> }
             <div class="op-head">
-                <div class="eyebrow">战斗第@(b.Round)轮 · 瞄准中</div>
                 <h2>@(o?.Label ?? GameEngine.ActionName(G.BattleAction))</h2>
-                <p>@(o == null ? "" : $"{(o.Ap < 0 ? "剩余AP" : o.Ap + "AP")}{(o.Energy > 0 ? $" · 体力{Ui.N(o.Energy)}" : "")} · 可选目标{aimSet.Count}个{(o.CooldownRounds > 0 ? $" · 冷却{o.CooldownRounds}轮" : "")}")</p>
+                @* B34a（Q530）：未指定目标时「{AP文案} · 体力−{消耗} · 可选目标{数量}个」，0 消耗省略体力项 *@
+                <p>@(o == null ? "" : BattleInfoCopy.AimNoTargetHeader(o.Ap < 0 ? "剩余AP" : o.Ap + "AP", o.Energy, aimSet.Count, o.CooldownRounds))</p>
                 @if (o?.EffectText != null) { <p class="muted">@o.EffectText</p> }
                 @if (o?.TargetMode == "suffix") { <p class="muted">贯穿：点哪个敌人就从它的号位打到4号位，每个目标独立判命中；离起点0/1/2/3格伤害×0.65/0.50/0.35/0.25，空位也占一格、不重排。</p> }
             </div>
             @if (G.BattleAimTarget is int hx && !aimSet.Contains(hx) && e.BattleEnemyAt(b, hx) is BattleEnemy he && he.Alive)
             {
-                @* 试玩修复 B7c-3：悬停够不到/不可选的目标时，右栏也写原因（与执行同源的 CommandBlocked） *@
+                @* 试玩修复 B7c-3：悬停够不到/不可选的目标时也写原因（与执行同源的 CommandBlocked） *@
                 <div class="blocked">@($"{he.Slot}号位 {e.EnemyName(he)}：{e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, hx, G.BattleItem)) ?? "不是这个指令的目标"}")</div>
             }
+            else if (!string.IsNullOrEmpty(st.Why)) { <div class="blocked">@st.Why</div> }
             <div class="risk none">@ShellAim.Guide(aimName)</div>
-            @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
+            <div class="under">@ShellAim.ReadOnly</div>
         </div>
-        <div class="detail-foot">@TargetCycle(aimSet.Count)@AimConfirm(null)<div class="under">@ShellAim.ReadOnly</div></div>
     }
     else if (G.BattleAction != null)
     {
         var p = e.PreviewCommand(s, cmd);
         <div class="detail-scroll">
-            <div class="op-head">
-                <div class="eyebrow">战斗第@(b.Round)轮 · 指令预览</div>
-                <h2>@p.Title</h2>
-                <p>@(p.Ap)AP · 体力@(Ui.N(p.EnergyBefore))→@(Ui.N(p.EnergyAfter))@(p.EnergyCost > 0 ? $"（−{Ui.N(p.EnergyCost)}）" : "")</p>
-            </div>
-            @foreach (var t in p.Targets)
-            {
-                @* B9（A10 §4.5）：固定写“行动者 → 实际目标”；被保护者接下时写“瞄准A，实际由B承受” *@
-                <div class="pv-route">@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))（@(GameEngine.PlayerPos(b))号位）→ @(t.Slot)号位 @t.Name@if (t.AimedIndex is int ai && e.BattleEnemyAt(b, ai) is BattleEnemy aimed) {<em>（瞄准@(aimed.Slot)号位@(e.EnemyName(aimed))，实际由它承受）</em>}</div>
-                <div class="facts">
-                    <div class="fact"><span>目标</span><strong>@(t.Slot)号位 @t.Name</strong></div>
-                    <div class="fact"><span>实际命中率</span><strong>@Ui.Pct(t.HitChance)</strong></div>
-                    <div class="fact"><span>命中能力 / 对方闪避</span><strong>@Ui.N(t.AccuracyRating) / @Ui.T(t.Evasion)</strong></div>
-                    <div class="fact"><span>暴击（命中后）</span><strong>@Ui.Pct(t.CritChance)</strong></div>
-                </div>
-                @* BM3（Q513）：每目标「伤害（未暴击）」排在「命中能力构成」之前（构成为空不显示、不留空行）；其余行与相对顺序、数值不变 *@
-                <div class="lines">
-                    <div><span>伤害（未暴击）</span><b>@Ui.N(t.DamageMin)—@Ui.N(t.DamageMax)</b></div>
-                    @if (t.AccuracyText != "") { <div><span>命中能力构成</span><b>@t.AccuracyText</b></div> }
-                    <div><span>伤害（暴击×@(Ui.T(e.Config.CombatMath.CritFactor))）</span><b>@Ui.N(t.CritDamageMin)—@Ui.N(t.CritDamageMax)</b></div>
-                    <div><span>目标健康</span><b>@Ui.N(t.Hp)@(t.Armor > 0 ? $" · 护甲{Ui.T(t.Armor)}{(t.Penetration > 0 ? $"−穿透{Ui.T(t.Penetration)}" : "")}（已扣）" : "")@(t.Guarded ? " · 防御中×0.5" : "")@(t.DamageBuff > 1 + 1e-9 ? $" · 伤害增益×{Ui.T(t.DamageBuff)}{(t.RawDamageBuff > t.DamageBuff + 1e-9 ? $"（合计×{Ui.T(t.RawDamageBuff)}，超过×1.35的部分递减）" : "")}" : "")</b></div>
-                </div>
-            }
-            @if (p.RetreatChance.HasValue)
-            {
-                <div class="facts"><div class="fact"><span>撤退成功率</span><strong>@Ui.Pct(p.RetreatChance.Value)</strong></div>
-                    <div class="fact"><span>速度（@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))/敌方最高）</span><strong>@Ui.Speed(e.PlayerEffectiveSpeed(s, b)) / @Ui.Speed(b.Alive.Where(x => x.Hostile).Select(e.EnemyEffectiveSpeed).DefaultIfEmpty(0).Max())</strong></div></div>
-            }
-            <div class="lines">
-                @if (p.AmmoText != null) { <div><span>弹药</span><b>@p.AmmoText</b></div> }
-                @if (p.WearText != null) { <div><span>耐久</span><b>@p.WearText</b></div> }
-                @if (p.NoiseAfter > p.NoiseBefore) { <div><span>噪声</span><b>@Ui.T(p.NoiseBefore)→@Ui.T(p.NoiseAfter)/@Ui.T(e.Config.Noise.Max)</b></div> }
-            </div>
-            @if (p.Notes.Count > 0) { <ul class="notes">@foreach (var n in p.Notes) { <li>@n</li> }</ul> }
+            @if (G.RightNotice != null) { <div class="blocked pin">@G.RightNotice</div> }
+            <div class="op-head"><h2>@p.Title</h2></div>
+            @KeyRows(p)
             @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
-            @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
-        </div>
-        <div class="detail-foot">
-            @* S14 §18.4、R03 §7.4：无目标类指令的提交入口在战斗区操作台“确认”，这里只作完整预测；BM2（Q497）瞄准中补「执行{指令名} Enter」 *@
-            @if (aiming) { @TargetCycle(aimSet.Count) @AimConfirm(p.Ok ? null : p.Reason) }
-            @* BM3（Q512）：无目标类指令的指引引用操作台真实确认按钮的同一业务文字（不含 Enter 键帽）；没有该按钮时不显示 *@
             @if (aiming) { <div class="under">@ShellAim.Guide(aimName)</div> }
             else if (G.BattleConsoleConfirmText() is string confirmText) { <div class="under">@ShellAim.ConsoleGuide(confirmText)</div> }
         </div>
@@ -184,37 +154,110 @@
             </div>
             @* B9：最近战斗记录移到右下“战报”（完整记录点“查看记录”），这里只放对象信息 *@
         </div>
-        <div class="detail-foot"><div class="under">地面与随身在底部“物资查看”（只读）；切页、装填与用药在操作台。</div></div>
+        <div class="detail-foot"><div class="under">地面与随身在操作台“查看物资”（只读）；切页、装填与用药在操作台。</div></div>
     }
 }
 
 @code {
-    /// <summary>
-    /// B43（S14「战斗目标预测切换」）：瞄准中原目标预测区的「上一目标 ←」「下一目标 →」，与方向键同一入口 BattleCycleTarget——
-    /// 只在合法目标间移动预测（悬停），不提交攻击；没有合法目标时禁用（键也无效）。只在全屏战斗里给（方向键只在全屏战斗路由）。
-    /// </summary>
-    private RenderFragment TargetCycle(int legal) => __builder =>
+    /// <summary>B34a：info＝阅读区「战斗信息」页（五行关键预测／对象事实）；detail＝只读子页「预测详情」（原全部字段）。</summary>
+    [Parameter] public string Mode { get; set; } = "info";
+
+    private string Who()
     {
-        if (!G.BattleFullscreen) return;
-        <div class="bp-cycle" role="group" aria-label="切换预测目标">
-            <button type="button" class="secondary" aria-keyshortcuts="ArrowLeft" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(-1)">@ShellKeys.PrevTarget <kbd class="kc kc-sym">@ShellKeys.PrevTargetCap</kbd></button>
-            <button type="button" class="secondary" aria-keyshortcuts="ArrowRight" disabled="@(legal == 0)" @onclick="() => G.BattleCycleTarget(1)">@ShellKeys.NextTarget <kbd class="kc kc-sym">@ShellKeys.NextTargetCap</kbd></button>
+        var b = G.S.Battle!;
+        return b.FocusId == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.S, b.FocusId);
+    }
+
+    /// <summary>
+    /// B34a（S14 Q528.1，取 Q570 后的字段合同）：五行关键预测——目标（保护转伤另写实际承伤）、成本、命中与暴击、伤害、目标状态，
+    /// 全部取自同一次 PreviewCommand；多目标行 1 写「受影响{数量}个目标」，其余行写当前明确查看的那名成员并标出它。
+    /// 无敌方目标的指令只列真实存在的行（成本、撤退成功率、用药效果），不编字段。长构成、注记在「预测详情」。
+    /// </summary>
+    private RenderFragment KeyRows(BattlePreview p) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var b = s.Battle!;
+        var ap = p.Ap < 0 ? "剩余AP" : $"{p.Ap}AP";
+        var cost = $"{ap} · 体力{Ui.N(p.EnergyBefore)}→{Ui.N(p.EnergyAfter)}{(p.EnergyCost > 0 ? $"（−{Ui.N(p.EnergyCost)}）" : "")}";
+        var look = G.BattleAimTarget ?? G.BattleHover ?? G.BattleTarget;
+        var t = p.Targets.FirstOrDefault(x => x.Index == look || x.AimedIndex == look) ?? p.Targets.FirstOrDefault();
+        <div class="bi-rows" role="list">
+            @if (t != null)
+            {
+                var member = $"{t.Slot}号 {t.Name}";
+                var aimed = t.AimedIndex is int ai ? e.BattleEnemyAt(b, ai) : null;
+                <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowTarget</span>
+                    <b>@if (p.Targets.Count > 1) {@BattleInfoCopy.Affected(p.Targets.Count)<text> · </text>}@(aimed != null ? $"{aimed.Slot}号 {e.EnemyName(aimed)}" : member)@if (aimed != null) {<em>；@BattleInfoCopy.TakenBy：@member</em>}</b></div>
+                <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowCost</span><b>@cost</b></div>
+                <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowHit</span><b>@(p.Targets.Count > 1 ? member + "：" : "")实际命中率@(Ui.Pct(t.HitChance)) · 暴击（命中后）@Ui.Pct(t.CritChance)</b></div>
+                <div class="bi-row" role="listitem"><span>@BattleInfoCopy.DamageNoCrit</span><b>@(p.Targets.Count > 1 ? member + "：" : "")@Ui.N(t.DamageMin)—@Ui.N(t.DamageMax) · 暴击伤害@(Ui.N(t.CritDamageMin))—@Ui.N(t.CritDamageMax)</b></div>
+                <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowState</span><b>@(p.Targets.Count > 1 ? member + "：" : "")健康@(Ui.N(t.Hp)) · 护甲@(Ui.T(t.Armor))@(t.Guarded ? " · 防御中×0.5" : "")</b></div>
+            }
+            else
+            {
+                <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowCost</span><b>@cost</b></div>
+                @if (p.RetreatChance.HasValue) { <div class="bi-row" role="listitem"><span>撤退成功率</span><b>@Ui.Pct(p.RetreatChance.Value)</b></div> }
+            }
         </div>
     };
 
     /// <summary>
-    /// BM2（Q497）：目标预测区底部「执行{指令名} Enter」——业务名与键帽同一按钮；只在全屏战斗瞄准中出现（无所选指令的查看、无目标类指令不出现）。
-    /// 不可用时禁用并在按钮下写第一条真实原因（与上方预测里已写的同一句不重复写）；点击与回车同一入口 BattleAimSubmit。
+    /// B34a（S14 Q528.3）：「预测详情」只读子页——原指令预览的全部字段、命中构成、两类伤害、健康护甲穿透防御增益、弹药耐久噪声、注记与具体原因；
+    /// 「伤害（未暴击）」仍先于命中能力构成（Q513）。没有所选指令或尚未指定目标时写「当前没有可查看的指令预测。」，不拿旧预测充数。
     /// </summary>
-    private RenderFragment AimConfirm(string? shownAbove) => __builder =>
+    private RenderFragment DetailView() => __builder =>
     {
-        if (!G.BattleFullscreen || !G.BattleAiming) return;
-        var st = G.BattleAimConfirm();
-        var token = G.BattleExecToken();
-        <div class="bp-confirm">
-            <button type="button" class="primary bp-go" data-aim-confirm aria-keyshortcuts="Enter" disabled="@(!st.Ok)" title="@st.Why"
-                    @onclick="() => G.BattleAimSubmit(token)">@ShellAim.ConfirmLabel(st.Name)<EnterCap On="@st.Ok" /></button>
-            @if (!string.IsNullOrEmpty(st.Why) && st.Why != shownAbove) { <div class="bp-why warn-text" role="status">@st.Why</div> }
+        var s = G.S;
+        var e = G.E;
+        var b = s.Battle!;
+        var aiming = G.BattleAiming;
+        var aimSet = G.AimTargets();
+        int? hoverTarget = aiming && G.BattleAimTarget is int hv && aimSet.Contains(hv) ? hv : null;
+        if (G.BattleAction == null || (aiming && hoverTarget == null && !G.AreaAction))
+        {
+            <p class="bi-empty">@BattleInfoCopy.NoPreview</p>
+            return;
+        }
+        var cmd = aiming ? BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : hoverTarget, G.BattleItem) : G.CurrentBattleCommand();
+        var p = e.PreviewCommand(s, cmd);
+        <div class="detail-scroll bi-detail">
+            <div class="op-head">
+                <div class="eyebrow">战斗第@(b.Round)轮 · 指令预览</div>
+                <h2>@p.Title</h2>
+                <p>@(p.Ap)AP · 体力@(Ui.N(p.EnergyBefore))→@(Ui.N(p.EnergyAfter))@(p.EnergyCost > 0 ? $"（−{Ui.N(p.EnergyCost)}）" : "")</p>
+            </div>
+            @foreach (var t in p.Targets)
+            {
+                @* B9（A10 §4.5）：固定写“行动者 → 实际目标”；被保护者接下时写“瞄准A，实际由B承受” *@
+                <div class="pv-route">@Who()（@(GameEngine.PlayerPos(b))号位）→ @(t.Slot)号位 @t.Name@if (t.AimedIndex is int ai && e.BattleEnemyAt(b, ai) is BattleEnemy aimed) {<em>（瞄准@(aimed.Slot)号位@(e.EnemyName(aimed))，实际由它承受）</em>}</div>
+                <div class="facts">
+                    <div class="fact"><span>目标</span><strong>@(t.Slot)号位 @t.Name</strong></div>
+                    <div class="fact"><span>实际命中率</span><strong>@Ui.Pct(t.HitChance)</strong></div>
+                    <div class="fact"><span>命中能力 / 对方闪避</span><strong>@Ui.N(t.AccuracyRating) / @Ui.T(t.Evasion)</strong></div>
+                    <div class="fact"><span>暴击（命中后）</span><strong>@Ui.Pct(t.CritChance)</strong></div>
+                </div>
+                @* BM3（Q513）：每目标「伤害（未暴击）」排在「命中能力构成」之前（构成为空不显示、不留空行）；其余行与相对顺序、数值不变 *@
+                <div class="lines">
+                    <div><span>伤害（未暴击）</span><b>@Ui.N(t.DamageMin)—@Ui.N(t.DamageMax)</b></div>
+                    @if (t.AccuracyText != "") { <div><span>命中能力构成</span><b>@t.AccuracyText</b></div> }
+                    <div><span>伤害（暴击×@(Ui.T(e.Config.CombatMath.CritFactor))）</span><b>@Ui.N(t.CritDamageMin)—@Ui.N(t.CritDamageMax)</b></div>
+                    <div><span>目标健康</span><b>@Ui.N(t.Hp)@(t.Armor > 0 ? $" · 护甲{Ui.T(t.Armor)}{(t.Penetration > 0 ? $"−穿透{Ui.T(t.Penetration)}" : "")}（已扣）" : "")@(t.Guarded ? " · 防御中×0.5" : "")@(t.DamageBuff > 1 + 1e-9 ? $" · 伤害增益×{Ui.T(t.DamageBuff)}{(t.RawDamageBuff > t.DamageBuff + 1e-9 ? $"（合计×{Ui.T(t.RawDamageBuff)}，超过×1.35的部分递减）" : "")}" : "")</b></div>
+                </div>
+            }
+            @if (p.RetreatChance.HasValue)
+            {
+                <div class="facts"><div class="fact"><span>撤退成功率</span><strong>@Ui.Pct(p.RetreatChance.Value)</strong></div>
+                    <div class="fact"><span>速度（@Who()/敌方最高）</span><strong>@Ui.Speed(e.PlayerEffectiveSpeed(s, b)) / @Ui.Speed(b.Alive.Where(x => x.Hostile).Select(e.EnemyEffectiveSpeed).DefaultIfEmpty(0).Max())</strong></div></div>
+            }
+            <div class="lines">
+                @if (p.AmmoText != null) { <div><span>弹药</span><b>@p.AmmoText</b></div> }
+                @if (p.WearText != null) { <div><span>耐久</span><b>@p.WearText</b></div> }
+                @if (p.NoiseAfter > p.NoiseBefore) { <div><span>噪声</span><b>@Ui.T(p.NoiseBefore)→@Ui.T(p.NoiseAfter)/@Ui.T(e.Config.Noise.Max)</b></div> }
+            </div>
+            @if (p.Notes.Count > 0) { <ul class="notes">@foreach (var n in p.Notes) { <li>@n</li> }</ul> }
+            @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
+            <div class="under">@ShellAim.ReadOnly</div>
         </div>
     };
 
@@ -223,11 +266,12 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (Mode != "info") return;
         var k = G.State != null && G.S.Battle != null && PeekKey.KindOf(G.PeekKeyNow) is PeekKey.Foe or PeekKey.Ally ? G.PeekKeyNow : null;
         if (k == _shownPeek) return;
         _shownPeek = k;
         if (k == null) return;
-        try { await JS.InvokeVoidAsync("survivalPeek.top", ".bfs-info .detail-body"); }
+        try { await JS.InvokeVoidAsync("survivalPeek.top", ".bfs-infoarea .bi-body"); }
         catch (JSException) { /* 旧缓存 app.js 没有 top：只是不复位 */ }
     }
 

@@ -5,31 +5,30 @@
    1280×720：40/48/36，352/196，240 宽；1920×1080 按同一比例给场景与操作台加高（578/302 左右），右栏 360、阅读宽上限 1920。 */
 
 .bfs {
-  position: fixed; inset: 0; z-index: 55;
+  position: fixed; inset: 0; z-index: 55; overflow-x: hidden; overflow-y: auto; overflow-anchor: none;
   --bfs-pad: 8px; --bfs-gap: 8px;
   --bfs-top: 48px; --bfs-queue: 64px; --bfs-feed: 44px;
-  --bfs-right: clamp(240px, 18.75vw, 360px);
+  /* B34a（Q570）：战场与操作台按视口高分配（1600×900 时 400／296，与新稿 P05a 同），阅读区展开时追加在下方、整体纵滚 */
+  --bfs-avail: calc(100vh - 2 * var(--bfs-pad) - var(--bfs-top) - var(--bfs-queue) - var(--bfs-feed) - 4 * var(--bfs-gap));
   background: linear-gradient(180deg, #0a1216f0, #0b1417f6 60%, #0a1114fa), var(--scene-art) center / cover;
   color: var(--text); font-size: var(--fs-body);
 }
 .bfs-grid {
-  position: relative; box-sizing: border-box; height: 100%; max-width: 1920px; margin: 0 auto; padding: var(--bfs-pad);
+  position: relative; box-sizing: border-box; min-height: 100%; max-width: 1920px; margin: 0 auto; padding: var(--bfs-pad);
   display: grid; gap: var(--bfs-gap);
-  grid-template-columns: minmax(0, 1fr) var(--bfs-right);
-  grid-template-rows: var(--bfs-top) var(--bfs-queue) minmax(0, 460fr) minmax(0, 240fr) var(--bfs-feed);
-  grid-template-areas: "top top" "queue queue" "scene info" "console log" "feed feed";
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--bfs-top) var(--bfs-queue) calc(var(--bfs-avail) * 400 / 696) calc(var(--bfs-avail) * 296 / 696) var(--bfs-feed);
+  grid-auto-rows: auto;
+  grid-template-areas: "top" "queue" "scene" "console" "feed";
 }
 @media (max-height: 800px) {
   .bfs { --bfs-top: 40px; --bfs-queue: 48px; --bfs-feed: 42px; }
-  .bfs-grid { grid-template-rows: var(--bfs-top) var(--bfs-queue) minmax(0, 352fr) minmax(0, 196fr) var(--bfs-feed); }
 }
 .bfs-grid > * { min-width: 0; min-height: 0; box-sizing: border-box; }
 .bfs-top { grid-area: top; }
 .bfs-queue { grid-area: queue; }
 .bfs-scene { grid-area: scene; }
 .bfs-console { grid-area: console; }
-.bfs-info { grid-area: info; }
-.bfs-log { grid-area: log; }
 .bfs-feed { grid-area: feed; }
 /* 战斗对白与二级抽屉覆盖场景、操作台与右栏（顶条、队列、底反馈仍可见） */
 .bfs-dlg, .bfs-drawer { grid-row: 3 / span 2; grid-column: 1 / -1; position: relative; z-index: 40; }
@@ -57,13 +56,6 @@
 
 /* ── 场景、操作台、右栏、底反馈的外框 ── */
 .bfs-scene, .bfs-console { background: #141c1fe6; border: 1px solid #8a4f3a; border-radius: 6px; }
-.bfs-info { padding: 10px 12px; display: flex; flex-direction: column; border-radius: 6px; }
-.bfs-info .detail-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-.bfs-log { display: flex; flex-direction: column; gap: 4px; padding: 6px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
-.bfs-log-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.bfs-log-head button { width: auto; min-height: 32px; padding: 0 10px; font-size: var(--fs-body); }
-.bfs-log-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 3px; font-size: var(--fs-body); line-height: 1.4; color: var(--muted); }
-.bfs-log-list li:first-child { color: var(--text); }
 .bfs-feed { display: flex; align-items: center; gap: 8px; padding: 0 6px 0 12px; background: #11181bf2; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
 .bfs-feed .bx-hint, .bfs-feed .bx-last { flex: 1 1 auto; min-width: 0; font-size: var(--fs-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bfs-feed .bx-last { color: var(--muted); }
@@ -73,22 +65,21 @@
 .bfs-feed-btns button { width: auto; min-height: 30px; padding: 0 12px; font-size: var(--fs-body); white-space: nowrap; }
 .bfs-feed-btns button.on { border-color: var(--accent); color: var(--accent); }
 
-/* ── 右对象信息栏（窄栏 240—360px）：正文 16px、单列，长数值不挤成竖排 ── */
-.bfs-info .detail-scroll { gap: 8px; }
-/* 试玩修复 M503：最新拒绝句贴在滚动区顶部，滚动过也完整可读 */
-.bfs-info .detail-scroll > .blocked.pin { position: sticky; top: 0; z-index: 1; flex: 0 0 auto; background: #3a2019; }
-.bfs-info .eyebrow { font-size: var(--fs-body); letter-spacing: 0; }
-.bfs-info .op-head { padding-bottom: 6px; }
-.bfs-info .op-head h2 { font-size: var(--fs-title); margin: 2px 0; }
-.bfs-info .op-head p, .bfs-info .notes, .bfs-info .risk, .bfs-info .blocked, .bfs-info .notice, .bfs-info .under { font-size: var(--fs-body); line-height: 1.5; }
-.bfs-info .facts { grid-template-columns: 1fr; gap: 4px; }
-.bfs-info .fact { padding: 4px 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.bfs-info .fact span { font-size: var(--fs-body); margin: 0; display: inline; }
-.bfs-info .fact strong { font-size: var(--fs-body); text-align: right; }
-.bfs-info .lines { font-size: var(--fs-body); line-height: 1.45; }
-.bfs-info .lines > div { flex-direction: column; gap: 0; padding: 2px 0; border-bottom: 1px solid #ffffff10; }
-.bfs-info .lines > div > b { text-align: left; font-weight: 500; }
-.bfs-info .detail-foot { margin-top: 6px; }
+/* ── B34a 阅读区「战斗信息」页与「预测详情」子页里的对象信息、预测（原右栏样式，选择器改到新容器） ── */
+:is(.bfs-infoarea, .bi-detail-wrap) .detail-scroll { gap: 8px; }
+:is(.bfs-infoarea, .bi-detail-wrap) .detail-scroll > .blocked.pin { position: sticky; top: 0; z-index: 1; flex: 0 0 auto; background: #3a2019; }
+:is(.bfs-infoarea, .bi-detail-wrap) .eyebrow { font-size: var(--fs-body); letter-spacing: 0; }
+:is(.bfs-infoarea, .bi-detail-wrap) .op-head { padding-bottom: 6px; }
+:is(.bfs-infoarea, .bi-detail-wrap) .op-head h2 { font-size: var(--fs-title); margin: 2px 0; }
+:is(.bfs-infoarea, .bi-detail-wrap) :is(.op-head p, .notes, .risk, .blocked, .notice, .under) { font-size: var(--fs-body); line-height: 1.5; }
+:is(.bfs-infoarea, .bi-detail-wrap) .facts { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px; }
+:is(.bfs-infoarea, .bi-detail-wrap) .fact { padding: 4px 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+:is(.bfs-infoarea, .bi-detail-wrap) .fact span { font-size: var(--fs-body); margin: 0; display: inline; }
+:is(.bfs-infoarea, .bi-detail-wrap) .fact strong { font-size: var(--fs-body); text-align: right; }
+:is(.bfs-infoarea, .bi-detail-wrap) .lines { font-size: var(--fs-body); line-height: 1.45; }
+:is(.bfs-infoarea, .bi-detail-wrap) .lines > div { flex-wrap: wrap; column-gap: 12px; padding: 2px 0; border-bottom: 1px solid #ffffff10; }
+:is(.bfs-infoarea, .bi-detail-wrap) .lines > div > b { font-weight: 500; }
+:is(.bfs-infoarea, .bi-detail-wrap) .detail-foot { margin-top: 6px; }
 
 /* ── 物资查看 / 装备查看（只读） ── */
 .bsup, .beq { display: flex; flex-direction: column; gap: 10px; }
@@ -346,3 +337,118 @@
 .anc.ally.pair-picked { outline: 3px solid #3f8f3a; outline-offset: -3px; }
 .anc-pair { position: absolute; top: 4px; right: 4px; min-width: 22px; text-align: center; font-weight: 700; background: #3f8f3a; color: #fff; border-radius: 4px; pointer-events: none; }
 .anc.ally.unreachable { cursor: not-allowed; background-image: repeating-linear-gradient(135deg, #00000018 0 6px, transparent 6px 12px); }
+
+/* ══ B34a（S14 Q570 选 B；新稿 a9b93f0 P05a）：全宽战场站位、操作台三区、底部阅读入口与下方阅读区 ══ */
+/* 战场：八站位按新稿坐标摆放。--u 为 1600×900 基准的 1px（场景 1584×400 时 =1px，按宽、高取较小的比例缩放）；
+   我方 p 号位左沿 = 中线 −(264 + (p−1)×169)u，敌方 p 号位左沿 = 中线 +(96 + (p−1)×169)u（同队间距 169、敌我最近 360、宽 168）；
+   人形区高 244u、上沿 86u（1600×900 时人物足底 y=466）。名牌与意图在人形上方，健康、体力与状态在脚下。 */
+.bfs-scene { position: relative; display: block; padding: 0; overflow: hidden; container-type: size; --u: min(calc(100cqw / 1584), calc(100cqh / 400)); }
+.bfs-side { position: absolute; inset: 0; display: block; pointer-events: none; }
+.bfs-side > .anc { pointer-events: auto; }
+.bfs-mid { position: absolute; left: 50%; top: calc(86 * var(--u)); height: calc(244 * var(--u)); width: 28px; margin-left: -14px; }
+.bfs-scene .anc { position: absolute; top: calc(10 * var(--u)); bottom: 4px; width: calc(168 * var(--u)); box-sizing: border-box;
+  grid-template-rows: 44px auto minmax(0, calc(244 * var(--u))) auto; align-content: start;
+  background: transparent; border-color: transparent; color: var(--text); clip-path: none; }
+@media (max-height: 800px) { .bfs-scene .anc { grid-template-rows: 40px auto minmax(0, calc(244 * var(--u))) auto; } }
+.bfs-scene .anc.ally[data-slot="1"] { left: calc(50cqw - 264 * var(--u)); }
+.bfs-scene .anc.ally[data-slot="2"] { left: calc(50cqw - 433 * var(--u)); }
+.bfs-scene .anc.ally[data-slot="3"] { left: calc(50cqw - 602 * var(--u)); }
+.bfs-scene .anc.ally[data-slot="4"] { left: calc(50cqw - 771 * var(--u)); }
+.bfs-scene .anc.foe[data-slot="1"] { left: calc(50cqw + 96 * var(--u)); }
+.bfs-scene .anc.foe[data-slot="2"] { left: calc(50cqw + 265 * var(--u)); }
+.bfs-scene .anc.foe[data-slot="3"] { left: calc(50cqw + 434 * var(--u)); }
+.bfs-scene .anc.foe[data-slot="4"] { left: calc(50cqw + 603 * var(--u)); }
+.bfs-scene .anc.empty { bottom: auto; height: calc(320 * var(--u)); top: calc(46 * var(--u)); border: 2px dashed #6b645088; background: #ffffff06; }
+/* 名牌与意图：深底金边铭牌（人形上方） */
+.bfs-scene .anc .anc-top, .bfs-scene .anc .anc-head { background: #171d1ee6; border: 1px solid #6b5c3f; border-radius: 4px; padding: 1px 4px; color: var(--text); }
+.bfs-scene .anc.foe .anc-head { border-color: #8a3b2c; }
+.bfs-scene .anc-intent { background: #1f2a2ae6; color: var(--text); }
+.bfs-scene .anc-intent.bite { background: #4a1f18e6; color: #ffd9cb; }
+.bfs-scene .anc-intent.calm { background: #1f2a24e6; }
+.bfs-scene .anc-intent.far { background: #2e2a1ee6; }
+.bfs-scene .anc-art { background: none; border-radius: 0; }
+.bfs-scene .anc-foot { background: #171d1ee6; border: 1px solid #6b5c3f; border-radius: 4px; padding: 2px 5px 3px; }
+.bfs-scene .anc.foe .anc-foot { border-color: #8a3b2c; }
+.bfs-scene .anc-nums.fc-on { color: #ffb59f; }
+.bfs-scene .anc-why { color: #ffb59f; }
+.bfs-scene .anc.acting { border-color: transparent; box-shadow: none; }
+.bfs-scene .anc.acting .anc-head, .bfs-scene .anc.acting .anc-foot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.bfs-scene .anc.selected { outline: 2px solid #f0d9a0; outline-offset: 0; border-radius: 6px; }
+.bfs-scene .anc.foe.targetable, .bfs-scene .anc.ally.targetable { border-color: #e08a3c; box-shadow: none; border-radius: 6px; background: #e08a3c14; }
+.bfs-scene .anc.ally.targetable { border-color: #6fae5a; background: #6fae5a14; }
+.bfs-scene .anc.foe.targetable.hover { box-shadow: inset 0 0 0 2px #f0b062; }
+.bfs-scene .anc.unreachable { background-image: none; }
+.bfs-scene .anc.unreachable .anc-art { opacity: .55; }
+/* 首战提示一行（Q528.3）：放在行动队列行右侧（不压战场站位），全文进「操作提示」子页 */
+.bfs-hintline { flex: 1 1 auto; min-width: 0; margin-left: 12px; display: flex; align-items: center; gap: 8px;
+  padding: 2px 10px; border: 1px dashed #6f7a68; border-radius: 4px; background: #0d1714ee; font-size: var(--fs-aux); line-height: 1.5; color: #cfd5c6; white-space: nowrap; }
+.bfs-hintline-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.bfs-hintline .tc-link { flex: 0 0 auto; background: none; border: none; padding: 0; min-height: 0; width: auto; color: var(--accent); font-size: var(--fs-aux); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+
+/* 操作台三区：当前行动者 | 武器与技能 | 通用行动（1600 时约 235／776／524） */
+.bfs-console { background: none; border: none; padding: 0; gap: 12px; grid-template-columns: minmax(0, 235fr) minmax(0, 776fr) minmax(0, 524fr); }
+.bfs-console > .bc-who, .bfs-console > .bc-main, .bfs-console > .bc-side { background: #141c1fe6; border: 2px solid #6b5c3f; border-radius: 6px; padding: 4px 8px 6px; box-sizing: border-box; }
+.bc-title { margin: 0 0 2px; font-size: var(--fs-title); font-weight: 600; line-height: 1.3; color: var(--text); font-family: var(--title-font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bc-main { grid-template-rows: auto 46px minmax(0, 1fr) 28px; }
+.bc-who-lines { display: flex; flex-direction: column; gap: 0; margin: 2px 0 0; }
+.bc-who-lines > div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid #ffffff12; }
+.bc-who-lines dt { color: var(--muted); }
+.bc-who-lines dd { margin: 0; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bc-who-lines .good dd, .bc-who-lines .good dt { color: var(--good); }
+.bc-who { overflow: hidden; }
+.bc-side { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 4px; }
+.bc-general { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 1500px) { .bc-general { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.bc-side-btns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.bc-side-btns button { width: auto; min-height: 36px; padding: 0 6px; font-size: var(--fs-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bc-side-btns button.on { border-color: var(--accent); color: var(--accent); }
+.bc-side-btns .bfs-end { border-color: #b8682a; }
+.bc-medtray { bottom: calc(100% + 6px); width: min(380px, 100%); max-height: 60vh; overflow-y: auto; }
+.bc-medtray-head .bc-medtray-back { width: auto; min-height: 32px; padding: 0 10px; font-size: var(--fs-body); }
+.bc-medtray-sec { display: flex; flex-direction: column; gap: 0; margin-top: 2px; font-size: var(--fs-body); line-height: 1.35; }
+.bc-medtray-sec small { color: var(--muted); font-size: var(--fs-aux); }
+.bc-locknote { width: min(360px, 34%); }
+
+/* 底部反馈位：瞄准时目标切换与「执行{指令名}」也在这里；右端两个阅读入口 */
+.bfs-feed .bp-cycle { flex: 0 0 auto; margin: 0; }
+.bfs-feed .bp-cycle .secondary { min-height: 34px; font-size: var(--fs-body); }
+.bfs-feed .bp-confirm { flex: 0 1 auto; display: flex; align-items: center; gap: 6px; margin: 0; min-width: 0; }
+.bfs-feed .bp-confirm .bp-go { min-height: 36px; width: auto; white-space: nowrap; }
+.bfs-feed .bp-confirm .bp-why { font-size: var(--fs-aux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 220px; }
+.bfs-feed-btns .bi-entry { min-height: 34px; }
+.bfs-feed-btns .bi-entry.on { border-color: var(--accent); color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
+
+/* 下方阅读区（默认收起，展开后在操作台和反馈位之下，战斗内容整体纵滚） */
+.bfs-infoarea { display: flex; flex-direction: column; gap: 6px; padding: 6px 10px 10px; background: #121a1dfa; border: 2px solid #6b5c3f; border-radius: 6px; }
+.bi-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bi-head button { width: auto; min-height: 34px; padding: 0 12px; font-size: var(--fs-body); }
+.bi-tabs { display: flex; gap: 4px; }
+.bi-tab { border: 2px solid var(--line); background: #1d2629; color: var(--text); }
+.bi-tab.on { border-color: var(--accent); background: #2f2c1f; box-shadow: inset 0 -3px 0 var(--accent); }
+.bi-collapse { margin-left: auto; }
+.bi-body { max-height: min(56vh, 520px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+.bi-body .detail-body { display: flex; flex-direction: column; }
+.bi-body .detail-scroll { overflow: visible; }
+.bi-rows { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-body); line-height: 1.45; }
+.bi-row { display: grid; grid-template-columns: 9em minmax(0, 1fr); gap: 8px; padding: 2px 0; border-bottom: 1px solid #ffffff10; }
+.bi-row > span { color: var(--muted); }
+.bi-row > b { font-weight: 600; overflow-wrap: anywhere; }
+.bi-row em { font-style: normal; color: var(--warn); }
+.bi-empty { margin: 4px 0; color: var(--muted); font-size: var(--fs-body); }
+.bi-loghead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: var(--fs-body); }
+.bi-loghead button { width: auto; min-height: 32px; padding: 0 12px; font-size: var(--fs-body); }
+.bi-count { color: var(--muted); }
+.bi-recent { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.bi-rec { display: block; width: 100%; min-height: 30px; padding: 2px 8px; text-align: left; background: #1a2326; border: 1px solid #ffffff14; border-radius: 4px; color: var(--text);
+  font-size: var(--fs-body); line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.bi-rec:hover, .bi-rec:focus-visible { border-color: var(--accent); }
+
+/* 只读子页：战斗记录副标、旧档提示、回到最新 */
+.bfs-drawer-sub { margin-left: 12px; font-size: var(--fs-body); font-weight: 400; color: var(--muted); }
+.blog-legacy { margin: 0 0 6px; padding: 4px 8px; border: 1px solid #6b5c3f; border-radius: 4px; background: #6f4d2229; color: var(--warn); font-size: var(--fs-body); }
+.bfs-full-log { margin: 0; padding-left: 0; list-style: none; }
+.bfs-full-log li:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.blog-foot { display: flex; justify-content: flex-end; gap: 8px; }
+.blog-foot button { width: auto; min-height: 34px; padding: 0 12px; font-size: var(--fs-body); }
+.blog-new { border-color: var(--accent); color: var(--accent); }
+.bi-detail-wrap { min-height: 0; }

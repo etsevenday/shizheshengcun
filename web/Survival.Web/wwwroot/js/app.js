@@ -1232,3 +1232,54 @@ window.survivalAim = (function () {
     }
   };
 })();
+
+// B34a（S14 Q570、Q528.2、Q529）：全屏战斗阅读区与只读子页的焦点、滚动与战斗记录跟随（只读，不提交、不改游戏状态）。
+window.survivalBattleUi = (function () {
+  function byId(id) { return id ? document.getElementById(id) : null; }
+  function usable(el) { return el && !el.disabled && !(el.closest && el.closest('[inert]')) && el.getClientRects().length > 0; }
+  function atBottom(el) { return el.scrollHeight - el.scrollTop - el.clientHeight < 4; }
+  return {
+    // 聚焦 id；不在或不可用时聚焦 fallback（例如摘要行已不在最近5条时回战报标题）。requireEnabled：确认按钮禁用或不存在时不移焦点（Q529）。
+    focus: function (id, fallback, requireEnabled) {
+      var el = byId(id);
+      if (!usable(el)) { if (requireEnabled) return; el = byId(fallback); }
+      if (!el || (el.closest && el.closest('[inert]'))) return;
+      try { el.focus({ preventScroll: true }); } catch (e) { }
+    },
+    // 展开阅读区时把它滚进视野；收起时战斗内容区回到顶部（原战场阅读位置）。
+    scroll: function (where) {
+      var host = document.querySelector('.bfs');
+      if (!host) return;
+      if (where === 'top') { host.scrollTop = 0; return; }
+      // 阅读区是战斗内容的最后一块：展开后滚到底，让整块进入视野（等本帧排版完成再滚）
+      var go = function () { host.scrollTop = host.scrollHeight; };
+      go(); requestAnimationFrame(function () { requestAnimationFrame(go); });
+    },
+    // 打开战斗记录：定位所点那一条（滚到中间并聚焦），否则定位最新一条。
+    logOpen: function (hostId, itemId) {
+      var host = byId(hostId);
+      if (!host) return;
+      var item = byId(itemId);
+      if (item) { item.scrollIntoView({ block: 'center' }); try { item.focus({ preventScroll: true }); } catch (e) { } }
+      else host.scrollTop = host.scrollHeight;
+      host.dataset.atBottom = atBottom(host) ? '1' : '0';
+      if (!host.__blogBound) {
+        host.__blogBound = true;
+        host.addEventListener('scroll', function () { host.dataset.atBottom = atBottom(host) ? '1' : '0'; }, { passive: true });
+      }
+    },
+    // 新记录到来：原已在末尾就跟随到最新（返回 true）；正在阅读旧段则不动滚动（返回 false，由界面显示新增条数）。
+    logFollow: function (hostId) {
+      var host = byId(hostId);
+      if (!host) return true;
+      if (host.dataset.atBottom === '1') { host.scrollTop = host.scrollHeight; return true; }
+      return false;
+    },
+    logBottom: function (hostId) {
+      var host = byId(hostId);
+      if (!host) return;
+      host.scrollTop = host.scrollHeight;
+      host.dataset.atBottom = '1';
+    }
+  };
+})();

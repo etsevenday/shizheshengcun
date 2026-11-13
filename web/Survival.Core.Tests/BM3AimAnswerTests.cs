@@ -43,7 +43,7 @@ public class BM3AimAnswerTests : TestBase
         Assert.That(battle[3].Note, Is.EqualTo("提交当前指令与已指定的合法目标。"));
         Assert.That(ShellKeyHelp.Groups().SelectMany(g => g.Rows).Select(r => r.Label), Has.None.Contain("{").And.None.Contain("}"));
         Assert.That(ShellAim.ConfirmLabel("拳击"), Is.EqualTo("执行拳击"), "真实按钮取所选指令名");
-        var panel = Web("Components/BattlePanel.razor");
+        var panel = Web("Components/BattleScreen.razor");   // B34a：执行按钮在底部反馈位
         Assert.That(panel, Does.Contain("@ShellAim.ConfirmLabel(st.Name)<EnterCap On=\"@st.Ok\" />"), "真实按钮与 Enter 键帽同一按钮、取真实指令名");
     }
 
