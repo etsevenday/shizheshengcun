@@ -23,10 +23,10 @@
 [data-detail-rail] .rail-page { gap: 8px; }
 [data-detail-rail] .rail-head { flex: 0 0 auto; display: flex; align-items: flex-start; gap: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--line); }
 [data-detail-rail] .rail-thumb { flex: 0 0 44px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 3px; background: #0b1214; overflow: hidden; }
-[data-detail-rail] .rail-thumb > :is(svg, img, span) { width: 38px; height: 38px; transform: none; }
+[data-detail-rail] .rail-thumb > :is(svg, img, span) { width: 38px; height: 38px; transform: none; object-fit: contain; }
 [data-detail-rail] .rail-id { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 [data-detail-rail] .rail-id h2 { margin: 0; font-size: var(--fs-title); font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
-[data-detail-rail] .rail-id h2 small { font-size: var(--fs-aux); }
+[data-detail-rail] .rail-id h2 small { font-size: var(--fs-aux); margin-left: 6px; }
 [data-detail-rail] .rail-src { font-size: var(--fs-aux); color: var(--muted); line-height: 1.4; overflow-wrap: anywhere; }
 [data-detail-rail] .rail-note { margin: 2px 0 0; font-size: var(--fs-aux); line-height: 1.5; }
 [data-detail-rail] .rail-text { margin: 0 0 4px; font-size: var(--fs-aux); color: var(--muted); line-height: 1.6; }
@@ -82,3 +82,6 @@
 [data-detail-rail] .nb { white-space: nowrap; }
 /* 敌踪接近状态／倒计时（卡面同源句）：表头下一行，正文色 */
 [data-detail-rail] .rail-status { font-size: var(--fs-aux); color: var(--accent); line-height: 1.4; }
+/* M835：火源「内容」组工位头——状态句放不下时整句换到工位名下一行，句内只在数值片段之间换行，不再截成省略号 */
+[data-detail-rail] .fire-detail .fs-head { flex-wrap: wrap; row-gap: 0; }
+[data-detail-rail] .fire-detail .fs-head > span { flex: 1 1 auto; overflow: visible; text-overflow: clip; }

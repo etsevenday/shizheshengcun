@@ -27,7 +27,9 @@
 
 <div class="detail-scroll member-peek rail-page" data-member-peek="@id">
     @* BM4b（Q589「人物」）：紧凑表头——名称（类别·所属）＋号位／候补作来源行；背景句沿原写法在表头下 *@
+    @* M835：表头小缩略图沿整备页的临时形象做法（主角 protagonist.svg，其余 unknown.svg，GearOverlay.Face） *@
     <RailHead Source="@where">
+        <Thumb><img src="@(isMe ? "img/portraits/protagonist.svg" : "img/portraits/unknown.svg")" alt="" draggable="false" /></Thumb>
         <Name>@name@if (kind != "") { <small class="muted"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</small> }</Name>
         <Sub>@if (named != null && named.Background != "") { <p class="rail-note muted">@kindTip</p> }</Sub>
     </RailHead>

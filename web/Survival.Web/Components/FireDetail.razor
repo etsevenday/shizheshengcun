@@ -73,7 +73,7 @@
                     var heating = e.FireSlotHeating(s, here, k);
                     if (it == null) continue;
                     <div @key="it.InstanceId" class="fire-slot @(e.IsPot(it) ? "pot" : "food") @(heating ? "st-busy" : "") @(lit ? "fresh" : "")">
-                        <div class="fs-head"><b>@slotName</b><span class="muted">@SlotState(it)</span></div>
+                        <div class="fs-head"><b>@slotName</b><span class="muted">@Ui.KeepUnits(SlotState(it))</span></div>
                         @if (e.IsPot(it))
                         {
                             <PotCard Pot="it" ReadOnly="true" />

@@ -221,4 +221,22 @@ public class BM4bRailTests : TestBase
         Assert.That(gs, Does.Contain("_notice.EndsWith(GameEngine.DialogueLockedReason, StringComparison.Ordinal) && !DialogueLocked"));
         Assert.That(gs, Does.Contain("ClearEndedDialogueNotice();"));
     }
+
+    /// <summary>M835：数值连单位不断行在纯文本上切分——含「·」的工位摘要不再把实体里的数字包进 span；火源「内容」组工位头同样不断行；同伴详情有小缩略图。</summary>
+    [Test]
+    public void Fix835_UnitRunsPlainText_SlotHead_MemberThumb()
+    {
+        var html = UnitRuns.Html("金属锅 · 净水100%·1000/1000毫升 · 加热20分钟");
+        Assert.That(html, Is.EqualTo("金属锅 &#183; 净水<span class=\"nb\">100%</span>&#183;<span class=\"nb\">1000/1000毫升</span> &#183; 加热<span class=\"nb\">20分钟</span>"));
+        Assert.That(html, Does.Not.Contain("&amp;"));
+        Assert.That(UnitRuns.Html("空位"), Is.EqualTo("空位"));
+        Assert.That(UnitRuns.Html("<b>&"), Is.EqualTo("&lt;b&gt;&amp;"), "其余文字照常转义");
+        var fire = Web("Components", "FireDetail.razor");
+        Assert.That(fire, Does.Contain("<span class=\"muted\">@Ui.KeepUnits(SlotState(it))</span>"));
+        Assert.That(Web("Services", "Ui.cs"), Does.Contain("new(UnitRuns.Html(text))"));
+        Assert.That(Web("wwwroot", "css", "rail.css"), Does.Contain("[data-detail-rail] .fire-detail .fs-head > span { flex: 1 1 auto; overflow: visible; text-overflow: clip; }"), "工位头状态句不截成省略号");
+        var m = Web("Components", "MemberPeekDetail.razor");
+        Assert.That(m, Does.Contain("<Thumb><img src=\"@(isMe ? \"img/portraits/protagonist.svg\" : \"img/portraits/unknown.svg\")\""));
+        Assert.That(Web("wwwroot", "css", "rail.css"), Does.Contain("[data-detail-rail] .rail-id h2 small { font-size: var(--fs-aux); margin-left: 6px; }"));
+    }
 }
