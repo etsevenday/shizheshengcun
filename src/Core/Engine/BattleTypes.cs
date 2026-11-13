@@ -130,4 +130,82 @@ namespace Survival.Core.Engine
         public string? EffectText { get; set; }
         public string ConfirmText { get; set; } = "";
     }
+
+    /// <summary>B34b（R03 §Q571）：特写的动作表现。七类里 miss／guard／defeat 由结果决定（见 <see cref="BattleFxEvent.Look"/>），这里是出手方式。</summary>
+    public static class BattleFxMotion
+    {
+        public const string Melee = "melee";
+        public const string Ranged = "ranged";
+        public const string Area = "area";
+        public const string Heal = "heal";
+        /// <summary>短反馈：只在行动者身上，不切特写、不进播放队列。</summary>
+        public const string Short = "short";
+    }
+
+    /// <summary>出手事件里的一名角色（行动者或承受者）的只读快照：阵营、稳定编号（我方 actorId、敌方 "e{本场序号}"）、名字、敌人配置 ID。</summary>
+    public sealed class BattleFxUnit
+    {
+        public const string AllySide = "ally";
+        public const string EnemySide = "enemy";
+        public string Side { get; set; } = AllySide;
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string? EnemyId { get; set; }
+        public bool IsAlly => Side == AllySide;
+    }
+
+    /// <summary>一段真实结果：Outcome 为 hit／crit／miss／blocked（护甲完全挡住）／effect（命中但无伤或无数值的效果）／heal。</summary>
+    public sealed class BattleFxResult
+    {
+        public BattleFxUnit Target { get; set; } = new BattleFxUnit();
+        public string Outcome { get; set; } = "";
+        /// <summary>实际变化值（伤害、治疗）；无数值时为 0。</summary>
+        public double Amount { get; set; }
+        /// <summary>被格挡／防御减伤。</summary>
+        public bool Guarded { get; set; }
+        /// <summary>这一段后倒地。</summary>
+        public bool Down { get; set; }
+    }
+
+    /// <summary>
+    /// 一次真实出手的结果快照（B34b，R03 §Q572）：场次、序号、行动者、按真实顺序的各段结果和同一次写下的战报原文。
+    /// 内核结算时抄下，界面只读播放；不进存档。反击／迎击是独立事件，ParentSeq 指向触发它的出手；父出手在其后继续出的段是续段（ContinuesSeq）。
+    /// </summary>
+    public sealed class BattleFxEvent
+    {
+        public int Seq { get; set; }
+        public int BattleId { get; set; }
+        public string Motion { get; set; } = BattleFxMotion.Melee;
+        public BattleFxUnit Actor { get; set; } = new BattleFxUnit();
+        public List<BattleFxResult> Results { get; } = new List<BattleFxResult>();
+        public List<string> Lines { get; } = new List<string>();
+        public bool Short { get; set; }
+        /// <summary>不显示数值（鼓舞提示贴等：R03 §Q571“不显示虚构治疗数值”）。</summary>
+        public bool NoNumbers { get; set; }
+        public int? ParentSeq { get; set; }
+        public int? ContinuesSeq { get; set; }
+        /// <summary>同一出手（含续段）的根序号。</summary>
+        public int RootSeq => ContinuesSeq ?? Seq;
+
+        /// <summary>
+        /// 七类表现（a9b93f0 动效合同 melee/ranged/miss/heal/area/guard/defeat）：多目标为 area；有倒地为 defeat；全部未中为 miss；
+        /// 有格挡为 guard；其余按出手方式（近战／远程／治疗）。
+        /// </summary>
+        public string Look
+        {
+            get
+            {
+                if (Motion == BattleFxMotion.Heal) return BattleFxMotion.Heal;
+                var targets = new HashSet<string>();
+                foreach (var r in Results) targets.Add(r.Target.Side + ":" + r.Target.Id);
+                if (targets.Count > 1 || Motion == BattleFxMotion.Area) return BattleFxMotion.Area;
+                var anyDown = false; var allMiss = Results.Count > 0; var anyGuard = false;
+                foreach (var r in Results) { anyDown |= r.Down; allMiss &= r.Outcome == "miss"; anyGuard |= r.Guarded; }
+                if (anyDown) return "defeat";
+                if (allMiss) return "miss";
+                if (anyGuard) return "guard";
+                return Motion;
+            }
+        }
+    }
 }

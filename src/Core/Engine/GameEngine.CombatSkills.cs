@@ -587,6 +587,8 @@ namespace Survival.Core.Engine
             }
             var hitTargets = new List<BattleEnemy>();
             var energyAfter = s.Stats.Energy;
+            // B34b（R03 §Q571）：我方技能攻击与应急拳击各记一次出手快照——多目标为 area，远程武器为 ranged，其余近战；各段按真实次序记
+            using var fxScope = FxBegin(s, targets.Count > 1 || IsAreaShotSpec(sp) ? BattleFxMotion.Area : RangedWeapon(weapon) ? BattleFxMotion.Ranged : BattleFxMotion.Melee, FxAlly(s, MeId(s)));
             // B9 遗留（B7 试玩第 2 轮）：击倒膨胀感染者时它的死亡喷溅日志先于这一击的总结写进战斗记录，看起来顺序颠倒；
             // 记下这一刻的记录条数，结算中途追加的行（喷溅等）挪到总结之后，结算本身与时机不变
             var logMark = b.Log.Count;
@@ -610,7 +612,7 @@ namespace Survival.Core.Engine
                     var seg = sp.Hits > 1 ? $"第{hit + 1}击" : "";
                     if (!sp.Desperate && sp.Exec!.RemoveGuard > 0 && t.Guard) { t.Guard = false; parts.Add($"{cfg.Name}的格挡被破除"); }
                     var pv = TargetCalc(s, b, sp, t, energyAfter);
-                    if (s.Rng.NextDouble() >= pv.HitChance) { parts.Add($"{cfg.Name}{seg}未命中（{Fmt.Pct(pv.HitChance)}）"); continue; }
+                    if (s.Rng.NextDouble() >= pv.HitChance) { parts.Add($"{cfg.Name}{seg}未命中（{Fmt.Pct(pv.HitChance)}）"); FxHit(FxFoe(t), "miss"); continue; }
                     anyHit = true;
                     var crit = s.Rng.NextDouble() < pv.CritChance;
                     var raw = weapon.DamageMin + s.Rng.NextDouble() * (weapon.DamageMax - weapon.DamageMin);
@@ -621,12 +623,13 @@ namespace Survival.Core.Engine
                     var guarded = pv.Guarded && Math.Max(0, multiplied + flat - armor) > 0;
                     var dmg = AttackDamage(multiplied, flat, armor, guarded, Config.CombatMath.GuardFactor);
                     if (guarded) t.Guard = false;
-                    if (sp.DamageFactor <= 0) { parts.Add($"{cfg.Name}{seg}被命中"); continue; }
-                    if (dmg <= 0) { parts.Add($"{cfg.Name}{seg}被护甲完全挡住"); continue; }
+                    if (sp.DamageFactor <= 0) { parts.Add($"{cfg.Name}{seg}被命中"); FxHit(FxFoe(t), "effect", guarded: guarded); continue; }
+                    if (dmg <= 0) { parts.Add($"{cfg.Name}{seg}被护甲完全挡住"); FxHit(FxFoe(t), "blocked", guarded: guarded); continue; }
                     positive = true;
                     t.Hp -= dmg;
                     parts.Add($"{cfg.Name}{seg}{(crit ? "暴击" : "命中")}−{Fmt.N(dmg)}{(guarded ? "（防御减半）" : "")}");
-                    if (t.Hp <= 1e-9) KillEnemy(s, t);
+                    FxHit(FxFoe(t), crit ? "crit" : "hit", dmg, guarded);
+                    if (t.Hp <= 1e-9) { KillEnemy(s, t); FxMarkDown(FxFoe(t)); }
                 }
                 if (anyHit) hitTargets.Add(t);
                 if (anyHit && !sp.Desperate && t.Alive) ApplySkillStatuses(s, b, sp, t, positive, parts);

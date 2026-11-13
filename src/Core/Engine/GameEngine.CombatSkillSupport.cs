@@ -292,6 +292,7 @@ namespace Survival.Core.Engine
             var parts = new List<string>();
             var solo = AllyCount(b) <= 1;
             var page = b.ActiveWeaponSlot;
+            IDisposable? fxMed = null;   // B34b：医疗技能的出手快照，到写完本条战报再结束（没有健康变化的不留）
             switch (x.Type)
             {
                 case "guard":
@@ -360,6 +361,7 @@ namespace Survival.Core.Engine
                     var rb = c.AllyTarget2!;
                     int pa = AllyPos(b, ra), pb = AllyPos(b, rb);
                     MoveAlly(b, pa, pb);
+                    FxShort(s, FxAlly(s, b.FocusId));   // B34b（R03 §Q571）：整队只给行动者短反馈
                     parts.Add($"{ActorDisplayName(s, ra)}{PosName(pa)}→{PosName(pb)}，{ActorDisplayName(s, rb)}{PosName(pb)}→{PosName(pa)}");
                     if (wi?.Durability != null) parts.Add(Wear(wi, 1));
                     parts.Add("换位无经验");
@@ -448,8 +450,12 @@ namespace Survival.Core.Engine
                     var target = AllyTargetOf(b, c, x) ?? b.FocusId;
                     var lv = SkillLevel(s, Medicine);
                     if (target != b.FocusId) parts.Add($"目标{ActorDisplayName(s, target)}");
+                    // B34b（R03 §Q571）：医疗技能——治疗式特写，真实施术者、受益者与健康变化值（应急护理等无健康变化的属 Q615，不记）
+                    double medH0, medH1;
+                    fxMed = FxBegin(s, BattleFxMotion.Heal, FxAlly(s, b.FocusId));
                     using (FocusOn(s, target))
                     {
+                        medH0 = s.Stats.Health;
                         if (x.UseBandage && BandageItem?.Use is ItemUseConfig bu) effective = ApplyMedicine(s, bu, parts, lv, false);
                         else
                         {
@@ -468,7 +474,9 @@ namespace Survival.Core.Engine
                             }
                             effective = bleed || heal > 0 || status;
                         }
+                        medH1 = s.Stats.Health;
                     }
+                    if (medH1 - medH0 > 1e-9) FxHit(FxAlly(s, target), "heal", medH1 - medH0);
                     if (effective)
                     {
                         parts.Add(XpText(s, Medicine, Config.Xp.Medical));
@@ -495,6 +503,7 @@ namespace Survival.Core.Engine
             }
             if (energy > 0) parts.Add($"体力−{Fmt.N(energy)}");
             BattleLog(s, $"{Who(s)}{n.Name}（{w.Name}）：{string.Join("，", parts)}。");
+            fxMed?.Dispose();
         }
 
         /// <summary>
@@ -557,7 +566,9 @@ namespace Survival.Core.Engine
             var cfg = _enemies[t.EnemyId];
             var pv = TargetCalc(s, b, sp, t, s.Stats.Energy);
             ConsumeFirstStrike(b, MeId(s));   // B41c（Q422）：一次反击／迎击是独立出手，未命中也消耗
-            if (s.Rng.NextDouble() >= pv.HitChance) { BattleLog(s, $"{Who(s)}{label}{cfg.Name}未命中（{Fmt.Pct(pv.HitChance)}）。"); return; }
+            // B34b（R03 §Q571）：反击、迎击是在真实触发处插入的一次出手（父出手的段不重播）
+            using var fxScope = FxBegin(s, RangedWeapon(w) ? BattleFxMotion.Ranged : BattleFxMotion.Melee, FxAlly(s, MeId(s)));
+            if (s.Rng.NextDouble() >= pv.HitChance) { FxHit(FxFoe(t), "miss"); BattleLog(s, $"{Who(s)}{label}{cfg.Name}未命中（{Fmt.Pct(pv.HitChance)}）。"); return; }
             var crit = s.Rng.NextDouble() < pv.CritChance;
             var raw = w.DamageMin + s.Rng.NextDouble() * (w.DamageMax - w.DamageMin);
             var multiplied = raw * pv.Multiplier * (crit ? Config.CombatMath.CritFactor : 1);
@@ -567,7 +578,8 @@ namespace Survival.Core.Engine
             if (guarded) t.Guard = false;
             var text = dmg <= 0 ? "被护甲完全挡住" : $"{(crit ? "暴击" : "命中")}−{Fmt.N(dmg)}";
             if (dmg > 0) t.Hp -= dmg;
-            if (t.Hp <= 1e-9) { KillEnemy(s, t); text += $"，{cfg.Name}倒下"; }
+            FxHit(FxFoe(t), dmg <= 0 ? "blocked" : crit ? "crit" : "hit", Math.Max(0, dmg), guarded);
+            if (t.Hp <= 1e-9) { KillEnemy(s, t); FxMarkDown(FxFoe(t)); text += $"，{cfg.Name}倒下"; }
             else CheckFlee(s, t);
             var xp = AttackXp(s, w.SkillId, new[] { t });
             BattleLog(s, $"{Who(s)}{label}（{w.Name}）：{cfg.Name}{text}{xp}。");
