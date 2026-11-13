@@ -1,0 +1,499 @@
+{
+  "contract": "Q600-recipe-visibility",
+  "version": 1,
+  "date": "2026-11-14",
+  "scope": "Design artifact only; not a runtime configuration edit.",
+  "sourceRecipeCount": 133,
+  "explicitSecretRecipeCount": 38,
+  "publicRecipeCount": 95,
+  "defaultForUnlistedRecipe": "public_subject_to_current_work_area",
+  "predicate": "visible = unlisted OR existing_recipe_knowledge_known OR all_revealSkillsAll_met_by_player OR any_revealAnyAcceptedQuest_accepted_or_completed OR any_revealAnyCompletedQuest_completed",
+  "knowledgePredicate": "Use original KnowsKnowledge, including existing initial knowledge and original grantedByFacts; do not regrant.",
+  "emptySkillMapMatches": false,
+  "emptyQuestListMatches": false,
+  "skillActorId": "p0",
+  "acceptedQuestFacts": [
+    "quest:{id}:accepted",
+    "quest:{id}:completed"
+  ],
+  "completedQuestFact": "quest:{id}:completed",
+  "newDiscoveryFlags": false,
+  "crossSaveDisclosure": false,
+  "craftingRequirementsChanged": false,
+  "sourceGrantRewardsChanged": false,
+  "records": [
+    {
+      "recipeId": "build_armory",
+      "name": "建军械台",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_armory_station",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q109）"
+    },
+    {
+      "recipeId": "make_guard_sword",
+      "name": "守备短剑",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_guard_sword",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_breach_axe",
+      "name": "破障斧",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_breach_axe",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_rescue_axe",
+      "name": "救援短斧",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_rescue_axe",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_pike",
+      "name": "加固长枪",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_pike",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_barbed_spear",
+      "name": "倒刺短矛",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_barbed_spear",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：采石坡（w03_quarry）探索100%后领取“采石坡野外装备图册”（10分钟，本局一次，Q120）"
+    },
+    {
+      "recipeId": "make_steel_mace",
+      "name": "钢制钉锤",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_steel_mace",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_shock_baton",
+      "name": "绝缘警棍",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_shock_baton",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_hunter_bow",
+      "name": "猎手弓",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_hunter_bow",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：采石坡（w03_quarry）探索100%后领取“采石坡野外装备图册”（10分钟，本局一次，Q120）"
+    },
+    {
+      "recipeId": "make_repeater_crossbow",
+      "name": "轻型战术弩",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_repeater_crossbow",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_rescue_shield",
+      "name": "救援盾",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_rescue_shield",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_field_radio",
+      "name": "战术电台",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_field_radio",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_command_terminal",
+      "name": "便携指挥终端",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_command_terminal",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_rescue_medkit",
+      "name": "救援医疗箱",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_rescue_medkit",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_triage_kit",
+      "name": "分诊器材组",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_triage_kit",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_scout_armor",
+      "name": "侦察护具",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_scout_armor",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：采石坡（w03_quarry）探索100%后领取“采石坡野外装备图册”（10分钟，本局一次，Q120）"
+    },
+    {
+      "recipeId": "make_heavy_armor",
+      "name": "重型防护甲",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_heavy_armor",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_medic_armor",
+      "name": "救护防护背心",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_medic_armor",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_balanced_armor",
+      "name": "均衡战术甲",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_balanced_armor",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_focus_lens",
+      "name": "聚焦镜片",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_focus_lens",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_aid_badge",
+      "name": "救护徽章",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_aid_badge",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_resolve_medal",
+      "name": "镇定勋章",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_resolve_medal",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_tactics_watch",
+      "name": "战术计时表",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_tactics_watch",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_craft_coat",
+      "name": "工匠围衣",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_craft_coat",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_rest_coat",
+      "name": "休养外衣",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_rest_coat",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_expedition_coat",
+      "name": "远征上衣",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_expedition_coat",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_reinforced_trousers",
+      "name": "加固长裤",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_reinforced_trousers",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_recovery_trousers",
+      "name": "休养长裤",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_recovery_trousers",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_expedition_trousers",
+      "name": "远征下衣",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_expedition_trousers",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_repair_manual",
+      "name": "维护手册",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_repair_manual",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [
+        "EXQ05"
+      ],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）；或废水厂地下管网·阀控室（d05_07）领取“水厂阀控记录”；或营区登记后在营区工坊“查抄公开资料”抄公开资料（30分钟，0材料）"
+    },
+    {
+      "recipeId": "make_medical_notes",
+      "name": "护理笔记",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_medical_notes",
+      "revealSkillsAll": {
+        "crafting": 7
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
+    },
+    {
+      "recipeId": "make_ration_pouch",
+      "name": "配给袋",
+      "group": "advanced_blueprint",
+      "knowledgeId": "blueprint_ration_pouch",
+      "revealSkillsAll": {
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [
+        "EXQ08"
+      ],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）；或应急冷链仓·调度室（d08_08）领取“冷链调度档案”；或营区登记后在营区医务室“查抄公开资料”抄物资登记资料（30分钟，0材料）"
+    },
+    {
+      "recipeId": "make_gather_gloves",
+      "name": "采集手套",
+      "group": "field_support",
+      "knowledgeId": "blueprint_gather_gloves",
+      "revealSkillsAll": {
+        "crafting": 3
+      },
+      "revealAnyAcceptedQuest": [
+        "EXQ06"
+      ],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "在深林矿洞的工具封库领取“矿道作业手册”时学会；也可在营区登记后，到营区工坊的“查抄公开资料”抄录“公开作业资料”（固定等待30分钟，0材料）。"
+    },
+    {
+      "recipeId": "make_utility_trousers",
+      "name": "作业长裤",
+      "group": "field_support",
+      "knowledgeId": "blueprint_utility_trousers",
+      "revealSkillsAll": {
+        "crafting": 3
+      },
+      "revealAnyAcceptedQuest": [
+        "EXQ06"
+      ],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "在深林矿洞的工具封库领取“矿道作业手册”时学会；也可在营区登记后，到营区工坊的“查抄公开资料”抄录“公开作业资料”（固定等待30分钟，0材料）。"
+    },
+    {
+      "recipeId": "make_forage_jacket",
+      "name": "采集外套",
+      "group": "field_support",
+      "knowledgeId": "blueprint_forage_jacket",
+      "revealSkillsAll": {
+        "crafting": 3
+      },
+      "revealAnyAcceptedQuest": [
+        "EXQ07"
+      ],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "在洪淹商城的屋顶避难点领取“商场避难物资簿”时学会；也可在营区登记后，到营区广场的“查抄公开资料”抄录“公共告示资料”（固定等待30分钟，0材料）。"
+    },
+    {
+      "recipeId": "make_field_medkit",
+      "name": "随行医疗包",
+      "group": "field_support",
+      "knowledgeId": "blueprint_field_medkit",
+      "revealSkillsAll": {
+        "crafting": 3
+      },
+      "revealAnyAcceptedQuest": [
+        "EXQ07"
+      ],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "在洪淹商城的屋顶避难点领取“商场避难物资簿”时学会；也可在营区登记后，到营区广场的“查抄公开资料”抄录“公共告示资料”（固定等待30分钟，0材料）。"
+    },
+    {
+      "recipeId": "make_filter_token",
+      "name": "净水操作套件",
+      "group": "field_support",
+      "knowledgeId": "blueprint_filter_token",
+      "revealSkillsAll": {
+        "crafting": 3
+      },
+      "revealAnyAcceptedQuest": [
+        "EXQ05"
+      ],
+      "revealAnyCompletedQuest": [],
+      "existingKnowledgeSource": "在废水厂地下管网的阀控室领取“水厂阀控记录”时学会；也可在营区登记后，到营区工坊的“查抄公开资料”抄录“公开资料”（固定等待30分钟，0材料）。"
+    },
+    {
+      "recipeId": "make_antiviral_cure",
+      "name": "病毒特效药",
+      "group": "medical_capstone",
+      "knowledgeId": null,
+      "revealSkillsAll": {
+        "medicine": 10,
+        "crafting": 10
+      },
+      "revealAnyAcceptedQuest": [],
+      "revealAnyCompletedQuest": [
+        "AC02"
+      ],
+      "existingKnowledgeSource": null
+    }
+  ]
+}
