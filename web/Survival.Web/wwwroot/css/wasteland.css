@@ -156,7 +156,8 @@ button:is(:disabled, .gate-off) { cursor: not-allowed; }
 .sub-head h2, .apop-title, .menu-box h2 { color: var(--ink2-light); font-family: var(--title-font); }
 .help-topic, .help-fig, .goal-day { background: var(--ink2-dark); border-color: var(--ink2-paper-bottom); }
 .risk.danger, .toast.bad { background: var(--ink2-btn-fill); border-color: var(--ink2-btn-primary-edge); }
-.dlg-layer { background: var(--iron-texture), linear-gradient(color-mix(in srgb, var(--ink2-dark) 96%, transparent), color-mix(in srgb, var(--ink2-dark) 96%, transparent)); border-color: var(--ink2-meter-gold); }
+/* BM4b（Q585）：对白层不再铺整块铁框底板；只给头像框、推进条带必要底色 */
+.dlg-face, .dlg-layer .dlg-aux .dlg-hint, .dlg-layer .dlg-title { background: var(--iron-texture), color-mix(in srgb, var(--ink2-dark) 95%, transparent); border-color: var(--ink2-meter-gold); }
 .footer { color: var(--ink2-muted); box-shadow: 0 -2px 0 color-mix(in srgb, var(--ink2-line) 50%, transparent); }
 .footer .event b { color: var(--ink2-gold); }
 * { scrollbar-color: var(--ink2-paper-top) var(--ink2-black); scrollbar-width: thin; }

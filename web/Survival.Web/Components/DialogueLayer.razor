@@ -10,6 +10,9 @@
 @* B39（N02 附录 §1「Q305–Q316 · B39 开工定稿」）：正文上方标题按真实组名→真实对象名→省略（Q307）；整组无对方发言时右侧留空、
    读屏名用组名或「当前对白」（Q306）；非人物行不点亮头像（Q305）；控制条辅助位依次为等待行动状态句（Q310）与文书阅读脚注（Q313），
    两者各占一位、可换行，正文独立滚动，继续/结束/招募选择始终可达。 *@
+@* BM4b（S14「B45 Q581—Q590」§Q585，N02 2026-11-13 节）：去掉整个对白区的大块背景与装饰边框，上部原场景可见；主角头像框左下、对话对象右下（不交换），
+   台词在说话者头像内侧的下方阅读区出现，旁白／文档／引导／结果／状态行用中性段落、不配头像；短引导只占头像、台词与控制条所需高度。
+   透明处仍由本层承接点击（不点穿），对白锁、ESC 菜单（Q322／Q501）、继续／结束去重与“回到最新”跟随沿原合同。 *@
 @{
     var v = G.State == null ? null : G.E.DialogueLayer(G.S);
 }
@@ -23,8 +26,10 @@
     @* B31b（Q322）：游戏菜单／战斗菜单开着时对白层不可操作，菜单不会消费对白继续键；关菜单后回到原对白行 *@
     <div class="dlg-layer" role="dialog" aria-modal="true" aria-label="@v.AriaName" inert="@(G.MenuOpen || G.BattleMenuOpen)">
         <div class="dlg-side left @(leftSpeaking ? "speaking" : "idle")">
-            <img class="dlg-portrait" src="img/portraits/protagonist.svg" alt="主角（临时形象）" draggable="false" />
-            <div class="dlg-name"><b>你</b>@if (leftSpeaking) {<em>发言中</em>}</div>
+            <div class="dlg-face">
+                <img class="dlg-portrait" src="img/portraits/protagonist.svg" alt="主角（临时形象）" draggable="false" />
+                <div class="dlg-name"><b>你</b>@if (leftSpeaking) {<em>发言中</em>}</div>
+            </div>
         </div>
         <div class="dlg-main">
             @if (v.Title != null) { <div class="dlg-title">@v.Title</div> }
@@ -60,8 +65,10 @@
         <div class="dlg-side right @(rightSpeaking ? "speaking" : "idle")">
             @if (other.Length > 0)
             {
-                <img class="dlg-portrait" src="@(other == "饱饱" ? "img/portraits/baobao.svg" : "img/portraits/unknown.svg")" alt="@($"{other}（临时形象）")" draggable="false" />
-                <div class="dlg-name"><b>@other</b>@if (rightSpeaking) {<em>发言中</em>}</div>
+                <div class="dlg-face">
+                    <img class="dlg-portrait" src="@(other == "饱饱" ? "img/portraits/baobao.svg" : "img/portraits/unknown.svg")" alt="@($"{other}（临时形象）")" draggable="false" />
+                    <div class="dlg-name"><b>@other</b>@if (rightSpeaking) {<em>发言中</em>}</div>
+                </div>
             }
         </div>
     </div>

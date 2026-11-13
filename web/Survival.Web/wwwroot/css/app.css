@@ -1036,25 +1036,35 @@ kbd { font-size: var(--fs-aux); }
 
 /* ───────────── 人物对话层与对话记录（S14 §10；开发计划 M62） ─────────────
    对话层覆盖地块两行（.rows2）的完整区域；主角形象恒左、对话对象恒右，未发言侧弱化；正文 22px（基准分辨率不低于 20px）。 */
-:root { --dlg-side: 150px; }
-.dlg-layer { position: absolute; inset: 0; z-index: 40; display: grid; grid-template-columns: var(--dlg-side) minmax(0, 1fr) var(--dlg-side); gap: 12px;
-  padding: 10px 12px; background: #141c17; background-image: linear-gradient(180deg, #121a15, #18211b); border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 28px #000a; }
-.dlg-side { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; min-height: 0; transition: opacity calc(.15s * var(--motion-k)), filter calc(.15s * var(--motion-k)); }
+:root { --dlg-side: 150px; --dlg-face-h: 124px; }
+/* BM4b（S14 Q585）：普通对白去掉大块背景与装饰边框——本层透明但仍承接点击（透明处不能点穿），内容沉到原对白区域底边：
+   主角头像框左下、对象头像框右下，台词在头像内侧的下方阅读区；只有头像框、姓名、台词气泡、中性段落与推进条保留各自的底色。 */
+.dlg-layer { position: absolute; inset: 0; z-index: 40; display: grid; grid-template-columns: var(--dlg-side) minmax(0, 1fr) var(--dlg-side); grid-template-rows: minmax(0, 1fr);
+  align-items: end; gap: 10px; padding: 6px 8px; background: transparent; border: 0; border-radius: 0; box-shadow: none; pointer-events: auto; }
+.dlg-side { align-self: end; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; min-height: 0; transition: opacity calc(.15s * var(--motion-k)), filter calc(.15s * var(--motion-k)); }
+.dlg-face { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 6px 4px; background: #101a17f2; border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 4px 14px #000a; }
 .dlg-side.idle { opacity: .5; filter: grayscale(.6) brightness(.85); }
-.dlg-portrait { width: 100%; min-height: 0; max-height: calc(100% - 50px); object-fit: contain; border-radius: 14px; border: 3px solid transparent; user-select: none; -webkit-user-drag: none; }
+/* BM4b：未发言一侧的弱化只作用于头像与姓名，头像框底色保持不透明（透明背景下仍清楚） */
+.dlg-layer .dlg-side.idle { opacity: 1; filter: none; }
+.dlg-layer .dlg-side.idle .dlg-face > * { opacity: .5; filter: grayscale(.6) brightness(.85); }
+.dlg-portrait { width: 100%; height: var(--dlg-face-h); min-height: 0; object-fit: contain; border-radius: 6px; border: 2px solid transparent; user-select: none; -webkit-user-drag: none; }
 .dlg-side.speaking .dlg-portrait { border-color: var(--accent); box-shadow: 0 0 0 3px #d6b77944, 0 0 18px #d6b77966; }
-.dlg-name { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 44px; }
+.dlg-name { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 40px; }
 .dlg-name b { font-size: var(--fs-body); font-weight: 600; }
 .dlg-side.speaking .dlg-name b { color: var(--accent); }
 .dlg-name em { font-style: normal; font-size: var(--fs-aux); padding: 0 8px; border-radius: 10px; background: var(--accent); color: var(--ink); font-weight: 600; }
-.dlg-main { display: flex; flex-direction: column; gap: 8px; min-height: 0; min-width: 0; }
+.dlg-main { align-self: end; max-height: 100%; display: flex; flex-direction: column; gap: 6px; min-height: 0; min-width: 0; }
 .dlg-stream { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 6px 6px 10px; scrollbar-color: #56604f transparent; }
+/* 对白层里的阅读区：按正文高度从下往上长，满了才在本区纵滚；短引导不留上方空框 */
+.dlg-layer .dlg-stream { flex: 0 1 auto; gap: 8px; padding: 2px 2px 2px; }
 .dlg-stream, .dlg-stream * { user-select: text; -webkit-user-select: text; }
 .dlg-stream:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .dlg-msg { display: flex; flex-direction: column; max-width: 88%; }
 .dlg-msg.left { align-self: flex-start; align-items: flex-start; }
 .dlg-msg.right { align-self: flex-end; align-items: flex-end; }
 .dlg-who { font-size: var(--fs-body); font-weight: 600; color: var(--muted); margin: 0 10px 3px; }
+.dlg-layer .dlg-who { margin: 0 4px 2px; padding: 0 8px; border-radius: 3px; background: #101a17e6; }
+.dlg-layer .dlg-bubble { box-shadow: 0 3px 10px #0009; }
 .dlg-msg.now .dlg-who { color: var(--accent); }
 .dlg-bubble { font-size: var(--fs-dialogue); line-height: var(--lh-dialogue); padding: 8px 16px; border-radius: 14px; background: #2b382d; border: 1px solid var(--line); text-align: left; color: var(--text); }
 .dlg-msg.left .dlg-bubble { border-top-left-radius: 3px; background: #34402f; }
@@ -1069,21 +1079,28 @@ kbd { font-size: var(--fs-aux); }
 .dlg-narr.k-status { border-style: dotted; border-color: #7b8478; color: #c2c8bb; background: transparent; }
 .dlg-narr.now.k-document, .dlg-narr.now.k-guide, .dlg-narr.now.k-result, .dlg-narr.now.k-status { border-color: #b8a46e; }
 .dlg-narr.dlg-note { max-width: 90%; }
+/* 对白层里中性段落不配头像，用不透明中性底色保证可读（原类型边框形态保留） */
+.dlg-layer .dlg-narr { background-color: #141c18f2; box-shadow: 0 3px 10px #0009; }
+.dlg-layer .dlg-narr.k-status { background-color: #141c18f2; }
 .dlg-tag { display: inline-block; margin-right: 8px; padding: 0 8px; border: 1px solid #a8b98f; border-radius: 3px; font-size: var(--fs-body); font-weight: 600; color: #d6e2c4; vertical-align: 2px; line-height: 1.5; }
 /* Q307：正文上方的当前对白标题（组名或对象名；都缺时整行省略） */
 .dlg-title { flex: none; font-size: var(--fs-body); font-weight: 600; color: var(--accent); padding: 0 8px 4px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.dlg-layer .dlg-title { align-self: center; max-width: 100%; padding: 1px 10px; border: 1px solid var(--line); border-radius: 3px; background: #101a17f2; }
 /* Q310 / Q313：控制条的两个独立辅助位（状态句在前、文书脚注在后），可换行 */
 .dlg-aux { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .dlg-aux .dlg-hint { flex: none; overflow-wrap: anywhere; }
 .dlg-hint.dlg-foot { color: #d8d2bd; }
 .dlg-ctrl { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; }
+.dlg-layer .dlg-ctrl { justify-content: flex-end; }
+.dlg-layer .dlg-aux .dlg-hint { padding: 2px 8px; border: 1px solid var(--line); border-radius: 3px; background: #101a17f2; }
+.dlg-layer .dlg-ctrl .dlg-next { box-shadow: 0 3px 10px #0009; }
 .dlg-hint { flex: 1 1 auto; min-width: 0; font-size: var(--fs-aux); color: var(--muted); }
 .dlg-ctrl .dlg-next { display: inline-block; width: auto; min-width: 150px; min-height: 44px; padding: 8px 20px; font-size: var(--fs-body); }
 .dlg-latest-host { display: none; }
 .dlg-latest-host.show { display: inline-flex; }
 .dlg-latest { min-height: 40px; }
-@media (max-height: 800px) { :root { --dlg-side: 124px; } .dlg-layer { padding: 8px 10px; gap: 10px; } }
-@media (min-height: 1000px) { :root { --dlg-side: 190px; } }
+@media (max-height: 800px) { :root { --dlg-side: 116px; --dlg-face-h: 92px; } .dlg-layer { padding: 4px 6px; gap: 8px; } }
+@media (min-height: 1000px) { :root { --dlg-side: 170px; --dlg-face-h: 150px; } .dlg-layer .dlg-main { max-height: 80%; } }
 
 /* 对话记录浏览层：左列表（日期时间 · 地点 · 对象），右正文（同对话层左右归属与 22px） */
 .dlog-body { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 12px; min-height: 0; }
