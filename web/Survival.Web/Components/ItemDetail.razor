@@ -46,136 +46,221 @@ else
     }
     var total = batches.Sum(b => b.Count);
 
-    <div class="detail-scroll">
-        <div class="op-head">
-            <div class="eyebrow">@(carried ? "随身物品" : e.WherePath(s, inst))</div>
-            @* 工具、锅等单件实例与卡下操作条同样写“名称#实例”；可自用物品的摘要用内核的“饱食+35”写法，与卡片、操作条一致（试玩修复 B9） *@
-            @if (!cfg.IsStackable || sel.Kind == SelectionKind.Tool && sel.InstanceId.HasValue && !potLiquid)
-            {
-                <h2>@cfg.Name@if (cfg.IsEquipment) { <small class="qtag q-@(inst.Quality ?? "white")">@e.QualityName(inst)</small> }</h2>
-            }
-            else
-            {
-                // B22 试玩修复 M409：同物品分成普通卡与战利品卡时，标题按所点那张卡的数量写，合计放说明行
-                // B22d Q178：已鉴定普通白色活性物质另成一张卡，标题“活性物质（白色·已鉴定）”
-                var chosenSide = e.CardSideOf(chosen.Stacks[0]);
-                var chosenDr = chosenSide == GameEngine.RewardCardSuffix;
-                var sideN = batches.Where(b => e.CardSideOf(b.Stacks[0]) == chosenSide).Sum(b => b.Count);
-                <h2>@e.CardTitle(cfg.Id, chosenSide)@(chosenDr ? "（战利品）" : "") <small class="muted">×@sideN</small></h2>
+    // BM4b（S14 Q589）：紧凑表头（小缩略图＋名称＋来源行）→ 主要数据（标签列＋数值列）→ 当前风险／不可用原因 → 次要折叠组（说明、词条、内容、批次）。
+    // 锅归“锅／设施／加工”，武器／装备／工具（有耐久）归“武器／装备／工具”，其余归“食物、饮水、普通材料”；折叠偏好按类型分开记。
+    var railType = e.IsPot(inst) ? RailTypes.Facility : cfg.IsEquipment || e.Weapon(cfg.Id) != null || inst.MaxDurability.HasValue ? RailTypes.Gear : RailTypes.Supply;
+    var equipLines = e.EquipDetailLines(s, inst);
+    // Q589「武器／装备／工具」首屏：类型（含速度修正）、固定效果（护甲等已生效摘要）、损坏状态；品质已在名称旁标签，“品质（附加词条n条）”行随词条组，
+    // 固定特性（多为相关技能上线后生效）、站位、技能归属、噪声与拆解在说明组
+    var mainEquip = equipLines.Where(x => x.Label is "类型" or "固定效果" or "状态").ToList();
+    var affixLines = equipLines.Where(x => x.Label == "附加词条" || (x.Label == "品质" && equipLines.Any(y => y.Label == "附加词条"))).ToList();
+    var moreEquip = equipLines.Where(x => !mainEquip.Contains(x) && !affixLines.Contains(x)).ToList();
+    var descText = cfg.Use != null && cfg.Use.IsMedicine ? (cfg.Use.IsBandage ? "药品：止血、回血、压低病毒（本次实际效果见下）" : cfg.Use.IsAntibiotic ? "药品：抑制病毒（本次实际效果见下）" : "药品：清除感染（本次实际效果见下）")
+                 : cfg.Use != null ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc;
+    var durRange = inst.MaxDurability.HasValue && inst.Durability.HasValue ? cfg.DurabilityMaxRange : null;
+    // B22 试玩修复 M408：本实例地牢战利品（可封存）单独成卡，详情写明是哪一批
+    var drN = batches.Where(b => b.Stacks[0].RewardOrigin != null).Sum(b => b.Count);
+    var useReq = cfg.Use != null && !spoiled ? ActionRequest.UseInstance(inst.InstanceId) : null;
+    var p = useReq != null ? G.Preview(useReq) : null;
+    var potInfo = e.IsPot(inst);
+    var potLiquids = potInfo ? e.PotLiquids(s, inst.InstanceId) : new List<ItemInstance>();
+    var potFoods = potInfo ? e.PotFood(s, inst.InstanceId) : new List<ItemInstance>();
+    var takeOutNote = potInfo && inst.InFacility ? $"取下这口锅：{e.TakeOutConsequenceOf(s, inst).Text}"
+                    : !potInfo && (inst.InFacility || inst.InContainer) && !e.IsLiquid(inst) ? $"取出：{e.TakeOutConsequenceOf(s, inst).Text}" : null;
+    var emptyPot = potInfo && potLiquids.Count == 0 && potFoods.Count == 0;
+    var attackWeapon = e.Weapon(cfg.Id) is WeaponConfig { CanAttack: true } aw ? aw : null;
+    var hasDesc = !string.IsNullOrEmpty(descText) || durRange != null || moreEquip.Count > 0 || cfg.ShelfLifeMinutes.HasValue || takeOutNote != null || emptyPot || attackWeapon != null || total <= 1;
+
+    <div class="detail-scroll rail-page" data-rail-type="@railType">
+        <RailHead Source="@e.RailSourceLine(s, inst)">
+            <Thumb>@Icons.Markup(cfg.Id)</Thumb>
+            <Name>
+                @* 工具、锅等单件实例与卡下操作条同样写名称；可自用物品的摘要用内核的“饱食+35”写法，与卡片、操作条一致（试玩修复 B9） *@
+                @if (!cfg.IsStackable || sel.Kind == SelectionKind.Tool && sel.InstanceId.HasValue && !potLiquid)
+                {
+                    @cfg.Name@if (cfg.IsEquipment) { <small class="qtag q-@(inst.Quality ?? "white")">@e.QualityName(inst)</small> }
+                }
+                else
+                {
+                    // B22 试玩修复 M409：同物品分成普通卡与战利品卡时，标题按所点那张卡的数量写，合计放说明行
+                    // B22d Q178：已鉴定普通白色活性物质另成一张卡，标题“活性物质（白色·已鉴定）”
+                    var chosenSide = e.CardSideOf(chosen.Stacks[0]);
+                    var chosenDr = chosenSide == GameEngine.RewardCardSuffix;
+                    var sideN = batches.Where(b => e.CardSideOf(b.Stacks[0]) == chosenSide).Sum(b => b.Count);
+                    @e.CardTitle(cfg.Id, chosenSide)@(chosenDr ? "（战利品）" : "") <small class="muted">×@sideN</small>
+                }
+            </Name>
+            <Sub>
                 @foreach (var og in otherBatches.GroupBy(b => e.CardSideOf(b.Stacks[0])))
                 {
-                    <p class="muted">另有@(e.CardTitle(cfg.Id, og.Key))×@(og.Sum(b => b.Count))在另一张卡。</p>
+                    <p class="rail-note muted">另有@(e.CardTitle(cfg.Id, og.Key))×@(og.Sum(b => b.Count))在另一张卡。</p>
                 }
-            }
-            <p>@(cfg.Use != null && cfg.Use.IsMedicine ? (cfg.Use.IsBandage ? "药品：止血、回血、压低病毒（本次实际效果见下）" : cfg.Use.IsAntibiotic ? "药品：抑制病毒（本次实际效果见下）" : "药品：清除感染（本次实际效果见下）")
-                 : cfg.Use != null ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc)</p>
-            @{
-                // B22 试玩修复 M408：本实例地牢战利品（可封存）单独成卡，详情写明是哪一批
-                var drN = batches.Where(b => b.Stacks[0].RewardOrigin != null).Sum(b => b.Count);
-            }
-            @if (drN > 0 && chosen.Stacks[0].RewardOrigin != null)
-            {
-                <p class="warn-text">本实例战利品×@(drN)：这次地牢里领到的奖励，可以封存（设施行“封存”卡）；成功离开地牢后并回同名物品。@(total > drN ? $"同名普通物品×{total - drN}是另一张卡（这里合计×{total}）。" : "")</p>
-            }
-            else if (drN > 0)
-            {
-                <p class="muted">另有本实例战利品×@(drN)（单独一张“战利品”卡，可封存；这里合计×@(total)）。</p>
-            }
-        </div>
-        <div class="detail-icon">@Icons.Markup(cfg.Id)</div>
-
-        <div class="lines">
-            @* Q35：紧凑模式卡面不常驻的火堆加工位编号，选中详情写等价全文 *@
-            @if (Ui.FireSlotNo(e, s, inst) is int slotNo)
-            {
-                <div><span>所在加工位</span><b>@($"{e.WherePath(s, inst)}／加工位{slotNo}")</b></div>
-            }
-            <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div>
-            <div><span>合计重量</span><b>@Ui.Kg(list.Sum(i => e.ItemGrams(s, i)))公斤@(e.IsPot(inst) ? "（含锅内）" : "")</b></div>
-            @if (inst.MaxDurability.HasValue && inst.Durability.HasValue)
-            {
-                <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(inst))</b></div>
-                <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(inst))</b></div>
-                @if (cfg.DurabilityMaxRange is double[] range)
+                @if (drN > 0 && chosen.Stacks[0].RewardOrigin != null)
                 {
-                    @* M120：带“耐用”词条的本件 = 区间内抽定 × 1.15，写明，避免看起来超出区间 *@
-                    var durableMul = (inst.Affixes ?? new List<string>()).Select(e.Affix).Where(a => a != null).SelectMany(a => a!.Effects).Where(x => x.Key == "durability.max").Select(x => x.Value).FirstOrDefault();
-                    <div><span>最大耐久区间</span><b>@Ui.T(range[0])—@Ui.T(range[1])@(durableMul > 0 ? $"，耐用×{Ui.T(durableMul)}后本件{Ui.N(inst.MaxDurability.Value)}（生成时抽定）" : $"（本件{Ui.N(inst.MaxDurability.Value)}，生成时抽定）")</b></div>
+                    <p class="rail-note warn-text">本实例战利品×@(drN)：这次地牢里领到的奖励，可以封存（设施行“封存”卡）；成功离开地牢后并回同名物品。@(total > drN ? $"同名普通物品×{total - drN}是另一张卡（这里合计×{total}）。" : "")</p>
                 }
+                else if (drN > 0)
+                {
+                    <p class="rail-note muted">另有本实例战利品×@(drN)（单独一张“战利品”卡，可封存；这里合计×@(total)）。</p>
+                }
+            </Sub>
+        </RailHead>
+
+        <div class="lines rail-main">
+            @if (p != null)
+            {
+                <div><span>即时效果</span><b>@(e.MedicineEffectText(s, cfg.Use!) ?? UseEffect(cfg))</b></div>
+                @if (cfg.Use!.IsMedicine && !string.IsNullOrEmpty(cfg.Desc)) { <div class="wide"><span>药效</span><b>@cfg.Desc</b></div> }
+                @if (p.Ok && p.StatsAfterImmediate != null)
+                {
+                    // 与卡下操作条同一口径：属性写“使用当下”的即时结算值；之后5分钟按等待正常消耗另起一行（试玩修复 G4）
+                    var later = new List<string>();
+                    foreach (var id in new[] { StatId.Satiety, StatId.Hydration, StatId.Health, StatId.Morale })
+                    {
+                        var b0 = Ui.N(p.StatsBefore.Get(id));
+                        var b1 = Ui.N(p.StatsAfterImmediate.Get(id));
+                        if (b0 != b1) { <div><span>@GameEngine.StatName(id)（即时）</span><b>@b0 → @b1</b></div> }
+                        var b2 = Ui.N(p.StatsAfter.Get(id));
+                        if (b2 != b1) later.Add($"{GameEngine.StatName(id)}{b2}");
+                    }
+                    if (later.Count > 0) { <div><span>5分钟后</span><b>@string.Join("，", later)（按等待消耗）</b></div> }
+                }
+                <div><span>耗时</span><b>@(e.Config.ItemActions.UseMinutes)分钟（不可中途取消）</b></div>
             }
             @if (e.Weapon(cfg.Id) is WeaponConfig { CanAttack: false } lw)
             {
                 @* B7：指挥、医疗器具不能直接攻击，只提供本门技能（技能体力按本件基础体力换算） *@
-                <div><span>技能器具</span><b>不能直接攻击；提供@(Survival.Core.State.WeaponKinds.Name(lw.WeaponKind))技能 · 基础体力@(Ui.T(lw.EnergyCost))/次（技能按“本件÷该类基准”换算）</b></div>
+                <div class="wide"><span>技能器具</span><b>不能直接攻击；提供@(Survival.Core.State.WeaponKinds.Name(lw.WeaponKind))技能 · 基础体力@(Ui.T(lw.EnergyCost))/次（技能按“本件÷该类基准”换算）</b></div>
             }
             else if (e.Weapon(cfg.Id) is WeaponConfig wp)
             {
-                <div><span>武器</span><b>@(wp.SkillId == "" ? "（无对应熟练度）" : e.SkillName(wp.SkillId)) · 伤害@(Ui.N(wp.DamageMin))—@(Ui.N(wp.DamageMax)) · 命中能力@(Ui.T(wp.AccuracyRating)) · 暴击能力@(Ui.T(wp.CritRatingBase))</b></div>
+                <div><span>伤害</span><b>@(Ui.N(wp.DamageMin))—@(Ui.N(wp.DamageMax))</b></div>
+                <div><span>命中能力</span><b>@(Ui.T(wp.AccuracyRating))</b></div>
+                <div><span>暴击能力</span><b>@(Ui.T(wp.CritRatingBase))</b></div>
                 <div><span>攻击范围</span><b>@($"我方{GameEngine.PosList(GameEngine.OwnPositionsOf(wp))}→敌方{GameEngine.PosList(GameEngine.TargetPositionsOf(wp))}")@(wp.UsesMagazine ? $" · 弹仓{inst.LoadedAmmo}/{wp.MagazineCapacity}（{e.ItemName(wp.AmmoId!)}）" : wp.ConsumesLooseAmmo ? $" · 每射消耗随身{e.ItemName(wp.AmmoId!)}1" : "")</b></div>
-                <div><span>基础体力</span><b>@Ui.T(wp.EnergyCost)/次（按熟练度折减）</b></div>
             }
-            @* B4（A05 §1、§2、§4、§5；开发计划 v0.9 B4 H10）：品质、附加词条、阶、速度、站位、固定特性/效果、生效情况与拆解产出 *@
-            @foreach (var (label, value) in e.EquipDetailLines(s, inst))
+            @* B4（A05 §1、§2、§4、§5）：品质、类型、固定特性／效果、生效情况在首屏；附加词条、站位、技能归属、噪声与拆解在折叠组 *@
+            @foreach (var (label, value) in mainEquip)
             {
-                <div class="@(label == "品质" ? "q-" + (inst.Quality ?? "white") : "")"><span>@label</span><b>@value</b></div>
+                <div class="@(label == "品质" ? "q-" + (inst.Quality ?? "white") : "") @(value.Length > 14 ? "wide" : "")"><span>@label</span><b>@value</b></div>
             }
-            @if (cfg.ShelfLifeMinutes.HasValue)
+            <div><span>合计重量</span><b>@Ui.Kg(list.Sum(i => e.ItemGrams(s, i)))公斤@(e.IsPot(inst) ? "（含锅内）" : "")</b></div>
+            @if (total > 1) { <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div> }
+            @if (inst.MaxDurability.HasValue && inst.Durability.HasValue)
             {
-                <div><span>保质期</span><b>@(cfg.ShelfLifeMinutes / 60)小时</b></div>
+                <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(inst))</b></div>
+                <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(inst))</b></div>
+            }
+            @if (chosen.ExpiresAt.HasValue || chosen.Reserved)
+            {
+                @* Q589：当前（所选或默认）批次的实际到期／腐败与预留状态在首屏；完整批次明细在「批次」组 *@
+                <div><span>@RailText.Batch</span><b class="@(Spoiled(chosen) ? "danger-text" : "")">×@chosen.Count@(chosen.Reserved ? " · 预留" : "")@(chosen.ExpiresAt.HasValue ? " · " + (chosen.Stacks.Count == 1 && e.IsHeatProtected(s, chosen.Stacks[0]) ? Ui.FreshOf(e, s, chosen.Stacks[0]) : Ui.Fresh(chosen.ExpiresAt.Value - s.GameMinute)) : "")</b></div>
+            }
+            @if (potInfo)
+            {
+                var pc = e.PotConfig(inst);
+                @* B32b P02b：「水量」「{水种} {当前}/{容量}毫升」（没有水时省略该行）、「食材」、「处理进度」 *@
+                @if (CardStates.PotWaterLine(e, s, inst) is string water) { <div><span>水量</span><b>@water</b></div> }
+                <div><span>食材</span><b>@potFoods.Count/@pc.FoodSlots</b></div>
+                <div><span>处理进度</span><b>@e.ContentStatus(s, inst)</b></div>
+                @if (e.CookXpLine(s, inst) is string pcx) { <div><span>净化经验</span><b>@pcx</b></div> }
+                @* B22a 试玩修复 M412：锅食谱每批一次的烹饪经验只在锅上写一处，锅内各份原料行不再重复 *@
+                @if (e.PotRecipeXpLine(s, inst) is string prx) { <div><span>烹饪经验</span><b>@prx</b></div> }
+            }
+            else if (inst.InFacility || inst.InContainer)
+            {
+                <div><span>加工</span><b>@(inst.InContainer && e.IsLiquid(inst) ? e.ContentStatus(s, e.ContainerOf(s, inst) ?? inst) : e.ContentStatus(s, inst))</b></div>
+                @if (e.CookXpLine(s, inst) is string icx) { <div><span>烹饪经验</span><b>@icx</b></div> }
             }
         </div>
 
-        @* v0.7 第 7 节：右栏只保留详情、预测与说明；自用、倒出、取出、放入火堆都在被选中卡片（或锅内那一行）的下方操作条里 *@
-        @if (e.IsPot(inst))
+        @* 当前风险／不可用原因：常驻首屏，不随折叠藏掉 *@
+        @if (p != null)
+        {
+            @if (p.OverflowText is string ov) { <div class="risk">@ov</div> }
+            @if (e.UseRiskText(cfg) is string risk) { <div class="risk">⚠ @(risk)。建议在营地烧开后再喝。</div> }
+            @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
+        }
+        else if (spoiled)
+        {
+            <div class="blocked">已腐败，不能食用或用于配方。仍有重量，可以放下丢弃。</div>
+        }
+        else if (cfg.RequiresCooking)
+        {
+            <div class="risk none">放进营地燃烧火堆的空加工位烤熟，或放进有净水的锅里、锅放进燃烧的火堆水煮后才能食用。</div>
+        }
+        @if (!potInfo && (inst.InFacility || inst.InContainer) && cfg.Use != null && e.UseCookNote(s, inst) is string cookNote) { <div class="risk none">直接@(GameEngine.UseVerb(cfg))：@cookNote</div> }
+        @if (potInfo && e.IsLocked(s, inst)) { <div class="risk none">行动占用：这口锅正被当前行动使用，不能移动、取水或加水。</div> }
+        @if (chosen.Reserved)
+        {
+            <div class="risk none">该批次正被当前行动预留，不能拾取、放下或使用。</div>
+        }
+        @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
+
+        @* 次要信息折叠组（没有明确偏好时收起；空组不显示） *@
+        @if (hasDesc)
+        {
+            <RailFold Type="@railType" Group="@RailGroups.Desc" Name="@RailText.Desc">
+                @if (!string.IsNullOrEmpty(descText)) { <p class="rail-text">@descText</p> }
+                @if (emptyPot)
+                {
+                    var pc0 = e.PotConfig(inst);
+                    <div class="rail-text">空锅。净水或脏水卡拖到锅的水量条装入（每份@(pc0.UnitMl)毫升，同一锅只装一种水）；生块根拖到锅的食材区（@(pc0.FoodSlots)个食材位）。</div>
+                }
+                @if (takeOutNote != null) { <div class="rail-text">@takeOutNote</div> }
+                @if (durRange != null || moreEquip.Count > 0 || cfg.ShelfLifeMinutes.HasValue || attackWeapon != null || total <= 1)
+                {
+                    <div class="lines">
+                        @* 单件重量：只有一件时与合计相同，归明细；基础体力是招式消耗的推导规则 *@
+                        @if (total <= 1) { <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div> }
+                        @if (attackWeapon != null) { <div><span>武器</span><b>@(attackWeapon.SkillId == "" ? "（无对应熟练度）" : e.SkillName(attackWeapon.SkillId))</b></div> }
+                        @if (attackWeapon != null) { <div><span>基础体力</span><b>@Ui.T(attackWeapon.EnergyCost)/次（按熟练度折减）</b></div> }
+                        @if (durRange is double[] range)
+                        {
+                            @* M120：带“耐用”词条的本件 = 区间内抽定 × 1.15，写明，避免看起来超出区间 *@
+                            var durableMul = (inst.Affixes ?? new List<string>()).Select(e.Affix).Where(a => a != null).SelectMany(a => a!.Effects).Where(x => x.Key == "durability.max").Select(x => x.Value).FirstOrDefault();
+                            <div class="wide"><span>最大耐久区间</span><b>@Ui.T(range[0])—@Ui.T(range[1])@(durableMul > 0 ? $"，耐用×{Ui.T(durableMul)}后本件{Ui.N(inst.MaxDurability!.Value)}（生成时抽定）" : $"（本件{Ui.N(inst.MaxDurability!.Value)}，生成时抽定）")</b></div>
+                        }
+                        @foreach (var (label, value) in moreEquip)
+                        {
+                            <div class="wide"><span>@label</span><b>@value</b></div>
+                        }
+                        @if (cfg.ShelfLifeMinutes.HasValue)
+                        {
+                            <div><span>保质期</span><b>@(cfg.ShelfLifeMinutes / 60)小时</b></div>
+                        }
+                    </div>
+                }
+            </RailFold>
+        }
+        @if (affixLines.Count > 0)
+        {
+            <RailFold Type="@railType" Group="@UiFoldPrefs.Traits" Name="@RailText.Traits" Count="@affixLines.Count(x => x.Label == "附加词条")">
+                <div class="lines">
+                    @foreach (var (label, value) in affixLines) { <div class="wide @(label == "品质" ? "q-" + (inst.Quality ?? "white") : "")"><span>@label</span><b>@value</b></div> }
+                </div>
+            </RailFold>
+        }
+        @if (potLiquids.Count + potFoods.Count > 0)
         {
             var pc = e.PotConfig(inst);
-            var liquids = e.PotLiquids(s, inst.InstanceId);
-            var foods = e.PotFood(s, inst.InstanceId);
             var free = e.PotFreeWaterUnits(s, inst);
-            <div class="pot-detail">
-                <div class="lines">
-                    @* B32b P02b：「水量」「{水种} {当前}/{容量}毫升」（没有水时省略该行）、「食材」、「处理进度」 *@
-                    @if (CardStates.PotWaterLine(e, s, inst) is string water) { <div><span>水量</span><b>@water</b></div> }
-                    <div><span>食材</span><b>@foods.Count/@pc.FoodSlots</b></div>
-                    <div><span>处理进度</span><b>@e.ContentStatus(s, inst)</b></div>
-                    @if (e.CookXpLine(s, inst) is string pcx) { <div><span>净化经验</span><b>@pcx</b></div> }
-                    @* B22a 试玩修复 M412：锅食谱每批一次的烹饪经验只在锅上写一处，锅内各份原料行不再重复 *@
-                    @if (e.PotRecipeXpLine(s, inst) is string prx) { <div><span>烹饪经验</span><b>@prx</b></div> }
-                </div>
-                @if (liquids.Count == 0 && foods.Count == 0)
-                {
-                    <div class="tiny muted">空锅。净水或脏水卡拖到锅的水量条装入（每份@(pc.UnitMl)毫升，同一锅只装一种水）；生块根拖到锅的食材区（@(pc.FoodSlots)个食材位）。</div>
-                }
-                @foreach (var c in liquids)
+            <RailFold Type="@railType" Group="@RailGroups.Content" Name="@RailText.Content" Count="@(potLiquids.Count + potFoods.Count)">
+                @foreach (var c in potLiquids)
                 {
                     var lockedWhy = free < 1 ? e.ReservedWaterText(s, c) : null;
                     <ItemRow Icon="@c.ItemId" Name="@e.ItemName(c.ItemId)" Qty="@($"×{c.Count}")" Status="@($"{c.Count * pc.UnitMl}毫升{(lockedWhy != null ? " · " + lockedWhy : "")}")" />
                 }
-                @foreach (var f in foods)
+                @foreach (var f in potFoods)
                 {
                     <ItemRow Icon="@f.ItemId" Name="@($"{e.ItemName(f.ItemId)}")" Qty="×1" Status="@($"{e.ContentStatus(s, f)}{(e.CookXpLine(s, f) is string fcx ? " · " + fcx : "")}")" />
                 }
-                @if (inst.InFacility)
-                {
-                    <div class="risk none">取下这口锅：@e.TakeOutConsequenceOf(s, inst).Text</div>
-                }
-                @if (e.IsLocked(s, inst)) { <div class="risk none">行动占用：这口锅正被当前行动使用，不能移动、取水或加水。</div> }
-            </div>
+            </RailFold>
         }
-        else if (inst.InFacility || inst.InContainer)
+        @if (batches.Count > 1)
         {
-            <div class="pot-detail">
-                <div class="lines"><div><span>加工</span><b>@(inst.InContainer && e.IsLiquid(inst) ? e.ContentStatus(s, e.ContainerOf(s, inst) ?? inst) : e.ContentStatus(s, inst))</b></div>
-                    @if (e.CookXpLine(s, inst) is string icx) { <div><span>烹饪经验</span><b>@icx</b></div> }</div>
-                @if (!e.IsLiquid(inst)) { <div class="risk none">取出：@e.TakeOutConsequenceOf(s, inst).Text</div> }
-                @if (cfg.Use != null && e.UseCookNote(s, inst) is string cookNote) { <div class="risk none">直接@(GameEngine.UseVerb(cfg))：@cookNote</div> }
-            </div>
-        }
-
-        @if (batches.Count > 1 || cfg.ShelfLifeMinutes.HasValue)
-        {
-            <div>
-                <div class="tiny muted" style="margin-bottom:5px">@(group ? (GameEngine.CanSelfUse(cfg) ? "批次（默认最早到期的有效批次；点选后食用、转移都用所选这一批）" : "批次（默认最早到期的有效批次；点选后转移用所选这一批）") : "批次（默认先用最早到期的有效批次）")</div>
+            @* Q589：批次标题统一「批次」，去掉原括号里的点选／食用／转移承诺；可点选时（真正选中）沿原规则可点，不因展开新增选择／转移 *@
+            <RailFold Type="@railType" Group="@RailGroups.Batch" Name="@RailText.Batch" Count="@batches.Count">
                 @foreach (var b in batches)
                 {
                     var key = b.Key;
@@ -194,49 +279,8 @@ else
                         <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key, group)">@batchText</button>
                     }
                 }
-            </div>
+            </RailFold>
         }
-
-        @if (cfg.Use != null && !spoiled)
-        {
-            var req = ActionRequest.UseInstance(inst.InstanceId);
-            var p = G.Preview(req);
-            <div class="lines">
-                <div><span>即时效果</span><b>@(e.MedicineEffectText(s, cfg.Use) ?? UseEffect(cfg))</b></div>
-                @if (cfg.Use.IsMedicine && !string.IsNullOrEmpty(cfg.Desc)) { <div><span>药效</span><b>@cfg.Desc</b></div> }
-                @if (p.Ok && p.StatsAfterImmediate != null)
-                {
-                    // 与卡下操作条同一口径：属性写“使用当下”的即时结算值；之后5分钟按等待正常消耗另起一行（试玩修复 G4）
-                    var later = new List<string>();
-                    foreach (var id in new[] { StatId.Satiety, StatId.Hydration, StatId.Health, StatId.Morale })
-                    {
-                        var b0 = Ui.N(p.StatsBefore.Get(id));
-                        var b1 = Ui.N(p.StatsAfterImmediate.Get(id));
-                        if (b0 != b1) { <div><span>@GameEngine.StatName(id)（即时）</span><b>@b0 → @b1</b></div> }
-                        var b2 = Ui.N(p.StatsAfter.Get(id));
-                        if (b2 != b1) later.Add($"{GameEngine.StatName(id)}{b2}");
-                    }
-                    if (later.Count > 0) { <div><span>5分钟后</span><b>@string.Join("，", later)（按等待消耗）</b></div> }
-                }
-                <div><span>耗时</span><b>@(e.Config.ItemActions.UseMinutes)分钟（不可中途取消）</b></div>
-            </div>
-            @if (p.OverflowText is string ov) { <div class="risk">@ov</div> }
-            @if (e.UseRiskText(cfg) is string risk) { <div class="risk">⚠ @(risk)。建议在营地烧开后再喝。</div> }
-            @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
-        }
-        else if (spoiled)
-        {
-            <div class="blocked">已腐败，不能食用或用于配方。仍有重量，可以放下丢弃。</div>
-        }
-        else if (cfg.RequiresCooking)
-        {
-            <div class="risk none">放进营地燃烧火堆的空加工位烤熟，或放进有净水的锅里、锅放进燃烧的火堆水煮后才能食用。</div>
-        }
-        @if (chosen.Reserved)
-        {
-            <div class="risk none">该批次正被当前行动预留，不能拾取、放下或使用。</div>
-        }
-        @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
     </div>
 
     @* B45（Q548）：火堆里的内容与加工菜单开着时右栏只读、操作在中央加工菜单——不显示指向选卡操作窗的旧脚注 *@

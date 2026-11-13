@@ -10,11 +10,7 @@
     var cfg = e.Config;
     var charPage = G.CharPage;
     // S14 截图复核 §C：两块各自的展开/收起是玩家偏好（档案×角色×板块），不是组件字段，组件重建/切菜单/刷新/读档都恢复最近选择
-    var equipOpen = G.IsFoldOpen(UiFoldPrefs.Equip);
-    var skillsOpen = G.IsFoldOpen(UiFoldPrefs.Skills);
-    var traitsOpen = G.IsFoldOpen(UiFoldPrefs.Traits);
-    var foldLocked = G.FoldLocked;
-    var lockWhy = foldLocked ? "对白或战斗进行中，暂不能折叠" : null;
+    // BM4b（S14 Q589「人物」）：装备明细、熟练度、词条、成员（队伍明细）是次要折叠组——没有明确偏好时收起，已有明确偏好沿原键恢复（RailFold）
 }
 @if (charPage != null)
 {
@@ -34,25 +30,28 @@ else
             <b>人物</b>
             <span class="muted">@(day ? "白昼" : "夜间") · @(e.ZoneName(s, s.Ground))@(e.IsSheltered(s, s.Ground) ? "（遮蔽）" : "（露天）")</span>
         </div>
-        @* B8：队伍（同行/候补/遗物/补员），没有名册与遗物时不显示 *@
-        <PartyPanel />
+        @* B8：队伍（同行/候补/遗物/补员），没有名册与遗物时不显示。BM4b（Q589）：首屏留「队伍 {人数}/{容量}」摘要，明细收进「成员」组 *@
+        @if (s.Roster.Count > 0 || e.RemainsHere(s).Count > 0)
+        {
+            <RailFold Group="@UiFoldPrefs.Party" Name="@RailText.Members" Summary="@($"队伍 {s.Party.Count}/{e.PartyCapacity(s)}")" Class="party-fold">
+                <PartyPanel />
+            </RailFold>
+        }
+        @* Q589：装备与生效效果摘要、当前异常在首屏，不随折叠藏掉 *@
+        @if (e.DuplicateWeaponsIllegal(s))
+        {
+            <div class="ca-note bad">两个武器槽是同类型武器（每人同类型最多1件）：安全空闲时会弹出整理窗。</div>
+        }
+        @foreach (var line in e.EquipSummaryLines(s))
+        {
+            <div class="ca-note equip-fx">@line</div>
+        }
 
         @* B3（S06 全系统更新目标 §1、R02 §1、A05 §5、A10 §7；开发计划 v0.9 B3 H9）：七个穿戴槽的装备区，折叠偏好同熟练度/词条（档案×角色×板块）。
            穿戴物不占五张物资卡、重量计本人；点槽内武器可卸下回随身，卡位不够时给“放当前地面”。战斗中只读（不给卸下按钮；两把已锁定，用战斗区页签切换）。
            全屏整备面板留到后续批次（A10 §7.1 建议，Q41）。 *@
-        <section class="char-fold equip-fold @(equipOpen ? "open" : "")" aria-label="装备" data-fold="equip">
-            <button type="button" class="fold-head" aria-expanded="@equipOpen" disabled="@foldLocked" title="@(lockWhy ?? (equipOpen ? "收起装备（记住你的选择）" : "展开装备（记住你的选择）"))" @onclick="() => G.ToggleFold(UiFoldPrefs.Equip)">
-                <span class="fold-name">装备</span>
-                <span class="fold-sum">@EquipSummary()</span>
-                <span class="fold-arrow" aria-hidden="true">@(equipOpen ? "▾" : "▸")</span>
-            </button>
-            @if (equipOpen)
-            {
+        <RailFold Group="@UiFoldPrefs.Equip" Name="@RailText.EquipDetail" Summary="@EquipSummary()" Class="char-fold equip-fold">
                 <div class="equip-list">
-                    @if (e.DuplicateWeaponsIllegal(s))
-                    {
-                        <div class="ca-note bad">两个武器槽是同类型武器（每人同类型最多1件）：安全空闲时会弹出整理窗。</div>
-                    }
                     @foreach (var slot in EquipSlots.All)
                     {
                         var it = e.WornItem(s, GameState.PlayerId, slot);
@@ -115,25 +114,13 @@ else
                     }
                     @* B4 H10：装备效果合计（R16 上限）：战斗类只显示，求生类生效中 *@
                     <div class="ca-note equip-fx">@e.BaseDefenseLine()</div>
-                    @foreach (var line in e.EquipSummaryLines(s))
-                    {
-                        <div class="ca-note equip-fx">@line</div>
-                    }
                     <div class="ca-note">穿戴不占@(e.MaxRootCards)张物资卡，重量计入本人（穿戴@(Ui.KgText(e.WornGrams(s)))）@(s.Battle != null ? " · 战斗中两把武器已锁定，用战斗区武器Ⅰ/武器Ⅱ页签切换" : " · 选中随身或当前地面的装备卡可装备，两武器同类型最多1件")</div>
                 </div>
-            }
-        </section>
+        </RailFold>
 
         @* S14 §18.2：右栏人物常态只放熟练度与词条两块，各自展开/收起（折叠后标题与摘要仍可见）；基础属性数值只在左栏，
            点左栏属性在右栏原位看说明（AttrDetail）。 *@
-        <section class="char-fold @(skillsOpen ? "open" : "")" aria-label="熟练度" data-fold="skills">
-            <button type="button" class="fold-head" aria-expanded="@skillsOpen" disabled="@foldLocked" title="@(lockWhy ?? (skillsOpen ? "收起熟练度（记住你的选择）" : "展开熟练度（记住你的选择）"))" @onclick="() => G.ToggleFold(UiFoldPrefs.Skills)">
-                <span class="fold-name">熟练度</span>
-                <span class="fold-sum">@(skills.Count)门@(top != null && top.Level > 1 ? $" · 最高{top.Name}{top.Level}级" : " · 均为1级")</span>
-                <span class="fold-arrow" aria-hidden="true">@(skillsOpen ? "▾" : "▸")</span>
-            </button>
-            @if (skillsOpen)
-            {
+        <RailFold Group="@UiFoldPrefs.Skills" Name="@RailText.Skills" Summary="@($"{skills.Count}门{(top != null && top.Level > 1 ? $" · 最高{top.Name}{top.Level}级" : " · 均为1级")}")" Class="char-fold">
                 @* B5（A06 §1/§4、开发计划 v0.9 B5 H10）：十五门按战斗/医疗/求生分组，等级/上限、本级经验或“满级”；悬停一门看它的 5 个专属技能。
                    完整 75 节点的成长页在 B10。 *@
                 <div class="skill-list">
@@ -160,16 +147,8 @@ else
                         <div class="skill-passive" data-standing>@line</div>
                     }
                 </div>
-            }
-        </section>
-        <section class="char-fold @(traitsOpen ? "open" : "")" aria-label="词条" data-fold="traits">
-            <button type="button" class="fold-head" aria-expanded="@traitsOpen" disabled="@foldLocked" title="@(lockWhy ?? (traitsOpen ? "收起词条（记住你的选择）" : "展开词条（记住你的选择）"))" @onclick="() => G.ToggleFold(UiFoldPrefs.Traits)">
-                <span class="fold-name">词条</span>
-                <span class="fold-sum">@(s.Traits.Count == 0 ? "暂无" : $"{s.Traits.Count}条")</span>
-                <span class="fold-arrow" aria-hidden="true">@(traitsOpen ? "▾" : "▸")</span>
-            </button>
-            @if (traitsOpen)
-            {
+        </RailFold>
+        <RailFold Group="@UiFoldPrefs.Traits" Name="@RailText.Traits" Summary="@(s.Traits.Count == 0 ? "暂无" : $"{s.Traits.Count}条")" Class="char-fold">
                 @if (s.Traits.Count == 0)
                 {
                     <div class="risk none">还没有词条。</div>
@@ -180,8 +159,7 @@ else
                         <b>@t.Label</b><small>@(t.Quality == "green" ? "绿色" : t.Quality)</small>
                     </div>
                 }
-            }
-        </section>
+        </RailFold>
     </div>
     <div class="detail-foot">
         <div class="under">基础属性在左栏，点左栏属性看说明 · 查看不耗时</div>

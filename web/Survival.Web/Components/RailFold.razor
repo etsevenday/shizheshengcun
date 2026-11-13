@@ -1,0 +1,44 @@
+@inherits GameComponent
+
+@* BM4b（S14「B45 Q581—Q590」§Q589）：右栏次要信息折叠组。组头＝分组名［（数量）］＋可选摘要；展开／收起的可访问名称「展开{分组名}」「收起{分组名}」。
+   没有明确偏好时默认收起；对象页按 档案×对象类型×分组 记、人物页按 档案×角色×分组 记（装备／熟练度／词条沿原键）。
+   空组由调用方不渲染（Q589「空组不显示」）。展开只是阅读：不推进时间、不改选择／预留。对白或战斗输入锁期间沿原规则不接受点击。 *@
+@{
+    var open = Type != null ? G.IsObjectFoldOpen(Type, Group) : G.IsRailFoldOpen(Group, Actor);
+    var locked = G.FoldLocked;
+    var title = RailText.Title(Name, Count);
+}
+<section class="rail-fold @(open ? "open" : "") @Class" data-fold="@Group" data-fold-type="@(Type ?? Actor)">
+    <button type="button" class="rail-fold-head" aria-expanded="@(open ? "true" : "false")" aria-label="@(open ? RailText.Collapse(Name) : RailText.Expand(Name))"
+            disabled="@locked" title="@(locked ? "对白或战斗进行中，暂不能折叠" : null)" @onclick="Toggle">
+        <span class="fold-arrow" aria-hidden="true">@(open ? "▾" : "▸")</span>
+        <span class="fold-name">@title</span>
+        @if (!string.IsNullOrEmpty(Summary)) { <span class="fold-sum">@Summary</span> }
+    </button>
+    @if (open)
+    {
+        <div class="rail-fold-body">@ChildContent</div>
+    }
+</section>
+
+@code {
+    /// <summary>对象类型（RailTypes.*）；null 为人物页（按 <see cref="Actor"/> 区分角色）。</summary>
+    [Parameter] public string? Type { get; set; }
+    [Parameter] public string Actor { get; set; } = UiFoldPrefs.MainActor;
+    /// <summary>分组键（RailGroups.* 或原 UiFoldPrefs 键）。</summary>
+    [Parameter, EditorRequired] public string Group { get; set; } = "";
+    /// <summary>分组名（逐字稿：说明、批次、内容、加工队列、成员、装备明细、熟练度、词条、计算明细）。</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+    /// <summary>已有可靠数量时标题写「{分组名}（{数量}）」。</summary>
+    [Parameter] public int? Count { get; set; }
+    /// <summary>组头摘要（收起时仍可见的原有摘要文字）。</summary>
+    [Parameter] public string? Summary { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private void Toggle()
+    {
+        if (Type != null) G.ToggleRailFold(Group, UiFoldPrefs.ObjectActor(Type));
+        else G.ToggleRailFold(Group, Actor);
+    }
+}

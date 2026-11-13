@@ -1,54 +1,62 @@
 @inherits GameComponent
 
+@* BM4b（S14 Q589「资源／地点／路线」「当前操作预估」）：紧凑表头（名称＋原眉标作来源行）→ 主要数据（预计耗时、完成时刻、次数、工具、产出、身体变化）
+   → 当前风险／不可用原因 → 次要组（说明：原副标题与长规则；计算明细：基础工作量、倍率、余量与倍率构成）。执行入口仍在卡片或卡旁浮窗。 *@
 @{
     var e = G.E;
     var s = G.S;
     var p = G.Preview(Request);
     var busy = G.Running || s.Main != null && !p.AsSubAction;
+    var hasCalc = p.Ok && p.IsWork;
+    var hasDesc = !string.IsNullOrEmpty(Subtitle) || (p.Ok && p.FacilityChanges.Count > 0) || p.Notes.Count > 0;
 }
 
-<div class="detail-scroll">
-    <div class="op-head">
-        <div class="eyebrow">@Eyebrow</div>
-        <h2>@(string.IsNullOrEmpty(Title) ? p.Label : Title)</h2>
-        @if (!string.IsNullOrEmpty(Subtitle)) { <p>@Subtitle</p> }
-    </div>
+<div class="detail-scroll rail-page" data-rail-type="@RailType">
+    <RailHead Source="@Eyebrow">
+        <Name>@(string.IsNullOrEmpty(Title) ? p.Label : Title)</Name>
+    </RailHead>
     @Extra
 
-    @if (p.Ok)
-    {
-        <div class="facts">
-            <div class="fact"><span>预计耗时</span><strong>@Clock.Duration(p.EstimatedMinutes)</strong></div>
-            <div class="fact"><span>预计完成</span><strong>@Clock.HHmm(p.EstimatedEndMinute)</strong></div>
-            @if (p.IsWork)
-            {
-                <div class="fact"><span>基础工作量</span><strong>@(p.BaseMinutes)分钟</strong></div>
-                <div class="fact" title="@string.Join("；", p.FactorReasons)"><span>当前倍率</span><strong>×@p.FactorAtStart.ToString("0.##")</strong></div>
-                @if (p.CarryBefore > 0 || p.CarryAfter is > 0)
-                {
-                    @* Q61 工作量余量结转：同类工作不足5分钟的余量 *@
-                    <div class="fact" title="同类工作不足5分钟的工作量余量，下次同类工作接着用（S01 Q61）"><span>同类余量</span><strong>@Ui.N(p.CarryBefore)@(p.CarryAfter is double ca ? $" → {Ui.N(ca)}" : "")分钟</strong></div>
-                }
-            }
-
+    <div class="lines rail-main">
+        @if (p.Ok)
+        {
+            <div><span>预计耗时</span><b>@Clock.Duration(p.EstimatedMinutes)</b></div>
+            <div><span>预计完成</span><b>@Clock.HHmm(p.EstimatedEndMinute)</b></div>
             @if (p.ClearCharges.HasValue)
             {
-                <div class="fact"><span>清理次数</span><strong>@p.ClearCharges/@p.ClearCap → @(p.ClearCharges - 1)/@p.ClearCap</strong></div>
+                <div><span>清理次数</span><b>@p.ClearCharges/@p.ClearCap → @(p.ClearCharges - 1)/@p.ClearCap</b></div>
             }
-        </div>
-    }
-    else if (p.ClearCharges.HasValue)
-    {
-        <div class="lines">
+        }
+        else if (p.ClearCharges.HasValue)
+        {
             <div><span>清理次数</span><b>@p.ClearCharges/@p.ClearCap@(p.NextRefillMinutes.HasValue ? $" · 距恢复1次{Clock.Duration(p.NextRefillMinutes.Value)}" : " · 已满")</b></div>
-        </div>
-    }
-
-    @if (p.Ok && p.IsWork && Request.Type == ActionType.Gather && p.FactorReasons.Count > 0)
-    {
-        @* B13a2（Q137，S14 本轮章）：采集/搜集逐项写倍率构成（熟练、工具运用、破门×0.75、是否触及合成下限×0.70、夜间等） *@
-        <div class="tiny muted factor-parts">倍率构成：@string.Join("；", p.FactorReasons)</div>
-    }
+        }
+        @if (!p.Ok && p.BaseMinutes > 0) { <div><span>基础耗时</span><b>@(p.BaseMinutes)分钟</b></div> }
+        @if (p.ToolName != null && p.ToolDurabilityBefore.HasValue && p.ToolMaxDurability.HasValue)
+        {
+            <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @Ui.N(p.ToolDurabilityAfter ?? 0)/@Ui.N(p.ToolMaxDurability.Value)</b></div>
+        }
+        @if (p.Ok)
+        {
+            @foreach (var id in Stats.All)
+            {
+                var before = Ui.N(p.StatsBefore.Get(id));
+                var after = Ui.N(p.StatsAfter.Get(id));
+                if (before == after && id != StatId.Hydration && id != StatId.Energy) continue;
+                var th = e.Config.Thresholds[GameEngine.StatKey(id)];
+                var cls = th.IsBelow(p.StatsAfter.Get(id)) ? "warn-text" : "";
+                <div><span>@GameEngine.StatName(id)</span><b class="@cls">@before → @after</b></div>
+            }
+            @if (Request.Type == ActionType.Travel || Request.Type == ActionType.Gather)
+            {
+                <div><span>负重</span><b>@(Request.Type == ActionType.Gather ? "采集后不自动增加" : Ui.Kg(e.CarriedGrams(s)) + "公斤")</b></div>
+            }
+            @if (p.XpGains.Count > 0)
+            {
+                <div><span>完成后经验</span><b>@string.Join("、", p.XpGains)</b></div>
+            }
+        }
+    </div>
 
     @if (p.Ok && p.Outputs.Count > 0)
     {
@@ -59,6 +67,12 @@
             }
         </div>
     }
+    else if (!p.Ok && p.Outputs.Count > 0)
+    {
+        <div class="outputs">
+            @foreach (var o in p.Outputs) { <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="产出" /> }
+        </div>
+    }
     @if (p.LootOdds.Count > 0)
     {
         <div class="loot-odds">
@@ -66,47 +80,6 @@
             @foreach (var o in p.LootOdds)
             {
                 <div class="@(o.ItemId == null ? "muted" : "")"><span>@o.Name</span><b>@(o.Percent)%</b></div>
-            }
-        </div>
-    }
-    else if (!p.Ok)
-    {
-        <div class="blocked">@p.Reason</div>
-        @if (p.Outputs.Count > 0 || p.BaseMinutes > 0)
-        {
-            <div class="lines">
-                @if (p.BaseMinutes > 0) { <div><span>基础耗时</span><b>@(p.BaseMinutes)分钟</b></div> }
-                @foreach (var o in p.Outputs) { <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="产出" /> }
-            </div>
-        }
-    }
-
-    @if (p.ToolName != null)
-    {
-        <div class="lines">
-            @if (p.ToolDurabilityBefore.HasValue && p.ToolMaxDurability.HasValue)
-            {
-                <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @Ui.N(p.ToolDurabilityAfter ?? 0)/@Ui.N(p.ToolMaxDurability.Value)</b></div>
-            }
-            <div class="tiny muted">@(p.ToolExplicit ? "使用拖入的这一把；它不可用时不会自动换成其他工具。" : "无需选择工具，自动使用随身成色最高的一件。")</div>
-            @if (p.ToolChoice && !p.ToolExplicit && !Confirmable && Request.Type == ActionType.Gather)
-            {
-                @* B13b（Q121，S05 本轮章）：工具是效率选择不是门票，可明确改徒手（不磨损、按原工时） *@
-                var bare = ActionRequest.Gather(Request.TargetId, null, true);
-                var bp = G.Preview(bare);
-                <button type="button" class="secondary tiny-btn" disabled="@(!bp.Ok || busy || starting)" title="不用随身工具，按原工时徒手进行，工具不磨损"
-                        @onclick="() => StartBare(bare)">改用徒手开始（@(bp.BaseMinutes)分钟）</button>
-            }
-            @if (p.ToolChoice && !p.ToolExplicit && !Confirmable && Request.Type == ActionType.Gather && Request.TargetId != null)
-            {
-                @* B13a2（Q137，S05/S14 本轮章）：身上另有别种合格工具（如锁闭储物点的消防斧，含已装备在武器页的）时可明确改用，锁定那一件 *@
-                foreach (var alt in e.QualifiedToolChoices(s, e.Resource(Request.TargetId)).Where(t => t.ItemId != p.ToolItemId))
-                {
-                    var areq = ActionRequest.Gather(Request.TargetId, alt.InstanceId);
-                    var ap = G.Preview(areq);
-                    <button type="button" class="secondary tiny-btn" disabled="@(!ap.Ok || busy || starting)" title="@(ap.Ok ? string.Join("；", ap.FactorReasons.DefaultIfEmpty("工作倍率×1")) : ap.Reason)"
-                            @onclick="() => StartBare(areq)">改用@(e.ItemName(alt.ItemId))开始（预计@(ap.EstimatedMinutes)分钟）</button>
-                }
             }
         </div>
     }
@@ -139,6 +112,12 @@
             <div class="tiny muted">同普通等待的消耗；不自动点火、加木、补水，成品留在原位不自动食用。</div>
         </div>
     }
+
+    @* 当前风险／不可用原因：常驻首屏 *@
+    @if (!p.Ok)
+    {
+        <div class="blocked">@p.Reason</div>
+    }
     @if (Request.Type == ActionType.Clear || Request.Type == ActionType.Explore)
     {
         <div class="risk none">无额外受伤风险；工具不改变耗时、概率与件数，也不磨损。</div>
@@ -154,41 +133,6 @@
             <div class="risk none">无随机伤害风险。</div>
         }
     }
-
-    @if (p.Ok)
-    {
-        <div class="lines">
-            @foreach (var id in Stats.All)
-            {
-                var before = Ui.N(p.StatsBefore.Get(id));
-                var after = Ui.N(p.StatsAfter.Get(id));
-                if (before == after && id != StatId.Hydration && id != StatId.Energy) continue;
-                var th = e.Config.Thresholds[GameEngine.StatKey(id)];
-                var cls = th.IsBelow(p.StatsAfter.Get(id)) ? "warn-text" : "";
-                <div><span>@GameEngine.StatName(id)</span><b class="@cls">@before → @after</b></div>
-            }
-            @if (Request.Type == ActionType.Travel || Request.Type == ActionType.Gather)
-            {
-                <div><span>负重</span><b>@(Request.Type == ActionType.Gather ? "采集后不自动增加" : Ui.Kg(e.CarriedGrams(s)) + "公斤")</b></div>
-            }
-        </div>
-    }
-
-    @if (p.Ok && p.FacilityChanges.Count > 0)
-    {
-        <div class="facility-changes">
-            <div class="tiny muted">期间设施变化（自动加工，不另扣角色体力）</div>
-            <ul class="notes">@foreach (var n in p.FacilityChanges) { <li>@n</li> }</ul>
-        </div>
-    }
-    @if (p.Ok && p.XpGains.Count > 0)
-    {
-        <div class="lines"><div><span>完成后经验</span><b>@string.Join("、", p.XpGains)</b></div></div>
-    }
-    @if (p.Notes.Count > 0)
-    {
-        <ul class="notes">@foreach (var n in p.Notes) { <li>@n</li> }</ul>
-    }
     @foreach (var w in p.Warnings)
     {
         <div class="risk">@w</div>
@@ -196,6 +140,70 @@
     @if (G.RightNotice != null)
     {
         <div class="notice">@G.RightNotice</div>
+    }
+
+    @if (p.ToolName != null)
+    {
+        <div class="rail-tools">
+            <div class="tiny muted">@(p.ToolExplicit ? "使用拖入的这一把；它不可用时不会自动换成其他工具。" : "无需选择工具，自动使用随身成色最高的一件。")</div>
+            @if (p.ToolChoice && !p.ToolExplicit && !Confirmable && Request.Type == ActionType.Gather)
+            {
+                @* B13b（Q121，S05 本轮章）：工具是效率选择不是门票，可明确改徒手（不磨损、按原工时） *@
+                var bare = ActionRequest.Gather(Request.TargetId, null, true);
+                var bp = G.Preview(bare);
+                <button type="button" class="secondary tiny-btn" disabled="@(!bp.Ok || busy || starting)" title="不用随身工具，按原工时徒手进行，工具不磨损"
+                        @onclick="() => StartBare(bare)">改用徒手开始（@(bp.BaseMinutes)分钟）</button>
+            }
+            @if (p.ToolChoice && !p.ToolExplicit && !Confirmable && Request.Type == ActionType.Gather && Request.TargetId != null)
+            {
+                @* B13a2（Q137，S05/S14 本轮章）：身上另有别种合格工具（如锁闭储物点的消防斧，含已装备在武器页的）时可明确改用，锁定那一件 *@
+                foreach (var alt in e.QualifiedToolChoices(s, e.Resource(Request.TargetId)).Where(t => t.ItemId != p.ToolItemId))
+                {
+                    var areq = ActionRequest.Gather(Request.TargetId, alt.InstanceId);
+                    var ap = G.Preview(areq);
+                    <button type="button" class="secondary tiny-btn" disabled="@(!ap.Ok || busy || starting)" title="@(ap.Ok ? string.Join("；", ap.FactorReasons.DefaultIfEmpty("工作倍率×1")) : ap.Reason)"
+                            @onclick="() => StartBare(areq)">改用@(e.ItemName(alt.ItemId))开始（预计@(ap.EstimatedMinutes)分钟）</button>
+                }
+            }
+        </div>
+    }
+
+    @* 次要信息折叠组（没有明确偏好时收起；无额外数据时不造折叠项） *@
+    @if (hasCalc)
+    {
+        <RailFold Type="@RailType" Group="@RailGroups.Calc" Name="@RailText.Calc">
+            <div class="lines">
+                <div><span>基础工作量</span><b>@(p.BaseMinutes)分钟</b></div>
+                <div title="@string.Join("；", p.FactorReasons)"><span>当前倍率</span><b>×@p.FactorAtStart.ToString("0.##")</b></div>
+                @if (p.CarryBefore > 0 || p.CarryAfter is > 0)
+                {
+                    @* Q61 工作量余量结转：同类工作不足5分钟的余量 *@
+                    <div title="同类工作不足5分钟的工作量余量，下次同类工作接着用（S01 Q61）"><span>同类余量</span><b>@Ui.N(p.CarryBefore)@(p.CarryAfter is double ca ? $" → {Ui.N(ca)}" : "")分钟</b></div>
+                }
+            </div>
+            @if (Request.Type == ActionType.Gather && p.FactorReasons.Count > 0)
+            {
+                @* B13a2（Q137，S14 本轮章）：采集/搜集逐项写倍率构成（熟练、工具运用、破门×0.75、是否触及合成下限×0.70、夜间等） *@
+                <div class="tiny muted factor-parts">倍率构成：@string.Join("；", p.FactorReasons)</div>
+            }
+        </RailFold>
+    }
+    @if (hasDesc)
+    {
+        <RailFold Type="@RailType" Group="@RailGroups.Desc" Name="@RailText.Desc">
+            @if (!string.IsNullOrEmpty(Subtitle)) { <p class="rail-text">@Subtitle</p> }
+            @if (p.Ok && p.FacilityChanges.Count > 0)
+            {
+                <div class="facility-changes">
+                    <div class="tiny muted">期间设施变化（自动加工，不另扣角色体力）</div>
+                    <ul class="notes">@foreach (var n in p.FacilityChanges) { <li>@n</li> }</ul>
+                </div>
+            }
+            @if (p.Notes.Count > 0)
+            {
+                <ul class="notes">@foreach (var n in p.Notes) { <li>@n</li> }</ul>
+            }
+        </RailFold>
     }
 </div>
 
@@ -226,6 +234,8 @@
     [Parameter] public RenderFragment? Extra { get; set; }
     /// <summary>B21：确认按钮文字（如“确认开始远征并前往”）；为空用预估自带的文字。</summary>
     [Parameter] public string? ConfirmLabel { get; set; }
+    /// <summary>BM4b（Q589）：折叠偏好所属对象类型——选中资源／地点／路线传 RailTypes.Place，其余为当前操作预估。</summary>
+    [Parameter] public string RailType { get; set; } = RailTypes.Op;
 
     private bool starting;
 

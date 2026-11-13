@@ -11,7 +11,7 @@
 @switch (sel.Kind)
 {
     case SelectionKind.Location when s.Locations[s.CurrentLocation].Progress < 100:
-        <PreviewView Request="ActionRequest.Explore()" Eyebrow="@($"{mark}{e.LocName(s.CurrentLocation)}")" Title="探索周边" Confirmable="false"
+        <PreviewView RailType="@RailTypes.Place" Request="ActionRequest.Explore()" Eyebrow="@($"{mark}{e.LocName(s.CurrentLocation)}")" Title="探索周边" Confirmable="false"
                      Subtitle="探索推进地块调查，并有机会取得零散物资；探索度达到100%后不再探索。" />
         break;
     case SelectionKind.Location:
@@ -19,7 +19,7 @@
         <div class="empty-detail">@e.LocName(s.CurrentLocation)已充分探索<br />点清理按钮或资源卡查看预测</div>
         break;
     case SelectionKind.Clear:
-        <PreviewView Request="ActionRequest.Clear()" Eyebrow="@($"{mark}{e.LocName(s.CurrentLocation)}")" Title="@e.ClearLabelAt(s.CurrentLocation)" Confirmable="false"
+        <PreviewView RailType="@RailTypes.Place" Request="ActionRequest.Clear()" Eyebrow="@($"{mark}{e.LocName(s.CurrentLocation)}")" Title="@e.ClearLabelAt(s.CurrentLocation)" Confirmable="false"
                      Subtitle="@(e.Location(s.CurrentLocation).ClearPerGeneration ? "翻找地牢房间里的零散物资。每代只能做1次，不随时间恢复；不领物资箱、守卫或核心记录，不增加探索度。" : "翻找、整理地块表层的零散基础物资。每地有独立次数，随游戏世界时间恢复；不增加探索度。")" />
         break;
     case SelectionKind.Entrance:
@@ -29,7 +29,7 @@
         var dEnt = e.DungeonAt(sel.Id);
         var needExp = e.NeedsExpeditionConfirm(s, sel.Id);
         var showExp = dEnt != null && e.ExpeditionEnabled(dEnt) && (needExp || (e.BufferNodeOf(dEnt) == sel.Id && e.DungeonAt(s.CurrentLocation) != dEnt));
-        <PreviewView Request="ActionRequest.Travel(sel.Id, needExp)" Eyebrow="@($"{mark}前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")" Confirmable="@(needExp && !Peek)"
+        <PreviewView RailType="@RailTypes.Place" Request="ActionRequest.Travel(sel.Id, needExp)" Eyebrow="@($"{mark}前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")" Confirmable="@(needExp && !Peek)"
                      ConfirmLabel="@(needExp && !Peek ? "确认开始远征并前往" : null)"
                      FootNote="在相邻地图卡旁的浮窗确认移动；时间为预计值"
                      Subtitle="位置在到达时一次更新；途中不能取用两端的物资。">
@@ -43,7 +43,7 @@
         break;
     case SelectionKind.Resource:
         var r = e.Resource(sel.Id);
-        <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"{mark}{r.Name}")" Title="@($"{e.GatherVerbNow(s, r)}{r.Name}")" Confirmable="false"
+        <PreviewView RailType="@RailTypes.Place" Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"{mark}{r.Name}")" Title="@($"{e.GatherVerbNow(s, r)}{r.Name}")" Confirmable="false"
                      Subtitle="工具与成本已计入本次预估。">
             <Extra>
                 @* B32a Q351：来源行「{资源所在地点名} · {资源账短标}」，地名与账短标取当前配置与现行资源显示口径 *@

@@ -67,7 +67,7 @@ public class B33GearUiWiringTests
         Assert.That(s, Does.Not.Contain("Selected =").And.Not.Contain("Select(").And.Not.Contain("PickBatch("));
         Assert.That(s, Does.Contain("if (State == null || Panel != \"gear\")"));
         var peek = Web("Components/GearPeekDetail.razor");
-        Assert.That(peek, Does.Contain("e.GearPlaceText(s, it)"));
+        Assert.That(peek, Does.Contain("e.RailSourceLine(s, it)"), "BM4b（Q589）：来源行统一「{地点}[ · {区域}] · {持有人}」");
         Assert.That(peek, Does.Not.Contain("<span>即时效果").And.Not.Contain("<span>5分钟后").And.Not.Contain("<span>耗时").And.Not.Contain("detail-foot").And.Not.Contain("PickBatch").And.Not.Contain("G.Preview("));
         Assert.That(Web("Components/DetailPanel.razor"), Does.Contain("<GearPeekDetail Item=\"gearPeek\" />"));
     }

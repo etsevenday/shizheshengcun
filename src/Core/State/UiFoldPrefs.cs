@@ -21,8 +21,23 @@ namespace Survival.Core.State
         /// <summary>右栏人物页“装备”板块（七个穿戴槽，B3 H9）。</summary>
         public const string Equip = "equip";
 
-        /// <summary>没有记录时的原默认值：两块都展开（S14 §18.2 原实现）。</summary>
+        /// <summary>没有记录时的原默认值：两块都展开（S14 §18.2 原实现）。任务框（TaskCorner）仍沿此默认。</summary>
         public const bool DefaultOpen = true;
+
+        /// <summary>
+        /// BM4b（S14 Q589）：右栏次要信息折叠组在没有玩家明确偏好时默认收起；已有明确记录（只在点击时写入）的装备／熟练度／词条沿原键恢复。
+        /// 旧的“默认展开”不是用户偏好，不写回。
+        /// </summary>
+        public const bool RailDefaultOpen = false;
+
+        /// <summary>Q589：人物页“成员”（队伍明细）折叠组。</summary>
+        public const string Party = "party";
+
+        /// <summary>
+        /// Q589：对象页新折叠记忆按 档案×对象类型×分组 保存——“角色”位放 "obj:{对象类型}"，与人物页的角色ID区分开；
+        /// 不含临时对象实例号，不进存档。
+        /// </summary>
+        public static string ObjectActor(string objectType) => "obj:" + objectType;
 
         private readonly Dictionary<string, bool> _open = new Dictionary<string, bool>(StringComparer.Ordinal);
 
@@ -34,6 +49,18 @@ namespace Survival.Core.State
         /// <summary>该组合当前是否展开；没有记录时返回 <see cref="DefaultOpen"/>，不写入。</summary>
         public bool IsOpen(string profile, string actorId, string sectionId) =>
             _open.TryGetValue(KeyOf(profile, actorId, sectionId), out var v) ? v : DefaultOpen;
+
+        /// <summary>该组合当前是否展开；没有记录时返回给定默认值（Q589 次要组传 <see cref="RailDefaultOpen"/>），不写入。</summary>
+        public bool IsOpen(string profile, string actorId, string sectionId, bool defaultOpen) =>
+            _open.TryGetValue(KeyOf(profile, actorId, sectionId), out var v) ? v : defaultOpen;
+
+        /// <summary>玩家点击折叠标题（带默认值）：取反当前显示值并写入，返回新值。</summary>
+        public bool Toggle(string profile, string actorId, string sectionId, bool defaultOpen)
+        {
+            var v = !IsOpen(profile, actorId, sectionId, defaultOpen);
+            Set(profile, actorId, sectionId, v);
+            return v;
+        }
 
         /// <summary>是否已有玩家明确选择过的记录。</summary>
         public bool HasChoice(string profile, string actorId, string sectionId) => _open.ContainsKey(KeyOf(profile, actorId, sectionId));

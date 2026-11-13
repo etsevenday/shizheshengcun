@@ -1,0 +1,80 @@
+/* ───────────── BM4b 常态右栏紧凑信息层级（S14「B45 Q581—Q590」§Q589） ─────────────
+   只作用于主界面右栏（[data-detail-rail]）；全屏战斗右列不在本批改动。
+   同一外框：页签 → 至多两行任务／提示摘要 → 紧凑表头（小缩略图＋名称＋来源行）→ 标签列＋数值列 → 当前风险／原因 → 次要折叠组。
+   字号沿 Q327 的正文／辅助两档，不靠缩字换首屏。 */
+
+/* 「对象详情」只留给读屏（不在对象名上方再堆同义大标题） */
+[data-detail-rail] .sr-title { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 任务／提示摘要：去掉独立大框，至多两行，单行省略（全文在悬停提示与任务册） */
+[data-detail-rail] .task-box.rail-task { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; padding: 0 0 5px; }
+[data-detail-rail] .rail-task .tc-head { align-items: center; flex-wrap: nowrap; }
+[data-detail-rail] .rail-task .tc-title { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-detail-rail] .rail-task .tc-row { display: flex; flex-wrap: nowrap; gap: 4px 10px; margin-top: 2px; white-space: nowrap; overflow: hidden; }
+[data-detail-rail] .rail-task .tc-done { margin-top: 2px; border-top: 0; padding-top: 0; display: flex; align-items: baseline; min-width: 0; white-space: nowrap; overflow: hidden; }
+[data-detail-rail] .rail-task .tc-done .tc-hint-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+[data-detail-rail] .rail-task .tc-hint { margin-top: 4px; border-top: 1px dashed #5d6656; padding-top: 3px; }
+[data-detail-rail] .rail-task .tc-hint-btns { flex-wrap: wrap; }
+[data-detail-rail] .char-panel .char-top { display: block; line-height: 1.4; }
+[data-detail-rail] .char-panel .char-top > b { font-size: var(--fs-body); margin-right: 6px; }
+[data-detail-rail] .rail-fold.char-fold .fold-sum { white-space: normal; overflow: visible; text-overflow: clip; }
+
+/* 紧凑表头 */
+[data-detail-rail] .rail-page { gap: 8px; }
+[data-detail-rail] .rail-head { flex: 0 0 auto; display: flex; align-items: flex-start; gap: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--line); }
+[data-detail-rail] .rail-thumb { flex: 0 0 44px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 3px; background: #0b1214; overflow: hidden; }
+[data-detail-rail] .rail-thumb > :is(svg, img, span) { width: 38px; height: 38px; transform: none; }
+[data-detail-rail] .rail-id { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+[data-detail-rail] .rail-id h2 { margin: 0; font-size: var(--fs-title); font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+[data-detail-rail] .rail-id h2 small { font-size: var(--fs-aux); }
+[data-detail-rail] .rail-src { font-size: var(--fs-aux); color: var(--muted); line-height: 1.4; overflow-wrap: anywhere; }
+[data-detail-rail] .rail-note { margin: 2px 0 0; font-size: var(--fs-aux); line-height: 1.5; }
+[data-detail-rail] .rail-text { margin: 0 0 4px; font-size: var(--fs-aux); color: var(--muted); line-height: 1.6; }
+
+/* 其他仍用旧表头的详情（地图、制作、休息、状态、公开条目）：大图收成表头旁小图，表头去分隔大段 */
+[data-detail-rail] .detail-icon { justify-content: flex-start; }
+[data-detail-rail] .detail-icon svg, [data-detail-rail] .detail-icon > .ink-sprite { width: 44px; height: 44px; transform: none; }
+[data-detail-rail] .op-head { padding-bottom: 6px; }
+[data-detail-rail] .op-head h2 { margin: 2px 0; line-height: 1.2; }
+
+/* 标签列＋数值列：短项按两列并排，长效果（.wide）独占整行 */
+[data-detail-rail] .lines { line-height: 1.55; }
+[data-detail-rail] .lines.rail-main { font-size: var(--fs-body); }
+/* 1280 档右栏只有约 200px 宽：主要数据沿原 .lines 的辅助字号（Q327 辅助档），不再放大 */
+@container (max-width: 300px) { [data-detail-rail] .lines.rail-main { font-size: var(--fs-aux); } }
+[data-detail-rail] .lines > div { align-items: baseline; padding: 1px 0; }
+[data-detail-rail] .lines > div > span:first-child { flex: 0 0 auto; max-width: 48%; }
+[data-detail-rail] .lines > div > b { flex: 1 1 auto; min-width: 0; text-align: right; font-weight: 500; overflow-wrap: anywhere; }
+[data-detail-rail] .lines > div.wide { flex-wrap: wrap; }
+[data-detail-rail] .lines > div.wide > span:first-child { max-width: none; }
+[data-detail-rail] .lines > div.wide > b { flex-basis: 100%; text-align: left; }
+@container (min-width: 420px) {
+  [data-detail-rail] .lines.rail-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 16px; }
+  [data-detail-rail] .lines.rail-main > div.wide { grid-column: 1 / -1; }
+}
+[data-detail-rail] .detail-body { container-type: inline-size; }
+
+/* 旧“数值大框”（预计耗时等）改成同样的标签／数值行，不再给每项套框 */
+[data-detail-rail] .facts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+[data-detail-rail] .fact { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 1px 0; background: none; border: 0; box-shadow: none; border-image: none; }
+[data-detail-rail] .fact span { display: inline; margin: 0; font-size: var(--fs-body); }
+[data-detail-rail] .fact strong { font-size: var(--fs-body); font-weight: 500; text-align: right; overflow-wrap: anywhere; }
+
+/* 火源两工位内容摘要 */
+[data-detail-rail] .lines > .fire-sum.st-busy > b { color: var(--accent); }
+[data-detail-rail] .lines > .fire-sum.fresh { outline: 1px solid var(--accent); outline-offset: 1px; }
+
+/* 次要信息折叠组 */
+[data-detail-rail] .rail-fold { flex: 0 0 auto; border: 0; border-top: 1px solid var(--line); border-radius: 0; margin: 0; }
+[data-detail-rail] .rail-fold-head { display: flex; width: 100%; align-items: center; gap: 8px; min-height: 36px; padding: 4px 2px; background: none; border: 0; border-radius: 0; text-align: left; color: var(--text); font-size: var(--fs-body); cursor: pointer; }
+[data-detail-rail] .rail-fold-head:disabled { cursor: not-allowed; opacity: .75; }
+[data-detail-rail] .rail-fold-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+[data-detail-rail] .rail-fold-head .fold-arrow { flex: 0 0 auto; color: var(--muted); }
+[data-detail-rail] .rail-fold-head .fold-name { flex: 0 0 auto; font-weight: 600; white-space: nowrap; }
+[data-detail-rail] .rail-fold-head .fold-sum { flex: 1 1 auto; min-width: 0; color: var(--muted); font-size: var(--fs-aux); text-align: right; overflow-wrap: anywhere; }
+[data-detail-rail] .rail-fold-body { padding: 0 2px 8px; display: flex; flex-direction: column; gap: 4px; }
+[data-detail-rail] .rail-fold-body .batch { width: 100%; }
+[data-detail-rail] .rail-fold.char-fold .rail-fold-body > :is(.skill-list, .trait-row, .risk, .equip-list) { margin: 0; }
+[data-detail-rail] .char-panel { gap: 6px; }
+[data-detail-rail] .char-panel .party-fold .party-block { border: 0; padding: 0; margin: 0; background: none; }
+[data-detail-rail] .rail-tools { display: flex; flex-direction: column; gap: 4px; }

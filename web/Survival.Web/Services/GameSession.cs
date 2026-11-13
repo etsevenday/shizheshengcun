@@ -1338,6 +1338,26 @@ public sealed partial class GameSession
         Notify();
     }
 
+    // BM4b（S14 Q589）：右栏次要信息折叠组。没有明确偏好时默认收起（UiFoldPrefs.RailDefaultOpen）；
+    // 人物页按 档案×角色×分组（装备／熟练度／词条沿原键），对象页按 档案×对象类型×分组（UiFoldPrefs.ObjectActor）。只是阅读偏好：不进存档、不推进时间、不改选择。
+
+    /// <summary>人物页某次要组是否展开（没有记录时收起）。</summary>
+    public bool IsRailFoldOpen(string group, string actorId = UiFoldPrefs.MainActor) =>
+        Fold.IsOpen(UiFoldPrefs.DefaultProfile, actorId, group, UiFoldPrefs.RailDefaultOpen);
+
+    /// <summary>对象页某类对象的某次要组是否展开（没有记录时收起）。</summary>
+    public bool IsObjectFoldOpen(string objectType, string group) =>
+        Fold.IsOpen(UiFoldPrefs.DefaultProfile, UiFoldPrefs.ObjectActor(objectType), group, UiFoldPrefs.RailDefaultOpen);
+
+    /// <summary>玩家点击次要组标题：切换并立即写入偏好（输入锁期间不处理）。</summary>
+    public void ToggleRailFold(string group, string actorId = UiFoldPrefs.MainActor)
+    {
+        if (FoldLocked) return;
+        Fold.Toggle(UiFoldPrefs.DefaultProfile, actorId, group, UiFoldPrefs.RailDefaultOpen);
+        try { _store.SetPref("fold", Fold.Serialize()); } catch { /* 本地存储不可用时只在本次有效 */ }
+        Notify();
+    }
+
     public int TipIndex { get; set; }
 
     public GameEngine E => Engine!;

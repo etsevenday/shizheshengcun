@@ -1,0 +1,21 @@
+@* BM4b（S14 §Q589）：常态右栏紧凑对象表头——表头旁小缩略图（主图与完整美术仍在原卡片）、名称（长名可换行）、来源行；
+   不在名称上方再堆同义大标题。名称仍是 h2（B44 点名称进入详情后焦点交给详情标题）。 *@
+<div class="rail-head">
+    @if (Thumb != null) { <div class="rail-thumb" aria-hidden="true">@Thumb</div> }
+    <div class="rail-id">
+        <h2>@Name</h2>
+        @if (!string.IsNullOrEmpty(Source)) { <div class="rail-src">@Source</div> }
+        @Sub
+    </div>
+</div>
+
+@code {
+    /// <summary>小缩略图（Icons.Markup）；null 不留缩略图位。</summary>
+    [Parameter] public RenderFragment? Thumb { get; set; }
+    /// <summary>名称（含品质标签、数量等原有写法）。</summary>
+    [Parameter, EditorRequired] public RenderFragment Name { get; set; } = default!;
+    /// <summary>来源行「{真实地点}[ · {区域}] · {真实持有人或来源}」或该对象原有的状态短行。</summary>
+    [Parameter] public string? Source { get; set; }
+    /// <summary>来源行下的原有短行（如另一张卡的数量）。</summary>
+    [Parameter] public RenderFragment? Sub { get; set; }
+}

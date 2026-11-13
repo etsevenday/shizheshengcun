@@ -21,26 +21,53 @@
     var sugg = e.CurrentSuggestions(s);
     var hint = e.CurrentHint(s);
     var routeKnown = s.Progress.Flags.Contains(GameEngine.FactCampRouteKnown);
-    <section class="task-box @(open ? "" : "folded")" aria-label="当前目标">
+    @* BM4b（S14 Q589）：外框内至多两行任务／操作提示摘要——第一行主目标短名（下一步全文在悬停提示与任务册）与收起键；
+       第二行原查看入口：建议、任务册、远行准备，有系统提示时加「系统提示」入口（点开读全文与原关闭／暂停按钮）；新完成一项时第二行临时换成完成提示。
+       点开建议或系统提示是玩家明确操作，另起列表，不占常驻两行。 *@
+    <section class="task-box rail-task @(open ? "" : "folded")" aria-label="当前目标">
         <div class="tc-head">
             <span class="tc-tag">主目标</span>
-            <span class="tc-title" title="@obj.Title">@obj.Title</span>
+            <span class="tc-title" title="@obj.Step">@obj.Title</span>
+            @if (!open && sugg.Count > 0)
+            {
+                <span class="tc-count" aria-label="@($"另有{sugg.Count}条建议")">建议 @(sugg.Count)</span>
+            }
             <button type="button" class="tc-min" title="@(open ? "收起任务框（真实危险提示不受影响）" : "展开任务框")" aria-label="@(open ? "收起任务框" : "展开任务框")" aria-expanded="@open" @onclick="Toggle">@(open ? "–" : "+")</button>
         </div>
         @if (open)
         {
-            <div class="tc-step" title="@obj.Step">@obj.Step</div>
-            <div class="tc-row">
-                @if (sugg.Count > 0)
-                {
-                    <button type="button" class="tc-link @(showSugg ? "on" : "")" aria-expanded="@showSugg" @onclick="() => showSugg = !showSugg">建议 @(sugg.Count) @(showSugg ? "▾" : "▸")</button>
-                }
-                <button type="button" class="tc-link" title="打开任务册（完整18项、已完成与提示）" disabled="@G.DialogueLocked" @onclick='() => G.OpenPanel("goals")'>任务册</button>
-                @if (routeKnown)
-                {
-                    <button type="button" class="tc-link" title="路线、当前状态与随身预览，确认远行准备（不耗时）" disabled="@G.DialogueLocked" @onclick='() => G.OpenPanel("journey")'>远行准备</button>
-                }
-            </div>
+            @if (flash != null)
+            {
+                <div class="tc-done" role="status"><span class="tc-sys">系统</span><span class="tc-hint-text" title="@flash">@flash</span></div>
+            }
+            else
+            {
+                <div class="tc-row">
+                    @if (sugg.Count > 0)
+                    {
+                        <button type="button" class="tc-link @(showSugg ? "on" : "")" aria-expanded="@showSugg" @onclick="() => { showSugg = !showSugg; showHint = false; }">建议 @(sugg.Count) @(showSugg ? "▾" : "▸")</button>
+                    }
+                    <button type="button" class="tc-link" title="打开任务册（完整18项、已完成与提示）" disabled="@G.DialogueLocked" @onclick='() => G.OpenPanel("goals")'>任务册</button>
+                    @if (routeKnown)
+                    {
+                        <button type="button" class="tc-link" title="路线、当前状态与随身预览，确认远行准备（不耗时）" disabled="@G.DialogueLocked" @onclick='() => G.OpenPanel("journey")'>远行准备</button>
+                    }
+                    @if (hint is { } hh)
+                    {
+                        <button type="button" class="tc-link tc-hint-link @(showHint ? "on" : "")" aria-expanded="@showHint" title="@hh.Text" @onclick="() => { showHint = !showHint; showSugg = false; }">系统提示 @(showHint ? "▾" : "▸")</button>
+                    }
+                </div>
+            }
+            @if (showHint && hint is { } h)
+            {
+                <div class="tc-hint" role="note">
+                    <span class="tc-sys">系统提示</span><span class="tc-hint-text">@h.Text</span>
+                    <span class="tc-hint-btns">
+                        <button type="button" class="tc-link" @onclick="() => G.DismissHint(h.TaskId)">关闭这条</button>
+                        <button type="button" class="tc-link" title="只关闭中性操作提示；剧情、危险提示与任务不受影响，可在任务册恢复" @onclick="() => G.SetHintsPaused(true)">暂停后续提示</button>
+                    </span>
+                </div>
+            }
             @if (showSugg)
             {
                 <ul class="tc-sugg">
@@ -50,24 +77,6 @@
                     }
                 </ul>
             }
-            @if (flash != null)
-            {
-                <div class="tc-done" role="status"><span class="tc-sys">系统</span>@flash</div>
-            }
-            else if (hint is { } h)
-            {
-                <div class="tc-hint" role="note">
-                    <span class="tc-sys">系统提示</span><span class="tc-hint-text" title="@h.Text">@h.Text</span>
-                    <span class="tc-hint-btns">
-                        <button type="button" class="tc-link" @onclick="() => G.DismissHint(h.TaskId)">关闭这条</button>
-                        <button type="button" class="tc-link" title="只关闭中性操作提示；剧情、危险提示与任务不受影响，可在任务册恢复" @onclick="() => G.SetHintsPaused(true)">暂停后续提示</button>
-                    </span>
-                </div>
-            }
-        }
-        else if (sugg.Count > 0)
-        {
-            <span class="tc-count" aria-label="@($"另有{sugg.Count}条建议")">建议 @(sugg.Count)</span>
         }
     </section>
 }
@@ -77,6 +86,7 @@
     public const string FoldKey = "task_corner";
 
     private bool showSugg;
+    private bool showHint;
     private PrologueObjectiveView? _held;
     private string? flash;
     private string? _pending;
