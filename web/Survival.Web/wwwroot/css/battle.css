@@ -34,6 +34,9 @@
 /* 战斗对白与二级抽屉覆盖场景、操作台与右栏（顶条、队列、底反馈仍可见） */
 .bfs-dlg, .bfs-drawer { grid-row: 3 / span 2; grid-column: 1 / -1; position: relative; z-index: 40; }
 .bfs-dlg > .dlg-layer { position: absolute; inset: 0; }
+/* BM4b：Q585 去大框只改普通主界面对白；全屏战斗内的对白仍保留原整块铁框底板（战斗界面留给 B34） */
+.bfs-dlg > .dlg-layer { padding: 10px 12px; border: 1px solid var(--ink2-meter-gold); border-radius: 6px; box-shadow: 0 8px 28px #000a;
+  background: var(--iron-texture), linear-gradient(color-mix(in srgb, var(--ink2-dark) 96%, transparent), color-mix(in srgb, var(--ink2-dark) 96%, transparent)); }
 
 /* ── 顶条 ── */
 .bfs-top { display: flex; align-items: center; gap: 14px; padding: 0 10px; background: #11181bf2; border: 1px solid #6b5c3f; border-radius: 6px; overflow: hidden; }

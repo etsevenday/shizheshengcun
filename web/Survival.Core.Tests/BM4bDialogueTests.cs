@@ -33,6 +33,9 @@ public class BM4bDialogueTests : TestBase
         Assert.That(css, Does.Contain(".dlg-main { align-self: end; max-height: 100%;"));
         Assert.That(Web("wwwroot", "css", "materials.css"), Does.Not.Contain(".pause-layer, .dlg-layer)"), "不再给对白层套铁框");
         Assert.That(Web("wwwroot", "css", "wasteland.css"), Does.Not.Contain(".dlg-layer { background:"));
+        // 全屏战斗内对白（BattleScreen 的 .bfs-dlg）仍保留原整块铁框底板，战斗界面不在本批改动
+        Assert.That(Web("wwwroot", "css", "materials.css"), Does.Contain(".pause-layer, .bfs-dlg > .dlg-layer)"));
+        Assert.That(Web("wwwroot", "css", "battle.css"), Does.Contain(".bfs-dlg > .dlg-layer { padding: 10px 12px; border: 1px solid var(--ink2-meter-gold);"));
         var layer = Web("Components", "DialogueLayer.razor");
         Assert.That(layer.IndexOf("dlg-side left", StringComparison.Ordinal), Is.LessThan(layer.IndexOf("dlg-main", StringComparison.Ordinal)));
         Assert.That(layer.IndexOf("dlg-main", StringComparison.Ordinal), Is.LessThan(layer.IndexOf("dlg-side right", StringComparison.Ordinal)), "主角左、对象右不交换");

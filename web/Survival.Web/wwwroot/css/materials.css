@@ -22,7 +22,7 @@
 
 /* Keep a plain border and base colour as the missing-resource fallback.
    The paint stops at the padding box; gaps in the frame reveal the scene. */
-.wasteland :is(.panel, .sub-panel, .apop, .st-pop, .menu-box, .cprog, .pause-layer),
+.wasteland :is(.panel, .sub-panel, .apop, .st-pop, .menu-box, .cprog, .pause-layer, .bfs-dlg > .dlg-layer),
 .title-card {
   border-color: var(--ink2-paper-bottom);
   border-radius: 2px;
