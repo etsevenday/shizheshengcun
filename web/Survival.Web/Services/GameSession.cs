@@ -891,8 +891,9 @@ public sealed partial class GameSession
         Panel = next;
         if (_chain.Count == 0) _chainAt = null;
         if (restore) RestorePanel(next!);
-        // BM4a（Q590）：覆盖打开后焦点进新面板首个合法控件（原层的焦点与滚动已由 app.js 按层记下）
-        if (covered && !restore) PanelFocusPending = true;
+        // BM4a（Q590）：新打开的一级面板（覆盖打开，或从无面板画面打开）焦点进新面板首个合法控件，不留在被盖住的下层卡上
+        // （BM4a.6 试玩修复 B2：否则下层卡的键盘焦点提示浮在新面板上）；原层的焦点与滚动已由 app.js 按层记下，恢复层不走这里
+        if (next != null && next != from && !restore && IsChainPanel(next)) PanelFocusPending = true;
         // BM4a：整条链关完回到原画面，覆盖打开前显示着的物品操作盘仍有效就原样再显示
         if (next == null && from != null && _cardPopBase != null)
         {

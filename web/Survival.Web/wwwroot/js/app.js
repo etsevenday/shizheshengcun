@@ -813,20 +813,41 @@ window.survivalPop = (function () {
     },
     // B32g（逐字稿 §1.5 Q401 选 C）：打开新的一级浏览／工具面板时 .NET 已一律收起物品操作盘（不论是否盖住来源）；等盘卸下、四轨遮罩（inert）解除后，
     // 焦点交给新面板（.panel-host；全屏确认层 .overflow-layer）第一个可用控件。焦点已在该面板里就不动；盘仍在（未卸下）时逐帧再等，最多约 20 帧。
+    // BM4a.6 试玩修复（Q590「焦点进入新面板首个合法控件」）：
+    // B1 输入控件（下拉、文字框、数量框）不作为落点——它们按 B43 吞掉顶栏字母，覆盖打开地图后焦点落在层级下拉框，M／L／C 就都失效了；
+    // 面板本身就是确认区（休息、制作、编队、远行准备：.sub-panel[data-enter-scope][tabindex]）时焦点交给面板，Enter 仍归该区唯一确认（B43）；
+    // 面板里只有输入控件时回该面板标题（同 survivalPanels 恢复失效时）。
     focusPanel: function () {
       var tries = 0;
+      function typing(c) {
+        var tg = c.tagName;
+        if (tg === 'SELECT' || tg === 'TEXTAREA' || c.isContentEditable) return true;
+        if (tg !== 'INPUT') return false;
+        return ['button', 'submit', 'reset', 'checkbox', 'radio', 'range', 'color', 'file', 'image'].indexOf((c.type || 'text').toLowerCase()) < 0;
+      }
       function go() {
         if (document.querySelector('.wasteland .center-scroll[data-disk-inert]')) { if (++tries < 20) requestAnimationFrame(go); return; }
         var hosts = Array.prototype.filter.call(document.querySelectorAll(COVER_SEL), function (c) { return c.offsetWidth > 0 && c.offsetHeight > 0 && !(c.closest && c.closest('[inert]')); });
         var ae = document.activeElement;
         for (var h = 0; h < hosts.length; h++) if (ae && ae !== document.body && hosts[h].contains(ae)) return;
         for (var k = 0; k < hosts.length; k++) {
+          var sp = hosts[k].querySelector('.sub-panel');
+          if (sp && sp.matches('[data-enter-scope][tabindex]') && !(sp.closest && sp.closest('[inert]'))) {
+            try { sp.focus({ preventScroll: true }); } catch (e) { try { sp.focus(); } catch (e2) { } }
+            if (document.activeElement === sp) return;
+          }
           var list = hosts[k].querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
           for (var i = 0; i < list.length; i++) {
             var c = list[i];
-            if (c.disabled || (c.closest && c.closest('[inert]')) || !(c.offsetWidth || c.offsetHeight)) continue;
+            if (c.disabled || typing(c) || (c.closest && c.closest('[inert]')) || !(c.offsetWidth || c.offsetHeight)) continue;
             try { c.focus({ preventScroll: true }); } catch (e) { try { c.focus(); } catch (e2) { } }
             if (document.activeElement === c) return;
+          }
+          var title = hosts[k].querySelector('#fm-title, h2, h3');
+          if (title && !(title.closest && title.closest('[inert]'))) {
+            if (!title.hasAttribute('tabindex')) title.setAttribute('tabindex', '-1');
+            try { title.focus({ preventScroll: true }); } catch (e) { try { title.focus(); } catch (e2) { } }
+            if (document.activeElement === title) return;
           }
         }
         if (!hosts.length && ++tries < 20) requestAnimationFrame(go);

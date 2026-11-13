@@ -195,6 +195,36 @@ public class BM4aPanelReturnTests : TestBase
         Assert.That(sw, Does.Contain("if (_cardPopBase == Selected.Key) CardPopCovered = false;"));
     }
 
+    /// <summary>
+    /// BM4a.6 试玩修复 B1、B2（§Q590「仅最上层可见且接收焦点」「焦点进入新面板首个合法控件」，Q590-A02「再按当前页快捷键关闭」）：
+    /// 新打开的一级面板（覆盖打开或从无面板画面打开）都把焦点交进新面板，不留在被盖住的下层卡上（其焦点提示不浮在面板上）；恢复层不走这里。
+    /// 落点不取下拉／文字／数量框（B43 规定它们吞掉顶栏字母：覆盖打开地图后焦点落在层级下拉框，M／L／C 都失效）；
+    /// 面板本身是确认区时交给面板（Enter 仍归唯一确认），只有输入控件时回标题。下拉框、数量框里字母不当快捷键的原规则不改。
+    /// </summary>
+    [Test]
+    public void BM4a6_NewPanelTakesFocusButNotIntoTypingControls()
+    {
+        var session = Web("Services", "GameSession.cs");
+        var sw = Slice(session, "private void SwitchPanel(", "public void Guide(");
+        Assert.That(sw, Does.Contain("if (next != null && next != from && !restore && IsChainPanel(next)) PanelFocusPending = true;"),
+            "从无面板画面打开同样交焦点（B2），恢复层仍由 survivalPanels.restore 取回原焦点");
+        Assert.That(sw, Does.Not.Contain("if (covered && !restore) PanelFocusPending = true;"));
+
+        var js = Web("wwwroot", "js", "app.js");
+        var fp = js.Substring(js.IndexOf("focusPanel: function () {"));
+        fp = fp.Substring(0, fp.IndexOf("\n    },"));
+        Assert.That(fp, Does.Contain("if (tg === 'SELECT' || tg === 'TEXTAREA' || c.isContentEditable) return true;"), "下拉、文字区不作落点（B1）");
+        Assert.That(fp, Does.Contain("if (c.disabled || typing(c) ||"), "输入控件跳过");
+        Assert.That(fp, Does.Contain("sp.matches('[data-enter-scope][tabindex]')"), "面板本身是确认区时交给面板，Enter 仍归唯一确认");
+        Assert.That(fp, Does.Contain("hosts[k].querySelector('#fm-title, h2, h3')"), "只有输入控件时回标题");
+        Assert.That(fp, Does.Contain("hosts[h].contains(ae)) return;"), "焦点已在新面板里就不动");
+
+        // 原 B43 输入控件规则不改：下拉、文字框、数量框里普通字母仍不当顶栏快捷键
+        var keys = js.Substring(js.IndexOf("hookKeys: function (dotnet) {"));
+        Assert.That(keys, Does.Contain("if (tg === 'TEXTAREA' || tg === 'SELECT' || el.isContentEditable) return true;"));
+        Assert.That(keys, Does.Contain("if (k !== 'Escape' || mod) return;"));
+    }
+
     private static string Verbatim() => File.ReadAllText(Path.Combine(Root(), "doc", "策划案", "重墨像素风界面与卡片 v0.9", "重墨 V2 开工裁定与界面逐字稿.md"));
 
     private static string Slice(string text, string from, string to)
