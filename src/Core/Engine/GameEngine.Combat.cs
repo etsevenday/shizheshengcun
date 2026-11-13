@@ -333,6 +333,7 @@ namespace Survival.Core.Engine
                 Surprise = surprise,
                 Context = context,
                 Tutorial = tutorial,
+                LogComplete = true,   // B34：新战斗的记录从开战起完整
                 // 开战锁定两个武器槽（B3 H6）；停在第一个有武器的页，两槽都空才是武器Ⅰ拳页（B3a H3）；战内不换装、战后不回写
                 ActiveWeaponSlot = DefaultWeaponPage(s),
             };
@@ -479,8 +480,7 @@ namespace Survival.Core.Engine
         {
             var b = s.Battle;
             if (b == null) return;
-            b.Log.Add($"第{b.Round}轮 · {text}");
-            if (b.Log.Count > 80) b.Log.RemoveRange(0, b.Log.Count - 80);
+            b.Log.Add($"第{b.Round}轮 · {text}");   // B34（Q528.2／Q570）：本场全部保留，不再截存 80 条
         }
 
         // ───────────── 轮与队列 ─────────────

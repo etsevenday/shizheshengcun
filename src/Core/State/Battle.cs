@@ -434,8 +434,18 @@ namespace Survival.Core.State
         /// </summary>
         public List<string> Allies { get; set; } = new List<string> { GameState.PlayerId };
         public List<BattleLoot> Loot { get; set; } = new List<BattleLoot>();
-        /// <summary>战斗日志（最近 80 条），界面逐条展示。</summary>
+        /// <summary>
+        /// 战斗日志：本场开战至今全部已提交战报（B34，S14 Q528.2／Q570：不再截存 80 条），界面取最近 5 条与全记录。
+        /// </summary>
         public List<string> Log { get; set; } = new List<string>();
+        /// <summary>
+        /// B34（S14 Q528.2）：本场记录是否从开战起完整。新战斗建立时为 true；旧档读入时没有这个字段（null），
+        /// 读档按“当时已有不足 80 条＝完整、满 80 条＝较早记录可能被旧版截掉”定一次（SaveMigrator.NormalizeBattleLog），之后不再变。
+        /// </summary>
+        public bool? LogComplete { get; set; }
+        /// <summary>旧档进行中的战斗较早记录可能已被旧版 80 条截存删掉（只有 LogComplete == false）。</summary>
+        [Newtonsoft.Json.JsonIgnore]
+        public bool LogMayBeIncomplete => LogComplete == false;
         /// <summary>本场已结算的世界 tick 次数（每有效轮一次）。</summary>
         public int Ticks { get; set; }
         /// <summary>本场累计：攻击次数、消耗弹药、获得经验等，结束时写进结果。</summary>
@@ -543,6 +553,7 @@ namespace Survival.Core.State
             c.FirstStrikeDamage = FirstStrikeDamage == null ? null : new List<string>(FirstStrikeDamage);
             c.Loot = Loot.Select(l => l.Clone()).ToList();
             c.Log = new List<string>(Log);
+            c.LogComplete = LogComplete;
             return c;
         }
     }

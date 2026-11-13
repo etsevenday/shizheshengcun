@@ -150,6 +150,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema48) From48To49(s);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
+            NormalizeBattleLog(s);
             return notes;
         }
 
@@ -1483,6 +1484,19 @@ namespace Survival.Core.Save
             EnsureResourceStates(s, config);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);   // B41a：新版敌踪上线后的第一次读档采纳新版敌踪卡模型（已采纳不做事）
+            NormalizeBattleLog(s);
+        }
+
+        /// <summary>旧版战斗日志截存上限（B34 前）：满这么多条的旧战斗无法确认早段完整。</summary>
+        public const int LegacyBattleLogCap = 80;
+
+        /// <summary>
+        /// B34（S14 Q528.2）：旧档里进行中的战斗没有 LogComplete——当时不足 80 条说明从未被截，记为完整；满 80 条记为“较早记录可能未保存”。
+        /// 已定过的不动（幂等）；不补造、不删除任何已有记录。
+        /// </summary>
+        public static void NormalizeBattleLog(GameState s)
+        {
+            if (s.Battle is { LogComplete: null } b) b.LogComplete = b.Log.Count < LegacyBattleLogCap;
         }
 
         /// <summary>
