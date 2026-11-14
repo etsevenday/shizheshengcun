@@ -212,7 +212,8 @@ namespace Survival.Core.Engine
                     var p = PreviewCommand(s, cmd);
                     apCost = p.Ap;
                     energyCost = p.EnergyCost;
-                    sum += p.Targets.Sum(t => sp.Hits * ExpectedHit(t));
+                    // 多段：每段各算后相加；词条平加只在同一目标第一下（同结算），后续段按无平加的同一区间
+                    sum += p.Targets.Sum(t => ExpectedHit(t) + Math.Max(0, sp.Hits - 1) * ExpectedHitNoFlat(t, sp.Weapon));
                     count++;
                 }
                 if (count == 0) continue;
@@ -238,6 +239,17 @@ namespace Survival.Core.Engine
         {
             var crit = Math.Max(0, Math.Min(1, t.CritChance));
             return Math.Max(0, Math.Min(1, t.HitChance)) * ((1 - crit) * (t.DamageMin + t.DamageMax) / 2 + crit * (t.CritDamageMin + t.CritDamageMax) / 2);
+        }
+
+        /// <summary>同一目标第二段起的单次期望（无词条平加；区间沿原预演的倍率、护甲、穿透与格挡口径）。</summary>
+        private double ExpectedHitNoFlat(BattleTargetPreview t, WeaponConfig w)
+        {
+            if (t.Flat <= 1e-12) return ExpectedHit(t);
+            var m = Config.CombatMath;
+            var armor = Math.Max(0, t.Armor - t.Penetration);
+            double Dmg(double raw, double critF) => AttackDamage(raw * t.Multiplier * critF, 0, armor, t.Guarded, m.GuardFactor);
+            var crit = Math.Max(0, Math.Min(1, t.CritChance));
+            return Math.Max(0, Math.Min(1, t.HitChance)) * ((1 - crit) * (Dmg(w.DamageMin, 1) + Dmg(w.DamageMax, 1)) / 2 + crit * (Dmg(w.DamageMin, m.CritFactor) + Dmg(w.DamageMax, m.CritFactor)) / 2);
         }
 
         /// <summary>
