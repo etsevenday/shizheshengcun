@@ -19,7 +19,7 @@
      title="@tip" data-tip="@tip"
      @onclick="Select" @onclick:stopPropagation="true" @onkeydown="Key" @onkeydown:stopPropagation="true">
     <div class="ff-head">
-        <span class="pc-ico" data-drag="@(ReadOnly ? null : $"card:{key}")" data-drag-title="@name" data-drag-from="@where">@Icons.Markup(Item.ItemId)</span>
+        <span class="pc-ico" data-drag="@(ReadOnly || NoDrag ? null : $"card:{key}")" data-drag-title="@name" data-drag-from="@where">@Icons.Markup(Item.ItemId)</span>
         <span class="pc-text"><span class="pc-name">@name</span>@if (Slot.HasValue) {<span class="pc-status">加工位@(Slot)</span>}</span>
         @if (!ReadOnly)
         {
@@ -55,6 +55,8 @@
     [Parameter] public bool ReadOnly { get; set; }
     /// <summary>B45：中央火堆加工菜单里的明确选择。</summary>
     [Parameter] public EventCallback<Selection> OnPick { get; set; }
+    /// <summary>BM5b1（S14 Q601）：中央加工菜单主层外不从加工位食材发起拖动（明确移入锅只在主层）。</summary>
+    [Parameter] public bool NoDrag { get; set; }
 
     private void Select()
     {

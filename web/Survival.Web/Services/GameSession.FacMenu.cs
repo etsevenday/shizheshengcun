@@ -52,6 +52,11 @@ public sealed partial class GameSession
         /// 须另选可用材料；不自动换料／换批／换工位。下一次明确选择时清掉。
         /// </summary>
         public string? SrcWhy { get; set; }
+        /// <summary>
+        /// BM5b1（S14 Q601）：当前来源是为哪个执行目标选的（<see cref="FireMenuTargetKey"/>；主层未选目标时为 null）。
+        /// 明确切到不同工位、打开锅或进入新的内容目标时，与之不同即清旧来源／数量文本／提交意图（<see cref="FireMenuRetarget"/>）。
+        /// </summary>
+        public string? SourceFor { get; set; }
     }
 
     /// <summary>B45b（Q582）：菜单自己的放入正在提交（放入加工位／装水／放入食材、煅烧确认），核对时把新内容认作本菜单的放入，不当成“被别处占用”。</summary>
@@ -150,6 +155,7 @@ public sealed partial class GameSession
         m.Taken = false;   // Q582：明确改选／进入新内容才换目标
         m.Fail = null;
         m.SrcWhy = null;
+        FireMenuRetarget();
         SyncRight(slots[k] is ItemInstance it ? ItemSel(E, it) : FireSelection);
     }
 
@@ -163,6 +169,7 @@ public sealed partial class GameSession
         m.Taken = false;
         m.Fail = null;
         m.SrcWhy = null;
+        FireMenuRetarget();
         SyncRight(sel);
     }
 
@@ -185,6 +192,7 @@ public sealed partial class GameSession
         m.Lost = null;
         m.Fail = null;
         m.SrcWhy = null;
+        FireMenuRetarget();
         // Q583（选 A）：回父层后键盘焦点回到刚离开的加工位卡（锅里内容回锅这一层时回锅卡）；只聚焦、不执行
         if (level < from && left is int k) FocusIdPending = FireMenuReturnFocus(Math.Max(0, level), k);
         SyncRight(CurrentFireMenuObject());
@@ -223,6 +231,7 @@ public sealed partial class GameSession
         if (FireMenuBlockWhy(it) != null) return;
         if (m.SourceId != it.InstanceId) m.Qty = "1";
         m.SourceId = it.InstanceId;
+        m.SourceFor = FireMenuTargetKey();
         m.Lost = null;
         m.Fail = null;
         m.SrcWhy = null;
@@ -234,6 +243,38 @@ public sealed partial class GameSession
             && (m.Taken || FireMenuMaxFor(it, slot, pot, out var why) > 0 && why == null))
             FocusIdPending = FireMenuQtyId;
         Notify();
+    }
+
+    /// <summary>
+    /// BM5b1（Q601）：当前层的执行目标键——主层（没有目标）为 null；空位（含 Q582 保留草稿的被占位）「slot:{k}」；锅这一层「pot:{k}:{锅实例}」；
+    /// 其余没有来源区的层（有内容的加工位、直烤／煅烧内容、锅里的水或食材）各自一键，进入即算换了执行目标。
+    /// </summary>
+    private string? FireMenuTargetKey()
+    {
+        if (FireMenu is not { } m) return null;
+        if (FireMenuTarget(out var slot, out var pot))
+            return slot is not int k ? null : pot != null ? $"pot:{k}:{pot.InstanceId}" : $"slot:{k}";
+        return $"view:{m.Slot}:{m.SlotItem}:{m.Inner?.Key}";
+    }
+
+    /// <summary>
+    /// BM5b1（S14 Q601）：明确换层后核对来源草稿——来源是为别的目标选的（含回到主层），清旧来源、数量文本回原默认 1、清旧提交意图；
+    /// 主层先选、尚未绑定目标的来源在第一次明确进入目标时绑定到它（沿 Q588 先选来源再选目标，对新目标不可放入时由核对清掉并给原因）。
+    /// 只在玩家明确的层级操作里调用；右栏只读同步、悬停、改同一动作数量、内容变化核对都不经过这里。
+    /// </summary>
+    private void FireMenuRetarget()
+    {
+        if (FireMenu is not { } m) return;
+        var key = FireMenuTargetKey();
+        if (m.SourceId == null) { m.SourceFor = null; return; }
+        if (m.SourceFor == null) { m.SourceFor = key; return; }
+        if (m.SourceFor == key) return;
+        m.SourceId = null;
+        m.SourceFor = null;
+        m.Qty = "1";
+        m.Taken = false;
+        m.Fail = null;
+        m.SrcWhy = null;
     }
 
     /// <summary>
@@ -290,6 +331,7 @@ public sealed partial class GameSession
             if (res.Ok)
             {
                 m.SourceId = null;
+                m.SourceFor = null;
                 m.Taken = false;
                 m.Fail = null;
                 m.SrcWhy = null;
@@ -306,6 +348,36 @@ public sealed partial class GameSession
         if (FireMenu is not { } m) return;
         m.Fail = why;
         Notify();
+    }
+
+    /// <summary>
+    /// BM5b1（S14 Q601）：主层「移入锅（加工位{目标序号}）」与拖工位食材到同火源锅（<see cref="ExecuteDrop"/>）的同一提交：
+    /// 内核原子重验后一次 0 分钟移物；成功留在主层、清投放草稿，焦点回目标锅所在工位卡（Q604）；失败留主层与原物、记真实原因，不自动再投。
+    /// </summary>
+    public ActionResult FireMenuMove(InstantRequest req)
+    {
+        _fireMenuOwnPut = true;
+        ActionResult res;
+        try { res = Instant(req); }
+        finally { _fireMenuOwnPut = false; }
+        if (FireMenu is { } m)
+        {
+            if (res.Ok)
+            {
+                m.SourceId = null;
+                m.SourceFor = null;
+                m.Qty = "1";
+                m.Taken = false;
+                m.Fail = null;
+                m.SrcWhy = null;
+                m.Lost = null;
+                if (!res.Duplicate && req.TargetSlot is int to) FocusIdPending = FireMenuSlotId(to);
+            }
+            else m.Fail = res.Reason;
+            Notify();
+        }
+        else if (res.Ok) ReconcileSelection();
+        return res;
     }
 
     public void FireMenuSetQty(string text)

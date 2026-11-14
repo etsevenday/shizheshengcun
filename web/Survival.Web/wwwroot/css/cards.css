@@ -448,6 +448,10 @@
 .fire-menu .fm-slot { cursor: pointer; min-width: 0; }
 .fire-menu .fm-slot.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .fire-menu .fm-slot:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* BM5b1（Q601）：主层食材工位卡上的「移入锅（加工位{目标序号}）」——按内容定宽，禁用时原具体原因换行显示在按钮下 */
+.fire-menu .fm-move { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+.fire-menu .fm-move-btn { width: auto; }
+.fire-menu .fm-move-why { white-space: normal; }
 .fire-menu .fm-obj { display: flex; flex-direction: column; gap: 6px; }
 .fire-menu .fm-obj > .tbar { box-shadow: none; }
 .fire-menu .fm-src { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #00000022; }

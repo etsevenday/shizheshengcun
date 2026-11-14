@@ -2124,6 +2124,8 @@ public sealed partial class GameSession
             if (E.Item(head.ItemId).IsStackable)
                 return TransferBatch(head.Owner, head.ItemId, head.ExpiresAt, count, r.Kind == InstantKind.Pickup, requestId, GameEngine.BatchKeyOf(head));
         }
+        // BM5b1（Q601）：拖工位食材到同火源锅与主层「移入锅」同一提交（只移这一份，不读拖动数量）
+        if (r.Kind == InstantKind.MoveToPot) { r.RequestId = requestId; return FireMenuMove(r); }
         r.Count = Math.Max(1, count);
         if (r.Kind == InstantKind.Reorder) r.Count = 1;
         r.RequestId = requestId;

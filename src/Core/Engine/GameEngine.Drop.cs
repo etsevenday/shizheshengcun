@@ -95,7 +95,7 @@ namespace Survival.Core.Engine
     /// 拖拽动词。Ignite 是 v0.7 第 4.1 节的点火专用修订：打火器松手即开始点火（不再打开需要再按“开始”的预览），
     /// 其余耗时交互（指定工具采集、配方）仍是预览类。
     /// </summary>
-    public enum DropVerb { None, Reorder, Transfer, AddFuel, Ignite, FillPot, Decant, PutInFire, PutFood, TakeOut, PreviewGatherTool, PreviewRecipe }
+    public enum DropVerb { None, Reorder, Transfer, AddFuel, Ignite, FillPot, Decant, PutInFire, PutFood, TakeOut, PreviewGatherTool, PreviewRecipe, MoveToPot }
 
     /// <summary>落点解析结果：即时类带 Instant（壳直接提交），开始类带 Action（壳松手即开始），预览类带 Action 或候选配方（壳打开面板预选）。</summary>
     public sealed class DropIntent
@@ -382,6 +382,13 @@ namespace Survival.Core.Engine
         /// <summary>食材落到锅（锅卡或锅食材区）：即时放进该锅的真实内容，不冒泡成火堆烤制（统一卡片案第 5 节）。</summary>
         private DropIntent DropFoodOnPot(GameState s, ItemInstance head, ItemInstance pot)
         {
+            // BM5b1（S14 Q601）：已实际在火堆加工位里的食材拖到同一火源另一加工位的锅——明确移入锅（原子、0 分钟），其余仍按原“先取出再放进锅”
+            if (head.InFacility && pot.InFacility && MoveToPotRequest(s, head, pot) is InstantRequest mv)
+            {
+                var block = MoveToPotBlocked(s, mv);
+                if (block != null) return DropIntent.No(block);
+                return Instant(DropVerb.MoveToPot, MoveToPotHint(mv.Slot!.Value + 1, ItemName(head.ItemId), mv.TargetSlot!.Value + 1, ItemName(pot.ItemId)), mv);
+            }
             var max = MaxPutFood(s, head, pot, out var why);
             if (why != null) return DropIntent.No(why);
             return Instant(DropVerb.PutFood, $"放进{ItemName(pot.ItemId)}食材区（{PotFoodHint(s, pot)}）",

@@ -122,7 +122,18 @@
                                         }
                                         else
                                         {
-                                            <FoodCard Item="it" Slot="@(si + 1)" OnPick="_ => G.FireMenuPickSlot(si)" />
+                                            @* BM5b1（S14 Q601）：主层才可把这份加工位食材拖到同火源另一位的锅；触屏／键盘等价入口「移入锅（加工位{目标序号}）」——
+                                               只在另一位确有锅时出现，独立激活才提交（聚焦不执行、不作无来源默认 Enter），不能移入时禁用并显示原具体原因 *@
+                                            <FoodCard Item="it" Slot="@(si + 1)" NoDrag="@(level != 0)" OnPick="_ => G.FireMenuPickSlot(si)" />
+                                            @if (level == 0 && e.MoveToPotOptionFor(s, si) is { } mv)
+                                            {
+                                                var mvWhy = busy && mv.Reason == null ? "行动进行中，暂不能整理物品" : mv.Reason;
+                                                <div class="fm-move">
+                                                    <button type="button" class="secondary fm-move-btn" disabled="@(mvWhy != null)" title="@mv.Hint" aria-description="@mv.Hint"
+                                                            @onclick="ev => Move(ev, mv)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@mv.Label</button>
+                                                    @if (mvWhy != null) { <span class="tiny warn-text fm-move-why">@mvWhy</span> }
+                                                </div>
+                                            }
                                         }
                                     </div>
                                 }
@@ -396,6 +407,15 @@
     };
 
     private void PickSource(ItemInstance it) => G.FireMenuPickSource(it);
+
+    /// <summary>BM5b1（Q601）：「移入锅（加工位{目标序号}）」——双击的第二下不再提交；请求号绑定这一份当前放入序，连按同一请求只生效一次。</summary>
+    private void Move(MouseEventArgs ev, MoveToPotOption mv)
+    {
+        if (ev.Detail > 1) return;
+        var r = mv.Request;
+        r.RequestId = $"mtp-{mv.Food.InstanceId}-{mv.Food.PlacedOrder}-{mv.Pot.InstanceId}";
+        G.FireMenuMove(r);
+    }
 
     /// <summary>Q588 正式短标与只读控件名（逐字稿「Q588 禁用材料」）。</summary>
     private const string NotPlaceable = "不可放入";

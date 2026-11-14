@@ -154,7 +154,7 @@ namespace Survival.Core.Engine
         public string ResultText { get; set; } = "";
     }
 
-    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe, StoreCabinet, TakeCabinet }
+    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe, StoreCabinet, TakeCabinet, MoveToPot }
 
     public sealed class InstantRequest
     {
@@ -175,6 +175,10 @@ namespace Survival.Core.Engine
         public CharcoalPlan? CharcoalPlan { get; set; }
         /// <summary>B45（S14 Q557）：放进火堆时明确的加工位（0 起）。带上时只放这一位、最多 1 份／1 口锅，被占用整单拒绝；null = 整卡原规则（自动第一空位）。</summary>
         public int? Slot { get; set; }
+        /// <summary>BM5b1（S14 Q601）：同火堆明确移入锅的目标加工位（0 起；锅所在那一位）。</summary>
+        public int? TargetSlot { get; set; }
+        /// <summary>BM5b1（S14 Q601）：提交时绑定的预期食材种类；源实例已变成别的物品（如生肉已烤成烤肉）整次拒绝。</summary>
+        public string? ExpectItemId { get; set; }
 
         public static InstantRequest Pickup(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Pickup, InstanceId = instanceId, Count = count };
         public static InstantRequest Drop(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Drop, InstanceId = instanceId, Count = count };
@@ -191,6 +195,12 @@ namespace Survival.Core.Engine
         /// <summary>食材放进指定锅的食材区。</summary>
         public static InstantRequest PutFoodInPot(int foodInstanceId, int potInstanceId, int count = 1) =>
             new InstantRequest { Kind = InstantKind.PutFoodInPot, InstanceId = foodInstanceId, TargetInstanceId = potInstanceId, Count = count };
+        /// <summary>
+        /// BM5b1（S14 Q601）：同一火堆加工位{fromSlot}里的这一份食材原子移入加工位{toSlot}里的锅（0 分钟，等价“取到当前地面再放入该锅”）。
+        /// 绑定源实例／源位／预期种类与目标锅实例／目标位，任一失效整次拒绝。
+        /// </summary>
+        public static InstantRequest MoveToPot(int foodInstanceId, int fromSlot, string expectItemId, int potInstanceId, int toSlot) =>
+            new InstantRequest { Kind = InstantKind.MoveToPot, InstanceId = foodInstanceId, Slot = fromSlot, ExpectItemId = expectItemId, TargetInstanceId = potInstanceId, TargetSlot = toSlot };
         /// <summary>从火堆取下锅（整锅）或取出火堆/锅里的一份食材，到随身或当前地面。</summary>
         public static InstantRequest TakeOut(int instanceId, string zone) => new InstantRequest { Kind = InstantKind.TakeOut, InstanceId = instanceId, Zone = zone };
         /// <summary>Q111 火堆煅烧木炭：从随身与当前地面未预留的木材凑足一批（4份）原子放进当前火堆一个空加工位；0 世界分钟。</summary>

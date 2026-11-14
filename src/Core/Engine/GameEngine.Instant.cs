@@ -148,6 +148,8 @@ namespace Survival.Core.Engine
                     return StoreInCabinet(s, r);
                 case InstantKind.TakeCabinet:
                     return TakeFromCabinet(s, r);
+                case InstantKind.MoveToPot:
+                    return MoveToPot(s, r);
             }
             return ActionResult.Fail("未知操作");
         }
