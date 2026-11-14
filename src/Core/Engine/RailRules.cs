@@ -20,6 +20,8 @@ namespace Survival.Core.Engine
         public const string Skills = "熟练度";
         public const string Traits = "词条";
         public const string Calc = "计算明细";
+        /// <summary>R05「2026-11-14 Q613主控定稿」：敌踪右栏的健康、护甲、速度、伤害与命中预估归「战斗详情」，默认收起（不在 Q589 九组表里）。</summary>
+        public const string BattleDetail = "战斗详情";
 
         public static readonly string[] AllGroups = { Desc, Batch, Content, Queue, Members, EquipDetail, Skills, Traits, Calc };
 
@@ -56,6 +58,8 @@ namespace Survival.Core.Engine
         public const string Queue = "queue";
         public const string Members = "members";
         public const string Calc = "calc";
+        /// <summary>R05 Q613「战斗详情」。</summary>
+        public const string BattleDetail = "battle";
     }
 
     public sealed partial class GameEngine

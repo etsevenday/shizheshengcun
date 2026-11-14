@@ -23,6 +23,8 @@ else
     var otherName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page == 1 ? 2 : 1)!);
     var range = card.Kind is "single" or "elite" ? "只与这一只交战" : card.Kind == "fixed" ? "全名单一起入场（从1号位起）" : null;
     var anyBite = members.Any(m => e.CanBite(e.Enemy(m.EnemyId)));
+    // BM5b1（R05 Q613）：整卡对当前实际队伍的即时交战风险（派生值，按事实版本缓存）
+    var risk = G.EngageRisk(card);
     @* BM4b（S14 Q589「敌踪」）：首屏＝卡名／状态（警觉、撤退保护）、当前查看成员（锁定名单第一位）的健康与攻防速核心值、开战武器与感染等风险；
        组卡其余成员的完整原详情行在「成员（{数量}）」组，接近／撤退等长说明在「说明」组。中央盘的逐成员预览不在本批改动。 *@
     <div class="detail-scroll rail-page" data-rail-type="@RailTypes.Enemy">
@@ -31,6 +33,13 @@ else
             <Name>@card.Title</Name>
             <Sub>
                 <div class="rail-src">@card.Badge · @GameEngine.VigilanceText(card.Vigilance)</div>
+                @* R05 Q613 首屏顺序：身份 → 交战风险 → 真实状态／倒计时／原因 → 「战斗详情」折叠；只显示等级与通用提示，不展示后台分值。没有有效敌方活成员时不留旧等级 *@
+                @if (risk.Invalid) { <div class="risk" data-engage-risk="invalid">@GameEngine.EnemyCardInvalidText</div> }
+                else
+                {
+                    <div class="rail-risk" data-engage-risk="@(risk.Unknown ? "unknown" : risk.Level.ToString())">@risk.Text</div>
+                    <div class="rail-risk-note">@GameEngine.EngageRiskNote</div>
+                }
                 @* Q589「敌踪」首屏：当前状态／倒计时或撤退保护，与卡面同源（CardApproachStatus） *@
                 @if (e.CardApproachStatus(s, card) is string approach) { <div class="rail-status" data-approach>@approach</div> }
             </Sub>
@@ -45,15 +54,19 @@ else
         @if (members.Count > 0 && !e.CanBite(e.Enemy(members[0].EnemyId)) && e.Enemy(members[0].EnemyId).IsZombie) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
         @if (why != null) { <div class="risk">@why</div> }
         @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
-        @if (members.Count > 0)
-        {
-            @MemberLines(members[0], false)
-        }
         <div class="lines rail-main">
             @if (members.Count > 0) { @MemberKind(members[0]) }
             <div class="wide"><span>开战武器</span><b>@(wi == null ? $"{pageName}空（拳）" : $"{pageName} {weapon.Name}")（战前可在右栏人物“装备”区调整，战斗中可切到@(otherName)页）</b></div>
         </div>
 
+        @* R05 Q613：健康、护甲／闪避／速度、攻击能力、伤害与我方命中预估归「战斗详情」，默认收起（展开偏好沿 Q589 按对象类型保存）。
+           成员类别行、开战武器、感染与弹仓风险、「成员」「说明」组的去处待 Q639，本批原位不动 *@
+        @if (members.Count > 0)
+        {
+            <RailFold Type="@RailTypes.Enemy" Group="@RailGroups.BattleDetail" Name="@RailText.BattleDetail">
+                @MemberLines(members[0], false)
+            </RailFold>
+        }
         @if (members.Count > 1)
         {
             <RailFold Type="@RailTypes.Enemy" Group="@RailGroups.Members" Name="@RailText.Members" Count="@members.Count">
@@ -97,7 +110,12 @@ else
             <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.Speed(ec.Speed)</b></div>
             <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
             <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
-            <div title="开战默认页普通攻击：(武器命中+3×熟练等级+8+装备命中)×疲劳；恐慌、失衡开战后才计"><span>你的命中率</span><b>@Ui.Pct(hit.HitChance)（命中能力@(Ui.N(hit.Accuracy))）</b></div>
+            @* R05 Q613：没有合适攻击者／目标时写「当前无可用攻击」，不造 0% 占位 *@
+            @if (e.OutOfBattleHasAttack(s))
+            {
+                <div title="开战默认页普通攻击：(武器命中+3×熟练等级+8+装备命中)×疲劳；恐慌、失衡开战后才计"><span>你的命中率</span><b>@Ui.Pct(hit.HitChance)（命中能力@(Ui.N(hit.Accuracy))）</b></div>
+            }
+            else { <div><span>你的命中率</span><b>@GameEngine.NoAttackHitText</b></div> }
         </div>
     };
 

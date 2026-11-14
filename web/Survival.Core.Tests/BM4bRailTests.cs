@@ -130,8 +130,12 @@ public class BM4bRailTests : TestBase
 
         var enemy = Web("Components", "EnemyDetail.razor");
         var ef = enemy.IndexOf("<RailFold", StringComparison.Ordinal);
-        foreach (var main in new[] { "@MemberLines(members[0], false)", "<span>开战武器</span>", "@MemberKind(members[0])", "ecard-guard", "单次咬伤感染概率", "@if (why != null) { <div class=\"risk\">@why</div> }" })
+        // BM5b1（R05 Q613）：当前查看成员的核心值改进默认收起的「战斗详情」组（第一个折叠组），其余首屏行原位（Q639 待定）
+        foreach (var main in new[] { "<span>开战武器</span>", "@MemberKind(members[0])", "ecard-guard", "单次咬伤感染概率", "@if (why != null) { <div class=\"risk\">@why</div> }" })
             Assert.That(enemy.IndexOf(main, StringComparison.Ordinal), Is.GreaterThan(0).And.LessThan(ef), main);
+        Assert.That(enemy.Substring(ef), Does.StartWith("<RailFold Type=\"@RailTypes.Enemy\" Group=\"@RailGroups.BattleDetail\" Name=\"@RailText.BattleDetail\">"));
+        var core = enemy.IndexOf("@MemberLines(members[0], false)", StringComparison.Ordinal);
+        Assert.That(core, Is.GreaterThan(ef).And.LessThan(enemy.IndexOf("</RailFold>", ef, StringComparison.Ordinal)), "核心值在「战斗详情」组内");
         Assert.That(enemy, Does.Contain("@if (members.Count > 1)"), "单只敌人不造成员组");
         Assert.That(enemy.IndexOf("单次咬伤感染概率", StringComparison.Ordinal), Is.LessThan(enemy.IndexOf("@MemberKind(members[0])", StringComparison.Ordinal)), "窄栏首屏：感染风险排在成员类别长行与开战武器长句之前");
 

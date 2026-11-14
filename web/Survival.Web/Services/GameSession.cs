@@ -2231,6 +2231,20 @@ public sealed partial class GameSession
         return plan;
     }
 
+    private (int ver, GameState? state, string key, EngageRiskResult? risk) _riskCache = (-1, null, "", null);
+
+    /// <summary>
+    /// BM5b1（R05 Q613）：敌踪右栏的交战风险。派生值，只与完整事实版本（每次 Notify 递增的 Version、当前状态对象）和卡键绑定，
+    /// 编队保存、换装、健康、世界推进、读档等任何真实变化都会通知界面而重算；未提交的草稿不进状态、不改评级。
+    /// </summary>
+    public EngageRiskResult EngageRisk(EnemyCardView card)
+    {
+        if (_riskCache.ver == Version && ReferenceEquals(_riskCache.state, S) && _riskCache.key == card.Key && _riskCache.risk != null) return _riskCache.risk;
+        var risk = E.EngageRiskFor(S, card);
+        _riskCache = (Version, S, card.Key, risk);
+        return risk;
+    }
+
     public async Task Resume()
     {
         var res = E.Resume(S);
