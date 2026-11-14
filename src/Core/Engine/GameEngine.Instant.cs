@@ -45,6 +45,7 @@ namespace Survival.Core.Engine
             {
                 case InstantKind.Pickup:
                 {
+                    if (r.Group) return TransferGroup(s, r, true);   // BM5b2（Q606）：同组自动配批
                     // B41c2（S01／S07 Q523）：锁定主行动暂停中只缺拾取同一原工具时，这一件可从当前地面整件拾取到随身（锁与暂停保持）
                     if (LockedToolPickup(s, r) is ActionResult toolPick) return toolPick;
                     var inst = FindItem(s, r.InstanceId);
@@ -64,6 +65,7 @@ namespace Survival.Core.Engine
                 }
                 case InstantKind.Drop:
                 {
+                    if (r.Group) return TransferGroup(s, r, false);   // BM5b2（Q606）：同组自动配批
                     var inst = FindItem(s, r.InstanceId);
                     if (inst != null && IsLocked(s, inst)) return ActionResult.Fail("行动占用：该物品正被当前行动使用");
                     if (IsBusy(s) && !ExtractTidyAllowed(s)) return ActionResult.Fail("行动进行中，不能整理物品");
@@ -180,7 +182,10 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>向锅里最多还能装多少份某种水（容量、同种、负重共同决定）；不能装时给出原因。</summary>
-        public int MaxFill(GameState s, ItemInstance water, ItemInstance pot, out string? reason)
+        public int MaxFill(GameState s, ItemInstance water, ItemInstance pot, out string? reason) => MaxFill(s, water, pot, out reason, null);
+
+        /// <summary>同上；available 给出同来源组（BM5b2 Q642）可配批的合计份数，缺省为这一堆。</summary>
+        public int MaxFill(GameState s, ItemInstance water, ItemInstance pot, out string? reason, int? available)
         {
             reason = PotBlocked(s, pot);
             if (reason != null) return 0;
@@ -199,7 +204,7 @@ namespace Survival.Core.Engine
             }
             var space = cfg.CapacityUnits - PotUnits(s, pot.InstanceId);
             if (space <= 0) { reason = $"满锅：锅内已满{cfg.CapacityMl}毫升"; return 0; }
-            var max = Math.Min(space, water.Count);
+            var max = Math.Min(space, available ?? water.Count);
             if (PlaceOf(s, pot) == ItemInstance.Carried && !water.IsCarried)
             {
                 var w = _items[water.ItemId].WeightGrams;
@@ -215,20 +220,30 @@ namespace Survival.Core.Engine
         {
             var water = FindItem(s, r.InstanceId);
             var pot = r.TargetInstanceId.HasValue ? FindItem(s, r.TargetInstanceId.Value) : null;
+            // BM5b2（Q642／Q606）：同来源组自动配批，组首失效时同组其他合格批次接替；份数按组合计
+            List<ItemInstance>? group = null;
+            if (r.Group && GroupKeyOf(s, r) is var (gOwner, gItem, gSide))
+            {
+                ConvertDueSpoilage(s);
+                group = GroupStacks(s, gOwner, gItem, gSide);
+                water = group.FirstOrDefault();
+            }
             if (water == null) return ActionResult.Fail("没有这份水");
-            var max = MaxFill(s, water, pot!, out var why);
+            var have = group?.Sum(i => i.Count) ?? water.Count;
+            var max = MaxFill(s, water, pot!, out var why, have);
             if (why != null) return ActionResult.Fail(why);
             if (r.Count < 1) return ActionResult.Fail("数量无效");
             if (r.Count > max)
             {
                 var capLeft = PotConfig(pot!).CapacityUnits - PotUnits(s, pot!.InstanceId);
-                if (r.Count > water.Count) return ActionResult.Fail("数量无效", max);
+                if (r.Count > have) return ActionResult.Fail("数量无效", max);
                 return r.Count > capLeft
                     ? ActionResult.Fail($"锅里只剩{capLeft}份空间", max)
                     : ActionResult.Fail($"装入后携带将超过{Config.Carry.HardGrams / 1000}公斤，最多可装{max}份", max);
             }
             var dirtyRestart = BatchProcess(water.ItemId) != null && ProcessOf(s, pot!) is FacilityProcess bp && bp.HeatDoneMinutes > 0;
-            MoveItems(s, water, r.Count, ItemInstance.ContainerOwner(pot!.InstanceId));
+            foreach (var (src, cnt) in group != null ? PlanGroup(group, r.Count) : new List<(ItemInstance, int)> { (water, r.Count) })
+                MoveItems(s, src, cnt, ItemInstance.ContainerOwner(pot!.InstanceId));
             // 同种脏水追加：整批净化重新计时（设施与烹饪案 5.2），净水追加不影响已有食物进度
             if (dirtyRestart)
             {

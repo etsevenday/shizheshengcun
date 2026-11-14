@@ -581,7 +581,6 @@ public sealed partial class GameSession
     /// <summary>从材料拖拽打开加工面板时的候选配方（配置顺序）；为空表示列出全部配方。</summary>
     public List<string>? CraftCandidates { get; set; }
     /// <summary>材料槽里手工指定的批次与指定的锅，随确认一起传给 Craft 请求。</summary>
-    public List<int> CraftPreferred { get; } = new();
     public int? CraftPot { get; set; }
     /// <summary>批量制作件数（v0.6 §03）；换配方时回到 1。</summary>
     public int CraftBatch { get; set; } = 1;
@@ -869,7 +868,6 @@ public sealed partial class GameSession
         if (!KeepState("craft"))
         {
             CraftCandidates = null;
-            CraftPreferred.Clear();
             CraftPot = null;
             CraftBatch = 1;
             CraftTarget = null;
@@ -1952,45 +1950,26 @@ public sealed partial class GameSession
     }
 
     /// <summary>
-    /// 同一批次（同物品、同到期时间、同位置）可能分成多堆；按堆依次拾取或放下指定数量。batchKey 不为空时只取这一真实批次
-    /// （到期 + 来源 + 预留状态，Q24 所选批次作用于转移）。
+    /// BM5b2（S06 Q606、Q643）：物品组转移——玩家只定总数，内核在同一来源组（随身／当前地面）、同物品、同卡侧内按最早有效到期自动配批，
+    /// 全量与最终五卡、30 公斤校验后一次原子执行；不足或放不下整次拒绝，不跨侧、不部分转移。卡下按钮、拖放、Shift 数量都走这里。
     /// </summary>
-    public ActionResult TransferBatch(string owner, string itemId, int? expiresAt, int count, bool toCarried, string? requestId = null, string? batchKey = null)
+    public ActionResult TransferGroup(string owner, string itemId, string? side, int count, bool toCarried, string? requestId = null, int headInstanceId = 0)
     {
         if (GameEngine.SeenRequest(S, requestId)) return ActionResult.Success();
-        // B31c（Q330）：操作条按钮不带请求号时补一个，成功的整批转移也记进请求号账本（算一次有效提交，清掉关键结果提示）
+        // B31c（Q330）：操作条按钮不带请求号时补一个，成功的整组转移也记进请求号账本（算一次有效提交，清掉关键结果提示）
         requestId ??= Guid.NewGuid().ToString("N");
         if (CityBrowsing) return CityReadOnlyFail();
-        var left = count;
-        ActionResult last = ActionResult.Success();
-        var stacks = S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ExpiresAt == expiresAt && i.ReservedBy == null
-                                        && (batchKey == null || GameEngine.BatchKeyOf(i) == batchKey))
-            .OrderBy(i => i.InstanceId).ToList();
-        // 拾取整批先按最终根卡数与重量预演：会出现第六张卡或超重就整次拒绝，一份都不先拿（S06 §8、开发假设 H2）
-        if (toCarried && stacks.Count > 0 && E.PickupBlockedText(S, stacks[0], count) is string blocked)
-        {
-            Notice = blocked;
-            Notify();
-            return ActionResult.Fail(blocked);
-        }
-        foreach (var st in stacks)
-        {
-            if (left <= 0) break;
-            var n = Math.Min(left, st.Count);
-            last = E.DoInstant(S, toCarried ? InstantRequest.Pickup(st.InstanceId, n) : InstantRequest.Drop(st.InstanceId, n));
-            if (!last.Ok) break;
-            left -= n;
-        }
-        // 整批转移的请求号记在最后，拆成几堆时也只生效一次
-        if (last.Ok) GameEngine.RememberRequest(S, requestId);
-        if (last.Ok && count - left > 0) QueueSwap(toCarried ? ItemInstance.Carried : S.Ground, itemId);
-        Notice = last.Ok ? null : last.Reason;
+        var r = toCarried ? InstantRequest.PickupGroup(owner, itemId, side, count, headInstanceId) : InstantRequest.DropGroup(owner, itemId, side, count, headInstanceId);
+        r.RequestId = requestId;
+        var res = E.DoInstant(S, r);
+        if (res.Ok && !res.Duplicate) QueueSwap(toCarried ? ItemInstance.Carried : S.Ground, itemId);
+        Notice = res.Ok ? null : res.Reason;
         Drain();
         MergeSwapHighlight();
         ReconcileSelection();
         Commit();
         Notify();
-        return last;
+        return res;
     }
 
     /// <summary>
@@ -2079,8 +2058,6 @@ public sealed partial class GameSession
     {
         OpenPanel("craft", recipes.FirstOrDefault());
         CraftCandidates = recipes;
-        CraftPreferred.Clear();
-        if (request != null) CraftPreferred.AddRange(request.PreferredInstanceIds);
         CraftPot = request?.PotInstanceId;
         Notify();
     }
@@ -2126,14 +2103,9 @@ public sealed partial class GameSession
             return ActionResult.Success();
         }
         var r = intent.Instant!;
-        if (intent.Verb == DropVerb.Transfer && intent.Instant!.Kind is InstantKind.Pickup or InstantKind.Drop)
-        {
-            var head = S.Items.FirstOrDefault(i => i.InstanceId == r.InstanceId);
-            if (head == null) return ActionResult.Fail("物品已不在");
-            // B22 试玩修复 M409：按被拖那一堆的真实批次键转移（含本实例战利品来源），不再只按到期分组——否则拖战利品卡到空白处/别的卡会搬走同名普通物品
-            if (E.Item(head.ItemId).IsStackable)
-                return TransferBatch(head.Owner, head.ItemId, head.ExpiresAt, count, r.Kind == InstantKind.Pickup, requestId, GameEngine.BatchKeyOf(head));
-        }
+        // BM5b2（Q606）：可堆叠物品拖放／Shift 数量按同组（来源、物品、卡侧，含战利品等原分侧）自动配批，与卡下按钮同一提交
+        if (intent.Verb == DropVerb.Transfer && r.Group && r.GroupOwner != null && r.GroupItemId != null)
+            return TransferGroup(r.GroupOwner, r.GroupItemId, r.GroupSide, Math.Max(1, count), r.Kind == InstantKind.Pickup, requestId, r.InstanceId);
         // BM5b1（Q601）：拖工位食材到同火源锅与主层「移入锅」同一提交（只移这一份，不读拖动数量）
         if (r.Kind == InstantKind.MoveToPot) { r.RequestId = requestId; return FireMenuMove(r); }
         r.Count = Math.Max(1, count);

@@ -12,8 +12,9 @@ public class BM7aMenuFocusTests
     public void Q645_A01_SourceRowGone_NextThenPrevThenTitle()
     {
         var menu = BM7aBattleTests.Web("Components", "FireMenu.razor");
-        Assert.That(menu, Does.Contain("<div @key=\"it.InstanceId\" class=\"fm-src-row @(on ? \"on\" : \"\")\" role=\"button\" tabindex=\"0\" aria-pressed=\"@on\" data-src-key=\"@it.InstanceId\""), "可选来源行按实例稳定键渲染");
-        Assert.That(menu, Does.Contain("<div class=\"fm-src-row no\" @key=\"iid\" data-src-key=\"@iid\" aria-disabled=\"true\""), "灰行同样有稳定键（参与原显示顺序，但不作落点）");
+        // BM5b2（Q642）：稳定键由实例号改为来源组键（rk）
+        Assert.That(menu, Does.Contain("<div @key=\"rk\" class=\"fm-src-row @(on ? \"on\" : \"\")\" role=\"button\" tabindex=\"0\" aria-pressed=\"@on\" data-src-key=\"@rk\""), "可选来源行按来源组稳定键渲染");
+        Assert.That(menu, Does.Contain("<div class=\"fm-src-row no\" @key=\"rk\" data-src-key=\"@rk\" aria-disabled=\"true\""), "灰行同样有稳定键（参与原显示顺序，但不作落点）");
         Assert.That(menu, Does.Contain("data-tab-trap=\"@(G.FireMenuTop ? GameSession.FireMenuTitleId : null)\""), "只在加工菜单为最高层时修复（沿 Q602 标记）");
 
         var js = BM7aBattleTests.Web("wwwroot", "js", "app.js");

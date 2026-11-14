@@ -217,7 +217,8 @@
 
     // ───────────── 原料来源（Q544）、数量（Q545／Q562）与放入（Q556／Q557） ─────────────
 
-    private sealed record Row(ItemInstance It, string? Why);
+    /// <summary>BM5b2（S14 Q642）：来源行——It 为组首（最早有效到期、未占用的一堆），Key 为来源组稳定键，Count 为本组可用合计。</summary>
+    private sealed record Row(ItemInstance It, string? Why, string Key, int Count);
 
     private static DropSource SrcOf(ItemInstance it) =>
         DropSource.Parse($"card:{it.Owner}|{it.ItemId}|{it.InstanceId}")!;
@@ -272,14 +273,28 @@
         var all = s.Items.Where(i => (i.IsCarried || i.Owner == here) && !i.InFacility && !i.InContainer && i.Count > 0)
             .OrderBy(i => i.IsCarried ? 0 : 1).ThenBy(i => i.ItemId).ThenBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
         var rows = new List<Row>();
+        // BM5b2（S14 Q642／Q643）：可堆叠物品按「来源组（随身／当前地面）× 物品 × 原卡侧」合成一行（组首＋本组可用合计、最近有效到期），
+        // 预留／占用等不进组的实例仍各自一行（沿原可用／预留说明）；聚合只在界面，底层实例、根卡与重量不合
+        var grouped = new HashSet<int>();
+        var heads = new List<(ItemInstance head, int count)>();
         foreach (var it in all)
+        {
+            if (grouped.Contains(it.InstanceId) || !e.Groupable(it)) continue;
+            var grp = e.GroupOf(s, it);
+            if (grp.Count == 0 || !grp.Contains(it)) continue;
+            foreach (var g in grp) grouped.Add(g.InstanceId);
+            heads.Add((grp[0], grp.Sum(g => g.Count)));
+        }
+        var cands = heads.Concat(all.Where(i => !grouped.Contains(i.InstanceId)).Select(i => (head: i, count: i.Count)))
+            .OrderBy(x => x.head.IsCarried ? 0 : 1).ThenBy(x => x.head.ItemId).ThenBy(x => x.head.ExpiresAt ?? int.MaxValue).ThenBy(x => x.head.InstanceId);
+        foreach (var (it, count) in cands)
         {
             if (!MainOk(it, here, firePot)) continue;
             string? why = null;
             // Q588：明确目标下用同一真实投放规则逐行判定（G.FireMenuBlockWhy）；未选目标沿 Q544 列料不判定。
             // BM5b1（Q603）：木材从主层起就灰显（同一判定给出「木材用于添加燃料；……」），加工位层／锅层仍是原各自拒绝句
             if (!taken) why = G.FireMenuBlockWhy(it);
-            rows.Add(new Row(it, why));
+            rows.Add(new Row(it, why, grouped.Contains(it.InstanceId) ? G.FireMenuSourceKey(it) : $"i:{it.InstanceId}", count));
         }
         var srcIt = m.SourceId is int sid ? e.FindItem(s, sid) : null;
         if (srcIt != null && !(srcIt.IsCarried || srcIt.Owner == here)) srcIt = null;
@@ -323,39 +338,39 @@
                     @foreach (var r in list)
                     {
                         var it = r.It;
-                        var on = m.SourceId == it.InstanceId;
+                        var rk = r.Key;
+                        var on = m.SourceId != null && m.SourceKey == rk;
                         var nm = e.ItemName(it.ItemId);
                         var sel = new Selection { Kind = SelectionKind.Tool, Id = it.ItemId, Owner = it.Owner, InstanceId = it.InstanceId };
                         var peek = e.Item(it.ItemId).IsStackable ? Peek.Sel(SelectionKind.ItemGroup, it.ItemId, it.Owner, null, GameEngine.BatchKeyOf(it)) : Peek.Sel(sel);
                         @if (r.Why != null)
                         {
                             var why = r.Why;
-                            var iid = it.InstanceId;
                             @* B45b（Q588 用户自定）：对当前目标不可放入的材料保留行（名称、数量、真实来源），标灰并常驻短标「不可放入」；
                                不能被鼠标、触屏、Enter／空格选为来源（行本身不可点、不可聚焦），也不从这行发起拖放（不带 data-drag）。
                                行旁「原因」是独立只读控件（可聚焦）：悬停／聚焦／点按时在底部说明位显示该行原真实拒绝句，离开后恢复当前选择的说明；
                                不选材料、不打开数量输入、不投放。悬停整行仍按全局合同只读查看该来源。 *@
                             @* BM5b1（Q603／Q604）：灰行本身不接焦点——按下不把焦点移走（也不清已有合法来源）；行旁「原因」按钮照常可聚焦、只读 *@
-                            <div class="fm-src-row no" @key="iid" data-src-key="@iid" aria-disabled="true" data-peek="@peek" title="@($"{nm}×{it.Count}（{label}）：{why}")" @onmousedown:preventDefault="true">
+                            <div class="fm-src-row no" @key="rk" data-src-key="@rk" aria-disabled="true" data-peek="@peek" title="@($"{nm}×{r.Count}（{label}）：{why}")" @onmousedown:preventDefault="true">
                                 <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
-                                <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
+                                <span class="fm-src-name">@nm<b>×@r.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
                                 <span class="fm-src-no">@NotPlaceable</span>
-                                <button type="button" class="fm-src-whybtn @(_whyId == iid ? "on" : "")" title="@why" aria-pressed="@(_whyId == iid)"
-                                        @onmouseenter="() => ShowWhy(iid)" @onfocus="() => ShowWhy(iid)" @onclick="() => ShowWhy(iid)"
-                                        @onmouseleave="() => HideWhy(iid)" @onblur="() => HideWhy(iid)"
+                                <button type="button" class="fm-src-whybtn @(_whyId == rk ? "on" : "")" title="@why" aria-pressed="@(_whyId == rk)"
+                                        @onmouseenter="() => ShowWhy(rk)" @onfocus="() => ShowWhy(rk)" @onclick="() => ShowWhy(rk)"
+                                        @onmouseleave="() => HideWhy(rk)" @onblur="() => HideWhy(rk)"
                                         @onmousedown:stopPropagation="true" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@WhyLabel</button>
                             </div>
                         }
                         else
                         {
-                            @* BM7a（S14 Q645）：来源行按实例稳定键（@key／data-src-key）渲染——重排或重建不误当消失；
+                            @* BM7a（S14 Q645）：来源行按稳定键（@key／data-src-key）渲染——重排或重建不误当消失；BM5b2（Q642）起键为来源组键（同组换了组首仍是同一行）；
                                焦点所在的行真实消失时，app.js 按原显示顺序回下一条、再上一条仍可选择的行，都没有回菜单标题（只移焦点，不选为来源） *@
-                            <div @key="it.InstanceId" class="fm-src-row @(on ? "on" : "")" role="button" tabindex="0" aria-pressed="@on" data-src-key="@it.InstanceId"
+                            <div @key="rk" class="fm-src-row @(on ? "on" : "")" role="button" tabindex="0" aria-pressed="@on" data-src-key="@rk"
                                  data-peek="@peek" data-drag="@($"card:{it.Owner}|{it.ItemId}|{it.InstanceId}")" data-drag-title="@nm" data-drag-from="@label"
-                                 title="@($"{nm}×{it.Count}（{label}）：点击选为原料来源（不转移）；也可以直接拖到上面的加工位或锅")"
+                                 title="@($"{nm}×{r.Count}（{label}）：点击选为原料来源（不转移）；也可以直接拖到上面的加工位或锅")"
                                  @onclick="() => PickSource(it)" @onkeydown="ev => Key(ev, () => PickSource(it))">
                                 <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
-                                <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
+                                <span class="fm-src-name">@nm<b>×@r.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
                             </div>
                         }
                     }
@@ -407,7 +422,7 @@
                 }
             </div>
             @* Q588：「原因」控件悬停／聚焦／点按时，这一位显示那一行的完整真实原因；离开后恢复当前有效选择的说明 *@
-            @{ var peekWhy = _whyId is int wid ? st.Carried.Concat(st.Ground).FirstOrDefault(r => r.It.InstanceId == wid)?.Why : null; }
+            @{ var peekWhy = _whyId is string wid ? st.Carried.Concat(st.Ground).FirstOrDefault(r => r.Key == wid)?.Why : null; }
             @if ((peekWhy ?? st.Reason) is string note) { <div class="ca-note bad" role="status">@note</div> }
             @if (m.Fail != null) { <div class="ca-note bad">@m.Fail</div> }
         </div>
@@ -428,12 +443,12 @@
     private const string NotPlaceable = "不可放入";
     private const string WhyLabel = "原因";
 
-    /// <summary>Q588：正在查看原因的那一行（实例号）；只是阅读状态，不改来源选择。显示时按该行当前的真实原因重读（行已恢复可用或消失就不再显示）。</summary>
-    private int? _whyId;
+    /// <summary>Q588：正在查看原因的那一行（来源行稳定键，BM5b2 Q642）；只是阅读状态，不改来源选择。显示时按该行当前的真实原因重读（行已恢复可用或消失就不再显示）。</summary>
+    private string? _whyId;
 
-    private void ShowWhy(int id) => _whyId = id;
+    private void ShowWhy(string id) => _whyId = id;
 
-    private void HideWhy(int id)
+    private void HideWhy(string id)
     {
         if (_whyId == id) _whyId = null;
     }
@@ -463,6 +478,8 @@
         var req = pot != null
             ? (e.IsLiquid(src) ? InstantRequest.FillPot(src.InstanceId, pot.InstanceId, n) : InstantRequest.PutFoodInPot(src.InstanceId, pot.InstanceId, n))
             : InstantRequest.PutInFireSlot(src.InstanceId, slot!.Value, n);
+        // BM5b2（S14 Q642）：选行选的是整个来源组——提交按同组实时实物重新配批（早到期优先、末批只拆缺额），不绑定组首这一堆
+        if (e.Groupable(src)) req = e.AsGroup(req, src);
         G.FireMenuSubmit(req);
     }
 }

@@ -115,7 +115,7 @@ public sealed partial class GameSession
                 break;
             case "craft":
             {
-                var lost = CraftPreferred.RemoveAll(id => E.FindItem(S, id) == null) > 0;
+                var lost = false;
                 if (CraftPot is int pot && E.FindItem(S, pot) == null) { CraftPot = null; lost = true; }
                 if (CraftTarget is int t && E.FindItem(S, t) == null) { CraftTarget = null; lost = true; }
                 if (CraftPatch is int pk && E.FindItem(S, pk) == null) { CraftPatch = null; lost = true; }

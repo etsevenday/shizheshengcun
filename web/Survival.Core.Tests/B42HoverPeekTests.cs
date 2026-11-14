@@ -189,7 +189,7 @@ public class B42HoverPeekTests
         Assert.That(Web("Components/DetailPanel.razor"), Does.Contain("<SelectionDetail Sel=\"sel\" />"));
         Assert.That(Web("Components/PeekDetail.razor"), Does.Contain("<SelectionDetail Sel=\"sel\" Peek=\"true\""));
         var item = Web("Components/ItemDetail.razor");
-        Assert.That(item, Does.Contain("<div class=\"batch readonly @(b == chosen ? \"on\" : \"\")\">@batchText</div>"));
+        Assert.That(item, Does.Contain("<div class=\"batch readonly\">@batchText</div>"));
         Assert.That(item, Does.Contain("var sel = Sel ?? G.Selected;"));
         Assert.That(item, Does.Contain("if (ReadOnly) return;"));
     }

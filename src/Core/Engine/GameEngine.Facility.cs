@@ -472,14 +472,24 @@ namespace Survival.Core.Engine
         private ActionResult PutInFire(GameState s, InstantRequest r)
         {
             var inst = FindItem(s, r.InstanceId);
+            // BM5b2（Q642／Q606）：同来源组自动配批——组首（最早有效到期）失效时同组其他合格批次接替；份数按组合计
+            List<ItemInstance>? group = null;
+            if (r.Group && GroupKeyOf(s, r) is var (gOwner, gItem, gSide))
+            {
+                ConvertDueSpoilage(s);
+                group = GroupStacks(s, gOwner, gItem, gSide);
+                inst = group.FirstOrDefault();
+            }
             if (inst == null) return ActionResult.Fail("物品已不在");
             var max = MaxPutInFire(s, inst, out var why, r.Slot);
             if (why != null) return ActionResult.Fail(why);
             var here = s.Ground;
+            var have = group?.Sum(i => i.Count) ?? inst.Count;
+            if (group != null && !r.Slot.HasValue) max = Math.Min(FireFreeSlots(s, here), have);
             var n = IsPot(inst) ? 1 : r.Count;
             if (r.Slot.HasValue && r.Count != 1) return ActionResult.Fail(QtyRangeText(max), max);
             if (n < 1) return ActionResult.Fail("数量无效");
-            if (n > inst.Count) return ActionResult.Fail("数量无效", max);
+            if (n > have) return ActionResult.Fail("数量无效", max);
             if (n > max) return ActionResult.Fail($"火堆只剩{max}个空加工位", max);
             var owner = FireOwner(here);
             var name = ItemName(inst.ItemId);
@@ -493,7 +503,8 @@ namespace Survival.Core.Engine
             }
             else
             {
-                for (var k = 0; k < n; k++) placed = MoveOne(s, inst, owner);
+                foreach (var (src, cnt) in group != null ? PlanGroup(group, n) : new List<(ItemInstance, int)> { (inst, n) })
+                    for (var k = 0; k < cnt; k++) placed = MoveOne(s, src, owner);
                 text = $"把{n}份{name}放进{ZoneName(s, here)}火堆加工位直接烤制。";
             }
             if (r.Slot is int slotK)
@@ -510,7 +521,10 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>最多还能放进这口锅几份食材（食材位、白名单与负重共同决定）。</summary>
-        public int MaxPutFood(GameState s, ItemInstance food, ItemInstance pot, out string? reason)
+        public int MaxPutFood(GameState s, ItemInstance food, ItemInstance pot, out string? reason) => MaxPutFood(s, food, pot, out reason, null);
+
+        /// <summary>BM5b2（Q642／Q606）：available 给出这一组（同来源／物品／卡侧）的可用总数时按组算上限（组首判定资格，份数按组合计）。</summary>
+        public int MaxPutFood(GameState s, ItemInstance food, ItemInstance pot, out string? reason, int? available)
         {
             reason = PotBlocked(s, pot);
             if (reason != null) return 0;
@@ -542,7 +556,7 @@ namespace Survival.Core.Engine
                 reason = $"锅内{water}、食材{foods.Count}/{cfg.FoodSlots}（{list}），请先取出食物";
                 return 0;
             }
-            var max = Math.Min(free, food.Count);
+            var max = Math.Min(free, available ?? food.Count);
             if (PlaceOf(s, pot) == ItemInstance.Carried && !food.IsCarried)
             {
                 var room = Math.Max(0, Config.Carry.HardGrams - CarriedGrams(s)) / fc.WeightGrams;
@@ -557,11 +571,20 @@ namespace Survival.Core.Engine
         {
             var food = FindItem(s, r.InstanceId);
             var pot = r.TargetInstanceId.HasValue ? FindItem(s, r.TargetInstanceId.Value) : null;
+            // BM5b2（Q642／Q606）：同来源组自动配批——组首失效时同组其他合格批次接替，份数按组合计、按最早有效到期逐批放入
+            List<ItemInstance>? group = null;
+            if (r.Group && GroupKeyOf(s, r) is var (gOwner, gItem, gSide))
+            {
+                ConvertDueSpoilage(s);
+                group = GroupStacks(s, gOwner, gItem, gSide);
+                food = group.FirstOrDefault();
+            }
             if (food == null) return ActionResult.Fail("物品已不在");
             if (pot == null || !IsPot(pot)) return ActionResult.Fail("没有这口锅");
-            var max = MaxPutFood(s, food, pot, out var why);
+            var have = group?.Sum(i => i.Count) ?? food.Count;
+            var max = MaxPutFood(s, food, pot, out var why, have);
             if (why != null) return ActionResult.Fail(why);
-            if (r.Count < 1 || r.Count > food.Count) return ActionResult.Fail("数量无效", max);
+            if (r.Count < 1 || r.Count > have) return ActionResult.Fail("数量无效", max);
             if (r.Count > max)
             {
                 var left = PotConfig(pot).FoodSlots - PotFood(s, pot.InstanceId).Count;
@@ -571,7 +594,8 @@ namespace Survival.Core.Engine
             }
             var name = ItemName(food.ItemId);
             var owner = ItemInstance.ContainerOwner(pot.InstanceId);
-            for (var k = 0; k < r.Count; k++) MoveOne(s, food, owner);
+            foreach (var (src, n) in group != null ? PlanGroup(group, r.Count) : new List<(ItemInstance, int)> { (food, r.Count) })
+                for (var k = 0; k < n; k++) MoveOne(s, src, owner);
             SyncFacilities(s);
             Emit(s, GameEventKind.Info, $"把{r.Count}份{name}放进{ItemName(pot.ItemId)}（{WherePath(s, pot)}）。");
             UpdateFlags(s);

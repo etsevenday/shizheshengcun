@@ -44,7 +44,7 @@ public class B22kTests : TestBase
     private List<DryingSlot> Slots(GameState s) => s.Locations["camp"].Facility.DryingSlots;
 
     /// <summary>
-    /// DRY-Q214-01：只取主角随身与当前地面，按确定性顺序（先能撑到完成的、组内截止先到、同截止随身优先、实例号）；预览逐实例写来源/数量/原截止，
+    /// DRY-Q214-01：只取主角随身与当前地面，按确定性顺序（BM5b2 Q606 起：截止先到先用、同截止随身优先、实例号，不再把能撑到完成的排前）；预览逐实例写来源/数量/原截止，
     /// 开预览不取料；不足、预留、异地、队友包、屋柜拒绝或不取；临期果干红字但可确认，肉干写保护说明、不报制作中腐败。
     /// </summary>
     [Test]
@@ -53,10 +53,10 @@ public class B22kTests : TestBase
         var s = Rack();
         var t0 = s.GameMinute;
         var finish = t0 + 120;
-        var early = Make(s, "berry", ItemInstance.Carried, t0 + 60);       // 会在完成前腐败：第二组
+        var early = Make(s, "berry", ItemInstance.Carried, t0 + 60);       // 会在完成前腐败：Q606 起最早有效到期先取（临期警告照旧）
         var g500 = Make(s, "berry", s.Ground, t0 + 500);
         var c500 = Make(s, "berry", ItemInstance.Carried, t0 + 500);       // 同截止随身优先
-        var g300 = Make(s, "berry", s.Ground, t0 + 300);                  // 能撑到完成里截止最早
+        var g300 = Make(s, "berry", s.Ground, t0 + 300);
         Make(s, "berry", ItemInstance.CarriedOwner("c1"), t0 + 900, 4);   // 队友包
         Make(s, "berry", ItemInstance.SafehouseStorageOwner("sh_x"), t0 + 900, 4);   // 屋柜
         Make(s, "berry", "w13_mill", t0 + 900, 4);                        // 异地
@@ -65,29 +65,30 @@ public class B22kTests : TestBase
         var pv = E.DryingPreview(s, "dry_berries");
         Assert.That(pv.Ok, Is.True, pv.Reason);
         Assert.That(pv.Sources, Has.Count.EqualTo(2));
-        Assert.That(pv.Sources[0], Does.StartWith($"地面野果×1（保质到{Clock.DayTime(t0 + 300)}）"));
-        Assert.That(pv.Sources[1], Does.StartWith($"随身野果×1（保质到{Clock.DayTime(t0 + 500)}）"), "同截止随身优先");
-        Assert.That(pv.Warnings, Is.Empty, "选中的都能撑到完成");
+        Assert.That(pv.Sources[0], Does.StartWith($"随身野果×1（保质到{Clock.DayTime(t0 + 60)}）"), "BM5b2（Q606）：取代 Q214 能撑到完成先取，最早有效到期先用");
+        Assert.That(pv.Sources[1], Does.StartWith($"地面野果×1（保质到{Clock.DayTime(t0 + 300)}）"));
+        Assert.That(pv.Warnings.Single(), Does.Contain($"野果（保质到{Clock.DayTime(t0 + 60)}").And.Contain("会在完成前腐败，届时停止且没有成品"), "临期果干红字但可确认");
         Assert.That((pv.Slot, pv.Minutes, pv.FinishMinute), Is.EqualTo((0, 120, finish)), "预览写位号与时间");
         Assert.That(pv.XpText, Does.Contain("经验+12"));
         Assert.That(s.Items.Select(i => (i.InstanceId, i.Owner, i.Count)).ToList(), Is.EqualTo(before), "开预览不取料、不预留");
 
         Ok(E.StartDrying(s, "dry_berries", null, null, pv.SourceKey));
-        Assert.That(E.DryingContents(s, s.Ground, 0).Select(i => i.InstanceId), Is.EquivalentTo(new[] { g300.InstanceId, c500.InstanceId }));
-        Assert.That(early.Owner, Is.EqualTo(ItemInstance.Carried));
+        Assert.That(E.DryingContents(s, s.Ground, 0).Select(i => i.InstanceId), Is.EquivalentTo(new[] { early.InstanceId, g300.InstanceId }));
+        Assert.That(c500.Owner, Is.EqualTo(ItemInstance.Carried));
         Assert.That(g500.Owner, Is.EqualTo(s.Ground));
+        Assert.That(E.DryingSlotViews(s)[0].Line, Does.Contain("会在完成前腐败"));
         Assert.That(s.Items.Where(i => i.Owner == ItemInstance.CarriedOwner("c1") || i.Owner.StartsWith(ItemInstance.SafehouseStoragePrefix) || i.Owner == "w13_mill")
             .Sum(i => i.Count), Is.EqualTo(12), "队友包、屋柜、异地都不取");
 
-        // 只剩会在完成前腐败的那份与一份能撑到的：临期果干红字但可确认
+        // 剩下同截止的两份：同截止随身优先，都能撑到完成
         var pv2 = E.DryingPreview(s, "dry_berries");
         Assert.That(pv2.Ok, Is.True);
-        Assert.That(pv2.Sources[0], Does.StartWith($"地面野果×1（保质到{Clock.DayTime(t0 + 500)}）"), "能撑到完成的先取");
-        Assert.That(pv2.Sources[1], Does.StartWith($"随身野果×1（保质到{Clock.DayTime(t0 + 60)}）"));
-        Assert.That(pv2.Warnings.Single(), Does.Contain($"野果（保质到{Clock.DayTime(t0 + 60)}").And.Contain("会在完成前腐败，届时停止且没有成品"));
+        Assert.That(pv2.Sources[0], Does.StartWith($"随身野果×1（保质到{Clock.DayTime(t0 + 500)}）"), "同截止随身优先");
+        Assert.That(pv2.Sources[1], Does.StartWith($"地面野果×1（保质到{Clock.DayTime(t0 + 500)}）"));
+        Assert.That(pv2.Warnings, Is.Empty, "选中的都能撑到完成");
         Assert.That(pv2.PausesShelf, Is.False);
         Ok(E.StartDrying(s, "dry_berries", null, null, pv2.SourceKey));
-        Assert.That(E.DryingSlotViews(s)[1].Line, Does.Contain("会在完成前腐败"));
+        Assert.That(E.DryingSlotViews(s)[1].Line, Does.Not.Contain("会在完成前腐败"));
 
         // 不足不半投、预留不取
         var one = Make(s, "berry", ItemInstance.Carried, t0 + 500);

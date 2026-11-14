@@ -17,21 +17,19 @@
     <div class="tbar cact" data-enter-scope tabindex="-1" role="group" aria-label="@($"{m.Name}的操作")" @onclick:stopPropagation="true">
         <div class="ca-head">
             <span class="ir-icon">@Icons.Markup(m.Icon)</span>
-            <span class="ca-title"><b>@m.Name</b><small>@m.From · ×@m.Available@(m.Batches != null ? $" · 所选批{BatchFresh(m.Batches.First(b => b.Key == m.BatchKey))}" : "")</small></span>
+            <span class="ca-title"><b>@m.Name</b><small>@m.From · ×@m.Available</small></span>
         </div>
 
         @if (m.Batches != null)
         {
-            @* Q24：同物品多批叠卡，展开选批次；最早到期在前、无保质在后；所选批次决定下面的食用与转移 *@
-            var batchUse = GameEngine.CanSelfUse(G.E.Item(m.ItemId)) ? "食用和转移" : "转移";
-            <div class="ca-batches" role="radiogroup" aria-label="@($"选择批次（{batchUse}都只用所选这一批）")" title="@($"点选批次：{batchUse}都只用所选这一批")">
+            @* BM5b2（S06 Q606）：批次条只读明细——标题「批次（{批数}）」，无选中框、不可点选；系统按最早有效到期自动配批 *@
+            <div class="ca-batches readonly" role="list" aria-label="@BatchHead(m.Batches.Count)">
+                <span class="ca-batches-title">@BatchHead(m.Batches.Count)</span>
                 @foreach (var b in m.Batches)
                 {
-                    var bk = b.Key;
-                    <button type="button" role="radio" aria-checked="@(bk == m.BatchKey)" class="ca-batch @(bk == m.BatchKey ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")"
-                            title="@BatchTitle(b)" @onclick="() => G.PickBatch(m.Owner, m.ItemId, bk)">
+                    <span role="listitem" class="ca-batch @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" title="@BatchTitle(b)">
                         <b>×@b.Count</b><small>@BatchFresh(b)@(b.Reserved ? " · 预留" : "")@(G.E.IsIdentifiedWhite(b.Stacks[0]) || G.E.IsIdentifiedTutorial(b.Stacks[0]) ? " · 已鉴定" : "")@(G.E.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")</small>
-                    </button>
+                    </span>
                 }
             </div>
         }
@@ -166,7 +164,10 @@
             var invalid = n < 1 || n > m.Available;
             var tooHeavy = !invalid && m.ToCarried && n > m.Max;
             var unit = m.UnitGrams;
-            var after = e.CarriedGrams(s) + (m.ToCarried ? 1 : -1) * unit * (invalid ? 0 : n);
+            // BM5b2（Q606）：物品组按自动配批的实际批次算重量与卡数（腐败物每份克重可不同）
+            var plan = m.Group != null && !invalid ? GameEngine.PlanGroup(m.Group, n) : null;
+            var moved = plan != null ? plan.Sum(x => x.n >= x.inst.Count ? e.ItemGrams(s, x.inst) : e.UnitGrams(x.inst) * x.n) : unit * (invalid ? 0 : n);
+            var after = e.CarriedGrams(s) + (m.ToCarried ? 1 : -1) * moved;
             if (moveBusy && !m.LockedPick)
             {
                 <div class="ca-note">@(s.Battle != null ? "战斗中不能拾取、放下或投放物品" : "行动进行中，暂不能整理物品")</div>
@@ -209,8 +210,8 @@
                     @if (fireWhy != null) { <div class="ca-note bad">放入火堆：@fireWhy</div> }
                 }
                 @if (invalid) { <div class="ca-note bad">请输入 1 到 @m.Available 之间的数字</div> }
-                else if (m.ToCarried && (m.Max < 1 || tooHeavy)) { <div class="ca-note bad">@(G.PickupLimitText(m.ItemId, m.Max < 1 ? 1 : n, m.Instance ?? m.Head) ?? $"最多可取{m.Max}份")</div> }
-                else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? $"，超过{e.Config.Carry.SoftGrams / 1000}公斤会减速" : "")@(m.ToCarried ? $" · 随身{e.RootCardsAfter(s, m.Instance ?? m.Head, invalid ? 0 : n, null, 0)}/{e.MaxRootCards}张卡" : "") · 不耗时</div> }
+                else if (m.ToCarried && (m.Max < 1 || tooHeavy)) { <div class="ca-note bad">@((m.Group != null ? e.GroupPickupBlockedText(s, m.Owner, m.ItemId, m.Side, m.Max < 1 ? 1 : n) : G.PickupLimitText(m.ItemId, m.Max < 1 ? 1 : n, m.Instance ?? m.Head)) ?? $"最多可取{m.Max}份")</div> }
+                else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? $"，超过{e.Config.Carry.SoftGrams / 1000}公斤会减速" : "")@(m.ToCarried ? $" · 随身{(plan != null ? e.RootCardsAfterPlan(s, GameState.PlayerId, plan) : e.RootCardsAfter(s, m.Instance ?? m.Head, invalid ? 0 : n, null, 0))}/{e.MaxRootCards}张卡" : "") · 不耗时</div> }
             }
             @if (m.Instance is ItemInstance wInst && e.IsWearable(wInst.ItemId) && s.Battle == null
                  && ((wInst.IsCarried && (m.Available > 0 || moveBusy)) || (wInst.Owner == s.Ground && !moveBusy && m.Available > 0)))
@@ -405,12 +406,12 @@
         public ItemInstance? PotInstance { get; init; }
         public int? UseId { get; init; }
         public string? Hint { get; init; }
-        /// <summary>所选真实批次键（Q24）；转移只取这一批。</summary>
-        public string? BatchKey { get; init; }
-        /// <summary>所选批次里第一堆未预留的（转移的重量与卡数预演用）。</summary>
+        /// <summary>组首（最早有效到期、未占用的一堆；转移失败原因预演用）。</summary>
         public ItemInstance? Head { get; init; }
-        /// <summary>随身同物品多批时的批次条（Q24 可展开选批次）；其余为 null。</summary>
+        /// <summary>BM5b2（Q606）：同物品多批时的只读批次明细（本卡侧全部真实批次）；其余为 null。</summary>
         public List<ItemBatch>? Batches { get; init; }
+        /// <summary>BM5b2（Q606）：本组可自动配批的实物（配批顺序）；单件物品为 null。</summary>
+        public List<ItemInstance>? Group { get; init; }
         /// <summary>B22d 试玩修复 M418：物品组卡所在的“卡片侧”（apr 已鉴定白色、dr 战利品、普通 null）；操作窗只列这一侧。</summary>
         public string? Side { get; init; }
         /// <summary>B41c2（Q523）：锁定暂停行动的原工具例外拾取（行动占用中也开放这一件的拾取）。</summary>
@@ -419,6 +420,9 @@
 
     private string BatchFresh(ItemBatch b) =>
         (b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - G.S.GameMinute)) + G.E.PatchDurabilitySuffix(b.Stacks[0]);   // B22b M463：修补包批次标包耐久
+
+    /// <summary>BM5b2（Q606）：批次组标题「批次」／「批次（{批数}）」。</summary>
+    public static string BatchHead(int count) => count > 1 ? $"批次（{count}）" : "批次";
 
     private string BatchTitle(ItemBatch b) =>
         $"这一批×{b.Count}：{BatchFresh(b)}{(string.IsNullOrEmpty(b.GrantEventId) ? "" : " · 来源单独成批")}{(b.Reserved ? " · 正被当前行动预留" : "")}";
@@ -486,25 +490,21 @@
                 if (all.Count == 0) return null;
                 var toCarried = sel.Owner != ItemInstance.Carried;
                 var from = sel.Owner == ItemInstance.Carried ? "随身" : $"{e.LocName(sel.Owner)}地面";
-                // Q24：自用与转移都作用于所选真实批次（默认最前合法可用批次）；批次全被预留时仍给出那一批，让按钮写真实原因
+                // BM5b2（S06 Q606、Q643）：玩家只选物品组（所点这一卡侧）与总数，系统按最早有效到期自动配批；食用仍取组里最早有效的一份
                 var batches = e.BatchesOf(s, sel.Owner, sel.Id);
-                var chosen = G.CurrentBatch(sel.Owner, sel.Id, batches)!;
-                // B22d 试玩修复 M418（Q178）：已鉴定/未鉴定活性物质分两张卡，操作窗的批次条、提示与融合列表只算所点这一侧
-                var side = e.CardSideOf(chosen.Stacks[0]);
-                if (batches.Any(b => GameEngine.IsSampleSide(e.CardSideOf(b.Stacks[0]))))   // B22f Q179：教学样本卡同样只算本侧
-                    batches = batches.Where(b => e.CardSideOf(b.Stacks[0]) == side).ToList();
-                var useInst = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? chosen.Stacks[0];
-                var available = chosen.Reserved ? 0 : chosen.Count;
-                var head = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null);
-                var batchPick = batches.Count > 1 && sel.Owner == ItemInstance.Carried;
-                // M95：玩家在右栏手动选过批次（会话里的所选批次就是这一批）时，提示如实写“所选批次”，没选过才写默认的“最早到期的有效批次”
-                var manualBatch = G.SelectedBatchKey != null && chosen.Key == G.SelectedBatchKey;
-                return new Model($"grp:{sel.Owner}:{sel.Id}", sel.Id, sel.Id, e.CardTitle(sel.Id, e.CardSideOf(chosen.Stacks[0])), from, available, available == 1 ? Mode.Single : Mode.Stack)
+                var anchor = G.CurrentBatch(sel.Owner, sel.Id, batches)!;
+                // B22d 试玩修复 M418（Q178）：已鉴定/未鉴定活性物质分两张卡，操作窗的批次明细、提示与融合列表只算所点这一侧
+                var side = e.CardSideOf(anchor.Stacks[0]);
+                batches = batches.Where(b => e.CardSideOf(b.Stacks[0]) == side).ToList();   // Q643：不跨卡侧
+                var group = e.GroupStacks(s, sel.Owner, sel.Id, side);
+                var useInst = group.FirstOrDefault(i => !e.IsSpoiled(s, i)) ?? anchor.Stacks[0];
+                var available = group.Sum(i => i.Count);
+                var head = group.FirstOrDefault();
+                return new Model($"grp:{sel.Owner}:{sel.Id}:{side}", sel.Id, sel.Id, e.CardTitle(sel.Id, side), from, available, available == 1 ? Mode.Single : Mode.Stack)
                 {
-                    ToCarried = toCarried, Owner = sel.Owner, ExpiresAt = chosen.ExpiresAt, BatchKey = chosen.Key, UnitGrams = e.Item(sel.Id).WeightGrams,
-                    Max = toCarried ? G.MaxPickup(sel.Id, available, head) : available, UseId = UseOf(useInst), Head = head,
-                    Batches = batchPick ? batches : null, Side = side,
-                    Hint = batches.Count > 1 && !batchPick ? (manualBatch ? $"共{batches.Count}批，转移所选批次（{BatchFresh(chosen)}）" : $"共{batches.Count}批，转移先取最早到期的有效批次（{BatchFresh(chosen)}）") : null,
+                    ToCarried = toCarried, Owner = sel.Owner, ExpiresAt = head?.ExpiresAt, UnitGrams = head != null ? e.UnitGrams(head) : e.Item(sel.Id).WeightGrams,
+                    Max = toCarried ? e.MaxGroupPickup(s, sel.Owner, sel.Id, side) : available, UseId = UseOf(useInst), Head = head,
+                    Batches = batches.Count > 1 ? batches : null, Side = side, Group = group,
                 };
             }
         }
@@ -518,7 +518,7 @@
     /// <summary>选中的对象或它的可转移数量一变，就把数量与目标重置为默认（数量对转移生效，自用永远是1份）。</summary>
     private void SyncDefault(Model m)
     {
-        var key = $"{m.Key}|{m.BatchKey}|{m.Available}";
+        var key = $"{m.Key}|{m.Available}";
         if (key == lastKey) return;
         var sameObject = lastKey.StartsWith(m.Key + "|");
         lastKey = key;
@@ -556,7 +556,7 @@
         if ((G.E.IsBusy(s) || G.Running) && !m.LockedPick) return;
         if (n < 1 || n > m.Available || (m.ToCarried && n > m.Max)) return;
         if (m.Instance != null) G.TransferOne(m.Instance.Owner, m.Instance.ItemId, m.Instance.InstanceId);
-        else G.TransferBatch(m.Owner, m.ItemId, m.ExpiresAt, n, m.ToCarried, batchKey: m.BatchKey);
+        else G.TransferGroup(m.Owner, m.ItemId, m.Side, n, m.ToCarried);
         // 这一堆全部转走后收起操作条
         if (m.Instance == null && !s.Items.Any(i => i.Owner == m.Owner && i.ItemId == m.ItemId)) G.ClearSelection();
     }

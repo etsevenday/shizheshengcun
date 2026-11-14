@@ -30,8 +30,10 @@ public sealed partial class GameSession
         public bool Open { get; set; }
         /// <summary>锅里明确点开的水（PotLiquid）或食材（Tool）；null = 锅这一层。</summary>
         public Selection? Inner { get; set; }
-        /// <summary>明确选中的原料来源实例（随身或当前地面）。</summary>
+        /// <summary>明确选中的原料来源实例（随身或当前地面）；BM5b2（Q642）起为所选来源组此刻的组首（组首用掉／转换后在同组内重配）。</summary>
         public int? SourceId { get; set; }
+        /// <summary>BM5b2（S14 Q642）：所选来源行的稳定键（可堆叠物品为来源组键「g:{owner}|{物品}|{卡侧}」，其余「i:{实例}」）。</summary>
+        public string? SourceKey { get; set; }
         /// <summary>Q545：通用来源数量草稿（原文，不悄悄取整）。</summary>
         public string Qty { get; set; } = "1";
         /// <summary>「内容已变化，请重新选择。」等一次性提示；下一次明确选择时清掉。</summary>
@@ -241,8 +243,10 @@ public sealed partial class GameSession
         if (FireMenu is not { Dead: false } m) return;
         // Q588：对当前目标不可放入的材料不能被设为来源（鼠标、触屏、键盘一律在这里同源拒绝），不选、不改已有合法来源
         if (FireMenuBlockWhy(it) != null) return;
-        if (m.SourceId != it.InstanceId) m.Qty = "1";
+        var key = FireMenuSourceKey(it);
+        if (m.SourceId == null || m.SourceKey != key) m.Qty = "1";
         m.SourceId = it.InstanceId;
+        m.SourceKey = key;
         m.SourceFor = FireMenuTargetKey();
         m.Lost = null;
         m.Fail = null;
@@ -339,7 +343,9 @@ public sealed partial class GameSession
     /// <summary>明确目标下这份来源的最大可提交量与原因（同源预演：工位 MaxPutInFire(明确位)、锅 MaxFill／MaxPutFood）。</summary>
     public int FireMenuMaxFor(ItemInstance it, int? slot, ItemInstance? pot, out string? why)
     {
-        if (pot != null) return E.IsLiquid(it) ? E.MaxFill(S, it, pot, out why) : E.MaxPutFood(S, it, pot, out why);
+        // BM5b2（Q642）：可堆叠来源按同组合计份数（与提交时的同组配批同源）
+        int? avail = E.Groupable(it) ? E.GroupCount(S, it) : null;
+        if (pot != null) return E.IsLiquid(it) ? E.MaxFill(S, it, pot, out why, avail) : E.MaxPutFood(S, it, pot, out why, avail);
         if (slot is int k) return E.MaxPutInFire(S, it, out why, k);
         why = null;
         return 0;
@@ -491,6 +497,13 @@ public sealed partial class GameSession
             }
             else if (m.Inner != null) m.Inner = null;
         }
+        // BM5b2（S14 Q642）：所选来源组仍在时按同组实时实物重新取组首（早批用完／转为腐败物后由同组下一合格批接替）；组整体消失才清来源，不改选腐败物或别的组
+        if (m.SourceKey is string gk && gk.StartsWith("g:", StringComparison.Ordinal) && m.SourceId is int gsid)
+        {
+            var head = FireMenuGroupHead(gk);
+            if (head != null) m.SourceId = head.InstanceId;
+            else if (E.FindItem(S, gsid) is ItemInstance old && FireMenuSourceKey(old) != gk) m.SourceId = -1;
+        }
         if (m.SourceId is int sid)
         {
             var src = E.FindItem(S, sid);
@@ -508,6 +521,18 @@ public sealed partial class GameSession
         }
         // 右栏所看的来源被用完（如两份净水全部装进锅）而清空选中时，右栏回这处设施的只读摘要，不跳回人物页（FACPROC 第 2 条）
         if (Selected.Kind == SelectionKind.None) SyncRightSilently(FireSelection);
+    }
+
+    /// <summary>BM5b2（S14 Q642）：来源行稳定键——可堆叠物品（随身／当前地面）按「来源组 × 物品 × 原卡侧」，其余按实例。</summary>
+    public string FireMenuSourceKey(ItemInstance it) =>
+        E.Groupable(it) ? $"g:{it.Owner}|{it.ItemId}|{E.CardSideOf(it)}" : $"i:{it.InstanceId}";
+
+    /// <summary>来源组此刻的组首（最早有效到期、未占用的一堆）；组已无可用实物为 null。</summary>
+    private ItemInstance? FireMenuGroupHead(string key)
+    {
+        var parts = key.Substring(2).Split('|');
+        if (parts.Length != 3) return null;
+        return E.GroupStacks(S, parts[0], parts[1], parts[2].Length == 0 ? null : parts[2]).FirstOrDefault();
     }
 
     /// <summary>BM5b1（Q604）：锅里所点的水或食材没了、锅仍在——焦点沿 Q583 回该位里的锅卡（只在焦点因此失效时）。</summary>

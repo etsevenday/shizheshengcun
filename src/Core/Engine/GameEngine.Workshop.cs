@@ -199,11 +199,13 @@ namespace Survival.Core.Engine
             var src = GiveSourceBlocked(s, fromId, instanceId);
             if (src != null) return src;
             var it = FindItem(s, instanceId)!;
-            if (count <= 0 || count > it.Count) return "数量无效";
-            var after = RootCardsAfterOf(s, toId, it, count, null, 0);
+            if (count <= 0 || count > GiveAvailable(s, it)) return "数量无效";
+            // BM5b2（S06 Q606）：可堆叠物品按出物人随身同组（同物品、同卡侧）自动配批，早到期优先，双方容量按跨批最终结果校验
+            var plan = GivePlan(s, it, count);
+            var after = RootCardsAfterPlan(s, toId, plan);
             if (!RootCardsAllowOf(s, toId, after))
                 return $"{ActorDisplayName(s, toId)}随身卡位不够（交接后{after}/{MaxRootCards}张）";
-            var grams = count >= it.Count ? ItemGrams(s, it) : UnitGrams(it) * count;
+            var grams = PlanGrams(s, plan);
             var total = CarriedGramsOf(s, toId) + grams;
             var hard = Config.Carry.HardGrams;
             if (total > hard) return $"{ActorDisplayName(s, toId)}会携带{Fmt.N(total / 1000.0)}公斤，超过{hard / 1000}公斤";
@@ -237,21 +239,31 @@ namespace Survival.Core.Engine
         /// <summary>交接后双方的随身卡数与总重（预览；不改状态）。</summary>
         public (int FromCards, int ToCards, int FromGrams, int ToGrams) GiveOutcome(GameState s, string fromId, string toId, ItemInstance it, int count)
         {
-            var grams = count >= it.Count ? ItemGrams(s, it) : UnitGrams(it) * count;
-            return (RootCardsAfterOf(s, fromId, null, 0, it, count), RootCardsAfterOf(s, toId, it, count, null, 0),
+            var plan = GivePlan(s, it, count);
+            var grams = PlanGrams(s, plan);
+            return (RootCardsAfterRemovePlan(s, fromId, plan), RootCardsAfterPlan(s, toId, plan),
                 CarriedGramsOf(s, fromId) - grams, CarriedGramsOf(s, toId) + grams);
         }
+
+        /// <summary>BM5b2（Q606）：交接可配批的份数——可堆叠物品为出物人随身同组（同物品、同卡侧、未占用）合计，其余为这一件。</summary>
+        public int GiveAvailable(GameState s, ItemInstance it) =>
+            IsStackableInst(it) && GroupOf(s, it) is var g && g.Contains(it) ? g.Sum(i => i.Count) : it.Count;
+
+        /// <summary>BM5b2（Q606）：交接 count 份的实际配批（同组早到期优先、末批只拆缺额）；不可堆叠或不在组里时就是这一件。</summary>
+        public List<(ItemInstance inst, int n)> GivePlan(GameState s, ItemInstance it, int count) =>
+            IsStackableInst(it) && GroupOf(s, it) is var g && g.Contains(it) ? PlanGroup(g, count) : new List<(ItemInstance, int)> { (it, Math.Min(count, it.Count)) };
 
         /// <summary>交接（0 时间、原子：校验通过才一次改 owner；带 requestId 幂等）。不复制、不重抽实例属性，保质与耐久不变。</summary>
         public ActionResult Give(GameState s, string fromId, string toId, int instanceId, int count, string? requestId = null)
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            ConvertDueSpoilage(s);   // BM5b2（Q606-A02）：确认前已到期的先按 Q610 转换，再由同组其他合格批次配够
             var why = GiveBlocked(s, fromId, toId, instanceId, count);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
             var it = FindItem(s, instanceId)!;
             var name = ItemName(it.ItemId);
-            MoveItems(s, it, count, ItemInstance.CarriedOwner(toId));
+            foreach (var (src, n) in GivePlan(s, it, count)) MoveItems(s, src, n, ItemInstance.CarriedOwner(toId));
             Normalize(s, ItemInstance.CarriedOwner(fromId));
             Emit(s, GameEventKind.Info, $"{ActorDisplayName(s, fromId)}把{name}×{count}交给{ActorDisplayName(s, toId)}（{ActorDisplayName(s, toId)}随身{RootCardCountOf(s, toId)}/{MaxRootCards}张、{Fmt.N(CarriedGramsOf(s, toId) / 1000.0)}公斤）。");
             UpdateFlags(s);

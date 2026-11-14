@@ -28,14 +28,13 @@
     // 拆解（B4）走配方流程但只在选中装备的卡下开始，不进手工制作列表
     var recipes = (candidates == null ? e.Config.Recipes.Where(r => TabOf(r) == tab) : e.Config.Recipes.Where(r => candidates.Contains(r.Id) && e.RecipeKnown(s, r)))
         .Where(r => !r.IsSalvage).OrderBy(r => e.RecipeLocks(s, r).Count > 0 ? 1 : 0).ToList();
-    var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.AllInputs.ContainsKey(i.ItemId))).ToList();
     var locks = e.RecipeLocks(s, rc);
     var batchable = !rc.IsBuild && !rc.IsRepair && !rc.IsFixedWait && !rc.IsDrying;   // B16：固定等待每次只做1批；B22c 试玩修复 M470：晾制每位一批
     var batch = batchable && !other ? Math.Max(1, G.CraftBatch) : 1;
     var stationRecipe = e.IsStationBatchRecipe(rc);   // B32e（Q380）：陶窑/固定净水台按「投料批数」连续投料、排队加工
     var sb = stationRecipe ? e.StationBatchHere(s, rc.Station) : null;
     var sbWait = stationRecipe ? e.StationWaitingHere(s, rc.Station) : new List<StationBatch>();
-    var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot && !other ? G.CraftPot : null, preferred, batch);
+    var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot && !other ? G.CraftPot : null, null, batch);
     if (rc.IsRepair) request.InstanceId = other ? null : G.CraftTarget;
     if (GameEngine.IsFieldPatchRecipe(rc)) request.PatchInstanceId = other ? null : G.CraftPatch;   // B22b（Q168）：选用的修补包，空为默认
 }
@@ -313,24 +312,21 @@
                             var have = e.AvailableCount(s, item, true);
                             var carried = e.UsableBatches(s, item, false).Sum(i => i.Count);
                             var reserved = s.Items.Where(i => i.ItemId == item && i.ReservedBy != null && (i.IsCarried || i.Owner == s.Ground)).Sum(i => i.Count);
-                            var plan = Fill(item, need, preferred);
+                            var plan = Fill(item, need);
                             var lack = Math.Max(0, need - have);
                             <ItemRow Icon="@item" Name="@e.ItemName(item)" Qty="@($"需{need}")" Missing="@(lack > 0)" CssClass="mat-row"
                                      Status="@($"现有{have}（随身{carried}／地面{have - carried}）{(reserved > 0 ? $" · 预留{reserved}" : "")}{(lack > 0 ? $" · 缺少{lack}" : "")}")"
-                                     DataDrop="@($"slot:{recipeId}:{item}")" Title="把具体批次的卡拖到这里指定使用">
+                                     DataDrop="@($"slot:{recipeId}:{item}")">
                                 @if (lack > 0)
                                 {
                                     @* B23（A10 §4）：缺料→查看来源（只读地图定位，关掉地图回这里并恢复选择） *@
                                     <button type="button" class="linkish src-btn" data-source-item="@item" title="在地图上查看@(e.ItemName(item))的已知来源（只读，不移动；关掉地图回到这里）" @onclick="() => G.OpenSources(item)">查看来源</button>
                                 }
-                                <span class="slot-batches">
+                                @* BM5b2（S08／S06 Q606）：材料批次只读明细——系统在同一合格来源级内按早到期配够，不再手工指定批次 *@
+                                <span class="slot-batches readonly">
                                     @foreach (var (b, n) in plan)
                                     {
-                                        var bid = b.InstanceId;
-                                        var pinned = preferred.Contains(bid);
-                                        <button type="button" class="batch-chip @(pinned ? "on" : "")" title="@(pinned ? "已手工指定，点击取消" : "点击固定使用这一批")" @onclick="() => TogglePreferred(bid)">
-                                            @BatchText(b, n, pinned)
-                                        </button>
+                                        <span class="batch-chip">@BatchText(b, n)</span>
                                     }
                                 </span>
                             </ItemRow>
@@ -731,24 +727,17 @@ else
         G.Notify();
     }
 
-    private void TogglePreferred(int id)
-    {
-        if (!G.CraftPreferred.Remove(id)) G.CraftPreferred.Add(id);
-        G.Notify();
-    }
-
-    private string BatchText(ItemInstance b, int n, bool pinned)
+    private string BatchText(ItemInstance b, int n)
     {
         var where = b.IsCarried ? "随身" : "地面";
         var fresh = b.ExpiresAt.HasValue ? " · " + Ui.Fresh(b.ExpiresAt.Value - G.S.GameMinute) : "";
-        return $"{where}×{n}{fresh}{(pinned ? " · 指定" : "")}";
+        return $"{where}×{n}{fresh}";
     }
 
-    /// <summary>材料槽将用到的批次：手工指定的在前，其余按最早到期、随身优先、实例 ID 自动补齐。</summary>
-    private List<(ItemInstance inst, int n)> Fill(string itemId, int need, List<int> preferred)
+    /// <summary>材料槽将用到的批次（BM5b2 Q606：只读预估）：按最早到期、随身优先、实例 ID 自动配够，与开工预留同一顺序。</summary>
+    private List<(ItemInstance inst, int n)> Fill(string itemId, int need)
     {
-        var list = G.E.UsableBatches(G.S, itemId, true)
-            .OrderBy(b => preferred.Contains(b.InstanceId) ? preferred.IndexOf(b.InstanceId) : int.MaxValue).ToList();
+        var list = G.E.UsableBatches(G.S, itemId, true);
         var res = new List<(ItemInstance, int)>();
         foreach (var b in list)
         {

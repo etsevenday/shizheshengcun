@@ -346,15 +346,18 @@ namespace Survival.Core.Engine
                 info.Blocked = entry ?? "物品已不在";
                 return info;
             }
-            info.Max = it.Count;
-            info.ShowQuantity = it.Count > 1;
+            // BM5b2（S06 Q606）：交接与卡片转移同一配批语义——数量上限为出物人随身同组合计，预演按跨批最终结果
+            var have = GiveAvailable(s, it);
+            info.Max = have;
+            info.ShowQuantity = have > 1;
             info.ContainerNote = s.Items.Any(i => i.Owner == ItemInstance.ContainerOwner(it.InstanceId));
-            var countOk = count > 0 && count <= it.Count;
+            var countOk = count > 0 && count <= have;
             if (countOk)
             {
                 info.HasOutcome = true;
-                var grams = count >= it.Count ? ItemGrams(s, it) : UnitGrams(it) * count;
-                info.FromCards = RootCardsAfterOf(s, fromId, null, 0, it, count);
+                var plan = GivePlan(s, it, count);
+                var grams = PlanGrams(s, plan);
+                info.FromCards = RootCardsAfterRemovePlan(s, fromId, plan);
                 info.FromGrams = CarriedGramsOf(s, fromId) - grams;
                 if (toId != null)
                 {

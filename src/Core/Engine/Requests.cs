@@ -180,6 +180,23 @@ namespace Survival.Core.Engine
         /// <summary>BM5b1（S14 Q601）：提交时绑定的预期食材种类；源实例已变成别的物品（如生肉已烤成烤肉）整次拒绝。</summary>
         public string? ExpectItemId { get; set; }
 
+        /// <summary>
+        /// BM5b2（S06 Q606、S14 Q643）：按物品组自动配批——来源 owner（随身或当前地面）、物品与卡侧（CardSideOf：已鉴定／教学／地牢战利品等，普通为 null）
+        /// 一起认定一组；提交时按同组实时实物最早有效到期在前重新配够 Count 份，全量与最终容量校验后一次原子执行，不足或放不下整次拒绝。
+        /// 拾取／放下、锅食材与火堆加工位的投放都可带组（Group=true 时 InstanceId 只是提交时看到的组首，失效时同组其他合格批次接替）。
+        /// </summary>
+        public bool Group { get; set; }
+        public string? GroupOwner { get; set; }
+        public string? GroupItemId { get; set; }
+        public string? GroupSide { get; set; }
+
+        /// <summary>BM5b2（Q606）：同组自动配批的拾取（地面 → 随身）。</summary>
+        public static InstantRequest PickupGroup(string owner, string itemId, string? side, int count, int headInstanceId = 0) =>
+            new InstantRequest { Kind = InstantKind.Pickup, InstanceId = headInstanceId, Count = count, Group = true, GroupOwner = owner, GroupItemId = itemId, GroupSide = side };
+        /// <summary>BM5b2（Q606）：同组自动配批的放下（随身 → 当前地面）。</summary>
+        public static InstantRequest DropGroup(string owner, string itemId, string? side, int count, int headInstanceId = 0) =>
+            new InstantRequest { Kind = InstantKind.Drop, InstanceId = headInstanceId, Count = count, Group = true, GroupOwner = owner, GroupItemId = itemId, GroupSide = side };
+
         public static InstantRequest Pickup(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Pickup, InstanceId = instanceId, Count = count };
         public static InstantRequest Drop(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Drop, InstanceId = instanceId, Count = count };
         public static InstantRequest AddFuel(int count = 1, int woodInstanceId = 0) => new InstantRequest { Kind = InstantKind.AddFuel, Count = count, InstanceId = woodInstanceId };

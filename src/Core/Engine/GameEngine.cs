@@ -529,13 +529,7 @@ namespace Survival.Core.Engine
                             ? $"缺少{name}（现有{have}/需{need}：原料{name}{ing}＋燃料{name}{fuel}，缺{need - have}；{RecipeFuelRule(rc)}）"
                             : $"缺少燃料{name}（现有{have}/需{need}，缺{need - have}；{RecipeFuelRule(rc)}）";
                     }
-                    // 材料槽里手工指定的批次：仍须可用且属于本配方，否则要求刷新重选
-                    foreach (var id in r.PreferredInstanceIds)
-                    {
-                        var b = FindItem(s, id);
-                        if (b == null || !rc.AllInputs.ContainsKey(b.ItemId) || !UsableBatches(s, b.ItemId, true).Contains(b))
-                            return "指定的材料批次已失效，请重新选择";
-                    }
+                    // BM5b2（S06／S08 Q606）：取消手工指定材料批次，旧请求里的 PreferredInstanceIds 一律忽略，按同一合格来源级内早到期自动配够
                     foreach (var kv in rc.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value * batch));
                     // Q57 选 B：取消制造等级工作量倍率 1/(1+0.025L)，制造/建造/维修/拆解只用配方基础工作量（再乘装备与节点效果）；
                     // 同批次多件合并成一个工作量。已在进行中的旧动作按开工时保存的工作量结束（BaseWorkMinutes 已存档）
@@ -949,7 +943,7 @@ namespace Survival.Core.Engine
                     if (!rc.IsSalvage) a.XpSkill = rc.XpSkill ?? Crafting;
                     foreach (var kv in rc.AllInputs)
                     {
-                        a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value * p.Batch, a.ActionId, r.PreferredInstanceIds));
+                        a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value * p.Batch, a.ActionId));
                     }
                     foreach (var c in p.Catalysts) a.LockedItemIds.Add(c.InstanceId);
                     if ((rc.IsRepair || rc.IsSalvage) && p.Tool != null)

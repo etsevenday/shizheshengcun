@@ -433,4 +433,192 @@ public class BM5b2Tests : TestBase
         Assert.That(t.Items.Any(i => i.ItemId == Rot), Is.False);
         Assert.That(Web("Components", "MenuOverlay.razor"), Does.Contain("G.E.DebugSpoilageKit(G.S)"));
     }
+
+    // ───────────── Q606／Q642／Q643 自动配批 ─────────────
+
+    private const string Meat = "raw_meat";
+
+    private static void Ok(ActionResult r) => Assert.That(r.Ok, Is.True, r.Reason);
+
+    private int Batch(GameState s, string owner, string itemId, int? expires) =>
+        s.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ExpiresAt == expires).Sum(i => i.Count);
+
+    /// <summary>Q606-A01：同组早2晚6，请求3份＝早2＋晚1（末批只拆缺额）；拖放带同一组意图、上限＝同组合计，放下也先放早到期的。</summary>
+    [Test]
+    public void Q606_A01_EarliestFirst_LastBatchSplitOnlyShortfall()
+    {
+        var s = New();
+        CarriedCards(s, 0);
+        var t0 = s.GameMinute;
+        Make(s, Meat, 2, "camp", t0 + 300);
+        Make(s, Meat, 6, "camp", t0 + 900);
+        Ok(E.DoInstant(s, InstantRequest.PickupGroup("camp", Meat, null, 3)));
+        Assert.That(Batch(s, ItemInstance.Carried, Meat, t0 + 300), Is.EqualTo(2), "早批整批先取");
+        Assert.That(Batch(s, ItemInstance.Carried, Meat, t0 + 900), Is.EqualTo(1), "晚批只拆缺额");
+        Assert.That(Batch(s, "camp", Meat, t0 + 900), Is.EqualTo(5));
+
+        var drag = E.ResolveDrop(s, DropSource.Parse("card:carried|raw_meat")!, DropTarget.Parse("zone:camp", 0)!);
+        Assert.That(drag.Ok, Is.True, drag.Reason);
+        Assert.That(drag.Instant!.Group, Is.True, "拖放按物品组提交，不绑定所拖那一堆");
+        Assert.That((drag.Instant.GroupOwner, drag.Instant.GroupItemId, drag.Instant.GroupSide), Is.EqualTo((ItemInstance.Carried, Meat, (string?)null)));
+        Assert.That(drag.MaxQuantity, Is.EqualTo(3), "拖放上限＝同组合计");
+        drag.Instant.Count = 2;
+        Ok(E.DoInstant(s, drag.Instant));
+        Assert.That(Batch(s, ItemInstance.Carried, Meat, t0 + 900), Is.EqualTo(1));
+        Assert.That(Batch(s, ItemInstance.Carried, Meat, t0 + 300), Is.EqualTo(0), "放下也先放早到期的");
+    }
+
+    /// <summary>Q606-A02：预估后早批在确认前到期——先转腐败物，由同组晚批配够；不足整次拒绝、什么都不变。</summary>
+    [Test]
+    public void Q606_A02_ExpiredBeforeConfirm_RefillFromSameGroup_ShortfallRejectsWhole()
+    {
+        var s = New();
+        CarriedCards(s, 0);
+        var t0 = s.GameMinute;
+        Make(s, Meat, 2, "camp", t0 + 300);
+        Make(s, Meat, 6, "camp", t0 + 900);
+        Assert.That(E.MaxGroupPickup(s, "camp", Meat, null), Is.EqualTo(8));
+        foreach (var i in s.Items.Where(i => i.ItemId == Meat && i.ExpiresAt == t0 + 300)) i.ExpiresAt = s.GameMinute;   // 到期＝当前分钟视为已到期
+        Ok(E.DoInstant(s, InstantRequest.PickupGroup("camp", Meat, null, 3)));
+        Assert.That(Batch(s, ItemInstance.Carried, Meat, t0 + 900), Is.EqualTo(3), "由同组其他合格批次接替");
+        Assert.That(Rotten(s, Meat, "camp"), Is.EqualTo(2), "不抢用过期原物，先按 Q610 转换");
+        Assert.That(s.Items.Any(i => i.IsCarried && i.ItemId == Rot), Is.False, "不自动拿腐败物");
+
+        var before = SaveSerializer.Serialize(s);
+        var no = E.DoInstant(s, InstantRequest.PickupGroup("camp", Meat, null, 4));
+        Assert.That(no.Ok, Is.False);
+        Assert.That(no.Reason, Is.EqualTo("数量无效"));
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "不缩量、不先转一部分");
+    }
+
+    /// <summary>Q606-A03：跨批后最终第6张卡——整次拒绝不部分转移；按钮、拖放与 Shift 数量同一上限与校验。</summary>
+    [Test]
+    public void Q606_A03_CrossBatchFinalCards_RejectWhole_DragSameRule()
+    {
+        var s = New();
+        CarriedCards(s, 4);
+        var t0 = s.GameMinute;
+        Make(s, Meat, 2, "camp", t0 + 300);
+        Make(s, Meat, 6, "camp", t0 + 900);
+        Assert.That(E.MaxGroupPickup(s, "camp", Meat, null), Is.EqualTo(2), "跨到第二批会成第6张卡");
+        Assert.That(E.GroupPickupBlockedText(s, "camp", Meat, null, 3), Does.Contain("随身卡位已满").And.Contain("最多可取2份"));
+        var before = SaveSerializer.Serialize(s);
+        Assert.That(E.DoInstant(s, InstantRequest.PickupGroup("camp", Meat, null, 3)).Ok, Is.False);
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "整次拒绝，不部分转移");
+        var drag = E.ResolveDrop(s, DropSource.Parse("card:camp|raw_meat")!, DropTarget.Parse("zone:carried", 0)!);
+        Assert.That(drag.MaxQuantity, Is.EqualTo(2), "拖放与按钮同一上限");
+        drag.Instant!.Count = 3;
+        Assert.That(E.DoInstant(s, drag.Instant).Ok, Is.False, "Shift 数量超限同样整次拒绝");
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before));
+        Ok(E.DoInstant(s, InstantRequest.PickupGroup("camp", Meat, null, 2)));
+        Assert.That(E.RootCardCount(s), Is.EqualTo(5));
+    }
+
+    /// <summary>Q643-A02：同物品普通侧与地牢战利品侧并存——只在所选侧配批，不足不跨侧补；重试只生效一次。</summary>
+    [Test]
+    public void Q643_A02_SidesNeverMix_ShortSideRejected_RetryOnce()
+    {
+        var s = New();
+        CarriedCards(s, 0);
+        var t0 = s.GameMinute;
+        Make(s, Meat, 2, "camp", t0 + 300);
+        foreach (var i in Make(s, Meat, 3, "camp", t0 + 200)) i.RewardOrigin = "test_dungeon";   // 战利品侧且更早到期
+        Assert.That(E.GroupStacks(s, "camp", Meat, null).Sum(i => i.Count), Is.EqualTo(2));
+        Assert.That(E.GroupStacks(s, "camp", Meat, GameEngine.RewardCardSuffix).Sum(i => i.Count), Is.EqualTo(3));
+        var before = SaveSerializer.Serialize(s);
+        Assert.That(E.DoInstant(s, InstantRequest.PickupGroup("camp", Meat, null, 3)).Ok, Is.False, "普通侧只有2份：不拿战利品侧补足");
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "不减量、不部分转移");
+        var r = InstantRequest.PickupGroup("camp", Meat, null, 2);
+        r.RequestId = "q643-retry";
+        Ok(E.DoInstant(s, r));
+        Assert.That(E.DoInstant(s, r).Ok, Is.True);
+        Assert.That(Count(s, Meat, ItemInstance.Carried), Is.EqualTo(2), "重试只生效一次");
+        Assert.That(s.Items.Where(i => i.IsCarried && i.ItemId == Meat).All(i => i.RewardOrigin == null), Is.True, "只取所选侧");
+        Assert.That(s.Items.Where(i => i.Owner == "camp" && i.ItemId == Meat).Sum(i => i.Count), Is.EqualTo(3));
+        Assert.That(s.Items.Where(i => i.Owner == "camp" && i.ItemId == Meat).All(i => i.RewardOrigin != null), Is.True, "战利品侧原样");
+    }
+
+    /// <summary>Q642-A01／A02：火堆来源按来源组——随身早1晚2为一组（地面另一组），锅里放2份恰取早1晚1；明确工位仍最多1份；组内全转腐败物则整次拒绝、不改选腐败物。</summary>
+    [Test]
+    public void Q642_A01_A02_FireSourceGroup_PotTakesEarlyThenLate()
+    {
+        var s = New();
+        var pot = First(s, "pot");
+        E.DebugGive(s, "clean_water", 2, "camp");
+        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2)));
+        Ok(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)));
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true;
+        fac.FuelMinutes = 240;
+        CarriedCards(s, 0);
+        var t0 = s.GameMinute;
+        var early = Make(s, "raw_root", 1, ItemInstance.Carried, t0 + 300).Single();
+        Make(s, "raw_root", 2, ItemInstance.Carried, t0 + 900);
+        var ground = Make(s, "raw_root", 1, "camp", t0 + 100).Single();
+        Assert.That(E.GroupCount(s, early), Is.EqualTo(3), "随身同侧合成一组总3");
+        Assert.That(E.GroupCount(s, ground), Is.EqualTo(1), "地面另一组");
+        Assert.That(E.MaxPutFood(s, early, pot, out var why, E.GroupCount(s, early)), Is.GreaterThanOrEqualTo(2), why);
+        Ok(E.DoInstant(s, E.AsGroup(InstantRequest.PutFoodInPot(early.InstanceId, pot.InstanceId, 2), early)));
+        Assert.That(Batch(s, ItemInstance.Carried, "raw_root", t0 + 300), Is.EqualTo(0), "早1先放");
+        Assert.That(Batch(s, ItemInstance.Carried, "raw_root", t0 + 900), Is.EqualTo(1), "晚批只拆缺额1");
+        Assert.That(ground.Owner, Is.EqualTo("camp"), "不从地面另一组凑");
+
+        var head = s.Items.First(i => i.IsCarried && i.ItemId == "raw_root");
+        var bad = E.DoInstant(s, E.AsGroup(InstantRequest.PutInFireSlot(head.InstanceId, 1, 2), head));
+        Assert.That(bad.Ok, Is.False, "明确工位最多1份");
+        Assert.That(bad.Reason, Is.EqualTo("请输入 1 到 1 之间的整数。"));
+
+        head.ExpiresAt = s.GameMinute;
+        var gone = E.DoInstant(s, E.AsGroup(InstantRequest.PutFoodInPot(head.InstanceId, pot.InstanceId, 1), head));
+        Assert.That(gone.Ok, Is.False, "组内已无可用实物：整次拒绝");
+        Assert.That(E.PotFood(s, pot.InstanceId).Any(i => i.ItemId == Rot), Is.False, "不自动改选腐败物");
+        Assert.That(Rotten(s, "raw_root", ItemInstance.Carried), Is.EqualTo(1));
+    }
+
+    /// <summary>Q606：同伴交接与卡片转移同一配批语义——上限为同组合计，点哪堆都先交早到期的；不足整次拒绝。</summary>
+    [Test]
+    public void Q606_GiveUsesSameGroupPlan()
+    {
+        var s = New();
+        E.DebugQuickParty(s, 2);
+        var mate = s.Party.First(id => id != GameState.PlayerId);
+        CarriedCards(s, 0);
+        var t0 = s.GameMinute;
+        Make(s, Meat, 1, ItemInstance.Carried, t0 + 300);
+        var late = Make(s, Meat, 3, ItemInstance.Carried, t0 + 900).Single();
+        var pv = E.GivePreview(s, GameState.PlayerId, mate, late.InstanceId, 2);
+        Assert.That(pv.Max, Is.EqualTo(4), "交接上限＝同组合计");
+        Assert.That(pv.Blocked, Is.Null, pv.Blocked);
+        Ok(E.Give(s, GameState.PlayerId, mate, late.InstanceId, 2));
+        var to = ItemInstance.CarriedOwner(mate);
+        Assert.That(Batch(s, to, Meat, t0 + 300), Is.EqualTo(1), "点晚批那堆也先交早到期的");
+        Assert.That(Batch(s, to, Meat, t0 + 900), Is.EqualTo(1));
+        Assert.That(E.GiveBlocked(s, GameState.PlayerId, mate, late.InstanceId, 3), Is.EqualTo("数量无效"), "不足整次拒绝");
+    }
+
+    /// <summary>Q606／Q642（S14 UI）：批次条与右栏批次只读（标题「批次（n）」、无选中框）、点叠卡任一层选同一物品组、制作材料批次不可指定、火堆来源行按来源组键并按组提交。</summary>
+    [Test]
+    public void Q606_Q642_Ui_ReadOnlyBatches_GroupSourceKey()
+    {
+        var ca = Web("Components", "CardActions.razor");
+        Assert.That(ca, Does.Contain("public static string BatchHead(int count) => count > 1 ? $\"批次（{count}）\" : \"批次\";"));
+        Assert.That(ca, Does.Not.Contain("role=\"radio\"").And.Not.Contain("G.PickBatch("), "无选中框、不可点选批次");
+        Assert.That(ca, Does.Not.Contain("转移先取最早到期的有效批次").And.Not.Contain("所选批"), "不加额外教学长句");
+        Assert.That(ca, Does.Contain("G.TransferGroup(m.Owner, m.ItemId, m.Side, n, m.ToCarried)"), "按钮按物品组与总数提交");
+        var detail = Web("Components", "ItemDetail.razor");
+        Assert.That(detail, Does.Contain("<div class=\"batch readonly\">@batchText</div>").And.Not.Contain("<button class=\"batch"));
+        var shelf = Web("Components", "ItemShelf.razor");
+        Assert.That(shelf, Does.Not.Contain("（点选这一批）"));
+        Assert.That(shelf, Does.Contain("@onclick=\"() => SelectSide(id, allKb, kb)\""), "点任一层选同一物品组，不指定该批");
+        var craft = Web("Components", "CraftOverlay.razor");
+        Assert.That(craft, Does.Not.Contain("TogglePreferred").And.Not.Contain("指定使用").And.Not.Contain("固定使用这一批"), "材料批次只读");
+        var session = Web("Services", "GameSession.cs");
+        Assert.That(session, Does.Not.Contain("CraftPreferred"));
+        Assert.That(session, Does.Contain("public ActionResult TransferGroup(string owner, string itemId, string? side, int count, bool toCarried"));
+        var fire = Web("Components", "FireMenu.razor");
+        Assert.That(fire, Does.Contain("if (e.Groupable(src)) req = e.AsGroup(req, src);"), "火堆来源按组提交");
+        Assert.That(fire, Does.Contain("<span class=\"fm-src-name\">@nm<b>×@r.Count</b>"), "来源行显示本组合计");
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        Assert.That(fac, Does.Contain("E.Groupable(it) ? $\"g:{it.Owner}|{it.ItemId}|{E.CardSideOf(it)}\" : $\"i:{it.InstanceId}\""), "稳定键为来源组键");
+    }
 }

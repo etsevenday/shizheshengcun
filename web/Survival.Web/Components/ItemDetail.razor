@@ -273,7 +273,7 @@ else
         }
         @if (batches.Count > 1)
         {
-            @* Q589：批次标题统一「批次」，去掉原括号里的点选／食用／转移承诺；可点选时（真正选中）沿原规则可点，不因展开新增选择／转移 *@
+            @* Q589：批次标题统一「批次」（RailFold 带数量时为「批次（{批数}）」）；BM5b2（Q606）起全部只读 *@
             <RailFold Type="@railType" Group="@RailGroups.Batch" Name="@RailText.Batch" Count="@batches.Count">
                 @foreach (var b in batches)
                 {
@@ -283,15 +283,8 @@ else
                         @* 试玩修复 M77-B9：受本次烹饪保护的食材不显示普通倒计时，写“受热保护中（原期限N小时）” *@
                         <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(!b.ExpiresAt.HasValue ? "不会腐败" : b.Stacks.Count == 1 && e.IsHeatProtected(s, b.Stacks[0]) ? Ui.FreshOf(e, s, b.Stacks[0]) : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute))</span>
                     </text>;
-                    @if (ReadOnly)
-                    {
-                        @* B42：悬停查看只读列出批次，不可点选（不改所选批次） *@
-                        <div class="batch readonly @(b == chosen ? "on" : "")">@batchText</div>
-                    }
-                    else
-                    {
-                        <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key, group)">@batchText</button>
-                    }
+                    @* BM5b2（S06 Q606）：批次只读明细——无选中框、不可点选；转移与食用由系统按最早有效到期自动配批 *@
+                    <div class="batch readonly">@batchText</div>
                 }
             </RailFold>
         }

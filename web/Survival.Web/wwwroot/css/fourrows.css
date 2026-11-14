@@ -357,6 +357,9 @@
 .ca-batch small { font-size: var(--fs-aux); color: var(--muted); }
 .ca-batch.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .ca-batch.spoiled small { color: #f0c7b9; }
+/* BM5b2（Q606）：批次条只读明细——标题「批次（n）」，各批不可点选 */
+.ca-batches-title { flex: 0 0 auto; align-self: center; font-size: var(--fs-aux); color: var(--muted); }
+.ca-batches.readonly .ca-batch { cursor: default; }
 
 /* ───── Q28（策划答复 2026-10-30，取代 S14 §18.2 约80%）：资源、设施、敌踪、相邻地点卡的图片区以约70%卡面为目标 ─────
    M84 试玩修复后的排布：上行整张给主图（完整显示，不放大裁切，图上不压文字角标，只留右上角一枚小角标）；下方信息区左列

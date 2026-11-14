@@ -147,7 +147,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 这一批要取的实例（Q214 选 A）：只取主角随身与当前区地面未预留、未占用、未腐败的（队友包、屋柜、穿戴、锅里、别的区都不取）；
-        /// 每种输入先取原截止晚于预计完成时刻（或无截止）的批，再取其他未腐败批；组内截止先到先用、同截止随身优先、再实例号升序（UsableBatches 的顺序，OrderBy 稳定）。
+        /// BM5b2（Q606）：每种输入按 UsableBatches 的顺序（截止先到先用、同截止随身优先、再实例号）配够，不再把截止晚于完成的批排在前面。
         /// 肉干也按这个顺序取，但肉干受 Q215 保护，不把“原截止早于完成”当作投后会腐败。
         /// </summary>
         private List<(ItemInstance inst, int take)> DryingSources(GameState s, RecipeConfig rc, int finish)
@@ -156,8 +156,8 @@ namespace Survival.Core.Engine
             foreach (var kv in rc.Inputs)
             {
                 var left = kv.Value;
-                foreach (var w in UsableBatches(s, kv.Key, true).Where(w => !IsLocked(s, w))
-                             .OrderBy(w => w.ExpiresAt.HasValue && w.ExpiresAt.Value <= finish ? 1 : 0))
+                // BM5b2（S06 Q606）：取代 Q214「截止晚于完成的先取」排序，同一合格来源内按最早有效到期配够（果干临期警告不变）
+                foreach (var w in UsableBatches(s, kv.Key, true).Where(w => !IsLocked(s, w)))
                 {
                     if (left <= 0) break;
                     var take = Math.Min(left, w.Count);

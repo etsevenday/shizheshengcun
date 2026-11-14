@@ -65,22 +65,21 @@
                 var span = carried ? Math.Max(1, e.RootCardsOf(s, list.Select(i => i.InstanceId))) : 1;
                 // 只有真实批次确实占了多个卡位时才铺成叠卡；同批仅因制作预留临时拆堆（仍占1格）不叠
                 var stacked = kb != null && kb.Count > 1 && span > 1;
-                var pickedKey = stacked && gSel ? G.CurrentBatch(Owner, id, kb)?.Key : null;
                 if (stacked) head = kb![0].Stacks.FirstOrDefault(i => i.ReservedBy == null) ?? kb[0].Stacks[0];
                 var colStyle = (span > 1 ? $"grid-column:span {span};--span:{span};" : "") + (stacked ? $"--layers:{kb!.Count - 1};" : "");
                 <div @key="@("g:" + id + (side != null ? ":" + side : ""))" class="card-col @(gSel ? "open" : "") @(stacked ? "stacked" : "")"
                      style="@(colStyle.Length > 0 ? colStyle : null)">
                 @if (stacked)
                 {
-                    @* 后层：从最晚到期到第二早，依次压在前一张下面；点后层 = 选中这一批（展开选批次），卡下操作窗随即作用于它 *@
+                    @* 后层：从最晚到期到第二早，依次压在前一张下面；BM5b2（S06 Q606）：点后层与点前卡相同 = 选中这一物品组（本卡侧），不再点选批次，转移与食用由系统按最早有效到期自动配批 *@
                     for (var k = kb!.Count - 1; k >= 1; k--)
                     {
                         var b = kb[k];
                         var bk = b.Key;
                         var fresh = b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute);
-                        <button type="button" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, bk)" class="stack-layer @(pickedKey == bk ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" style="--i:@k"
-                                title="@($"第{k + 1}批×{b.Count}：{fresh}{e.PatchDurabilitySuffix(b.Stacks[0])}{(b.Reserved ? " · 预留" : "")}（点选这一批）")" aria-label="@($"选择第{k + 1}批，{b.Count}份，{fresh}")"
-                                @onclick="() => G.PickBatch(Owner, id, bk)">
+                        <button type="button" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, bk)" class="stack-layer @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" style="--i:@k"
+                                title="@($"第{k + 1}批×{b.Count}：{fresh}{e.PatchDurabilitySuffix(b.Stacks[0])}{(b.Reserved ? " · 预留" : "")}")" aria-label="@($"第{k + 1}批，{b.Count}份，{fresh}")"
+                                @onclick="() => SelectSide(id, allKb, kb)">
                             <span class="sl-art">@Icons.Markup(id)</span>
                             <span class="sl-tag"><b>×@b.Count</b> @fresh@(e.PatchDurabilitySuffix(b.Stacks[0]))</span>
                         </button>
@@ -102,7 +101,7 @@
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@
                 @* B42：卡片本体是悬停热区（与点击同一物品身份；分卡时带这一侧的批次） *@
                 <div id="@(gSel ? "card-sel" : null)" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, split ? (sideKb.FirstOrDefault(b => !b.Reserved && !b.Spoiled) ?? sideKb.FirstOrDefault())?.Key : null)" data-tip="@($"{title} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drag-title="@title" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item k2i @(spoiledFront ? "st-danger" : "") @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
+                     class="card item k2i @(spoiledFront ? "st-danger" : "") @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
                      role="button" tabindex="0" @onclick="() => SelectSide(id, kb, split ? sideKb : null)" @onkeydown="ev => OnCardKey(ev, () => SelectSide(id, kb, split ? sideKb : null))" title="@(dr ? "本实例战利品：这次地牢里领到的奖励，可以封存；成功离开地牢后并回同名物品。" + e.Item(id).Desc : e.Item(id).Desc)">
                     @{ var qtyTip = stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null; }
                     @* B32a（Q340、Q356）：重墨 V2 物品卡——上部主图，下部纸色信息条「名称 + 数量副标 + 状态第二行」，转移箭头在信息条右端 *@

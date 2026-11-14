@@ -146,6 +146,19 @@ namespace Survival.Core.Engine
                 .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
         }
 
+        /// <summary>BM5b2（Q606）：可按组自动配批的卡——随身或当前地面上的可堆叠物品（工具、锅、设施与锅里的内容仍按实例）。</summary>
+        public bool Groupable(ItemInstance head) => IsStackableInst(head) && !IsPot(head) && !head.InFacility && !head.InContainer;
+
+        /// <summary>给即时请求挂上这一实例所在的组（提交时按组实时配批）。</summary>
+        public InstantRequest AsGroup(InstantRequest r, ItemInstance head)
+        {
+            r.Group = true;
+            r.GroupOwner = head.Owner;
+            r.GroupItemId = head.ItemId;
+            r.GroupSide = CardSideOf(head);
+            return r;
+        }
+
         /// <summary>该卡当前批次（同物品、同到期、同区、未预留）的总数。</summary>
         public int CardBatchCount(GameState s, ItemInstance head) =>
             s.Items.Where(i => i.Owner == head.Owner && i.ItemId == head.ItemId && i.ExpiresAt == head.ExpiresAt && i.ReservedBy == null && i.RewardOrigin == head.RewardOrigin && CardSideOf(i) == CardSideOf(head))
@@ -245,6 +258,19 @@ namespace Survival.Core.Engine
                 return pick;
             }
             if (IsLocked(s, head)) return DropIntent.No("行动占用：该物品正被当前行动使用");
+            // BM5b2（Q606）：可堆叠物品按同组（同来源／物品／卡侧）自动配批，Shift 数量上限按跨批最终根卡与重量预演
+            if (Groupable(head))
+            {
+                var side = CardSideOf(head);
+                var total = GroupCount(s, head);
+                if (zone == ItemInstance.Carried)
+                {
+                    var gmax = MaxGroupPickup(s, head.Owner, head.ItemId, side);
+                    if (gmax < 1) return DropIntent.No(GroupPickupBlockedText(s, head.Owner, head.ItemId, side, 1) ?? $"携带后将超过{Config.Carry.HardGrams / 1000}公斤");
+                    return Instant(DropVerb.Transfer, $"拾取1{name}到随身", InstantRequest.PickupGroup(head.Owner, head.ItemId, side, 1, head.InstanceId), gmax);
+                }
+                return Instant(DropVerb.Transfer, $"放下1{name}到地面", InstantRequest.DropGroup(head.Owner, head.ItemId, side, 1, head.InstanceId), total);
+            }
             var batch = CardBatchCount(s, head);
             if (zone == ItemInstance.Carried)
             {
@@ -341,6 +367,13 @@ namespace Survival.Core.Engine
                 return Instant(DropVerb.PutInFire, $"把{name}放进火堆加工位{hint}", req);
             }
             var p = FireFoodProcess(head.ItemId)!;
+            if (Groupable(head))
+            {
+                // BM5b2（Q606）：同组自动配批；明确加工位仍只放 1 份（组里最早有效到期那份）
+                AsGroup(req, head);
+                var gmax = slot.HasValue ? Math.Min(1, max) : Math.Min(FireFreeSlots(s, loc), GroupCount(s, head));
+                return Instant(DropVerb.PutInFire, $"放1份{name}进火堆加工位直接{p.Name}（{p.HeatMinutes}分钟）", req, gmax);
+            }
             return Instant(DropVerb.PutInFire, $"放1份{name}进火堆加工位直接{p.Name}（{p.HeatMinutes}分钟）",
                 req, Math.Min(max, CardBatchCount(s, head)));
         }
@@ -367,7 +400,8 @@ namespace Survival.Core.Engine
             if (src.Kind == DropSourceKind.PotChild) return DropIntent.No(IsLiquid(head) ? "暂不支持锅与锅之间倒水" : "先把它从原来的锅里取出来");
             if (!IsLiquid(head)) return DropFoodOnPot(s, head, pot);
             if (!PotConfig(pot).Accepts.Contains(head.ItemId)) return DropIntent.No(Unsupported);
-            var max = MaxFill(s, head, pot, out var reason);
+            var grouped = Groupable(head);   // BM5b2（Q606）：拖放与按钮同一配批，可堆叠的水按同组合计
+            var max = MaxFill(s, head, pot, out var reason, grouped ? GroupCount(s, head) : null);
             if (reason != null) return DropIntent.No(reason);
             var cfg = PotConfig(pot);
             var before = PotUnits(s, pot.InstanceId) * cfg.UnitMl * 100 / cfg.CapacityMl;
@@ -376,7 +410,7 @@ namespace Survival.Core.Engine
             var restart = BatchProcess(head.ItemId) != null && ProcessOf(s, pot) is FacilityProcess bp && bp.HeatDoneMinutes > 0
                 ? $"；整锅净化进度{bp.HeatDoneMinutes}分钟清零重新计时" : "";
             return Instant(DropVerb.FillPot, $"装入1份{ItemName(head.ItemId)}，水量{before}%→{after}%{restart}",
-                InstantRequest.FillPot(head.InstanceId, pot.InstanceId), max);
+                grouped ? AsGroup(InstantRequest.FillPot(head.InstanceId, pot.InstanceId), head) : InstantRequest.FillPot(head.InstanceId, pot.InstanceId), max);
         }
 
         /// <summary>食材落到锅（锅卡或锅食材区）：即时放进该锅的真实内容，不冒泡成火堆烤制（统一卡片案第 5 节）。</summary>
@@ -389,10 +423,12 @@ namespace Survival.Core.Engine
                 if (block != null) return DropIntent.No(block);
                 return Instant(DropVerb.MoveToPot, MoveToPotLabel(mv.TargetSlot!.Value + 1), mv);   // BM7a（Q644）：落点只写同一短动作与真实目标
             }
-            var max = MaxPutFood(s, head, pot, out var why);
+            var group = Groupable(head);
+            var max = MaxPutFood(s, head, pot, out var why, group ? GroupCount(s, head) : (int?)null);
             if (why != null) return DropIntent.No(why);
-            return Instant(DropVerb.PutFood, $"放进{ItemName(pot.ItemId)}食材区（{PotFoodHint(s, pot)}）",
-                InstantRequest.PutFoodInPot(head.InstanceId, pot.InstanceId), max);
+            var req = InstantRequest.PutFoodInPot(head.InstanceId, pot.InstanceId);
+            if (group) AsGroup(req, head);   // BM5b2（Q606）：同组自动配批
+            return Instant(DropVerb.PutFood, $"放进{ItemName(pot.ItemId)}食材区（{PotFoodHint(s, pot)}）", req, max);
         }
 
         private DropIntent DropOnResource(GameState s, DropSource src, ItemInstance head, string nodeId)
@@ -430,7 +466,7 @@ namespace Survival.Core.Engine
             return new DropIntent
             {
                 Ok = true, Verb = DropVerb.PreviewRecipe, Label = $"指定这批{ItemName(itemId)}", Recipes = new List<string> { recipeId },
-                Action = ActionRequest.Craft(recipeId, null, new[] { head.InstanceId }),
+                Action = ActionRequest.Craft(recipeId),
             };
         }
     }

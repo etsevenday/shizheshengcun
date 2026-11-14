@@ -202,7 +202,7 @@ public sealed partial class GameSession
     {
         if (GearSource is not ItemInstance src || src.Owner != ItemInstance.CarriedOwner(GearActorId)) return;
         if (E.GiveEntryBlocked(S, GearActorId, src.InstanceId) != null) return;
-        GivePending = new GearGiveDraft { InstanceId = src.InstanceId, Count = src.Count, FromCompare = GearSlot != null };
+        GivePending = new GearGiveDraft { InstanceId = src.InstanceId, Count = E.GiveAvailable(S, src), FromCompare = GearSlot != null };
         Notify();
     }
 
@@ -237,7 +237,7 @@ public sealed partial class GameSession
         QueueFly($"[data-gear-member=\"{to}\"]");
         if (E.FindItem(S, g.InstanceId) is ItemInstance left && left.Owner == ItemInstance.CarriedOwner(GearActorId))
         {
-            g.Count = left.Count;
+            g.Count = E.GiveAvailable(S, left);
             if (!E.GiveReceivers(S, GearActorId).Contains(to)) g.To = null;
         }
         else ClearGearWork();

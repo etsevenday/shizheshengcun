@@ -102,7 +102,7 @@ public class BM4bRailTests : TestBase
         }
         var item = Web("Components", "ItemDetail.razor");
         Assert.That(item, Does.Contain("<RailFold Type=\"@railType\" Group=\"@RailGroups.Batch\" Name=\"@RailText.Batch\" Count=\"@batches.Count\">"));
-        Assert.That(item, Does.Contain("<div class=\"batch readonly @(b == chosen ? \"on\" : \"\")\">@batchText</div>"), "只读批次不可点");
+        Assert.That(item, Does.Contain("<div class=\"batch readonly\">@batchText</div>"), "只读批次不可点");
     }
 
     /// <summary>Q589-A01：主要信息（身份、即时效果、重量、耐久、到期／预留、风险与不可用原因）在第一个折叠组之前，不随折叠藏掉；空组不渲染。</summary>

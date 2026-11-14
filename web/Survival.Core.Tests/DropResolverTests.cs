@@ -249,7 +249,7 @@ public class DropResolverTests : TestBase
 
         var slot = R(s, Card("camp|stone"), "slot:knife:stone");
         Assert.That(slot.Ok, Is.True, slot.Reason);
-        Assert.That(slot.Action!.PreferredInstanceIds, Has.Count.EqualTo(1));
+        Assert.That(slot.Action!.PreferredInstanceIds, Is.Empty, "BM5b2（Q606）：拖到材料槽只打开配方，不再手工指定批次");
         Assert.That(R(s, Card("camp|wood"), "slot:knife:stone").Reason, Is.EqualTo("这个材料槽需要石块"));
         var camp = R(s, Card("camp|wood"), "loc:camp");
         Assert.That(camp.Recipes, Is.EqualTo(new[] { "shelter", "build_drying_rack" }), "原料拖至营地地点卡（B22c 起晾制架也用木材）");
@@ -264,7 +264,6 @@ public class DropResolverTests : TestBase
         var b = a.Clone();
         Start(a, ActionRequest.Craft("knife"));
         var drag = E.ResolveDrop(b, Card("camp|stone"), T("slot:knife:stone"));
-        // 拖拽指定的是地面那批石块；按钮自动补齐时同到期先用随身，故此处对比自动补齐的拖拽入口
         var viaCard = E.ResolveDrop(b, Card("camp|stone"), T("card:camp|fiber"));
         Assert.That(viaCard.Recipes, Does.Contain("knife"));
         Start(b, ActionRequest.Craft(viaCard.Recipes[0]));
@@ -273,14 +272,13 @@ public class DropResolverTests : TestBase
         Run(b);
         Assert.That(SaveSerializer.Serialize(b), Is.EqualTo(SaveSerializer.Serialize(a)), "产物位置一致");
 
-        // 指定批次：先用拖入的地面石块
+        // BM5b2（Q606）：拖到材料槽不再手工指定批次，开工与按钮同一自动配批（同到期随身优先）
         var c = New(77);
         E.DebugGive(c, "stone", 1, "carried");
-        var ground = First(c, "stone", "camp");
+        var d = c.Clone();
         Start(c, drag.Action!.WithRequestId(null));
-        var stones = c.Main!.ReservedItemIds.Select(id => c.Items.First(x => x.InstanceId == id)).Where(x => x.ItemId == "stone").ToList();
-        Assert.That(stones.All(x => x.Owner == "camp"), Is.True, "预留的是拖入的地面批次");
-        Assert.That(Count(c, "stone", "carried"), Is.EqualTo(1), "随身石块未被用掉");
+        Start(d, ActionRequest.Craft("knife"));
+        Assert.That(SaveSerializer.Serialize(c), Is.EqualTo(SaveSerializer.Serialize(d)), "拖入材料槽与按钮开工的预留完全一致");
     }
 
     [Test]
