@@ -18,7 +18,8 @@ namespace Survival.Core.State
     public enum ActionStatus { Running, Paused }
 
     /// <summary>EnemyApproach：B41b 敌方接近到期打断（R05 Q416、Q444、Q470；原因字段见 ActionState.PauseNote）。</summary>
-    public enum PauseReason { None, StatAlert, StatZero, FireOut, EnemyApproach, ExploreEncounter }
+    /// <summary>Dying：B47a2 可暂停未完多段工作内有人真实进入濒死（R09 Q673；人物快照见 ActionState.PauseNote）。</summary>
+    public enum PauseReason { None, StatAlert, StatZero, FireOut, EnemyApproach, ExploreEncounter, Dying }
 
     /// <summary>整局唯一的可序列化状态。内核不持有其他可变数据。</summary>
     public sealed class GameState
@@ -309,6 +310,11 @@ namespace Survival.Core.State
         /// 按首次出现顺序、每对一次；出手结束时结账意志经验后清空。只在同一次原子调用内存在，不进存档。null 表示当前不在结账范围内。
         /// </summary>
         [JsonIgnore] public List<(string ActorId, int WorldEnemyId)>? WillpowerPending { get; set; }
+        /// <summary>
+        /// B47a2（R09 Q673、Q680、Q681）：当前这一个世界推进段里真实从正常进入濒死、且此前未被提醒过的人物 ID（按原触发顺序）。
+        /// 只在 Advance 推进一段期间存在，段末阈值提醒边界读完即清；战斗、空闲、已暂停等不经 Advance 的进入濒死不记（只写日志与提醒锁，不补未来暂停）。不进存档。
+        /// </summary>
+        [JsonIgnore] public List<string>? DyingEntries { get; set; }
         /// <summary>B47a2：意志经验结账范围的嵌套深度（最外层结束才结账）。不进存档。</summary>
         [JsonIgnore] public int WillpowerDepth { get; set; }
 
@@ -336,6 +342,7 @@ namespace Survival.Core.State
             c.Items = Items.Select(i => i.Clone()).ToList();
             c.WillpowerPending = null;   // B47a2：结账范围是单次原子调用内的临时账，副本不共享
             c.WillpowerDepth = 0;
+            c.DyingEntries = null;
             c.Main = Main?.Clone();
             c.Sub = Sub?.Clone();
             c.StashedWork = StashedWork?.Clone();

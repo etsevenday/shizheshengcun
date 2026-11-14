@@ -167,14 +167,27 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>开发入口（B13b）：某一门熟练度直接设为指定等级（经验清零）。</summary>
-        /// <summary>开发入口（B47a1 濒死与意志）：h03 主角健康→0.3；h0 主角健康→0（直接濒死）；starve 饱食、水分→0（世界段持续正伤）；bleed 主角开始出血。</summary>
+        /// <summary>
+        /// 开发入口（B47a1 濒死与意志）：h03 主角健康→0.3（B47a2 起同时清濒死提醒锁）；h0 主角健康→0（直接濒死）；starve 饱食、水分→0（世界段持续正伤）；bleed 主角开始出血；
+        /// B47a2：pause1 下一段只因进入濒死暂停；multi 下一段同边界新濒死＋归零＋高危多原因。
+        /// </summary>
         public string DebugDying(GameState s, string what)
         {
             var p = s.Actor(GameState.PlayerId);
             if (IsDead(s, p)) return "本局已结束";
             switch (what)
             {
-                case "h03": p.Stats.Health = 0.3; return "主角健康→0.3（开发用）";
+                case "h03": p.Stats.Health = 0.3; p.DyingNotified = false; return "主角健康→0.3（开发用）";
+                case "pause1":
+                    // B47a2（Q673）：下一段世界推进里只因进入濒死暂停——健康 0.05、饱食水分 0（提醒已锁存）
+                    p.Stats.Health = 0.05; p.DyingNotified = false; p.Stats.Satiety = 0; p.Stats.Hydration = 0; SyncLatches(s);
+                    return "主角健康→0.05、饱食水分→0（提醒已锁存；开始或继续多段行动，下一段进入濒死，开发用）";
+                case "multi":
+                    // B47a2（Q681）：同一段同时新进入濒死、饱食与水分归零、健康高危
+                    p.Stats.Health = 0.05; p.DyingNotified = false; p.Stats.Satiety = 0; p.Stats.Hydration = 0;
+                    p.ZeroLatched[StatId.Satiety] = false; p.ZeroLatched[StatId.Hydration] = false;
+                    p.AlertLatched[StatId.Health] = false; p.AlertLatched[StatId.Satiety] = false; p.AlertLatched[StatId.Hydration] = false;
+                    return "主角健康→0.05、饱食水分→0（提醒未锁存；开始或继续多段行动，下一段同边界多原因，开发用）";
                 case "h0": p.Stats.Health = 0; p.DyingNotified = true; return "主角健康→0，处于濒死（开发用）";
                 case "starve": p.Stats.Satiety = 0; p.Stats.Hydration = 0; SyncLatches(s); return "主角饱食、水分→0（开发用）";
                 case "bleed": ApplyPlayerBleed(s); return $"主角开始出血（{Fmt.T(s.Body.BleedDamage)}×{s.Body.BleedTriggers}，开发用）";

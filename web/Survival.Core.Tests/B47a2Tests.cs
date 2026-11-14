@@ -348,4 +348,191 @@ public class B47a2Tests : BattleTestBase
         Assert.That((WpXp(s, GameState.PlayerId), WpXp(s, m1)), Is.EqualTo((0L, 0L)));
         Assert.That(s.Battle!.Log.Any(l => l.Contains("意志经验")), Is.False);
     }
+
+    // ───────────── M917 Q673／Q680／Q681 进入濒死暂停 ─────────────
+
+    /// <summary>空闲新局（第 2 日白天、农野荒地、冻结刷新），主角健康 0.05、饱食水分 0 且提醒已锁存：下一段身体损伤让主角进入濒死。</summary>
+    private GameState NearDying(uint seed)
+    {
+        var s = New(seed);
+        E.DebugTeleport(s, "field");
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        s.WorldEnemies.Clear();
+        E.DebugDying(s, "pause1");
+        return s;
+    }
+
+    private static List<LogEntry> Since(GameState s, int mark) => s.Log.Skip(mark).ToList();
+
+    /// <summary>Q673-A01：未完多段行动内 H&gt;0→0：本段完整提交（世界 +5 分钟）后暂停一次，中央句与暂停原因按逐字稿；进入濒死日志只一条。</summary>
+    [Test]
+    public void Q673_A01_EnterDyingInMultiSegmentWork_PausesOnceAtBoundary()
+    {
+        var s = NearDying(47231);
+        Start(s, ActionRequest.Wait(60));
+        var t0 = s.GameMinute;
+        var mark = s.Log.Count;
+        var r = E.Advance(s);
+        Assert.That(r.Status, Is.EqualTo(SegmentStatus.Paused));
+        Assert.That((s.GameMinute - t0, s.Main!.ElapsedMinutes, s.Player.Stats.Health), Is.EqualTo((5, 5, 0.0)), "本段完整提交，不额外 tick");
+        Assert.That((s.Main.PauseReason, s.Main.PauseNote, s.Main.PauseStat), Is.EqualTo((PauseReason.Dying, "你进入濒死状态", (StatId?)null)));
+        var ev = Since(s, mark);
+        Assert.That(ev.Count(e => e.Kind == "ActionPaused"), Is.EqualTo(1));
+        Assert.That(ev.Single(e => e.Kind == "ActionPaused").Text, Is.EqualTo($"{s.Main.Label}已暂停：你进入濒死状态。"));
+        Assert.That(ev.Count(e => e.Text == GameEngine.EnterDyingText("你")), Is.EqualTo(1), "不为暂停再造同义进入句");
+        Assert.That(E.ActionProgress(s)!.PauseText, Is.EqualTo("你进入濒死状态"), "暂停原因");
+        Assert.That(s.Progress.Dead, Is.False);
+    }
+
+    /// <summary>
+    /// Q673-A02：手动继续后一直 H0，再过多段、新开工作都不因同次濒死再停（读档不清锁）；合法医疗 H&gt;0 后再次归零才再暂停一次。
+    /// </summary>
+    [Test]
+    public void Q673_A02_NoRepeatWhileZero_ResetOnlyAfterMedicalHeal()
+    {
+        var s = NearDying(47232);
+        Start(s, ActionRequest.Wait(60));
+        Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Paused));
+        Rolls(E, Enumerable.Repeat(0.0, 40).ToArray());   // 之后每段身体损伤都抵抗成功
+        Assert.That(E.Resume(s).Ok, Is.True);
+        for (var k = 0; k < 3; k++) Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Running), $"第{k + 2}段不再暂停");
+        Assert.That(s.Log.Count(e => e.Text == GameEngine.ResistedDeathText("你")), Is.EqualTo(3), "Q678 逐段抵抗句照写");
+        s = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(s.Player.DyingNotified, Is.True, "读档不清锁");
+        E.Cancel(s);
+        Start(s, ActionRequest.Wait(30));
+        Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Running), "仍濒死时新开工作不伪造新进入事件");
+        E.Cancel(s);
+        // 合法医疗回血 → 脱离、清锁；再次归零重新暂停一次
+        Assert.That(E.HealActor(s, s.Player, 0.02), Is.GreaterThan(0));
+        Assert.That(s.Player.DyingNotified, Is.False);
+        Start(s, ActionRequest.Wait(30));
+        var r = E.Advance(s);
+        Assert.That((r.Status, s.Main!.PauseReason), Is.EqualTo((SegmentStatus.Paused, PauseReason.Dying)));
+    }
+
+    /// <summary>Q673-A03：同段已完成的行动不凭空暂停（成果照交）；旧档兼容的 H0 活人（提醒锁已置）不补历史暂停；已提交的濒死暂停读回照常恢复。</summary>
+    [Test]
+    public void Q673_A03_CompletedNoPause_OldH0NoPause_SavedPauseRestores()
+    {
+        var s = NearDying(47233);
+        s.Player.Stats.Health = 0.05 + 5 * 2.0 * 5 / 60;   // 饱食、水分归零共 −2/小时：前 5 段仍正常，第 6 段（最后一段）进入濒死
+        Start(s, ActionRequest.Wait(30));
+        for (var k = 0; k < 5; k++) Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Running));
+        Assert.That(s.Player.Stats.Health, Is.GreaterThan(0));
+        var r = E.Advance(s);
+        Assert.That((r.Status, s.Main, s.Player.Stats.Health), Is.EqualTo((SegmentStatus.Completed, (ActionState?)null, 0.0)), "同段完成 → 原完成收束，不暂停");
+        Assert.That(s.Log.Count(e => e.Kind == "ActionPaused"), Is.EqualTo(0));
+
+        var t = NearDying(47234);
+        t.Player.Stats.Health = 0;
+        t.Player.DyingNotified = true;   // 同存档 52 迁移：旧 H0 活人归濒死并置提醒锁
+        Rolls(E, Enumerable.Repeat(0.0, 10).ToArray());
+        Start(t, ActionRequest.Wait(60));
+        Assert.That(E.Advance(t).Status, Is.EqualTo(SegmentStatus.Running), "不补历史进入事件或暂停");
+        Assert.That(t.Log.Any(e => e.Text == GameEngine.EnterDyingText("你")), Is.False);
+
+        var u = NearDying(47235);
+        Start(u, ActionRequest.Wait(60));
+        E.Advance(u);
+        var v = SaveSerializer.Deserialize(SaveSerializer.Serialize(u), Cfg);
+        Assert.That((v.Main!.Status, v.Main.PauseReason, E.ActionProgress(v)!.PauseText), Is.EqualTo((ActionStatus.Paused, PauseReason.Dying, "你进入濒死状态")));
+        Assert.That(E.Resume(v).Ok, Is.True);
+        Assert.That((v.Main!.Status, v.Main.PauseNote), Is.EqualTo((ActionStatus.Running, (string?)null)));
+    }
+
+    /// <summary>Q673-A03：候补（不在同行）在世界段进入濒死只写日志，不暂停同行者的工作。</summary>
+    [Test]
+    public void Q673_A03_ReserveEnteringDying_LogOnly()
+    {
+        var s = New(47236);
+        E.DebugQuickParty(s, 2);
+        var mate = s.Party.Single(id => id != GameState.PlayerId);
+        s.Party.Remove(mate);   // 留作候补（名册在册、不在同行）
+        Assert.That(E.IsReserve(s, mate), Is.True);
+        var m = s.Actors[mate];
+        m.Stats.Health = 0.05;
+        m.Stats.Satiety = 0;
+        m.Stats.Hydration = 0;
+        Start(s, ActionRequest.Wait(60));
+        var r = E.Advance(s);
+        Assert.That(m.Stats.Health, Is.EqualTo(0.0));
+        Assert.That(r.Status, Is.EqualTo(SegmentStatus.Running));
+        Assert.That(s.Main?.PauseReason ?? PauseReason.None, Is.Not.EqualTo(PauseReason.Dying));
+        Assert.That(s.Log.Any(e => e.Text == GameEngine.EnterDyingText(E.ActorDisplayName(s, mate))), Is.True);
+    }
+
+    /// <summary>
+    /// Q680-A01：战斗中、工作已暂停、空闲时进入濒死只写日志并锁存；战后继续、恢复暂停的工作或新开工作都不补暂停；
+    /// 正在推进的可暂停工作内真实进入濒死仍暂停（见 Q673-A01）。
+    /// </summary>
+    [Test]
+    public void Q680_A01_NoDeferredPause_FromBattlePausedOrIdle()
+    {
+        // 战斗中：在办等待被打断入战，战中进入濒死；战后继续原工作不补停
+        var s = NearDying(47241);
+        s.Player.Stats.Health = 0.3;
+        Start(s, ActionRequest.Wait(60));
+        Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Running));
+        s.Player.Stats.Satiety = 80; s.Player.Stats.Hydration = 80;
+        var id = E.DebugSpawnEnemy(s, "shambler", "field").Id;
+        Assert.That(E.DebugStartBattle(s, new[] { id }, GameEngine.FearEncounter), Is.True);
+        Force(s, Draw(), Below(0.01), Any());
+        EnemyAttack(s, s.Battle!.Alive.First());
+        Assert.That((s.Player.Stats.Health, s.Player.DyingNotified), Is.EqualTo((0.0, true)), "战中只写战报并锁存");
+        s.Battle = null;   // 收场（这里只验暂停，不走战斗收束）
+        if (s.Main!.Status == ActionStatus.Paused) E.Resume(s);
+        Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Running), "战后继续不补暂停");
+
+        // 工作已因其他原因暂停：暂停期间进入濒死，继续后不补停
+        var t = NearDying(47242);
+        t.Player.Stats.Health = 0.3; t.Player.Stats.Satiety = 80; t.Player.Stats.Hydration = 80;
+        Start(t, ActionRequest.Wait(60));
+        E.Advance(t);
+        t.Main!.Status = ActionStatus.Paused;
+        t.Main.PauseReason = PauseReason.StatAlert;
+        t.Main.PauseStat = StatId.Energy;
+        Assert.That(E.DamageActor(t, t.Player, 1), Is.EqualTo(DamageOutcome.EnteredDying));
+        Assert.That(E.Resume(t).Ok, Is.True);
+        Assert.That(E.Advance(t).Status, Is.EqualTo(SegmentStatus.Running), "恢复后不补停");
+
+        // 空闲：进入濒死后新开工作不补停
+        var u = NearDying(47243);
+        u.Player.Stats.Health = 0.3; u.Player.Stats.Satiety = 80; u.Player.Stats.Hydration = 80;
+        Assert.That(E.DamageActor(u, u.Player, 1), Is.EqualTo(DamageOutcome.EnteredDying));
+        Start(u, ActionRequest.Wait(60));
+        Assert.That(E.Advance(u).Status, Is.EqualTo(SegmentStatus.Running));
+        Assert.That(u.Log.Count(e => e.Text == GameEngine.EnterDyingText("你")), Is.EqualTo(1));
+    }
+
+    /// <summary>
+    /// Q681-A01：同一边界新濒死＋饱食水分归零＋健康高危：中央只一次濒死句，其他真实原因都照原日志；两人同段进入濒死按原触发顺序取首个，另一人只日志。
+    /// </summary>
+    [Test]
+    public void Q681_A01_DyingFirst_OthersLogged_OnePause_OriginalOrder()
+    {
+        var s = NearDying(47251);
+        E.DebugDying(s, "multi");
+        E.DebugQuickParty(s, 2);
+        var mate = s.Actors[s.Party.Single(id => id != GameState.PlayerId)];
+        mate.Stats.Health = 0.05; mate.Stats.Satiety = 0; mate.Stats.Hydration = 0;
+        mate.ZeroLatched[StatId.Satiety] = true; mate.ZeroLatched[StatId.Hydration] = true; mate.AlertLatched[StatId.Health] = true;
+        mate.AlertLatched[StatId.Satiety] = true; mate.AlertLatched[StatId.Hydration] = true;
+        Start(s, ActionRequest.Wait(60));
+        var mark = s.Log.Count;
+        var t0 = s.GameMinute;
+        Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Paused));
+        Assert.That(s.GameMinute - t0, Is.EqualTo(5), "不多推进世界段");
+        var ev = Since(s, mark);
+        Assert.That(ev.Count(e => e.Kind == "ActionPaused"), Is.EqualTo(1), "只停一次");
+        Assert.That(ev.Single(e => e.Kind == "ActionPaused").Text, Is.EqualTo($"{s.Main!.Label}已暂停：你进入濒死状态。"), "濒死优先，同级按原触发顺序（主角在前）");
+        Assert.That(s.Main.PauseReason, Is.EqualTo(PauseReason.Dying));
+        var alerts = ev.Where(e => e.Kind == "Alert").Select(e => e.Text).ToList();
+        Assert.That(alerts, Does.Contain(E.AlertText(StatId.Satiety, true)).And.Contain(E.AlertText(StatId.Hydration, true)).And.Contain(E.AlertText(StatId.Health, false)), "其他真实原因照原日志");
+        Assert.That(ev.Count(e => e.Text == GameEngine.EnterDyingText("你")), Is.EqualTo(1));
+        Assert.That(ev.Count(e => e.Text == GameEngine.EnterDyingText(E.ActorDisplayName(s, mate.Id))), Is.EqualTo(1), "另一人进入濒死只日志、锁存");
+        Assert.That(mate.DyingNotified, Is.True);
+    }
 }

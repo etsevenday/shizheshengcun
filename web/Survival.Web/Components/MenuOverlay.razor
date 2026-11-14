@@ -211,6 +211,8 @@
                 <div class="btn-row">
                     <button class="secondary" title="战斗中：下一次任何正伤即死" @onclick='() => DevDone(G.E.DebugBattleFoes(G.S, "hp01"))'>在场敌人健康→0.1（战斗中）</button>
                     <button class="secondary" title="战斗中：下个大回合开始流血（无视流血免疫）" @onclick='() => DevDone(G.E.DebugBattleFoes(G.S, "bleed"))'>在场敌人开始出血（战斗中）</button>
+                    <button class="secondary" title="开始或继续搜集、等待等多段行动：下一段进入濒死并暂停（只此一个原因）" @onclick='() => DevDone(G.E.DebugDying(G.S, "pause1"))'>主角健康→0.05、饱食水分→0（试濒死暂停）</button>
+                    <button class="secondary" title="开始或继续多段行动：下一段同时新进入濒死、饱食水分归零、健康高危" @onclick='() => DevDone(G.E.DebugDying(G.S, "multi"))'>主角健康→0.05、饱食水分→0未锁存（试多原因同边界）</button>
                 </div>
                 @* B29（R90—R96）：同行者、随身食水、腐败与锅水，试食饮局部盘和地牢饮水预告 *@
                 <div class="eyebrow">同行食饮与饮水预算（B29）</div>

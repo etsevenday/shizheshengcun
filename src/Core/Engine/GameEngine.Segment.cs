@@ -229,6 +229,7 @@ namespace Survival.Core.Engine
             }
 
             // 1–3. 段首计算角色本段速率，再做一次世界 tick（身体、燃料、设施、免疫、病毒、终局、刷新）
+            s.DyingEntries = new List<string>();   // B47a2（Q673）：本段真实进入濒死者，段末提醒边界读
             var ctx = ComputeSegment(s, a);
             var companion = CompanionAction(a);
             if (!WorldTick(s, actor => actor.IsPlayer ? ctx : ComputeSegment(s, companion, actor), a, false)) return new SegmentResult(SegmentStatus.Dead);
@@ -801,7 +802,11 @@ namespace Survival.Core.Engine
         {
             var triggers = new List<(ActorState actor, StatId stat, bool zero)>();
             foreach (var actor in s.PartyActors.ToList()) CollectAlerts(actor, triggers);
-            if (triggers.Count == 0) return false;
+            // B47a2（R09 Q673、Q681）：本段真实进入濒死、此刻仍活且仍同行的人（原触发顺序；候补、已确死不算）
+            var dying = (s.DyingEntries ?? new List<string>()).Distinct()
+                .Where(id => s.Party.Contains(id) && s.Actors.TryGetValue(id, out var da) && !IsDead(s, da)).ToList();
+            s.DyingEntries = null;
+            if (triggers.Count == 0 && dying.Count == 0) return false;
 
             // 归零优先于普通提醒
             triggers = triggers.OrderBy(t => t.zero ? 0 : 1).ToList();
@@ -813,6 +818,14 @@ namespace Survival.Core.Engine
             if (ran.Type == ActionType.Extract) return false;
             if (!ran.IsSub && !completed && main != null && main.ActionId == ran.ActionId && main.Status == ActionStatus.Running)
             {
+                // Q681：同一边界新进入濒死优先于属性归零、再普通阈值；只暂停一次，其余原因照原日志（进入濒死日志已在受伤时写过，不再造同义句）
+                if (dying.Count > 0)
+                {
+                    var who = ActorDisplayName(s, dying[0]);
+                    Pause(s, main, PauseReason.Dying, null, DyingPauseText(main.Label, who));
+                    main.PauseNote = DyingPauseReasonText(who);
+                    return true;
+                }
                 var first = triggers[0];
                 Pause(s, main, first.zero ? PauseReason.StatZero : PauseReason.StatAlert, first.stat,
                     $"{main.Label}已暂停：{ActorPrefix(first.actor)}{AlertText(first.stat, first.zero)}");

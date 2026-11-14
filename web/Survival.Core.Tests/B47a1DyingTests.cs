@@ -316,6 +316,8 @@ public class B47a1DyingTests : BattleTestBase
         Start(s, ActionRequest.Wait(30));
         E.Advance(s);
         Assert.That((s.Player.Stats.Health, s.Progress.Dead), Is.EqualTo((0.0, false)), "正常者出血归 0 → 濒死");
+        Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.Dying), "B47a2（Q673）：进入濒死在本段边界暂停一次");
+        E.Resume(s);
         FailDeathRolls();
         var st = E.Advance(s);
         Assert.That(st.Status, Is.EqualTo(SegmentStatus.Dead));

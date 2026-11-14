@@ -208,6 +208,7 @@ namespace Survival.Core.Engine
             PauseReason.StatAlert when a.PauseStat.HasValue => AlertText(a.PauseStat.Value, false),
             PauseReason.EnemyApproach => a.PauseNote ?? EnemyApproachPauseNote(null),   // B41b（Q444、Q470）：开战瞬间快照
             PauseReason.ExploreEncounter => ExploreEncounterPauseNote,   // BM5c（逐字稿 Q621）
+            PauseReason.Dying => a.PauseNote ?? "已暂停",   // B47a2（逐字稿 Q673「暂停原因」）：“{人物}进入濒死状态”，人物取暂停时快照
             _ => "已暂停",
         };
 

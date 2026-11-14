@@ -62,6 +62,12 @@ namespace Survival.Core.Engine
         /// <summary>R09 §8「濒死后续正伤且抵抗」正式句（Q678：战外每次真实成功抵抗各一条）。</summary>
         public static string ResistedDeathText(string who) => $"{who}抵抗了致死，仍处于濒死状态。";
 
+        /// <summary>R09 Q673 暂停原因（逐字稿「暂停原因」）：“{人物}进入濒死状态”。</summary>
+        public static string DyingPauseReasonText(string who) => $"{who}进入濒死状态";
+
+        /// <summary>R09 Q673／Q681 中央暂停结果正式句：“{行动名}已暂停：{人物}进入濒死状态。”。</summary>
+        public static string DyingPauseText(string action, string who) => $"{action}已暂停：{DyingPauseReasonText(who)}。";
+
         /// <summary>R09 §8「用药／医疗回血脱离」正式句。</summary>
         public static string LeaveDyingText(string who) => $"{who}脱离濒死状态。";
 
@@ -84,6 +90,8 @@ namespace Survival.Core.Engine
             {
                 st.Add(StatId.Health, -d);
                 if (st.Health > 0) return DamageOutcome.Hurt;
+                // B47a2（Q673、Q680）：本段推进中首次进入濒死（提醒锁未置）才登记为段末暂停原因；不在推进段内只写日志与锁
+                if (!actor.DyingNotified && s.DyingEntries != null) s.DyingEntries.Add(actor.Id);
                 actor.DyingNotified = true;
                 LifeNote(s, actor, EnterDyingText(ActorDisplayName(s, actor.Id)), notes);
                 return DamageOutcome.EnteredDying;
