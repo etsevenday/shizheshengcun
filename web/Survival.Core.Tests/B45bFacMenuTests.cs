@@ -189,7 +189,7 @@ public class B45bFacMenuTests : TestBase
     {
         var fac = Web("Services", "GameSession.FacMenu.cs");
         // BM5b1（Q603）：主层无目标时只有木材灰显，其余仍不判定
-        Assert.That(fac, Does.Contain("if (slot == null) return it.ItemId == WoodItemId ? GameEngine.WoodSourceWhy : null;"), "主层无目标不判定（木材除外）");
+        Assert.That(fac, Does.Contain("if (slot == null) return it.ItemId == WoodItemId ? WoodMainWhy(it) : null;"), "主层无目标不判定（木材除外）");
         Assert.That(fac, Does.Contain("if (m.Taken && pot == null) return null;"));
         var rec = Slice(fac, "private void ReconcileFireMenu()", "private void CloseFireMenuForAction()");
         Assert.That(rec, Does.Contain("else if (!_fireMenuOwnPut && FireMenuBlockWhy(src) is string why)"));

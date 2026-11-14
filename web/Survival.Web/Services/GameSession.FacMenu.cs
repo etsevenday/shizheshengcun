@@ -316,10 +316,18 @@ public sealed partial class GameSession
     {
         if (FireMenu is not { } m || !FireMenuTarget(out var slot, out var pot)) return null;
         // BM5b1（Q603）：主层未选目标就把木材灰显——不能选为普通投放源（投入木材、煅烧木炭仍走各自原入口）
-        if (slot == null) return it.ItemId == WoodItemId ? GameEngine.WoodSourceWhy : null;
+        // BM5b1（Q637 选 A）：只在真实走到木材拒绝分支时用主层句；更优先的忙碌／位置／预留等原拒绝句保持（同源整卡预演）
+        if (slot == null) return it.ItemId == WoodItemId ? WoodMainWhy(it) : null;
         if (m.Taken && pot == null) return null;
         var max = FireMenuMaxFor(it, slot, pot, out var why);
         return why ?? (max <= 0 ? GameEngine.NoQtyText : null);
+    }
+
+    /// <summary>BM5b1（Q637-A01）：主层木材的原因——整卡预演给出的更优先原拒绝句保持，走到木材分支（或无原因）时用主层句。</summary>
+    private string WoodMainWhy(ItemInstance it)
+    {
+        E.MaxPutInFire(S, it, out var why);
+        return why == null || why.StartsWith(GameEngine.WoodIsFuelNote, StringComparison.Ordinal) ? GameEngine.WoodSourceWhy : why;
     }
 
     /// <summary>BM5b1（Q603）：来源区按“木材”灰显的物品（与「投入木材」同一燃料物品）。</summary>

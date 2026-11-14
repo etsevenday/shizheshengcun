@@ -36,7 +36,7 @@ namespace Survival.Core.Engine
         public const string PickTargetText = "请选择加工目标。";
         /// <summary>Q545：原预演最大 0 但没有更具体原因。</summary>
         public const string NoQtyText = "当前没有可放入数量。";
-        /// <summary>BM5b1（S14 Q603；逐字稿「木材原因」）：主层起来源区木材灰行的完整原因（加工位层／锅层仍用原各自拒绝句，Q637 待定）。</summary>
+        /// <summary>BM5b1（S14 Q603；逐字稿「木材原因」）：主层起来源区木材灰行的完整原因（加工位层／锅层仍用原各自拒绝句，Q637 选 A 保留；更优先原拒绝句不被覆盖）。</summary>
         public const string WoodSourceWhy = "木材用于添加燃料；烧制木炭请在空加工位选择‘煅烧木炭’。";
         public const string SourceTitle = "原料来源";
         public const string SourceCarried = "随身";

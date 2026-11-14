@@ -1,3 +1,4 @@
+using Survival.Core.Config;
 using Survival.Core.Engine;
 using Survival.Core.Save;
 using Survival.Core.State;
@@ -311,13 +312,13 @@ public class BM5b1FacMenuTests : TestBase
         Assert.That(doc, Does.Contain("| 木材原因 | " + GameEngine.WoodSourceWhy + " |"), "原因逐字");
         var fac = Web("Services", "GameSession.FacMenu.cs");
         var block = Slice(fac, "public string? FireMenuBlockWhy(ItemInstance it)", "public const string WoodItemId");
-        Assert.That(block, Does.Contain("if (slot == null) return it.ItemId == WoodItemId ? GameEngine.WoodSourceWhy : null;"));
+        Assert.That(block, Does.Contain("if (slot == null) return it.ItemId == WoodItemId ? WoodMainWhy(it) : null;"), "Q637 起主层更优先原因保持");
         Assert.That(fac, Does.Contain("if (FireMenuBlockWhy(it) != null) return;"), "选不上");
         var menu = Web("Components", "FireMenu.razor");
         Assert.That(menu, Does.Contain("if (!taken) why = G.FireMenuBlockWhy(it);"));
         Assert.That(Slice(menu, "<div class=\"fm-src-row no\"", "</div>"), Does.Not.Contain("data-drag"));
         Assert.That(menu, Does.Contain("if (list.Count == 0) continue;"), "空分组沿原隐藏");
-        // 内核：加工位层的木材原句不变（Q637 待定前保持）
+        // 内核：加工位层的木材原句不变（Q637 选 A 保留）
         var s = New();
         var wood = s.Items.FirstOrDefault(i => i.ItemId == "wood" && i.IsCarried) ?? E.CreateItems(s, "wood", 2, ItemInstance.Carried).Single();
         E.MaxPutInFire(s, wood, out var why, 0);
@@ -336,6 +337,61 @@ public class BM5b1FacMenuTests : TestBase
         var quick = Web("Components", "FireQuickActions.razor");
         Assert.That(quick, Does.Contain("<strong>投入木材</strong>"));
         Assert.That(Web("Components", "FireMenu.razor"), Does.Contain("id=\"fc-charcoal\""), "煅烧入口保持");
+    }
+
+    // ───────────── Q637 木材三层原因 ─────────────
+
+    /// <summary>
+    /// Q637-A01：同一木材主层／明确工位／锅层灰显不可选，原因分别为三句（工位层原料名／数取真实煅烧配方，无配方只前句兜底）；
+    /// 更优先的忙碌等原拒绝句保持，不借原因文字放开灰行拖放。
+    /// </summary>
+    [Test]
+    public void Q637_A01_WoodReasonPerLayer()
+    {
+        var s14 = File.ReadAllText(Path.Combine(Root(), "doc", "策划案", "系统策划总册 v1.0", "01 基础系统", "S14 主界面与全局UI交互系统.md"));
+        Assert.That(s14, Does.Contain("主层用“" + GameEngine.WoodSourceWhy + "”"), "主层句逐字");
+        Assert.That(s14, Does.Contain("原兜底短句“" + GameEngine.WoodIsFuelNote + "”"));
+        Assert.That(s14, Does.Contain("锅层用原“木材不能放进锅里”"));
+        var s = New();
+        LightFire(s);
+        var wood = E.CreateItems(s, "wood", 3, ItemInstance.Carried).Single();
+        // 工位层：真实煅烧配方的原料名／数
+        var cp = E.CharcoalProcess!;
+        Assert.That(E.MaxPutInFire(s, wood, out var slotWhy, 0), Is.EqualTo(0));
+        Assert.That(slotWhy, Is.EqualTo($"拖木材到火堆卡是添加燃料。要煅烧木炭，请点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」（每批{E.ItemName(cp.InputId)}×{cp.InputCount}）。"));
+        // 锅层
+        var pot = Pot(s);
+        Assert.That(E.MaxPutFood(s, wood, pot, out var potWhy), Is.EqualTo(0));
+        Assert.That(potWhy, Is.EqualTo("木材不能放进锅里"));
+        // 更优先的忙碌原因不被木材句覆盖（工位层／锅层／主层整卡预演同源）
+        Start(s, ActionRequest.Wait(30));
+        E.MaxPutInFire(s, wood, out var busySlot, 0);
+        E.MaxPutFood(s, wood, pot, out var busyPot);
+        E.MaxPutInFire(s, wood, out var busyMain);
+        Assert.That(busySlot, Is.EqualTo("行动进行中，不能整理物品"));
+        Assert.That(busyPot, Is.EqualTo("行动进行中，不能整理物品"));
+        Assert.That(busyMain, Is.EqualTo("行动进行中，不能整理物品"));
+        // 无煅烧配方：只前句
+        var j = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
+        var procs = (Newtonsoft.Json.Linq.JArray)j["processes"]!;
+        procs.Where(x => (string?)x["id"] == "fire_charcoal").ToList().ForEach(x => x.Remove());
+        var e2 = new GameEngine(ConfigLoader.FromJson(j.ToString(), validate: false));
+        Assert.That(e2.CharcoalProcess, Is.Null);
+        var s2 = e2.NewGame(12345);
+        e2.DebugLegacyStory(s2);
+        s2.Locations[Here].Facility.FireLit = true;
+        s2.Locations[Here].Facility.FuelMinutes = 240;
+        var w2 = e2.CreateItems(s2, "wood", 2, ItemInstance.Carried).Single();
+        e2.MaxPutInFire(s2, w2, out var noRecipe, 0);
+        Assert.That(noRecipe, Is.EqualTo(GameEngine.WoodIsFuelNote), "不造可点的烧炭入口");
+        // 壳：主层只在走到木材分支（或无原因）时换主层句，其他原拒绝句保持；灰行仍不可选、不可拖
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        var main = Slice(fac, "private string WoodMainWhy(ItemInstance it)", "/// <summary>BM5b1（Q603）");
+        Assert.That(main, Does.Contain("E.MaxPutInFire(S, it, out var why);"));
+        Assert.That(main, Does.Contain("why == null || why.StartsWith(GameEngine.WoodIsFuelNote, StringComparison.Ordinal) ? GameEngine.WoodSourceWhy : why"));
+        Assert.That(Slice(fac, "public string? FireMenuBlockWhy(ItemInstance it)", "public const string WoodItemId"), Does.Contain("if (slot == null) return it.ItemId == WoodItemId ? WoodMainWhy(it) : null;"));
+        Assert.That(fac, Does.Contain("if (FireMenuBlockWhy(it) != null) return;"), "选不上");
+        Assert.That(Slice(Web("Components", "FireMenu.razor"), "<div class=\"fm-src-row no\"", "</div>"), Does.Not.Contain("data-drag"));
     }
 
     // ───────────── Q604 操作后回到相关工位 ─────────────
