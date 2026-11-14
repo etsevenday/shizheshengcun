@@ -18,6 +18,15 @@ namespace Survival.Core.Engine
         /// <summary>战斗中：普通行动推进暂停，由战斗流程自己推进世界时间（B41e3 起没有“敌踪待选”状态）。</summary>
         public bool InCombatFlow(GameState s) => s.Battle != null;
 
+        private HashSet<string>? _npcSafe;
+
+        /// <summary>
+        /// BM5a（R05「B41e3 Q563—Q569」§Q566 安全地点范围与入口约束）：势力城内 NPC／代班人固定所在地点（配置 city.npcs[].locationId 的岗位绑定，
+        /// 不看此刻画面是否渲染 NPC、本人是否暂离／换代班）是安全地图——不生成、首次补充、刷新、组卡，也不是巡游、逃离、躲避重现的目标；
+        /// 开发菜单放敌同样拒绝。与原城市／公共地点过滤（randomEncounterEnabled 等）同时成立。检查哨等独立危险节点不受影响。
+        /// </summary>
+        public bool NpcSafePlace(string loc) => (_npcSafe ??= Config.City.Npcs.Where(n => !string.IsNullOrEmpty(n.LocationId)).Select(n => n.LocationId!).ToHashSet()).Contains(loc);
+
         /// <summary>首个不早于 minute 的检查点：start + k×interval。</summary>
         private static int NextGrid(int minute, int start, int interval) =>
             minute <= start ? start : start + (int)Math.Ceiling((minute - start) / (double)interval) * interval;
@@ -101,7 +110,7 @@ namespace Survival.Core.Engine
             if (!Config.CombatEnabled) return 0;
             if (TutorialGateOpen(s)) return 0;   // 首战未胜利：不随机接敌（R05 §4）
             if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay) return 0;
-            if (en.SafeLocations.Contains(loc)) return 0;
+            if (en.SafeLocations.Contains(loc) || NpcSafePlace(loc)) return 0;
             if (_locs.TryGetValue(loc, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior)) return 0;
             if (s.GameMinute < s.EncounterGraceUntil) return 0;
             // B41a（R05 Q417）：同地已有未隐藏的存续随机组卡时，探索／清理不再形成新组
@@ -162,7 +171,7 @@ namespace Survival.Core.Engine
                 .Select(kv => kv.Key)
                 .Where(loc => WE.CapOf(loc) > 0 && LocalCount(s, loc) < WE.CapOf(loc))
                 .Where(loc => !(WE.OnlyOutsidePlayerCurrentLocation && loc == s.CurrentLocation))
-                .Where(loc => !Config.Encounters.SafeLocations.Contains(loc))
+                .Where(loc => !Config.Encounters.SafeLocations.Contains(loc) && !NpcSafePlace(loc))
                 .ToList();
         }
 
@@ -213,6 +222,7 @@ namespace Survival.Core.Engine
                 if (s.Rng.NextDouble() >= WE.PatrolMoveProbabilityPerEnemy) continue;
                 var targets = PhysicalNeighbors(w.LocationId)
                     .Where(l => WE.PatrolEntersCamp || !Config.Encounters.SafeLocations.Contains(l))
+                    .Where(l => !NpcSafePlace(l))
                     .Where(l => WE.CapOf(l) > 0 && LocalCount(s, l) < WE.CapOf(l))
                     .Distinct().OrderBy(l => l).ToList();
                 if (targets.Count == 0) continue;
@@ -264,7 +274,7 @@ namespace Survival.Core.Engine
         public string? DebugSpawnBlocked(GameState s, string locationId)
         {
             if (Config.Encounters.SafeLocations.Contains(locationId)) return $"{LocName(locationId)}是安全区，不放敌人";
-            if (_locs.TryGetValue(locationId, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior)) return $"{LocName(locationId)}没有随机敌人种群，不放敌人";
+            if (NpcSafePlace(locationId) || _locs.TryGetValue(locationId, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior)) return $"{LocName(locationId)}没有随机敌人种群，不放敌人";
             var cap = LocalCapOf(locationId);
             if (LocalCount(s, locationId) >= cap) return $"{LocName(locationId)}敌人已达上限{cap}";
             // B20：新人口区按本区总上限；旧 8 地点按旧全局 12

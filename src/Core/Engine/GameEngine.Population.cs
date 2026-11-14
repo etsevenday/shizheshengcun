@@ -22,7 +22,7 @@ namespace Survival.Core.Engine
 
         /// <summary>某节点所属的人口区（有敌池、在该区节点表里）；不属于任何新人口区为 null（旧 8 地点、城市、地牢）。</summary>
         public PopulationRegionConfig? PopRegionOf(string loc) =>
-            _locs.TryGetValue(loc, out var lc) && lc.PopulationRegionId != null && lc.PopulationWeights != null && lc.PopulationWeights.Count > 0
+            !NpcSafePlace(loc) && _locs.TryGetValue(loc, out var lc) && lc.PopulationRegionId != null && lc.PopulationWeights != null && lc.PopulationWeights.Count > 0
             && Regions.TryGetValue(lc.PopulationRegionId, out var r) && r.Nodes.Contains(loc) ? r : null;
 
         /// <summary>某人口区里的种群敌数（含交战中；固定战与旧精英挑战不计）。B41c（Q503）：有原人口账的按原账计。</summary>

@@ -1529,7 +1529,7 @@ namespace Survival.Core.Engine
         {
             // B20：人口区的动物逃向同区有空位的相邻节点（巡游同口径）；旧 8 地点照旧
             var targets = PopRegionOf(we.LocationId) != null ? RegionPatrolTargets(s, we.LocationId) : PhysicalNeighbors(we.LocationId)
-                .Where(l => !Config.Encounters.SafeLocations.Contains(l) && WE.CapOf(l) > 0 && LocalCount(s, l) < WE.CapOf(l))
+                .Where(l => !Config.Encounters.SafeLocations.Contains(l) && !NpcSafePlace(l) && WE.CapOf(l) > 0 && LocalCount(s, l) < WE.CapOf(l))
                 .Distinct().OrderBy(l => l).ToList();
             if (targets.Count > 0) we.LocationId = targets[(int)Math.Min(targets.Count - 1, Math.Floor(s.Rng.NextDouble() * targets.Count))];
             else we.HiddenUntil = s.GameMinute + WE.FleeWithoutValidNeighborHiddenMinutes;

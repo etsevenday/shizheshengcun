@@ -31578,7 +31578,7 @@
       "ap": 0,
       "baseEnergy": 0.0,
       "positions": "战外→对应活动",
-      "effectText": "危险搜集划伤概率×0.8，不影响战斗接敌",
+      "effectText": "危险搜集划伤概率×0.8，不影响战斗",
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "survival",
@@ -31590,7 +31590,7 @@
           "value": 0.8
         }
       ],
-      "displayText": "危险搜集划伤概率×0.8，不影响战斗接敌"
+      "displayText": "危险搜集划伤概率×0.8，不影响战斗"
     },
     {
       "id": "scavenging_10",

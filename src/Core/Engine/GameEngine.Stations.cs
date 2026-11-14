@@ -298,6 +298,9 @@ namespace Survival.Core.Engine
             foreach (var it in s.Items.Where(i => i.ReservedBy == b.BatchId)) it.ReservedBy = null;
         }
 
+        /// <summary>BM5a（02 Q563 选 A，照 Q446⑦ 最小删词）：工坊「取消当前批／取消排队」战斗中的拒绝句；普通敌踪卡在场不挡。</summary>
+        public const string StationBattleBlocked = "战斗时不能操作";
+
         /// <summary>
         /// 「取消当前批」：取消当前区这座工坊加工中的一批，释放该批全部未核销材料和燃料到本区地面，已过时间不退，没有产物和经验；
         /// 有等待批时队首立即转为加工中（下一世界段起计时）。只能在当地操作，0 分钟。
@@ -307,7 +310,7 @@ namespace Survival.Core.Engine
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             if (s.Progress.Dead) return ActionResult.Fail("本局已结束");
-            if (s.Battle != null) return ActionResult.Fail("战斗或敌踪待处理时不能操作");
+            if (s.Battle != null) return ActionResult.Fail(StationBattleBlocked);
             var place = s.Ground;
             var fac = FacOf(s, place);
             var b = StationBatchHere(s, stationId);
@@ -331,7 +334,7 @@ namespace Survival.Core.Engine
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             if (s.Progress.Dead) return ActionResult.Fail("本局已结束");
-            if (s.Battle != null) return ActionResult.Fail("战斗或敌踪待处理时不能操作");
+            if (s.Battle != null) return ActionResult.Fail(StationBattleBlocked);
             var place = s.Ground;
             var fac = FacOf(s, place);
             var waiting = StationWaitingHere(s, stationId);

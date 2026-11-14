@@ -17,12 +17,15 @@ public sealed partial class GameSession
     /// <summary>练习盘里明确选中的练习者（未选为 null，开始按钮写「请选择练习者。」）。</summary>
     public string? PracticeActor { get; private set; }
 
-    /// <summary>点「练习潜行」：打开练习盘，草稿从未选人开始（逐字稿：明确选练习者）。</summary>
+    /// <summary>
+    /// 点「练习潜行」：打开练习盘。多人队草稿从未选人开始（逐字稿：明确选练习者）；BM5a（02 Q567 选 A、R05 §Q567）：队伍只有主角本人时预选「你」，
+    /// 仍须明确点「开始练习」才开工（选人不耗时、不改编队或队长）；资格不足照旧由 CanPracticeStealth 禁用并给原因。
+    /// </summary>
     public void OpenPractice()
     {
         if (State == null) return;
         PracticeOpen = true;
-        PracticeActor = null;
+        PracticeActor = S.Party.All(id => id == GameState.PlayerId) ? GameState.PlayerId : null;
         Notify();
     }
 

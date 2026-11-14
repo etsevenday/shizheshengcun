@@ -57,7 +57,7 @@ namespace Survival.Core.Engine
         private bool ReappearLegal(string loc, string? dungeon)
         {
             if (!_locs.TryGetValue(loc, out var lc)) return false;
-            if (Config.Encounters.SafeLocations.Contains(loc)) return false;
+            if (Config.Encounters.SafeLocations.Contains(loc) || NpcSafePlace(loc)) return false;   // BM5a（Q566）
             var d = DungeonAt(loc);
             if (dungeon != null) return d == dungeon && IsDangerRoom(loc);
             if (d != null || lc.IsDungeon) return false;

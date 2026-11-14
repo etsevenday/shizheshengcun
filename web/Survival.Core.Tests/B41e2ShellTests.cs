@@ -74,7 +74,9 @@ public class B41e2ShellTests
         Assert.That(g, Does.Contain("var valid = who != null && e.PracticeCandidates(s).Contains(who);"), "无选人／失效不给预估");
         var sess = Web("Services/GameSession.EnemyCardsV2.cs");
         Assert.That(sess, Does.Contain("E.CanPracticeStealth(S, PracticeActor)").And.Contain("E.StartPractice(S, PracticeActor"));
-        Assert.That(sess, Does.Contain("PracticeActor = null;"), "打开盘时未选人");
+        Assert.That(sess, Does.Contain("PracticeActor = null;"), "收盘／离页丢弃草稿");
+        // BM5a（Q567 选 A）：多人队打开时未选人，只有主角本人时预选「你」，不自动开工
+        Assert.That(sess, Does.Contain("PracticeActor = S.Party.All(id => id == GameState.PlayerId) ? GameState.PlayerId : null;"));
     }
 
     [Test]
