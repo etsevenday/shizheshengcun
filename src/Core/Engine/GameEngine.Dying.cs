@@ -90,7 +90,8 @@ namespace Survival.Core.Engine
         /// <item>事件前已濒死：按事件开始前的意志等级抽一次 u，抵抗成功仍 H=0（写抵抗句），失败置确死标记（<see cref="DamageOutcome.Died"/>）。</item>
         /// </list>
         /// 死亡后果（主角终局、队友离队与遗物、战斗收束）由调用方在原时序处理（主角“结算写完再终局”、世界段死亡先于自然治愈等）；
-        /// B47a2（Q689）：失败时置 ResistFailed，原死亡主结果写出时前接“{人物}未能抵抗致死。”拼成一条。只读预演（SimCopy）不抽随机，按未能抵抗处理（B47a3 预估截断前的过渡口径）。
+        /// B47a2（Q689）：失败时置 ResistFailed，原死亡主结果写出时前接“{人物}未能抵抗致死。”拼成一条。
+        /// B47a3（Q682）：只读预估副本（SimCopy）不抽随机、不确认死亡，记危险后按仍可存活继续（完成计划假设存活）；身体预估由预估循环在首个危险段截止。
         /// 状态句写到 notes（调用方在自己的伤害日志之后追加）；notes 为空时立即写：在场我方写战报，其他写普通日志。
         /// </summary>
         public DamageOutcome DamageActor(GameState s, ActorState actor, double d, List<string>? notes = null)
@@ -104,18 +105,25 @@ namespace Survival.Core.Engine
                 // B47a2（Q673、Q680）：本段推进中首次进入濒死（提醒锁未置）才登记为段末暂停原因；不在推进段内只写日志与锁
                 if (!actor.DyingNotified && s.DyingEntries != null) s.DyingEntries.Add(actor.Id);
                 actor.DyingNotified = true;
+                s.SimProbe?.Dangers.Add((actor.Id, DangerKind.Enter));   // B47a3（Q674）：预估副本记首次进入濒死
                 LifeNote(s, actor, EnterDyingText(ActorDisplayName(s, actor.Id)), notes);
                 return DamageOutcome.EnteredDying;
             }
+            if (s.SimCopy)
+            {
+                // B47a3（R09 Q682）：只读预估副本不抽致死、不确认死亡——记一次需要致死判定的危险（身体预估在此截止），
+                // 完成计划按仍可存活继续求；不写抵抗日志、不发经验、不动真实随机
+                s.SimProbe?.Dangers.Add((actor.Id, DangerKind.Certain));
+                return DamageOutcome.Resisted;
+            }
             var level = SkillLevel(actor, Willpower);
-            var resisted = !s.SimCopy && ResistsDeath(level, TestDeathRolls is { Count: > 0 } q ? q.Dequeue() : s.Rng.NextDouble());
-            if (resisted)
+            if (ResistsDeath(level, TestDeathRolls is { Count: > 0 } q ? q.Dequeue() : s.Rng.NextDouble()))
             {
                 LifeNote(s, actor, ResistedDeathText(ActorDisplayName(s, actor.Id)), notes);
                 return DamageOutcome.Resisted;
             }
             actor.Dead = true;
-            actor.ResistFailed = !s.SimCopy;   // B47a2（Q689）：原死亡主结果前接“未能抵抗致死。”
+            actor.ResistFailed = true;   // B47a2（Q689）：原死亡主结果前接“未能抵抗致死。”
             return DamageOutcome.Died;
         }
 

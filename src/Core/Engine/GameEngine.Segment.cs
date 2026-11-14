@@ -338,6 +338,8 @@ namespace Survival.Core.Engine
                 }
                 if (Zombified(actor))
                 {
+                    // B47a3（R09 Q682、Q684）：预估副本不在副本里尸变／离队提前截止计划，只记本人病毒已到上限的风险
+                    if (s.SimCopy) { s.SimProbe?.Virus.Add(actor.Id); continue; }
                     if (actor.IsPlayer) { Zombify(s); return false; }
                     CompanionDown(s, actor, ZombifiedCause);
                 }
@@ -349,7 +351,7 @@ namespace Survival.Core.Engine
             {
                 var actor = reserves[k];
                 if (IsDead(s, actor)) { CompanionDown(s, actor, string.IsNullOrEmpty(rctxs[k].DamageCause) ? "伤势过重" : rctxs[k].DamageCause); continue; }
-                if (Zombified(actor)) { CompanionDown(s, actor, ZombifiedCause); continue; }
+                if (Zombified(actor)) { if (!s.SimCopy) CompanionDown(s, actor, ZombifiedCause); continue; }
                 TickNaturalCure(s, actor, rstarts[k]);
                 ReserveRedLines(s, actor);
             }
@@ -718,6 +720,7 @@ namespace Survival.Core.Engine
                 WriteLifeNotes(s, s.Player, notes);
                 if (life == DamageOutcome.Died) Kill(s, s.Progress.LastDamageCause);
             }
+            else if (res.Hazard != null && HazardChance(s, res) > 0) SimPossibleHit(s, s.Player, HazardLoss(s, res));   // B47a3（Q675、Q687）：预估副本记未触发的概率伤
             return true;
         }
 

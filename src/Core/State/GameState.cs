@@ -317,6 +317,11 @@ namespace Survival.Core.State
         [JsonIgnore] public List<string>? DyingEntries { get; set; }
         /// <summary>B47a2：意志经验结账范围的嵌套深度（最外层结束才结账）。不进存档。</summary>
         [JsonIgnore] public int WillpowerDepth { get; set; }
+        /// <summary>
+        /// B47a3（R09 Q682—Q687）：预估副本上的危险记录（首次进入濒死、濒死后确定／可能正伤、仅概率伤可能归零、病毒预计到尸变上限）。
+        /// 只在只读预估副本（SimCopy）上由预估循环建立，真实状态恒为 null；不进存档，Clone 不共享。
+        /// </summary>
+        [JsonIgnore] public SimProbe? SimProbe { get; set; }
 
         public GameState Clone()
         {
@@ -343,6 +348,7 @@ namespace Survival.Core.State
             c.WillpowerPending = null;   // B47a2：结账范围是单次原子调用内的临时账，副本不共享
             c.WillpowerDepth = 0;
             c.DyingEntries = null;
+            c.SimProbe = null;
             c.Main = Main?.Clone();
             c.Sub = Sub?.Clone();
             c.StashedWork = StashedWork?.Clone();

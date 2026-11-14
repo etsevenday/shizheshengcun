@@ -12,6 +12,7 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 只读预览：在状态副本上真实执行一遍（风险视为未触发、提醒自动继续），
         /// 得到预计耗时、完成时刻与状态变化。不修改传入状态。
+        /// B47a3（R09 Q682—Q687）：完成计划在副本上假设存活完成（不抽致死、不尸变）；身体值与阈值提醒只到相关人物最早的危险段（见 GameEngine.Forecast）。
         /// </summary>
         public ActionPreview Preview(GameState s, ActionRequest r)
         {
@@ -64,46 +65,39 @@ namespace Survival.Core.Engine
             var needWork = a?.BaseWorkMinutes ?? 0;
             var heldCarry = a?.CarryReserved ?? 0;
 
-            var alerts = new HashSet<StatId>();
+            // B47a3（R09 Q682—Q687）：相关人物＝主角与当前同行的存活者（含濒死，不含候补）；副本按原 5 分钟段推到行动结束（完成计划假设存活），
+            // 同时记下各人首个危险段，身体预估在最早的一段截止
+            var who = s.PartyActors.Where(x => !IsDead(s, x)).Select(x => x.Id).ToList();
+            if (!who.Contains(GameState.PlayerId)) who.Insert(0, GameState.PlayerId);
             c.PendingEvents.Clear();
             // 逐段跟踪工作倍率：火堆燃尽、入夜、体力跌破阈值都会让后续段变慢，
             // 预览必须把变化的时刻与原因列出来（UI 案 06、地图案 07）。
             var trackFactor = p.IsWork && !plan.IsSub;
             var prevFactor = p.FactorAtStart;
             var prevLit = (FacOf(s, s.Ground) ?? s.Locations[s.CurrentLocation].Facility).FireLit;
-            for (var k = 0; k < SimLimit; k++)
+            var run = RunForecast(c, id, plan.IsSub, who, cs =>
             {
-                SimReadDialogues(c);
-                var cur = plan.IsSub ? c.Sub : c.Main;
-                if (cur == null || cur.ActionId != id || c.Progress.Dead) break;
-                if (!plan.IsSub && cur.Status == ActionStatus.Paused)
+                if (!trackFactor) return;
+                var reasons = new List<string>();
+                var f = WorkFactor(cs, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan.Tool != null, r.Type == ActionType.Gather ? plan.Tool?.ItemId : null);
+                var litNow = (FacOf(cs, cs.Ground) ?? cs.Locations[cs.CurrentLocation].Facility).FireLit;
+                if (System.Math.Abs(f - prevFactor) > Eps)
                 {
-                    if (cur.PauseStat.HasValue) alerts.Add(cur.PauseStat.Value);
-                    ResumeCore(c, false);
+                    var cause = prevLit && !litNow && r.Type != ActionType.Travel ? "火堆燃尽，" : "";
+                    var why = reasons.Count > 0 ? $"（{string.Join("，", reasons)}）" : "";
+                    p.Warnings.Add($"预计{Clock.HHmm(cs.GameMinute)}起{cause}工作倍率变为×{f:0.##}{why}");
+                    prevFactor = f;
                 }
-                if (trackFactor)
-                {
-                    var reasons = new List<string>();
-                    var f = WorkFactor(c, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan.Tool != null, r.Type == ActionType.Gather ? plan.Tool?.ItemId : null);
-                    var litNow = (FacOf(c, c.Ground) ?? c.Locations[c.CurrentLocation].Facility).FireLit;
-                    if (System.Math.Abs(f - prevFactor) > Eps)
-                    {
-                        var cause = prevLit && !litNow && r.Type != ActionType.Travel ? "火堆燃尽，" : "";
-                        var why = reasons.Count > 0 ? $"（{string.Join("，", reasons)}）" : "";
-                        p.Warnings.Add($"预计{Clock.HHmm(c.GameMinute)}起{cause}工作倍率变为×{f:0.##}{why}");
-                        prevFactor = f;
-                    }
-                    prevLit = litNow;
-                }
-                Advance(c);
-            }
-            p.AlertsExpected = alerts.ToList();
+                prevLit = litNow;
+            });
             p.WouldDie = c.Progress.Dead;
+            p.PlanFailed = !run.Done;
+            p.PlanFailReason = run.FailReason;
             p.StatsAfter = c.Stats.Clone();
             if (p.Feed != null) p.Feed.TargetAfter = c.Actors[p.Feed.TargetActorId].Stats.Clone();
             p.EstimatedEndMinute = c.GameMinute;
             p.EstimatedMinutes = c.GameMinute - s.GameMinute;
-            if (carryKey != null && !c.Progress.Dead)
+            if (carryKey != null && run.Done)
             {
                 var done = (plan.IsSub ? c.Sub : c.Main)?.ActionId != id;
                 p.WorkMinutes = needWork;
@@ -112,8 +106,14 @@ namespace Survival.Core.Engine
                 var after = p.CarryAfter is double ca ? $"，完成后余量{Fmt.N(ca)}分钟" : "";
                 p.Notes.Add($"需求工作量{Fmt.N(needWork)}分钟，已有同类余量{Fmt.N(heldCarry)}分钟；预计{p.EstimatedMinutes}分钟{after}（不足5分钟的余量留给下次同类工作）");
             }
-            p.FacilityChanges = FacilityChanges(s, c);
-            if (plan.Type == ActionType.Ignite)
+            else if (carryKey != null)
+            {
+                p.WorkMinutes = needWork;
+                p.CarryBefore = heldCarry;
+            }
+            // Q682：求不出可信完成时不把中途快照当完成结果（设施／燃料变化只在完成计划可信时列出）
+            if (run.Done) p.FacilityChanges = FacilityChanges(s, c);
+            if (plan.Type == ActionType.Ignite && run.Done)
             {
                 p.FuelAtEnd = FacOf(c, s.Ground)!.FuelMinutes;
                 p.DiesOutAtEnd = !FacOf(c, s.Ground)!.FireLit;
@@ -121,8 +121,10 @@ namespace Survival.Core.Engine
                     p.Warnings.Add($"现有燃料{p.FuelBefore}分钟只够点火过程：点火完成时燃尽熄灭，请先投入木材");
             }
 
-            if (p.WouldDie) p.Warnings.Add("按当前状态，行动途中可能死亡");
-            foreach (var st in alerts) p.Warnings.Add($"途中{StatName(st)}将越过提醒阈值，行动会暂停");
+            // B47a3：身体区（截止、风险、阈值提醒）与完成计划区分开；旧“按当前状态，行动途中可能死亡”由 Q675 六句与 Q684 尸变句取代
+            p.PlanWarnings = p.Warnings.ToList();
+            ApplyBodyForecast(s, c, p, run, who);
+            p.Warnings = FlatWarnings(p);
             return p;
         }
 
@@ -449,7 +451,7 @@ namespace Survival.Core.Engine
             return over;
         }
 
-        /// <summary>估算当前行动的完成时刻（提醒自动继续、风险不计）。火堆会熄灭等无法预估时返回 null。limit：最多模拟几段（B41c2 开工认定只看前两段），超出也返回 null。</summary>
+        /// <summary>估算当前行动的完成时刻（提醒自动继续、风险不计；B47a3 起副本按假设存活完成求，与预估的完成计划同源）。中途中止、火堆会熄灭等无法预估时返回 null。limit：最多模拟几段（B41c2 开工认定只看前两段），超出也返回 null。</summary>
         public int? EstimateEndMinute(GameState s, int limit = SimLimit)
         {
             var a = s.Sub ?? s.Main;
@@ -464,14 +466,16 @@ namespace Survival.Core.Engine
             target.HazardHit = false;
             target.EncounterRoll = 1;
             if (!sub && target.Status == ActionStatus.Paused) ResumeCore(c, false);
+            var last = SegmentStatus.Running;
             for (var k = 0; k <= limit; k++)
             {
                 SimReadDialogues(c);
                 var cur = sub ? c.Sub : c.Main;
-                if (cur == null || cur.ActionId != id) return c.GameMinute;
+                // B47a3（Q682）：与预估同一完成计划——副本里濒死／致死判定按仍可存活继续；中途中止（原料腐败、燃料不足停止）不是完成，不猜时刻
+                if (cur == null || cur.ActionId != id) return last == SegmentStatus.Aborted ? (int?)null : c.GameMinute;
                 if (c.Progress.Dead || k == limit) return null;
                 if (!sub && cur.Status == ActionStatus.Paused) ResumeCore(c, false);
-                Advance(c);
+                last = Advance(c).Status;
             }
             return null;
         }

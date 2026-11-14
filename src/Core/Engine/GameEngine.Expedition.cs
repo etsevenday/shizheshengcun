@@ -528,6 +528,7 @@ namespace Survival.Core.Engine
                 p.BaseMinutes = e.ExtractLegMinutes.Sum();
                 p.Factor = e.LockedFactor;
                 p.TotalMinutes = e.TotalMinutes;
+                FillExtractForecast(s, p);   // B47a3（Q685）：已在撤出中只推剩余路线、不重扣
                 return p;
             }
             var plan = ComputeExtractPlan(s, e.DungeonId, s.CurrentLocation);
@@ -537,7 +538,7 @@ namespace Survival.Core.Engine
             p.FactorReasons = plan.FactorReasons;
             p.TotalMinutes = plan.TotalMinutes;
             p.Risks.Add("途中饱食、水分、体力、清醒、精神不再另外下降（已含在这次损失里），但不会自然回血");
-            p.Risks.Add("已经归零的饱食/水分/清醒继续扣健康，出血、感染与病毒照常发展，可能在途中死亡");
+            p.Risks.Add(ExtractBodyMechanism);   // B47a3（Q675）：原复合风险句拆开，濒死／尸变风险逐人另列
             p.Risks.Add($"终点是{p.ParentName}（不是营区）；回营地要另走，正常消耗");
             p.Risks.Add("确认后立即扣除、开始撤出，途中不能取消，也不能吃喝、用药或休息");
             // B22（A10 §7、R03 D7.1）：原实例遗留物清单与封存物去向
@@ -546,6 +547,7 @@ namespace Survival.Core.Engine
             p.SealedText = sealedNow.Count > 0
                 ? $"封存的{sealedNow.Sum(i => i.Count)}份战利品（{string.Join("、", sealedNow.Select(i => $"{ItemName(i.ItemId)}×{i.Count}"))}）随队带出，到达后放进{p.ParentName}的远征回收箱"
                 : "没有封存的战利品（各人随身的物品照旧归本人）";
+            FillExtractForecast(s, p);
             return p;
         }
 
@@ -975,6 +977,12 @@ namespace Survival.Core.Engine
         public List<string> FactorReasons { get; set; } = new List<string>();
         public int TotalMinutes { get; set; }
         public List<string> Risks { get; set; } = new List<string>();
+        /// <summary>B47a3（Q685）：逐人撤出身体检查（扣包后健康→本人截止处或撤出结束，本人截止句与风险句）。</summary>
+        public List<ExtractBodyRow> BodyRows { get; set; } = new List<ExtractBodyRow>();
+        /// <summary>B47a3（Q684）：撤出途中病毒预计到尸变上限的人物风险句。</summary>
+        public List<string> VirusRisks { get; set; } = new List<string>();
+        /// <summary>B47a3（Q675）：有撤出抵抗风险时附一次的单次抵抗含义说明。</summary>
+        public string? ResistanceNote { get; set; }
         /// <summary>B22：留在原实例里的物品（地牢房间地面、死在这里的队友遗物）；不带走，可重入回收，重置前迁到父地点认领箱。</summary>
         public List<string> Leftovers { get; set; } = new List<string>();
         /// <summary>B22：封存战利品的去向说明。</summary>

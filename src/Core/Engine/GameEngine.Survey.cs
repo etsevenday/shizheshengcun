@@ -90,6 +90,7 @@ namespace Survival.Core.Engine
                 WriteLifeNotes(s, s.Player, notes);
                 if (life == DamageOutcome.Died) Kill(s, s.Progress.LastDamageCause);
             }
+            else if (SurveyHazard(loc) != null && SurveyHazardChance(s, loc) > 0) SimPossibleHit(s, s.Player, SurveyHazardLoss(s, loc));   // B47a3（Q675、Q687）：预估副本记未触发的概率伤
             return true;
         }
 

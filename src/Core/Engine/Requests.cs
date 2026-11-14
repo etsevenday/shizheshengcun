@@ -346,7 +346,37 @@ namespace Survival.Core.Engine
         public List<string> FacilityChanges { get; set; } = new List<string>();
         public List<StatId> AlertsExpected { get; set; } = new List<StatId>();
         public List<string> Notes { get; set; } = new List<string>();
+        /// <summary>
+        /// 全部提示摊平的一列（就近浮窗、制作／休息摘要等紧凑位置读它）：计划提示、计划求不出完成、身体截止与风险、各人风险、阈值提醒、尸变风险、概率限定。
+        /// 右栏完整预估改按下面分类字段分区显示（B47a3）。
+        /// </summary>
         public List<string> Warnings { get; set; } = new List<string>();
+
+        // ───── B47a3（R09 Q682—Q687）：身体预估截断与完成计划分区 ─────
+        /// <summary>完成计划区的提示：教学首战预告、工作倍率变化及其时刻、点火燃尽等（不含身体与生死风险）。</summary>
+        public List<string> PlanWarnings { get; set; } = new List<string>();
+        /// <summary>身体区：截止范围内的阈值提醒句（“途中{属性}将越过提醒阈值，行动会暂停”）。</summary>
+        public List<string> BodyAlerts { get; set; } = new List<string>();
+        /// <summary>有身体危险时：从现在起到共同截止段末的分钟（身体值 StatsAfter 取该时刻）；无危险为 null（原完整预估）。</summary>
+        public int? BodyCutoffMinutes { get; set; }
+        /// <summary>共同截止段内健康取决于致死判定结果的人物（健康后值写“未预估”）。</summary>
+        public HashSet<string> HealthUnknown { get; set; } = new HashSet<string>();
+        /// <summary>共同截止段内各人的 Q675 风险句（按同行顺序）。</summary>
+        public List<string> BodyRisks { get; set; } = new List<string>();
+        /// <summary>晚于共同截止的各人首个风险（“各人风险”组）。</summary>
+        public List<string> LaterRisks { get; set; } = new List<string>();
+        /// <summary>有抵抗风险时附一次的单次抵抗含义说明；没有为 null。</summary>
+        public string? ResistanceNote { get; set; }
+        /// <summary>Q684：按本人已知状态推到计划结束、病毒预计到尸变上限的人物风险句。</summary>
+        public List<string> VirusRisks { get; set; } = new List<string>();
+        /// <summary>Q687：尚未濒死者仅概率伤可能归零、不截断时附的限定句；不适用为 null。</summary>
+        public string? ProbabilityNote { get; set; }
+        /// <summary>Q682：按当前条件求不出可信完成（中止、暂停无法继续、算不完）；耗时与完成时刻写“未预估”。</summary>
+        public bool PlanFailed { get; set; }
+        /// <summary>求不出完成的已有真实原因；没有为 null。</summary>
+        public string? PlanFailReason { get; set; }
+        /// <summary>身体预估在危险段截断（右栏分“预估至危险段”与“完成计划”两区）。</summary>
+        public bool BodyCut => BodyCutoffMinutes.HasValue;
 
         /// <summary>清理与探索：本地掉落表（含未获得物资），只列可能结果，不泄露本次抽签。</summary>
         public List<LootOddsLine> LootOdds { get; set; } = new List<LootOddsLine>();
