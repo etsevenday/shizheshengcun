@@ -29,10 +29,13 @@ namespace Survival.Core.Engine
         {
             private readonly GameEngine _e;
             private readonly BattleFxEvent? _ev;
-            public FxClose(GameEngine e, BattleFxEvent? ev) { _e = e; _ev = ev; }
+            private readonly GameState? _s;
+            private readonly Dictionary<string, List<string>>? _before;
+            public FxClose(GameEngine e, BattleFxEvent? ev, GameState? s = null, Dictionary<string, List<string>>? before = null) { _e = e; _ev = ev; _s = s; _before = before; }
             public void Dispose()
             {
                 if (_ev == null) return;
+                if (_s != null && _before != null) _e.FxStampStates(_s, _ev, _before);
                 // 没有任何结果的出手（目标全部失效、医疗无健康变化）不留快照，不播空镜头
                 if (!_ev.Short) _e._fx.RemoveAll(x => (x == _ev || x.ContinuesSeq == _ev.Seq) && x.Results.Count == 0);
                 // 栈顶可能已换成本事件的续段（子事件插入后父事件继续出段）——连同续段一起出栈
@@ -47,7 +50,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>开始记一次出手（特写或短反馈）。不在战斗中时不记。返回的对象 Dispose 时结束这一次出手。</summary>
-        private IDisposable FxBegin(GameState s, string motion, BattleFxUnit actor, bool shortFeedback = false, bool noNumbers = false)
+        private IDisposable FxBegin(GameState s, string name, string motion, BattleFxUnit actor, bool shortFeedback = false, bool noNumbers = false)
         {
             var b = s.Battle;
             if (b == null) return new FxClose(this, null);
@@ -55,6 +58,7 @@ namespace Survival.Core.Engine
             {
                 Seq = ++_fxSeq,
                 BattleId = b.BattleId,
+                Name = name,
                 Motion = motion,
                 Actor = actor,
                 Short = shortFeedback,
@@ -64,13 +68,89 @@ namespace Survival.Core.Engine
             if (_fx.Count >= 400) _fx.RemoveRange(0, _fx.Count - 300);   // 没人取走（测试、离线推进）时不无限增长
             _fx.Add(ev);
             _fxOpen.Add(ev);
-            return new FxClose(this, ev);
+            return shortFeedback ? new FxClose(this, ev) : new FxClose(this, ev, s, FxStatesNow(s));
+        }
+
+        /// <summary>
+        /// 站位上每名角色此刻已生效的状态名（与战场角标同一组判断，用全名）：出手开始时抄一份，结束时比对，
+        /// 新出现的就是这次出手真实施加的状态（S14 Q573“实际已生效状态名”）。只读。
+        /// </summary>
+        private Dictionary<string, List<string>> FxStatesNow(GameState s)
+        {
+            var r = new Dictionary<string, List<string>>();
+            var b = s.Battle;
+            if (b == null) return r;
+            foreach (var en in b.Enemies) if (en.Alive) r[BattleFxUnit.EnemySide + ":e" + en.Index] = FxStateNames(s, FxFoe(en));
+            foreach (var id in AlliesOnField(b)) r[BattleFxUnit.AllySide + ":" + id] = FxStateNames(s, FxAlly(s, id));
+            return r;
+        }
+
+        /// <summary>一名角色此刻已生效的战斗状态名（战场角标同源）。</summary>
+        public List<string> FxStateNames(GameState s, BattleFxUnit u)
+        {
+            var list = new List<string>();
+            var b = s.Battle;
+            if (b == null) return list;
+            if (!u.IsAlly)
+            {
+                BattleEnemy? en = null;
+                foreach (var x in b.Enemies) if ("e" + x.Index == u.Id) en = x;
+                if (en == null || !en.Alive) return list;
+                if (en.Guard) list.Add("防御");
+                if (en.ProtectingIndex > 0) list.Add("保护");
+                if (en.Stagger) list.Add("失衡");
+                if (en.SlowActive || en.SlowPending) list.Add("减速");
+                if (en.BleedTriggers > 0) list.Add("出血");
+                if (EnemyMarked(b, en)) list.Add("标记");
+                if (en.ArmorBreak > 0 && en.ArmorBreakUntilRound >= b.Round) list.Add("破甲");
+                if (EnemyWeak(b, en)) list.Add("虚弱");
+                return list;
+            }
+            if (!AllyInBattle(b, u.Id)) return list;
+            using (FocusOn(s, u.Id))
+            {
+                if (b.PlayerGuard) list.Add(b.PlayerGuardSourceId != null ? "盾格挡" : "防御");
+                if (b.BraceCharges > 0) list.Add("架矛");
+                if (b.CounterFactor > 0) list.Add("反击架势");
+                if (AxeChargeOn(b)) list.Add("蓄力");
+                if (b.PlayerStagger) list.Add("失衡");
+                if (b.PlayerSlowActive || b.PlayerSlowPending) list.Add("减速");
+                if (PlayerArmorBroken(b)) list.Add("破甲");
+                if (PlayerWeakActive(b)) list.Add("虚弱");
+                if (s.Body.BleedTriggers > 0) list.Add("出血");
+                if (s.Body.Infected) list.Add("感染");
+            }
+            return list;
+        }
+
+        /// <summary>出手结束：每名承受者新生效的状态名挂到他本次最后一段上（续段一并算）。</summary>
+        private void FxStampStates(GameState s, BattleFxEvent ev, Dictionary<string, List<string>> before)
+        {
+            var last = new Dictionary<string, BattleFxResult>();
+            foreach (var x in _fx)
+                if (x == ev || x.ContinuesSeq == ev.Seq)
+                    foreach (var r in x.Results) last[r.Target.Side + ":" + r.Target.Id] = r;
+            foreach (var kv in last)
+            {
+                if (kv.Value.Down) continue;
+                var now = FxStateNames(s, kv.Value.Target);
+                before.TryGetValue(kv.Key, out var was);
+                foreach (var n in now) if (was == null || !was.Contains(n)) kv.Value.States.Add(n);
+            }
         }
 
         /// <summary>短反馈（R03 §Q571：防御、调息、调整站位、撤退、装填、整队；敌方非攻击意图；支撑护带包）。只记行动者，不造数值。</summary>
-        private void FxShort(GameState s, BattleFxUnit actor)
+        private void FxShort(GameState s, string name, BattleFxUnit actor)
         {
-            using (FxBegin(s, BattleFxMotion.Short, actor, shortFeedback: true)) { }
+            using (FxBegin(s, name, BattleFxMotion.Short, actor, shortFeedback: true)) { }
+        }
+
+        /// <summary>敌人这一步实际执行的动作名（意图正式名去掉括注与数值，与执行时的战报动词同源）；只在执行时调用，不预告未来计划。</summary>
+        private string FxEnemyActName(BattleEnemy e, BattleState b)
+        {
+            var label = IntentLabel(e, b);
+            var cut = label.IndexOfAny(new[] { ' ', '（', '，' });
+            return cut > 0 ? label.Substring(0, cut) : label;
         }
 
         /// <summary>
@@ -87,6 +167,7 @@ namespace Survival.Core.Engine
                 {
                     Seq = ++_fxSeq,
                     BattleId = ev.BattleId,
+                    Name = ev.Name,
                     Motion = ev.Motion,
                     Actor = ev.Actor,
                     NoNumbers = ev.NoNumbers,

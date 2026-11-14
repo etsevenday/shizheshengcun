@@ -501,7 +501,7 @@ namespace Survival.Core.Engine
                 case "flee":
                     e.Fled = true;
                     e.Slot = "";
-                    FxShort(s, FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
+                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}逃离了战斗（没有尸体，不算击杀）。");
                     CheckVictory(s);
                     return;
@@ -510,7 +510,7 @@ namespace Survival.Core.Engine
                     return;
                 case "guard":
                     e.Guard = true;
-                    FxShort(s, FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
+                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}举盾防御（下一次受到的直接伤害×{Fmt.T(Config.CombatMath.GuardFactor)}）。");
                     return;
                 case "howl":
@@ -524,13 +524,13 @@ namespace Survival.Core.Engine
                             b.PanicPeak = Math.Max(b.PanicPeak, b.Panic);
                             heard.Add(id == GameState.PlayerId ? $"你的恐慌+{Fmt.T(st.Panic)}（{Fmt.N(b.Panic)}）" : $"{Who(s)}恐慌+{Fmt.T(st.Panic)}（{Fmt.N(b.Panic)}）");
                         }
-                    FxShort(s, FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
+                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}{(st.Verb != "" ? st.Verb : "嚎叫")}，{string.Join("，", heard)}。");
                     return;
                 }
                 case "charge_prepare":
                     e.Charged = true;
-                    FxShort(s, FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
+                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}蓄力，下轮{(AllSteps(cfg).FirstOrDefault(x => x.Kind == "charge")?.Verb is string v && v != "" ? v : "冲撞")}。");
                     return;
                 case "protect":
@@ -551,12 +551,12 @@ namespace Survival.Core.Engine
                     if (ProtectBlocked(links, $"e{e.Index}", $"e{t.Index}") is string why) { BattleLog(s, $"{EnemyName(e)}没能保护{EnemyName(t)}（{why}）。"); return; }
                     e.ProtectingIndex = t.Index;
                     e.ProtectUses++;
-                    FxShort(s, FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
+                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}护住{EnemyName(t)}（替它挡下一次单体攻击，到{EnemyName(e)}下次行动前）。");
                     return;
                 }
                 case "signal":
-                    FxShort(s, FxFoe(e));   // B34b：信号属敌方非攻击意图短反馈
+                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b：信号属敌方非攻击意图短反馈
                     if (!b.ReinforcementUsed && !b.ReinforcementRequested && !b.Tutorial && Config.Noise.MaxReinforcementsPerBattle > 0)
                     {
                         b.ReinforcementRequested = true;
@@ -567,7 +567,7 @@ namespace Survival.Core.Engine
                 case "buff":
                     // A09 E2“同名buff取强”：已有同名的下一击增益时取较大值，不叠乘
                     e.NextHitFactor = Math.Max(e.NextHitFactor, st.NextHitFactor > 0 ? st.NextHitFactor : 1);
-                    FxShort(s, FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
+                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}{st.Verb}：下一击伤害×{Fmt.T(e.NextHitFactor)}。");
                     return;
                 case "rally":
@@ -576,7 +576,7 @@ namespace Survival.Core.Engine
                     var ts = RallyTargets(b, e);
                     if (ts.Count == 0) { BattleLog(s, $"{EnemyName(e)}{st.Verb}，身边没有同伴回应。"); return; }
                     foreach (var t in ts) t.RallyFactor = Math.Max(t.RallyFactor, st.NextHitFactor);
-                    FxShort(s, FxFoe(e));   // B34b：增益类意图短反馈
+                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b：增益类意图短反馈
                     BattleLog(s, $"{EnemyName(e)}低声{st.Verb}：{string.Join("、", ts.Select(t => $"{EnemyName(t)}（{PosName(t.Pos)}）"))}下一击伤害×{Fmt.T(st.NextHitFactor)}（不叠层）。");
                     return;
                 }
@@ -598,7 +598,7 @@ namespace Survival.Core.Engine
                     var k = Math.Max(0, Math.Min(cfg.Magazine - Math.Max(0, e.Mag), e.Reserve));
                     e.Mag = Math.Max(0, e.Mag) + k;
                     e.Reserve -= k;
-                    FxShort(s, FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
+                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}装填{k}发（弹仓{e.Mag}，备弹{e.Reserve}）。");
                     return;
                 }
@@ -734,7 +734,7 @@ namespace Survival.Core.Engine
             var ahead = b.Alive.FirstOrDefault(x => x.Pos == e.Pos - 1);
             if (ahead != null) (e.Slot, ahead.Slot) = (ahead.Slot, e.Slot);
             else e.Slot = (e.Pos - 1).ToString();
-            FxShort(s, FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
+            FxShort(s, "前移", FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
             BattleLog(s, $"{EnemyName(e)}前移到{PosName(e.Pos)}{(ahead != null ? $"（{EnemyName(ahead)}退到{PosName(ahead.Pos)}）" : "")}。");
             TryBrace(s, b, e);
         }
@@ -776,7 +776,7 @@ namespace Survival.Core.Engine
             }
             if (targets.Count == 0) { BattleLog(s, $"{EnemyName(e)}{verb}落在空处。"); return; }
             // B34b（R03 §Q571）：敌方攻击类意图按真实近战／远程／扫击播特写，承伤者按真实抽中（含保护转移）
-            using var fxScope = FxBegin(s, sweep ? BattleFxMotion.Area : shoot ? BattleFxMotion.Ranged : BattleFxMotion.Melee, FxFoe(e));
+            using var fxScope = FxBegin(s, verb, sweep ? BattleFxMotion.Area : shoot ? BattleFxMotion.Ranged : BattleFxMotion.Melee, FxFoe(e));
             if (shoot) e.Mag--;
             var a = Math.Max(Config.CombatMath.MinAccuracy, cfg.AttackRating);
             if (e.Stagger) { a *= Config.Statuses.Stagger.NextAttackAccuracyFactor; e.Stagger = false; e.StaggerSticky = false; }

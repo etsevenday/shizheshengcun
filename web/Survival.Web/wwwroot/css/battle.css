@@ -483,8 +483,20 @@
   animation: bfx-chip calc(var(--fx-ms) * .2) ease-out both; animation-delay: calc(var(--fx-ms) * (.33 + var(--i) * .09)); }
 .bfx-chip.o-crit { color: #ffb347; font-size: clamp(26px, 3vw, 46px); }
 .bfx-chip.o-heal { color: #9be38b; }
-.bfx-chip:is(.o-miss, .o-blocked, .o-effect) { width: 22px; height: 22px; border: 3px solid #b9b2a2; border-radius: 50%; align-self: center; }
-.bfx-chip.o-blocked, .bfx-chip.g:empty { border-color: #d4a84a; border-radius: 3px; }
+.bfx-chip { display: inline-flex; gap: 6px; align-items: baseline; }
+.bfx-chip:empty { display: none; }
+.bfx-chip .bfx-w:not(.num) { font-size: clamp(16px, 1.5vw, 24px); }
+.bfx-chip.o-miss, .bfx-chip.o-blocked { color: #c9c1ad; }
+.bfx-chip.g .bfx-w:not(.num) { color: #e8c46a; }
+.bfx-chip:is(.o-state, .o-down) { font-size: clamp(14px, 1.3vw, 20px); padding: 1px 8px; border: 2px solid currentColor; border-radius: 3px; align-self: center; background: #0009; }
+.bfx-chip.o-state { color: #e8c46a; }
+.bfx-chip.o-down { color: #ff7b6b; }
+.bfx-chips { flex-wrap: wrap; max-width: 200%; }
+.bfx-title { position: absolute; z-index: 2; top: calc(7vh + 14px); left: 50%; translate: -50% 0; margin: 0; padding: 4px 18px; font-size: clamp(20px, 2vw, 32px); letter-spacing: .08em; color: #f2e2bb;
+  border-top: 2px solid #d4a84a88; border-bottom: 2px solid #d4a84a88; white-space: nowrap; animation: bfx-chip calc(var(--fx-ms) * .15) ease-out both; }
+/* 短反馈：行动者头顶只显示真实行动名（S14 Q573） */
+.fx-pulse-name { position: absolute; z-index: 6; left: 50%; top: 52px; translate: -50% 0; padding: 1px 8px; white-space: nowrap; pointer-events: none;
+  font-size: var(--fs-aux); font-weight: 600; color: #f2e2bb; background: #000b; border: 1px solid #d4a84a; border-radius: 3px; animation: bfx-chip calc(160ms * var(--motion-k)) ease-out both; }
 .bfx-caption { position: relative; z-index: 1; margin: 0 auto 9vh; padding: 10px 6vw 0; max-width: 1200px; text-align: center; font-size: var(--fs-body); line-height: 1.5; color: #d6ccb4;
   animation: bfx-chip calc(var(--fx-ms) * .2) ease-out both; animation-delay: calc(var(--fx-ms) * .47); }
 .bfx-caption p { margin: 0; }

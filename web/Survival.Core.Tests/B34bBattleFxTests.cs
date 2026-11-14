@@ -100,4 +100,43 @@ public class B34bBattleFxTests : BattleTestBase
         Assert.That(Ev(BattleFxMotion.Melee, new BattleFxResult { Target = a, Outcome = "hit" }, new BattleFxResult { Target = a, Outcome = "miss" }).Look, Is.EqualTo("melee"), "同目标多段仍是一段特写");
         Assert.That(Ev(BattleFxMotion.Heal, new BattleFxResult { Target = a, Outcome = "effect" }).Look, Is.EqualTo("heal"));
     }
+
+    /// <summary>Q573-A01：特写标题是本次真实指令名（与战报里的名字同源）；短反馈只带行动名。</summary>
+    [Test]
+    public void Q573_Name_IsRealCommandName()
+    {
+        var s = Fight(11, "shambler");
+        ToPlayer(s);
+        Assume.That(E.AwaitingPlayer(s));
+        E.DrainBattleFx();
+        var o = FirstAttack(E, s);
+        Assert.That(Cmd(s, o.Action, o.Targets[0]).Ok, Is.True);
+        var ev = E.DrainBattleFx().First(x => !x.Short);
+        Assert.That(ev.Name, Is.EqualTo(o.Label), "标题＝真实指令名");
+        Assert.That(ev.Lines.All(l => l.Contains(ev.Name)), "与同次战报里的名字一致");
+        var t = Fight(12, "shambler");
+        ToPlayer(t);
+        Assume.That(E.BattleOptions(t).Any(x => x.Action == "guard" && x.Available));
+        E.DrainBattleFx();
+        Cmd(t, "guard");
+        Assert.That(E.DrainBattleFx().Single(x => x.Short).Name, Is.EqualTo("防御"), "短反馈只显示行动名");
+    }
+
+    /// <summary>Q573-A01：新生效的状态名取真实状态（与站位角标同名），出手前已有的不重复算。</summary>
+    [Test]
+    public void Q573_States_OnlyNewlyApplied()
+    {
+        var s = Fight(15, "shambler");
+        ToPlayer(s);
+        var en = s.Battle!.Alive.First();
+        var u = new BattleFxUnit { Side = BattleFxUnit.EnemySide, Id = "e" + en.Index };
+        Assert.That(E.FxStateNames(s, u), Does.Not.Contain("失衡"));
+        en.Stagger = true;
+        Assert.That(E.FxStateNames(s, u), Does.Contain("失衡"), "与角标同一判断");
+        en.Stagger = false;
+        en.Guard = true;
+        Assert.That(E.FxStateNames(s, u), Does.Contain("防御"));
+        var me = new BattleFxUnit { Side = BattleFxUnit.AllySide, Id = GameState.PlayerId };
+        Assert.That(E.FxStateNames(s, me), Is.Not.Null);
+    }
 }

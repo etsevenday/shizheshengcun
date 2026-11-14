@@ -3,7 +3,8 @@
 @* B34b（R03 文首「2026-11-13 B34主要Q570—Q572」§Q571／§Q572；a9b93f0 动效合同 battle 七类、《给开发的动效说明》1200ms 时序与近战特写分镜）：
    战斗特写播放层。只读 G.FxNow 这一段出手快照（行动者、承受者、按真实次序的各段结果、同次战报原文），不读当前战斗状态——
    上一场的最后几段播放时下一场的演员、HP 不会混进来。画面点击＝跳过（第一次到结果帧，再一次跳过余下）；只读子页盖在上面时退到下面、不收点击。
-   标题与结果用字等 Q573 答复：现在不加标题，结果只显示与战报同格式的数值，文字取同次战报原句。人物图沿用战场现有立绘（主角立绘、敌人图标）。 *@
+   B34（S14 Q573）：标题为本次真实指令名；结果字用战报原词「未命中」「格挡」「暴击」「倒地」及这次真实新生效的状态名，恢复「+{数值}」、扣血「−{数值}」取真实变化值；
+   不另加「行动名 · 伤害」结果条（同次战报原句只给读屏）。跳过按钮悬停为两级跳过的逐字说明。人物图沿用战场现有立绘（主角立绘、敌人图标）。 *@
 @if (G.FxNow is BattleFxEvent ev)
 {
     var look = ev.Look;
@@ -11,22 +12,41 @@
     var foes = Units(ev, false);
     <div class="bfx-layer @(G.FxUnderReading ? "under" : "") @(G.FxPaused ? "paused" : "") @(G.FxAtResult ? "at-result" : "")" data-active
          style="--fx-ms:@(G.FxDurationMs)ms" @onclick="G.PlaybackSkip" aria-hidden="@(G.FxUnderReading)">
+        <h2 class="bfx-title" aria-hidden="true">@ev.Name</h2>
         <div class="bfx-stage bfx-@look bfx-m-@ev.Motion @(ev.Actor.IsAlly ? "from-ally" : "from-foe") @(ev.ContinuesSeq != null ? "cont" : "")" @key="G.FxSegment" aria-hidden="true">
             <div class="bfx-group left">@foreach (var u in allies) { @Figure(ev, u) }</div>
             <div class="bfx-group right">@foreach (var u in foes) { @Figure(ev, u) }</div>
             @if (ev.Motion == BattleFxMotion.Ranged) { <i class="bfx-trail @(ev.Actor.IsAlly ? "ltr" : "rtl")"></i> }
         </div>
-        <div class="bfx-caption" aria-live="polite">
+        <div class="bfx-caption sr-only" aria-live="polite">
             @foreach (var line in ev.Lines) { <p>@line</p> }
         </div>
         @if (G.FxSkipLabel is string label)
         {
-            <button type="button" class="bfx-skip" @onclick="G.PlaybackSkip" @onclick:stopPropagation="true">@label<kbd class="keycap">@ShellKeys.EnterSpaceCap</kbd></button>
+            <button type="button" class="bfx-skip" title="@G.FxSkipNote" @onclick="G.PlaybackSkip" @onclick:stopPropagation="true">@label<kbd class="keycap">@ShellKeys.EnterSpaceCap</kbd></button>
         }
     </div>
 }
 
 @code {
+    /// <summary>S14 Q573 列出的战报原词。</summary>
+    private const string MissWord = "未命中", GuardWord = "格挡", CritWord = "暴击", DownWord = "倒地";
+
+    /// <summary>
+    /// 一段结果的结果字（S14 Q573）：未中「未命中」；格挡「格挡」；暴击「暴击」；扣血「−{数值}」、恢复「+{数值}」取真实变化值（鼓舞提示贴等不显示数值）；
+    /// 护甲完全挡住沿同侧战报原句（我方打敌人「被护甲完全挡住」，敌人打我方「被完全挡住」）；无数值效果只显示新生效的状态名（另列）。
+    /// </summary>
+    private static IEnumerable<string> Words(BattleFxEvent ev, BattleFxResult r)
+    {
+        if (r.Outcome == "miss") { yield return MissWord; yield break; }
+        if (r.Guarded) yield return GuardWord;
+        if (r.Outcome == "crit") yield return CritWord;
+        if (ev.NoNumbers) yield break;
+        if (r.Outcome is "hit" or "crit" && r.Amount > 0) yield return "−" + Ui.N(r.Amount);
+        else if (r.Outcome == "heal" && r.Amount > 0) yield return "+" + Ui.N(r.Amount);
+        else if (r.Outcome == "blocked" && !r.Guarded) yield return r.Target.IsAlly ? "被完全挡住" : "被护甲完全挡住";
+    }
+
     /// <summary>这一段里出现的角色（行动者在前，再按结果出现的先后），按阵营分到左（我方）右（敌方）。</summary>
     private static List<BattleFxUnit> Units(BattleFxEvent ev, bool ally)
     {
@@ -51,13 +71,9 @@
                 @for (var i = 0; i < rs.Count; i++)
                 {
                     var r = rs[i];
-                    var text = ev.NoNumbers ? null : r.Outcome switch
-                    {
-                        "hit" or "crit" => "−" + Ui.N(r.Amount),
-                        "heal" => "+" + Ui.N(r.Amount),
-                        _ => null,
-                    };
-                    <span class="bfx-chip o-@r.Outcome @(r.Guarded ? "g" : "")" style="--i:@i">@if (text != null) {@text}</span>
+                    <span class="bfx-chip o-@r.Outcome @(r.Guarded ? "g" : "")" style="--i:@i">@foreach (var w in Words(ev, r)) {<span class="bfx-w @(w.StartsWith("−") || w.StartsWith("+") ? "num" : "")">@w</span>}</span>
+                    @foreach (var st in r.States) { <span class="bfx-chip o-state" style="--i:@i">@st</span> }
+                    @if (r.Down) { <span class="bfx-chip o-down" style="--i:@i">@DownWord</span> }
                 }
             </div>
             <div class="bfx-art">

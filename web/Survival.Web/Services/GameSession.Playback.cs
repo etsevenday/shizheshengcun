@@ -63,6 +63,9 @@ public sealed partial class GameSession
     /// <summary>短反馈：锚点键（阵营:编号）→ 序号；界面按它在锚点上播一次短亮（不挡输入、不进队列）。</summary>
     public Dictionary<string, int> FxPulses { get; } = new();
 
+    /// <summary>短反馈此刻显示的真实行动名（S14 Q573：短反馈只显示行动名）。</summary>
+    private readonly Dictionary<string, string> _fxPulseNames = new();
+
     /// <summary>
     /// 播一批刚取走的出手快照（调用方已先 Drain／Commit／Notify 真实状态）。短反馈只在锚点上亮一下；特写逐段排队播放。
     /// 返回是否真的播了特写（播了就不再叠旧的 480 毫秒敌方逐条停顿，R03 §Q571）。上下文切换（读档、新局）时立即返回。
@@ -71,7 +74,7 @@ public sealed partial class GameSession
     {
         if (evs.Count == 0) return false;
         var gen = _fxGen;
-        foreach (var ev in evs.Where(x => x.Short)) Pulse(ev.Actor, gen);
+        foreach (var ev in evs.Where(x => x.Short)) Pulse(ev, gen);
         var main = evs.Where(x => !x.Short && x.Results.Count > 0).ToList();
         if (main.Count == 0) return false;
         if (_fxSkipAll) return true;   // 本批已选择跳过余下：结果照常（已结算），只略动画
@@ -144,14 +147,17 @@ public sealed partial class GameSession
         FxNow = null;
         FxAtResult = false;
         FxPulses.Clear();
+        _fxPulseNames.Clear();
         E.DrainBattleFx();
     }
 
-    private void Pulse(BattleFxUnit u, int gen)
+    private void Pulse(BattleFxEvent ev, int gen)
     {
+        var u = ev.Actor;
         var key = u.Side + ":" + u.Id;
         var seq = FxPulses.TryGetValue(key, out var v) ? v + 1 : 1;
         FxPulses[key] = seq;
+        _fxPulseNames[key] = ev.Name;
         _ = ClearPulse(key, seq, gen);
     }
 
@@ -160,9 +166,16 @@ public sealed partial class GameSession
         await Task.Delay(MotionMs(FxPulseBaseMs) + 50);
         if (gen != _fxGen || !FxPulses.TryGetValue(key, out var v) || v != seq) return;
         FxPulses.Remove(key);
+        _fxPulseNames.Remove(key);
         Notify();
     }
 
     /// <summary>锚点此刻是否在播短反馈（阵营:编号）。</summary>
     public int? PulseOf(string side, string id) => FxPulses.TryGetValue(side + ":" + id, out var v) ? v : null;
+
+    /// <summary>锚点此刻短反馈的行动名（没有在播为 null）。</summary>
+    public string? PulseNameOf(string side, string id) => FxPulses.ContainsKey(side + ":" + id) && _fxPulseNames.TryGetValue(side + ":" + id, out var n) && n != "" ? n : null;
+
+    /// <summary>跳过控件此刻的配套说明（S14 Q573 逐字，与键表说明同源）。</summary>
+    public string? FxSkipNote => FxSkipLabel == ShellKeys.SkipToResult ? ShellKeys.SkipToResultNote : FxSkipLabel == ShellKeys.SkipRest ? ShellKeys.SkipRestNote : null;
 }

@@ -163,6 +163,9 @@ namespace Survival.Core.Engine
         public const string SkipToResult = "跳到结果";
         public const string SkipRest = "跳过余下";
         public const string EnterSpaceCap = "Enter / Space";
+        /// <summary>B34（S14 Q573）：两级跳过的配套说明逐字（键表说明列与跳过按钮悬停同一句）。</summary>
+        public const string SkipToResultNote = "跳到本段结果，不改变战斗结果。";
+        public const string SkipRestNote = "跳过剩余出手表现，结果照常结算。";
 
         /// <summary>BM2（Q496）：顶栏、战斗区、结算页「菜单 ESC」按钮的悬停正式句。</summary>
         public const string MenuHover = "点击打开或关闭菜单。按 ESC 时先处理当前可关闭层；没有可关闭层时打开菜单。";
@@ -186,7 +189,7 @@ namespace Survival.Core.Engine
 
     /// <summary>
     /// BM2（Q495、Q501；S14「B43 Q495—Q502」、重墨 V2 逐字稿同日节）：系统说明「入门与操作」里的「键盘快捷键」条目与「ESC 与界面层级」六段。
-    /// 键表标签由 <see cref="ShellKeys"/> 的按钮原文与键帽拼出，与按钮、真实绑定同源；未交付的战斗两级跳过不列。
+    /// 键表标签由 <see cref="ShellKeys"/> 的按钮原文与键帽拼出，与按钮、真实绑定同源；B34 起列出战斗特写两级跳过（Q573）。
     /// </summary>
     public static class ShellKeyHelp
     {
@@ -201,7 +204,7 @@ namespace Survival.Core.Engine
             "仅显示“×”的关闭键和手动存档页的“返回”按钮不标 ESC，仍可按 ESC 按界面层级返回。",
         };
 
-        /// <summary>四个区：顶栏 12 项（与 <see cref="ShellKeys.TopLabel"/> 同源）、局部操作、战斗、动画跳过（当前只有中央「跳过动画 空格」）。</summary>
+        /// <summary>四个区：顶栏 12 项（与 <see cref="ShellKeys.TopLabel"/> 同源）、局部操作、战斗、动画跳过（中央「跳过动画 空格」与战斗特写「跳到结果／跳过余下 Enter / Space」）。</summary>
         public static IReadOnlyList<KeyHelpGroup> Groups()
         {
             var top = new List<KeyHelpRow>();
@@ -228,6 +231,9 @@ namespace Survival.Core.Engine
                 new KeyHelpGroup("动画跳过", new[]
                 {
                     new KeyHelpRow($"{ShellKeys.SkipAnim} {ShellKeys.SpaceCap}", "跳过中央行动的表现等待，实际行动仍按原规则逐段结算。"),
+                    // B34（S14 Q573）：战斗特写两级跳过，行名与按钮、键帽同源
+                    new KeyHelpRow($"{ShellKeys.SkipToResult} {ShellKeys.EnterSpaceCap}", ShellKeys.SkipToResultNote),
+                    new KeyHelpRow($"{ShellKeys.SkipRest} {ShellKeys.EnterSpaceCap}", ShellKeys.SkipRestNote),
                 }),
             };
         }

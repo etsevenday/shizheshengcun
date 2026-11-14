@@ -165,6 +165,8 @@ namespace Survival.Core.Engine
         public bool Guarded { get; set; }
         /// <summary>这一段后倒地。</summary>
         public bool Down { get; set; }
+        /// <summary>B34（S14 Q573）：这次出手让承受者新生效的状态名（与站位角标同名，如“失衡”“标记”）；只挂在该承受者本次最后一段上。</summary>
+        public List<string> States { get; } = new List<string>();
     }
 
     /// <summary>
@@ -175,6 +177,8 @@ namespace Survival.Core.Engine
     {
         public int Seq { get; set; }
         public int BattleId { get; set; }
+        /// <summary>B34（S14 Q573）：本次真实指令／动作名（特写标题、短反馈只显示它）。</summary>
+        public string Name { get; set; } = "";
         public string Motion { get; set; } = BattleFxMotion.Melee;
         public BattleFxUnit Actor { get; set; } = new BattleFxUnit();
         public List<BattleFxResult> Results { get; } = new List<BattleFxResult>();

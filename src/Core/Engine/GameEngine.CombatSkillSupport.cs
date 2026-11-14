@@ -361,7 +361,7 @@ namespace Survival.Core.Engine
                     var rb = c.AllyTarget2!;
                     int pa = AllyPos(b, ra), pb = AllyPos(b, rb);
                     MoveAlly(b, pa, pb);
-                    FxShort(s, FxAlly(s, b.FocusId));   // B34b（R03 §Q571）：整队只给行动者短反馈
+                    FxShort(s, n.Name, FxAlly(s, b.FocusId));   // B34b（R03 §Q571）：整队只给行动者短反馈
                     parts.Add($"{ActorDisplayName(s, ra)}{PosName(pa)}→{PosName(pb)}，{ActorDisplayName(s, rb)}{PosName(pb)}→{PosName(pa)}");
                     if (wi?.Durability != null) parts.Add(Wear(wi, 1));
                     parts.Add("换位无经验");
@@ -452,7 +452,7 @@ namespace Survival.Core.Engine
                     if (target != b.FocusId) parts.Add($"目标{ActorDisplayName(s, target)}");
                     // B34b（R03 §Q571）：医疗技能——治疗式特写，真实施术者、受益者与健康变化值（应急护理等无健康变化的属 Q615，不记）
                     double medH0, medH1;
-                    fxMed = FxBegin(s, BattleFxMotion.Heal, FxAlly(s, b.FocusId));
+                    fxMed = FxBegin(s, n.Name, BattleFxMotion.Heal, FxAlly(s, b.FocusId));
                     using (FocusOn(s, target))
                     {
                         medH0 = s.Stats.Health;
@@ -567,7 +567,7 @@ namespace Survival.Core.Engine
             var pv = TargetCalc(s, b, sp, t, s.Stats.Energy);
             ConsumeFirstStrike(b, MeId(s));   // B41c（Q422）：一次反击／迎击是独立出手，未命中也消耗
             // B34b（R03 §Q571）：反击、迎击是在真实触发处插入的一次出手（父出手的段不重播）
-            using var fxScope = FxBegin(s, RangedWeapon(w) ? BattleFxMotion.Ranged : BattleFxMotion.Melee, FxAlly(s, MeId(s)));
+            using var fxScope = FxBegin(s, label, RangedWeapon(w) ? BattleFxMotion.Ranged : BattleFxMotion.Melee, FxAlly(s, MeId(s)));
             if (s.Rng.NextDouble() >= pv.HitChance) { FxHit(FxFoe(t), "miss"); BattleLog(s, $"{Who(s)}{label}{cfg.Name}未命中（{Fmt.Pct(pv.HitChance)}）。"); return; }
             var crit = s.Rng.NextDouble() < pv.CritChance;
             var raw = w.DamageMin + s.Rng.NextDouble() * (w.DamageMax - w.DamageMin);

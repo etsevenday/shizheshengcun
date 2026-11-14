@@ -588,7 +588,7 @@ namespace Survival.Core.Engine
             var hitTargets = new List<BattleEnemy>();
             var energyAfter = s.Stats.Energy;
             // B34b（R03 §Q571）：我方技能攻击与应急拳击各记一次出手快照——多目标为 area，远程武器为 ranged，其余近战；各段按真实次序记
-            using var fxScope = FxBegin(s, targets.Count > 1 || IsAreaShotSpec(sp) ? BattleFxMotion.Area : RangedWeapon(weapon) ? BattleFxMotion.Ranged : BattleFxMotion.Melee, FxAlly(s, MeId(s)));
+            using var fxScope = FxBegin(s, sp.Desperate ? ActionName(DesperatePunch) : sp.Node!.Name, targets.Count > 1 || IsAreaShotSpec(sp) ? BattleFxMotion.Area : RangedWeapon(weapon) ? BattleFxMotion.Ranged : BattleFxMotion.Melee, FxAlly(s, MeId(s)));
             // B9 遗留（B7 试玩第 2 轮）：击倒膨胀感染者时它的死亡喷溅日志先于这一击的总结写进战斗记录，看起来顺序颠倒；
             // 记下这一刻的记录条数，结算中途追加的行（喷溅等）挪到总结之后，结算本身与时机不变
             var logMark = b.Log.Count;

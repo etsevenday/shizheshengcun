@@ -157,7 +157,7 @@ namespace Survival.Core.Engine
                     e.MarkUntilRound = Math.Max(was ? e.MarkUntilRound : 0, b.Round + t.Rounds);
                     AddNoise(s, b, t.Noise);
                     // B34b（R03 §Q571）：闪光标记器——ranged 式，真实对象与实际效果，不造命中伤害
-                    using var fxFlash = FxBegin(s, BattleFxMotion.Ranged, FxAlly(s, b.FocusId), noNumbers: true);
+                    using var fxFlash = FxBegin(s, name, BattleFxMotion.Ranged, FxAlly(s, b.FocusId), noNumbers: true);
                     FxHit(FxFoe(e), "effect");
                     BattleLog(s, $"{Who(s)}用{name}标记了{EnemyName(e)}（全队对它命中能力+{Fmt.T(e.MarkBonus)}，到第{e.MarkUntilRound}轮末；噪声+{Fmt.T(t.Noise)}）。");
                     break;
@@ -168,7 +168,7 @@ namespace Survival.Core.Engine
                     var active = f.DisplaceUntilRound >= b.Round;
                     f.DisplaceResist = active ? Math.Max(f.DisplaceResist, t.DisplaceResist) : t.DisplaceResist;
                     f.DisplaceUntilRound = Math.Max(active ? f.DisplaceUntilRound : 0, b.Round + t.Rounds);
-                    FxShort(s, FxAlly(s, b.FocusId));   // B34b：支撑护带包只给短反馈
+                    FxShort(s, name, FxAlly(s, b.FocusId));   // B34b：支撑护带包只给短反馈
                     BattleLog(s, $"{Who(s)}系上{name}（位移抵抗+{Fmt.T(f.DisplaceResist)}个百分点，到第{f.DisplaceUntilRound}轮末）。");
                     break;
                 }
@@ -182,7 +182,7 @@ namespace Survival.Core.Engine
                     var before = f.Panic;
                     f.Panic = Math.Max(0, f.Panic - cut);
                     // B34b（R03 §Q571）：鼓舞提示贴——heal 式动作，不显示虚构治疗数值
-                    using var fxRally = FxBegin(s, BattleFxMotion.Heal, FxAlly(s, b.FocusId), noNumbers: true);
+                    using var fxRally = FxBegin(s, name, BattleFxMotion.Heal, FxAlly(s, b.FocusId), noNumbers: true);
                     FxHit(FxAlly(s, target), "effect");
                     BattleLog(s, $"{Who(s)}给{(target == b.FocusId ? "自己" : ActorDisplayName(s, target))}贴上{name}：恐慌{Fmt.N(before)}→{Fmt.N(f.Panic)}。");
                     break;

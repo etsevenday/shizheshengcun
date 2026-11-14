@@ -1260,7 +1260,7 @@ namespace Survival.Core.Engine
                     break;
                 case "guard":
                 {
-                    FxShort(s, FxAlly(s, actor));   // B34b（R03 §Q571）：防御、调息、调整站位、撤退、装填只给行动者短反馈
+                    FxShort(s, ActionName(c.Action), FxAlly(s, actor));   // B34b（R03 §Q571）：防御、调息、调整站位、撤退、装填只给行动者短反馈
                     var noShield = GuardShieldMissingReason(s);
                     var wear = GrantGuard(s, b, 1);
                     BattleLog(s, b.PlayerGuardSourceId is int sid ? $"{Who(s)}举起{ItemName(FindItem(s, sid)?.ItemId ?? "")}格挡（下一次直接伤害×{Fmt.T(b.PlayerGuardFactor)}；{wear}）。"
@@ -1270,7 +1270,7 @@ namespace Survival.Core.Engine
                 case "breathe":
                 {
                     b.BreatheUsed = true;
-                    FxShort(s, FxAlly(s, actor));
+                    FxShort(s, ActionName(c.Action), FxAlly(s, actor));
                     var e0 = s.Stats.Energy;
                     s.Stats.Add(StatId.Energy, a.RestoreEnergy);
                     b.Panic = Math.Max(Config.Panic.Range[0], b.Panic - a.ReducePanic);
@@ -1283,7 +1283,7 @@ namespace Survival.Core.Engine
                     var took = TakeCarried(s, w.AmmoId!, need);
                     wi.LoadedAmmo += took;
                     wi.LoadedAmmoId = w.AmmoId;
-                    FxShort(s, FxAlly(s, actor));
+                    FxShort(s, ActionName(c.Action), FxAlly(s, actor));
                     BattleLog(s, $"{Who(s)}装填{ItemName(w.AmmoId!)}{took}发（弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}）。");
                     break;
                 }
@@ -1297,7 +1297,7 @@ namespace Survival.Core.Engine
                     var parts = new List<string>();
                     // B34b（R03 §Q571）：药品自用——治疗式，行动者与受益者同一人，数值取本人真实健康变化（没有健康变化时不显示数值）
                     var h0 = s.Stats.Health;
-                    using var fxMed = FxBegin(s, BattleFxMotion.Heal, FxAlly(s, actor), noNumbers: false);
+                    using var fxMed = FxBegin(s, ActionName(c.Action), BattleFxMotion.Heal, FxAlly(s, actor), noNumbers: false);
                     ApplyMedicine(s, use, parts);
                     var dh = s.Stats.Health - h0;
                     FxHit(FxAlly(s, actor), dh > 1e-9 ? "heal" : "effect", Math.Max(0, dh));
@@ -1310,7 +1310,7 @@ namespace Survival.Core.Engine
                     var to = SwapDestination(c)!.Value;
                     var mate = AllyAt(b, to);
                     MoveAlly(b, from, to);
-                    FxShort(s, FxAlly(s, actor));
+                    FxShort(s, ActionName(c.Action), FxAlly(s, actor));
                     var cost = a.Energy ?? 0;
                     s.Stats.Add(StatId.Energy, -cost);
                     BattleLog(s, $"{Who(s)}调整站位：{PosName(from)}→{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}（体力−{Fmt.N(cost)}）。");
@@ -1319,7 +1319,7 @@ namespace Survival.Core.Engine
                 case "retreat":
                 {
                     b.RetreatUsed = true;
-                    FxShort(s, FxAlly(s, actor));
+                    FxShort(s, ActionName(c.Action), FxAlly(s, actor));
                     var (chance, energy, low) = RetreatChance(s, b, a);
                     s.Stats.Add(StatId.Energy, -energy);
                     if (s.Rng.NextDouble() < chance)

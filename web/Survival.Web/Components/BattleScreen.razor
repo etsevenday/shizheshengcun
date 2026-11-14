@@ -451,6 +451,7 @@
                 <span class="anc-ap">@(acting ? $"{(b.ActingPursuit ? "追击" : "行动中")} {fa.Ap}/{apMax}AP" : "等待")</span>
             </div>
             <div class="anc-head">@if (acting) {<span class="anc-ptr" aria-hidden="true">▼</span>}<span class="anc-slot bdg">@(pos)号</span><b>@name</b></div>
+            @if (G.PulseNameOf(BattleFxUnit.AllySide, id) is string pulseName) { <span class="fx-pulse-name" aria-hidden="true">@pulseName</span> }
             <div class="anc-art">
                 <img src="img/portraits/protagonist.svg" alt="" draggable="false" />
                 @{ WeaponConfig cw; ItemInstance? cwi; using (e.FocusOn(s, id)) cw = e.CurrentWeapon(s, out cwi); }
@@ -533,6 +534,7 @@
                 <span class="anc-brief-row"><span class="intent-ico" aria-hidden="true">@ico</span><b class="anc-brief">@brief</b></span>@if (range != null) {<span class="anc-intent-row"><small>@range</small></span>}
             </div>
             <div class="anc-head">@if (idx == activeIdx) {<span class="anc-ptr" aria-hidden="true">▼</span>}<span class="anc-slot bdg">@(pos)号</span><b title="@ec.Name">@ec.Name</b></div>
+            @if (G.PulseNameOf(BattleFxUnit.EnemySide, "e" + idx) is string pulseName) { <span class="fx-pulse-name" aria-hidden="true">@pulseName</span> }
             <div class="anc-art">
                 @Icons.Markup("enemy_" + ec.Id)
                 @if (en.Acted) { <span class="anc-done bdg" title="本轮已行动">已动</span> }
