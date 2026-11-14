@@ -1,5 +1,5 @@
 {
-  "version": "Q652-20261114",
+  "version": "Q652+Q679-20261115",
   "status": "策划合同，非运行配置；待开发接入",
   "authority": "用户允许主控补齐多途径病毒传播，并明确同伴病毒不随时间自然增长。",
   "baseProbability": {
@@ -44,7 +44,7 @@
       "repeatDelta": 3
     }
   },
-  "gate": "有命中判定的真实感染源攻击须命中；原无命中判定的死亡喷溅按真实伤害事件。扣甲/格挡/掩护后实际正伤害D>0，且R09生命判定后仍存活（含濒死）；一次真实命中或喷溅每承伤者最多一份暴露。",
+  "gate": "有命中判定的真实感染源攻击须命中；原无命中判定的死亡喷溅按真实伤害事件。扣甲/格挡/掩护后实际正伤害D>0，且R09生命判定后仍存活（含濒死）；一次真实命中或喷溅每承伤者最多一份暴露。 死亡喷溅须先满足Q679：有原配置且被我方主动攻击直接击杀；流血等伤害型负面状态、反击／迎击致死没有喷溅，也不进入暴露。",
   "selection": "真实bite优先，只取一种profile；其余按已配置敌种+实际动作步骤；追击/迫近/弱近战取defaultPhysicalExposure，不改成咬击。非伤害行为与0伤不暴露。",
   "rng": "同一命中事件、目标、来源profile的结果与原事务原子保存；u∈[0,1)，u<p成功，等于失败；只读不抽签。",
   "companionProgress": {
@@ -1075,5 +1075,20 @@
         }
       ]
     }
-  ]
+  ],
+  "q679DeathSplashTrigger": {
+    "requiresExistingDeathSplashConfig": true,
+    "qualifyingLethalCause": "friendly_active_attack_direct_damage",
+    "excludedLethalCauses": [
+      "damaging_debuff_or_dot",
+      "counterattack",
+      "interception"
+    ],
+    "classification": "actual_lethal_subevent_not_outer_command_or_ui",
+    "noSplashMeansNoExposureRandomOrVirusChange": true,
+    "qualifiedSplashProfileUnchanged": "mutant_fluid",
+    "newHitRollForSplash": false,
+    "committedOldResultsPreserved": true,
+    "allEnemyStepProfilesAndProbabilityDoseValuesUnchanged": true
+  }
 }

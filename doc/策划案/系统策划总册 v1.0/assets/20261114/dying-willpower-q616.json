@@ -1,7 +1,7 @@
 {
-  "contractVersion": 2,
+  "contractVersion": 3,
   "date": "2026-11-15",
-  "purpose": "Q616策划合同与Q673—Q678补充，唯一正文R09；不是运行配置或已实现声明",
+  "purpose": "Q616及Q673—Q678、Q679—Q681／Q688—Q689策划合同，唯一正文R09；不是运行配置或已实现声明",
   "scope": {
     "friendlyActors": [
       "protagonist",
@@ -199,6 +199,56 @@
       "addsPause": false,
       "addsXp": false,
       "firstEntryAndZeroDamageAreNotSuccessfulRollEvents": true
+    }
+  },
+  "q679Q680Q681Q688Q689": {
+    "decisions": {
+      "Q679": "custom_exclude_debuff_and_counter_intercept_death_splash",
+      "Q680": "A",
+      "Q681": "A",
+      "Q688": "A",
+      "Q689": "B"
+    },
+    "deathSplash": {
+      "requiresExistingEnemyConfiguration": true,
+      "eligibleLethalCause": "friendly_active_attack_direct_damage",
+      "excludedLethalCauses": [
+        "damaging_debuff_or_dot",
+        "counterattack",
+        "interception"
+      ],
+      "classifyActualLethalSubeventNotOuterCommand": true,
+      "merelyHavingDebuffDoesNotPreventActiveDirectKillSplash": true,
+      "excludedEventProducesNoSplashDamageLifeRollExposureXpLogOrFx": true,
+      "originalEnemyDeathLootQuestAndAttackXpUnchanged": true,
+      "qualifiedSplashXpUsesExistingQ676AtWholeActiveInstructionEnd": true,
+      "preserveCommittedOldResults": true
+    },
+    "pause": {
+      "entryWithoutCurrentlyPausableAdvancingAction": "log_and_mark_episode_reminded_no_future_pause",
+      "queueDeferredPauseForNextResume": false,
+      "existingCommittedPausedStatePreserved": true,
+      "resetOnlyAfterLegalMedicalHealthPositive": true,
+      "priority": [
+        "new_dying",
+        "original_stat_zero",
+        "original_threshold_alert"
+      ],
+      "samePriorityActorOrder": "original_trigger_order_not_ui_focus",
+      "centralText": "{行动名}已暂停：{人物}进入濒死状态。",
+      "onePausePerOriginalBoundary": true
+    },
+    "battleLifeNotifications": {
+      "newFourStatesExtraImmediateAlert": false,
+      "originalRealDeathAlertPreserved": true,
+      "originalPoseCloseupAndReportsPreserved": true
+    },
+    "deathLog": {
+      "text": "{人物}未能抵抗致死。{原死亡结果全文}",
+      "standaloneFailureReport": false,
+      "appendFailureOnlyWhenActualDeathResistanceFailed": true,
+      "originalDeathSideEffectsOnce": true,
+      "rewriteHistoricalRecords": false
     }
   }
 }
