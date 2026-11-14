@@ -398,7 +398,7 @@ namespace Survival.Core.Engine
         public static string QtyRangeText(int max) => $"请输入 1 到 {max} 之间的整数。";
 
         /// <summary>燃料空余容量不足一份木材时的原阻断句（拖入与「投入木材」共用）。</summary>
-        private string FuelRoomText(FacilityState fac) => $"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{FuelCapOf(fac)}分钟）";
+        public string FuelRoomText(FacilityState fac) => $"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{FuelCapOf(fac)}分钟）";
 
         private string FireFullText(GameState s, string loc)
         {

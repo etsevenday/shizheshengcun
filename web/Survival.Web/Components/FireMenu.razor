@@ -225,6 +225,8 @@
     /// <summary>主层候选：经原预演能投向本设施至少一个真实合法落点（整卡燃料／加工位、锅装水、锅食材）；打火器等行动工具不算原料。</summary>
     private bool MainOk(ItemInstance it, string here, ItemInstance? firePot)
     {
+        // BM5b1 试玩修复（Q603／Q637）：来源范围确有木材就保留灰行——不看此刻能否加燃料（燃料接近上限时原因写真实容量句，见 GameSession.WoodMainWhy）
+        if (it.ItemId == GameSession.WoodItemId) return true;
         var e = G.E;
         var s = G.S;
         var src = SrcOf(it);

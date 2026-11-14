@@ -327,7 +327,10 @@ public sealed partial class GameSession
     private string WoodMainWhy(ItemInstance it)
     {
         E.MaxPutInFire(S, it, out var why);
-        return why == null || why.StartsWith(GameEngine.WoodIsFuelNote, StringComparison.Ordinal) ? GameEngine.WoodSourceWhy : why;
+        if (why != null && !why.StartsWith(GameEngine.WoodIsFuelNote, StringComparison.Ordinal)) return why;
+        // BM5b1 试玩修复（Q637「不覆盖……容量等真实原因」）：燃料空余容量不足一份木材时写原容量句（同「投入木材」与拖木到火堆）
+        if (E.FacOf(S, S.Ground) is FacilityState fac && E.MaxWoodForFire(fac) < 1) return E.FuelRoomText(fac);
+        return GameEngine.WoodSourceWhy;
     }
 
     /// <summary>BM5b1（Q603）：来源区按“木材”灰显的物品（与「投入木材」同一燃料物品）。</summary>

@@ -182,6 +182,19 @@
 .ocard.k2 .k2-l2 > .oc-line { font-size: inherit; line-height: inherit; text-align: center; }
 /* BM5b1（R05 Q639）：敌踪卡面的受阻原因／状态句可换行读全，不用省略号藏关键阻断 */
 .ocard.k2 .k2-l2 > .oc-line.ecard-status { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+/* BM5b1 试玩修复：组卡副标（成员名单）不再按单行居中溢出两头被截——可换行、最多两行，再长由副标悬停读全文（Q539）；健康副标不变 */
+.ocard.k2.k2-enemy .k2-sub:not(.hp) {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+  white-space: normal; overflow: hidden; overflow-wrap: anywhere; text-align: center;
+}
+/* ≤800 高（如 1280×720）：卡面受阻原因可占三行，名单收一行、信息条行距收紧，给插画留出可见高度（字号不变） */
+@media (max-height: 800px) {
+  .ocard.k2.k2-enemy .k2-sub:not(.hp) { -webkit-line-clamp: 1; line-clamp: 1; }
+  .ocard.k2.k2-enemy > .k2-info { gap: 0; padding: 2px 4px 3px; }
+  .ocard.k2.k2-enemy .k2-name { line-height: 1.15; }
+  .ocard.k2.k2-enemy .k2-l2 { gap: 0; line-height: 1.1; }
+  .ocard.k2.k2-enemy > .k2-art > :is(svg, img) { inset: 3px 6px 1px; height: calc(100% - 4px); }
+}
 .ocard.k2 .k2-l2 > .hp-line { display: flex; justify-content: center; gap: 4px; }
 .wasteland .ocard.k2 .k2-sub > .oc-line,
 .wasteland .ocard.k2 .k2-l2 > :is(.oc-line, .hp-line) { color: var(--k2-sub); }

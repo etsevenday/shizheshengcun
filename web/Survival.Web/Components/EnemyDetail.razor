@@ -44,8 +44,9 @@ else
                 }
             </Sub>
         </RailHead>
-        @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
         @if (members.Count > 0) { @CoreLines(card, members[0]) }
+        @* BM5b1 试玩修复：右栏提示沿其他右栏（物品／火堆）放在主区数值之后、折叠组之前，不插进风险→六项属性之间 *@
+        @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
 
         @if (members.Count > 0)
         {

@@ -388,10 +388,46 @@ public class BM5b1FacMenuTests : TestBase
         var fac = Web("Services", "GameSession.FacMenu.cs");
         var main = Slice(fac, "private string WoodMainWhy(ItemInstance it)", "/// <summary>BM5b1（Q603）");
         Assert.That(main, Does.Contain("E.MaxPutInFire(S, it, out var why);"));
-        Assert.That(main, Does.Contain("why == null || why.StartsWith(GameEngine.WoodIsFuelNote, StringComparison.Ordinal) ? GameEngine.WoodSourceWhy : why"));
+        Assert.That(main, Does.Contain("if (why != null && !why.StartsWith(GameEngine.WoodIsFuelNote, StringComparison.Ordinal)) return why;"));
+        Assert.That(main, Does.Contain("return GameEngine.WoodSourceWhy;"));
         Assert.That(Slice(fac, "public string? FireMenuBlockWhy(ItemInstance it)", "public const string WoodItemId"), Does.Contain("if (slot == null) return it.ItemId == WoodItemId ? WoodMainWhy(it) : null;"));
         Assert.That(fac, Does.Contain("if (FireMenuBlockWhy(it) != null) return;"), "选不上");
         Assert.That(Slice(Web("Components", "FireMenu.razor"), "<div class=\"fm-src-row no\"", "</div>"), Does.Not.Contain("data-drag"));
+    }
+
+    /// <summary>
+    /// BM5b1 试玩修复（Q603／Q637-A01）：燃料接近上限、不能再加一份木材时，三层木材行仍保留灰行（不按能否加燃料决定是否列出）；
+    /// 主层原因写真实燃料容量句（同「投入木材」／拖木到火堆），工位层、锅层原句不变；燃料有空余时主层仍是主层句。
+    /// </summary>
+    [Test]
+    public void Q637_A02_WoodKeptNearFuelCap()
+    {
+        var s = New();
+        var fac = s.Locations[Here].Facility;
+        LightFire(s, E.FuelCapOf(fac) - E.Config.Fire.BurnMinutesPerWood + 1);
+        var wood = E.CreateItems(s, "wood", 3, ItemInstance.Carried).Single();
+        Assert.That(E.MaxWoodForFire(fac), Is.LessThan(1), "容量不足一份木材");
+        var drop = E.ResolveDrop(s, DropSource.Parse($"card:{wood.Owner}|{wood.ItemId}|{wood.InstanceId}")!, DropTarget.Parse($"fire:{Here}")!);
+        Assert.That(drop.Ok, Is.False);
+        Assert.That(drop.Reason, Is.EqualTo(E.FuelRoomText(fac)));
+        Assert.That(E.FuelRoomText(fac), Is.EqualTo($"至少需要{E.Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{E.FuelCapOf(fac)}分钟）"));
+        // 工位层／锅层：原各自拒绝句不因容量改变
+        E.MaxPutInFire(s, wood, out var slotWhy, 0);
+        Assert.That(slotWhy, Does.StartWith(GameEngine.WoodIsFuelNote));
+        Assert.That(E.MaxPutFood(s, wood, Pot(s), out var potWhy), Is.EqualTo(0));
+        Assert.That(potWhy, Is.EqualTo("木材不能放进锅里"));
+        // 壳：木材不经「能否加燃料」预演过滤；主层原因在木材分支内先看燃料容量
+        var menu = Web("Components", "FireMenu.razor");
+        var ok = Slice(menu, "private bool MainOk(ItemInstance it, string here, ItemInstance? firePot)", "return p.Ok && p.Verb == DropVerb.PutFood;");
+        var keep = ok.IndexOf("if (it.ItemId == GameSession.WoodItemId) return true;", StringComparison.Ordinal);
+        Assert.That(keep, Is.GreaterThan(0), "来源范围确有木材就保留");
+        Assert.That(keep, Is.LessThan(ok.IndexOf("e.ResolveDrop", StringComparison.Ordinal)));
+        var main = Slice(Web("Services", "GameSession.FacMenu.cs"), "private string WoodMainWhy(ItemInstance it)", "/// <summary>BM5b1（Q603）");
+        var prior = main.IndexOf("return why;", StringComparison.Ordinal);
+        var room = main.IndexOf("E.MaxWoodForFire(fac) < 1) return E.FuelRoomText(fac);", StringComparison.Ordinal);
+        Assert.That(prior, Is.GreaterThan(0));
+        Assert.That(room, Is.GreaterThan(prior), "更优先原拒绝句仍在容量句之前");
+        Assert.That(room, Is.LessThan(main.IndexOf("return GameEngine.WoodSourceWhy;", StringComparison.Ordinal)));
     }
 
     // ───────────── Q604 操作后回到相关工位 ─────────────

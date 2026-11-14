@@ -168,6 +168,27 @@ public class BM5b1EnemyRailTests : B41cTestBase
         Assert.That(E.ApproachCard(f, key).Ok, Is.True);
     }
 
+    /// <summary>
+    /// BM5b1 试玩修复（排版，不改文字）：组卡成员名单可换行（最多两行、悬停读全），≤800 高收一行并收紧信息条给插画留高；
+    /// 右栏提示沿其他右栏放在主区数值之后，不插进风险→六项属性之间。
+    /// </summary>
+    [Test]
+    public void Q639_PlaytestLayout()
+    {
+        var css = Web("wwwroot", "css", "cards.css");
+        var sub = Slice(css, ".ocard.k2.k2-enemy .k2-sub:not(.hp) {", "}");
+        Assert.That(sub, Does.Contain("white-space: normal;"));
+        Assert.That(sub, Does.Contain("-webkit-line-clamp: 2;"));
+        Assert.That(css, Does.Contain(".ocard.k2.k2-enemy .k2-sub:not(.hp) { -webkit-line-clamp: 1; line-clamp: 1; }"));
+        Assert.That(Web("Components", "ObjectCard.razor"), Does.Contain("<div class=\"k2-sub @SubClass\" title=\"@(SubTitle ?? Sub)\">@Sub</div>"), "名单全文仍在副标悬停");
+        var d = Web("Components", "EnemyDetail.razor");
+        var core = d.IndexOf("@if (members.Count > 0) { @CoreLines(card, members[0]) }", StringComparison.Ordinal);
+        var notice = d.IndexOf("@if (G.RightNotice != null) { <div class=\"notice\">@G.RightNotice</div> }", StringComparison.Ordinal);
+        Assert.That(core, Is.GreaterThan(0));
+        Assert.That(notice, Is.GreaterThan(core), "提示在六项属性之后");
+        Assert.That(notice, Is.LessThan(d.IndexOf("Group=\"@RailGroups.BattleDetail\"", StringComparison.Ordinal)), "提示在折叠组之前");
+    }
+
     private static string Verbatim() => File.ReadAllText(Directory.GetFiles(Path.Combine(Root(), "doc", "策划案"), "重墨 V2 开工裁定与界面逐字稿.md", SearchOption.AllDirectories).Single());
 
     private static string Web(params string[] parts) => File.ReadAllText(Path.Combine(new[] { Root(), "web", "Survival.Web" }.Concat(parts).ToArray())).Replace("\r\n", "\n");
