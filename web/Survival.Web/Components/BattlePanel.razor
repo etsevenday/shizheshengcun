@@ -118,8 +118,8 @@ else if (b != null)
             @if (G.RightNotice != null) { <div class="blocked pin">@G.RightNotice</div> }
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"{(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))}的行动（剩{b.PlayerAp}AP）" : G.BattleShownActor > 0 ? "敌方行动中" : b.Cursor >= b.Queue.Count ? "轮末结算" : b.Queue[b.Cursor] <= 0 ? "等待我方行动" : "敌方行动中")</div>
-                <h2>@(t != null && t.Alive ? $"{t.Slot}号位 {e.EnemyName(t)}" : "选择指令")</h2>
-                @if (t == null || !t.Alive) { <p>先在操作台选技能，再把鼠标移到亮起的目标上看预测、点击目标执行；没选技能时点敌卡只查看。</p> }
+                @* B34（S14 Q577）：没有选动作时不写文字催促（原「选择指令」与操作说明句取消），只留真实对象信息 *@
+                @if (t != null && t.Alive) { <h2>@($"{t.Slot}号位 {e.EnemyName(t)}")</h2> }
             </div>
             @if (t != null && t.Alive)
             {
@@ -131,12 +131,7 @@ else if (b != null)
                     <div><span>护甲 / 闪避 / 速度</span><b>@(brk > 0 ? $"{Ui.T(Math.Max(0, ec.Armor - brk))}（基础{Ui.T(ec.Armor)}，破甲−{Ui.T(brk)}）" : Ui.T(ec.Armor)) / @Ui.T(ec.Dodge) / @(Ui.Speed(e.EnemyRoundSpeed(b, t).Speed))@(e.EnemyRoundSpeed(b, t).Note)</b></div>
                     <div><span>行动点 / 站位</span><b>@(ec.Ap)AP@(ec.Elite ? "（精英）" : "") · 己位@(ec.OwnSlots)→目标@(ec.TargetSlots) · 控制抗性@(Ui.T(ec.ControlResist))%</b></div>
                     <div><span>攻击能力 / 对@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))</b></div>
-                    @{ var plan = G.E.PlanFor(G.S.Battle!, t, G.E.StepOf(t)); var approach = plan is GameEngine.ReachPlan.Approach or GameEngine.ReachPlan.AdvanceThenApproach; }
-                    @* 试玩修复 B7d-3：迫近时不再把原意图（可能是咬击）写成“公开意图”，免得误会迫近会咬；Q97/Q103：有合法迎击者才写“会触发××的架矛迎击”（与敌卡意图、执行同源） *@
-                    @{ var braceBy = approach ? G.E.BraceResponder(G.S, G.S.Battle!, t, plan == GameEngine.ReachPlan.AdvanceThenApproach ? t.Pos - 1 : t.Pos) : null; var multi = GameEngine.AlliesOnField(G.S.Battle!).Count > 1; }
-                    <div><span>本轮意图</span><b>@G.E.IntentShown(G.S.Battle!, t, G.S)@(approach ? $"（迫近先花1AP、算一次主动前移，{(braceBy != null ? $"会触发{(multi ? $"{(braceBy == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.S, braceBy))}（{GameEngine.AllyPos(G.S.Battle!, braceBy)}号位）的" : "你的")}架矛迎击（{(multi ? "号位从前到后第一名合法的架矛者，一次只迎击一人；" : "")}出手时再按武器、射程、耐久与剩余次数判断）；被迎击打死或打断就不再近袭" : $"{(multi ? "我方" : "你")}现在没有能迎击它的架矛，不会被迎击")}；只做一次弱近袭：不咬、不附控制、不改号位；够得着你时的原意图：{G.E.IntentLabel(t, G.S.Battle)}）" : G.E.IntentOutOfReach(G.S.Battle!, t) ? $"（公开意图：{G.E.IntentLabel(t, G.S.Battle)}）" : "")</b></div>
-                    @* B8b Q91：意图只公开目标范围与“攻击时随机”，不预先写抽中谁（抽中的人在攻击提交后写进战斗日志） *@
-                    @if (G.E.IntentTargetNote(G.S, G.S.Battle!, t) is string tn) { <div><span>目标</span><b>@tn</b></div> }
+                    @* B34（S14 Q574）：不显示敌人尚未执行的计划（锁定的动作、计划伤害、预定目标、前移／迫近分支），只留公开属性与已生效状态 *@
                 </div>
                 @if (ec.IsZombie && !e.CanBite(ec)) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
                 else if (ec.IsZombie) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。抓击、喷吐、尖啸不会感染。</div> }

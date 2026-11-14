@@ -43,10 +43,12 @@
     var items = opts.Where(o => o.Group == "item" && CarriedFor(o) > 0).ToList();
     // B9（A10 §4.5）：瞄准中悬停合法目标时，目标生命条上画“预计”条纹——与右栏同一次 PreviewCommand（只读、不抽随机）
     _forecast = null;
+    _takenBy = new HashSet<int>();
     if (aiming && G.BattleAimTarget is int hov && aimSet.Contains(hov))
     {
         var pv = e.PreviewCommand(s, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : hov, G.BattleItem));
         if (pv.Ok && pv.Targets.Count > 0) _forecast = pv.Targets.ToDictionary(t => t.Index, t => (t.DamageMin, t.DamageMax));
+        if (pv.Ok) _takenBy = pv.Targets.Where(t => t.AimedIndex != null && t.AimedIndex != t.Index).Select(t => t.Index).ToHashSet();
     }
     // 试玩修复 B9-4：对白锁期间 AwaitingPlayer 为假，但轮到的仍是队列游标上的角色——顶条/底栏写真实行动者，不写“敌方行动中”
     // B9 遗留 1：敌方逐条展示中，游标已越过刚出手的敌人——按会话记下的“刚出手的那一只”点名（第一只与最后一只也写名字）
@@ -427,7 +429,7 @@
         if (id == null)
         {
             <div class="anc ally empty" data-slot="@pos" title="@($"我方{pos}号位：空位（可用“调整站位”移过来；空位不是未解锁）")" aria-label="@($"我方{pos}号位，空位")">
-                <span class="anc-slot bdg">@(pos)号</span><span class="anc-empty">空位</span>
+                <span class="anc-plate">@BattleInfoCopy.Plate(pos, null)</span>
             </div>
             return;
         }
@@ -447,10 +449,11 @@
              aria-label="@($"我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(acting ? "，行动中" : "")}{(targetable ? "，可作为目标" : "")}")"
              title="@(pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, token, locked)" @onkeydown="ev => AllyKey(ev, id)"
              @onmouseenter="() => G.HoverBattleAlly(targetable ? id : null)" @onmouseleave="() => G.HoverBattleAlly(null)">
-            <div class="anc-top" title="@(acting ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{fa.Ap}AP（不带入下次）" : "还没轮到；行动顺序见上方队列")">
+            @* B34（S14 Q574）：头顶名牌「{号位}号位 · {姓名}」；下一行是 AP／当前行动事实 *@
+            <div class="anc-top anc-plate-row">@if (acting) {<span class="anc-ptr" aria-hidden="true">▼</span>}<b class="anc-plate">@BattleInfoCopy.Plate(pos, name)</b></div>
+            <div class="anc-head" title="@(acting ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{fa.Ap}AP（不带入下次）" : "还没轮到；行动顺序见上方队列")">
                 <span class="anc-ap">@(acting ? $"{(b.ActingPursuit ? "追击" : "行动中")} {fa.Ap}/{apMax}AP" : "等待")</span>
             </div>
-            <div class="anc-head">@if (acting) {<span class="anc-ptr" aria-hidden="true">▼</span>}<span class="anc-slot bdg">@(pos)号</span><b>@name</b></div>
             @if (G.PulseNameOf(BattleFxUnit.AllySide, id) is string pulseName) { <span class="fx-pulse-name" aria-hidden="true">@pulseName</span> }
             <div class="anc-art">
                 <img src="img/portraits/protagonist.svg" alt="" draggable="false" />
@@ -460,10 +463,10 @@
                 @if (pairMark != null) { <span class="anc-pair bdg" aria-label="@($"整队已选{pairMark}")">@pairMark</span> }
             </div>
             <div class="anc-foot">
+                <div class="anc-chips">@AllyChips(id)</div>
                 <div class="anc-nums"><span title="健康">♥@(Ui.N(st.Health))</span><span title="体力">体@(Ui.N(st.Energy))</span></div>
                 <div class="track hp"><i style="width:@Ui.Bar(st.Health, st.HealthMax)%"></i></div>
                 <div class="track en"><i style="width:@Ui.Bar(st.Energy, st.EnergyMax)%"></i></div>
-                <div class="anc-chips">@AllyChips(id)</div>
             </div>
         </div>
     };
@@ -511,7 +514,7 @@
         if (en == null)
         {
             <div class="anc foe empty" data-slot="@pos" title="@($"敌方{pos}号位：空位")" aria-label="@($"敌方{pos}号位，空位")">
-                <span class="anc-slot bdg">@(pos)号</span><span class="anc-empty">空位</span>
+                <span class="anc-plate">@BattleInfoCopy.Plate(pos, null)</span>
             </div>
             return;
         }
@@ -521,47 +524,54 @@
         var unreachable = aiming && !aimSet.Contains(idx);
         var reachWhy = unreachable ? (e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, idx, G.BattleItem)) ?? "不在本指令范围内") : null;
         var picked = G.BattleTarget == idx;
-        var shown = e.IntentShown(b, en, s);
-        var note = e.IntentTargetNote(s, b, en);
-        var (ico, brief, range, kind) = IntentBrief(en, shown);
+        var taken = _takenBy.Contains(idx);
         var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
         <div @key="@("foe" + idx)" id="@($"foe-{idx}")" data-slot="@pos" data-peek="@Peek.Foe(idx)" class="anc foe @Pulse(BattleFxUnit.EnemySide, "e" + idx) @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx || (aiming && G.BattleAimTarget == idx) ? "hover" : "")"
              role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))"
-             aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{shown}{(note != null ? "；" + note : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
+             aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}{(en.Acted ? "，本轮已行动" : "")}{(taken ? "，" + BattleInfoCopy.TakenBy : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
              title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"
              @onmouseenter="() => G.HoverBattleTarget(idx)" @onmouseleave="() => G.HoverBattleTarget(null)" @onfocus="() => G.FocusBattleTarget(idx)">
-            <div class="anc-top anc-intent @kind" title="@($"本轮公开意图（轮初锁定，不公开伤害抽值）：{shown}{(note != null ? "；" + note : "")}")">
-                <span class="anc-brief-row"><span class="intent-ico" aria-hidden="true">@ico</span><b class="anc-brief">@brief</b></span>@if (range != null) {<span class="anc-intent-row"><small>@range</small></span>}
-            </div>
-            <div class="anc-head">@if (idx == activeIdx) {<span class="anc-ptr" aria-hidden="true">▼</span>}<span class="anc-slot bdg">@(pos)号</span><b title="@ec.Name">@ec.Name</b></div>
+            @* B34（S14 Q574）：头顶名牌「{号位}号位 · {姓名}」；不显示敌人尚未执行的计划（意图图标、动作、计划伤害、目标与分支），悬停与读屏也不写 *@
+            <div class="anc-top anc-plate-row">@if (idx == activeIdx) {<span class="anc-ptr" aria-hidden="true">▼</span>}<b class="anc-plate" title="@ec.Name">@BattleInfoCopy.Plate(pos, ec.Name)</b></div>
+            <div class="anc-head none"></div>
             @if (G.PulseNameOf(BattleFxUnit.EnemySide, "e" + idx) is string pulseName) { <span class="fx-pulse-name" aria-hidden="true">@pulseName</span> }
             <div class="anc-art">
                 @Icons.Markup("enemy_" + ec.Id)
                 @if (en.Acted) { <span class="anc-done bdg" title="本轮已行动">已动</span> }
+                @if (taken) { <span class="anc-taken bdg">@BattleInfoCopy.TakenBy</span> }
                 @if (targetable) { <span class="anc-aim" aria-hidden="true">⌖</span> }
                 @if (unreachable) { <span class="anc-no" aria-hidden="true"></span> }
             </div>
             <div class="anc-foot">
+                @FoeChips(b, en, ec)
                 <div class="anc-nums @(ForecastText(en) != null ? "fc-on" : "")">@if (ForecastText(en) is string fct) {<span class="fc-tag" title="预计剩余生命（未暴击；暴击见右侧）">预计</span><span title="预计剩余生命（未暴击；暴击见右侧）">@fct</span>} else {<span title="健康">♥@(Ui.N(en.Hp))/@(Ui.N(ec.Hp))</span>}</div>
                 <div class="track hp">@HpForecast(en, ec)<i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
-                <div class="anc-chips">
-                    @if (en.Guard) { <span class="st good bdg">防御</span> }
-                    @if (en.ProtectingIndex > 0) { <span class="st good bdg" title="对同伴的单体攻击由它接下">保护</span> }
-                    @if (en.Stagger) { <span class="st bad bdg">失衡</span> }
-                    @if (en.SlowActive || en.SlowPending) { <span class="st bad bdg">减速</span> }
-                    @if (en.BleedTriggers > 0) { <span class="st bad bdg">出血×@en.BleedTriggers</span> }
-                    @if (GameEngine.EnemyMarked(b, en)) { <span class="st bad bdg">标记</span> }
-                    @if (en.ArmorBreak > 0 && en.ArmorBreakUntilRound >= b.Round) { <span class="st bad bdg">破甲</span> }
-                    @if (GameEngine.EnemyWeak(b, en)) { <span class="st bad bdg">虚弱</span> }
-                    @if (!en.Hostile) { <span class="st bdg">中立</span> }
-                    @if (ec.Elite) { <span class="st bdg" title="精英：每次正常激活4AP">精英</span> }
-                </div>
                 @if (unreachable) { <div class="anc-why" title="@reachWhy">@ShortReach(reachWhy)</div> }
             </div>
         </div>
     };
 
     private Dictionary<int, (double Min, double Max)>? _forecast;
+
+    /// <summary>B34（S14 Q574）：本次预测里原目标被保护转移时，实际承受者的敌人号（站位上标「实际承伤」）。</summary>
+    private HashSet<int> _takenBy = new();
+
+    /// <summary>敌人已生效的状态角标（S14 Q574：在数值条上方）；只写已发生的事实，不写未执行计划。</summary>
+    private RenderFragment FoeChips(BattleState b, BattleEnemy en, EnemyConfig ec) => __builder =>
+    {
+        <div class="anc-chips">
+            @if (en.Guard) { <span class="st good bdg">防御</span> }
+            @if (en.ProtectingIndex > 0) { <span class="st good bdg" title="对同伴的单体攻击由它接下">保护</span> }
+            @if (en.Stagger) { <span class="st bad bdg">失衡</span> }
+            @if (en.SlowActive || en.SlowPending) { <span class="st bad bdg">减速</span> }
+            @if (en.BleedTriggers > 0) { <span class="st bad bdg">出血×@en.BleedTriggers</span> }
+            @if (GameEngine.EnemyMarked(b, en)) { <span class="st bad bdg">标记</span> }
+            @if (en.ArmorBreak > 0 && en.ArmorBreakUntilRound >= b.Round) { <span class="st bad bdg">破甲</span> }
+            @if (GameEngine.EnemyWeak(b, en)) { <span class="st bad bdg">虚弱</span> }
+            @if (!en.Hostile) { <span class="st bdg">中立</span> }
+            @if (ec.Elite) { <span class="st bdg" title="精英：每次正常激活4AP">精英</span> }
+        </div>
+    };
 
     /// <summary>
     /// 目标生命条上的预计伤害（A10 §4.5）：悬停合法目标时，从“打满最大值后剩余”到当前生命之间画条纹（不写入真实生命）；
@@ -578,46 +588,6 @@
 
     private string? ForecastText(BattleEnemy en) =>
         _forecast != null && _forecast.TryGetValue(en.Index, out var f) ? $"♥{Ui.N(Math.Max(0, en.Hp - f.Max))}—{Ui.N(Math.Max(0, en.Hp - f.Min))}" : null;
-
-    /// <summary>
-    /// 意图图标 + 短名 + 伤害区间（与 IntentShown 同源，只截短显示）：够不到时按真实计划写“迫近→弱袭”“前移”“弱攻击”“防御·够不到”“等待”。
-    /// kind 给图形样式：bite 咬击（可能感染）、calm 非攻击、far 够不到。
-    /// </summary>
-    private (string Ico, string Brief, string? Range, string Kind) IntentBrief(BattleEnemy en, string shown)
-    {
-        var e = G.E;
-        var b = G.S.Battle!;
-        var m = System.Text.RegularExpressions.Regex.Match(shown, @"\d+\.\d+—\d+\.\d+");
-        var range = m.Success ? m.Value.Replace("—", "⁠—⁠") : null;
-        if (shown.StartsWith("等待")) return ("等", "等待", null, "calm");
-        if (e.IntentOutOfReach(b, en))
-        {
-            var plan = e.PlanFor(b, en, e.StepOf(en));
-            return plan switch
-            {
-                GameEngine.ReachPlan.Approach => ("迫", "迫近→弱袭", range, "far"),
-                GameEngine.ReachPlan.AdvanceThenApproach => ("迫", "前移+迫近", range, "far"),
-                GameEngine.ReachPlan.AdvanceThenAttack => ("移", VerbOf(shown), range, en.Intent == "bite" ? "bite" : "far"),
-                GameEngine.ReachPlan.Weak => ("弱", "弱攻击", range, "far"),
-                GameEngine.ReachPlan.Guard => ("防", "防御·够不到", null, "calm"),
-                _ => ("移", "前移", null, "far"),
-            };
-        }
-        var label = e.IntentLabel(en, b);
-        var cut = label.IndexOfAny(new[] { ' ', '（', '，' });
-        var brief = cut > 0 ? label[..cut] : label;
-        var kind = en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" or "protect" or "buff" or "reload" or "howl" or "signal" or "charge_prepare" ? "calm" : "";
-        return (IntentIcon(en.Intent), brief, range, kind);
-    }
-
-    private static string VerbOf(string shown)
-    {
-        var i = shown.IndexOf("后");
-        if (i < 0) return "攻击";
-        var rest = shown[(i + 1)..];
-        var j = rest.IndexOf(' ');
-        return j > 0 ? rest[..j] : rest;
-    }
 
     private static string ShortReach(string? why) =>
         why == null ? "" : why.StartsWith("射程不足") ? "射程不足" : why.Contains("号位") ? "位置不符" : "不可选";
@@ -1054,24 +1024,4 @@
         catch (TaskCanceledException) { }
     }
 
-    private static string IntentIcon(string intent) => intent switch
-    {
-        "bite" => "咬",
-        "attack" => "攻",
-        "charge" => "撞",
-        "charge_prepare" => "蓄",
-        "guard" => "防",
-        "howl" => "嚎",
-        "flee" => "逃",
-        "watch" => "望",
-        "protect" => "护",
-        "signal" => "鸣",
-        "buff" => "势",
-        "sweep" => "扫",
-        "spit" => "喷",
-        "pull" => "拉",
-        "shoot" => "射",
-        "reload" => "装",
-        _ => "·",
-    };
 }

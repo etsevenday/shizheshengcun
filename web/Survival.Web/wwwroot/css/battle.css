@@ -535,3 +535,13 @@
 .anc.fx-pulse.b .anc-art { animation: fx-pulse-b calc(600ms * var(--motion-k)) ease-out 1; }
 @keyframes fx-pulse-a { 0% { filter: none; } 35% { filter: brightness(1.6) drop-shadow(0 0 10px #d4a84a); } 100% { filter: none; } }
 @keyframes fx-pulse-b { 0% { filter: none; } 35% { filter: brightness(1.6) drop-shadow(0 0 10px #d4a84a); } 100% { filter: none; } }
+
+/* ───── B34（S14 Q574）：头顶名牌「{号位}号位 · {姓名}」；敌方不再有意图位；状态角标在数值条上方；保护转伤「实际承伤」 ───── */
+.anc-plate-row { justify-content: center; }
+.anc-plate { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--fs-body); font-weight: 700; }
+.anc.empty .anc-plate { font-weight: 400; opacity: .85; }
+.anc-head.none { visibility: hidden; }
+.bfs-scene .anc.foe .anc-top { border-color: #8a3b2c; }
+.bfs-scene .anc.ally .anc-head { justify-content: center; }
+.anc-taken { position: absolute; left: 2px; top: 2px; z-index: 1; font-size: var(--fs-aux); padding: 0 4px; border-radius: 3px; background: #8a3b2c; color: #ffe9df; white-space: nowrap; }
+.anc-foot .anc-chips { order: 0; }

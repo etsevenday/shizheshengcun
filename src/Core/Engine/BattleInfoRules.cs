@@ -61,6 +61,12 @@ namespace Survival.Core.Engine
         public const string EquipEntry = "查看装备";
         public const string EquipTitle = "战斗装备";
 
+        /// <summary>B34（S14 Q574）：站位头顶名牌「{号位}号位 · {姓名}」，空位「{号位}号位 · 空位」。</summary>
+        public static string Plate(int pos, string? name) => $"{pos}号位 · {name ?? "空位"}";
+
+        /// <summary>B34（S14 Q577）：当前行动者的无障碍名称「当前行动者：{姓名}」。</summary>
+        public static string CurrentActorAria(string name) => $"当前行动者：{name}";
+
         /// <summary>阅读区「战报」页计数：「最近{显示条数}条 · 共{本场记录数}条」；旧档较早记录可能缺失时「· 已保存{条数}条」。</summary>
         public static string RecentCount(int shown, int total, bool maybeIncomplete) =>
             maybeIncomplete ? $"最近{shown}条 · 已保存{total}条" : $"最近{shown}条 · 共{total}条";
