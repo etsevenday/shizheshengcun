@@ -1,7 +1,7 @@
 {
-  "contractVersion": 4,
+  "contractVersion": 5,
   "date": "2026-11-15",
-  "purpose": "Q616及已答濒死补充合同，含Q682—Q687分离预估；唯一正文R09，不是运行配置或已实装声明",
+  "purpose": "Q616及已答濒死补充合同，含Q690—Q697成长与生命反馈；唯一正文R09，不是运行配置或已实装声明",
   "scope": {
     "friendlyActors": [
       "protagonist",
@@ -339,5 +339,152 @@
       "changeWorkOrLocks": false,
       "rewriteSavedHistory": false
     }
+  },
+  "q690ToQ697": {
+    "decisions": {
+      "Q690": "A",
+      "Q691": "A",
+      "Q692": "B",
+      "Q693": "A",
+      "Q694": "A",
+      "Q695": "A",
+      "Q696": "A",
+      "Q697": "A"
+    },
+    "copy": {
+      "quota": "今日还可获得{n}点（每天最多60点）",
+      "keyLevel": "{L}级 · 致死抵抗{P}%",
+      "xp": "受到敌人造成的正伤害，且该次出手结束时仍活着，才获得意志经验；同一敌人最多3次，每天最多60点。",
+      "effect": "致死抵抗{抵抗率}；濒死后每次受到正伤害时判定。",
+      "lifeFallback": "生命状态变化",
+      "dying": "濒死",
+      "recovered": "脱离濒死",
+      "resisted": "抵抗致死",
+      "death": "死亡",
+      "remoteLabel": "{人物} · {地点}",
+      "remove": "解除{状态}",
+      "panic": "恐慌−{实际减少量}",
+      "nextAp": "下次行动点+{实际增加量}",
+      "resistance": "致死抵抗{抵抗率}",
+      "recovery": "濒死时无法自然恢复健康；需要用药或医疗实际回血。",
+      "damage": "−{伤害}",
+      "dyingHealth": "0/{上限} · 濒死",
+      "help": "健康归0先进入濒死（见“濒死与意志”），濒死后再受伤可能死亡；病毒达到上限会尸变。主角死亡或尸变结束本局。",
+      "actorWill": "{角色名}：意志{等级}级，致死抵抗{抵抗率}"
+    },
+    "growth": {
+      "quotaOwner": "selected_growth_actor_stable_id",
+      "remainingDailyXp": "clamp(60 - actual_xp_awarded_in_current_world_day, 0, 60)",
+      "showZeroQuota": true,
+      "hideQuotaAtLevel": 10,
+      "keyLevels": [
+        {
+          "level": 1,
+          "resistance": 0.65
+        },
+        {
+          "level": 3,
+          "resistance": 0.69
+        },
+        {
+          "level": 5,
+          "resistance": 0.73
+        },
+        {
+          "level": 7,
+          "resistance": 0.77
+        },
+        {
+          "level": 10,
+          "resistance": 0.83
+        }
+      ],
+      "passiveReferencesNotNewNodes": true,
+      "currentEffectUsesActualLevel": true,
+      "historicalMissingRecord": "意志：未记录",
+      "deadHistoryClaimsCurrentGrowthQuota": false,
+      "originalXpCapsAndReceiptsUnchanged": true
+    },
+    "lifeCloseup": {
+      "title": "actual_public_source_else_lifeFallback",
+      "stateResult": {
+        "normal_to_dying": "濒死",
+        "dying_to_normal": "脱离濒死",
+        "living_to_dead": "死亡"
+      },
+      "independentZombificationNamingUnchanged": true,
+      "mergeExistingAttackOrHeal": true,
+      "resistanceCreatesStandalonePoseChange": false,
+      "includeAbsentReserveAndHouseResidents": true,
+      "remoteActorAndPlace": "committed_event_snapshot_known_place_only",
+      "fallbackPlace": "actor_name_only_existing_closeup_background",
+      "remoteTreatmentOrTeleport": false,
+      "addsWorldTime": false,
+      "addsWorkPause": false,
+      "replayHistoricalLogsAsCloseups": false,
+      "standardDurationMs": 1200,
+      "speed": "original_same_tier_multipliers",
+      "battleActionSkippable": false,
+      "addsSkipEntry": false,
+      "originalWorldSameTierPresentationRulesUnchanged": true,
+      "menuFreezesPlayback": true,
+      "originalHigherLayerOrderUnchanged": true
+    },
+    "support": {
+      "removedStates": "actual_removed_public_names_only",
+      "panic": "actual_net_decrease_not_configured_amount",
+      "ap": "actual_added_next_normal_activation_bonus_not_current_ap",
+      "nextApCap": 6,
+      "nextApAppliesToPursuit": false,
+      "originalNonstackingUnchanged": true,
+      "swap": "movement_only_no_duplicate_result_text",
+      "zeroOrFictitiousChangeText": false
+    },
+    "mainResistance": {
+      "showOnlyWhileDying": true,
+      "normalGrowthStillInspectable": true,
+      "owner": "actual_actor_current_result_frame",
+      "noNewDebuff": true
+    },
+    "positiveDamageAtZero": {
+      "amount": "actual_final_unrounded_damage_not_health_delta",
+      "tinyPositiveDisplay": "−<0.01",
+      "formatter": "existing_Fmt.N",
+      "places": [
+        "existing_closeup",
+        "original_damage_log_plus_actual_life_state",
+        "persistent_health_and_dying_state"
+      ],
+      "extraBattleInformationDamageRow": false,
+      "zeroDamageHasDeathResistanceRoll": false,
+      "failedDeathCombinedLogUnchanged": true
+    },
+    "help": {
+      "owner": "selected_growth_actor_stable_id",
+      "fallback": "original_default_protagonist_only_if_no_valid_selected_actor",
+      "historyMissingRecordNotFabricated": true
+    },
+    "readOnly": {
+      "mutateWorld": false,
+      "mutateLife": false,
+      "consumeRandom": false,
+      "awardXp": false,
+      "resetDailyOrEnemyReceipts": false,
+      "addLog": false,
+      "addPause": false,
+      "reviveHistory": false
+    },
+    "acceptance": [
+      "Q690-A01",
+      "Q690-A02",
+      "Q691-A01",
+      "Q692-A01",
+      "Q692-A02",
+      "Q693-A01",
+      "Q694-A01",
+      "Q695-A01",
+      "Q696-A01",
+      "Q697-A01"
+    ]
   }
 }
