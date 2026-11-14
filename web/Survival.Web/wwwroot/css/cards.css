@@ -180,6 +180,8 @@
 .ocard.k2 .k2-sub > .oc-line { flex: 0 1 auto; min-width: 0; display: block; font-size: inherit; line-height: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ocard.k2 .k2-sub .acct-ico { width: 1em; height: 1em; margin-right: 3px; vertical-align: -2px; }
 .ocard.k2 .k2-l2 > .oc-line { font-size: inherit; line-height: inherit; text-align: center; }
+/* BM5b1（R05 Q639）：敌踪卡面的受阻原因／状态句可换行读全，不用省略号藏关键阻断 */
+.ocard.k2 .k2-l2 > .oc-line.ecard-status { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
 .ocard.k2 .k2-l2 > .hp-line { display: flex; justify-content: center; gap: 4px; }
 .wasteland .ocard.k2 .k2-sub > .oc-line,
 .wasteland .ocard.k2 .k2-l2 > :is(.oc-line, .hp-line) { color: var(--k2-sub); }

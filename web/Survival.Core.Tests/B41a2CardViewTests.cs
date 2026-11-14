@@ -83,9 +83,9 @@ public class B41a2CardViewTests : B41aTestBase
         s.EncounterGraceUntil = s.GameMinute + 45;
         var grace = s.EncounterGraceUntil;
         foreach (var t in new[] { ActionType.Explore, ActionType.Clear })
-            Assert.That(E.EncounterNote(s, "field", t), Is.EqualTo($"旧存档接敌保护剩余{Clock.Duration(45)}。"));
+            Assert.That(E.EncounterNote(s, "field", t), Is.EqualTo(GameEngine.LegacyGraceText));
         s.GameMinute += 20;
-        Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Is.EqualTo($"旧存档接敌保护剩余{Clock.Duration(25)}。"));
+        Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Is.EqualTo(GameEngine.LegacyGraceText));
 
         // 到期后转已有组卡句；预览不移除组卡、不刷新保护
         s.GameMinute = grace;

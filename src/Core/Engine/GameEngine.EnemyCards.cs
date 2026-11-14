@@ -54,6 +54,8 @@ namespace Survival.Core.Engine
         public string Badge { get; set; } = "";
         /// <summary>危险叠层（Q427、Q357）：随机组卡、固定战、可选强敌、精英常驻挂；普通常驻不挂。</summary>
         public bool Danger { get; set; }
+        /// <summary>BM5b1（R05 Q639）：真实守卫标记（固定战配置 guardian），右栏身份「守卫·{原卡名}」用；只影响文字。</summary>
+        public bool Guardian { get; set; }
     }
 
     /// <summary>
@@ -224,8 +226,8 @@ namespace Survival.Core.Engine
             if (en.SafeLocations.Contains(loc)) return "安全区不会形成随机遭遇组卡。";
             if (_locs.TryGetValue(loc, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior))
                 return lc.IsDungeon ? "地牢房间按固定敌踪处理。" : "城市与公共地点不会形成随机遭遇组卡。";
-            // Q438：历史保护沿原截止，时长 = 原截止 − 当前世界时刻；到期不再显示
-            if (s.GameMinute < s.EncounterGraceUntil) return $"旧存档接敌保护剩余{Clock.Duration(s.EncounterGraceUntil - s.GameMinute)}。";
+            // Q438：历史保护沿原截止，到期不再显示。BM5b1（R05 Q639）：不显示剩余时长，改无时长句（内部截止不变）
+            if (s.GameMinute < s.EncounterGraceUntil) return LegacyGraceText;
             if (VisibleGroupCardAt(s, loc) != null) return "当前已有一组敌踪，本次探索或清理不会形成新组卡。";
             var p = EncounterChance(s, loc, type);
             return $"完成后发现敌踪概率{Fmt.Pct(p)}（本地敌对{LocalHostiles(s, loc).Count}/上限{LocalCapOf(loc)}）。";
@@ -308,7 +310,7 @@ namespace Survival.Core.Engine
                     Members = members, EnemyIds = members.Select(w => w.EnemyId).ToList(),
                     Vigilance = vig, KeyEnemy = true, TutorialGated = TutorialGateOpen(s),
                     Hidden = false, Engaged = members.Any(w => w.Engaged),
-                    Badge = f.Guardian ? "守卫" : "固定", Danger = true,
+                    Badge = f.Guardian ? "守卫" : "固定", Danger = true, Guardian = f.Guardian,
                 };
             }
             if (cardKey.StartsWith(ElitePrefix))
@@ -382,7 +384,7 @@ namespace Survival.Core.Engine
             if (card.Hidden) return "这处敌踪暂时不可见。";
             if (s.CurrentZone == SafehouseZone) return "只能处理当前地点、当前区域可见的敌踪。";
             if (card.Engaged) return "这处敌踪正在交战。";
-            if (card.TutorialGated) return "先战胜农野荒地的游荡尸，再处理其他敌踪。";
+            if (card.TutorialGated) return TutorialGateReason;
             return null;
         }
 

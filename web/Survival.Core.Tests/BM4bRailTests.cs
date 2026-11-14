@@ -130,14 +130,14 @@ public class BM4bRailTests : TestBase
 
         var enemy = Web("Components", "EnemyDetail.razor");
         var ef = enemy.IndexOf("<RailFold", StringComparison.Ordinal);
-        // BM5b1（R05 Q613）：当前查看成员的核心值改进默认收起的「战斗详情」组（第一个折叠组），其余首屏行原位（Q639 待定）
-        foreach (var main in new[] { "<span>开战武器</span>", "@MemberKind(members[0])", "ecard-guard", "单次咬伤感染概率", "@if (why != null) { <div class=\"risk\">@why</div> }" })
-            Assert.That(enemy.IndexOf(main, StringComparison.Ordinal), Is.GreaterThan(0).And.LessThan(ef), main);
+        // BM5b1（S14／R05 Q639，取代 Q589／Q613 敌踪首屏）：主区只身份、风险与当前成员重要属性；开战武器、感染／空弹仓、成员类别与其他成员归「战斗详情」（第一个折叠组）
+        Assert.That(enemy.IndexOf("@CoreLines(card, members[0])", StringComparison.Ordinal), Is.GreaterThan(0).And.LessThan(ef), "重要属性在主区");
         Assert.That(enemy.Substring(ef), Does.StartWith("<RailFold Type=\"@RailTypes.Enemy\" Group=\"@RailGroups.BattleDetail\" Name=\"@RailText.BattleDetail\">"));
-        var core = enemy.IndexOf("@MemberLines(members[0], false)", StringComparison.Ordinal);
-        Assert.That(core, Is.GreaterThan(ef).And.LessThan(enemy.IndexOf("</RailFold>", ef, StringComparison.Ordinal)), "核心值在「战斗详情」组内");
-        Assert.That(enemy, Does.Contain("@if (members.Count > 1)"), "单只敌人不造成员组");
-        Assert.That(enemy.IndexOf("单次咬伤感染概率", StringComparison.Ordinal), Is.LessThan(enemy.IndexOf("@MemberKind(members[0])", StringComparison.Ordinal)), "窄栏首屏：感染风险排在成员类别长行与开战武器长句之前");
+        var battleEnd = enemy.IndexOf("</RailFold>", ef, StringComparison.Ordinal);
+        foreach (var inFold in new[] { "<span>开战武器</span>", "单次咬伤感染概率", "弹仓为0", "@MemberLines(members[0], false)", "@foreach (var m in members.Skip(1))" })
+            Assert.That(enemy.IndexOf(inFold, StringComparison.Ordinal), Is.GreaterThan(ef).And.LessThan(battleEnd), inFold);
+        Assert.That(enemy, Does.Not.Contain("RailGroups.Members"), "原「成员」组并入战斗详情");
+        Assert.That(enemy, Does.Not.Contain("@if (why != null)"), "受阻原因在卡面与中央按钮，右栏主区不重复");
 
         var pv = Web("Components", "PreviewView.razor");
         var pf = pv.IndexOf("<RailFold", StringComparison.Ordinal);
@@ -180,8 +180,9 @@ public class BM4bRailTests : TestBase
     public void Fix_EnemyStatus_ResourceStock_RouteSource()
     {
         var enemy = Web("Components", "EnemyDetail.razor");
-        Assert.That(enemy, Does.Contain("@if (e.CardApproachStatus(s, card) is string approach) { <div class=\"rail-status\" data-approach>@approach</div> }"));
-        Assert.That(enemy.IndexOf("CardApproachStatus", StringComparison.Ordinal), Is.LessThan(enemy.IndexOf("<RailFold", StringComparison.Ordinal)));
+        // BM5b1（R05 Q639）：卡面同源的无时长状态句移到「说明」组（右栏风险与属性之间不另铺一段）
+        Assert.That(enemy, Does.Contain("@if (status != null) { <li class=\"ecard-state\" data-approach>@status</li> }"));
+        Assert.That(enemy.IndexOf("<li class=\"ecard-state\"", StringComparison.Ordinal), Is.GreaterThan(enemy.IndexOf("Group=\"@RailGroups.Desc\"", StringComparison.Ordinal)));
         var sel = Web("Components", "SelectionDetail.razor");
         Assert.That(sel, Does.Contain("var rStock = e.ResourceCardStock(s, r).Badge;"));
         Assert.That(sel, Does.Not.Contain("Eyebrow=\"@($\"{mark}前往{e.LocName(sel.Id)}\")\""), "路线来源行不重复标题");

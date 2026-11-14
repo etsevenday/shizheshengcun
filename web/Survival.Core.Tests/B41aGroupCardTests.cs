@@ -162,14 +162,14 @@ public class B41aGroupCardTests : B41aTestBase
         var s = Field(3, "shambler", "crawler");
         s.EncounterGraceUntil = s.GameMinute + 45;
         Assert.That(E.EncounterChance(s, "field", ActionType.Explore), Is.EqualTo(0), "历史期限内不形成新的随机遭遇组卡");
-        Assert.That(E.EncounterNote(s, "field", ActionType.Explore), Is.EqualTo($"旧存档接敌保护剩余{Clock.Duration(45)}。"));
-        Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Is.EqualTo($"旧存档接敌保护剩余{Clock.Duration(45)}。"));
+        Assert.That(E.EncounterNote(s, "field", ActionType.Explore), Is.EqualTo(GameEngine.LegacyGraceText));
+        Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Is.EqualTo(GameEngine.LegacyGraceText));
         Clear(s);
         Assert.That(s.EnemyCards.Groups, Is.Empty);
         // 时长 = 原截止 − 当前世界时刻；读档不延期；到期移除该行
         var left = s.EncounterGraceUntil - s.GameMinute;
         Assert.That(left, Is.LessThan(45));
-        Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Is.EqualTo($"旧存档接敌保护剩余{Clock.Duration(left)}。"));
+        Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Is.EqualTo(GameEngine.LegacyGraceText));
         var t = Survival.Core.Save.SaveSerializer.Deserialize(Survival.Core.Save.SaveSerializer.Serialize(s), CfgV2);
         Assert.That(t.EncounterGraceUntil, Is.EqualTo(s.EncounterGraceUntil));
         s.GameMinute = s.EncounterGraceUntil;

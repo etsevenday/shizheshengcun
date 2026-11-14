@@ -251,6 +251,8 @@
                         var lead = e.Enemy(c.EnemyIds[0]);
                         var one = c.Kind is "single" or "elite" ? c.Members.FirstOrDefault() : null;
                         var status = e.CardApproachStatus(s, c);
+                        // BM5b1（R05 Q639）：卡面直接给卡自身的真实受阻原因（首战门控／固定关键限制），再接无时长状态句；长句换行、悬停／焦点读全文
+                        var faceWhy = GameEngine.EnemyCardFaceReason(c);
                         var hover = e.EnemyCardHoverLines(s, c);
                         // B41e2（Q539）：随机组卡第一副标照固定卡格式，列锁定名单原序的存活成员公开名（「、」连接、同名不合并；长名单由卡的副标悬停读全文）
                         var names = e.EnemyCardMemberNames(c);
@@ -265,6 +267,7 @@
                             <Line2>
                                 @if (one != null) { <div class="track"><i style="width:@Ui.Bar(one.Hp, lead.Hp)%"></i></div> }
                                 @if (c.Kind == "fixed" && e.FixedHurtNote(s, here) is string hurt) { <div class="oc-line" title="@hurt">@hurt</div> }
+                                @if (faceWhy != null) { <div class="oc-line ecard-status ecard-why" title="@faceWhy">@faceWhy</div> }
                                 @if (status != null) { <div class="oc-line ecard-status" title="@status">@status</div> }
                             </Line2>
                         </ObjectCard>

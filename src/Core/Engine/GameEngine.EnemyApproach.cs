@@ -83,22 +83,35 @@ namespace Survival.Core.Engine
                 if (FindEnemyCard(s, key, out _) == null) s.EnemyCards.Timers.Remove(key);
         }
 
+        /// <summary>BM5b1（R05 Q639 无倒计时正式句）：普通可主动接近的敌对卡。</summary>
+        public const string MayApproachText = "可能主动接近。";
+        /// <summary>R05 Q639：中立且原未激怒。</summary>
+        public const string NeutralCardText = "中立，受到攻击后才转为敌对。";
+        /// <summary>R05 Q639：可选强敌原不主动接近。</summary>
+        public const string OptionalCardText = "可选强敌，不会主动接近。";
+        /// <summary>R05 Q639：卡撤退保护有效（卡状态与中央风险句同一句）。</summary>
+        public const string RetreatGuardText = "此敌踪处于撤退保护中，期间可主动处理。";
+        /// <summary>R05 Q639：旧档全局接敌保护有效（状态与预览原因同一句）。</summary>
+        public const string LegacyGraceText = "旧存档接敌保护中。";
+
         /// <summary>
-        /// 卡面接近状态句（逐字稿「卡片、操作盘与倒计时」，按可选挑战、首战门控、普通中立、有效保护、已到期、正常倒计时的顺序取一条）；
-        /// 旧档历史保护与同卡撤退保护并存时取较晚截止的对应句。还没抽接近时间的计时卡为 null。界面接线在 B41e。
+        /// 卡接近状态句（逐字稿「卡片、操作盘与倒计时」，按可选挑战、首战门控、普通中立、有效保护、普通敌对的顺序取一条）；
+        /// 旧档历史保护与同卡撤退保护并存时仍按原逻辑取较晚截止对应的身份，只输出无时长句。
+        /// BM5b1（R05 Q639）：所有展示出口不再给剩余时长／截止／“已到期”阶段——普通可主动接近的敌对卡一律「可能主动接近。」（含还没抽接近时间、已到期等待的）；
+        /// 固定战与教学卡（固定关键敌人）沿原不含时间的限制句（<see cref="KeyEnemyDetailNote"/>，卡面与悬停），不给它们造普通接近状态，无保护时为 null。
+        /// 内部时限、到期接近、保护与 Q620 收尾一律不变。
         /// </summary>
         public string? CardApproachStatus(GameState s, EnemyCardView card)
         {
-            if (card.Optional) return "可选挑战，由你决定何时处理。";
+            if (card.Optional) return OptionalCardText;
             if (card.TutorialGated) return "首战胜利后开始接近计时。";
-            if (!CardTimed(card)) return "中立，不会主动接近。";
+            if (!CardTimed(card)) return NeutralCardText;
             var t = CardTimer(s, card.Key);
             var guard = t?.GuardUntil is int g && g > s.GameMinute ? g : (int?)null;
             var legacy = s.EncounterGraceUntil > s.GameMinute ? s.EncounterGraceUntil : (int?)null;
-            if (guard != null && (legacy == null || guard >= legacy)) return $"撤退保护剩余{Clock.Duration(guard.Value - s.GameMinute)}。";
-            if (legacy != null) return $"旧存档接敌保护剩余{Clock.Duration(legacy.Value - s.GameMinute)}。";
-            if (t?.Left == null) return null;
-            return t.Left <= 0 ? "已到期，等待交战。" : $"距敌人接近{Clock.Duration(t.Left.Value)}";
+            if (guard != null && (legacy == null || guard >= legacy)) return RetreatGuardText;
+            if (legacy != null) return LegacyGraceText;
+            return card.KeyEnemy ? null : MayApproachText;
         }
 
         /// <summary>

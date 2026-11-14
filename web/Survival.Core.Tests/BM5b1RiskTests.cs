@@ -182,15 +182,16 @@ public class BM5b1RiskTests : B41cTestBase
         var src = d.IndexOf("<div class=\"rail-src\">@card.Badge", StringComparison.Ordinal);
         var risk = d.IndexOf("<div class=\"rail-risk\"", StringComparison.Ordinal);
         var note = d.IndexOf("@GameEngine.EngageRiskNote", StringComparison.Ordinal);
-        var status = d.IndexOf("CardApproachStatus(s, card)", StringComparison.Ordinal);
-        var why = d.IndexOf("@if (why != null)", StringComparison.Ordinal);
+        // BM5b1（Q639 取代 Q613 首屏状态位置）：身份 → 风险 → 当前成员重要属性 → 「战斗详情」；状态句（无时长）在「说明」
+        var core = d.IndexOf("@CoreLines(card, members[0])", StringComparison.Ordinal);
         var fold = d.IndexOf("<RailFold Type=\"@RailTypes.Enemy\" Group=\"@RailGroups.BattleDetail\" Name=\"@RailText.BattleDetail\">", StringComparison.Ordinal);
+        var status = d.IndexOf("<li class=\"ecard-state\" data-approach>@status</li>", StringComparison.Ordinal);
         Assert.That(src, Is.GreaterThan(0));
         Assert.That(risk, Is.GreaterThan(src));
         Assert.That(note, Is.GreaterThan(risk));
-        Assert.That(status, Is.GreaterThan(note));
-        Assert.That(why, Is.GreaterThan(status));
-        Assert.That(fold, Is.GreaterThan(why));
+        Assert.That(core, Is.GreaterThan(note));
+        Assert.That(fold, Is.GreaterThan(core));
+        Assert.That(status, Is.GreaterThan(fold));
         Assert.That(d, Does.Contain("var risk = G.EngageRisk(card);"));
         Assert.That(d, Does.Contain("@if (risk.Invalid) { <div class=\"risk\" data-engage-risk=\"invalid\">@GameEngine.EnemyCardInvalidText</div> }"));
         Assert.That(d, Does.Contain("<b>@GameEngine.NoAttackHitText</b>"));

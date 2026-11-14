@@ -31,7 +31,7 @@ public class B41bTimerTests : B41bTestBase
         Assert.That(t.Rng.State, Is.EqualTo(rng));
         Assert.That(E.Advance(t).Status, Is.EqualTo(SegmentStatus.Running));
         Assert.That(Left(t, key), Is.EqualTo(l - 10));
-        Assert.That(E.CardApproachStatus(t, E.FindEnemyCard(t, key, out _)!), Is.EqualTo($"距敌人接近{l - 10}分钟"));
+        Assert.That(E.CardApproachStatus(t, E.FindEnemyCard(t, key, out _)!), Is.EqualTo(GameEngine.MayApproachText), "（BM5b1 R05 Q639：不显示剩余时长）内部时限照减");
     }
 
     [Test]
@@ -77,7 +77,7 @@ public class B41bTimerTests : B41bTestBase
         Step(s);
         Step(s);
         Assert.That(E.CardTimer(s, key), Is.Null, "中立单卡不抽、不扣");
-        Assert.That(E.CardApproachStatus(s, E.FindEnemyCard(s, key, out _)!), Is.EqualTo("中立，不会主动接近。"));
+        Assert.That(E.CardApproachStatus(s, E.FindEnemyCard(s, key, out _)!), Is.EqualTo("中立，受到攻击后才转为敌对。"));
         // 转为敌对后首次可操作时才抽
         s.WorldEnemies[0].Hostile = true;
         Step(s);
@@ -95,7 +95,7 @@ public class B41bTimerTests : B41bTestBase
         card.TutorialGated = false;
         card.Optional = true;
         Assert.That(E.CardTimed(card), Is.False);
-        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("可选挑战，由你决定何时处理。"));
+        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("可选强敌，不会主动接近。"));
     }
 
     [Test]
@@ -104,15 +104,17 @@ public class B41bTimerTests : B41bTestBase
         var s = Field(3, "shambler");
         var key = GameEngine.SingleCardKey(s.WorldEnemies[0].Id);
         var card = E.FindEnemyCard(s, key, out _)!;
-        Assert.That(E.CardApproachStatus(s, card), Is.Null, "还没抽");
+        // BM5b1（R05 Q639）：普通敌对卡还没抽／已到期都只写「可能主动接近。」；保护只给无时长句，并存时仍按原逻辑取较晚截止对应的身份
+        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("可能主动接近。"), "还没抽");
         SetLeft(s, key, 0);
-        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("已到期，等待交战。"));
+        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("可能主动接近。"));
         s.EnemyCards.Timers[key].GuardUntil = s.GameMinute + 60;
-        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("撤退保护剩余1小时。"));
+        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("此敌踪处于撤退保护中，期间可主动处理。"));
         s.EncounterGraceUntil = s.GameMinute + 90;
-        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("旧存档接敌保护剩余1小时30分。"), "两种保护并存取较晚截止的对应句");
+        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("旧存档接敌保护中。"), "两种保护并存取较晚截止的对应句");
         s.EncounterGraceUntil = s.GameMinute + 30;
-        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("撤退保护剩余1小时。"));
+        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("此敌踪处于撤退保护中，期间可主动处理。"));
+        Assert.That(s.EnemyCards.Timers[key].GuardUntil, Is.EqualTo(s.GameMinute + 60), "内部截止不变");
     }
 
     [Test]

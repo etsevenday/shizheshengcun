@@ -101,7 +101,7 @@ public class B41e2Tests : B41cTestBase
         var note = E.EliteDropNote(card);
         Assert.That(note, Is.EqualTo($"可选强敌 · 单局一次 · 特殊掉落{E.ItemName(cfg.RewardItemId)}×{cfg.RewardCount}（{Fmt.Pct(cfg.RewardChance)}，首次处理时抽定）"));
         Assert.That(note, Does.Not.Contain("首次接战时抽定").And.Not.Contain("已交过手"));
-        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, note, "可选挑战，由你决定何时处理。" }));
+        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, note, "可选强敌，不会主动接近。" }));
         Assert.That(s.WorldEnemies.Any(w => w.FixedOf == card.Key), Is.False, "只读，不生成实例");
         Assert.That(s.Population.Elites.TryGetValue(cfg.Id, out var st) && st.RewardWon != null, Is.False, "不抽签");
     }
@@ -161,8 +161,9 @@ public class B41e2Tests : B41cTestBase
         var card = E.EnemyCardHere(s, key)!;
         Assert.That(E.CardGuardNote(s, card), Is.Null);
         E.CardTimer(s, key)!.GuardUntil = s.GameMinute + 45;
-        Assert.That(E.CardGuardNote(s, card), Is.EqualTo($"此敌踪撤退保护剩余{Clock.Duration(45)}，期间可主动处理。"));
-        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo($"撤退保护剩余{Clock.Duration(45)}。"), "卡面原短句保持");
+        // BM5b1（R05 Q639）：卡状态与中央风险句同一无时长句
+        Assert.That(E.CardGuardNote(s, card), Is.EqualTo("此敌踪处于撤退保护中，期间可主动处理。"));
+        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo("此敌踪处于撤退保护中，期间可主动处理。"));
         s.GameMinute += 45;
         Assert.That(E.CardGuardNote(s, card), Is.Null, "到期移除");
         s.EncounterGraceUntil = s.GameMinute + 30;

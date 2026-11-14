@@ -58,7 +58,7 @@ public class B41bRetreatGuardTests : B41bTestBase
 
         SetLeft(s, a, 0);
         Assert.That(E.CheckEnemyApproach(s), Is.False, "到期后等待保护结束");
-        Assert.That(E.CardApproachStatus(s, E.FindEnemyCard(s, a, out _)!), Is.EqualTo("撤退保护剩余1小时。"));
+        Assert.That(E.CardApproachStatus(s, E.FindEnemyCard(s, a, out _)!), Is.EqualTo(GameEngine.RetreatGuardText), "（BM5b1 R05 Q639：不显示剩余时长）");
         Start(s, ActionRequest.Wait(60));
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
         Assert.That(s.GameMinute, Is.EqualTo(second));

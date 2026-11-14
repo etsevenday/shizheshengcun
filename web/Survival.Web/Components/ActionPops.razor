@@ -127,7 +127,7 @@
                             <span title="开战默认页（第一个有武器的页）的命中率（战斗中可切换武器页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(e.DefaultWeaponPage(s) == 1 ? "Ⅰ" : "Ⅱ") @(wi == null ? "拳" : weapon.Name) · 命中@(Ui.Pct(hit.HitChance))</span>
                         </div>
                         @if (e.CanBite(ec)) { <div class="apop-risk">咬伤可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）</div> }
-                        else if (ec.IsZombie) { <div class="apop-note">它的意图里没有咬击，不会咬伤（攻击不传播病毒）</div> }
+                        else if (ec.IsZombie) { <div class="apop-note">@GameEngine.NonBiteNote</div> }
                     }
                     @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
                     {

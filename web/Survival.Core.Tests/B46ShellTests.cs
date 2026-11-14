@@ -86,7 +86,8 @@ public class B46ShellTests
         // （有未结束子行动时就是「当前行动还没结束。」，内核断言见 B46Tests.Q534_A01_A02）
         var pops = Web("Components/ActionPops.razor");
         Assert.That(pops, Does.Contain("var whyApproach = e.CanApproachCard(s, key);"));
-        Assert.That(Web("Components/EnemyDetail.razor"), Does.Contain("var why = e.CanApproachCard(s, card.Key);"));
+        // BM5b1（R05 Q639）：右栏主区不再重复受阻原因（原因在卡面与中央按钮禁用／拒绝处，同源内核 CanApproachCard）
+        Assert.That(Web("Components/EnemyDetail.razor"), Does.Not.Contain("e.CanApproachCard("));
         var strip = Web("Components/LocationStrip.razor");
         Assert.That(strip, Does.Not.Contain("e.CanEngageFixed(s)").And.Not.Contain("e.CanEngageElite(s, cid)").And.Not.Contain("e.CanApproach(s, wid)"));
         Assert.That(GameEngine.LockedSubRunning, Is.EqualTo("当前行动还没结束。"));

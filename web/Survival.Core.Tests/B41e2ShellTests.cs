@@ -30,7 +30,7 @@ public class B41e2ShellTests
                      GameEngine.PracticeStart, GameEngine.PracticeBodyLabel, GameEngine.StashedWorkNote,
                      "| 暂存原工作摘要 | 暂存行动：{原行动名} |", "| 原工作地点摘要 | 行动地点：{原地点} |",
                      "| 可躲避卡失败入战整卡行 | 躲避失败时：{原受惊预览} |", "（{概率}，首次处理时抽定）",
-                     "此敌踪撤退保护剩余{时长}，期间可主动处理。", "等待期间每小时 {变化列表}", "等待期间每小时 无变化", "（含先手×1.5）",
+                     "等待期间每小时 {变化列表}", "等待期间每小时 无变化", "（含先手×1.5）",
                      "人物对话和顶栏面板只盖住上面两行，当前地面和随身两行位置不变；进入战斗后改为全屏战斗画面，战斗结束原样回到这四行。",
                      "点击敌踪卡打开操作盘，查看风险后选择「主动接近」。",
                      "敌人是世界里已有的个体，伤势和身份会保留。动物各自显示为单卡，不加入随机组卡。普通单体按地点规则巡游，随机组卡的成员留在组中。",
@@ -49,12 +49,15 @@ public class B41e2ShellTests
                      "人物对话显示在中部下方，覆盖「当前地面」和「随身物品」两行；上方场景和设施区域保持可见。对白读完前不能进行场景或物品操作，ESC仍可打开游戏菜单。顶栏面板按各自范围显示；进入战斗后改为全屏战斗画面，战斗结束原样回到主界面。",
                      "敌人是世界里已有的个体，伤势和身份会保留。动物各自显示为单卡，不加入随机组卡。普通单体按地点规则巡游，随机组卡的成员留在组中。",
                      "必经关卡的固定敌人必须战胜，无法躲避。可选强敌由你决定何时处理，不会倒计时主动接战。",
-                     "在第二轨的「敌踪」中选择卡片，查看警惕、接近时间和风险，再选择主动接近、潜行接近或躲避。潜行与躲避各用5分钟，由小队队长判定成功率。",
                  })
         {
             Assert.That(v, Does.Contain(t), t);
             Assert.That(h, Does.Contain(t), t);
         }
+        // BM5b1（R05 Q639）：帮助不再写“接近时间”与撤退保护分钟数，只说明计时与保护这一句（逐字稿／R05 原句）
+        Assert.That(h, Does.Contain("在第二轨的「敌踪」中选择卡片，查看警惕和风险，再选择主动接近、潜行接近或躲避。"));
+        Assert.That(File.ReadAllText(Directory.GetFiles(Path.Combine(Root(), "doc", "策划案"), "R05 敌人卡、种群刷新与遭遇系统.md", SearchOption.AllDirectories).Single()), Does.Contain("“敌人可能随同地的时间推进主动接近；保护期间按原规则暂不主动接近，但可主动处理”"));
+        Assert.That(h, Does.Contain("EnemyTimingHelp = \"敌人可能随同地的时间推进主动接近；保护期间按原规则暂不主动接近，但可主动处理。\""));
         Assert.That(GameEngine.StashedWorkText("制作"), Is.EqualTo("暂存行动：制作"));
         Assert.That(GameEngine.WorkPlaceText("农野荒地"), Is.EqualTo("行动地点：农野荒地"));
     }
@@ -122,7 +125,7 @@ public class B41e2ShellTests
         Assert.That(Web("Components/CharacterPanel.razor"), Does.Contain("(\"survival\", \"求生与行动\")").And.Not.Contain("CardsV2"), "⑨");
         Assert.That(Web("Components/TipsOverlay.razor"), Does.Not.Contain("TipForState"), "⑩ 配置里的提示已是新句");
         var h = Web("Services/HelpCatalog.cs");
-        Assert.That(h, Does.Contain("退回处的敌踪照常显示。撤退成功后，只有同一张敌踪卡在{e.Config.Encounters.CardRetreatGuardMinutes}游戏分钟内不会主动开战。"), "②");
+        Assert.That(h, Does.Contain("退回处的敌踪照常显示。\" + EnemyTimingHelp + \"").And.Not.Contain("CardRetreatGuardMinutes"), "②");
         Assert.That(h, Does.Contain("\" + CapacityCardsV2 + \""), "③");
         Assert.That(h, Does.Contain("\" + StealthXpSource,").And.Contain("\" + StealthRole,"), "Q447 熟练度两句");
         Assert.That(h, Does.Contain("FirstStrikeHelp,"), "Q447 先手帮助");

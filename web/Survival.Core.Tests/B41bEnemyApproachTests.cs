@@ -70,7 +70,7 @@ public class B41bEnemyApproachTests : B41bTestBase
         Assert.That(Step(s), Is.EqualTo(SegmentStatus.Running));
         Assert.That(s.Battle, Is.Null, "普通休息整次结束后再开战");
         Assert.That(Left(s, key), Is.EqualTo(0));
-        Assert.That(E.CardApproachStatus(s, E.FindEnemyCard(s, key, out _)!), Is.EqualTo("已到期，等待交战。"));
+        Assert.That(E.CardApproachStatus(s, E.FindEnemyCard(s, key, out _)!), Is.EqualTo(GameEngine.MayApproachText), "（BM5b1 R05 Q639：不显示剩余时长）到期等待也不显示阶段");
         for (var k = 0; k < 4; k++) Assert.That(Step(s), Is.EqualTo(SegmentStatus.Running));
         Assert.That(s.Battle, Is.Null);
         Assert.That(Step(s), Is.EqualTo(SegmentStatus.Completed));

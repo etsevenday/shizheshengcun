@@ -50,11 +50,12 @@ public class B41e1EnemyCardUiTests : B41cTestBase
     {
         var (s, key) = OneShambler();
         var card = E.EnemyCardHere(s, key)!;
-        Assert.That(E.CardApproachStatus(s, card), Is.Null, "还没抽接近时间");
-        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote }));
+        // BM5b1（R05 Q639）：还没抽／已抽接近时间都只写无时长句
+        Assert.That(E.CardApproachStatus(s, card), Is.EqualTo(GameEngine.MayApproachText), "还没抽接近时间");
+        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, GameEngine.MayApproachText }));
         E.CheckEnemyApproach(s);
         var st = E.CardApproachStatus(s, card);
-        Assert.That(st, Does.StartWith("距敌人接近"));
+        Assert.That(st, Is.EqualTo(GameEngine.MayApproachText));
         Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, st }), "常驻卡不补必须战胜说明、不承诺不会主动开战");
         Assert.That(E.EnemyCardPreviewMembers(s, card).Select(m => m.Enemy!.Id), Is.EqualTo(new[] { s.WorldEnemies.Single().Id }));
     }
@@ -67,7 +68,7 @@ public class B41e1EnemyCardUiTests : B41cTestBase
         Assume.That(w.Hostile, Is.False, "雄鹿默认中立");
         var card = E.EnemyCardHere(s, Key(w))!;
         Assert.That(card.Badge, Is.EqualTo("中立"));
-        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, "中立，不会主动接近。" }));
+        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, "中立，受到攻击后才转为敌对。" }));
     }
 
     [Test]
@@ -98,7 +99,7 @@ public class B41e1EnemyCardUiTests : B41cTestBase
         E.DebugSetProgress(s, cfg.NodeId, 100);
         var card = E.EnemyCardsHere(s).Single();
         Assert.That(card.Kind, Is.EqualTo("elite"));
-        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, E.EliteDropNote(card), "可选挑战，由你决定何时处理。" }), "B41e2（Q551）：通用句后补特殊掉落说明");
+        Assert.That(E.EnemyCardHoverLines(s, card), Is.EqualTo(new[] { GameEngine.EnemyCardFootnote, E.EliteDropNote(card), "可选强敌，不会主动接近。" }), "B41e2（Q551）：通用句后补特殊掉落说明");
         var members = E.EnemyCardPreviewMembers(s, card);
         Assert.That(members.Select(m => (m.EnemyId, m.Enemy)), Is.EqualTo(new[] { ("z_guard", (WorldEnemy?)null) }));
         Assert.That(E.EnemyCardFearNote(s, card, false), Is.Not.Empty);

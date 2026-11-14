@@ -16,7 +16,6 @@
 else
 {
     var members = e.EnemyCardPreviewMembers(s, card);
-    var why = e.CanApproachCard(s, card.Key);
     var weapon = e.CurrentWeapon(s, out var wi);
     var page = e.DefaultWeaponPage(s);
     var pageName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page)!);
@@ -25,60 +24,54 @@ else
     var anyBite = members.Any(m => e.CanBite(e.Enemy(m.EnemyId)));
     // BM5b1（R05 Q613）：整卡对当前实际队伍的即时交战风险（派生值，按事实版本缓存）
     var risk = G.EngageRisk(card);
-    @* BM4b（S14 Q589「敌踪」）：首屏＝卡名／状态（警觉、撤退保护）、当前查看成员（锁定名单第一位）的健康与攻防速核心值、开战武器与感染等风险；
-       组卡其余成员的完整原详情行在「成员（{数量}）」组，接近／撤退等长说明在「说明」组。中央盘的逐成员预览不在本批改动。 *@
+    var status = e.CardApproachStatus(s, card);
+    var guard = e.CardGuardNote(s, card);
+    @* BM5b1（S14／R05 Q639，取代 Q589／Q613 首屏折叠与状态倒计时）：主区固定顺序＝①身份（真实守卫标记才「守卫·{原卡名}」，其余原卡名＋原角标）→②交战风险
+       →③当前查看成员（锁定名单第一位）的健康／护甲／闪避／速度／攻击能力／伤害。受阻原因在卡面与中央按钮，右栏主区不重复；
+       开战武器、我方命中／承伤、空弹仓与感染、成员类别与其他成员完整属性归默认收起的「战斗详情」，接近／保护状态（无时长）与原长规则在「说明」。 *@
     <div class="detail-scroll rail-page" data-rail-type="@RailTypes.Enemy">
         <RailHead Source="@($"{GameEngine.EnemyCardDetailTitle} · {e.LocName(card.LocationId)}")">
             <Thumb>@Icons.Markup("enemy_" + card.EnemyIds[0])</Thumb>
-            <Name>@card.Title</Name>
+            <Name>@GameEngine.EnemyRailIdentity(card)</Name>
             <Sub>
                 <div class="rail-src">@card.Badge · @GameEngine.VigilanceText(card.Vigilance)</div>
-                @* R05 Q613 首屏顺序：身份 → 交战风险 → 真实状态／倒计时／原因 → 「战斗详情」折叠；只显示等级与通用提示，不展示后台分值。没有有效敌方活成员时不留旧等级 *@
+                @* R05 Q613：只显示等级与通用提示，不展示后台分值。没有有效敌方活成员时不留旧等级 *@
                 @if (risk.Invalid) { <div class="risk" data-engage-risk="invalid">@GameEngine.EnemyCardInvalidText</div> }
                 else
                 {
                     <div class="rail-risk" data-engage-risk="@(risk.Unknown ? "unknown" : risk.Level.ToString())">@risk.Text</div>
                     <div class="rail-risk-note">@GameEngine.EngageRiskNote</div>
                 }
-                @* Q589「敌踪」首屏：当前状态／倒计时或撤退保护，与卡面同源（CardApproachStatus） *@
-                @if (e.CardApproachStatus(s, card) is string approach) { <div class="rail-status" data-approach>@approach</div> }
             </Sub>
         </RailHead>
-        @* 1280×720 窄栏（约200px）里先放当前风险与原因，再放当前查看成员的核心值；成员类别长行与开战武器长句排在其后（仍在主区，不进折叠组） *@
-        @if (e.CardGuardNote(s, card) is string guard) { <div class="risk none ecard-guard">@guard</div> }
-        @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
-        {
-            <div class="risk">@($"{weapon.Name}")弹仓为0：开战后需先装填（1AP），或在右栏人物“装备”区换一把再接近。</div>
-        }
-        @if (anyBite) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div> }
-        @if (members.Count > 0 && !e.CanBite(e.Enemy(members[0].EnemyId)) && e.Enemy(members[0].EnemyId).IsZombie) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
-        @if (why != null) { <div class="risk">@why</div> }
         @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
-        <div class="lines rail-main">
-            @if (members.Count > 0) { @MemberKind(members[0]) }
-            <div class="wide"><span>开战武器</span><b>@(wi == null ? $"{pageName}空（拳）" : $"{pageName} {weapon.Name}")（战前可在右栏人物“装备”区调整，战斗中可切到@(otherName)页）</b></div>
-        </div>
+        @if (members.Count > 0) { @CoreLines(card, members[0]) }
 
-        @* R05 Q613：健康、护甲／闪避／速度、攻击能力、伤害与我方命中预估归「战斗详情」，默认收起（展开偏好沿 Q589 按对象类型保存）。
-           成员类别行、开战武器、感染与弹仓风险、「成员」「说明」组的去处待 Q639，本批原位不动 *@
         @if (members.Count > 0)
         {
             <RailFold Type="@RailTypes.Enemy" Group="@RailGroups.BattleDetail" Name="@RailText.BattleDetail">
+                <div class="lines rail-main">
+                    <div class="wide"><span>开战武器</span><b>@(wi == null ? $"{pageName}空（拳）" : $"{pageName} {weapon.Name}")（战前可在右栏人物“装备”区调整，战斗中可切到@(otherName)页）</b></div>
+                </div>
+                @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
+                {
+                    <div class="risk">@($"{weapon.Name}")弹仓为0：开战后需先装填（1AP），或在右栏人物“装备”区换一把再接近。</div>
+                }
+                @if (anyBite) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div> }
+                @if (!e.CanBite(e.Enemy(members[0].EnemyId)) && e.Enemy(members[0].EnemyId).IsZombie) { <div class="risk none">@GameEngine.NonBiteNote</div> }
                 @MemberLines(members[0], false)
-            </RailFold>
-        }
-        @if (members.Count > 1)
-        {
-            <RailFold Type="@RailTypes.Enemy" Group="@RailGroups.Members" Name="@RailText.Members" Count="@members.Count">
                 @foreach (var m in members.Skip(1))
                 {
                     @MemberLines(m)
-                    @if (!e.CanBite(e.Enemy(m.EnemyId)) && e.Enemy(m.EnemyId).IsZombie) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
+                    @if (!e.CanBite(e.Enemy(m.EnemyId)) && e.Enemy(m.EnemyId).IsZombie) { <div class="risk none">@GameEngine.NonBiteNote</div> }
                 }
             </RailFold>
         }
         <RailFold Type="@RailTypes.Enemy" Group="@RailGroups.Desc" Name="@RailText.Desc">
             <ul class="notes">
+                @* R05 Q639：接近／中立／保护状态只用无时长句（与卡面同源），不显示剩余时长、截止或进度 *@
+                @if (status != null) { <li class="ecard-state" data-approach>@status</li> }
+                @if (guard != null && guard != status) { <li class="ecard-guard">@guard</li> }
                 <li>@GameEngine.ApproachCardButton：@e.EnemyCardFearNote(s, card, false)@(range != null ? "；" + range : "")。</li>
                 <li>每回合推进5分钟世界时间；@e.RetreatOutlookHere(s)。</li>
                 @if (card.KeyEnemy) { <li>@GameEngine.KeyEnemyDetailNote</li> }
@@ -96,8 +89,26 @@ else
     /// <summary>B42：要显示的敌踪（悬停查看时传入）；null 为真正选中的 G.Selected。</summary>
     [Parameter] public Selection? Sel { get; set; }
 
-    /// <summary>一名成员的原详情行（锁定名单原顺序）。</summary>
-    /// <param name="withKind">false：首屏当前查看成员，类别长行由 <see cref="MemberKind"/> 排在风险之后。</param>
+    /// <summary>
+    /// BM5b1（S14／R05 Q639）：主区当前查看成员的重要属性——健康（当前／上限）、护甲、闪避、速度、公开基础攻击能力、基础伤害（沿原单位／精度），
+    /// 标签与数值列对齐、短项可两列。组卡等原卡名不是这名成员时，先写当前成员名，不把首位数值冒充全组。基础伤害是配置区间，不是下一步计划伤害。
+    /// </summary>
+    private RenderFragment CoreLines(EnemyCardView card, (string EnemyId, WorldEnemy? Enemy) m) => __builder =>
+    {
+        var ec = G.E.Enemy(m.EnemyId);
+        <div class="lines rail-main enemy-core" data-enemy-core>
+            @if (ec.Name != card.Title) { <div class="wide rail-member"><b>@ec.Name</b></div> }
+            <div><span>健康</span><b>@Ui.N(m.Enemy?.Hp ?? ec.Hp)/@Ui.N(ec.Hp)</b></div>
+            <div><span>护甲</span><b>@Ui.T(ec.Armor)</b></div>
+            <div><span>闪避</span><b>@Ui.T(ec.Dodge)</b></div>
+            <div><span>速度</span><b>@Ui.Speed(ec.Speed)</b></div>
+            <div><span>攻击能力</span><b>@Ui.T(ec.AttackRating)</b></div>
+            <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
+        </div>
+    };
+
+    /// <summary>一名成员在「战斗详情」里的原详情行（锁定名单原顺序）：类别／AP／站位／控制抗性、健康与攻防速、对你命中率与你的命中率。</summary>
+    /// <param name="withKind">false：首位成员的健康与攻防速已在主区，这里只列类别与交战预估。</param>
     private RenderFragment MemberLines((string EnemyId, WorldEnemy? Enemy) m, bool withKind = true) => __builder =>
     {
         var s = G.S;
@@ -105,11 +116,15 @@ else
         var ec = e.Enemy(m.EnemyId);
         var hit = e.OutOfBattleHit(s, ec);
         <div class="lines rail-main enemy-lines">
-            @if (withKind) { @MemberKind(m) }
-            <div><span>健康</span><b>@Ui.N(m.Enemy?.Hp ?? ec.Hp)/@Ui.N(ec.Hp)</b></div>
-            <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.Speed(ec.Speed)</b></div>
-            <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
-            <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
+            @MemberKind(m)
+            @if (withKind)
+            {
+                <div><span>健康</span><b>@Ui.N(m.Enemy?.Hp ?? ec.Hp)/@Ui.N(ec.Hp)</b></div>
+                <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.Speed(ec.Speed)</b></div>
+                <div><span>攻击能力</span><b>@Ui.T(ec.AttackRating)</b></div>
+                <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
+            }
+            <div><span>对你命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
             @* R05 Q613：没有合适攻击者／目标时写「当前无可用攻击」，不造 0% 占位 *@
             @if (e.OutOfBattleHasAttack(s))
             {

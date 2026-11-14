@@ -12,6 +12,29 @@ namespace Survival.Core.Engine
     /// </summary>
     public sealed partial class GameEngine
     {
+        /// <summary>首战门控时其他敌踪的处理拒绝原因（逐字稿「新操作的禁用与拒绝」）；BM5b1（R05 Q639）起也是这类卡的卡面受阻原因。</summary>
+        public const string TutorialGateReason = "先战胜农野荒地的游荡尸，再处理其他敌踪。";
+
+        /// <summary>BM5b1（S14／R05 Q639 逐字稿「原确实无咬伤传播能力者」）：右栏战斗详情与中央盘统一句。</summary>
+        public const string NonBiteNote = "它不会咬伤，攻击不传播病毒。";
+
+        /// <summary>
+        /// BM5b1（R05 Q639）：右栏身份「{身份}·{原卡名}」——只在真实守卫标记（固定战 guardian）时写「守卫·{原卡名}」，原卡名已含同前缀不重复；
+        /// 其他卡沿原卡名（身份类别仍在原角标）。不凭风险或“强敌”造身份；只影响文字。
+        /// </summary>
+        public static string EnemyRailIdentity(EnemyCardView card) =>
+            card.Guardian && !card.Title.StartsWith(GuardianIdentity) ? $"{GuardianIdentity}·{card.Title}" : card.Title;
+
+        /// <summary>R05 Q639：真实守卫标记的身份名（沿原角标「守卫」）。</summary>
+        public const string GuardianIdentity = "守卫";
+
+        /// <summary>
+        /// BM5b1（R05 Q639）：敌踪卡面的受阻原因——卡自身的真实优先限制：首战门控时 <see cref="TutorialGateReason"/>，固定关键敌人（教学、固定战、守卫、检查哨）
+        /// 原不含时间的限制句 <see cref="KeyEnemyDetailNote"/>；其他为 null。行动进行中等全局状态不上卡面（仍在中央按钮禁用／拒绝处），点击仍原重验。
+        /// </summary>
+        public static string? EnemyCardFaceReason(EnemyCardView card) =>
+            card.TutorialGated ? TutorialGateReason : card.KeyEnemy ? KeyEnemyDetailNote : null;
+
         /// <summary>逐字稿「敌人详情脚注」，Q446 ⑥ 三类卡悬停共用句。</summary>
         public const string EnemyCardFootnote = "点击敌踪卡查看行动。可先核对风险，再选择处理方式。";
 
@@ -55,6 +78,8 @@ namespace Survival.Core.Engine
         public List<string> EnemyCardHoverLines(GameState s, EnemyCardView card)
         {
             var lines = new List<string> { EnemyCardFootnote };
+            // BM5b1（R05 Q639）：卡面受阻原因在悬停／焦点完整可读（关键句沿原位置）
+            if (card.TutorialGated) lines.Add(TutorialGateReason);
             if (card.KeyEnemy) lines.Add(KeyEnemyDetailNote);
             if (EliteDropNote(card) is string drop) lines.Add(drop);
             if (CardApproachStatus(s, card) is string st) lines.Add(st);
@@ -69,14 +94,14 @@ namespace Survival.Core.Engine
             card.Kind is "group" or "fixed" ? string.Join("、", card.Members.Select(w => _enemies[w.EnemyId].Name)) : null;
 
         /// <summary>
-        /// 同卡撤退保护的长句（Q538；逐字稿 B41e Q537—Q541 补充表）：只在该卡自己的撤退保护有效时给出，放敌踪详情与居中操作盘的主动接近风险区；
-        /// 剩余时长取同一真实截止减当前世界时间，沿 Clock.Duration 原格式；到期为 null。旧档历史全地点保护不套此句。
+        /// 同卡撤退保护的长句（Q538；逐字稿 B41e Q537—Q541 补充表）：只在该卡自己的撤退保护有效时给出，放敌踪详情与居中操作盘的主动接近风险区；到期为 null。旧档历史全地点保护不套此句。
+        /// BM5b1（R05 Q639）：改无时长句「此敌踪处于撤退保护中，期间可主动处理。」，不再显示剩余时长（内部截止不变）。
         /// </summary>
         public string? CardGuardNote(GameState s, EnemyCardView card)
         {
             if (card.Optional) return null;
             var g = CardTimer(s, card.Key)?.GuardUntil;
-            return g is int until && until > s.GameMinute ? $"此敌踪撤退保护剩余{Clock.Duration(until - s.GameMinute)}，期间可主动处理。" : null;
+            return g is int until && until > s.GameMinute ? RetreatGuardText : null;
         }
 
         /// <summary>
