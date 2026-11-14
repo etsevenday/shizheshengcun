@@ -1,3 +1,4 @@
+using System.Reflection;
 using Newtonsoft.Json.Linq;
 using Survival.Core.Engine;
 using Survival.Core.Save;
@@ -9,7 +10,7 @@ namespace Survival.Core.Tests;
 /// B47a1 濒死生命态、统一受伤、世界段、战斗与医疗脱离（R09 濒死、意志与致死判定系统；dying-willpower-q616.json；开发记录 B47a1）。
 /// 意志经验结账（Q676—Q677）、进入濒死暂停（Q673）与预估截断（Q674—Q675）属 B47a2／B47a3，不在这里。
 /// </summary>
-public class B47a1DyingTests : TestBase
+public class B47a1DyingTests : BattleTestBase
 {
     protected override bool NoEnemyApproach => true;
 
@@ -319,5 +320,138 @@ public class B47a1DyingTests : TestBase
         var st = E.Advance(s);
         Assert.That(st.Status, Is.EqualTo(SegmentStatus.Dead));
         Assert.That(s.Progress.Death!.Cause, Is.EqualTo("出血"));
+    }
+
+    // ───────────── M4 战斗 ─────────────
+
+    private void Attack(GameState s, BattleEnemy e) =>
+        typeof(GameEngine).GetMethod("EnemyAttack", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
+
+    private bool RoundBleed(GameState s) =>
+        (bool)typeof(GameEngine).GetMethod("RoundStartBleed", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s })!;
+
+    private void Ready(GameState s)
+    {
+        PlayerFirst(s);
+        E.BattleStep(s);
+        Assert.That(E.AwaitingPlayer(s), Is.True);
+    }
+
+    private static void Rolls(GameEngine e, params double[] u) => e.TestDeathRolls = new Queue<double>(u);
+
+    /// <summary>主角与一名同行者在农野荒地对一只蹒跚者入战（同行者站 1 号位、主角 3 号位，蹒跚者只能打到同行者）。</summary>
+    private GameState PartyFight(uint seed, out string mate)
+    {
+        var s = New(seed);
+        UnlockCapacity(s, 3);
+        E.DebugQuickParty(s, 2);
+        mate = s.Party.Single(id => id != GameState.PlayerId);
+        E.DebugTeleport(s, "field");
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        s.WorldEnemies.Clear();
+        var id = E.DebugSpawnEnemy(s, "shambler", "field").Id;
+        Assert.That(E.DebugStartBattle(s, new[] { id }, GameEngine.FearEncounter), Is.True);
+        s.Battle!.Allies = new List<string> { mate, "", GameState.PlayerId };
+        return s;
+    }
+
+    /// <summary>Q616-A03：同一目标先被打到 0 只入濒死（不抽），之后每次正伤各判一次；抵抗仍在战、失败按原死亡句终局（Q689 不写未能抵抗句）。</summary>
+    [Test]
+    public void M4_A03_PlayerHitToDying_ThenEachHitRolls()
+    {
+        var s = Fight(4701, "shambler");
+        var e = s.Battle!.Alive.First();
+        s.Player.Stats.Health = 0.3;
+        Rolls(E, 0.0, 0.999);
+        Force(s, Draw(), Below(0.01), Any());
+        Attack(s, e);
+        Assert.That((s.Player.Stats.Health, s.Progress.Dead, s.Battle != null, E.TestDeathRolls!.Count), Is.EqualTo((0.0, false, true, 2)), "首次归 0 不判致死");
+        var log = s.Battle!.Log;
+        Assert.That(log[^1], Does.EndWith(GameEngine.EnterDyingText("你")), "状态句接在伤害战报之后");
+        Assert.That(log[^2], Does.Contain("命中").And.Contain("健康−"));
+        Assert.That(s.Log.Select(l => l.Text), Has.None.Contains("进入濒死"), "Q688：战斗中只写战报");
+        Force(s, Draw(), Below(0.01), Any());
+        Attack(s, e);
+        Assert.That((s.Progress.Dead, s.Battle != null, E.TestDeathRolls!.Count), Is.EqualTo((false, true, 1)));
+        Assert.That(s.Battle!.Log[^1], Does.EndWith(GameEngine.ResistedDeathText("你")));
+        Force(s, Draw(), Below(0.01), Any());
+        Attack(s, e);
+        Assert.That((s.Progress.Dead, s.Battle == null, E.TestDeathRolls!.Count), Is.EqualTo((true, true, 0)));
+        Assert.That(s.Progress.Death!.Cause, Does.StartWith("被"));
+        Assert.That(s.Log.Select(l => l.Text), Has.None.Contains("未能抵抗"), "Q689 待答复：只写原死亡句");
+    }
+
+    /// <summary>Q616-A06：主角与全队都 0H 未确死不自动败北；同行者濒死不发死亡恐慌、不迁遗物；真死才处理一次（恐慌+8、离队）。</summary>
+    [Test]
+    public void M4_A06_AllZeroNotDefeated_CompanionDyingNoPanic_DeathOnce()
+    {
+        var s = PartyFight(4702, out var mate);
+        var b = s.Battle!;
+        var e = b.Alive.First();
+        s.Actor(GameState.PlayerId).Stats.Health = 0;
+        s.Actors[mate].Stats.Health = 0.2;
+        var p0 = b.Fighter(GameState.PlayerId).Panic;
+        Rolls(E, 0.0, 0.999);
+        Force(s, Draw(), Below(0.01), Any());
+        Attack(s, e);
+        Assert.That((E.LifeOf(s, s.Actors[mate]), b.Allies.Contains(mate), s.Battle != null, s.Progress.Dead), Is.EqualTo((LifeState.Dying, true, true, false)), "全员 0H 仍在战");
+        Assert.That(b.Fighter(GameState.PlayerId).Panic, Is.EqualTo(p0), "濒死不发同伴死亡恐慌");
+        Assert.That(b.Log.Any(l => l.Contains("已战死")), Is.False);
+        Assert.That(b.Log[^1], Does.EndWith(GameEngine.EnterDyingText(E.ActorDisplayName(s, mate))));
+        Force(s, Draw(), Below(0.01), Any());
+        Attack(s, e);
+        Assert.That(b.Log[^1], Does.EndWith(GameEngine.ResistedDeathText(E.ActorDisplayName(s, mate))));
+        Assert.That(E.TestDeathRolls!.Count, Is.EqualTo(1));
+        Force(s, Draw(), Below(0.01), Any());
+        Attack(s, e);
+        Assert.That((s.Actors[mate].Dead, E.RosterOf(s, mate)!.Dead, b.Allies.Contains(mate), s.Party.Contains(mate)), Is.EqualTo((true, true, false, false)));
+        Assert.That(b.Log.Count(l => l.Contains("已战死")), Is.EqualTo(1));
+        Assert.That(b.Fighter(GameState.PlayerId).Panic, Is.EqualTo(Math.Min(Cfg.Panic.Range[1], p0 + Cfg.Panic.AllyDeathGain)).Within(1e-9));
+        Assert.That((s.Battle != null, s.Progress.Dead), Is.EqualTo((true, false)), "濒死主角仍在战");
+    }
+
+    /// <summary>大回合出血：濒死者每次出血触发判一次；失败按“出血”收束（队友战死、主角终局）。</summary>
+    [Test]
+    public void M4_RoundStartBleed_DyingRolls_DeathByBleed()
+    {
+        var s = PartyFight(4703, out var mate);
+        var m = s.Actors[mate];
+        m.Stats.Health = 0;
+        m.Body.BleedDamage = 0.4;
+        m.Body.BleedTriggers = 2;
+        Rolls(E, 0.0, 0.999);
+        Assert.That(RoundBleed(s), Is.True);
+        Assert.That(m.Dead, Is.False);
+        Assert.That(s.Battle!.Log[^1], Does.EndWith(GameEngine.ResistedDeathText(E.ActorDisplayName(s, mate))));
+        Assert.That(RoundBleed(s), Is.True);
+        Assert.That(m.Dead, Is.True);
+        Assert.That(s.Battle!.Log.Any(l => l.Contains("已战死（出血）")), Is.True);
+
+        var t = Fight(4704, "shambler");
+        t.Player.Stats.Health = 0.3;
+        t.Player.Body.BleedDamage = 0.4;
+        t.Player.Body.BleedTriggers = 3;
+        Rolls(E, 0.999);
+        Assert.That(RoundBleed(t), Is.True, "正常者出血归 0 → 濒死，仍在战");
+        Assert.That((t.Player.Stats.Health, t.Progress.Dead, E.TestDeathRolls!.Count), Is.EqualTo((0.0, false, 1)));
+        Assert.That(RoundBleed(t), Is.False);
+        Assert.That((t.Progress.Dead, t.Progress.Death!.Cause, t.Battle), Is.EqualTo((true, "出血", (BattleState?)null)));
+    }
+
+    /// <summary>敌人没有濒死：H 归 0 直接死亡、退出在场名单（R09 §7）。</summary>
+    [Test]
+    public void M4_EnemyAtZero_DiesDirectly()
+    {
+        var s = Fight(4705, "shambler", "shambler");
+        Ready(s);
+        var e = Enemy(s, 1);
+        e.Hp = 0.01;
+        Force(s, Below(0.001), AtLeast(0.999), Any(), Any());
+        Cmd(s, "basic_attack", 1);
+        Assert.That((e.Alive, s.Battle!.Alive.Contains(e)), Is.EqualTo((false, false)));
+        Assert.That(E.TestDeathRolls, Is.Null, "敌人不判致死");
     }
 }

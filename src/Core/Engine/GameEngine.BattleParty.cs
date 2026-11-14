@@ -139,7 +139,7 @@ namespace Survival.Core.Engine
         private bool PlayerDownAfterSplash(GameState s)
         {
             if (s.Battle == null || s.Progress.Dead) return s.Progress.Dead;
-            if (s.Actor(GameState.PlayerId).Stats.Health > 0) return false;
+            if (!s.Actor(GameState.PlayerId).Dead) return false;   // B47a1（R09 §2）：只收确死；健康 0 的濒死主角仍在战
             using (FocusOn(s, GameState.PlayerId)) BattleDeath(s, s.Progress.LastDamageCause ?? "喷溅");
             return true;
         }
@@ -153,7 +153,7 @@ namespace Survival.Core.Engine
         {
             var b = s.Battle;
             if (b == null || actorId == GameState.PlayerId || !s.Actors.TryGetValue(actorId, out var actor)) return;
-            if (!b.Allies.Contains(actorId) && actor.Stats.Health > 0) return;
+            if (!b.Allies.Contains(actorId) && !IsDead(s, actor)) return;
             var name = ActorDisplayName(s, actorId);
             var wasActing = ActingAlly(b) == actorId;
             int moved;

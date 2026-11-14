@@ -177,7 +177,8 @@ public class B9aPartyBattleTests : BattleTestBase
         Assert.That(E.Config.Panic.AllyDeathGain, Is.EqualTo(8));
         var p0 = b.Fighter(GameState.PlayerId).Panic;
         var pz = b.Fighter(Zhou).Panic;
-        s.Actors[Lin].Stats.Health = 0.01;
+        s.Actors[Lin].Stats.Health = 0;   // B47a1：已濒死，这一击致死判定失败才真正战死
+        FailDeathRolls();
         b.Allies = new List<string> { Lin, GameState.PlayerId, Zhou };
         var e = Enemy(s, 1);
         e.Slot = "1";
@@ -238,8 +239,9 @@ public class B9aPartyBattleTests : BattleTestBase
         var s = Party(9707, 2, "z_bloater");
         var b = s.Battle!;
         b.Allies = new List<string> { Lin, GameState.PlayerId };
-        s.Actors[Lin].Stats.Health = 0.01;
-        s.Actors[GameState.PlayerId].Stats.Health = 0.01;
+        s.Actors[Lin].Stats.Health = 0;   // B47a1：两人都已濒死，喷溅致死判定失败
+        s.Actors[GameState.PlayerId].Stats.Health = 0;
+        FailDeathRolls();
         TurnOf(s, GameState.PlayerId);
         b.PlayerAp = 6;
         var e = Enemy(s, 1);

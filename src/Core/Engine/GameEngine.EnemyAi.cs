@@ -878,8 +878,10 @@ namespace Survival.Core.Engine
                 TryCounter(s, b, e);
                 return;
             }
-            s.Stats.Add(StatId.Health, -dmg);
-            FxHit(FxAlly(s, MeId(s)), "hit", dmg, guarded, s.Stats.Health <= 0);
+            // B47a1（R09 §3.1）：统一受伤入口——正常者归 0 只入濒死，濒死者每次正伤判一次致死；状态句在本条伤害战报之后追加（Q688：只写战报）
+            var life = new List<string>();
+            var outcome = DamageActor(s, s.Player, dmg, life);
+            FxHit(FxAlly(s, MeId(s)), "hit", dmg, guarded, outcome == DamageOutcome.Died);
             var cause = $"被{EnemyName(e)}{verb}";
             if (me) s.Progress.LastDamageCause = cause;
             b.Panic = Math.Min(Config.Panic.Range[1], b.Panic + dmg * Config.Panic.DamageGainFactor);
@@ -887,8 +889,9 @@ namespace Survival.Core.Engine
             if (guarded) extra.Insert(0, $"格挡×{Fmt.T(b.PlayerGuardFactor)}");
             if (covered) extra.Insert(0, $"掩护×{Fmt.T(coverFactor)}");
             if (armorWear != "") extra.Add(armorWear);
-            if (s.Stats.Health <= 0)
+            if (outcome == DamageOutcome.Died)
             {
+                // Q689 待答复：不写“未能抵抗致死”句，只沿原死亡句；确死后不再给死者执行感染、控制、出血等后续反应
                 BattleLog(s, $"{EnemyName(e)}{verb}命中{tn}，健康−{Fmt.N(dmg)}。");
                 BattleDeath(s, cause);
                 return;
@@ -927,6 +930,7 @@ namespace Survival.Core.Engine
                 }
             }
             BattleLog(s, $"{EnemyName(e)}{verb}命中{tn}，健康−{Fmt.N(dmg)}（{(me ? "" : tn + "剩" + Fmt.N(Math.Max(0, s.Stats.Health)) + "，")}恐慌{Fmt.N(b.Panic)}）{(extra.Count > 0 ? "：" + string.Join("，", extra) : "")}。");
+            WriteLifeNotes(s, s.Player, life);
             TryCounter(s, b, e);
         }
 
@@ -969,10 +973,12 @@ namespace Survival.Core.Engine
                 {
                     var dmg = Math.Max(0, cfg.DeathSplash - Math.Max(0, PlayerArmor(s) - (PlayerArmorBroken(b) ? b.PlayerArmorBreak : 0)));
                     if (dmg <= 0) { BattleLog(s, $"{cfg.Name}死亡喷溅被{(id == GameState.PlayerId ? "" : Who(s) + "的")}护甲挡住。"); continue; }
-                    s.Stats.Add(StatId.Health, -dmg);
+                    var life = new List<string>();
+                    var outcome = DamageActor(s, s.Player, dmg, life);   // B47a1：统一受伤入口（濒死者喷溅也判致死）
                     if (id == GameState.PlayerId) s.Progress.LastDamageCause = $"{cfg.Name}死亡喷溅";
                     BattleLog(s, $"{cfg.Name}死亡喷溅：{Who(s)}健康−{Fmt.N(dmg)}（不感染）。");
-                    if (s.Stats.Health <= 0 && id != GameState.PlayerId) BattleDeath(s, $"{cfg.Name}死亡喷溅");   // 主角倒下由调用方在本次结算写完后终局
+                    WriteLifeNotes(s, s.Player, life);
+                    if (outcome == DamageOutcome.Died && id != GameState.PlayerId) BattleDeath(s, $"{cfg.Name}死亡喷溅");   // 主角确死由调用方在本次结算写完后终局
                 }
             }
         }

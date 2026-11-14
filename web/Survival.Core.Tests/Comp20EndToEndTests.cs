@@ -429,8 +429,9 @@ public class Comp20EndToEndTests : TestBase
         var db = new Comp20Driver(E, b);
         RunLogged(db, "COMP20 死亡：守卫战不撤", () =>
         {
-            E.DebugSetStats(b, 1, b.Stats.Satiety, b.Stats.Hydration, b.Stats.Energy, b.Stats.Wakefulness, b.Stats.Morale);
-            db.Shortcut("读守卫前存档，健康改为 1（开发入口）");
+            E.DebugSetStats(b, 0, b.Stats.Satiety, b.Stats.Hydration, b.Stats.Energy, b.Stats.Wakefulness, b.Stats.Morale);
+            FailDeathRolls();   // B47a1：已濒死，守卫第一次正伤致死判定失败
+            db.Shortcut("读守卫前存档，健康改为 0（濒死，开发入口）");
             var roster = b.Roster.Count(r => r.Present);
             db.Do(ActionRequest.Travel("d01_07"), required: true);
             Ok(E.EngageFixed(b), "接守卫战");

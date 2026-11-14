@@ -638,11 +638,14 @@ namespace Survival.Core.Engine
                 {
                     var body = s.Body;
                     if (body.BleedTriggers <= 0) continue;
-                    s.Stats.Add(StatId.Health, -body.BleedDamage);
+                    // B47a1（R09 §3.1）：每次出血触发是一个受伤事件，走统一入口；状态句接在流血战报之后
+                    var life = new List<string>();
+                    var outcome = DamageActor(s, s.Player, body.BleedDamage, life);
                     body.BleedTriggers--;
                     BattleLog(s, $"{Who(s)}流血，健康−{Fmt.N(body.BleedDamage)}（还剩{body.BleedTriggers}次）。");
+                    WriteLifeNotes(s, s.Player, life);
                     if (body.BleedTriggers == 0) body.BleedDamage = 0;
-                    if (s.Stats.Health <= 0) { BattleDeath(s, "出血"); if (s.Battle == null || s.Progress.Dead) return false; }
+                    if (outcome == DamageOutcome.Died) { BattleDeath(s, "出血"); if (s.Battle == null || s.Progress.Dead) return false; }
                 }
             foreach (var e in b.Alive.Where(e => e.BleedTriggers > 0).OrderBy(e => e.Pos).ToList())
             {
