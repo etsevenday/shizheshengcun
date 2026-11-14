@@ -121,6 +121,7 @@ namespace Survival.Core.Engine
         private bool EnemyApproachBoundary(GameState s, bool allowStart = true)
         {
             if (!ApproachLive(s)) return false;
+            PurgeSafePlaceEnemies(s);   // B48（R05 Q636）：运行中残留／异常测试状态在接敌边界先复核清理
             PruneCardTimers(s);
             DrawCardTimers(s);
             return allowStart && TryEnemyApproach(s);

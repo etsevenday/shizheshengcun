@@ -122,6 +122,7 @@ namespace Survival.Core.Engine
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             var why = CanStealthCard(s, cardKey, kind, leaderId, expectedRate);
+            if (why == SafeZoneNoEngageText) PurgeSafePlaceEnemies(s);   // B48（R05 Q636）：先清无效引用，再给安全区拒绝（不开工、不耗时）
             if (why != null) return ActionResult.Fail(why);
             var card = FindEnemyCard(s, cardKey, out _)!;
             var leader = SquadLeaderId(s);

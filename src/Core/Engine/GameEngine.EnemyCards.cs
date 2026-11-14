@@ -386,6 +386,7 @@ namespace Survival.Core.Engine
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (!Config.CombatEnabled || !Config.Encounters.ActiveContactEnabled) return "当前无法发起战斗。";
             if (s.Battle != null) return "当前正在战斗。";
+            if (SafePlaceContact(s, cardKey)) return SafeZoneNoEngageText;   // B48（R05 Q636）：过期卡视图／异常固定入口命中岗位安全地点
             if (s.Expedition?.IsExtracting == true) return "撤出途中无法开始这项行动。";
             if (s.Sub != null || (s.Main != null && s.Main.Status != ActionStatus.Paused)) return "当前行动还没结束。";
             if (s.Main != null) return LockedMainPaused(s) ? LockedPausedBusy : "行动暂停中，请先继续或退出行动。";   // B41c2（Q517）
@@ -409,6 +410,7 @@ namespace Survival.Core.Engine
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             var why = CanApproachCard(s, cardKey);
+            if (why == SafeZoneNoEngageText) PurgeSafePlaceEnemies(s);   // B48（R05 Q636）：先清无效引用，再给安全区拒绝（0 时间／AP／费用）
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
             var card = FindEnemyCard(s, cardKey, out _)!;

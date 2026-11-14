@@ -154,6 +154,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema50) From50To51(s, config, notes);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
+            PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
             NormalizeBattleLog(s);
             return notes;
         }
@@ -1488,6 +1489,17 @@ namespace Survival.Core.Save
             new Engine.GameEngine(config).AdoptEnemyCards(s);
         }
 
+        /// <summary>
+        /// B48（R05 Q636）：读档时清除岗位安全地点上残留的敌人实例与敌人卡（规则见 Engine.GameEngine.PurgeSafePlaceEnemies）；
+        /// 有实际清理时按地点写世界日志，无残留不做事，保存后再读不重复。
+        /// </summary>
+        public static void PurgeSafePlaceEnemies(GameState s, GameConfig config)
+        {
+            if (s.WorldEnemies.Count == 0 && (s.EnemyCards == null || s.EnemyCards.Groups.Count == 0)) return;
+            s.EnemyCards ??= new EnemyCardsState();
+            new Engine.GameEngine(config).PurgeSafePlaceEnemies(s);
+        }
+
         private static void NormalizeStationQueue(FacilityState fac)
         {
             foreach (var g in fac.StationBatches.GroupBy(b => b.StationId))
@@ -1508,6 +1520,7 @@ namespace Survival.Core.Save
             EnsureResourceStates(s, config);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);   // B41a：新版敌踪上线后的第一次读档采纳新版敌踪卡模型（已采纳不做事）
+            PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：当前版本读档同样清一次（无残留不做事，幂等）
             NormalizeBattleLog(s);
         }
 
