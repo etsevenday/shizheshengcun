@@ -254,7 +254,7 @@ public class B22kTests : TestBase
         Assert.That(Count(s, "salt"), Is.EqualTo(1));
         Assert.That(CookXp(s), Is.EqualTo(x0));
         AdvanceTo(s, t1 + 120);
-        Assert.That(E.IsSpoiled(s, First(s, "raw_meat", s.Ground)), Is.True, "退出后照常计时");
+        Assert.That(First(s, GameEngine.SpoiledMatterId, s.Ground).SpoiledFrom, Is.EqualTo("raw_meat"), "退出后照常计时（BM5b2：到期转为腐败物）");
     }
 
     /// <summary>

@@ -28,7 +28,7 @@ public class B41bMigrationTests : B41aTestBase
     [Test]
     public void Schema47_ConfigValuesFromR05()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("50"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("51"));
         Assert.That(Cfg.Encounters.ApproachMinutes, Is.EqualTo(new[] { 20, 25, 30, 35, 40 }), "R05 Q416 五档");
         Assert.That(Cfg.Encounters.CardRetreatGuardMinutes, Is.EqualTo(60), "R05 Q416 同卡撤退保护 60 世界分钟");
     }
@@ -45,7 +45,7 @@ public class B41bMigrationTests : B41aTestBase
         var rng = RngOf(s);
         var log = s.Log.Count;
         var t = SaveSerializer.Deserialize(AsSchema46(s), CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("50"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("51"));
         Assert.That(t.EnemyCards.Timers, Is.Empty);
         Assert.That(t.StashedWork, Is.Null, "旧档无暂存记录即按无暂存处理");
         Assert.That(t.Main!.Type, Is.EqualTo(ActionType.Clear));

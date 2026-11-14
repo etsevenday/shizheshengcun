@@ -255,7 +255,7 @@ namespace Survival.Core.Engine
             var max = Math.Min(child.Count, free);
             if (zone == ItemInstance.Carried && PlaceOf(s, pot) != ItemInstance.Carried)
             {
-                var room = Math.Max(0, Config.Carry.HardGrams - CarriedGrams(s)) / _items[child.ItemId].WeightGrams;
+                var room = Math.Max(0, Config.Carry.HardGrams - CarriedGrams(s)) / Math.Max(1, UnitGrams(child));
                 if (room <= 0) { reason = $"携带后将超过{Config.Carry.HardGrams / 1000}公斤"; return 0; }
                 max = Math.Min(max, room);
             }

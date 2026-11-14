@@ -244,8 +244,28 @@ namespace Survival.Core.Engine
         /// <summary>调试面板：在当前地点地面放一批常用物资，用于检查大量物资时的界面。</summary>
         public void DebugFillGround(GameState s)
         {
-            foreach (var it in Config.Items)
+            foreach (var it in Config.Items.Where(i => i.Id != SpoiledMatterId))   // BM5b2：腐败物只由真实到期转换产生
                 CreateItems(s, it.Id, it.IsStackable ? 3 : 1, s.Ground);
+        }
+
+        /// <summary>
+        /// BM5b2 开发：腐败物与自动配批测试物资——当前地面野果早批2份（minutes 分钟后到期）与晚批6份、草药2份与野狗尸体1具（minutes 分钟后到期），
+        /// 随身生肉1份（minutes 分钟后到期）。不推进时间；返回说明并写日志。
+        /// </summary>
+        public string DebugSpoilageKit(GameState s, int minutes = 10)
+        {
+            var here = s.Ground;
+            var due = s.GameMinute + minutes;
+            foreach (var i in CreateItems(s, "berry", 2, here)) i.ExpiresAt = due;
+            CreateItems(s, "berry", 6, here);
+            foreach (var i in CreateItems(s, "herb", 2, here)) i.ExpiresAt = due;
+            foreach (var i in CreateItems(s, "carcass_feral_dog", 1, here)) i.ExpiresAt = due;
+            foreach (var i in CreateItems(s, "raw_meat", 1, ItemInstance.Carried)) i.ExpiresAt = due;
+            Normalize(s, here);
+            Normalize(s, ItemInstance.Carried);
+            var text = $"开发：腐败测试物资——当前地面野果早批2份（{minutes}分钟后到期）与晚批6份、草药2份与野狗尸体1具（{minutes}分钟后到期），随身生肉1份（{minutes}分钟后到期）。";
+            Emit(s, GameEventKind.Info, text);
+            return text;
         }
     }
 }

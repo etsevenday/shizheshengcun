@@ -270,7 +270,7 @@ namespace Survival.Core.Engine
             {
                 var p = fac.Processes.First(x => x.ProcessId == pid);
                 var t = FindItem(s, p.TargetInstanceId);
-                if (t != null && IsSpoiled(s, t)) { StopCookWait(s, a, $"{ItemName(t.ItemId)}已腐败"); return true; }
+                if (t != null && IsSpoiled(s, t)) { StopCookWait(s, a, $"{ItemName(OriginItemId(t))}已腐败"); return true; }
             }
             if (!FireHot(s, loc))
             {

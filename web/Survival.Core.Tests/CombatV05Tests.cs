@@ -670,7 +670,9 @@ public class CombatV05Tests : BattleTestBase
         c2.ExpiresAt = t.GameMinute + 10;
         Run(t);
         Assert.That(Count(t, "raw_meat"), Is.EqualTo(0));
-        Assert.That(Count(t, "carcass_wolf", "camp"), Is.EqualTo(1));
+        // BM5b2（Q610）：腐败的尸体转为腐败物留地面，保留原每份克重
+        var rotten = First(t, GameEngine.SpoiledMatterId, "camp");
+        Assert.That((rotten.Count, rotten.SpoiledFrom, E.ItemGrams(t, rotten)), Is.EqualTo((1, "carcass_wolf", E.Item("carcass_wolf").WeightGrams)));
     }
 
     /// <summary>生肉→烤肉（火堆直烤）/水煮肉（锅内净水500毫升），锅白名单与2个食材位（v0.5 §14）。</summary>

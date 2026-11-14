@@ -24,6 +24,7 @@ namespace Survival.Core.Engine
             if (!r.InstanceId.HasValue) return "请选择要处理的尸体";
             var inst = FindItem(s, r.InstanceId.Value);
             if (inst == null) return "尸体已不在";
+            if (IsSpoiledMatter(inst)) return SpoiledMatterRejectText;   // BM5b2（Q610）
             var c = CarcassOf(inst.ItemId);
             if (c == null) return "这不是可处理的尸体";
             if (!(inst.IsCarried || inst.Owner == s.Ground)) return "只能处理随身或当前地面的尸体";

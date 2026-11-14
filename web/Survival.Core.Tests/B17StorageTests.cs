@@ -115,7 +115,7 @@ public class B17StorageTests : TestBase
         AdvanceTo(t, exp!.Value + 5);
         var spoiled = E.CabinetItems(t, "camp").Single();
         Assert.That(E.IsSpoiled(t, spoiled), Is.True);
-        Assert.That(spoiled.ExpiresAt, Is.EqualTo(exp));
+        Assert.That((spoiled.ItemId, spoiled.SpoiledFrom, spoiled.ExpiresAt), Is.EqualTo((GameEngine.SpoiledMatterId, "raw_meat", (int?)null)), "BM5b2：柜里原位转为腐败物，不再有期限");
         Ok(E.DoInstant(t, InstantRequest.TakeCabinet(spoiled.InstanceId, 1)));
         Assert.That(E.IsSpoiled(t, E.FindItem(t, spoiled.InstanceId)!), Is.True, "坏料取出不复活");
     }

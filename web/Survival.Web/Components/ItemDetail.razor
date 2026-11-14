@@ -149,7 +149,7 @@ else
                 <div class="@(label == "品质" ? "q-" + (inst.Quality ?? "white") : "") @(value.Length > 14 ? "wide" : "")"><span>@label</span><b>@value</b></div>
             }
             <div><span>合计重量</span><b>@Ui.Kg(list.Sum(i => e.ItemGrams(s, i)))公斤@(e.IsPot(inst) ? "（含锅内）" : "")</b></div>
-            @if (total > 1) { <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div> }
+            @if (total > 1) { <div><span>单件重量</span><b>@Ui.UnitKg(e, list)公斤</b></div> }
             @if (inst.MaxDurability.HasValue && inst.Durability.HasValue)
             {
                 <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(inst))</b></div>
@@ -226,7 +226,7 @@ else
                 {
                     <div class="lines">
                         @* 单件重量：只有一件时与合计相同，归明细；基础体力是招式消耗的推导规则 *@
-                        @if (total <= 1) { <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div> }
+                        @if (total <= 1) { <div><span>单件重量</span><b>@Ui.UnitKg(e, list)公斤</b></div> }
                         @if (attackWeapon != null) { <div><span>武器</span><b>@(attackWeapon.SkillId == "" ? "（无对应熟练度）" : e.SkillName(attackWeapon.SkillId))</b></div> }
                         @if (attackWeapon != null) { <div><span>基础体力</span><b>@Ui.T(attackWeapon.EnergyCost)/次（按熟练度折减）</b></div> }
                         @if (durRange is double[] range)

@@ -32,7 +32,7 @@ public class ConfigTests : TestBase
     {
         Assert.That(ConfigLoader.Validate(Cfg), Is.Empty);
         Assert.That(Cfg.CombatEnabled, Is.True, "用户 2026-10-26 拍板：直接开启，不做开关");
-        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26 + 1 + 70 + 61 + 1 + 2), "B22b 绿/蓝野外修补包（Q168）；v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料，加 v1.0 活性物质，加 B4 物理目录 70 件（A07/A12 physicalItems）与新装备 61 件（27 武器 + 34 防具饰品衣物），加 B7c 护拳绑带（Q64）");
+        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26 + 1 + 70 + 61 + 1 + 2 + 1), "BM5b2 腐败物（Q610）；B22b 绿/蓝野外修补包（Q168）；v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料，加 v1.0 活性物质，加 B4 物理目录 70 件（A07/A12 physicalItems）与新装备 61 件（27 武器 + 34 防具饰品衣物），加 B7c 护拳绑带（Q64）");
         // B11（R33，A08）：v3 地图 143 节点（world 62、city_building 14、dungeon 67）、180 边（172 双向、8 单向出口）
         Assert.That(Cfg.Locations, Has.Count.EqualTo(143));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(180));

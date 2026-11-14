@@ -32,7 +32,7 @@ public class B41aMigrationTests : B41aTestBase
     [Test]
     public void NewGame_ModelVersionIsV2()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("50"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("51"));
         Assert.That(E.NewGame(1).EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2), "新局直接是新版卡模型");
     }
 
@@ -47,7 +47,7 @@ public class B41aMigrationTests : B41aTestBase
         var log = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema45(s), CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("50"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("51"));
         Assert.That(t.EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2));
         Assert.That(t.Encounter, Is.Null, "旧待处理名单转成组卡后清掉");
         Assert.That(t.EnemyCards.Groups, Has.Count.EqualTo(1));

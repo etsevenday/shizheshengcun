@@ -42,7 +42,7 @@
             <div class="@(label == "品质" ? "q-" + (it.Quality ?? "white") : "") @(value.Length > 14 ? "wide" : "")"><span>@label</span><b>@value</b></div>
         }
         <div><span>合计重量</span><b>@Ui.Kg(e.ItemGrams(s, it))公斤@(e.IsPot(it) ? "（含锅内）" : "")</b></div>
-        @if (it.Count > 1) { <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div> }
+        @if (it.Count > 1) { <div><span>单件重量</span><b>@Ui.Kg(e.UnitGrams(it))公斤</b></div> }
         @if (it.MaxDurability.HasValue && it.Durability.HasValue)
         {
             <div><span>耐久</span><b class="@(it.Durability <= 0 ? "danger-text" : "")">@(it.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(it))</b></div>
@@ -76,7 +76,7 @@
             @if (!string.IsNullOrEmpty(descText)) { <p class="rail-text">@descText</p> }
             <div class="lines">
                 @if (e.Weapon(cfg.Id) is WeaponConfig { CanAttack: true } sw) { <div><span>武器</span><b>@(sw.SkillId == "" ? "（无对应熟练度）" : e.SkillName(sw.SkillId))</b></div> }
-                @if (it.Count <= 1) { <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div> }
+                @if (it.Count <= 1) { <div><span>单件重量</span><b>@Ui.Kg(e.UnitGrams(it))公斤</b></div> }
                 @foreach (var (label, value) in moreEquip)
                 {
                     <div class="wide"><span>@label</span><b>@value</b></div>

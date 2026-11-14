@@ -354,6 +354,8 @@ namespace Survival.Core.Engine
             AdvanceFacilities(s, snap);
             AdvanceStationBatches(s);   // B17：陶窑、固定净水台的被动批次（同一世界时钟，离开也继续）
             AdvanceDrying(s);   // B22c（Q170）：晾制架八位被动晾制（同一世界时钟，离开也继续）
+            // BM5b2（Q610）：本段受热保护／熟成与晾制失败都结算后，再把本段截止已到、未受保护的物品转为腐败物
+            ConvertDueSpoilage(s);
             if (!battle) TickCardTimers(s);   // B41b（R05 Q416）：同地同区非战斗段扣敌踪接近余量（巡游前，按本段在场的卡）
             TickWorldEnemies(s);
             return true;
@@ -484,9 +486,11 @@ namespace Survival.Core.Engine
 
         private void AbortSpoiled(GameState s, ActionState a)
         {
+            // BM5b2（Q610）：预留里到期的输入先静默转为腐败物（只这次真实腐败的部分），再按原规则返还当前地面
+            var turned = SpoilWorkInputs(s, a.ReservedItemIds.ToList());
             Release(s, a, s.Ground, bySource: false);
             if (a.IsSub) s.Sub = null; else s.Main = null;
-            Emit(s, GameEventKind.ActionAborted, $"{a.Label}中止：原料已腐败，预留物返还当前地面，未生成产物。");
+            Emit(s, GameEventKind.ActionAborted, $"{a.Label}中止：原料已腐败，预留物返还当前地面，未生成产物。" + (turned ? SpoiledWorkClause : ""));
         }
 
         /// <summary>提交行动结果。返回 false 表示在完成时刻因原料腐败而中止。</summary>
@@ -823,6 +827,8 @@ namespace Survival.Core.Engine
         /// <summary>引导与七日检查标记：达成即锁存（实施方案 9B-13）。</summary>
         public void UpdateFlags(GameState s)
         {
+            // BM5b2（Q610）：每个变更边界补做到期转换（不走世界段的时间跳跃、取出解除保护后等）；无到期物时不做事
+            ConvertDueSpoilage(s);
             var f = s.Progress.Flags;
             if (s.Locations.TryGetValue("field", out var field) && field.Progress >= 50) f.Add("field50");
             if ((s.Locations.TryGetValue("stream", out var st) && st.Visited) || (s.Locations.TryGetValue("woods", out var wd) && wd.Visited))

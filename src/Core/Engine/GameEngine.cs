@@ -625,6 +625,7 @@ namespace Survival.Core.Engine
                         }
                     }
                     var cfg = _items[inst.ItemId];
+                    if (IsSpoiledMatter(inst)) return SpoiledMatterRejectText;   // BM5b2（Q610）：腐败物不能食用、治疗
                     if (inst.ReservedBy != null) return "该物品已被预留";
                     // B16 分量水壶：壶内直接喝 250 毫升（5 分钟，W+15；脏水同样腹泻）
                     if (cfg.Canteen != null)
@@ -1210,7 +1211,7 @@ namespace Survival.Core.Engine
         /// </summary>
         public int MaxPickupBatch(GameState s, ItemInstance head, int batch)
         {
-            var unit = head.Count > 0 ? ItemGrams(s, head) / head.Count : _items[head.ItemId].WeightGrams;
+            var unit = head.Count > 0 ? ItemGrams(s, head) / head.Count : UnitGrams(head);
             var room = Math.Max(0, Config.Carry.HardGrams - CarriedGrams(s));
             var byWeight = Math.Min(batch, unit > 0 ? room / unit : batch);
             return Math.Min(byWeight, MaxIntoCarriedByCards(s, head, batch));

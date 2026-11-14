@@ -41,6 +41,10 @@ public static class Ui
         return k < 0 ? null : k + 1;
     }
 
+    /// <summary>BM5b2（Q610）：一组实例的单件重量（腐败物按实例保留原每份克重；同组克重不同的逐一列出，用“／”分隔）。</summary>
+    public static string UnitKg(GameEngine e, IEnumerable<ItemInstance> list) =>
+        string.Join("／", list.Select(e.UnitGrams).Distinct().OrderBy(g => g).Select(g => Kg(g)));
+
     /// <summary>“70小时”“40分钟”：剩余保质的时长写法（不带“后腐败”）。</summary>
     public static string FreshLeft(int minutesLeft) => minutesLeft < 60 ? $"{Math.Max(0, minutesLeft)}分钟" : $"{minutesLeft / 60}小时";
 

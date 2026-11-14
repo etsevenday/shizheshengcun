@@ -86,6 +86,7 @@ namespace Survival.Core.Save
         public const string Schema47 = "47";
         public const string Schema48 = "48";
         public const string Schema49 = "49";
+        public const string Schema50 = "50";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -150,6 +151,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema47) From47To48(s);
             if (s.SchemaVersion == Schema48) From48To49(s);
             if (s.SchemaVersion == Schema49) From49To50(s);
+            if (s.SchemaVersion == Schema50) From50To51(s, config, notes);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             NormalizeBattleLog(s);
@@ -1459,7 +1461,18 @@ namespace Survival.Core.Save
         /// </summary>
         private static void From49To50(GameState s)
         {
+            s.SchemaVersion = Schema50;
+        }
+
+        /// <summary>
+        /// 50 → 51（BM5b2，S06 Q610「正式文字与旧档」）：保留可信烹饪保护与肉干暂停保质，其余截止已到的物品一次原位转为腐败物
+        /// （份数、每份克重、原单堆上限、归属、来源与奖励身份保留；随身满的按落地规则落到持有者当前区地面），不逐物补日志，
+        /// 有转换时日志写一次「已将存档中过期的物品转换为腐败物。」。版本号先改再转换，重读同一存档不会再转一次。
+        /// </summary>
+        private static void From50To51(GameState s, GameConfig config, List<string> notes)
+        {
             s.SchemaVersion = GameState.CurrentSchema;
+            if (new Engine.GameEngine(config).MigrateSpoilage(s)) notes.Add(Engine.GameEngine.SpoiledMigrationNote);
         }
 
         /// <summary>

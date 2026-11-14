@@ -327,14 +327,14 @@ namespace Survival.Core.Engine
         /// <summary>一组物品放进主角随身后的根卡数（口径同 RootCardsAfterOf）。</summary>
         private int RootCardsAfterAdding(GameState s, IEnumerable<ItemInstance> adds)
         {
-            var stacks = new Dictionary<(string, int?, string?), int>();
+            var stacks = new Dictionary<(string, int?, string?), (int n, int cap)>();
             var singles = 0;
             foreach (var i in s.Items.Where(i => i.Owner == ItemInstance.Carried).Concat(adds.Where(a => a.Owner != ItemInstance.Carried)))
             {
-                if (StacksAsBatch(i)) { var key = StackKey(i); stacks[key] = (stacks.TryGetValue(key, out var c) ? c : 0) + i.Count; }
+                if (StacksAsBatch(i)) AddStack(stacks, i, i.Count);
                 else singles++;
             }
-            return singles + stacks.Sum(kv => (kv.Value + _items[kv.Key.Item1].StackMax - 1) / Math.Max(1, _items[kv.Key.Item1].StackMax));
+            return singles + CardsOfStacks(stacks);
         }
 
         /// <summary>把这一位的物品整位移到随身（验五卡与 30 公斤）或当地地面（不限）现在不能做的原因。</summary>
@@ -434,7 +434,7 @@ namespace Survival.Core.Engine
             var items = DryingContents(s, place, slot);
             var spoiled = b.Status == DryingSlot.Spoiled;
             var what = spoiled
-                ? string.Join("、", items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}{(IsSpoiled(s, i) ? "（已腐败）" : "")}"))
+                ? string.Join("、", items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}{(IsSpoiled(s, i) && !IsSpoiledMatter(i) ? "（已腐败）" : "")}"))
                 : string.Join("、", items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}（{ExpiryNote(s, i)}）"));
             fac.DryingSlots.Remove(b);
             MoveDryingOut(s, items, toCarried ? ItemInstance.Carried : place);
@@ -464,9 +464,13 @@ namespace Survival.Core.Engine
                     {
                         b.Status = DryingSlot.Spoiled;
                         b.EndMinute = s.GameMinute;
+                        // BM5b2（Q610）：腐败的原料就地转为腐败物（静默，原料仍留这一位待清理），结果句接停工分句
+                        var badName = bad != null ? ItemName(OriginItemId(bad)) : null;
+                        var turned = bad != null && SpoilWorkInputs(s, items.Select(i => i.InstanceId).ToList());
                         Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架工位{b.Slot + 1}："
-                                                    + (bad != null ? $"{ItemName(bad.ItemId)}已腐败" : "原料不全")
-                                                    + $"，{rc.Name}停止，没有成品、不给经验；原料留在这一位，回到当地清理。");
+                                                    + (bad != null ? $"{badName}已腐败" : "原料不全")
+                                                    + $"，{rc.Name}停止，没有成品、不给经验；原料留在这一位，回到当地清理。"
+                                                    + (turned ? SpoiledWorkClause : ""));
                         continue;
                     }
                     b.DoneMinutes += Tick;

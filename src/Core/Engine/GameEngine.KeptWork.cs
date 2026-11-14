@@ -110,7 +110,7 @@ namespace Survival.Core.Engine
                 case ActionType.Butcher:
                 {
                     var carcass = a.ReservedItemIds.Select(id => FindItem(s, id)).FirstOrDefault(i => i != null);
-                    if (carcass == null || CarcassOf(carcass.ItemId) is not CarcassConfig c) return ResumeTargetGone;
+                    if (carcass == null || CarcassOf(OriginItemId(carcass)) is not CarcassConfig c) return ResumeTargetGone;
                     if (ReservationChanged(s, a)) return ResumeReserveChanged;
                     if (IsSpoiled(s, carcass)) return "尸体已腐败，不能处理";
                     var tool = a.ToolInstanceId is int tid ? FindItem(s, tid) : null;

@@ -65,7 +65,7 @@ namespace Survival.Core.State
         /// GameState.ExploreCheckPending、探索遭遇战标记 BattleState.ExploreEncounter（R05 Q605、Q620—Q624，开发记录 BM5c；
         /// 49→50 不补检查段：旧在办探索缺段即旧开工规则，在实际完成边界检查一次）。
         /// </summary>
-        public const string CurrentSchema = "50";
+        public const string CurrentSchema = "51";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -895,6 +895,15 @@ namespace Survival.Core.State
         /// 只在晾制位内出现：取消/退料时新截止＝退料世界分钟 C＋R 并清空；完成时原料核销。原无截止的（盐）不记。普通物品为 null。
         /// </summary>
         public int? ShelfPausedMinutes { get; set; }
+
+        /// <summary>
+        /// 腐败物来源（Q610，BM5b2，存档 51）：本实例是「腐败物」时记原物品 ID（只供日志、配方完整性与尸体判定使用，不进合堆键）；普通物品为 null。
+        /// </summary>
+        public string? SpoiledFrom { get; set; }
+        /// <summary>腐败物每件克重（Q610 精确克重守恒：沿用原物品单件克重）；普通物品为 null。</summary>
+        public int? SpoiledUnitGrams { get; set; }
+        /// <summary>腐败物堆叠上限（Q610：沿用原物品堆叠上限，原物不可堆叠的仍为 1）；普通物品为 null。</summary>
+        public int? SpoiledStackMax { get; set; }
 
         public bool IsCarried => Owner == Carried;
         /// <summary>

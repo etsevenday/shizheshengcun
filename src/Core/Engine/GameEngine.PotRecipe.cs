@@ -187,11 +187,11 @@ namespace Survival.Core.Engine
             var want = pc.FoodInputs.SelectMany(kv => Enumerable.Repeat(kv.Key, kv.Value)).OrderBy(x => x).ToList();
             var have = p.InputInstanceIds.Select(id => FindItem(s, id)).ToList();
             if (have.Any(i => i == null || i.Owner != owner || i.Count != 1)) return false;
-            if (!have.Select(i => i!.ItemId).OrderBy(x => x).SequenceEqual(want)) return false;
+            if (!have.Select(i => OriginItemId(i!)).OrderBy(x => x).SequenceEqual(want)) return false;   // BM5b2：腐败的主食材仍按原物占着这份食谱（原“原料已腐败，不再加工”）
             var auxWant = pc.AuxInputs.SelectMany(kv => Enumerable.Repeat(kv.Key, kv.Value)).OrderBy(x => x).ToList();
             var auxHave = (p.AuxInstanceIds ?? new List<int>()).Select(id => FindItem(s, id)).ToList();
             if (auxHave.Any(i => i == null || i.Owner != owner || i.Count != 1)) return false;
-            return auxHave.Select(i => i!.ItemId).OrderBy(x => x).SequenceEqual(auxWant);
+            return auxHave.Select(i => OriginItemId(i!)).OrderBy(x => x).SequenceEqual(auxWant);
         }
 
         /// <summary>作废一个锅食谱进程：辅料退回该火堆地面（主食材仍在锅里，由玩家取出）；进度清零、保护解除。返回退回说明。</summary>

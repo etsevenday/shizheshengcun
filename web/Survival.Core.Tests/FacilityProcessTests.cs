@@ -469,7 +469,7 @@ public class FacilityProcessTests : TestBase
         Assert.That(E.IsSpoiled(u, r0), Is.True, "未受热的原料照常腐败");
         LightFire(u);
         WaitMinutes(u, 40);
-        Assert.That(r0.ItemId, Is.EqualTo("raw_root"), "腐败后不再受热恢复");
+        Assert.That((r0.ItemId, r0.SpoiledFrom), Is.EqualTo((GameEngine.SpoiledMatterId, "raw_root")), "腐败后不再受热恢复（BM5b2：原位转为腐败物）");
         Assert.That(r0.Owner, Is.EqualTo(Fire), "留原位显示腐败");
 
         var t = New();

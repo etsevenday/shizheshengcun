@@ -337,14 +337,16 @@
             var why = moveBusy ? "行动进行中，暂不能整理物品" : e.TakeOutBlocked(s, it, zone);
             var c = e.TakeOutConsequenceOf(s, it);
             var verb = e.IsPot(it) ? (zone == ItemInstance.Carried ? "拾取" : "取下") : "取出";
+            var takeLabel = $"{verb}{m.Name}{(e.IsPot(it) ? "（含内容）" : "")}到{(zone == ItemInstance.Carried ? "随身" : "地面")}";
             <TargetPicker Value="@zone" Here="@s.Ground" OnPick="v => target = v" />
             <div class="tbar-row">
-                <button type="button" class="tbar-go" data-enter disabled="@(why != null)" title="@why" @onclick="() => Take(it, zone)">@(verb)@(m.Name)@(e.IsPot(it) ? "（含内容）" : "")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(!HideEnterCap && why == null)" /></button>
+                <button type="button" class="tbar-go" data-enter disabled="@(why != null)" title="@why" @onclick="() => Take(it, zone)">@takeLabel<EnterCap On="@(!HideEnterCap && why == null)" /></button>
             </div>
             @if (why != null) { <div class="ca-note bad">@why</div> }
             else
             {
-                <div class="ca-note @(c.Resets.Count > 0 ? "warn" : "")">@c.Text@(zone == ItemInstance.Carried ? $" · 拾取后随身{Ui.Kg(c.CarriedGramsAfter)}公斤" : "") · 不耗时</div>
+                @* BM5b2（Q641）：取出风险原句后紧接这个取出按钮已有的真实去向文案 *@
+                <div class="ca-note @(c.Resets.Count > 0 || c.Spoils.Count > 0 ? "warn" : "")">@c.Text@(c.Spoils.Count > 0 ? takeLabel : "")@(zone == ItemInstance.Carried ? $" · 拾取后随身{Ui.Kg(c.CarriedGramsAfter)}公斤" : "") · 不耗时</div>
             }
         }
         else if (m.Mode == Mode.Decant)

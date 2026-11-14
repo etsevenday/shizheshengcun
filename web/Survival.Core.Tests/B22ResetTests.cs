@@ -112,7 +112,7 @@ public class B22ResetTests : BattleTestBase
         s.GameMinute = Eligible(s);
         var pv = E.ResetPreview(s, "d01");
         Assert.That(pv.Reason, Is.Null);
-        Assert.That(pv.Leftovers, Has.Some.Contains("肉干×2").And.Some.Contains("已腐败"));
+        Assert.That(pv.Leftovers, Has.Some.Contains("腐败物×2").And.Some.Contains("已腐败"), "BM5b2：过期肉干已转为腐败物");
         Assert.That(pv.Leftovers, Has.Some.Contains("布料×3（捐献仓地面）"));
         Assert.That(pv.Leftovers, Has.Some.Contains("的遗物"));
         Assert.That(pv.Leftovers, Has.Some.Contains("布料×3（旧路线档案地面）").Or.Some.Contains("缝线×2"), "首通补给留在核心房地面也算");

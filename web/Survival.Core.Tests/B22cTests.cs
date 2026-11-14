@@ -181,10 +181,11 @@ public class B22cTests : TestBase
         Assert.That(CookXp(s), Is.EqualTo(x0), "腐败 0 经验");
         Assert.That(E.CancelDrying(s, b.Slot, false).Reason, Does.Contain("只能清理"));
         Ok(E.TakeDrying(s, b.Slot, false));
-        Assert.That(E.IsSpoiled(s, First(s, "berry", s.Ground)), Is.True, "腐败原料按原腐败规则，不回活");
+        var rotten = First(s, GameEngine.SpoiledMatterId, s.Ground);
+        Assert.That((E.IsSpoiled(s, rotten), rotten.SpoiledFrom), Is.EqualTo((true, "berry")), "腐败原料按原腐败规则，不回活（BM5b2：已是腐败物）");
         Assert.That(s.Locations["camp"].Facility.DryingSlots, Is.Empty);
-        // 已腐败的原料不能投
-        Assert.That(E.StartDrying(s, "dry_berries").Reason, Does.Contain("已腐败2份不能用"));
+        // 已腐败的原料不能投（BM5b2：腐败物是另一物品，野果堆只计新鲜实物）
+        Assert.That(E.StartDrying(s, "dry_berries").Reason, Does.Contain("缺少野果").And.Not.Contain("已腐败"));
     }
 
     /// <summary>门槛与来源：烹饪等级不够、预留材料、队友包与异地不自动取；离开营地仍推进、不能远程操作。</summary>

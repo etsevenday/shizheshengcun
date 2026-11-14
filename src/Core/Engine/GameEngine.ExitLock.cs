@@ -190,7 +190,7 @@ namespace Survival.Core.Engine
                 case ActionType.Butcher:
                 {
                     var carcass = a.ReservedItemIds.Select(id => FindItem(s, id)).FirstOrDefault(i => i != null);
-                    if (carcass == null || CarcassOf(carcass.ItemId) is not CarcassConfig c) return LockedResumeVerdict.Perm(LockedTargetGone);
+                    if (carcass == null || CarcassOf(OriginItemId(carcass)) is not CarcassConfig c) return LockedResumeVerdict.Perm(LockedTargetGone);
                     if (ReservationChanged(s, a)) return LockedResumeVerdict.Perm(LockedReserveChanged);
                     if (IsSpoiled(s, carcass)) return LockedResumeVerdict.Perm("尸体已腐败，不能处理");
                     var missing = $"缺少本次处理所需的有效{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}，无法继续。";
@@ -342,6 +342,8 @@ namespace Survival.Core.Engine
             var groundName = ZoneName(s, s.Ground);
             var hadMaterials = a.ReservedItemIds.Count > 0;
             var hadStock = a.Type == ActionType.Gather && a.ReservedResourceUnits > 0;
+            // BM5b2（Q610）：预留里到期的输入先静默转为腐败物，再按原规则释放；结果句在原因后接停工分句
+            var turned = hadMaterials && SpoilWorkInputs(s, a.ReservedItemIds.ToList());
             var staged = _stagedCancelNote = new List<string>();
             try { Release(s, a, s.Ground); }
             finally { _stagedCancelNote = null; }
@@ -350,6 +352,7 @@ namespace Survival.Core.Engine
 
             var text = $"{a.Label}已中止。原因：{reason}";
             if (!(text.EndsWith("。") || text.EndsWith("！") || text.EndsWith("？"))) text += "。";
+            if (turned) text += SpoiledWorkClause;
             if (hadMaterials)
             {
                 if (kept) text += KeptReturnClause(s, a, src, true);

@@ -3263,6 +3263,20 @@
       "requiresCooking": false,
       "use": null,
       "desc": "求生饰品·T3；非战斗食用正N收益×1.05；不增格、不保鲜"
+    },
+    {
+      "id": "spoiled_matter",
+      "name": "腐败物",
+      "weightGrams": 1,
+      "stackMax": 2,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "已腐败的物品，不能食用、治疗或加工。"
     }
   ],
   "locations": [

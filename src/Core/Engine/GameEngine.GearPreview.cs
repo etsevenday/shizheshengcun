@@ -353,7 +353,7 @@ namespace Survival.Core.Engine
             if (countOk)
             {
                 info.HasOutcome = true;
-                var grams = count >= it.Count ? ItemGrams(s, it) : _items[it.ItemId].WeightGrams * count;
+                var grams = count >= it.Count ? ItemGrams(s, it) : UnitGrams(it) * count;
                 info.FromCards = RootCardsAfterOf(s, fromId, null, 0, it, count);
                 info.FromGrams = CarriedGramsOf(s, fromId) - grams;
                 if (toId != null)

@@ -103,7 +103,7 @@ public class V11CookProtectTests : TestBase
         stone.Count = Cfg.Carry.HardGrams / E.Item("stone").WeightGrams;
         var cons = E.TakeOutConsequenceOf(s, root);
         Assert.That(cons.Spoils, Has.Count.EqualTo(1), "提前写明取出即腐败");
-        Assert.That(cons.Text, Does.Contain("取出即解除烹饪保护并立即腐败"));
+        Assert.That(cons.Text, Does.Contain("生块根×1已过原保质期。取出后解除烹饪保护，已过期的食材将变为腐败物。"), "BM5b2（Q641）：取出风险原句");
         var fail = E.DoInstant(s, InstantRequest.TakeOut(root.InstanceId, ItemInstance.Carried));
         Assert.That(fail.Ok, Is.False, "超重取出失败");
         Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.True, "失败取出不先解除保护");
@@ -113,7 +113,7 @@ public class V11CookProtectTests : TestBase
         Assert.That(E.DoInstant(s, InstantRequest.TakeOut(root.InstanceId, "camp")).Ok, Is.True);
         Assert.That(E.ProcessOf(s, root), Is.Null);
         Assert.That(E.IsSpoiled(s, root), Is.True, "取出后按原 expiresAt 立即腐败");
-        Assert.That(s.Log.Last().Text, Does.Contain("解除烹饪保护"));
+        Assert.That(s.Log.Last().Text, Does.EndWith("，相关加工进度清零。生块根×1已腐败，变为腐败物×1。").And.Not.Contain("解除烹饪保护"), "BM5b2（Q641）：主句后接一次原位腐败句，删旧尾句");
         var back = E.DoInstant(s, InstantRequest.PutFoodInPot(root.InstanceId, pot.InstanceId, 1));
         Assert.That(back.Ok, Is.False, "已变质不能重新放回烹饪");
 
@@ -199,7 +199,8 @@ public class V11CookProtectTests : TestBase
         Wait(t, 5);
         Assert.That(E.CanStart(t, ActionRequest.UseInstance(m2.InstanceId)), Is.Null);
         Assert.That(E.DoInstant(t, InstantRequest.TakeOut(m2.InstanceId, "camp")).Ok, Is.True);
-        Assert.That(E.CanStart(t, ActionRequest.UseInstance(m2.InstanceId)), Is.EqualTo("已腐败，不能食用"), "取出先解除保护再判腐败");
+        Assert.That(E.CanStart(t, ActionRequest.UseInstance(m2.InstanceId)), Is.EqualTo("腐败物不能用于此操作。"), "取出先解除保护再判腐败（BM5b2：同事务转为腐败物）");
+        Assert.That(m2.ItemId, Is.EqualTo(GameEngine.SpoiledMatterId));
     }
 
     /// <summary>S11-A15/R06-A06：复煮在原期限前、后完成都从完成起 1440 分钟；已变质不可开工；水煮肉再存放不加工不刷新。</summary>

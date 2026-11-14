@@ -203,7 +203,7 @@ namespace Survival.Core.Engine
             var after = RootCardsAfterOf(s, toId, it, count, null, 0);
             if (!RootCardsAllowOf(s, toId, after))
                 return $"{ActorDisplayName(s, toId)}随身卡位不够（交接后{after}/{MaxRootCards}张）";
-            var grams = count >= it.Count ? ItemGrams(s, it) : _items[it.ItemId].WeightGrams * count;
+            var grams = count >= it.Count ? ItemGrams(s, it) : UnitGrams(it) * count;
             var total = CarriedGramsOf(s, toId) + grams;
             var hard = Config.Carry.HardGrams;
             if (total > hard) return $"{ActorDisplayName(s, toId)}会携带{Fmt.N(total / 1000.0)}公斤，超过{hard / 1000}公斤";
@@ -237,7 +237,7 @@ namespace Survival.Core.Engine
         /// <summary>交接后双方的随身卡数与总重（预览；不改状态）。</summary>
         public (int FromCards, int ToCards, int FromGrams, int ToGrams) GiveOutcome(GameState s, string fromId, string toId, ItemInstance it, int count)
         {
-            var grams = count >= it.Count ? ItemGrams(s, it) : _items[it.ItemId].WeightGrams * count;
+            var grams = count >= it.Count ? ItemGrams(s, it) : UnitGrams(it) * count;
             return (RootCardsAfterOf(s, fromId, null, 0, it, count), RootCardsAfterOf(s, toId, it, count, null, 0),
                 CarriedGramsOf(s, fromId) - grams, CarriedGramsOf(s, toId) + grams);
         }

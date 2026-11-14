@@ -19,7 +19,7 @@ public class V11ModelTests : TestBase
         // BM7a（S14 Q629、N02 附录与逐字稿 Q629—Q636 表）：首战 guide 附注整句换新稿（原 N01 §3.1／N02 B38 句被取代）
         Assert.That(note, Is.EqualTo(BM7aTeachingTextTests.TutorialArriveNote), "S14 Q629 首战操作附注新句");
         Assert.That(note, Does.Not.Contain("执行”"), "不再要求另点“执行”");
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("50"), "BM5c 探索唯一随机检查段（B41c2 为 49、B41c 为 48、B41b 为 47、B41a 为 46、B32e 为 45、B27c 为 44、B27 为 43、B26a 为 42、B24 为 41、B23 为 40、B22k 为 39、B22c 为 38、B22b 为 37、B22h 为 36、B22g 为 35、B22 为 34、B21 为 33、B20 为 32、B19 为 31、B18 为 30、B17 为 29、B16 为 28、B15 为 27、B14 为 26、B13d 为 25、B13c 为 24、B13b 为 23、B13 为 22、B12 为 21、B11 为 20、B10a 为 19、B8c 为 18、B8b 为 17、B8a 为 16、B8 为 15、B7d 为 14、B7b 为 13、B6 为 12）");
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("51"), "BM5b2 腐败物（BM5c 探索唯一随机检查段为 50、B41c2 为 49、B41c 为 48、B41b 为 47、B41a 为 46、B32e 为 45、B27c 为 44、B27 为 43、B26a 为 42、B24 为 41、B23 为 40、B22k 为 39、B22c 为 38、B22b 为 37、B22h 为 36、B22g 为 35、B22 为 34、B21 为 33、B20 为 32、B19 为 31、B18 为 30、B17 为 29、B16 为 28、B15 为 27、B14 为 26、B13d 为 25、B13c 为 24、B13b 为 23、B13 为 22、B12 为 21、B11 为 20、B10a 为 19、B8c 为 18、B8b 为 17、B8a 为 16、B8 为 15、B7d 为 14、B7b 为 13、B6 为 12）");
     }
 
     [Test]

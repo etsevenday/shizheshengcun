@@ -16,7 +16,7 @@ namespace Survival.Core.Engine
         /// 取出（进程移除）即按原 expiresAt 立即判断。保护不改写 ExpiresAt。
         /// </summary>
         public bool IsSpoiled(GameState s, ItemInstance i) =>
-            i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute && !IsHeatProtected(s, i);
+            IsSpoiledMatter(i) || i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute && !IsHeatProtected(s, i);
 
         /// <summary>该物品正受本次烹饪加工保护（只可能在火堆加工位或火堆里的锅中）。</summary>
         public bool IsHeatProtected(GameState s, ItemInstance i) =>
@@ -54,7 +54,7 @@ namespace Survival.Core.Engine
         /// <summary>一件物品连同全部后代（锅里的水与食材）的克重，每件只计一次。</summary>
         public int ItemGrams(GameState s, ItemInstance i)
         {
-            var g = _items[i.ItemId].WeightGrams * i.Count;
+            var g = UnitGrams(i) * i.Count;   // BM5b2（Q610）：腐败物沿原物每份精确克重
             if (IsPot(i)) g += PotContents(s, i.InstanceId).Sum(c => ItemGrams(s, c));
             // B16 分量水壶：壶内水按 1 克/毫升计入，满壶 2.40 公斤（S10 X4“所有后代与水重量计一次”）
             if (i.LiquidMl > 0 && _items[i.ItemId].Canteen is CanteenConfig cc) g += (int)Math.Round(i.LiquidMl * cc.GramsPerMl);
@@ -102,6 +102,8 @@ namespace Survival.Core.Engine
             var tag = i.Appraisal == null ? i.Source?.GrantEventId : (i.Source?.GrantEventId ?? "") + "|apr:" + i.Appraisal.Result;
             // B22：地牢奖励来源（封存白名单）不与同名外带物合堆；没有来源时与原来完全相同
             if (i.RewardOrigin != null) tag = (tag ?? "") + "|dr:" + i.RewardOrigin;
+            // BM5b2（Q610）：腐败物合堆须同每份克重与继承的原单堆上限
+            if (i.SpoiledUnitGrams.HasValue) tag = (tag ?? "") + $"|sp:{i.SpoiledUnitGrams.Value}:{i.SpoiledStackMax ?? 1}";
             // B22b（Q168）：用过的修补包单独成堆（堆叠上限 1），满包仍按原键合堆
             return i.IsUsedFieldPatch ? (tag ?? "") + "|pu:" + i.InstanceId : tag;
         }
@@ -114,6 +116,7 @@ namespace Survival.Core.Engine
             $"{(i.ExpiresAt.HasValue ? i.ExpiresAt.Value.ToString() : "-")}|{i.Source?.GrantEventId ?? ""}|{(i.ReservedBy != null ? "r" : "")}"
             + (i.Appraisal != null ? "|apr:" + i.Appraisal.Result : "")   // B18：鉴定状态进真实批次键（S06 X4、R07 X3.4）
             + (i.RewardOrigin != null ? "|dr:" + i.RewardOrigin : "")   // B22：地牢奖励来源（R03 D7.1）
+            + (i.SpoiledUnitGrams.HasValue ? $"|sp:{i.SpoiledUnitGrams.Value}:{i.SpoiledStackMax ?? 1}" : "")   // BM5b2（Q610）：腐败物按每份克重与原单堆上限分批
             + (i.IsUsedFieldPatch ? "|pu:" + i.InstanceId : "");   // B22b（Q168）：用过的修补包各自一批
 
         /// <summary>
@@ -165,25 +168,36 @@ namespace Survival.Core.Engine
         public int RootCardsAfterOf(GameState s, string actorId, ItemInstance? add, int addCount, ItemInstance? remove, int removeCount)
         {
             var owner = ItemInstance.CarriedOwner(actorId);
-            var stacks = new Dictionary<(string, int?, string?), int>();
+            var stacks = new Dictionary<(string, int?, string?), (int n, int cap)>();
             var singles = 0;
             foreach (var i in s.Items.Where(i => i.Owner == owner))
             {
                 var n = i.Count;
                 if (remove != null && i.InstanceId == remove.InstanceId) n -= Math.Min(n, removeCount);
                 if (n <= 0) continue;
-                if (StacksAsBatch(i)) { var k = StackKey(i); stacks[k] = (stacks.TryGetValue(k, out var c) ? c : 0) + n; }
+                if (StacksAsBatch(i)) AddStack(stacks, i, n);
                 else singles++;
             }
             if (add != null && addCount > 0 && add.Owner != owner)
             {
-                if (StacksAsBatch(add)) { var k = StackKey(add); stacks[k] = (stacks.TryGetValue(k, out var c) ? c : 0) + addCount; }
+                if (StacksAsBatch(add)) AddStack(stacks, add, addCount);
                 else singles++;
             }
-            return singles + stacks.Sum(kv => (kv.Value + _items[kv.Key.Item1].StackMax - 1) / Math.Max(1, _items[kv.Key.Item1].StackMax));
+            return singles + CardsOfStacks(stacks);
         }
 
-        private bool StacksAsBatch(ItemInstance i) => _items[i.ItemId].IsStackable && !IsPot(i);
+        /// <summary>根卡计数用：按合堆键累加份数，并记该键的单堆上限（腐败物为实例继承的原上限，BM5b2 Q610）。</summary>
+        private void AddStack(Dictionary<(string, int?, string?), (int n, int cap)> stacks, ItemInstance i, int n)
+        {
+            var k = StackKey(i);
+            var had = stacks.TryGetValue(k, out var c) ? c.n : 0;
+            stacks[k] = (had + n, StackMaxOf(i));
+        }
+
+        private static int CardsOfStacks(Dictionary<(string, int?, string?), (int n, int cap)> stacks) =>
+            stacks.Values.Sum(v => (v.n + Math.Max(1, v.cap) - 1) / Math.Max(1, v.cap));
+
+        private bool StacksAsBatch(ItemInstance i) => IsStackableInst(i) && !IsPot(i);
 
         /// <summary>这次进入随身后根卡数是否允许：不超过上限；旧档已超限时不得再增加（S06 §8）。</summary>
         public bool RootCardsAllow(GameState s, int after) => after <= Math.Max(MaxRootCards, RootCardCount(s));
@@ -233,14 +247,14 @@ namespace Survival.Core.Engine
         public int RootCardsOf(GameState s, IEnumerable<int> instanceIds)
         {
             var ids = new HashSet<int>(instanceIds);
-            var stacks = new Dictionary<(string, int?, string?), int>();
+            var stacks = new Dictionary<(string, int?, string?), (int n, int cap)>();
             var singles = 0;
             foreach (var i in s.Items.Where(i => i.IsCarried && ids.Contains(i.InstanceId)))
             {
-                if (StacksAsBatch(i)) { var k = StackKey(i); stacks[k] = (stacks.TryGetValue(k, out var c) ? c : 0) + i.Count; }
+                if (StacksAsBatch(i)) AddStack(stacks, i, i.Count);
                 else singles++;
             }
-            return singles + stacks.Sum(kv => (kv.Value + _items[kv.Key.Item1].StackMax - 1) / Math.Max(1, _items[kv.Key.Item1].StackMax));
+            return singles + CardsOfStacks(stacks);
         }
 
         /// <summary>
@@ -579,13 +593,13 @@ namespace Survival.Core.Engine
             if (ItemInstance.TryFacilityId(owner, out _)) return;
             var inPot = owner.StartsWith(ItemInstance.ContainerPrefix);
             var groups = s.Items
-                .Where(i => i.Owner == owner && i.ReservedBy == null && !IsLocked(s, i) && _items[i.ItemId].IsStackable && (!inPot || IsLiquid(i)))   // B22b：行动锁住的堆（修补包）不参与合堆
+                .Where(i => i.Owner == owner && i.ReservedBy == null && !IsLocked(s, i) && IsStackableInst(i) && (!inPot || IsLiquid(i)))   // B22b：行动锁住的堆（修补包）不参与合堆
                 .GroupBy(i => (i.ItemId, i.ExpiresAt, MergeTag(i)))
                 .ToList();
             foreach (var g in groups)
             {
                 var list = g.OrderBy(i => i.InstanceId).ToList();
-                var max = _items[g.Key.ItemId].StackMax;
+                var max = StackMaxOf(list[0]);   // BM5b2：腐败物按继承的原单堆上限（同键必同上限）
                 var total = list.Sum(i => i.Count);
                 var needed = (total + max - 1) / max;
                 if (list.Count == needed && list.Take(needed - 1).All(i => i.Count == max)) continue;
@@ -612,6 +626,9 @@ namespace Survival.Core.Engine
                         RewardOrigin = tmpl.RewardOrigin,
                         Durability = tmpl.Durability,   // B22b：满修补包的包耐久随堆复制
                         MaxDurability = tmpl.MaxDurability,
+                        SpoiledFrom = tmpl.SpoiledFrom,   // BM5b2：腐败物元数据随堆复制
+                        SpoiledUnitGrams = tmpl.SpoiledUnitGrams,
+                        SpoiledStackMax = tmpl.SpoiledStackMax,
                     });
                     total -= take;
                 }

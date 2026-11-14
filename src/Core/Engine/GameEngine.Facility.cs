@@ -419,6 +419,7 @@ namespace Survival.Core.Engine
             if (reason != null) return 0;
             if (!HasFireAt(s, here)) { reason = "这里没有火堆"; return 0; }
             var cfg = _items[inst.ItemId];
+            if (IsSpoiledMatter(inst)) { reason = SpoiledMatterRejectText; return 0; }   // BM5b2（Q610）
             if (inst.InFacility) { reason = PlaceOf(s, inst) == here ? $"{cfg.Name}已经在火堆里" : "异地不能操作火堆"; return 0; }
             if (!(inst.IsCarried || inst.Owner == here))
             {
@@ -517,6 +518,7 @@ namespace Survival.Core.Engine
             var fc = _items[food.ItemId];
             if (IsLiquid(food)) { reason = $"{fc.Name}请拖到锅的水量条上装入"; return 0; }
             if (IsPot(food)) { reason = "不能锅套锅"; return 0; }
+            if (IsSpoiledMatter(food)) { reason = SpoiledMatterRejectText; return 0; }   // BM5b2（Q610）
             if (!(food.IsCarried || food.Owner == s.Ground))
             {
                 reason = food.InFacility || food.InContainer ? $"先把{fc.Name}取出来再放进锅" : "只能放入随身或当前地面的食材";
@@ -618,10 +620,11 @@ namespace Survival.Core.Engine
                 ? AllProcesses(s).Where(p => p.PotInstanceId == inst.InstanceId).ToList()
                 : AllProcesses(s).Where(p => TouchesItem(p, inst.InstanceId)).ToList();
             var reset = touched.Any(p => p.HeatDoneMinutes > 0);
-            // Q16：成功取出即解除保护；原保质期已过的食材取出后立即按原 expiresAt 判腐败（失败的取出在上面已整次拒绝，什么都不变）
+            // Q16：成功取出即解除保护；原保质期已过的食材取出后在同一事务转为腐败物（Q610／Q641；失败的取出在上面已整次拒绝，什么都不变）
             var lost = touched.Where(p => p.HeatProtected).Select(p => FindItem(s, p.TargetInstanceId))
                 .Where(t => t != null && t.ExpiresAt.HasValue && t.ExpiresAt.Value <= s.GameMinute)
-                .Select(t => $"{ItemName(t!.ItemId)}").ToList();
+                .Select(t => t!.InstanceId).Distinct().ToList();
+            var cardsBefore = new Dictionary<string, int> { [GameState.PlayerId] = RootCardCount(s) };
             var name = IsPot(inst) || inst.Count <= 1 ? $"{ItemName(inst.ItemId)}" : $"{ItemName(inst.ItemId)}×{inst.Count}";
             // B16 试玩修复 M351：取出锅食谱的食材/辅料或取下锅时，日志写明整份作废与辅料退回
             var abandon = PotRecipeAbandonText(s, touched);
@@ -630,9 +633,10 @@ namespace Survival.Core.Engine
             inst.PlacedOrder = null;
             Normalize(s, zone);
             SyncFacilities(s);
+            var spoilLines = lost.Count > 0 ? ConvertDueSpoilage(s, lost, cardsBefore, emit: false) : new List<string>();
             var to = zone == ItemInstance.Carried ? "随身" : $"{LocName(zone)}地面";
-            Emit(s, GameEventKind.Info, $"把{name}从{from}取出到{to}{(reset ? "，相关加工进度清零" : "")}{(abandon != null ? "，" + abandon : "")}"
-                                        + $"{(lost.Count > 0 ? $"，{string.Join("、", lost)}解除烹饪保护、已过原保质期而腐败" : "")}。");
+            Emit(s, GameEventKind.Info, $"把{name}从{from}取出到{to}{(reset ? "，相关加工进度清零" : "")}{(abandon != null ? "，" + abandon : "")}。"
+                                        + string.Concat(spoilLines));
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -656,7 +660,7 @@ namespace Survival.Core.Engine
             foreach (var p in touched.Where(p => p.HeatProtected).OrderBy(p => p.TargetInstanceId))
             {
                 var t = FindItem(s, p.TargetInstanceId);
-                if (t != null && PastExpiryButProtected(s, t)) c.Spoils.Add($"{ItemName(t.ItemId)}");
+                if (t != null && PastExpiryButProtected(s, t)) c.Spoils.Add($"{ItemName(t.ItemId)}×{t.Count}");
             }
             c.CarriedGramsAfter = CarriedGrams(s) + (PlaceOf(s, inst) == ItemInstance.Carried ? 0 : c.Grams);
             c.RootCardsAfter = RootCardsAfter(s, inst, inst.Count, null, 0);
@@ -674,7 +678,7 @@ namespace Survival.Core.Engine
                     .Select(p => FindItem(s, p.TargetInstanceId) is ItemInstance t ? $"{ItemName(t.ItemId)}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}分钟" : "").Where(x => x != "").ToList();
                 c.Text = $"取出后{ab}" + (IsPot(inst) ? "" : "，锅里其余食材留在锅里") + (others.Count > 0 ? $"；{string.Join("、", others)}清零" : "");
             }
-            if (c.Spoils.Count > 0) c.Text += $"；{string.Join("、", c.Spoils)}已过原保质期，取出即解除烹饪保护并立即腐败";
+            if (c.Spoils.Count > 0) c.Text += $"；{string.Join("、", c.Spoils)}已过原保质期。{TakeOutSpoilRiskText}";
             return c;
         }
 
