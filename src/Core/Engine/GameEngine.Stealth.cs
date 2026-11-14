@@ -21,7 +21,7 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return false;
             if (actorId == GameState.PlayerId) return true;
             if (!s.Party.Contains(actorId) || !s.Actors.TryGetValue(actorId, out var a)) return false;
-            if (a.Stats.Health <= 0 || RosterOf(s, actorId)?.Dead == true) return false;
+            if (IsDead(s, a)) return false;   // B47a1（R09 Q616-A06）：濒死同行者仍可当队长
             return true;
         }
 
@@ -313,7 +313,7 @@ namespace Survival.Core.Engine
             if (string.IsNullOrEmpty(actorId) || !s.Actors.ContainsKey(actorId!)) return "请选择练习者。";
             if (actorId != GameState.PlayerId)
             {
-                if (s.Actors[actorId!].Stats.Health <= 0 || RosterOf(s, actorId!)?.Dead == true) return "练习者已死亡，请重新选择。";
+                if (IsDead(s, s.Actors[actorId!])) return "练习者已死亡，请重新选择。";
                 if (!s.Party.Contains(actorId!)) return "练习者已不在同行队伍中，请重新选择。";
             }
             if (ActionableHostileCardHere(s)) return "当前区域有可行动的敌对敌踪，无法练习潜行。";

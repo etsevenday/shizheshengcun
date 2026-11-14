@@ -20519,6 +20519,15 @@
     "recoveryMinHydration": 40,
     "recoveryMinMorale": 20
   },
+  "dying": {
+    "source": "R09 濒死、意志与致死判定系统；assets/20261114/dying-willpower-q616.json（contractVersion 2）",
+    "willpowerSkillId": "willpower",
+    "resistanceBasePercent": 65,
+    "resistancePerLevelPercent": 2,
+    "willpowerXpPerEnemyAction": 10,
+    "willpowerMaxAwardsPerActorPerEnemy": 3,
+    "willpowerMaxXpPerActorPerDay": 60
+  },
   "thresholds": {
     "satiety": {
       "value": 20,
@@ -20886,6 +20895,15 @@
     {
       "id": "stealth",
       "name": "潜行",
+      "category": "survival",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": 10,
+      "trackOnly": true
+    },
+    {
+      "id": "willpower",
+      "name": "意志",
       "category": "survival",
       "initialLevel": 1,
       "nextLevelXpFormula": "50*(L+1)",

@@ -23,6 +23,8 @@ namespace Survival.Core.Config
         public List<RecipeConfig> Recipes { get; set; } = new List<RecipeConfig>();
         public Dictionary<string, RateBlock> HourlyRates { get; set; } = new Dictionary<string, RateBlock>();
         public HealthRulesConfig HealthRules { get; set; } = new HealthRulesConfig();
+        /// <summary>濒死与意志（R09、dying-willpower-q616.json；开发记录 B47a1）。</summary>
+        public DyingConfig Dying { get; set; } = new DyingConfig();
         public Dictionary<string, ThresholdConfig> Thresholds { get; set; } = new Dictionary<string, ThresholdConfig>();
         public ItemActionsConfig ItemActions { get; set; } = new ItemActionsConfig();
         public FacilityEffectsConfig FacilityEffects { get; set; } = new FacilityEffectsConfig();
@@ -839,6 +841,21 @@ namespace Survival.Core.Config
         public double RecoveryMinSatiety { get; set; }
         public double RecoveryMinHydration { get; set; }
         public double RecoveryMinMorale { get; set; }
+    }
+
+    /// <summary>
+    /// 濒死与意志参数（R09 §4、dying-willpower-q616.json willpower）：致死抵抗百分点 P = 基础 + 每级 ×(L−1)（整数百分点，最后一次除以 100）；
+    /// 意志经验每次敌方完整出手基准、同敌每人次数上限、每人每世界日上限（B47a2 结账用，B47a1 只建字段）。
+    /// </summary>
+    public sealed class DyingConfig
+    {
+        public string Source { get; set; } = "";
+        public string WillpowerSkillId { get; set; } = "willpower";
+        public int ResistanceBasePercent { get; set; } = 65;
+        public int ResistancePerLevelPercent { get; set; } = 2;
+        public int WillpowerXpPerEnemyAction { get; set; } = 10;
+        public int WillpowerMaxAwardsPerActorPerEnemy { get; set; } = 3;
+        public int WillpowerMaxXpPerActorPerDay { get; set; } = 60;
     }
 
     public sealed class ThresholdConfig

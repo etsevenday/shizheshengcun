@@ -385,6 +385,7 @@ namespace Survival.Core.Engine
         {
             if (actor.IsPlayer) return 0;
             if (cause != ZombifiedCause) actor.Stats.Health = 0;
+            actor.Dead = true;   // B47a1（R09 §2）：确实死亡
             var wasActive = s.Party.Contains(actor.Id);
             // 候补死在营区公共居所（Q89：迁址前为替身地点）；B22g（Q183 death）：驻屋候补死在该安全屋屋内，遗物保留实际屋内
             var houseOf = wasActive ? null : RosterOf(s, actor.Id)?.ReserveSafehouse;
@@ -716,6 +717,7 @@ namespace Survival.Core.Engine
             s.Sub = null;
             s.StashedWork = null;
             s.Actor(GameState.PlayerId).Stats.Health = 0;   // B9a：战斗中 s.Stats 可能指向当前视角的队友，主角终局只改主角
+            s.Actor(GameState.PlayerId).Dead = true;   // B47a1（R09 §2）：确实死亡
             s.Progress.Dead = true;
             s.Progress.Death = new DeathInfo
             {

@@ -26,7 +26,7 @@ public class B5SkillTests : BattleTestBase
     {
         var ids = new[] { "unarmed", "blade", "axe", "spear", "blunt", "archery", "firearms", "shield", "command", "medicine",
                           "crafting", "gathering", "scavenging", "cooking", "athletics" };
-        Assert.That(Cfg.Skills.Where(x => x.Id != GameEngine.StealthSkill).Select(x => x.Id), Is.EqualTo(ids), "A06 §4 十五门（B41c 第 16 门潜行另见 B41c 用例）");
+        Assert.That(Cfg.Skills.Where(x => x.Id != GameEngine.StealthSkill && x.Id != GameEngine.Willpower).Select(x => x.Id), Is.EqualTo(ids), "A06 §4 十五门（B41c 第 16 门潜行另见 B41c 用例，B47a1 第 17 门意志另见 B47a1 用例）");
         Assert.That(Cfg.Skills.Single(x => x.Id == "blade").Name, Is.EqualTo("刀剑"));
         Assert.That(Cfg.Skills.Single(x => x.Id == "archery").Name, Is.EqualTo("弓弩"));
         Assert.That(Cfg.SkillNodes, Has.Count.EqualTo(75));
@@ -417,8 +417,8 @@ public class B5SkillTests : BattleTestBase
     {
         var s = New();
         var v = E.SkillViews(s);
-        Assert.That((v.Count(x => x.Category == "combat"), v.Count(x => x.Category == "both"), v.Count(x => x.Category == "survival")), Is.EqualTo((9, 1, 6)), "B41c 求生类另有潜行");
-        Assert.That(v.All(x => x.Nodes.Count == (x.Id == "stealth" ? 0 : 5) && x.Cap == 10 && x.NextXp == 100), Is.True, "潜行没有专属节点");
+        Assert.That((v.Count(x => x.Category == "combat"), v.Count(x => x.Category == "both"), v.Count(x => x.Category == "survival")), Is.EqualTo((9, 1, 7)), "B41c 求生类另有潜行，B47a1 另有意志");
+        Assert.That(v.All(x => x.Nodes.Count == (x.Id is "stealth" or "willpower" ? 0 : 5) && x.Cap == 10 && x.NextXp == 100), Is.True, "潜行、意志没有专属节点");
         Assert.That(E.DebugSetSkillLevels(s, 10, true), Does.Contain("求生五门"));
         Assert.That(s.Skills["athletics"].Level, Is.EqualTo(10));
         Assert.That(s.Skills["blade"].Level, Is.EqualTo(1), "只改求生五门");

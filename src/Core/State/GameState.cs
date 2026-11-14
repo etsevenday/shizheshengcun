@@ -64,8 +64,12 @@ namespace Survival.Core.State
         /// "50" 起探索唯一随机检查段与回执 ActionState.EncounterSegment／EncounterChecked／EncounterPending、完成边界待检查快照
         /// GameState.ExploreCheckPending、探索遭遇战标记 BattleState.ExploreEncounter（R05 Q605、Q620—Q624，开发记录 BM5c；
         /// 49→50 不补检查段：旧在办探索缺段即旧开工规则，在实际完成边界检查一次）。
+        /// "51" 起物品到期转腐败物（S06 Q610，开发记录 BM5b2）。
+        /// "52" 起濒死与意志（R09，开发记录 B47a1）：确实死亡标记 ActorState.Dead、濒死提醒锁 ActorState.DyingNotified、意志经验同敌账／日账
+        /// ActorState.WillpowerEnemyAwards／WillpowerXpDay／WillpowerXpToday、第 17 门熟练度 willpower；51→52 按名册与终局补确死标记，
+        /// 未确死的 H=0 归濒死（提醒锁置已提醒，不补历史进入事件、不补抽致死），存活者缺意志补 1 级 0 经验。
         /// </summary>
-        public const string CurrentSchema = "51";
+        public const string CurrentSchema = "52";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";

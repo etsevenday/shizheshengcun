@@ -190,7 +190,7 @@ namespace Survival.Core.Engine
             var allySpeed = new List<double>();
             foreach (var id in b.Members.ToList())
             {
-                if (!c.Actors.TryGetValue(id, out var actor) || actor.Stats.Health <= 1e-9) continue;
+                if (!c.Actors.TryGetValue(id, out var actor) || IsDead(c, actor)) continue;   // B47a1：濒死成员照常参战
                 if (id == GameState.PlayerId && c.Progress.Dead) continue;
                 using (FocusOn(c, id))
                 {
@@ -377,7 +377,7 @@ namespace Survival.Core.Engine
             var preview = EnemyCardPreviewMembers(s, card);
             var list = preview.Select(_ => new PreBattleHit()).ToList();
             if (EntryProjection(s, card) is not var (c, b)) return list;
-            if (!b.Members.Contains(GameState.PlayerId) || c.Progress.Dead || c.Actors[GameState.PlayerId].Stats.Health <= 1e-9) return list;
+            if (!b.Members.Contains(GameState.PlayerId) || IsDead(c, c.Actors[GameState.PlayerId])) return list;
             using (FocusOn(c, GameState.PlayerId))
             {
                 var me = b.Me;

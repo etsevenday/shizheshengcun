@@ -55,7 +55,7 @@ namespace Survival.Core.Engine
         public SkillConfig? SkillCfg(string id) => Config.Skills.FirstOrDefault(x => x.Id == id);
 
         /// <summary>
-        /// 当前生效的技能门类：配置里的全部 16 门（B41c 第 16 门潜行随 B41e3 新版敌踪上线一起生效，R05 Q342、R01）。
+        /// 当前生效的技能门类：配置里的全部 17 门（B41c 第 16 门潜行随 B41e3 新版敌踪上线一起生效，R05 Q342、R01；B47a1 第 17 门意志，R09 §4）。
         /// </summary>
         public IEnumerable<SkillConfig> SkillsInPlay => Config.Skills;
 
@@ -90,10 +90,12 @@ namespace Survival.Core.Engine
             return total;
         }
 
-        /// <summary>新局与旧档迁移：缺的技能补初始等级、经验 0（已有的不动）。</summary>
+        /// <summary>
+        /// 新局与旧档迁移：缺的技能补初始等级、经验 0（已有的不动）。B47a1（R09 §6）：已确实死亡的人不补（历史死者没有记录的意志不编造）。
+        /// </summary>
         public void InitSkills(GameState s)
         {
-            foreach (var a in s.Actors.Values) InitSkills(a);
+            foreach (var a in s.Actors.Values) if (!IsDead(s, a)) InitSkills(a);
         }
 
         public void InitSkills(ActorState actor)

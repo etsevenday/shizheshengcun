@@ -144,6 +144,7 @@ namespace Survival.Core.Engine
             s.Sub = null;
             s.StashedWork = null;
             s.Body.VirusLoad = Inf.ZombificationAtLoad;
+            s.Actor(GameState.PlayerId).Dead = true;   // B47a1（R09 §2）：尸变是独立确实死亡
             s.Progress.Dead = true;
             s.Progress.Death = new DeathInfo { Cause = ZombifiedCause, Minute = s.GameMinute, LocationId = loc, Zombified = true };
             ExpeditionOnDeath(s);   // B21

@@ -517,7 +517,7 @@ namespace Survival.Core.Engine
             p.ExpeditionId = e.Id;
             p.DungeonName = d.Name;
             p.ParentName = LocName(d.Parent);
-            foreach (var a in s.PartyActors.Where(a => a.Stats.Health > 0))
+            foreach (var a in s.PartyActors.Where(a => !IsDead(s, a)))   // B47a1：濒死者仍是存活同行
                 p.Rows.Add(new AbortPenaltyRow { Id = a.Id, Name = ActorDisplayName(s, a.Id), Before = a.Stats.Clone(), After = AbortPenaltyAfter(a.Stats) });
             p.ShakenText = ShakenText();
             var until = s.GameMinute + DX.ShakenMinutes;
@@ -574,7 +574,7 @@ namespace Survival.Core.Engine
             // 一次扣包（每名仍存活同行，死人不扣），记去重键；装备/技能不折减
             var lines = new List<string>();
             var until = s.GameMinute + DX.ShakenMinutes;
-            foreach (var a in s.PartyActors.Where(a => a.Stats.Health > 0).ToList())
+            foreach (var a in s.PartyActors.Where(a => !IsDead(s, a)).ToList())
             {
                 var before = a.Stats.Clone();
                 var after = AbortPenaltyAfter(a.Stats);

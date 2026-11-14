@@ -52,6 +52,26 @@ namespace Survival.Core.State
         /// </summary>
         public int? ShakenUntil { get; set; }
 
+        /// <summary>
+        /// 已确实死亡（R09 §2 三态之“确实死亡”，schema 52）：致死抵抗失败、尸变或原死亡事件确认的一刻置 true，此后不再接受伤害、治疗、经验或新判定。
+        /// 队友另有名册 RosterEntry.Dead、主角另有 Progress.Dead（终局），判断统一走 GameEngine.IsDead。H=0 且未确死即“濒死”。
+        /// </summary>
+        public bool Dead { get; set; }
+        /// <summary>
+        /// 濒死提醒锁（R09 Q673，schema 52）：本次真实进入濒死已提醒（进入濒死日志已写），合法药品／医疗实际回血使 H&gt;0 时清除。
+        /// B47a1 只写入与清除；B47a2 的“进入濒死暂停一次”按它判断。旧档的存活 H0 迁移为濒死时直接置 true（不补历史进入事件或暂停）。
+        /// </summary>
+        public bool DyingNotified { get; set; }
+        /// <summary>
+        /// 意志经验同敌账（R09 §4.1、Q676，schema 52）：键为稳定 worldEnemyId（十进制字符串），值为本局已实际到账的次数（每人每敌最多 3 次，永久不清）。
+        /// B47a1 只建字段，结账在 B47a2。
+        /// </summary>
+        public Dictionary<string, int> WillpowerEnemyAwards { get; set; } = new Dictionary<string, int>();
+        /// <summary>意志经验日账所属世界日（R09 §4.1，schema 52）；跨日后日账从 0 重计。B47a2 结账用。</summary>
+        public int WillpowerXpDay { get; set; }
+        /// <summary>意志经验日账：WillpowerXpDay 当日已实际到账的意志经验（每人每世界日最多 60）。B47a2 结账用。</summary>
+        public int WillpowerXpToday { get; set; }
+
         public bool IsPlayer => Id == GameState.PlayerId;
 
         public ActorState Clone()
@@ -65,6 +85,7 @@ namespace Survival.Core.State
             c.DailyCounts = new Dictionary<string, int>(DailyCounts);
             c.RedLatched = new Dictionary<string, bool>(RedLatched);
             c.Cooldowns = new Dictionary<string, int>(Cooldowns);
+            c.WillpowerEnemyAwards = new Dictionary<string, int>(WillpowerEnemyAwards);
             return c;
         }
     }

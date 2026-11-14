@@ -222,7 +222,7 @@ namespace Survival.Core.Engine
             var c = Config.Progression.StationXp;
             if (b.XpSnapshot <= 0) return "这一批开始时被动加工不给经验";
             if (b.InitiatorActorId == null || !s.Actors.TryGetValue(b.InitiatorActorId, out var actor)
-                || (actor.IsPlayer ? s.Progress.Dead : actor.Stats.Health <= 0)) return "投料者已不在，不给经验";
+                || IsDead(s, actor)) return "投料者已不在，不给经验";
             var skill = c.Skill;
             if (SkillLevel(actor, skill) >= SkillCap(skill)) return $"{SkillName(skill)}已满{SkillCap(skill)}级，不再获得经验";
             var day = Clock.Day(s.GameMinute);

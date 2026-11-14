@@ -87,6 +87,7 @@ namespace Survival.Core.Save
         public const string Schema48 = "48";
         public const string Schema49 = "49";
         public const string Schema50 = "50";
+        public const string Schema51 = "51";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -152,6 +153,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema48) From48To49(s);
             if (s.SchemaVersion == Schema49) From49To50(s);
             if (s.SchemaVersion == Schema50) From50To51(s, config, notes);
+            if (s.SchemaVersion == Schema51) From51To52(s);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
@@ -1472,8 +1474,25 @@ namespace Survival.Core.Save
         /// </summary>
         private static void From50To51(GameState s, GameConfig config, List<string> notes)
         {
-            s.SchemaVersion = GameState.CurrentSchema;
+            s.SchemaVersion = Schema51;
             if (new Engine.GameEngine(config).MigrateSpoilage(s)) notes.Add(Engine.GameEngine.SpoiledMigrationNote);
+        }
+
+        /// <summary>
+        /// 51 → 52（B47a1，R09 §6「原终局、名册与持久化」、Q673 旧档边界、Q616-A10）：旧档有可信死亡记录的（名册 Dead、主角 Progress.Dead 终局含尸变）
+        /// 补确死标记，保持原终局与遗物、不复活、不补经验；其余在册人物 H=0 归濒死（濒死提醒锁置已提醒：不补历史进入事件、不强行暂停，
+        /// 不补抽致死），H&gt;0 归正常；HP、装备、工作、进行中战斗与随机游标原样保留。缺意志的存活者由链尾 InitSkills 补 1 级 0 经验一次
+        /// （已有的不覆盖，历史死者不补）；意志账字段默认空账。不写迁移说明。
+        /// </summary>
+        private static void From51To52(GameState s)
+        {
+            s.SchemaVersion = GameState.CurrentSchema;
+            foreach (var a in s.Actors.Values)
+            {
+                var dead = a.IsPlayer ? s.Progress.Dead : s.Roster.Any(r => r.ActorId == a.Id && r.Dead);
+                if (dead) { a.Dead = true; continue; }
+                if (a.Stats.Health <= 0) a.DyingNotified = true;
+            }
         }
 
         /// <summary>
@@ -1483,7 +1502,7 @@ namespace Survival.Core.Save
         public static void AdoptEnemyCards(GameState s, GameConfig config)
         {
             s.EnemyCards ??= new EnemyCardsState();
-            // B41c：每次读档都给所有人补第 16 门潜行（缺才补，1 级 0 经验；R05 Q342 / R01），已有的不动
+            // B41c：每次读档都给所有人补第 16 门潜行（缺才补，1 级 0 经验；R05 Q342 / R01），已有的不动；B47a1 起第 17 门意志同样补，确实死亡者不补（R09 §6）
             new Engine.GameEngine(config).InitSkills(s);
             if (s.EnemyCards.ModelVersion >= Engine.GameEngine.EnemyCardsModelV2) return;
             new Engine.GameEngine(config).AdoptEnemyCards(s);

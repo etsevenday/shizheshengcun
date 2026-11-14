@@ -53,7 +53,7 @@ namespace Survival.Core.Engine
         private ActorState? CookCredit(GameState s, FacilityProcess p)
         {
             if (p.InitiatorActorId == null || !s.Actors.TryGetValue(p.InitiatorActorId, out var actor)) return null;
-            if (actor.IsPlayer ? s.Progress.Dead : actor.Stats.Health <= 0) return null;
+            if (IsDead(s, actor)) return null;   // B47a1（R09 §2）：濒死发起者仍是活人
             return actor;
         }
 

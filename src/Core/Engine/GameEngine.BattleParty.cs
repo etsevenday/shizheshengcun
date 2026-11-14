@@ -122,7 +122,7 @@ namespace Survival.Core.Engine
             {
                 var id = preset[k];
                 if (string.IsNullOrEmpty(id) || id == GameState.PlayerId || !s.Party.Contains(id)) continue;
-                if (!s.Actors.TryGetValue(id, out var a) || a.Stats.Health <= 0) continue;
+                if (!s.Actors.TryGetValue(id, out var a) || IsDead(s, a)) continue;   // B47a1（R09 §2）：濒死者照常入战
                 if (taken >= Math.Max(1, capacity) || slots[k] != "") continue;
                 slots[k] = id;
                 taken++;

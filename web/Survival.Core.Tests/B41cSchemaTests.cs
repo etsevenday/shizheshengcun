@@ -12,7 +12,7 @@ public class B41cSchemaTests : B41cTestBase
     [Test]
     public void Schema48_ConfigValuesFromR05()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("51"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("52"));
         var st = CfgV2.Encounters.Stealth;
         Assert.That((st.CheckMinutes, st.PracticeMinutes), Is.EqualTo((5, 30)), "潜行接近／躲避判定 5 分钟，练习潜行 30 分钟");
         Assert.That((st.LevelFactor, st.WakefulnessFactor, st.WakefulnessRef, st.MoraleFactor, st.MoraleRef), Is.EqualTo((5.0, 0.25, 90.0, 0.2, 60.0)));
@@ -31,7 +31,7 @@ public class B41cSchemaTests : B41cTestBase
         var s = E.NewGame(1);
         Assert.That(Stealth(s), Is.EqualTo((1, 0L)));
         var views = E.SkillViews(s);
-        Assert.That(views.Count, Is.EqualTo(16));
+        Assert.That(views.Count, Is.EqualTo(17), "B47a1 第 17 门意志");
         var v = views.Single(x => x.Id == "stealth");
         Assert.That((v.Name, v.Level, v.Cap, v.NextXp), Is.EqualTo(("潜行", 1, 10, 100L)), "R01：升级门槛 50×(L+1)");
     }
@@ -47,7 +47,7 @@ public class B41cSchemaTests : B41cTestBase
         var rng = s.Rng.State;
         var log = s.Log.Count;
         var t = SaveSerializer.Deserialize(AsSchema47(s), CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("51"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("52"));
         Assert.That(t.SquadLeader, Is.Null, "队长为主角");
         Assert.That(t.EnemyCards.Appearances, Is.Empty);
         Assert.That(t.EnemyCards.StealthXpClaims, Is.Empty);
@@ -66,7 +66,7 @@ public class B41cSchemaTests : B41cTestBase
         var s = V2Field();
         s.Player.Skills["athletics"] = new SkillState { Level = 4, Xp = 30 };
         var t = SaveSerializer.Deserialize(AsSchema47(s), CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("51"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("52"));
         Assert.That(Stealth(t), Is.EqualTo((1, 0L)), "补潜行 1 级 0 经验");
         Assert.That((t.Player.Skills["athletics"].Level, t.Player.Skills["athletics"].Xp), Is.EqualTo((4, 30L)), "已有技能不动");
         // 开关关着时已是 48 的档（没有潜行、卡模型标记 0）在 B41e3 打开开关后读入也补

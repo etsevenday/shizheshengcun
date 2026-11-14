@@ -201,7 +201,7 @@ namespace Survival.Core.Engine
             var route = ExtractTotalMinutes(b.RouteBaseMinutes.Value, TimeFactor(s, s.Actor(GameState.PlayerId), ActionType.Travel));
             b.RouteMinutes = route;
             var (low, high) = ExploreEstimate(s, dungeonId);
-            foreach (var a in s.PartyActors.Where(x => x.Stats.Health > 0))
+            foreach (var a in s.PartyActors.Where(x => !IsDead(s, x)))   // B47a1：濒死者照常计入
             {
                 var r = WaterLossPerHour(s, a);
                 var row = new WaterPersonBudget { ActorId = a.Id, Name = ActorDisplayName(s, a.Id), LossPerHour = r, Reliable = WaterSipHydration - r / 12 > 0 };

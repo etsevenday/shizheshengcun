@@ -152,6 +152,8 @@ public class BM5b1RiskTests : B41cTestBase
         Assert.That(E.EngageRiskFactorsFor(s, Card(s))!.Allies, Is.EqualTo(1), "不在同行队伍（候补／留屋）不计");
         s.Party.Add(mate);
         s.Actors[mate].Stats.Health = 0;
+        Assert.That(E.EngageRiskFactorsFor(s, Card(s))!.Allies, Is.EqualTo(2), "B47a1（R09 §2）：濒死成员（H0 未确死）照常参战");
+        s.Actors[mate].Dead = true;
         Assert.That(E.EngageRiskFactorsFor(s, Card(s))!.Allies, Is.EqualTo(1), "死亡成员不计");
     }
 
