@@ -1,7 +1,7 @@
 {
-  "contractVersion": 3,
+  "contractVersion": 4,
   "date": "2026-11-15",
-  "purpose": "Q616及Q673—Q678、Q679—Q681／Q688—Q689策划合同，唯一正文R09；不是运行配置或已实现声明",
+  "purpose": "Q616及已答濒死补充合同，含Q682—Q687分离预估；唯一正文R09，不是运行配置或已实装声明",
   "scope": {
     "friendlyActors": [
       "protagonist",
@@ -249,6 +249,95 @@
       "appendFailureOnlyWhenActualDeathResistanceFailed": true,
       "originalDeathSideEffectsOnce": true,
       "rewriteHistoricalRecords": false
+    }
+  },
+  "q682ToQ687": {
+    "decisions": {
+      "Q682": "A",
+      "Q683": "A",
+      "Q684": "A",
+      "Q685": "A",
+      "Q686": "A",
+      "Q687": "A"
+    },
+    "bodyProjection": {
+      "ordinaryParticipants": "player_and_actual_present_living_party_including_dying_not_remote_reserve",
+      "ordinaryCutoff": "earliest_relevant_actor_danger_segment_common_time",
+      "bodyValuesAfterCutoff": "not_estimated_never_plan_final_body_values",
+      "extractCutoff": "each_actual_extracting_actor_own_first_danger_segment",
+      "enterDyingOnOnlyProbabilisticDamageWhenPreviouslyNormalTriggersCutoff": false,
+      "alreadyDyingPossiblePositiveDamageStillTriggersCutoff": true,
+      "existingNonlethalHealthFloorUnchanged": true
+    },
+    "conditionalCompletionPlan": {
+      "assumeSurvivalForPlanOnly": true,
+      "continuedDeathResistanceRolls": false,
+      "applyRealDeathOrZombificationConsequencesInPlan": false,
+      "showIndependentZombificationRiskSeparately": true,
+      "naturalHealthRecoveryWhileDying": 0,
+      "addUnrequestedTreatmentRefuelOrRepair": false,
+      "useOriginalDynamicFiveMinuteWorldAndWorkRules": true,
+      "preserveNightFuelEnergyFactorsCarryWearAndInputConditions": true,
+      "autoResumeOnlyForExistingEstimateTimeConvention": true,
+      "unknownWhenCompletionNotTrustworthy": true,
+      "sourceOfStartFiveMinuteExitLock": "same_trustworthy_complete_dynamic_plan_exactly_5_minutes",
+      "changeExistingNoExitOnReadOrAfterStart": false
+    },
+    "fields": {
+      "body": [
+        "original_body_attributes",
+        "body_threshold_alerts_up_to_cutoff"
+      ],
+      "plan": [
+        "duration",
+        "completion_time",
+        "outputs",
+        "completion_load",
+        "xp",
+        "possible_supplies",
+        "facility_and_fuel_changes",
+        "factor_changes_and_times",
+        "tool_durability",
+        "work_carry"
+      ]
+    },
+    "perActorRiskProbe": {
+      "recordEachOwnFirstRiskOnly": true,
+      "publishBodyTerminalValuesAfterCommonCutoff": false,
+      "laterRisksInSeparateNamedGroup": true,
+      "noFutureXpForResistanceRate": true
+    },
+    "virusRisk": {
+      "ordinaryAndExtract": "through_full_plan_end_including_completion_segment_independent_of_body_cutoff",
+      "requireOwnProjectedThresholdReached": true,
+      "threshold": 100,
+      "existingInternalThresholdSemantics": true,
+      "useOriginalDynamicImmunityMedicineAndCureRules": true,
+      "companionNaturalPositiveVirusGrowth": false,
+      "inventFutureAttackExposureOrAutoMedication": false,
+      "unknownPlanEndDoesNotMeanNoRisk": true
+    },
+    "copy": {
+      "bodyTitle": "预估至危险段",
+      "bodyRange": "身体预估仅到首次濒死或需要致死判定的危险段；后续身体变化未预估。",
+      "unknown": "未预估",
+      "planTitle": "完成计划（假设能够存活并完成）",
+      "planNote": "本区按能够存活并完成本次行动估算，已考虑途中已知的速度与环境变化；不保证实际能够完成。",
+      "planFailed": "按当前条件无法预估完成。",
+      "virus": "按当前已知状态推算，若本次行动继续推进，{人物}的病毒量预计在计划结束前或结束时达到尸变上限。致死抵抗不能阻止尸变。",
+      "extractVirus": "按当前已知状态推算，若继续撤出，{人物}的病毒量预计在计划结束前或结束时达到尸变上限。致死抵抗不能阻止尸变。",
+      "extractRange": "{人物}的撤出身体预估截至从现在起{时长}；此后身体变化未预估。",
+      "ordinaryRange": "身体预估截至从现在起{时长}；此后身体变化未预估。",
+      "probabilityNote": "身体变化按未触发本次概率受伤估算；概率受伤风险另列，不代表保证安全。",
+      "laterRisk": "以下为各人截至计划结束的首个风险检查，不表示已预估危险处以后的身体数值。"
+    },
+    "readOnly": {
+      "advanceRealWorld": false,
+      "consumeRealRandom": false,
+      "publishAssumedLifeState": false,
+      "awardXpOrWriteLogs": false,
+      "changeWorkOrLocks": false,
+      "rewriteSavedHistory": false
     }
   }
 }
