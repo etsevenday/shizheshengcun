@@ -133,7 +133,7 @@ public class BM5b1FacMenuTests : TestBase
         Assert.That(E.MoveToPotOptionFor(s, 1), Is.Null, "锅位本身没有这个入口");
         Assert.That(mv.Reason, Is.Null);
         Assert.That(mv.Label, Is.EqualTo("移入锅（加工位2）"));
-        Assert.That(mv.Hint, Is.EqualTo($"将加工位1的生肉移入加工位2的{potName}。原直烤受热进度不继承。"));
+        // BM7a（Q644）：按钮说明句已取消（原断言 mv.Hint 撤下），见 BM7aFacMenuTests
 
         var req = mv.Request.WithRequestId("mtp-test");
         Ok(E.DoInstant(s, req));
@@ -177,6 +177,37 @@ public class BM5b1FacMenuTests : TestBase
         var potName = E.ItemName(pot.ItemId);
         Assert.That(s.Log.Last().Text, Is.EqualTo($"已将加工位1的生肉移入加工位2的{potName}。"));
         Assert.That(E.PotFood(s, pot.InstanceId).Count(f => f.ItemId == "raw_meat"), Is.EqualTo(1));
+    }
+
+    /// <summary>
+    /// BM7a Q644-A01（S14 文首「2026-11-14 Q644—Q655」§Q644）：移入锅按钮、悬停、读屏、拖放预览都不再有「将加工位…原直烤受热进度不继承。」整句；
+    /// 按钮短动作「移入锅（加工位{目标序号}）」保留，拖放落点用同一短动作与真实目标；真实拒绝原因、受热不继承规则与成功日志不变。
+    /// </summary>
+    [Test]
+    public void BM7a_Q644_A01_NoExtraMoveSentence()
+    {
+        var s = New();
+        LightFire(s);
+        var (meat, pot) = Setup(s);
+        WaitMinutes(s, 10);
+        var mv = E.MoveToPotOptionFor(s, 0)!;
+        Assert.That(mv.Label, Is.EqualTo("移入锅（加工位2）"));
+        Assert.That(typeof(MoveToPotOption).GetProperty("Hint"), Is.Null, "按钮说明句字段撤下");
+        var src = DropSource.Parse($"card:{meat.Owner}|{meat.ItemId}|{meat.InstanceId}")!;
+        var d = E.ResolveDrop(s, src, DropTarget.Parse($"potfood:{pot.InstanceId}")!);
+        Assert.That(d.Verb, Is.EqualTo(DropVerb.MoveToPot));
+        Assert.That(d.Label, Is.EqualTo("移入锅（加工位2）"), "落点不空白：同一短动作与真实目标");
+        Assert.That(d.Label, Does.Not.Contain("不继承").And.Not.Contain("将加工位"));
+        var menu = Web("Components", "FireMenu.razor");
+        var btn = Slice(menu, "class=\"secondary fm-move-btn\"", "</button>");
+        Assert.That(btn, Does.Not.Contain("title=").And.Not.Contain("aria-description"), "悬停与读屏不重复说明句；可访问名称仍是按钮文字");
+        Assert.That(btn, Does.Contain("@mv.Label"));
+        Assert.That(menu, Does.Contain("@if (mvWhy != null) { <span class=\"tiny warn-text fm-move-why\">@mvWhy</span> }"), "真实拒绝原因仍就近可读");
+        // 实际规则与日志不变：有直烤受热才追加清零句
+        var heat = E.ProcessOf(s, meat)?.HeatDoneMinutes ?? 0;
+        Ok(E.DoInstant(s, mv.Request.WithRequestId("bm7a-q644")));
+        var potName = E.ItemName(pot.ItemId);
+        Assert.That(s.Log.Last().Text, Is.EqualTo(heat > 0 ? $"已将加工位1的生肉移入加工位2的{potName}。原直烤受热进度已清零。" : $"已将加工位1的生肉移入加工位2的{potName}。"));
     }
 
     /// <summary>Q601-A04：锅满／内容变化／非同火源／取出后过期整次失败，源热量、保护、位置与目标内容不变。</summary>
@@ -249,7 +280,7 @@ public class BM5b1FacMenuTests : TestBase
         var btn = Slice(menu, "class=\"secondary fm-move-btn\"", "</button>");
         Assert.That(btn, Does.Not.Contain("data-enter"), "不作为默认 Enter");
         Assert.That(btn, Does.Contain("disabled=\"@(mvWhy != null)\""));
-        Assert.That(btn, Does.Contain("title=\"@mv.Hint\""));
+        Assert.That(btn, Does.Not.Contain("mv.Hint"), "BM7a（Q644）：按钮不再带说明句");
         Assert.That(Web("Components", "FoodCard.razor"), Does.Contain("data-drag=\"@(ReadOnly || NoDrag ? null : $\"card:{key}\")\""));
         var fac = Web("Services", "GameSession.FacMenu.cs");
         var move = Slice(fac, "public ActionResult FireMenuMove(InstantRequest req)", "public void FireMenuSetQty(");
@@ -268,11 +299,14 @@ public class BM5b1FacMenuTests : TestBase
         var menu = Web("Components", "FireMenu.razor");
         Assert.That(menu, Does.Contain("data-tab-trap=\"@(G.FireMenuTop ? GameSession.FireMenuTitleId : null)\""), "C# 告诉 JS 哪层在最上，值是安全落点（标题）");
         var js = Web("wwwroot", "js", "app.js");
-        var trap = Slice(js, "if (k === 'Tab' && !mod) {", "// B46 试玩修复（Q535-A04）");
-        Assert.That(trap, Does.Contain("document.querySelector('[data-tab-trap]')"));
-        Assert.That(trap, Does.Contain("!el.disabled && el.tabIndex >= 0 && shown(el) && !(el.closest && el.closest('[inert], [hidden]'))"), "跳过禁用、隐藏与 inert");
-        Assert.That(trap, Does.Contain("(at + (ev.shiftKey ? -1 : 1) + items.length) % items.length"), "首尾循环");
-        Assert.That(trap, Does.Contain("document.getElementById(trap.getAttribute('data-tab-trap'))"), "无控件留在标题");
+        // BM7a（Q655）：菜单分支里也有 Tab 处理，这里从加工菜单的 data-tab-trap 判定起切
+        var trap = Slice(js, "var trap = document.querySelector('[data-tab-trap]');", "// B46 试玩修复（Q535-A04）");
+        // BM7a（Q655）：循环逻辑抽成 trapTab，游戏菜单与加工菜单共用
+        Assert.That(trap, Does.Contain("trapTab(ev, trap, document.getElementById(trap.getAttribute('data-tab-trap')));"), "无控件留在标题");
+        var loop = Slice(js, "function trapTab(ev, root, safe) {", "function topMenu()");
+        Assert.That(loop, Does.Contain("!el.disabled && el.tabIndex >= 0 && shown(el) && !(el.closest && el.closest('[inert], [hidden]'))"), "跳过禁用、隐藏与 inert");
+        Assert.That(loop, Does.Contain("(at + (ev.shiftKey ? -1 : 1) + items.length) % items.length"), "首尾循环");
+        Assert.That(loop, Does.Not.Contain(".click()"), "Tab 只移焦点");
         Assert.That(trap, Does.Not.Contain(".click()"), "Tab 只移焦点");
         // 「原因」按钮是可聚焦按钮（禁用行旁仍可达）
         Assert.That(Slice(menu, "class=\"fm-src-whybtn", "</button>"), Does.Not.Contain("disabled"));

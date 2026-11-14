@@ -270,6 +270,22 @@ window.survival = {
       var ps = Array.prototype.filter.call(document.querySelectorAll('.sub-panel'), function (p) { return shown(p) && !(p.closest && p.closest('[inert]')); });
       return ps.length ? ps[ps.length - 1] : null;
     }
+    // BM5b1（Q602）／BM7a（Q655）：在 root 层里当前可见、可用、非 inert／hidden 的可聚焦控件间按文档顺序首尾循环；没有时回 safe（安全标题）
+    function trapTab(ev, root, safe) {
+      var items = Array.prototype.filter.call(root.querySelectorAll('button, a[href], input, select, textarea, [tabindex]'), function (el) {
+        return !el.disabled && el.tabIndex >= 0 && shown(el) && !(el.closest && el.closest('[inert], [hidden]'));
+      });
+      ev.preventDefault();
+      if (!items.length) { if (safe) safe.focus(); return; }
+      var at = items.indexOf(document.activeElement);
+      var nx = at < 0 ? (ev.shiftKey ? items.length - 1 : 0) : (at + (ev.shiftKey ? -1 : 1) + items.length) % items.length;
+      items[nx].focus();
+    }
+    // BM7a（Q655）：最上层的游戏菜单／战斗菜单／手动存档子页（.menu-modal，可见且不在 inert 里）
+    function topMenu() {
+      var ms = Array.prototype.filter.call(document.querySelectorAll('.menu-modal'), function (m) { return shown(m) && !(m.closest && m.closest('[inert]')); });
+      return ms.length ? ms[ms.length - 1] : null;
+    }
     // 该面板的确认区：面板本身是区就取它；否则取面板里唯一一个顶层的区（如整备里的比较／交接工作区）
     function panelScope() {
       var p = topPanel();
@@ -351,9 +367,21 @@ window.survival = {
       var send = function (key) { ev.preventDefault(); dotnet.invokeMethodAsync('OnKey', key); };
       // 反馈与留言窗口开着：按键归窗口自己（它的 Esc 只关窗口，关掉后回到游戏菜单，Q322）
       if (window.FeedbackWidget && FeedbackWidget.isOpen()) return;
+      // BM7a（Q655）：按住 ESC 不连退——菜单收起后，同一次按住的重复 ESC 不再落到背后（不重开菜单、不收别的层）
+      if (k === 'Escape' && ev.repeat && window.__survivalMenuEsc) { ev.preventDefault(); return; }
       // B31b（Q322）：游戏菜单／战斗菜单打开时，只有 Esc 交给游戏（收起菜单）；回车、空格、数字留给菜单里的按钮，不落到背后的操作条、对白或战斗指令
+      // BM7a（S14 Q655）：菜单（及当前子页）是最高可操作层：Tab／Shift+Tab 只在本层真实可聚焦且可见的控件间首尾循环，不跑背后的顶栏、加工菜单或战场；
+      // 没有可聚焦控件时回本层标题。按住的 ESC 只收一层
       if (document.querySelector('.menu-modal')) {
-        if (k === 'Escape' && !mod) send('Escape');
+        if (k === 'Escape' && !mod) {
+          if (ev.repeat) { ev.preventDefault(); return; }
+          window.__survivalMenuEsc = true;
+          send('Escape');
+        }
+        else if (k === 'Tab' && !mod) {
+          var mm = topMenu();
+          if (mm) trapTab(ev, mm, mm.querySelector('h2[tabindex]'));
+        }
         return;
       }
       // B34b（S14 Q572）：战斗特写播放层在最上层时，ESC 打开菜单，其余键不穿透到背后的战斗、对白或结算；
@@ -385,18 +413,7 @@ window.survival = {
       if (k === 'Tab' && !mod) {
         var trap = document.querySelector('[data-tab-trap]');
         if (trap && shown(trap) && !(trap.closest && trap.closest('[inert]'))) {
-          var items = Array.prototype.filter.call(trap.querySelectorAll('button, a[href], input, select, textarea, [tabindex]'), function (el) {
-            return !el.disabled && el.tabIndex >= 0 && shown(el) && !(el.closest && el.closest('[inert], [hidden]'));
-          });
-          ev.preventDefault();
-          if (!items.length) {
-            var safe = document.getElementById(trap.getAttribute('data-tab-trap'));
-            if (safe) safe.focus();
-            return;
-          }
-          var at = items.indexOf(document.activeElement);
-          var nx2 = at < 0 ? (ev.shiftKey ? items.length - 1 : 0) : (at + (ev.shiftKey ? -1 : 1) + items.length) % items.length;
-          items[nx2].focus();
+          trapTab(ev, trap, document.getElementById(trap.getAttribute('data-tab-trap')));
           return;
         }
       }
@@ -1511,4 +1528,109 @@ window.survivalBattleUi = (function () {
       host.dataset.atBottom = '1';
     }
   };
+})();
+
+// ───────────── BM7a 焦点修复（S14 Q645 加工菜单来源行消失、Q655 游戏菜单关闭回原位置） ─────────────
+// 只恢复焦点：不点、不选来源／技能、不提交；焦点仍在有效位置（别的输入框、更高层）时一律不抢。
+(function () {
+  if (window.__survivalFocusRepair) return;
+  window.__survivalFocusRepair = true;
+  function shown(el) { return !!(el && (el.offsetWidth || el.offsetHeight)); }
+  function lost() { var a = document.activeElement; return !a || a === document.body || !a.isConnected; }
+  function free(el) { return !!(el && el.isConnected && shown(el) && !el.disabled && !(el.closest && el.closest('[inert], [hidden]'))); }
+  function put(el) { try { el.focus({ preventScroll: true }); } catch (e) { try { el.focus(); } catch (e2) { } } }
+
+  // ── Q645：加工菜单来源区。焦点确在一条可选择的来源行（.fm-src-row[data-src-key]，非灰行）时记下它的稳定键与当时各行的显示顺序 ──
+  var src = null;   // { key, order }
+  function srcRows(root) { return Array.prototype.slice.call((root || document).querySelectorAll('.fire-menu .fm-src-row[data-src-key]')); }
+  function srcKey(el) { return el.getAttribute('data-src-key'); }
+  document.addEventListener('focusin', function (ev) {
+    var el = ev.target;
+    if (el && el.matches && el.matches('.fire-menu .fm-src-row[data-src-key]:not(.no)')) { src = { key: srcKey(el), order: srcRows().map(srcKey) }; return; }
+    // 焦点进了游戏菜单等更高层：先留着记录，菜单收起后仍需修复才按当前合法行处理；落到别处有效位置就作废
+    if (el && el.closest && el.closest('.menu-modal')) return;
+    src = null;
+  }, true);
+  // 焦点已丢失（落在页面本身或原行已卸下）且加工菜单是最上层（C# 只在那时写 data-tab-trap）时修复；返回是否已处理
+  function repairSrc() {
+    if (!src) return false;
+    var a = document.activeElement;
+    if (!lost()) {
+      // 焦点还在那条行上：随内容刷新更新显示顺序；在别处有效位置：不动
+      if (a.matches && a.matches('.fm-src-row[data-src-key]') && srcKey(a) === src.key) src.order = srcRows().map(srcKey);
+      return false;
+    }
+    var trap = document.querySelector('.fire-menu[data-tab-trap]');
+    if (!trap || !shown(trap) || (trap.closest && trap.closest('[inert]'))) return false;   // 菜单被盖住：等它重新成为最上层
+    var box = trap.querySelector('.fm-src');
+    if (!box) { src = null; return false; }   // 整个来源区随内容页一起没了：交给 Q604 原规则（回相关工位／标题）
+    var map = {};
+    srcRows(box).forEach(function (r) { if (!r.classList.contains('no') && free(r)) map[srcKey(r)] = r; });
+    var order = src.order, at = order.indexOf(src.key), pick = map[src.key] || null;   // 同一稳定键还在（只是重排／重建）：回它本身
+    for (var i = at + 1; !pick && i < order.length; i++) pick = map[order[i]] || null;   // 原位置之后第一条仍可选择的行
+    for (var j = at - 1; !pick && j >= 0; j--) pick = map[order[j]] || null;               // 再往前找上一条
+    if (!pick) pick = document.getElementById(trap.getAttribute('data-tab-trap'));          // 都没有：回本层标题
+    src = null;
+    if (pick) { put(pick); return true; }
+    return false;
+  }
+  var srcTimer = 0;
+  function laterSrc() {
+    if (!src || srcTimer) return;
+    // 稍等一下：主动操作成功回相关工位（Q604 focusId）与内容失效修复先做，做完焦点已有效就不再动
+    srcTimer = setTimeout(function () { srcTimer = 0; repairSrc(); }, 60);
+  }
+
+  // ── Q655：游戏菜单／战斗菜单（.menu-modal）打开时记下原合法层的触发位置，整层收起后回到它 ──
+  var open = false, opener = null, preEsc = null, preEscAt = 0;
+  document.addEventListener('keydown', function (ev) {
+    // ESC 打开菜单前，背后按钮会被 blur（试玩修复 L6）：先记下当时的焦点
+    if (ev.key === 'Escape' && !ev.repeat && !document.querySelector('.menu-modal')) { preEsc = document.activeElement; preEscAt = Date.now(); }
+  }, true);
+  document.addEventListener('keyup', function (ev) { if (ev.key === 'Escape') window.__survivalMenuEsc = false; }, true);
+  function covered(el) {
+    var hs = document.querySelectorAll('.modal-back, .overflow-layer, .disk-scrim, .bfs-drawer, .dlg-layer');
+    for (var i = 0; i < hs.length; i++) if (shown(hs[i]) && !hs[i].contains(el)) return true;
+    return false;
+  }
+  // 原控件失效：回该层现存的安全标题（加工菜单最上层时的菜单标题），否则回原「菜单」入口按钮
+  function menuFallback() {
+    var trap = document.querySelector('[data-tab-trap]');
+    if (trap && shown(trap) && !(trap.closest && trap.closest('[inert]'))) {
+      var t = document.getElementById(trap.getAttribute('data-tab-trap'));
+      if (free(t)) return t;
+    }
+    var mb = document.querySelector('button[aria-keyshortcuts="Escape"]');
+    return free(mb) && !covered(mb) ? mb : null;
+  }
+  function restore(target) {
+    var tries = 0;
+    function go() {
+      if (document.querySelector('.menu-modal') || !lost()) return;   // 又开了菜单，或别的层／代码已把焦点放到有效位置
+      if (target && free(target) && !covered(target)) { put(target); return; }
+      if (repairSrc()) return;   // 原位置是已消失的来源行：按 Q645 回下一／上一可选行或本层标题
+      var f = menuFallback();
+      if (f) { put(f); return; }
+      if (++tries < 10) requestAnimationFrame(go);
+    }
+    setTimeout(go, 0);
+  }
+  new MutationObserver(function () {
+    var now = !!document.querySelector('.menu-modal');
+    if (now !== open) {
+      open = now;
+      if (now) {
+        var a = document.activeElement;
+        opener = a && a !== document.body && a.isConnected ? a : (preEsc && preEsc !== document.body && preEsc.isConnected && Date.now() - preEscAt < 1500 ? preEsc : null);
+        preEsc = null;
+      } else {
+        var t = opener;
+        opener = null;
+        // 打开前就没有键盘焦点（比如鼠标点开）：不硬塞焦点；原焦点在来源行上则也走一次来源修复
+        if (t) restore(t); else laterSrc();
+      }
+      return;
+    }
+    if (!now) laterSrc();
+  }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-tab-trap'] });
 })();

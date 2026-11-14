@@ -42,7 +42,7 @@ public class B31dShellTests : TestBase
         var menu = Web("Components", "MenuOverlay.razor");
         Assert.That(menu, Does.Not.Contain("菜单 · 敌踪选择中"));
         Assert.That(menu, Does.Contain("var menuTitle = ShellText.BattleUiMenuTitle(inBattle);"));
-        Assert.That(menu, Does.Contain("aria-label=\"@menuTitle\"").And.Contain("<h2>@menuTitle</h2>"));
+        Assert.That(menu, Does.Contain("aria-label=\"@menuTitle\"").And.Contain("<h2 tabindex=\"-1\">@menuTitle</h2>"));   // BM7a（Q655）：标题可作安全落点
     }
 
     /// <summary>Q353-A01（逐字稿 §1.3）：敌踪尚未接战的游戏菜单底部关闭键写「继续游戏」，实际战斗仍「返回战斗」；死亡结算菜单底部写「返回结算」，常态仍「继续游戏」。都只收起菜单。</summary>

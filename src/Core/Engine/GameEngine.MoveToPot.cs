@@ -12,8 +12,6 @@ namespace Survival.Core.Engine
         public ItemInstance Pot { get; set; } = null!;
         /// <summary>按钮文字「移入锅（加工位{目标序号}）」。</summary>
         public string Label { get; set; } = "";
-        /// <summary>按钮说明「将加工位{源序号}的{食材名}移入加工位{目标序号}的{锅名}。原直烤受热进度不继承。」。</summary>
-        public string Hint { get; set; } = "";
         /// <summary>不能移入时的原具体原因（按钮禁用并显示）；可移入为 null。</summary>
         public string? Reason { get; set; }
         public InstantRequest Request { get; set; } = null!;
@@ -34,9 +32,8 @@ namespace Survival.Core.Engine
         /// <summary>逐字稿 Q601：按钮「移入锅（加工位{目标序号}）」（序号从 1 起）。</summary>
         public static string MoveToPotLabel(int toNo) => $"移入锅（加工位{toNo}）";
 
-        /// <summary>逐字稿 Q601：按钮说明（序号从 1 起）。</summary>
-        public static string MoveToPotHint(int fromNo, string food, int toNo, string pot) =>
-            $"将加工位{fromNo}的{food}移入加工位{toNo}的{pot}。原直烤受热进度不继承。";
+        // BM7a（S14 Q644）：原按钮说明句「将加工位{源序号}的{食材名}移入加工位{目标序号}的{锅名}。原直烤受热进度不继承。」整句取消——
+        // 不在按钮下、悬停、读屏或拖放预览重复；拖放落点用同一短动作 MoveToPotLabel。实际规则（直烤受热不继承）与成功日志不改。
 
         /// <summary>逐字稿 Q601：成功日志（序号从 1 起）。</summary>
         public static string MoveToPotDoneText(int fromNo, string food, int toNo, string pot) =>
@@ -76,7 +73,6 @@ namespace Survival.Core.Engine
                 {
                     FromSlot = fromSlot, ToSlot = k, Food = food, Pot = pot, Request = req, Reason = why,
                     Label = MoveToPotLabel(k + 1),
-                    Hint = MoveToPotHint(fromSlot + 1, ItemName(food.ItemId), k + 1, ItemName(pot.ItemId)),
                 };
             }
             return null;

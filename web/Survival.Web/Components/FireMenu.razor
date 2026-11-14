@@ -130,7 +130,7 @@
                                             {
                                                 var mvWhy = busy && mv.Reason == null ? "行动进行中，暂不能整理物品" : mv.Reason;
                                                 <div class="fm-move">
-                                                    <button type="button" class="secondary fm-move-btn" disabled="@(mvWhy != null)" title="@mv.Hint" aria-description="@mv.Hint"
+                                                    <button type="button" class="secondary fm-move-btn" disabled="@(mvWhy != null)"
                                                             @onclick="ev => Move(ev, mv)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@mv.Label</button>
                                                     @if (mvWhy != null) { <span class="tiny warn-text fm-move-why">@mvWhy</span> }
                                                 </div>
@@ -336,7 +336,7 @@
                                行旁「原因」是独立只读控件（可聚焦）：悬停／聚焦／点按时在底部说明位显示该行原真实拒绝句，离开后恢复当前选择的说明；
                                不选材料、不打开数量输入、不投放。悬停整行仍按全局合同只读查看该来源。 *@
                             @* BM5b1（Q603／Q604）：灰行本身不接焦点——按下不把焦点移走（也不清已有合法来源）；行旁「原因」按钮照常可聚焦、只读 *@
-                            <div class="fm-src-row no" aria-disabled="true" data-peek="@peek" title="@($"{nm}×{it.Count}（{label}）：{why}")" @onmousedown:preventDefault="true">
+                            <div class="fm-src-row no" @key="iid" data-src-key="@iid" aria-disabled="true" data-peek="@peek" title="@($"{nm}×{it.Count}（{label}）：{why}")" @onmousedown:preventDefault="true">
                                 <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
                                 <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
                                 <span class="fm-src-no">@NotPlaceable</span>
@@ -348,7 +348,9 @@
                         }
                         else
                         {
-                            <div class="fm-src-row @(on ? "on" : "")" role="button" tabindex="0" aria-pressed="@on"
+                            @* BM7a（S14 Q645）：来源行按实例稳定键（@key／data-src-key）渲染——重排或重建不误当消失；
+                               焦点所在的行真实消失时，app.js 按原显示顺序回下一条、再上一条仍可选择的行，都没有回菜单标题（只移焦点，不选为来源） *@
+                            <div @key="it.InstanceId" class="fm-src-row @(on ? "on" : "")" role="button" tabindex="0" aria-pressed="@on" data-src-key="@it.InstanceId"
                                  data-peek="@peek" data-drag="@($"card:{it.Owner}|{it.ItemId}|{it.InstanceId}")" data-drag-title="@nm" data-drag-from="@label"
                                  title="@($"{nm}×{it.Count}（{label}）：点击选为原料来源（不转移）；也可以直接拖到上面的加工位或锅")"
                                  @onclick="() => PickSource(it)" @onkeydown="ev => Key(ev, () => PickSource(it))">

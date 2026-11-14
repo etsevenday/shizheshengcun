@@ -19,7 +19,7 @@
     <div class="menu-scrim" role="presentation">
         <div class="menu-modal overlay" role="dialog" aria-modal="true" aria-label="@menuTitle">
             <div class="overlay-head mm-head">
-                <h2>@menuTitle</h2>
+                <h2 tabindex="-1">@menuTitle</h2>
             </div>
             <div class="mm-body" data-wheel="y">
                 @if (inBattle)
@@ -60,7 +60,7 @@
 <div class="menu-scrim" role="presentation">
 <div class="menu-modal overlay menu-top" role="dialog" aria-modal="true" aria-label="@ShellText.GameMenu">
     <div class="overlay-head mm-head">
-        <h2>@ShellText.GameMenu</h2>
+        <h2 tabindex="-1">@ShellText.GameMenu</h2>
     </div>
     <div class="mm-body menu-scroll" data-wheel="y">
         @* B31a（Q295、Q321）：阅读字体与动画速度（浏览器偏好，取代原「动画速度（每5分钟时间段）」40／120／250 档） *@

@@ -387,7 +387,7 @@ namespace Survival.Core.Engine
             {
                 var block = MoveToPotBlocked(s, mv);
                 if (block != null) return DropIntent.No(block);
-                return Instant(DropVerb.MoveToPot, MoveToPotHint(mv.Slot!.Value + 1, ItemName(head.ItemId), mv.TargetSlot!.Value + 1, ItemName(pot.ItemId)), mv);
+                return Instant(DropVerb.MoveToPot, MoveToPotLabel(mv.TargetSlot!.Value + 1), mv);   // BM7a（Q644）：落点只写同一短动作与真实目标
             }
             var max = MaxPutFood(s, head, pot, out var why);
             if (why != null) return DropIntent.No(why);
