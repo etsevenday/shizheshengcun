@@ -85,7 +85,8 @@ public class BM5aDialogueTests : TestBase
     [Test]
     public void DLG_LOWER_A06_BattleDialogueUnchanged()
     {
-        Assert.That(Web("Components", "BattleScreen.razor"), Does.Contain("<div class=\"bfs-dlg\" inert=\"@fxLock\"><DialogueLayer /></div>"));
+        // BM6（Q628）：特写独占播放时对白区先 .wait 不显示，位置与底板不变
+        Assert.That(Web("Components", "BattleScreen.razor"), Does.Contain("<div class=\"bfs-dlg @(dlg && fxLock ? \"wait\" : \"\")\" inert=\"@fxLock\"><DialogueLayer /></div>"));
         Assert.That(Web("wwwroot", "css", "battle.css"), Does.Contain(".bfs-dlg > .dlg-layer { padding: 10px 12px; border: 1px solid var(--ink2-meter-gold);"));
         Assert.That(Web("wwwroot", "css", "materials.css"), Does.Contain(".pause-layer, .bfs-dlg > .dlg-layer)"));
         var css = Web("wwwroot", "css", "fourrows.css");
@@ -108,8 +109,8 @@ public class BM5aDialogueTests : TestBase
     }
 
     /// <summary>
-    /// Q614-A01（选 A）：手动滚动只要不在“已显示最新”就亮「回到最新」，没有新句也亮；到底或回到最新即隐藏；点击只滚动（anchor）、不推进对白。
-    /// Q627 未答：B39 长句句首锚定保持——锚点处及其下方都算“在最新”。
+    /// Q614-A01（选 A）：手动滚动只要不在已显示正文底部就亮「回到最新」，没有新句也亮；到底即隐藏；点击只滚动、不推进对白。
+    /// BM6 起按 Q627 改：显隐只看真实底部（长句句首锚定时下方还有内容也显示），点击滚到正文最底；细节见 BM6DialogueFocusTests。
     /// </summary>
     [Test]
     public void Q614_A01_LatestShownWheneverNotAtLatest()
@@ -117,10 +118,9 @@ public class BM5aDialogueTests : TestBase
         var js = Web("wwwroot", "js", "app.js");
         var dlg = js.Substring(js.IndexOf("window.survivalDlg = (function () {", StringComparison.Ordinal));
         dlg = dlg.Substring(0, dlg.IndexOf("})();", StringComparison.Ordinal));
-        Assert.That(dlg, Does.Contain("function atLatest(el) { return bottom(el) || el.scrollTop >= anchorTop(el) - 8; }"));
-        Assert.That(dlg, Does.Contain("var on = atLatest(el);\n          el.__dlg.follow = on;\n          showLatest(el, !on);"), "手动滚动即判定，不等新句");
+        Assert.That(dlg, Does.Contain("function refresh(el) { showLatest(el, !bottom(el)); }"), "没到底就显示，不等新句");
         Assert.That(dlg, Does.Contain("function bottom(el) { return el.scrollTop + el.clientHeight >= el.scrollHeight - 8; }"), "沿原底部容差");
-        Assert.That(dlg, Does.Contain("else showLatest(el, true);"), "回看期间新句不抢位置");
+        Assert.That(dlg, Does.Contain("if (st.follow) anchor(el);   // 跟读：新句句首锚定（不算回看）"), "回看期间新句不抢位置");
         Assert.That(dlg, Does.Not.Contain("invokeMethodAsync"), "只滚动，不回调推进对白");
         var layer = Web("Components", "DialogueLayer.razor");
         Assert.That(layer, Does.Contain("await JS.InvokeVoidAsync(\"survivalDlg.latest\", _stream);"));

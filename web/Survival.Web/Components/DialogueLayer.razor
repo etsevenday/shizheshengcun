@@ -16,8 +16,19 @@
 @* BM5a（S14「2026-11-13 试玩后续修订：对白恢复背景并覆盖下两行」DLG-LOWER-A01—A06，取代上面 BM4b 的透明大区与“上两行”定位）：
    主界面普通对白由 GameScreen 放在四行网格的③④位置、恢复不透明底板（fourrows.css）；本组件结构不变，全屏战斗内仍由 BattleScreen 的 .bfs-dlg 承载。
    「回到最新」按 Q614 选 A：手动离开已显示最新即出现（app.js survivalDlg）。 *@
+@* BM6（S14 Q625／Q627／Q628，沿 Q612）：对白以外整屏背景的压暗＋模糊由 GameScreen／BattleScreen 的 .dlg-focus 一层遮罩负责，本层只在遮罩的洞里保持清晰。
+   本层入场 180ms 淡入、退场 140ms 淡出（× 动画速度，CSS）：对白结束后用最后一屏内容留一层“退场影子”（.dlg-ghost，内部 inert、只接住点击不点穿、
+   不朗读），影子期间若接着来下一段对白则直接换回正式层、不先退场；读档／新局／回标题／终局不留影子。读档恢复的在办对白（G.FocusStaticDialogue）
+   直接静态显示，不重播入场。「回到最新」按 Q627：正文没到底就显示，点后滚到正文最底（app.js survivalDlg）。 *@
 @{
-    var v = G.State == null ? null : G.E.DialogueLayer(G.S);
+    var live = G.State == null ? null : G.E.DialogueLayer(G.S);
+    if (!ReferenceEquals(G.State, _stateSeen)) { _stateSeen = G.State; _last = null; _ghost = null; }
+    if (live != null) { _last = live; _ghost = null; }
+    else if (_last != null && _ghost == null && G.State != null && !G.S.Progress.Dead) { _ghost = _last; _ = EndGhost(_ghost); }
+    else if (G.State == null || G.S.Progress.Dead) { _last = null; _ghost = null; }
+    var v = live ?? _ghost;
+    var ghost = live == null;
+    var still = !ghost && G.FocusStaticDialogue == v?.Session.Id;
 }
 @if (v != null)
 {
@@ -27,14 +38,14 @@
     var other = v.Counterpart;
     var more = v.HasMore;
     @* B31b（Q322）：游戏菜单／战斗菜单开着时对白层不可操作，菜单不会消费对白继续键；关菜单后回到原对白行 *@
-    <div class="dlg-layer" role="dialog" aria-modal="true" aria-label="@v.AriaName" inert="@(G.MenuOpen || G.BattleMenuOpen)">
-        <div class="dlg-side left @(leftSpeaking ? "speaking" : "idle")">
+    <div class="dlg-layer @(ghost ? "dlg-ghost" : still ? "dlg-static" : "")" role="@(ghost ? null : "dialog")" aria-modal="@(ghost ? null : "true")" aria-hidden="@(ghost ? "true" : null)" aria-label="@v.AriaName" inert="@(G.MenuOpen || G.BattleMenuOpen)">
+        <div class="dlg-side left @(leftSpeaking ? "speaking" : "idle")" inert="@ghost">
             <div class="dlg-face">
                 <img class="dlg-portrait" src="img/portraits/protagonist.svg" alt="主角（临时形象）" draggable="false" />
                 <div class="dlg-name"><b>你</b>@if (leftSpeaking) {<em>发言中</em>}</div>
             </div>
         </div>
-        <div class="dlg-main">
+        <div class="dlg-main" inert="@ghost">
             @if (v.Title != null) { <div class="dlg-title">@v.Title</div> }
             <div class="dlg-stream" @ref="_stream" tabindex="0" aria-live="polite" aria-label="对话内容（可滚动回看）">
                 <DialogueLines Lines="v.Session.Lines" CurrentOrder="cur.Order" />
@@ -65,7 +76,7 @@
                 }
             </div>
         </div>
-        <div class="dlg-side right @(rightSpeaking ? "speaking" : "idle")">
+        <div class="dlg-side right @(rightSpeaking ? "speaking" : "idle")" inert="@ghost">
             @if (other.Length > 0)
             {
                 <div class="dlg-face">
@@ -81,6 +92,19 @@
     private ElementReference _stream;
     private int _shown;
     private int _session = -1;
+    private object? _stateSeen;
+    private DialogueLayerView? _last;
+    private DialogueLayerView? _ghost;
+
+    /// <summary>BM6：退场影子留 140ms（× 动画速度）后撤下；期间换回正式对白或换局则作废。</summary>
+    private async Task EndGhost(DialogueLayerView g)
+    {
+        await Task.Delay(G.MotionMs(DialogueFocus.ExitMs));
+        if (!ReferenceEquals(_ghost, g)) return;
+        _ghost = null;
+        _last = null;
+        await InvokeAsync(StateHasChanged);
+    }
 
     private void Ack(string lineId) => G.AckDialogue(lineId);
 

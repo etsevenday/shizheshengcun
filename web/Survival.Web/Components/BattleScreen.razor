@@ -65,6 +65,11 @@
     // B34b（S14 Q570／Q572）：特写播放中，播放层是最高输入层——战场、操作台、阅读入口与阅读区都不可操作、点击不穿透（只读子页已开着时它仍在最上层）
     var fxLock = G.PlaybackActive && !G.FxUnderReading;
     var lockedUi = dlg || fxLock || G.EncounterPromptActive;   // BM5c（Q605）：探索遭遇短提示期间不接受战斗指令
+    // BM6（S14 Q628）：对白结束后战斗对白区再留 140ms（× 动画速度）给退场影子淡出；期间遮罩仍接住点击
+    if (dlg) _dlgWas = true;
+    else if (_dlgWas) { _dlgWas = false; _ = DlgExit(++_dlgExitSeq); }
+    var dlgFocusOn = DialogueFocus.BattleOn(dlg, fxLock);
+    var dlgStatic = dlg && G.FocusStaticDialogue != null && G.FocusStaticDialogue == e.ActiveDialogue(s)?.Id;
 }
 
 <div class="bfs" role="region" aria-label="@($"{BattleInfoCopy.Title(e.LocName(b.LocationId))} · {BattleInfoCopy.RoundText(b.Round)}")">
@@ -355,9 +360,11 @@
         }
 
         @* 战斗对白（A10 §6.2）：在战场内上层覆盖场景与操作台的主要阅读区；读完前战斗不接受输入、不推进 *@
-        @if (dlg)
+        @* BM6（S14 Q628）：位置与不透明底板仍是原战斗专用区域；特写还在独占播放（Q572 先播出手再承接对白）时对白区先不显示（.wait），
+           播完由对白接管时与背景聚焦一起淡入；对白结束后留退场影子淡出 *@
+        @if (dlg || _dlgExitSeq > 0)
         {
-            <div class="bfs-dlg" inert="@fxLock"><DialogueLayer /></div>
+            <div class="bfs-dlg @(dlg && fxLock ? "wait" : "")" inert="@fxLock"><DialogueLayer /></div>
         }
         @if (G.BattleDrawer != null && !dlg)
         {
@@ -387,6 +394,9 @@
             </div>
         }
     </div>
+    @* BM6（S14 Q628，沿 Q625）：战斗对白的背景聚焦——战场、队列、操作台、顶条与底部反馈整屏压暗＋模糊（一层遮罩），对白区在遮罩的洞里保持清晰；
+       遮罩在战斗内容之上、特写播放层／遭遇提示／战斗菜单之下（更高层不被当作背景）。白名单只有对白本身（DialogueFocus.BattleKeep） *@
+    <div class="dlg-focus battle @(dlgFocusOn ? "on" : "") @(dlgStatic ? "static" : "")" data-keep="@DialogueFocus.BattleKeep" aria-hidden="true"></div>
     @* B34b：特写播放层在战斗页之内（菜单之下、只读子页打开时退到子页之下） *@
     <BattleFxLayer />
     @* BM5c（S14 Q605）：探索遭遇短提示（菜单之下；点击只跳过提示，菜单打开时停在原处） *@
@@ -400,6 +410,18 @@
 </div>
 
 @code {
+    private bool _dlgWas;
+    private int _dlgExitSeq;
+
+    /// <summary>BM6：退场影子期满撤下战斗对白区（期间又来对白则由 dlg 接着显示）。</summary>
+    private async Task DlgExit(int seq)
+    {
+        await Task.Delay(G.MotionMs(DialogueFocus.ExitMs));
+        if (seq != _dlgExitSeq) return;
+        _dlgExitSeq = 0;
+        await InvokeAsync(StateHasChanged);
+    }
+
     /// <summary>
     /// 等待中的顶条/底栏文字（B9a 试玩修复 2）：有敌人在出手写“敌方行动中：N号 名字”；队列游标停在我方下一名（激活马上开始）写“轮到××”；
     /// 本轮队列走完、正在推进轮末 5 分钟写“轮末结算”。不再出现光秃的“敌方行动中”。

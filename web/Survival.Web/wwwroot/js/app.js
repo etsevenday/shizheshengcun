@@ -574,8 +574,11 @@ window.survivalPanels = (function () {
 // 只改滚动位置，不推进对白；“回到最新”按钮所在的容器类名由这里切换（Blazor 不管理这个类）。
 window.survivalDlg = (function () {
   // B39（N02 附录 §1、DLG-A06，B26b/B38 遗留“1280×720 长句顶部被裁”）：新句出现时按句首锚定——新句整段放得下就停在底部，
-  // 放不下就让它的第一行贴住可视区上沿（不再滚到底把句首裁掉）。“正在跟读”见下方 atLatest（BM5a 按 Q614 改：离开已显示最新即算回看）；
-  // 向上回看时保持位置并亮出“回到最新”。只滚动本流，不推进对白。
+  // 放不下就让它的第一行贴住可视区上沿（不再滚到底把句首裁掉）。只滚动本流，不推进对白。
+  // BM6（S14 Q627 选 A，沿 Q614）：「回到最新」显隐只看本流真实滚动底部（沿原 8px 容差）——正文没到底就显示，到底或无可滚动内容就隐藏；
+  // 与“是否在跟读”（follow）分开：程序按新句句首锚定不算用户回看（锚定后仍跟读，但长句下方还有内容时按钮照样显示）；
+  // 用户真往上翻过当前句句首才退出跟读，此后新句进入不抢位置；翻回句首以下或点「回到最新」恢复跟读。
+  // 点「回到最新」滚到已显示正文最底并隐藏按钮，不推进台词、不提交选项。窗口缩放、字体或头像布局改变后按同一滚动容器重验。
   function latestHost(el) {
     var layer = el && el.closest ? el.closest('.dlg-layer') : null;
     return layer ? layer.querySelector('.dlg-latest-host') : null;
@@ -585,6 +588,8 @@ window.survivalDlg = (function () {
     if (h) h.classList.toggle('show', !!on);
   }
   function bottom(el) { return el.scrollTop + el.clientHeight >= el.scrollHeight - 8; }
+  // 按钮显隐：只看真实底部
+  function refresh(el) { showLatest(el, !bottom(el)); }
   // 锚点句：最近一次 sync 时的当前句（新句已渲染、sync 还没跑的间隙里发生的滚动不拿新句判断，免得误判成回看）
   function nowEl(el) {
     var n = el.__dlg && el.__dlg.now;
@@ -600,38 +605,198 @@ window.survivalDlg = (function () {
     var t = nowTop(el);
     return t === null ? max : Math.min(max, Math.max(0, t - 6));
   }
-  function anchor(el) { el.scrollTop = anchorTop(el); }
-  // BM5a（Q614 选 A；Q627 未答，B39 句首锚定保持）：手动滚动时只要阅读位置在“已显示最新”之上就亮出“回到最新”，没有新句也亮；
-  // “已显示最新”= 已在底部（沿原 8px 容差），或不高于 B39 给最新一句定的句首锚点（长句句首贴上沿时仍算在最新、不亮按钮）。
-  // 回看期间（按钮亮着）新句进入不跟随、不抢位置；无可滚动内容时 scrollTop=0 即在底部，不显示。
-  function atLatest(el) { return bottom(el) || el.scrollTop >= anchorTop(el) - 8; }
+  // 程序滚动：记下目标位置，随后到来的那次 scroll 事件不当作用户操作（不改跟读状态）
+  function setTop(el, top) {
+    var st = el.__dlg, before = el.scrollTop;
+    el.scrollTop = top;
+    if (st) st.prog = el.scrollTop !== before ? el.scrollTop : null;
+  }
+  function anchor(el) { setTop(el, anchorTop(el)); if (el.__dlg) el.__dlg.anchored = true; }
+  // 跟读判定（只在用户滚动时用）：在底部，或不高于当前句句首锚点
+  function following(el) { return bottom(el) || el.scrollTop >= anchorTop(el) - 8; }
+  function init(el) {
+    if (el.__dlg) return el.__dlg;
+    var st = el.__dlg = { count: 0, follow: true, prog: null, anchored: false };
+    el.addEventListener('scroll', function () {
+      if (st.prog !== null && Math.abs(el.scrollTop - st.prog) <= 2) st.prog = null;   // 程序锚定／回到最新引起的滚动
+      else { st.prog = null; st.anchored = false; st.follow = following(el); }
+      refresh(el);
+    });
+    // 缩放、字体、头像布局改变：仍停在程序锚点（没手动滚过）时按当前句句首重锚，其余保持位置；按钮按真实底部重验
+    if (window.ResizeObserver) {
+      st.ro = new ResizeObserver(function () {
+        if (!el.isConnected) { st.ro.disconnect(); return; }
+        if (st.follow && st.anchored) anchor(el);
+        refresh(el);
+      });
+      st.ro.observe(el);
+    }
+    return st;
+  }
+  function watchLines(el, st) {
+    if (!st.ro) return;
+    for (var c = el.firstElementChild; c; c = c.nextElementSibling) {
+      if (c.__dlgRo) continue;
+      c.__dlgRo = true;
+      st.ro.observe(c);
+    }
+  }
   return {
     sync: function (el, count) {
       if (!el) return;
-      if (!el.__dlg) {
-        el.__dlg = { count: 0, follow: true };
-        el.addEventListener('scroll', function () {
-          var on = atLatest(el);
-          el.__dlg.follow = on;
-          showLatest(el, !on);
-        });
-      }
-      var st = el.__dlg;
+      var st = init(el);
       st.now = el.querySelector('.now');
+      watchLines(el, st);
       // 新的一次对话（句数变少）或首次出现：从这一段的句首开始
-      if (count <= st.count || st.count === 0) { st.count = count; anchor(el); st.follow = true; showLatest(el, false); return; }
+      if (count <= st.count || st.count === 0) { st.count = count; st.follow = true; anchor(el); refresh(el); return; }
       st.count = count;
-      if (st.follow) { anchor(el); st.follow = true; showLatest(el, false); }
-      else showLatest(el, true);
+      if (st.follow) anchor(el);   // 跟读：新句句首锚定（不算回看）
+      refresh(el);                 // 回看：不抢位置；两种情况按钮都只看是否到底
     },
     latest: function (el) {
       if (!el) return;
-      if (el.__dlg) el.__dlg.now = el.querySelector('.now');
-      anchor(el);
-      if (el.__dlg) el.__dlg.follow = true;
-      showLatest(el, false);
+      var st = init(el);
+      st.now = el.querySelector('.now');
+      setTop(el, Math.max(0, el.scrollHeight - el.clientHeight));
+      st.follow = true;
+      st.anchored = false;
+      refresh(el);
     }
   };
+})();
+
+// BM6（S14 Q625／Q628，沿 Q612）：对白聚焦——整屏对白以外的背景一次性压暗（黑 0.48）＋模糊（2px），对白与白名单按钮保持清晰。
+// 只有一层遮罩（.dlg-focus，主界面一层、全屏战斗内一层，同时只亮一层）：backdrop-filter 只作用于遮罩背后，clip-path 按白名单元素的
+// 实际位置挖洞——洞里露出的对白、顶栏「菜单」、底栏「重试」「在此页面继续保存」、结果提示 × 不被压暗或模糊，也照原规则可点；
+// 其余位置都落在遮罩上，从入场到退场完成都点不穿。白名单选择器写在遮罩的 data-keep 上（由 C# 按情境给出），不新开任何权限：
+// 原本禁用的按钮仍禁用，不存在的提示不画按钮。更高层菜单、确认、播放层在遮罩之上，不被当作背景。
+// 入场 180ms／退场 140ms × 动画速度（CSS）；入场期间第一下点击或 Enter／Space 只完成入场表现、不推进台词（显式菜单／存档按钮照常各自消费）；
+// 菜单打开时冻结入场表现，关闭后续原进度。系统减少动态效果时 CSS 不做渐变，静态压暗与模糊照常。
+window.survivalFocus = (function () {
+  var raf = 0, timer = 0, paused = [];
+  function scrims() { return document.querySelectorAll('.dlg-focus'); }
+  function active(s) {
+    if (s.classList.contains('on')) return true;
+    try { return getComputedStyle(s).visibility !== 'hidden'; } catch (e) { return false; }
+  }
+  function holes(s) {
+    var sel = s.getAttribute('data-keep');
+    if (!sel) return [];
+    var list;
+    try { list = document.querySelectorAll(sel); } catch (e) { return []; }
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var r = list[i].getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) continue;
+      var pad = list[i].classList.contains('dlg-layer') ? 0 : 2;   // 按钮留出焦点框
+      out.push([r.left - pad, r.top - pad, r.right + pad, r.bottom + pad]);
+    }
+    return out;
+  }
+  function n(v) { return Math.round(v * 2) / 2; }
+  function pathOf(s, hs) {
+    if (!hs.length) return '';
+    var b = s.getBoundingClientRect();
+    var d = 'M0 0H' + n(b.width) + 'V' + n(b.height) + 'H0Z';
+    for (var i = 0; i < hs.length; i++) {
+      var h = hs[i];
+      d += 'M' + n(h[0] - b.left) + ' ' + n(h[1] - b.top) + 'H' + n(h[2] - b.left) + 'V' + n(h[3] - b.top) + 'H' + n(h[0] - b.left) + 'Z';
+    }
+    return "path(evenodd, '" + d + "')";
+  }
+  function entering(layer) {
+    if (!layer || !layer.getAnimations) return [];
+    return layer.getAnimations().filter(function (a) { return a.animationName === 'dlg-in' && a.playState !== 'finished'; });
+  }
+  function liveLayer() { return document.querySelector('.dlg-layer:not(.dlg-ghost)'); }
+  function scrimAnims() {
+    var out = [];
+    var ss = scrims();
+    for (var i = 0; i < ss.length; i++) if (ss[i].getAnimations) out = out.concat(ss[i].getAnimations());
+    return out;
+  }
+  // 菜单打开：冻结入场表现；关闭：从原进度续（不重播）
+  function freeze() {
+    var menu = !!document.querySelector('.menu-scrim');
+    if (menu) {
+      var list = entering(liveLayer()).concat(scrimAnims());
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].playState === 'running') { try { list[i].pause(); paused.push(list[i]); } catch (e) { } }
+      }
+    } else if (paused.length) {
+      var p = paused; paused = [];
+      for (var j = 0; j < p.length; j++) { try { p[j].play(); } catch (e) { } }
+    }
+  }
+  function update() {
+    raf = 0;
+    var any = false, ss = scrims();
+    for (var i = 0; i < ss.length; i++) {
+      var s = ss[i];
+      var p = active(s) ? pathOf(s, holes(s)) : '';
+      if (p) any = true;
+      if (s.__p !== p) { s.__p = p; s.style.clipPath = p; }
+    }
+    freeze();
+    if (any && !timer) timer = setInterval(schedule, 400);   // 兜底：布局在没有 DOM 变化时改变（图片载入、过渡）
+    else if (!any && timer) { clearInterval(timer); timer = 0; }
+  }
+  function schedule() { if (!raf) raf = requestAnimationFrame(update); }
+  function finishEntry(layer) {
+    var list = entering(layer).concat(scrimAnims());
+    for (var i = 0; i < list.length; i++) { try { list[i].finish(); } catch (e) { } }
+    paused = [];
+  }
+  // 入场期间第一下：只完成入场表现，同一下不推进台词、不选背景（白名单按钮照常消费自己的点击／按键）
+  var swallowUntil = 0;
+  function onBackgroundOrDialogue(t, layer) {
+    return !!(t && t.closest && (layer.contains(t) || t.closest('.dlg-focus')));
+  }
+  function onKeep(t) {
+    if (!t || !t.closest) return false;
+    var ss = scrims();
+    for (var i = 0; i < ss.length; i++) {
+      var sel = ss[i].getAttribute('data-keep');
+      if (!sel || !active(ss[i])) continue;
+      try { var k = t.closest(sel); if (k && !k.classList.contains('dlg-layer')) return true; } catch (e) { }
+    }
+    return false;
+  }
+  function init() {
+    if (window.__survivalFocusInit) return;
+    window.__survivalFocusInit = true;
+    new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'inert', 'disabled', 'data-read-font'] });
+    window.addEventListener('resize', schedule);
+    document.addEventListener('scroll', schedule, true);
+    window.addEventListener('pointerdown', function (ev) {
+      var L = liveLayer();
+      if (!L || !entering(L).length || document.querySelector('.menu-scrim')) return;
+      if (!onBackgroundOrDialogue(ev.target, L)) return;
+      finishEntry(L);
+      swallowUntil = Date.now() + 1500;
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+    }, true);
+    window.addEventListener('click', function (ev) {
+      if (!swallowUntil) return;
+      var due = Date.now() <= swallowUntil;
+      swallowUntil = 0;
+      var L = liveLayer();
+      if (due && L && onBackgroundOrDialogue(ev.target, L)) { ev.preventDefault(); ev.stopImmediatePropagation(); }
+    }, true);
+    window.addEventListener('keydown', function (ev) {
+      if (ev.repeat || (ev.key !== 'Enter' && ev.key !== ' ')) return;
+      if ((window.FeedbackWidget && FeedbackWidget.isOpen()) || document.querySelector('.menu-scrim')) return;
+      var L = liveLayer();
+      if (!L || !entering(L).length || onKeep(document.activeElement)) return;
+      finishEntry(L);
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+    }, true);
+    schedule();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  return { refresh: schedule };
 })();
 
 // 就近操作浮窗（S14 §14.1）：锚定到对象卡/指令按钮旁。优先 data-place 顺序里第一个放得下的方向（附近空位），都放不下取空间最大的一侧，

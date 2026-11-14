@@ -197,6 +197,10 @@
             }
         </div>
     </footer>
+    @* BM6（S14 Q625，沿 Q612）：对白聚焦——普通对白（含全屏面板开着时）整屏其余背景（顶栏、左右栏、底栏、上方场景／设施与原打开页面）一次性压暗＋模糊，
+       只有一层遮罩；对白层与原本就可用的顶栏「菜单」、底栏「在此页面继续保存」「重试」、结果提示 × 在遮罩的洞里保持原亮度、清晰与原权限（DialogueFocus.MainKeep），
+       其余背景从入场到退场完成都点不穿。全屏战斗由 BattleScreen 自己的一层负责；死亡结算不亮。读档恢复的在办对白直接静态聚焦（.static） *@
+    <div class="dlg-focus main @(DialogueFocus.MainOn(dlgLock, fullBattle, s.Progress.Dead) ? "on" : "") @(dlgLock && G.FocusStaticDialogue != null && G.FocusStaticDialogue == e.ActiveDialogue(s)?.Id ? "static" : "")" data-keep="@DialogueFocus.MainKeep" aria-hidden="true"></div>
     @if (fullBattle) { <BattleScreen /> }
 </div>
 

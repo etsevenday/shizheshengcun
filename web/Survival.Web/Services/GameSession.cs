@@ -1521,6 +1521,7 @@ public sealed partial class GameSession
             return SaveSlots.UnreadablePrefix + SaveProblems.Corrupt;
         }
         ResetUi();
+        FocusStaticDialogue = E.ActiveDialogue(S)?.Id;   // BM6：读档恢复的在办对白静态显示
         foreach (var l in S.Log.TakeLast(8))
             Recent.Add(new GameEvent { Minute = l.Minute, Text = E.HideInstanceTags(l.Text), Kind = GameEventKind.Info });   // B32a Q349：旧存档记录回看隐藏物品编号
         Saves?.StartLoaded(S, NowMs);
@@ -1548,9 +1549,16 @@ public sealed partial class GameSession
         Notify();
     }
 
+    /// <summary>
+    /// BM6（S14 Q625／Q628 读档与切场）：读档时已在办的对白编号——这段对白直接显示可信当前句与静态背景聚焦，不重播入场淡入；
+    /// 之后新出现的对白照常淡入。新局、回标题为 null（新局开场对白照常淡入）。
+    /// </summary>
+    public int? FocusStaticDialogue { get; private set; }
+
     private void ResetUi()
     {
         DeathLogOpen = false;
+        FocusStaticDialogue = null;
         Recent.Clear();
         Toast = null;
         Highlights.Clear();

@@ -509,3 +509,29 @@ button .kc, .wasteland button kbd.kc { color: inherit; border-color: currentColo
 .center-scroll.four.docked-prog .panel-host .rest-panel > * { flex-shrink: 0; }
 .center-scroll.four.docked-prog .panel-host .rest-panel > .rest-scroll { overflow: visible; }
 .center-scroll.four.docked-prog .panel-host .rest-panel > .rest-go { position: sticky; bottom: 0; }
+
+/* ───── BM6（S14「2026-11-14 BM5c／BM5a Q620—Q628」§Q625、§Q625／Q628、§Q628，沿 §Q612）：对白聚焦 ─────
+   一层遮罩（.dlg-focus：主界面一层、全屏战斗内一层）盖住整屏对白以外的背景——黑色遮罩 0.48、背景模糊 2px（只作用于遮罩背后，backdrop-filter）；
+   对白层与白名单按钮由 app.js survivalFocus 按实际位置在遮罩上挖洞（clip-path），所以保持原亮度、清晰与原权限，其余位置落在遮罩上点不穿。
+   遮罩不随台词／换人／回看重复叠加；入场 180ms 缓出、退场 140ms 缓入（× 动画速度 --motion-k），退场期间遮罩仍可见并接住点击（visibility 延后切换）。
+   系统减少动态效果时由 app.css 全局规则去掉渐变：静态压暗＋模糊照常，不用关模糊冒充减少动态。读档恢复的在办对白（.static）直接静态显示。
+   层级：主界面在全部游戏内容与结果提示（60）之上、战后全记录（65）／特写（70）／强制整理（80）／游戏菜单（85）之下；战斗内在战场之上、特写播放层／遭遇提示／战斗菜单之下。 */
+.dlg-focus {
+  position: fixed; inset: 0; z-index: 62; pointer-events: auto;
+  background: rgb(0 0 0 / .48);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  opacity: 0; visibility: hidden;
+  transition: opacity calc(140ms * var(--motion-k, 1)) ease-in, visibility 0s linear calc(140ms * var(--motion-k, 1));
+}
+.dlg-focus.on { opacity: 1; visibility: visible; transition: opacity calc(180ms * var(--motion-k, 1)) ease-out, visibility 0s; animation: dlg-in calc(180ms * var(--motion-k, 1)) ease-out; }
+/* 遮罩随页面新建时（标题进新局、战斗页刚打开）没有可过渡的旧状态，靠同一入场动画淡入；读档恢复的在办对白直接静态 */
+.dlg-focus.static { transition: none; animation-duration: 0s; }
+.bfs > .dlg-focus { z-index: 50; }
+/* 对白层：表面微提亮约 6%（整层亮度 ×1.06，正文与底色同比提亮、对比度不降），首次出现淡入；同一层在连续台词、换人、回看与相邻下一段对白间保留，不反复淡入淡出 */
+.dlg-layer { filter: brightness(1.06); animation: dlg-in calc(180ms * var(--motion-k, 1)) ease-out; transition: opacity calc(140ms * var(--motion-k, 1)) ease-in; }
+@keyframes dlg-in { from { opacity: 0; } }
+/* 退场影子：最后一屏内容淡出；内部 inert，影子本身接住点击（不点穿到背后已解锁的地面／随身或战斗操作台） */
+.dlg-layer.dlg-ghost { opacity: 0; pointer-events: auto; }
+.dlg-layer.dlg-static { animation-duration: 0s; }   /* 只把入场时长归零、不换动画名：静态结束后同一层不会重播淡入 */
+/* 全屏战斗：特写仍在独占播放（Q572）时对白区先不出现，对白接管时与背景聚焦一起淡入 */
+.bfs-dlg.wait > .dlg-layer { visibility: hidden; animation: none; }
