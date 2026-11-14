@@ -165,15 +165,19 @@ namespace Survival.Core.Engine
             if (run.ProbabilityZero.Values.Any(z => cut == null || z <= cut.Value)) p.ProbabilityNote = ProbabilityOnlyNote;
         }
 
-        /// <summary>把预估的各类提示按“计划提示 → 身体截止与风险 → 各人风险 → 阈值提醒 → 尸变 → 概率限定”摊平成一列（就近浮窗等紧凑位置照旧读 Warnings）。</summary>
+        /// <summary>
+        /// 把预估的各类提示摊平成一列（就近浮窗、制作／休息摘要等紧凑位置照旧读 Warnings，常只显示第一条）：
+        /// 求不出完成 → 身体截止与风险 → 各人风险 → 抵抗含义 → 计划提示 → 阈值提醒 → 尸变 → 概率限定。无危险时与原顺序相同（计划提示在阈值提醒前）。
+        /// </summary>
         private static List<string> FlatWarnings(ActionPreview p)
         {
-            var list = new List<string>(p.PlanWarnings);
+            var list = new List<string>();
             if (p.PlanFailed) list.Add(PlanFailedText + (p.PlanFailReason is string why ? why : ""));
             if (p.BodyCutoffMinutes is int m) list.Add(BodyCutAtText(m));
             list.AddRange(p.BodyRisks);
             if (p.LaterRisks.Count > 0) { list.Add(LaterRiskNote); list.AddRange(p.LaterRisks); }
             if (p.ResistanceNote != null) list.Add(p.ResistanceNote);
+            list.AddRange(p.PlanWarnings);
             list.AddRange(p.BodyAlerts);
             list.AddRange(p.VirusRisks);
             if (p.ProbabilityNote != null) list.Add(p.ProbabilityNote);

@@ -189,6 +189,9 @@ namespace Survival.Core.Engine
                     p.AlertLatched[StatId.Health] = false; p.AlertLatched[StatId.Satiety] = false; p.AlertLatched[StatId.Hydration] = false;
                     return "主角健康→0.05、饱食水分→0（提醒未锁存；开始或继续多段行动，下一段同边界多原因，开发用）";
                 case "h0": p.Stats.Health = 0; p.DyingNotified = true; return "主角健康→0，处于濒死（开发用）";
+                // B47a3（R09 Q674、Q683）：试预估截断——健康 0.3 且饱食水分 0（第 2 段首次进入濒死）；已濒死且饱食水分 0（第 1 段确定正伤，健康写未预估）
+                case "cut": p.Stats.Health = 0.3; p.DyingNotified = false; p.Stats.Satiety = 0; p.Stats.Hydration = 0; SyncLatches(s); return "主角健康→0.3、饱食水分→0（打开任一多段行动预估，第2段首次进入濒死，开发用）";
+                case "cut0": p.Stats.Health = 0; p.DyingNotified = true; p.Stats.Satiety = 0; p.Stats.Hydration = 0; SyncLatches(s); return "主角健康→0（濒死）、饱食水分→0（预估第1段确定再受正伤，开发用）";
                 case "starve": p.Stats.Satiety = 0; p.Stats.Hydration = 0; SyncLatches(s); return "主角饱食、水分→0（开发用）";
                 case "bleed": ApplyPlayerBleed(s); return $"主角开始出血（{Fmt.T(s.Body.BleedDamage)}×{s.Body.BleedTriggers}，开发用）";
                 default: return "未知开发项";

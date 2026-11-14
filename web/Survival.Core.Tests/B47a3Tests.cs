@@ -118,7 +118,7 @@ public class B47a3Tests : BattleTestBase
         Assert.That(p.HealthUnknown, Is.Empty, "首次归零本身可确定为 0");
         Assert.That(p.StatsAfter.Energy, Is.EqualTo(s.Stats.Energy + E.Config.HourlyRates["explore"].Energy * 10 / 60.0).Within(1e-9), "身体值取截止时刻，不是计划终值");
         Assert.That(p.BodyRisks, Is.EqualTo(new[] { Enter("你", 65) }));
-        Assert.That(p.Warnings[p.PlanWarnings.Count], Is.EqualTo("身体预估截至从现在起10分钟；此后身体变化未预估。"));
+        Assert.That(p.Warnings[0], Is.EqualTo("身体预估截至从现在起10分钟；此后身体变化未预估。"), "紧凑位置只显示第一条时先见截止");
         Assert.That(E.Preview(s, ActionRequest.Explore()).Warnings, Is.EqualTo(p.Warnings), "反复查看同事实输出一致");
     }
 
@@ -397,5 +397,72 @@ public class B47a3Tests : BattleTestBase
         Assert.That(p3.Warnings, Is.EqualTo(p1.Warnings), "读档同事实同输出");
         Assert.That(p1.VirusRisks, Is.Not.Empty);
         Assert.That(before, Does.Not.Contain("SimProbe"));
+    }
+
+    // ───────────── 界面接线（源码） ─────────────
+
+    private static string Root()
+    {
+        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "AGENTS.md"))) dir = dir.Parent;
+        return dir!.FullName;
+    }
+
+    private static string Web(string relative) => File.ReadAllText(Path.Combine(Root(), "web", "Survival.Web", relative));
+
+    /// <summary>S14／逐字稿 Q683：右栏有危险时先“预估至危险段”（范围句、截止句、身体行、阈值提醒、风险、各人风险）再“完成计划”（标题与限定常显），无危险沿原完整预估。</summary>
+    [Test]
+    public void Ui_PreviewView_TwoSections()
+    {
+        var pv = Web("Components/PreviewView.razor");
+        var body = pv.IndexOf("@GameEngine.BodyCutTitle", StringComparison.Ordinal);
+        var plan = pv.IndexOf("@GameEngine.PlanTitle", StringComparison.Ordinal);
+        var dur = pv.IndexOf("<span>预计耗时</span>", StringComparison.Ordinal);
+        Assert.That(body, Is.GreaterThan(0).And.LessThan(plan));
+        Assert.That(plan, Is.LessThan(dur), "完成计划区包住耗时／完成／产物等原字段");
+        foreach (var x in new[] { "@GameEngine.BodyCutRange", "@GameEngine.BodyCutAtText(p.BodyCutoffMinutes!.Value)", "@BodyRows(p)", "p.BodyAlerts", "p.BodyRisks",
+                     "@GameEngine.LaterRiskTitle", "@GameEngine.LaterRiskNote", "p.LaterRisks", "p.ResistanceNote", "p.ProbabilityNote" })
+            Assert.That(pv.IndexOf(x, StringComparison.Ordinal), Is.GreaterThan(body).And.LessThan(plan), x);
+        Assert.That(pv, Does.Contain("@GameEngine.PlanNote"));
+        Assert.That(pv, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : Clock.Duration(p.EstimatedMinutes)"));
+        Assert.That(pv, Does.Contain("p.HealthUnknown.Contains(GameState.PlayerId)"));
+        Assert.That(pv, Does.Contain("@if (p.Ok && p.BodyCut)"), "无危险不加两区标题");
+        Assert.That(Web("Components/ItemDetail.razor"), Does.Contain("p.HealthUnknown.Contains(GameState.PlayerId) ? GameEngine.NotEstimated"));
+        Assert.That(Web("Components/CraftOverlay.razor"), Does.Contain("@if (p.PlanFailed)"));
+    }
+
+    /// <summary>R03／S14 Q685：撤出确认窗保留即时损失表，返程风险后逐人列身体检查、本人截止句与风险句、抵抗含义与尸变句。</summary>
+    [Test]
+    public void Ui_ExpeditionAbort_PerActorRows()
+    {
+        var ab = Web("Components/ExpeditionAbort.razor");
+        var loss = ab.IndexOf("即时损失（确认时一次扣除，每名存活同行）", StringComparison.Ordinal);
+        var risks = ab.IndexOf("@foreach (var x in p.Risks)", StringComparison.Ordinal);
+        var rows = ab.IndexOf("@foreach (var r in p.BodyRows)", StringComparison.Ordinal);
+        Assert.That(loss, Is.GreaterThan(0).And.LessThan(risks));
+        Assert.That(rows, Is.GreaterThan(risks));
+        foreach (var x in new[] { "r.CutoffText", "r.Risk", "GameEngine.NotEstimated", "p.ResistanceNote", "p.VirusRisks" })
+            Assert.That(ab.IndexOf(x, rows, StringComparison.Ordinal), Is.GreaterThan(rows), x);
+    }
+
+    /// <summary>开发入口（?dev=1）：B47a3 组与同伴饱食水分→0、病毒→99.9。</summary>
+    [Test]
+    public void Dev_Entries()
+    {
+        var menu = Web("Components/MenuOverlay.razor");
+        Assert.That(menu, Does.Contain("行动与撤出预估截断（B47a3）"));
+        Assert.That(menu, Does.Contain("DebugDying(G.S, \"cut\")").And.Contain("DebugDying(G.S, \"cut0\")"));
+        Assert.That(menu, Does.Contain("DebugActor(st, rid, \"starve\")").And.Contain("DebugActor(st, rid, \"virus99\")"));
+        var s = New();
+        Assert.That(E.DebugDying(s, "cut"), Does.StartWith("主角健康→0.3"));
+        Assert.That((s.Stats.Health, s.Stats.Satiety, s.Stats.Hydration, s.Player.DyingNotified), Is.EqualTo((0.3, 0.0, 0.0, false)));
+        Assert.That(E.Preview(s, ActionRequest.Wait(30)).BodyCutoffMinutes, Is.EqualTo(10));
+        E.DebugDying(s, "cut0");
+        Assert.That(E.Preview(s, ActionRequest.Wait(30)).HealthUnknown, Does.Contain(GameState.PlayerId));
+        E.DebugQuickParty(s, 2);
+        var mate = s.Party.Single(id => id != GameState.PlayerId);
+        E.DebugActor(s, mate, "starve");
+        E.DebugActor(s, mate, "virus99");
+        Assert.That((s.Actors[mate].Stats.Satiety, s.Actors[mate].Body.VirusLoad), Is.EqualTo((0.0, 99.9)));
     }
 }

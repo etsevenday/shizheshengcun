@@ -191,7 +191,7 @@ public class BM4bRailTests : TestBase
         var pv = Web("Components", "PreviewView.razor");
         var outputs = pv.IndexOf("@if (p.Ok && p.Outputs.Count > 0)", StringComparison.Ordinal);
         var risk = pv.IndexOf("无随机伤害风险。", StringComparison.Ordinal);
-        var body = pv.IndexOf("@foreach (var id in Stats.All)", StringComparison.Ordinal);
+        var body = pv.IndexOf("@if (!p.BodyCut) { @BodyRows(p) }", StringComparison.Ordinal);   // B47a3：身体行抽成 BodyRows（无危险时仍在原位置）
         Assert.That(outputs, Is.GreaterThan(0).And.LessThan(risk));
         Assert.That(risk, Is.LessThan(body));
     }

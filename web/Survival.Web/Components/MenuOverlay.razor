@@ -225,6 +225,14 @@
                     <button class="secondary" title="开始或继续搜集、等待等多段行动：下一段进入濒死并暂停（只此一个原因）" @onclick='() => DevDone(G.E.DebugDying(G.S, "pause1"))'>主角健康→0.05、饱食水分→0（试濒死暂停）</button>
                     <button class="secondary" title="开始或继续多段行动：下一段同时新进入濒死、饱食水分归零、健康高危" @onclick='() => DevDone(G.E.DebugDying(G.S, "multi"))'>主角健康→0.05、饱食水分→0未锁存（试多原因同边界）</button>
                 </div>
+                @* B47a3（R09 Q682—Q687）：行动与撤出预估截断——造首次进入濒死／确定再受正伤的身体，打开探索、搜集、等待等预估看“预估至危险段”与“完成计划”两区；
+                   同伴风险用名册里各人的「健康→1」「饱食水分→0」「病毒→99.9」，撤出用远征栏 dr04b 后点「终止本次远征…」 *@
+                <div class="eyebrow">行动与撤出预估截断（B47a3）</div>
+                <div class="btn-row">
+                    <button class="secondary" title="第2段首次进入濒死：身体区截止从现在起10分钟" @onclick='() => DevDone(G.E.DebugDying(G.S, "cut"))'>主角健康→0.3、饱食水分→0（试身体截断）</button>
+                    <button class="secondary" title="已濒死、第1段确定再受正伤：健康写未预估" @onclick='() => DevDone(G.E.DebugDying(G.S, "cut0"))'>主角健康→0（濒死）、饱食水分→0（试未预估）</button>
+                    <button class="secondary" title="病毒到上限前的尸变预警（预估查到计划结束）" @onclick="() => DevVirus(99.9)">主角病毒99.9（试尸变预警）</button>
+                </div>
                 @* B29（R90—R96）：同行者、随身食水、腐败与锅水，试食饮局部盘和地牢饮水预告 *@
                 <div class="eyebrow">同行食饮与饮水预算（B29）</div>
                 <div class="btn-row">
@@ -477,6 +485,8 @@
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "health1"))'>健康→1</button>
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "health0"))'>健康→0（濒死）</button>
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "virus79"))'>病毒→79</button>
+                        <button class="secondary small-btn" title="B47a3：试同伴尸变预警" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "virus99"))'>病毒→99.9</button>
+                        <button class="secondary small-btn" title="B47a3：试同伴先遇险、共同身体截止与各人风险" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "starve"))'>饱食水分→0</button>
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "food41"))'>饱食水分→41</button>
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "food85"))'>饱食水分精神→85</button>
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "wake50"))'>清醒→50</button>

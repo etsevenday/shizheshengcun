@@ -45,6 +45,18 @@
                 @foreach (var x in p.Leftovers) { <div class="exp-row muted"><span>· @x</span></div> }
                 <div class="exp-sec">返程中仍可能发生</div>
                 @foreach (var x in p.Risks) { <div class="exp-row warn-text"><span>· @x</span></div> }
+                @* B47a3（R03／R09 Q685、Q675、Q684）：确认扣包后逐人按撤出规则检查——健康到本人首个危险段（取决于致死判定写“未预估”）或撤出结束，
+                   有截断的贴本人截止句与对应撤出风险句；不同人的截止各自标明，不当成同一终点。病毒单独查到撤出结束，到上限才列本人 *@
+                @foreach (var r in p.BodyRows)
+                {
+                    <div class="exp-row exp-cut">
+                        <span><b>@r.Name</b> 健康@(Ui.N(r.HealthFrom))→@(r.HealthTo is double h ? Ui.N(h) : GameEngine.NotEstimated)</span>
+                        @if (r.CutoffText != null) { <span class="muted">@r.CutoffText</span> }
+                        @if (r.Risk != null) { <span class="warn-text">@r.Risk</span> }
+                    </div>
+                }
+                @if (p.ResistanceNote != null) { <div class="exp-row muted"><span>@p.ResistanceNote</span></div> }
+                @foreach (var x in p.VirusRisks) { <div class="exp-row warn-text"><span>· @x</span></div> }
             </div>
             <div class="ov-foot">
                 <button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">取消（不扣任何东西）<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>

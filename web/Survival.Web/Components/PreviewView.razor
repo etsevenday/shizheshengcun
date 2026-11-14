@@ -17,11 +17,38 @@
     </RailHead>
     @Extra
 
+    @if (p.Ok && p.BodyCut)
+    {
+        @* B47a3（R09 Q683、S14／逐字稿「B47a3 Q682—Q687」）：有身体危险时分两区——身体只到同行者最早的危险段（不确定写“未预估”、截止外不列），
+           其后“完成计划”按假设存活完成显示耗时／完成／产物与其余计划明细（原字段、单位与折叠不变）。无危险时不加这两块标题。 *@
+        <div class="pv-cut pv-body" data-pv-section="body">
+            <div class="pv-cut-title">@GameEngine.BodyCutTitle</div>
+            <div class="pv-cut-note">@GameEngine.BodyCutRange</div>
+            <div class="risk">@GameEngine.BodyCutAtText(p.BodyCutoffMinutes!.Value)</div>
+            <div class="lines rail-main rail-body">@BodyRows(p)</div>
+            @foreach (var w in p.BodyAlerts) { <div class="risk">@w</div> }
+            @foreach (var w in p.BodyRisks) { <div class="risk">@w</div> }
+            @if (p.LaterRisks.Count > 0)
+            {
+                <div class="pv-cut-sub">@GameEngine.LaterRiskTitle</div>
+                <div class="pv-cut-note">@GameEngine.LaterRiskNote</div>
+                @foreach (var w in p.LaterRisks) { <div class="risk">@w</div> }
+            }
+            @if (p.ResistanceNote != null) { <div class="pv-cut-note">@p.ResistanceNote</div> }
+            @if (p.ProbabilityNote != null) { <div class="pv-cut-note">@p.ProbabilityNote</div> }
+        </div>
+        <div class="pv-cut pv-plan" data-pv-section="plan">
+            <div class="pv-cut-title">@GameEngine.PlanTitle</div>
+            <div class="pv-cut-note">@GameEngine.PlanNote</div>
+        </div>
+    }
+
     <div class="lines rail-main">
         @if (p.Ok)
         {
-            <div><span>预计耗时</span><b>@Clock.Duration(p.EstimatedMinutes)</b></div>
-            <div><span>预计完成</span><b>@Clock.HHmm(p.EstimatedEndMinute)</b></div>
+            @* B47a3（Q682）：按当前条件求不出可信完成时，耗时与完成时刻写“未预估”（原因见下方风险行） *@
+            <div><span>预计耗时</span><b>@(p.PlanFailed ? GameEngine.NotEstimated : Clock.Duration(p.EstimatedMinutes))</b></div>
+            <div><span>预计完成</span><b>@(p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute))</b></div>
             @if (p.ClearCharges.HasValue)
             {
                 <div><span>清理次数</span><b>@p.ClearCharges/@p.ClearCap → @(p.ClearCharges - 1)/@p.ClearCap</b></div>
@@ -74,9 +101,20 @@
             <div class="risk none">无随机伤害风险。</div>
         }
     }
-    @foreach (var w in p.Warnings)
+    @if (!p.BodyCut)
     {
-        <div class="risk">@w</div>
+        @foreach (var w in p.Warnings)
+        {
+            <div class="risk">@w</div>
+        }
+    }
+    else
+    {
+        @* 截断时身体区已列截止、风险与阈值提醒；这里只留完成计划的提示（倍率变化、无法估完）与本人尸变风险（Q684 查到计划结束） *@
+        @foreach (var w in PlanSide(p))
+        {
+            <div class="risk">@w</div>
+        }
     }
     @if (G.RightNotice != null)
     {
@@ -86,15 +124,7 @@
     @if (p.Ok)
     {
         <div class="lines rail-main rail-body">
-            @foreach (var id in Stats.All)
-            {
-                var before = Ui.N(p.StatsBefore.Get(id));
-                var after = Ui.N(p.StatsAfter.Get(id));
-                if (before == after && id != StatId.Hydration && id != StatId.Energy) continue;
-                var th = e.Config.Thresholds[GameEngine.StatKey(id)];
-                var cls = th.IsBelow(p.StatsAfter.Get(id)) ? "warn-text" : "";
-                <div><span>@GameEngine.StatName(id)</span><b class="@cls">@before → @after</b></div>
-            }
+            @if (!p.BodyCut) { @BodyRows(p) }
             @if (Request.Type == ActionType.Travel || Request.Type == ActionType.Gather)
             {
                 <div><span>负重</span><b>@(Request.Type == ActionType.Gather ? "采集后不自动增加" : Ui.Kg(e.CarriedGrams(s)) + "公斤")</b></div>
@@ -242,6 +272,30 @@
     [Parameter] public string RailType { get; set; } = RailTypes.Op;
 
     private bool starting;
+
+    /// <summary>主角身体前→后（截断时后值取共同截止处；取决于致死判定结果的健康写“未预估”）。</summary>
+    private RenderFragment BodyRows(ActionPreview p) => __builder =>
+    {
+        var e = G.E;
+        foreach (var id in Stats.All)
+        {
+            var before = Ui.N(p.StatsBefore.Get(id));
+            var unknown = id == StatId.Health && p.HealthUnknown.Contains(GameState.PlayerId);
+            var after = unknown ? GameEngine.NotEstimated : Ui.N(p.StatsAfter.Get(id));
+            if (before == after && id != StatId.Hydration && id != StatId.Energy) continue;
+            var th = e.Config.Thresholds[GameEngine.StatKey(id)];
+            var cls = !unknown && th.IsBelow(p.StatsAfter.Get(id)) ? "warn-text" : "";
+            <div><span>@GameEngine.StatName(id)</span><b class="@cls">@before → @after</b></div>
+        }
+    };
+
+    /// <summary>截断时完成计划区的提示：计划提示（倍率变化等）、求不出完成及原因、尸变风险。</summary>
+    private static IEnumerable<string> PlanSide(ActionPreview p)
+    {
+        foreach (var w in p.PlanWarnings) yield return w;
+        if (p.PlanFailed) yield return GameEngine.PlanFailedText + (p.PlanFailReason ?? "");
+        foreach (var w in p.VirusRisks) yield return w;
+    }
 
     private async Task StartBare(ActionRequest bare)
     {

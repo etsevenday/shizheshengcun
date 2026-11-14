@@ -122,7 +122,7 @@ else
                         var b0 = Ui.N(p.StatsBefore.Get(id));
                         var b1 = Ui.N(p.StatsAfterImmediate.Get(id));
                         if (b0 != b1) { <div><span>@GameEngine.StatName(id)（即时）</span><b>@b0 → @b1</b></div> }
-                        var b2 = Ui.N(p.StatsAfter.Get(id));
+                        var b2 = id == StatId.Health && p.HealthUnknown.Contains(GameState.PlayerId) ? GameEngine.NotEstimated : Ui.N(p.StatsAfter.Get(id));   // B47a3（Q683）：取决于致死判定的健康写“未预估”
                         if (b2 != b1) later.Add($"{GameEngine.StatName(id)}{b2}");
                     }
                     if (later.Count > 0) { <div><span>5分钟后</span><b>@string.Join("，", later)（按等待消耗）</b></div> }
