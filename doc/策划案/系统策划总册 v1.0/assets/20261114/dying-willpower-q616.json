@@ -1,7 +1,7 @@
 {
-  "contractVersion": 1,
-  "date": "2026-11-14",
-  "purpose": "Q616策划合同，唯一正文R09；不是运行配置或已实现声明",
+  "contractVersion": 2,
+  "date": "2026-11-15",
+  "purpose": "Q616策划合同与Q673—Q678补充，唯一正文R09；不是运行配置或已实现声明",
   "scope": {
     "friendlyActors": [
       "protagonist",
@@ -129,5 +129,76 @@
     "oldLivingHealthZero": "dying_without_retroactive_roll",
     "retroactiveXpOrDeathRolls": false,
     "existingDomainStateAndRandomPreserved": true
+  },
+  "q673ToQ678": {
+    "decisions": {
+      "Q673": "A",
+      "Q674": "B",
+      "Q675": "B_controller_full_copy",
+      "Q676": "A",
+      "Q677": "A",
+      "Q678": "A"
+    },
+    "dyingPause": {
+      "trigger": "real_normal_to_dying_transition_at_original_safe_boundary_of_unfinished_pausable_action",
+      "latchOwner": "actorId",
+      "resetOnlyAfterLegalMedicalHealthPositive": true,
+      "repeatAtZeroAfterResumeOrNewWork": false,
+      "originalExitPermissionsUnchanged": true,
+      "extractionAndReserve": "log_only_no_new_pause",
+      "oldLivingZeroMigration": "initialize_dying_without_retroactive_entry_event_or_pause",
+      "log": "{行动名}已暂停：{人物}进入濒死状态。"
+    },
+    "bodyPreview": {
+      "stop": "first_segment_with_entry_to_dying_or_certain_or_conditional_death_resistance_risk",
+      "projectOnlyValuesIndependentOfUnknownSurvival": true,
+      "rollRandom": false,
+      "assumeAllFutureResistsSucceed": false,
+      "sharedProjection": "earliest_relevant_actor_risk_same_projection_time",
+      "independentOriginalPlanDurationPreserved": true,
+      "title": "预估至危险段",
+      "range": "身体预估仅到首次濒死或需要致死判定的危险段；后续身体变化未预估。",
+      "planDisclaimer": "计划信息不代表一定能够存活并完成。",
+      "ordinaryRiskCopy": {
+        "enter": "按当前状态，{人物}预计在本段进入濒死。此后仍处于濒死状态时，每次再受到正伤害都将进行致死判定；{人物}当前致死抵抗为{抵抗率}。",
+        "certain": "{人物}已处于濒死状态，本段将受到正伤害；濒死期间每次受到正伤害都将进行致死判定，{人物}当前致死抵抗为{抵抗率}。",
+        "possible": "{人物}已处于濒死状态。若本段在濒死状态下受到正伤害，每次都将进行致死判定；{人物}当前致死抵抗为{抵抗率}。"
+      },
+      "extractionRiskCopy": {
+        "enter": "撤出途中，按当前状态，{人物}预计在本段进入濒死。此后仍处于濒死状态时，每次再受到正伤害都将进行致死判定；{人物}当前致死抵抗为{抵抗率}。",
+        "certain": "撤出途中，{人物}已处于濒死状态，本段将受到正伤害；濒死期间每次受到正伤害都将进行致死判定，{人物}当前致死抵抗为{抵抗率}。",
+        "possible": "撤出途中，{人物}已处于濒死状态。若本段在濒死状态下受到正伤害，每次都将进行致死判定；{人物}当前致死抵抗为{抵抗率}。"
+      },
+      "resistanceMeaning": "致死抵抗是濒死后每次再受正伤害时的抵抗机会，不是整段行动的存活率。",
+      "resistanceFormat": "actual_actor_integer_percent_65_to_83_not_whole_action_survival",
+      "oldDirectDeathWarning": "independent_true_death_risks_only_never_first_health_zero",
+      "extractionBodyMechanism": "已经归零的饱食、水分、清醒继续扣健康，出血、感染与病毒照常发展。",
+      "extractionIndependentDeathWhenActuallyApplicable": "撤出途中存在病毒尸变等独立死亡风险，致死抵抗不能阻止。"
+    },
+    "deathSplashXp": {
+      "qualifiesAsEnemyDirectDamage": true,
+      "source": "original_stable_worldEnemyId_even_if_source_dead",
+      "awardBoundary": "end_of_whole_player_instruction_that_caused_splash",
+      "requireRecipientStillAlive": true,
+      "maxAwardsPerRecipientPerSourcePerInstruction": 1,
+      "sharesOriginalPerEnemyDailyAndLevelCaps": true,
+      "zeroActualXpOccupiesReceipt": false
+    },
+    "xpLog": {
+      "perPositiveRecipient": true,
+      "player": "意志经验+{n}",
+      "companion": "{姓名}：意志经验+{n}",
+      "zeroXpLog": false,
+      "existingLevelUpTextUnchanged": true,
+      "afterWholeSourceInstructionCommit": true
+    },
+    "outsideBattleResistanceLog": {
+      "onePerRealSuccessfulEvent": true,
+      "aggregateAcrossAction": false,
+      "text": "{人物}抵抗了致死，仍处于濒死状态。",
+      "addsPause": false,
+      "addsXp": false,
+      "firstEntryAndZeroDamageAreNotSuccessfulRollEvents": true
+    }
   }
 }
