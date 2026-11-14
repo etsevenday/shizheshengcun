@@ -477,8 +477,9 @@ public class FacilityProcessTests : TestBase
         var r2 = RootInFire(t);
         E.ProcessOf(t, r2)!.HeatDoneMinutes = 25;
         Start(t, ActionRequest.Wait(30));
-        t.Stats.Health = 0.01;
+        t.Stats.Health = 0;   // B47a1：已濒死 + 缺水正伤 → 致死判定失败
         t.Stats.Hydration = 0;
+        FailDeathRolls();
         E.SyncLatches(t);
         Assert.That(E.Advance(t).Status, Is.EqualTo(SegmentStatus.Dead));
         Assert.That(r2.ItemId, Is.EqualTo("raw_root"), "死亡前未提交的加工不转化");

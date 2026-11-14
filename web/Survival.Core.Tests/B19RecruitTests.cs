@@ -443,7 +443,9 @@ public class B19RecruitTests : TestBase
     {
         var s = AtShelter();
         Ok(E.StartRecruit(s, s.Recruit.Candidates[0].CandidateId, RecruitPlacement.Square));
-        s.Stats.Health = 0;
+        s.Stats.Health = 0;   // B47a1：已濒死 + 缺水正伤 → 致死判定失败
+        s.Stats.Hydration = 0;
+        FailDeathRolls();
         var res = E.Advance(s);
         Assert.That(res.Status, Is.EqualTo(SegmentStatus.Dead));
         Assert.That(s.Progress.Dead, Is.True);

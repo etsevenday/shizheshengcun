@@ -430,7 +430,8 @@ public class CombatV06Tests : BattleTestBase
         var s = New();
         Infect(s, 5, 90);
         s.Body.HighImmunityMinutes = 715;
-        SetStats(s, 0.01, 80, 0, 18, 90, 60);
+        SetStats(s, 0, 80, 0, 18, 90, 60);   // B47a1：已濒死 + 缺水正伤 → 致死判定失败
+        FailDeathRolls();
         Start(s, ActionRequest.Wait(30));
         Run(s);
         Assert.That(s.Progress.Dead, Is.True);

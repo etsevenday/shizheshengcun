@@ -852,6 +852,7 @@ namespace Survival.Core.Engine
             if (st.Energy <= 0 && ctx.IsWork) { health += c.BattleTime.ZeroEnergyWorkingHealthPerHour; causes.Add("体力透支"); }
             if (causes.Count > 0) ctx.DamageCause = causes[0];
             ctx.HealthPerHour = health;
+            ctx.HealthLossPerHour = health;   // B47a1：只有负项（不给自然回血）
             return ctx;
         }
 

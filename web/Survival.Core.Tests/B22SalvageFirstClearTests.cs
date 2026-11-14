@@ -91,7 +91,8 @@ public class B22SalvageFirstClearTests : BattleTestBase
         s.Player.Stats.Set(StatId.Satiety, 0);
         s.Player.Stats.Set(StatId.Hydration, 0);
         s.Player.Stats.Set(StatId.Wakefulness, 0);
-        s.Player.Stats.Set(StatId.Health, 0.001);
+        s.Player.Stats.Set(StatId.Health, 0);   // B47a1：已濒死 + 饥渴正伤 → 致死判定失败
+        FailDeathRolls();
         WinBattle(s);
         Assert.That(s.Progress.Dead, Is.True);
         Assert.That(E.SalvageClaimed(s, "d01"), Is.False);

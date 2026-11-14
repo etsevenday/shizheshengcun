@@ -21,6 +21,11 @@ namespace Survival.Core.Engine
 
         private DyingConfig DyingCfg => Config.Dying;
 
+        /// <summary>
+        /// 仅供自动测试注入：非空且有值时，下一次真实致死判定按顺序取这里的 u（不消耗存档随机游标）。正式流程与网页壳恒为 null。
+        /// </summary>
+        public Queue<double>? TestDeathRolls { get; set; }
+
         /// <summary>该角色已确实死亡（R09 §2）：本人确死标记、名册死亡记录或主角终局。</summary>
         public bool IsDead(GameState s, ActorState actor) =>
             actor.Dead || (actor.IsPlayer ? s.Progress.Dead : RosterOf(s, actor.Id)?.Dead == true);
@@ -84,7 +89,7 @@ namespace Survival.Core.Engine
                 return DamageOutcome.EnteredDying;
             }
             var level = SkillLevel(actor, Willpower);
-            var resisted = !s.SimCopy && ResistsDeath(level, s.Rng.NextDouble());
+            var resisted = !s.SimCopy && ResistsDeath(level, TestDeathRolls is { Count: > 0 } q ? q.Dequeue() : s.Rng.NextDouble());
             if (resisted)
             {
                 LifeNote(s, actor, ResistedDeathText(ActorDisplayName(s, actor.Id)), notes);

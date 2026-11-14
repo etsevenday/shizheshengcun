@@ -179,4 +179,145 @@ public class B47a1DyingTests : TestBase
         s.Actors[mate].Dead = true;
         Assert.That(E.SquadMemberValid(s, mate), Is.False);
     }
+
+    /// <summary>搜集划伤：濒死者再被划伤判致死；失败按原死亡收束（产物留地面、原死亡原因），抵抗则写抵抗句、成果照交。</summary>
+    [Test]
+    public void M2_GatherHazard_WhileDying_RollsDeath()
+    {
+        var died = false;
+        var resisted = false;
+        for (uint seed = 1; seed < 60 && !(died && resisted); seed++)
+        {
+            var s = New(seed);
+            E.DebugTeleport(s, "woods");
+            E.DebugSetProgress(s, "woods", 25);
+            SetStats(s, 0, 80, 80, 18, 90, 60);
+            Start(s, ActionRequest.Gather("wood"));
+            s.Main!.HazardHit = true;
+            var st = Run(s);
+            Assert.That(Count(s, "wood", "woods"), Is.EqualTo(1), "产物先交，留地面");
+            if (st == SegmentStatus.Dead)
+            {
+                died = true;
+                Assert.That(s.Progress.Death!.Cause, Does.Contain("划伤"));
+                Assert.That(s.Log.Select(l => l.Text), Has.None.Contains("抵抗了致死"));
+            }
+            else
+            {
+                resisted = true;
+                Assert.That(st, Is.EqualTo(SegmentStatus.Completed));
+                Assert.That(s.Log.Select(l => l.Text).Count(x => x == GameEngine.ResistedDeathText("你")), Is.EqualTo(1));
+                Assert.That(s.Log.Select(l => l.Text), Has.None.Contains("进入濒死"), "已濒死不再写进入句");
+            }
+        }
+        Assert.That((died, resisted), Is.EqualTo((true, true)));
+    }
+
+    // ───────────── M3 世界段 ─────────────
+
+    private void Resists(int n) => E.TestDeathRolls = new Queue<double>(Enumerable.Repeat(0.0, n));
+
+    /// <summary>Q616-A04：濒死者同段饥饿+缺水+缺睡是一次身体损伤（判 1 次），出血是另一独立事件（再判 1 次）；世界只推进 5 分钟；战外每次抵抗各写一条（Q678）。</summary>
+    [Test]
+    public void M3_A04_BodyDamageOneEvent_BleedSeparate_TwoRolls_FiveMinutes()
+    {
+        var s = New();
+        SetStats(s, 0, 0, 0, 18, 0, 60);
+        s.Body.BleedDamage = 2;
+        s.Body.BleedTriggers = 3;
+        Start(s, ActionRequest.Wait(30));
+        Resists(10);
+        var m0 = s.GameMinute;
+        var log0 = s.Log.Count;
+        var rng0 = s.Rng.State;
+        E.Advance(s);
+        Assert.That(E.TestDeathRolls!.Count, Is.EqualTo(8), "恰好两次致死判定");
+        Assert.That(s.GameMinute, Is.EqualTo(m0 + 5));
+        Assert.That((s.Player.Stats.Health, s.Player.Dead, s.Progress.Dead), Is.EqualTo((0.0, false, false)));
+        Assert.That(s.Log.Skip(log0).Count(l => l.Text == GameEngine.ResistedDeathText("你")), Is.EqualTo(2), "Q678：战外每次真实成功抵抗各一条");
+        Assert.That(s.Body.BleedTriggers, Is.EqualTo(2));
+        // 没有出血、单一缺水：一次判定
+        var t = New();
+        SetStats(t, 0, 80, 0, 18, 80, 60);
+        Start(t, ActionRequest.Wait(30));
+        Resists(10);
+        E.Advance(t);
+        Assert.That(E.TestDeathRolls!.Count, Is.EqualTo(9));
+    }
+
+    /// <summary>Q616-A04：正常 H0.02 遮蔽睡眠、清醒 0 → 本段身体损伤先归 0 进入濒死，自然恢复不与负项相抵、本段不再给。</summary>
+    [Test]
+    public void M3_A04_NormalToDying_RecoveryNotNetted()
+    {
+        var s = New();
+        E.DebugTeleport(s, "w13_mill");
+        SetStats(s, 0.02, 80, 80, 18, 0, 60);
+        var ctx = E.ComputeSegment(s, new ActionState { Type = ActionType.Sleep, TargetId = "" });
+        Assert.That((ctx.HealthLossPerHour, ctx.HealthRecoveryPerHour), Is.EqualTo((Cfg.HealthRules.ZeroWakefulnessPerHour, Cfg.HealthRules.ShelteredRestRecoveryPerHour)));
+        Start(s, ActionRequest.Sleep(Cfg.Actions.SleepMinutes.Min()));
+        var rng0 = s.Rng.State;
+        E.Advance(s);
+        Assert.That(s.Player.Stats.Health, Is.EqualTo(0.0), "−0.0333 先归 0，+0.0167 不相抵也不补");
+        Assert.That(s.Player.DyingNotified, Is.True);
+        Assert.That(s.Log.Select(l => l.Text), Has.One.EqualTo(GameEngine.EnterDyingText("你")));
+    }
+
+    /// <summary>Q616-A05：濒死者在完整休息条件下 H 保持 0，其他属性照常恢复；不累存。</summary>
+    [Test]
+    public void M3_A05_DyingRest_NoNaturalHealthRecovery()
+    {
+        var s = New();
+        E.DebugTeleport(s, "w13_mill");
+        SetStats(s, 0, 80, 80, 10, 80, 60);
+        var ctx = E.ComputeSegment(s, new ActionState { Type = ActionType.Rest, TargetId = "" });
+        Assert.That((ctx.HealthRecoveryPerHour, ctx.HealthPerHour), Is.EqualTo((0.0, 0.0)), "濒死者自然恢复为 0");
+        Start(s, ActionRequest.Rest(60));
+        Run(s);
+        Assert.That(s.Player.Stats.Health, Is.EqualTo(0.0));
+        Assert.That(s.Player.Stats.Energy, Is.GreaterThan(10), "体力照常恢复");
+        Assert.That(s.Progress.Dead, Is.False);
+        // 同条件正常者照旧回血（对照）
+        var t = New();
+        E.DebugTeleport(t, "w13_mill");
+        SetStats(t, 5, 80, 80, 10, 80, 60);
+        Start(t, ActionRequest.Rest(60));
+        Run(t);
+        Assert.That(t.Player.Stats.Health, Is.GreaterThan(5));
+    }
+
+    /// <summary>濒死同行者：同一世界段同样不得自然回血；致死失败按原队友死亡收束（原死亡原因）。</summary>
+    [Test]
+    public void M3_DyingCompanion_NoRecovery_DeathByWorldTick()
+    {
+        var s = New();
+        E.DebugQuickParty(s, 2);
+        var mate = s.Actors[s.Party.Single(id => id != GameState.PlayerId)];
+        mate.Stats.Health = 0;
+        mate.Stats.Satiety = 80; mate.Stats.Hydration = 80; mate.Stats.Morale = 60;
+        var ctx = E.ComputeSegment(s, new ActionState { Type = ActionType.Rest, TargetId = "" }, mate);
+        Assert.That(ctx.HealthRecoveryPerHour, Is.EqualTo(0.0));
+        mate.Stats.Hydration = 0;
+        Start(s, ActionRequest.Wait(30));
+        FailDeathRolls();
+        E.Advance(s);
+        Assert.That((mate.Dead, E.RosterOf(s, mate.Id)!.Dead, s.Party.Contains(mate.Id)), Is.EqualTo((true, true, false)), "致死失败 → 原队友死亡收束");
+        Assert.That(s.Progress.Dead, Is.False);
+    }
+
+    /// <summary>战外出血：濒死者出血致死失败，死亡原因“出血”；正常者出血归 0 只进入濒死。</summary>
+    [Test]
+    public void M3_BleedWhileDying_DeathCauseBleed()
+    {
+        var s = New();
+        SetStats(s, 1, 80, 80, 18, 80, 60);
+        s.Body.BleedDamage = 2;
+        s.Body.BleedTriggers = 3;
+        Start(s, ActionRequest.Wait(30));
+        E.Advance(s);
+        Assert.That((s.Player.Stats.Health, s.Progress.Dead), Is.EqualTo((0.0, false)), "正常者出血归 0 → 濒死");
+        FailDeathRolls();
+        var st = E.Advance(s);
+        Assert.That(st.Status, Is.EqualTo(SegmentStatus.Dead));
+        Assert.That(s.Progress.Death!.Cause, Is.EqualTo("出血"));
+    }
 }

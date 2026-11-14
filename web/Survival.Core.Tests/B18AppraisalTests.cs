@@ -442,7 +442,9 @@ public class B18AppraisalTests : TestBase
         var b = Ordinary(d, ItemInstance.Carried, "g-b");
         var cloth0 = Ground(d, "cloth");
         Ok(E.StartAppraisalTrade(d, b.InstanceId, "white_for_cloth"));
-        d.Stats.Health = 0;
+        d.Stats.Health = 0;   // B47a1：已濒死 + 缺水正伤 → 致死判定失败
+        d.Stats.Hydration = 0;
+        FailDeathRolls();
         Run(d);
         Assert.That(d.Progress.Dead, Is.True);
         Assert.That(E.FindItem(d, b.InstanceId), Is.Not.Null, "未完成死亡不扣样本");

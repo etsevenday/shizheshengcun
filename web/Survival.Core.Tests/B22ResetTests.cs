@@ -230,7 +230,8 @@ public class B22ResetTests : BattleTestBase
         var loot = s.Items.First(i => i.Owner == "d01_08" && i.RewardOrigin != null);
         Assert.That(E.SealReward(s, loot.InstanceId).Ok, Is.True);
         foreach (var st in new[] { StatId.Satiety, StatId.Hydration, StatId.Wakefulness }) s.Player.Stats.Set(st, 0);
-        s.Player.Stats.Set(StatId.Health, 0.05);
+        s.Player.Stats.Set(StatId.Health, 0);   // B47a1：已濒死 + 饥渴正伤 → 致死判定失败
+        FailDeathRolls();
         Start(s, ActionRequest.Travel("c03_crypt"));
         Run(s);
         Assert.That(s.Progress.Dead, Is.True);

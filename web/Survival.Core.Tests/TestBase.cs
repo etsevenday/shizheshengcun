@@ -136,6 +136,13 @@ public abstract class TestBase
         if (s.Progress.Dead) Assert.Fail("推进途中角色已死亡，时间不再前进");
     }
 
+    /// <summary>
+    /// B47a1：此后 n 次真实致死判定都判“未能抵抗”（u=0.999，不消耗存档随机游标）。旧测试“健康归零当 tick 死亡”改写为
+    /// “已濒死（H=0）+ 本 tick 仍有正伤 → 致死判定失败”，保住原测试意图（死亡不提交、死亡优先等）。
+    /// </summary>
+    protected void FailDeathRolls(int n = 32) =>
+        E.TestDeathRolls = new Queue<double>(Enumerable.Repeat(0.999, n));
+
     /// <summary>覆盖当前主行动已锁定的随机结果（itemId 为 null 表示空结果），用于验收表里的“强制抽中”。</summary>
     protected static void ForceLoot(GameState s, string? itemId)
     {

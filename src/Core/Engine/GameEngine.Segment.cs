@@ -12,7 +12,12 @@ namespace Survival.Core.Engine
         public sealed class SegmentContext
         {
             public RateBlock Rates = new RateBlock();
+            /// <summary>本段健康净速率（负项合计 + 自然恢复），预估与说明用；真实结算按下面两项分开提交（B47a1，R09 §3.2）。</summary>
             public double HealthPerHour;
+            /// <summary>本段健康负项小时率合计（≤0：饥饿、缺水、缺乏睡眠、体力透支等），每段合成该人一次身体损伤事件（R09 §3.2）。</summary>
+            public double HealthLossPerHour;
+            /// <summary>本段自然健康恢复小时率（≥0）：只给负项事件后仍正常存活的人；段首已濒死为 0（R09 §5）。</summary>
+            public double HealthRecoveryPerHour;
             public double Factor = 1;
             public bool IsWork;
             public bool Sheltered;
@@ -98,13 +103,14 @@ namespace Survival.Core.Engine
             if (st.Wakefulness <= 0) { health += hr.ZeroWakefulnessPerHour; causes.Add("缺乏睡眠"); }
             if (st.Energy <= 0 && ctx.IsWork) { health += hr.ZeroEnergyWhileWorkingPerHour; causes.Add("体力透支"); }
             if (causes.Count > 0) ctx.DamageCause = causes[0];
+            ctx.HealthLossPerHour = health;
 
-            // 自然恢复：休息或睡眠、遮蔽、段首饱食与水分≥40、精神≥20（求生案 04）
+            // 自然恢复：休息或睡眠、遮蔽、段首饱食与水分≥40、精神≥20（求生案 04）；B47a1（R09 §5、S13 Q616）：段首濒死者自然恢复为 0，不累存
             if ((a.Type == ActionType.Rest || a.Type == ActionType.Sleep) && ctx.Sheltered
                 && st.Satiety >= hr.RecoveryMinSatiety && st.Hydration >= hr.RecoveryMinHydration
-                && st.Morale >= hr.RecoveryMinMorale)
-                health += hr.ShelteredRestRecoveryPerHour;
-            ctx.HealthPerHour = health;
+                && st.Morale >= hr.RecoveryMinMorale && !IsDying(s, actor))
+                ctx.HealthRecoveryPerHour = hr.ShelteredRestRecoveryPerHour;
+            ctx.HealthPerHour = health + ctx.HealthRecoveryPerHour;
 
             if (ctx.IsWork)
             {
@@ -303,26 +309,27 @@ namespace Survival.Core.Engine
             var starts = party.Select(actor => TickStart.Capture(s, actor)).ToList();
             var rstarts = reserves.Select(actor => TickStart.Capture(s, actor)).ToList();
 
-            // 身体变化（每小时速率 × 5/60），按项上限夹紧
+            // 身体变化（每小时速率 × 5/60），按项上限夹紧；B47a1（R09 §3.2）：健康负项合成一次身体损伤事件先提交并判生死，之后只给仍正常者自然恢复
             for (var k = 0; k < party.Count; k++) ApplyRates(s, party[k], ctxs[k]);
             // 候补（Q90）：先结算该段 rest/sleep 自然变化，再加公共 N/W/M 补给增量（每项只补到 80、高值不截降、不生成任何物品）
             for (var k = 0; k < reserves.Count; k++)
             {
                 ApplyRates(s, reserves[k], rctxs[k]);
-                ApplyReserveCare(reserves[k]);
+                if (!IsDead(s, reserves[k])) ApplyReserveCare(reserves[k]);
             }
 
             s.GameMinute += Tick;
             s.SegmentCount++;
             BurnFires(s);
-            for (var k = 0; k < party.Count; k++) TickBody(s, party[k], starts[k], ctxs[k], battle);
-            for (var k = 0; k < reserves.Count; k++) TickBody(s, reserves[k], rstarts[k], rctxs[k], false);
+            // B47a1：本段已确实死亡的人不再结算免疫、病毒与出血（R09 §3.1 确死后不再给死者执行后续反应／新状态）
+            for (var k = 0; k < party.Count; k++) if (!IsDead(s, party[k])) TickBody(s, party[k], starts[k], ctxs[k], battle);
+            for (var k = 0; k < reserves.Count; k++) if (!IsDead(s, reserves[k])) TickBody(s, reserves[k], rstarts[k], rctxs[k], false);
 
-            // 终局：健康归零先于尸变，二者都先于自然治愈与本段未提交的设施产物
+            // 终局：本段确实死亡（致死抵抗失败）先于尸变，二者都先于自然治愈与本段未提交的设施产物；B47a1（R09 §2）：健康 0 的濒死者仍是活人
             for (var k = 0; k < party.Count; k++)
             {
                 var actor = party[k];
-                if (actor.Stats.Health <= 0)
+                if (IsDead(s, actor))
                 {
                     if (actor.IsPlayer) { Kill(s, s.Progress.LastDamageCause); return false; }
                     CompanionDown(s, actor, string.IsNullOrEmpty(ctxs[k].DamageCause) ? "伤势过重" : ctxs[k].DamageCause);
@@ -340,7 +347,7 @@ namespace Survival.Core.Engine
             for (var k = 0; k < reserves.Count; k++)
             {
                 var actor = reserves[k];
-                if (actor.Stats.Health <= 0) { CompanionDown(s, actor, string.IsNullOrEmpty(rctxs[k].DamageCause) ? "伤势过重" : rctxs[k].DamageCause); continue; }
+                if (IsDead(s, actor)) { CompanionDown(s, actor, string.IsNullOrEmpty(rctxs[k].DamageCause) ? "伤势过重" : rctxs[k].DamageCause); continue; }
                 if (Zombified(actor)) { CompanionDown(s, actor, ZombifiedCause); continue; }
                 TickNaturalCure(s, actor, rstarts[k]);
                 ReserveRedLines(s, actor);
@@ -361,9 +368,14 @@ namespace Survival.Core.Engine
             return true;
         }
 
-        /// <summary>一个角色本段的六项状态变化（每小时速率 × 5/60，按项上限夹紧）；主角记最近伤害原因。</summary>
+        /// <summary>
+        /// 一个角色本段的六项状态变化（每小时速率 × 5/60，按项上限夹紧）；主角记最近伤害原因。
+        /// B47a1（R09 §3.2、Q616-A04）：健康负项小时率合计 × 5/60 是该人本段一次“身体损伤”事件（不按原因个数多判），走统一受伤入口先提交生死；
+        /// 自然正恢复不与负项相抵，只在该事件后仍正常存活时才加（已濒死或本段刚进入濒死为 0）。
+        /// </summary>
         private void ApplyRates(GameState s, ActorState actor, SegmentContext ctx)
         {
+            if (IsDead(s, actor)) return;
             var h = Tick / 60.0;
             var st = actor.Stats;
             st.Add(StatId.Satiety, ctx.Rates.Satiety * h);
@@ -371,8 +383,10 @@ namespace Survival.Core.Engine
             st.Add(StatId.Energy, ctx.Rates.Energy * h);
             st.Add(StatId.Wakefulness, ctx.Rates.Wakefulness * h);
             st.Add(StatId.Morale, ctx.Rates.Morale * h);
-            st.Add(StatId.Health, ctx.HealthPerHour * h);
             if (actor.IsPlayer && !string.IsNullOrEmpty(ctx.DamageCause)) s.Progress.LastDamageCause = ctx.DamageCause;
+            var loss = -ctx.HealthLossPerHour * h;
+            if (loss > 0) DamageActor(s, actor, loss);
+            if (ctx.HealthRecoveryPerHour > 0 && LifeOf(s, actor) == LifeState.Normal) st.Add(StatId.Health, ctx.HealthRecoveryPerHour * h);
         }
 
         /// <summary>

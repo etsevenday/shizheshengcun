@@ -200,7 +200,8 @@ public class V10StoryTests : BattleTestBase
         for (var i = 0; i < 20 && s.Battle != null && !E.AwaitingPlayer(s); i++) E.BattleStep(s);
         // 饱食为0、健康极低：胜利那一刻的轮末 tick 致死
         s.Stats.Satiety = 0;
-        s.Stats.Health = 0.01;
+        s.Stats.Health = 0;   // B47a1：已濒死 + 饥饿正伤 → 段末致死判定失败
+        FailDeathRolls();
         s.Battle!.Enemies[0].Hp = 0.01;
         Force(s, Below(0.2), AtLeast(0.6), Any());
         Cmd(s, "basic_attack", s.Battle.Enemies[0].Index);

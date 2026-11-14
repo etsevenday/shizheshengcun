@@ -130,7 +130,8 @@ public class B21ExtractTests : BattleTestBase
         High(s);
         Assert.That(E.AbortExpedition(s).Ok, Is.True);
         s.Player.Stats.Set(StatId.Hydration, 0);
-        s.Player.Stats.Set(StatId.Health, 0.2);
+        s.Player.Stats.Set(StatId.Health, 0);   // B47a1：已濒死 + 缺水正伤 → 致死判定失败
+        FailDeathRolls();
         var r = Run(s, false);
         Assert.That(r, Is.EqualTo(SegmentStatus.Dead));
         Assert.That(s.Progress.Dead, Is.True);

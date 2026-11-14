@@ -406,10 +406,11 @@ public class B8cReserveCareTests : TestBase
     {
         var s = CampWithReserve(10);
         var gu = s.Actors[Gu];
-        Body(gu, 0, 0, 18, 95, 60, 0.1);
+        Body(gu, 0, 0, 18, 95, 60, 0);   // B47a1：已濒死 + 饥渴正伤 → 致死判定失败
+        FailDeathRolls();
         Start(s, ActionRequest.Wait(30));
         E.Advance(s);
-        Assert.That(E.RosterOf(s, Gu)!.Dead, Is.True, "饥渴伤害本段把健康扣到 0：死亡优先");
+        Assert.That(E.RosterOf(s, Gu)!.Dead, Is.True, "濒死后饥渴伤害本段致死判定失败：死亡优先");
         Assert.That(E.IsReserve(s, Gu), Is.False);
         Run(s);
         Assert.That(E.RosterOf(s, Gu)!.Dead, Is.True, "不复活");

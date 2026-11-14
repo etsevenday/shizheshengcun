@@ -390,7 +390,8 @@ public class CombatV05Tests : BattleTestBase
         Ready(s);
         Arm(s, "hatchet");
         Enemy(s, 1).Hp = 0.01;
-        SetStats(s, 0.01, 80, 0, 18, 90, 60);
+        SetStats(s, 0, 80, 0, 18, 90, 60);   // B47a1：已濒死 + 缺水正伤 → 致死判定失败
+        FailDeathRolls();
         Force(s, Below(0.01), AtLeast(0.99), Any(), Below(0.5));
         Cmd(s, "basic_attack", 1);
         Assert.That(s.Progress.Dead, Is.True, "退出时的 tick 致死");

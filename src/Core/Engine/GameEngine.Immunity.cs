@@ -102,12 +102,14 @@ namespace Survival.Core.Engine
             else b.VirusLoad = 0;
 
             // 战外出血：每个世界 tick 扣一次；战斗轮末的 tick 不扣（战内出血在自己激活时扣，退出瞬间不补扣）
+            // B47a1（R09 §3.2）：出血是身体损伤之后的独立伤害事件，走统一受伤入口（同段先入濒死后出血可再判致死）
             if (!battle && b.BleedTriggers > 0)
             {
-                actor.Stats.Add(StatId.Health, -b.BleedDamage);
+                var d = b.BleedDamage;
                 b.BleedTriggers--;
                 if (actor.IsPlayer) s.Progress.LastDamageCause = "出血";
                 if (b.BleedTriggers == 0) b.BleedDamage = 0;
+                DamageActor(s, actor, d);
             }
         }
 

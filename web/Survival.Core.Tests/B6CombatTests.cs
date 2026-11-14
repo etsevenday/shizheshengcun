@@ -599,7 +599,8 @@ public class B6CombatTests : BattleTestBase
     {
         var s = Fight(24, "shambler");
         Ready(s);
-        SetStats(s, 0.1, 50, 0, 18, 90, 60);
+        SetStats(s, 0, 50, 0, 18, 90, 60);   // B47a1：已濒死 + 缺水正伤 → 段末致死判定失败
+        FailDeathRolls();
         var e = Enemy(s, 1);
         e.Hp = 0.01;
         Force(s, Below(0.001), AtLeast(0.999), Any(), Any());
