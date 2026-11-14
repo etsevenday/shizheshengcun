@@ -101,12 +101,16 @@ namespace Survival.Core.Engine
             t.DueMinute = s.GameMinute;
             var m = s.Main;
             var highlight = members.Select(w => $"enemy:{w.Id}");
-            if (!completed && m != null && m.ActionId == a.ActionId && m.Status == ActionStatus.Running)
+            if (!completed && m != null && m.ActionId == a.ActionId)
             {
-                m.Status = ActionStatus.Paused;
-                m.PauseReason = PauseReason.ExploreEncounter;
-                m.PauseStat = null;
-                m.PauseNote = ExploreEncounterPauseNote;
+                // 未完成：Q621 未完两态；已因别的原因停着的不伪造第二次暂停（原因保持），仍按未完态写句
+                if (m.Status == ActionStatus.Running)
+                {
+                    m.Status = ActionStatus.Paused;
+                    m.PauseReason = PauseReason.ExploreEncounter;
+                    m.PauseStat = null;
+                    m.PauseNote = ExploreEncounterPauseNote;
+                }
                 EmitPrompt(s, GameEventKind.ActionPaused, ExploreEncounterText + (ExitLocked(m) ? $"{m.Label}已暂停，战后可以继续。" : $"{m.Label}已暂停，战后可以继续或退出。"), highlight);
             }
             else EmitPrompt(s, GameEventKind.Encounter, ExploreEncounterText, highlight);
