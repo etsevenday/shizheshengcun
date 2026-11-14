@@ -40,6 +40,17 @@
                     @* B9（A10 §6.3）：战斗菜单含系统说明（阅读暂停，不触发敌方行动、不推进世界时间）；对白锁期间禁用 *@
                     <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.Help, locked))" title="@lockTip" @onclick='() => { G.ToggleBattleMenu(false); G.OpenBattleDrawer("help"); }'>@ShellText.Help</button>
                 }
+                @if (inBattle && DevMode)
+                {
+                    @* B47a2 试玩修复（M921）：战斗菜单另起开发入口（仅 ?dev=1），放 Q679 喷溅来源两项——常态菜单在战斗中不出现，战斗外点只会“不在战斗中”。对白锁期间整组禁用 *@
+                    <fieldset class="dev-box" disabled="@(!ShellMenu.Enabled(ShellMenuItem.Dev, locked))">
+                        <div class="eyebrow">开发入口（?dev=1）：喷溅来源（B47a2）</div>
+                        <div class="btn-row">
+                            <button class="secondary" title="战斗中：下一次任何正伤即死" @onclick='() => DevBattleDone(G.E.DebugBattleFoes(G.S, "hp01"))'>在场敌人健康→0.1（战斗中）</button>
+                            <button class="secondary" title="战斗中：下个大回合开始流血（无视流血免疫）" @onclick='() => DevBattleDone(G.E.DebugBattleFoes(G.S, "bleed"))'>在场敌人开始出血（战斗中）</button>
+                        </div>
+                    </fieldset>
+                }
                 <button class="secondary" @onclick="Feedback">@ShellText.Feedback</button>
             </div>
             <ExitSaveStatus />
@@ -595,6 +606,15 @@
         G.Notice = text;
         G.Commit();
         G.SetMenu(false);
+    }
+
+    /// <summary>B47a2 试玩修复（M921）：战斗菜单里的开发项——结果写结果提示、存档，回到战斗（关战斗菜单而不是常态菜单）。</summary>
+    private void DevBattleDone(string text)
+    {
+        G.FlushEvents();
+        G.Notice = text;
+        G.Commit();
+        G.ToggleBattleMenu(false);
     }
 
     private void DevSpoil() => DevDone(G.E.DebugSpoilageKit(G.S));

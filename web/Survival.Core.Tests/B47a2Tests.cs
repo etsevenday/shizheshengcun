@@ -639,4 +639,18 @@ public class B47a2Tests : BattleTestBase
         Assert.That(z.Dead, Is.True);
         Assert.That(u.Log.Any(l => l.Text.Contains("未能抵抗")), Is.False, "独立尸变未抽抵抗不加前缀");
     }
+
+    [Test]
+    public void PlaytestFix_M921_BattleMenuDevEntries()
+    {
+        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "doc", "策划案"))) dir = dir.Parent;
+        Assert.That(dir, Is.Not.Null, "找不到仓库根目录");
+        var menu = File.ReadAllText(Path.Combine(dir!.FullName, "web", "Survival.Web", "Components", "MenuOverlay.razor"));
+        var battle = menu.Substring(menu.IndexOf("@if (Battle)"));
+        battle = battle.Substring(0, battle.IndexOf("    return;"));
+        Assert.That(battle, Does.Contain("@if (inBattle && DevMode)"), "战斗菜单的开发入口只在 ?dev=1 时显示");
+        Assert.That(battle, Does.Contain("DevBattleDone(G.E.DebugBattleFoes(G.S, \"hp01\"))").And.Contain("DevBattleDone(G.E.DebugBattleFoes(G.S, \"bleed\"))"));
+        Assert.That(battle, Does.Contain("<fieldset class=\"dev-box\" disabled=\"@(!ShellMenu.Enabled(ShellMenuItem.Dev, locked))\">"));
+    }
 }
