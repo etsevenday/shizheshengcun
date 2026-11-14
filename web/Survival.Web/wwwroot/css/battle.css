@@ -545,3 +545,20 @@
 .bfs-scene .anc.ally .anc-head { justify-content: center; }
 .anc-taken { position: absolute; left: 2px; top: 2px; z-index: 1; font-size: var(--fs-aux); padding: 0 4px; border-radius: 3px; background: #8a3b2c; color: #ffe9df; white-space: nowrap; }
 .anc-foot .anc-chips { order: 0; }
+
+/* ───── B34（S14 Q575）：容量、噪声、追击条件在队列行右端；窄窗时随行换行（不裁入口、不盖队列） ───── */
+.bfs-queue { flex-wrap: wrap; row-gap: 4px; align-content: center; }
+.bq-facts { margin-left: auto; display: flex; align-items: center; gap: 12px; flex: 0 0 auto; white-space: nowrap; font-size: var(--fs-body); }
+.bq-facts .bq-cond { margin-left: 0; }
+.bq-facts .bt-noise { font-size: var(--fs-body); color: var(--muted); }
+.bq-facts .bt-noise .track { width: 56px; }
+.bfs-grid { grid-template-rows: var(--bfs-top) minmax(var(--bfs-queue), auto) calc(var(--bfs-avail) * 400 / 696) calc(var(--bfs-avail) * 296 / 696) var(--bfs-feed); }
+.bfs-where { color: var(--text); }
+
+/* ───── B34（S14 Q577）：当前实际行动者等待下令时——轻微高亮、微动态待机、人物局部微聚焦（只作用于立绘层，不改站位与点击对象）；
+   减少动态效果时停止循环与缩放，只留静态高亮 ───── */
+.bfs-scene .anc.ally.await-cmd .anc-art { box-shadow: inset 0 0 0 2px var(--accent), 0 0 16px #d4a84a77; border-radius: 4px; }
+.anc.ally.await-cmd .anc-art > img { transform-origin: 50% 100%; animation: anc-idle calc(2400ms * var(--motion-k)) ease-in-out infinite; }
+@keyframes anc-idle { 0%, 100% { transform: scale(1.04) translateY(0); filter: brightness(1.06); } 50% { transform: scale(1.06) translateY(-2px); filter: brightness(1.12); } }
+@media (prefers-reduced-motion: reduce) { .anc.ally.await-cmd .anc-art > img { animation: none !important; transform: none; filter: brightness(1.08); } }
+.bfs-queue .bfs-hintline { flex: 1 1 0; min-width: 160px; }

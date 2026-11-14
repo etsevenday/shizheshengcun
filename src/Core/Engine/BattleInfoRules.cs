@@ -61,6 +61,12 @@ namespace Survival.Core.Engine
         public const string EquipEntry = "查看装备";
         public const string EquipTitle = "战斗装备";
 
+        /// <summary>B34（S14 Q576）：首战与普通战统一主标题「战斗 · {地点}」。</summary>
+        public static string Title(string location) => $"战斗 · {location}";
+
+        /// <summary>B34（S14 Q576）：当前计时「第{回合}回合」。</summary>
+        public static string RoundText(int round) => $"第{round}回合";
+
         /// <summary>B34（S14 Q574）：站位头顶名牌「{号位}号位 · {姓名}」，空位「{号位}号位 · 空位」。</summary>
         public static string Plate(int pos, string? name) => $"{pos}号位 · {name ?? "空位"}";
 

@@ -67,19 +67,15 @@
     var lockedUi = dlg || fxLock;
 }
 
-<div class="bfs" role="region" aria-label="@($"战斗 · 第{b.Round}轮")">
+<div class="bfs" role="region" aria-label="@($"{BattleInfoCopy.Title(e.LocName(b.LocationId))} · {BattleInfoCopy.RoundText(b.Round)}")">
     <div class="bfs-grid @(aiming ? "aiming" : "")" @oncontextmenu="CancelAim" @oncontextmenu:preventDefault="true">
-        @* 顶条：地点 · 轮次 · 当前激活 [普通/追击] · AP 当前/本次上限 · 战斗菜单（A10 §2.2、§4.1） *@
+        @* 顶条：「战斗 · {地点}」· 第{回合}回合 · 当前激活 [普通/追击] · AP 当前/本次上限 · 战斗菜单（A10 §2.2、§4.1）。
+           B34（S14 Q575／Q576）：首战与普通战同一标题；容量、噪声、追击条件挪到队列行右端；系统说明只在战斗菜单里 *@
         <header class="bfs-top" inert="@lockedUi">
-            <b class="bfs-title">@(b.Tutorial ? "首战" : "战斗") · 第@(b.Round)轮</b>
-            <span class="bfs-where">@e.LocName(b.LocationId)</span>
+            <b class="bfs-title">@BattleInfoCopy.Title(e.LocName(b.LocationId))</b>
+            <span class="bfs-where">@BattleInfoCopy.RoundText(b.Round)</span>
             <span class="bfs-actor @(actorWait ? "wait" : "now")" aria-live="polite">@actorText</span>
-            <span class="bfs-cap" title="@e.CapacityText(s)">容量@(b.Capacity) · 敌人最多@(b.Capacity)只</span>
-            <span class="bt-noise" title="枪声+@(Ui.T(cfg.Noise.GunGain))、弩+@(Ui.T(cfg.Noise.CrossbowGain))；满@(Ui.T(cfg.Noise.Max))可能引来同地丧尸（每场最多1次）">
-                噪声<span class="track thin"><i style="width:@Ui.Bar(b.Noise, cfg.Noise.Max)%"></i></span>@Ui.T(b.Noise)/@Ui.T(cfg.Noise.Max)
-            </span>
             <span class="bfs-top-btns">
-                <button type="button" class="secondary" @onclick='() => G.OpenBattleDrawer("help")' title="系统说明（只读，阅读时敌方行动暂停）">系统说明</button>
                 <button type="button" class="secondary @(G.BattleMenuOpen ? "on" : "")" @onclick="() => G.ToggleBattleMenu()" aria-keyshortcuts="Escape" title="@ShellKeys.MenuHover">@ShellText.Menu <kbd class="kc">@ShellKeys.Esc</kbd></button>
             </span>
         </header>
@@ -130,7 +126,14 @@
                     <button type="button" class="tc-link" id="bi-hint-open" @onclick='() => G.OpenBattleSub("hint", "bi-hint-open")'>@BattleInfoCopy.HintOpen</button>
                 </div>
             }
-            <span class="bq-cond" tabindex="0" title="@PursuitCondition(b)">追击条件</span>
+            @* B34（S14 Q575）：队列行右端——容量、噪声、追击条件（原值与悬停说明不变；窄窗随行换行） *@
+            <span class="bq-facts">
+                <span class="bfs-cap" title="@e.CapacityText(s)">容量@(b.Capacity) · 敌人最多@(b.Capacity)只</span>
+                <span class="bt-noise" title="枪声+@(Ui.T(cfg.Noise.GunGain))、弩+@(Ui.T(cfg.Noise.CrossbowGain))；满@(Ui.T(cfg.Noise.Max))可能引来同地丧尸（每场最多1次）">
+                    噪声<span class="track thin"><i style="width:@Ui.Bar(b.Noise, cfg.Noise.Max)%"></i></span>@Ui.T(b.Noise)/@Ui.T(cfg.Noise.Max)
+                </span>
+                <span class="bq-cond" tabindex="0" title="@PursuitCondition(b)">追击条件</span>
+            </span>
         </div>
 
         @* 场景：八个永久锚点（A10 §2.2、§4.1；R03 §1）——从左到右己方 4/3/2/1、敌方 1/2/3/4，中线两边的 1 号位最近；
@@ -294,7 +297,8 @@
             }
             else
             {
-                <span class="bx-last">@(b.Log.LastOrDefault() ?? "选一个技能，再点亮起的目标")</span>
+                @* B34（S14 Q577）：没选动作时不写文字催促；有真实战报就显示最新一条，没有就留空 *@
+                <span class="bx-last">@b.Log.LastOrDefault()</span>
             }
             @* B34a（Q570）：主画面两个阅读入口——只展开对应页并聚焦页签，不选人、不确认 *@
             <span class="bfs-feed-btns" role="group" aria-label="阅读区入口">
@@ -445,8 +449,10 @@
         // 整队（Q105）：已选的 A/B 带角标，不算“非目标”变灰
         var pairMark = G.BattlePairAiming ? (G.BattleAllyTarget == id ? "A" : G.BattleAllyTarget2 == id ? "B" : null) : null;
         var notTarget = allyAim && !targetable && pairMark == null;
-        <div class="anc ally @Pulse(BattleFxUnit.AllySide, id) @(acting ? "acting" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" data-peek="@Peek.Ally(id)" role="button" tabindex="0" aria-pressed="@viewing"
-             aria-label="@($"我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(acting ? "，行动中" : "")}{(targetable ? "，可作为目标" : "")}")"
+        // B34（S14 Q577）：真正等待玩家下令、还没选动作时，当前实际行动者轻微高亮＋微动态待机＋人物局部微聚焦（只作用于立绘层，不改站位与点击对象）
+        var awaitCmd = acting && G.BattleAction == null && !G.DialogueLocked && !G.PlaybackActive && G.E.AwaitingPlayer(s);
+        <div class="anc ally @Pulse(BattleFxUnit.AllySide, id) @(acting ? "acting" : "") @(awaitCmd ? "await-cmd" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" data-peek="@Peek.Ally(id)" role="button" tabindex="0" aria-pressed="@viewing"
+             aria-label="@($"{(acting ? BattleInfoCopy.CurrentActorAria(name) + "，" : "")}我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(targetable ? "，可作为目标" : "")}")"
              title="@(pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, token, locked)" @onkeydown="ev => AllyKey(ev, id)"
              @onmouseenter="() => G.HoverBattleAlly(targetable ? id : null)" @onmouseleave="() => G.HoverBattleAlly(null)">
             @* B34（S14 Q574）：头顶名牌「{号位}号位 · {姓名}」；下一行是 AP／当前行动事实 *@
