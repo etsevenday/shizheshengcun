@@ -60,4 +60,29 @@ public class B34R218Tests
         var css = Web("wwwroot/css/battle.css");
         Assert.That(css, Does.Contain("@media (prefers-reduced-motion: reduce) { .anc.ally.await-cmd .anc-art > img { animation: none !important; transform: none;"));
     }
+
+    /// <summary>Q578-A01：通用区「调整站位」只有一张卡；点卡只进入选位，明确点亮起的我方目的号位才按原 swap 请求提交；全局 Enter 不代选。</summary>
+    [Test]
+    public void Q578_SingleSwapCard_PickSlotToCommit()
+    {
+        var bs = Web("Components/BattleScreen.razor");
+        Assert.That(bs, Does.Contain("if (o.Action == \"swap\") { if (!swapShown) { swapShown = true; @SwapCard("), "按目的号位拆出的多条 swap 合成一张卡");
+        Assert.That(bs, Does.Contain("G.PickBattleAction(\"swap\")"), "点卡只进入选位（不带目的槽）");
+        Assert.That(bs, Does.Contain("if (G.BattleSwapAiming) { if (!locked) await G.ClickSwapSlot(pos, token); return; }"), "点亮起的号位才提交");
+        Assert.That(bs, Does.Contain("@onclick=\"() => G.ClickSwapSlot(pos, token)\""), "合法空号位也可点");
+        var gs = Web("Services/GameSession.cs");
+        Assert.That(gs, Does.Contain("if (BattleSwapAiming) return;"), "选位中全局 Enter 不代选目的号位");
+        Assert.That(gs, Does.Contain("BattleConfirmFocusPending = !BattleAiming && !BattleAllyAiming && !BattleSwapAiming;"));
+        var sw = Web("Services/GameSession.BattleSwap.cs");
+        Assert.That(sw, Does.Contain("BattleAction == \"swap\" && BattleItem == null"));
+        Assert.That(sw, Does.Contain("BattleItem = pos;").And.Contain("await ExecuteBattleCommand(token);"), "提交走原指令入口");
+    }
+
+    /// <summary>Q578：内核每个目的号位一条 swap 选项（ItemInstanceId＝目的槽），合成卡的号位亮起与它同源。</summary>
+    [Test]
+    public void Q578_EngineSwapOptions_PerDestination()
+    {
+        var src = File.ReadAllText(Path.Combine(Root(), "src", "Core", "Engine", "GameEngine.Combat.cs"));
+        Assert.That(src, Does.Contain("ItemInstanceId = to, Available = sw == null"), "目的槽由 ItemInstanceId 带上");
+    }
 }

@@ -562,3 +562,8 @@
 @keyframes anc-idle { 0%, 100% { transform: scale(1.04) translateY(0); filter: brightness(1.06); } 50% { transform: scale(1.06) translateY(-2px); filter: brightness(1.12); } }
 @media (prefers-reduced-motion: reduce) { .anc.ally.await-cmd .anc-art > img { animation: none !important; transform: none; filter: brightness(1.08); } }
 .bfs-queue .bfs-hintline { flex: 1 1 0; min-width: 160px; }
+
+/* B34（S14 Q578）：调整站位选位中，合法空号位亮起；名牌留在上方，⌖ 落在下半，互不遮挡 */
+.anc.ally.empty.targetable { justify-content: flex-start; padding-top: 18%; cursor: pointer; }
+.anc.ally.empty.targetable .anc-aim { inset: 40% 0 0 0; }
+.anc.ally.empty.targetable:focus-visible { outline: 3px solid #3f8f3a; outline-offset: 2px; }

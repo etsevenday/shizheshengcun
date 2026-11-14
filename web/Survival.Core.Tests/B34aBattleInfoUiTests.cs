@@ -63,7 +63,7 @@ public class B34aBattleInfoUiTests
     public void Q529_NoTargetCommand_FocusesConfirm()
     {
         var gs = Web("Services/GameSession.cs");
-        Assert.That(gs, Does.Contain("BattleConfirmFocusPending = !BattleAiming && !BattleAllyAiming;"));
+        Assert.That(gs, Does.Contain("BattleConfirmFocusPending = !BattleAiming && !BattleAllyAiming && !BattleSwapAiming;"));
     }
 
     [Test]

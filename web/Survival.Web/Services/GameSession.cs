@@ -2795,6 +2795,7 @@ public sealed partial class GameSession
     {
         if (State == null || S.Battle == null || BattleAction == null || BattleBusy || DialogueLocked || BattleMenuOpen || !E.AwaitingPlayer(S)) return;
         if (PlaybackActive || FxJustEnded) return;   // B34b（Q572）：播放结束的同一次 Enter 不接着确认指令
+        if (BattleSwapAiming) return;   // B34（Q578）：调整站位要明确激活一个目的号位，全局 Enter 不代选
         if (BattleAiming)
         {
             // BM2（Q497）：瞄准中回车与目标预测区「执行{指令名}」同一入口、同一校验
@@ -2978,7 +2979,8 @@ public sealed partial class GameSession
         DetailTab = DetailTab.Object;
         Notice = null;
         // B34a（Q529）：可确认的无目标指令新选中后，渲染完成把焦点交给实际确认按钮一次；友方／双目标／敌方瞄准不套用
-        BattleConfirmFocusPending = !BattleAiming && !BattleAllyAiming;
+        BattleConfirmFocusPending = !BattleAiming && !BattleAllyAiming && !BattleSwapAiming;
+        SwapHoverSlot = null;
         Notify();
     }
 

@@ -221,7 +221,13 @@
             <div class="bc-side">
                 <h3 class="bc-title">@BattleInfoCopy.GeneralPanel</h3>
                 <div class="bc-general" role="toolbar" aria-label="通用动作">
-                    @foreach (var o in general.Where(x => x.Action != "end_turn")) { @Cmd(o, sel, wi, w, locked) }
+                    @* B34（S14 Q578）：「调整站位」按目的号位拆出的多条合成一张卡（点卡只进入选位）；其余合法通用动作照列，超过5张换行 *@
+                    @{ var swapShown = false; }
+                    @foreach (var o in general.Where(x => x.Action != "end_turn"))
+                    {
+                        if (o.Action == "swap") { if (!swapShown) { swapShown = true; @SwapCard(general.Where(x => x.Action == "swap").ToList(), locked) } continue; }
+                        @Cmd(o, sel, wi, w, locked)
+                    }
                     @foreach (var o in skills.Where(x => x.NodeId == null)) { @Cmd(o, sel, wi, w, locked) }
                     @{ var meds = opts.Where(o => o.Group == "item").ToList(); var medCount = meds.Sum(CarriedFor); }
                     <button type="button" class="cmdt med @(G.MedTrayOpen ? "on" : "") @(meds.Any(m => m.Available) ? "" : "off")" id="cmd-med" aria-expanded="@G.MedTrayOpen"
@@ -274,6 +280,17 @@
             else if (waiting)
             {
                 <span class="bx-hint warn">@(WaitText(turnFoe, turnName))…</span>
+            }
+            else if (G.BattleSwapAiming)
+            {
+                @* B34（Q578）：选位中——悬停／聚焦的目的号位显示同源名称与费用；未指定不代选，明确点亮起的号位才提交 *@
+                var hs = G.SwapHoverSlot is int hp && G.SwapAimSlots().Contains(hp) ? G.SwapOptionFor(hp) : null;
+                @if (hs != null)
+                {
+                    var spv = e.PreviewCommand(s, BattleCommand.Of("swap", null, hs.ItemInstanceId));
+                    <span class="bx-hint @(spv.Ok ? "" : "warn")" title="@(spv.Ok ? string.Join("；", spv.Notes) : spv.Reason)">@(spv.Ok ? $"{spv.EffectText}；{ApText(hs.Ap)}{(hs.Energy > 0 ? $"，体力{Ui.N(hs.Energy)}" : "")}" : spv.Reason)</span>
+                }
+                <button type="button" class="bx-x" aria-label="取消（ESC）" title="取消（ESC/右键），不执行" @onclick="G.ClearBattleAction">×</button>
             }
             else if (sel != null && aiming)
             {
@@ -432,9 +449,22 @@
         var id = GameEngine.AllyAt(b, pos);
         if (id == null)
         {
-            <div class="anc ally empty" data-slot="@pos" title="@($"我方{pos}号位：空位（可用“调整站位”移过来；空位不是未解锁）")" aria-label="@($"我方{pos}号位，空位")">
-                <span class="anc-plate">@BattleInfoCopy.Plate(pos, null)</span>
-            </div>
+            var swapEmpty = G.BattleSwapAiming && G.SwapAimSlots().Contains(pos);
+            @if (swapEmpty)
+            {
+                @* B34（Q578）：调整站位选位中，合法的空号位亮起；点击或键盘激活才提交 *@
+                <div class="anc ally empty targetable" data-slot="@pos" role="button" tabindex="0" title="@SwapTip(G.SwapOptionFor(pos))" aria-label="@($"我方{pos}号位，空位，可作为调整站位的目的号位")"
+                     @onclick="() => G.ClickSwapSlot(pos, token)" @onkeydown="ev => EmptySlotKey(ev, pos, token, locked)"
+                     @onmouseenter="() => G.HoverSwapSlot(pos)" @onmouseleave="() => G.HoverSwapSlot(null)" @onfocus="() => G.HoverSwapSlot(pos)">
+                    <span class="anc-plate">@BattleInfoCopy.Plate(pos, null)</span><span class="anc-aim" aria-hidden="true">⌖</span>
+                </div>
+            }
+            else
+            {
+                <div class="anc ally empty @(G.BattleSwapAiming ? "unreachable" : "")" data-slot="@pos" title="@($"我方{pos}号位：空位（可用“调整站位”移过来；空位不是未解锁）")" aria-label="@($"我方{pos}号位，空位")">
+                    <span class="anc-plate">@BattleInfoCopy.Plate(pos, null)</span>
+                </div>
+            }
             return;
         }
         var me = id == GameState.PlayerId;
@@ -445,16 +475,18 @@
         var st = s.Actors.TryGetValue(id, out var act) ? act.Stats : s.Stats;
         var fa = b.Fighter(id);
         var apMax = fa.Acting && fa.ActivationAp > 0 ? fa.ActivationAp : e.NormalActivationAp(s.Actor(id));
-        var targetable = allyAim && allyAimSet.Contains(id);
+        var swapSlot = G.BattleSwapAiming && G.SwapAimSlots().Contains(pos);
+        var targetable = (allyAim && allyAimSet.Contains(id)) || swapSlot;
         // 整队（Q105）：已选的 A/B 带角标，不算“非目标”变灰
         var pairMark = G.BattlePairAiming ? (G.BattleAllyTarget == id ? "A" : G.BattleAllyTarget2 == id ? "B" : null) : null;
-        var notTarget = allyAim && !targetable && pairMark == null;
+        var notTarget = (allyAim || G.BattleSwapAiming) && !targetable && pairMark == null;
         // B34（S14 Q577）：真正等待玩家下令、还没选动作时，当前实际行动者轻微高亮＋微动态待机＋人物局部微聚焦（只作用于立绘层，不改站位与点击对象）
         var awaitCmd = acting && G.BattleAction == null && !G.DialogueLocked && !G.PlaybackActive && G.E.AwaitingPlayer(s);
         <div class="anc ally @Pulse(BattleFxUnit.AllySide, id) @(acting ? "acting" : "") @(awaitCmd ? "await-cmd" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" data-peek="@Peek.Ally(id)" role="button" tabindex="0" aria-pressed="@viewing"
              aria-label="@($"{(acting ? BattleInfoCopy.CurrentActorAria(name) + "，" : "")}我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(targetable ? "，可作为目标" : "")}")"
-             title="@(pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, token, locked)" @onkeydown="ev => AllyKey(ev, id)"
-             @onmouseenter="() => G.HoverBattleAlly(targetable ? id : null)" @onmouseleave="() => G.HoverBattleAlly(null)">
+             title="@(swapSlot ? SwapTip(G.SwapOptionFor(pos)) : pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, pos, token, locked)" @onkeydown="ev => AllyKey(ev, id, pos, token, locked)"
+             @onmouseenter="() => { if (swapSlot) G.HoverSwapSlot(pos); else G.HoverBattleAlly(targetable ? id : null); }" @onmouseleave="() => { G.HoverSwapSlot(null); G.HoverBattleAlly(null); }"
+             @onfocus="() => { if (swapSlot) G.HoverSwapSlot(pos); }">
             @* B34（S14 Q574）：头顶名牌「{号位}号位 · {姓名}」；下一行是 AP／当前行动事实 *@
             <div class="anc-top anc-plate-row">@if (acting) {<span class="anc-ptr" aria-hidden="true">▼</span>}<b class="anc-plate">@BattleInfoCopy.Plate(pos, name)</b></div>
             <div class="anc-head" title="@(acting ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{fa.Ap}AP（不带入下次）" : "还没轮到；行动顺序见上方队列")">
@@ -477,17 +509,58 @@
         </div>
     };
 
-    private void AllyKey(KeyboardEventArgs ev, string id)
+    private async Task AllyKey(KeyboardEventArgs ev, string id, int pos, string token, bool locked)
     {
-        if (ev.Key is "Enter" or " ") G.ViewBattleAlly(id);
+        if (ev.Key is not ("Enter" or " ")) return;
+        // B34（Q578）：选位中键盘明确激活亮起的号位＝鼠标点它（按住重复不再提交）
+        if (G.BattleSwapAiming) { if (!locked && !ev.Repeat) await G.ClickSwapSlot(pos, token); return; }
+        G.ViewBattleAlly(id);
     }
 
-    /// <summary>点我方锚点：瞄准友方技能时提交（执行锁期间不受理），否则只查看。</summary>
-    private async Task ClickAlly(string id, string token, bool locked)
+    /// <summary>点我方锚点：调整站位选位中点目的号位即提交；瞄准友方技能时提交（执行锁期间不受理），否则只查看。</summary>
+    private async Task ClickAlly(string id, int pos, string token, bool locked)
     {
+        if (G.BattleSwapAiming) { if (!locked) await G.ClickSwapSlot(pos, token); return; }
         if (G.BattleAllyAiming && locked) return;
         await G.ClickBattleAlly(id, token);
     }
+
+    /// <summary>空的我方号位在调整站位选位中亮起时可点、可键盘激活。</summary>
+    private async Task EmptySlotKey(KeyboardEventArgs ev, int pos, string token, bool locked)
+    {
+        if (ev.Key is not ("Enter" or " ") || ev.Repeat || locked) return;
+        await G.ClickSwapSlot(pos, token);
+    }
+
+    /// <summary>目的号位的悬停说明：内核原选项名称「调整站位→{号位}」与同源 AP、体力（与原指令卡悬停同一格式）。</summary>
+    private static string SwapTip(BattleCommandOption? o) =>
+        o == null ? "" : o.Reason ?? $"{o.Label}：{ApText(o.Ap)}{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}";
+
+    /// <summary>
+    /// B34（S14 Q578）：通用区唯一一张「调整站位」卡——点卡只进入选位（我方合法目的号位亮起），不移动、不扣费；
+    /// 没有任何合法目的地时禁用并写内核原因。AP 与体力取原选项（各目的槽同价）。
+    /// </summary>
+    private RenderFragment SwapCard(List<BattleCommandOption> swaps, bool locked) => __builder =>
+    {
+        var ok = swaps.FirstOrDefault(x => x.Available);
+        var any = ok ?? swaps.FirstOrDefault();
+        var why = ok == null ? (any?.Reason ?? G.E.CommandBlocked(G.S, BattleCommand.Of("swap"))) : null;
+        var on = G.BattleSwapAiming;
+        var ap = any?.Ap ?? 0;
+        var energy = any?.Energy ?? 0;
+        var name = GameEngine.ActionName("swap");
+        <button type="button" id="cmd-swap" class="cmdt plain @(on ? "on" : "") @(ok != null ? "" : "off")" disabled="@locked" aria-disabled="@(ok == null)" aria-pressed="@on"
+                aria-label="@($"{name}，{ApText(ap)}{(why != null ? "；不可用：" + why : "")}")"
+                title="@(why ?? $"{name}：{ApText(ap)}{(energy > 0 ? $"，体力{Ui.N(energy)}" : "")}；我方站位。")"
+                @onclick='() => { if (ok != null) G.PickBattleAction("swap"); else G.ExplainBlocked(name, why); }'>
+            <span class="cmdt-ap bdg" aria-hidden="true">@ApText(ap)</span>
+            <span class="cmdt-art">@Icons.Markup("cmd_switch")</span>
+            <span class="cmdt-text">
+                <span class="cmdt-name">@name</span>
+                @if (ok == null) { <span class="cmdt-why">@ShortWhy(why)</span> }
+            </span>
+        </button>
+    };
 
     /// <summary>主角脚下的状态角标（短徽标，完整说明在右侧对象信息）：防御/格挡、架矛、蓄力、失衡、减速、出血、感染等。</summary>
     private RenderFragment AllyChips(string id) => __builder =>
