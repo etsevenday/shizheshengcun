@@ -552,8 +552,8 @@ window.survivalPanels = (function () {
 // 只改滚动位置，不推进对白；“回到最新”按钮所在的容器类名由这里切换（Blazor 不管理这个类）。
 window.survivalDlg = (function () {
   // B39（N02 附录 §1、DLG-A06，B26b/B38 遗留“1280×720 长句顶部被裁”）：新句出现时按句首锚定——新句整段放得下就停在底部，
-  // 放不下就让它的第一行贴住可视区上沿（不再滚到底把句首裁掉）。“正在跟读”= 已在底部，或最新一句的句首没有落到可视区下沿之下；
-  // 向上回看（最新句首在可视区下方）时保持位置并亮出“回到最新”。只滚动本流，不推进对白。
+  // 放不下就让它的第一行贴住可视区上沿（不再滚到底把句首裁掉）。“正在跟读”见下方 atLatest（BM5a 按 Q614 改：离开已显示最新即算回看）；
+  // 向上回看时保持位置并亮出“回到最新”。只滚动本流，不推进对白。
   function latestHost(el) {
     var layer = el && el.closest ? el.closest('.dlg-layer') : null;
     return layer ? layer.querySelector('.dlg-latest-host') : null;
@@ -563,32 +563,39 @@ window.survivalDlg = (function () {
     if (h) h.classList.toggle('show', !!on);
   }
   function bottom(el) { return el.scrollTop + el.clientHeight >= el.scrollHeight - 8; }
+  // 锚点句：最近一次 sync 时的当前句（新句已渲染、sync 还没跑的间隙里发生的滚动不拿新句判断，免得误判成回看）
+  function nowEl(el) {
+    var n = el.__dlg && el.__dlg.now;
+    return n && n.isConnected ? n : el.querySelector('.now');
+  }
   function nowTop(el) {
-    var n = el.querySelector('.now');
+    var n = nowEl(el);
     if (!n) return null;
     return el.scrollTop + n.getBoundingClientRect().top - el.getBoundingClientRect().top;
   }
-  function following(el) {
-    if (bottom(el)) return true;
-    var t = nowTop(el);
-    return t !== null && t - el.scrollTop <= el.clientHeight - 24;
-  }
-  function anchor(el) {
+  function anchorTop(el) {
     var max = Math.max(0, el.scrollHeight - el.clientHeight);
     var t = nowTop(el);
-    el.scrollTop = t === null ? max : Math.min(max, Math.max(0, t - 6));
+    return t === null ? max : Math.min(max, Math.max(0, t - 6));
   }
+  function anchor(el) { el.scrollTop = anchorTop(el); }
+  // BM5a（Q614 选 A；Q627 未答，B39 句首锚定保持）：手动滚动时只要阅读位置在“已显示最新”之上就亮出“回到最新”，没有新句也亮；
+  // “已显示最新”= 已在底部（沿原 8px 容差），或不高于 B39 给最新一句定的句首锚点（长句句首贴上沿时仍算在最新、不亮按钮）。
+  // 回看期间（按钮亮着）新句进入不跟随、不抢位置；无可滚动内容时 scrollTop=0 即在底部，不显示。
+  function atLatest(el) { return bottom(el) || el.scrollTop >= anchorTop(el) - 8; }
   return {
     sync: function (el, count) {
       if (!el) return;
       if (!el.__dlg) {
         el.__dlg = { count: 0, follow: true };
         el.addEventListener('scroll', function () {
-          el.__dlg.follow = following(el);
-          if (el.__dlg.follow) showLatest(el, false);
+          var on = atLatest(el);
+          el.__dlg.follow = on;
+          showLatest(el, !on);
         });
       }
       var st = el.__dlg;
+      st.now = el.querySelector('.now');
       // 新的一次对话（句数变少）或首次出现：从这一段的句首开始
       if (count <= st.count || st.count === 0) { st.count = count; anchor(el); st.follow = true; showLatest(el, false); return; }
       st.count = count;
@@ -597,6 +604,7 @@ window.survivalDlg = (function () {
     },
     latest: function (el) {
       if (!el) return;
+      if (el.__dlg) el.__dlg.now = el.querySelector('.now');
       anchor(el);
       if (el.__dlg) el.__dlg.follow = true;
       showLatest(el, false);

@@ -1194,3 +1194,29 @@
 /* Q252：第二行只来自资源自身状态（危险、已领取、库存为0等），行动进行中、请先读完对话不写进卡面，主图不因它们消失。
    Q254：没有确定产出的整句较长，不换行、不缩字、不压主图，单行省略，全文在悬停、聚焦朗读和点选详情。 */
 .center-scroll.four .facility-row .desk-group.resources .res-card .oc-body .oc-line.res-yield:not(.warn-line) { font-size: var(--fs-aux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ───── BM5a（S14「2026-11-13 试玩后续修订：对白恢复背景并覆盖下两行」，DLG-LOWER-A01—A06）─────
+   普通对白层是四行网格的直接子项：锚定③当前地面顶边至④随身物品底边，覆盖两栏完整中央宽度与中间间隔，叠加不挤动四行；
+   加工菜单、整备、成长等全屏面板（.full-panel／.tall-panel 的 ①②合并区 z-index 31）开着时同一几何，层级在面板之上。
+   恢复一整层不透明阅读底板（底色 alpha=1，铁纹只叠在自身底色之上，铁框描边区也以底色垫满），沿战斗对白同一铁框主题；
+   头像框、台词气泡、标题、辅助说明与控制条全在底板内：头像沉左下／右下，正文占中列剩余高度独立纵滚，控制条始终可见。
+   全屏战斗对白（.bfs-dlg > .dlg-layer）不受本段影响。 */
+/* 四行网格只有一列：显式把所有子项放进第 1 列，免得对白层先占③④后把地面／随身挤进隐式第 2 列 */
+.center-scroll.four > * { grid-column: 1; }
+.center-scroll.four > .dlg-layer {
+  grid-row: 3 / span 2; grid-column: 1; position: relative; inset: auto; z-index: 40; min-height: 0;
+  align-items: stretch; padding: 10px 12px;
+  border: 1px solid var(--ink2-meter-gold); border-radius: 2px;
+  border-image: var(--frame-iron) 12 / var(--ink2-frame-l) / 0 stretch;
+  background: var(--iron-texture), var(--ink2-dark); background-clip: border-box;
+  box-shadow: 0 8px 28px #000a;
+}
+.center-scroll.four > .dlg-layer > .dlg-side { align-self: end; }
+.center-scroll.four > .dlg-layer > .dlg-main { align-self: stretch; max-height: 100%; }
+.center-scroll.four > .dlg-layer .dlg-stream { flex: 1 1 auto; }
+/* 矮屏先收留白与头像占位，不缩对白字号（Q327） */
+@media (max-height: 800px) {
+  .center-scroll.four > .dlg-layer { padding: 8px 10px; }
+  .center-scroll.four > .dlg-layer .dlg-face { padding: 4px 4px 2px; gap: 2px; }
+  .center-scroll.four > .dlg-layer .dlg-name { min-height: 0; }
+}

@@ -67,7 +67,7 @@
             _diskMask = G.DiskMaskShown;
         }
         @* 固定四行（S14 §18.1）：中部净高均分四份——①地图/场景 ②设施/资源 ③当前地面 ④随身；选卡、展开锅、悬停、开面板、对白、
-           战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。对白/战斗/面板只占①②合并区域。 *@
+           战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。战斗/面板只占①②合并区域；普通对白（BM5a）覆盖③④。 *@
         <section class="center @(G.Panel == "citymap" ? "city-open" : "")" aria-label="当前地点">
             <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(G.Panel is "gear" or "growth" or GameSession.FireMenuPanel ? "full-panel" : G.Panel is "craft" or "safehouse" or "drying" or "citymap" || (G.Panel == "city" && G.CityPanelTall) ? "tall-panel" : "") @(battleUi ? "battle" : "") @(dockProgress && (G.PauseLayerShown || progress != null) ? "docked-prog" : "")">
                 <div class="rows2" data-row="1-2">
@@ -76,8 +76,6 @@
                         @if (G.BattleFullscreen) { <div class="rows2-blank" aria-hidden="true"></div> }
                         else { <LocationStrip /> }
                     </div>
-                    @* 人物对话层覆盖地图与设施两行的完整区域（S14 §10.1），地面/随身与左右栏保持可见；全屏战斗中的对白在战场内显示（A10 §6.2） *@
-                    @if (!G.BattleFullscreen) { <DialogueLayer /> }
                     @if (centerPanel)
                     {
                         <div class="panel-host" data-panel="@G.Panel" inert="@dlgLock">
@@ -106,6 +104,11 @@
                 </div>
                 <ItemShelf Owner="@s.Ground" Title="@(s.CurrentZone == GameState.SafehouseZone ? "屋内地面" : "当前地面")" Sub="@e.ZoneName(s, s.Ground)" />
                 <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
+                @* BM5a（S14「2026-11-13 试玩后续修订：对白恢复背景并覆盖下两行」，DLG-LOWER-A01—A06；取代 Q585 透明对白与 §10.1 只盖上两行）：
+                   普通对白层是四行网格的直接子项，锚定③当前地面顶边至④随身物品底边，不透明底板叠在两栏之上、不挤动四行；
+                   顶栏面板（含加工菜单、整备、成长等全屏面板）开着时仍按同一四行几何定位，层级高于面板。①②保持可见但随对白锁 inert。
+                   全屏战斗中的对白在战场内专用区域显示（A10 §6.2），不走这里。 *@
+                @if (!G.BattleFullscreen) { <DialogueLayer /> }
             </div>
 
             @if (_diskMask)
