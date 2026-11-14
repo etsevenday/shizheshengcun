@@ -155,6 +155,7 @@ namespace Survival.Core.Engine
             if (b == null || actorId == GameState.PlayerId || !s.Actors.TryGetValue(actorId, out var actor)) return;
             if (!b.Allies.Contains(actorId) && !IsDead(s, actor)) return;
             var name = ActorDisplayName(s, actorId);
+            var failed = TakeFailedResistPrefix(actor, name);   // B47a2（Q689）：失败前缀只接在战报主结果前，原“已战死”即时提醒不带
             var wasActing = ActingAlly(b) == actorId;
             int moved;
             using (FocusOn(s, GameState.PlayerId)) moved = CompanionDown(s, actor, cause, inBattle: true);
@@ -174,7 +175,7 @@ namespace Survival.Core.Engine
                     if (of.Panic > before + 1e-9) rises.Add((ActorDisplayName(s, id), Fmt.T(of.Panic - before)));
                 }
             // B38b（Q284）：首句“{人物}已战死（{原因}）。”；实际有遗物才接遗物句；只有恐慌实际增加者按增量合组（顿号），不同增量分别成句，顺序沿参战顺序
-            var text = $"{name}已战死（{cause}）。" + (moved > 0 ? $"遗物留在{LocName(b.LocationId)}，战后可取。" : "");
+            var text = $"{failed}{name}已战死（{cause}）。" + (moved > 0 ? $"遗物留在{LocName(b.LocationId)}，战后可取。" : "");
             foreach (var g in rises.GroupBy(x => x.Inc)) text += $"{string.Join("、", g.Select(x => x.Name))}恐慌+{g.Key}。";
             BattleLog(s, text);
             if (wasActing)

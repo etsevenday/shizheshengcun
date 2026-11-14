@@ -63,6 +63,11 @@ namespace Survival.Core.State
         /// </summary>
         public bool DyingNotified { get; set; }
         /// <summary>
+        /// B47a2（R09 Q689）：本次确实死亡是致死抵抗失败所确认（DamageActor 判失败时置位），写原死亡主结果时前接“{人物}未能抵抗致死。”后清除。
+        /// 只在同一次原子结算内存在（死亡收束紧随其后），不进存档；尸变等未抽抵抗的死亡不置位。
+        /// </summary>
+        [Newtonsoft.Json.JsonIgnore] public bool ResistFailed { get; set; }
+        /// <summary>
         /// 意志经验同敌账（R09 §4.1、Q676，schema 52）：键为稳定 worldEnemyId（十进制字符串），值为本局已实际到账的次数（每人每敌最多 3 次，永久不清）。
         /// B47a1 只建字段，结账在 B47a2。
         /// </summary>

@@ -423,8 +423,10 @@ namespace Survival.Core.Engine
             }
             var moved = MoveToRemains(s, actor, where, cause, wasActive ? s.Battle?.BattleId : null, !wasActive && houseOf == null, houseOf != null ? SafehouseZone : null);
             var whereName = houseOf != null ? $"{SafehouseName(s, houseOf)}屋内" : LocName(where);
+            // B47a2（Q689）：世界中的队友死亡主结果前接“{人物}未能抵抗致死。”（战斗中的战死由 AllyDownInBattle 在战报主结果前接，原即时提醒不再弹前缀）
+            var failed = TakeFailedResistPrefix(actor, ActorLabel(actor));
             Emit(s, GameEventKind.Alert, inBattle && wasActive ? $"{ActorLabel(actor)}已战死（{cause}）"
-                : $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{whereName}。" : "。"));
+                : failed + $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{whereName}。" : "。"));
             AfterSquadLeave(s, actor.Id);   // B41c：队长回退、练习潜行收束（先写原死亡结果再追加）
             return moved;
         }
@@ -734,6 +736,7 @@ namespace Survival.Core.Engine
             s.Main = null;
             s.Sub = null;
             s.StashedWork = null;
+            var failed = TakeFailedResistPrefix(s.Actor(GameState.PlayerId), "你");   // B47a2（Q689）：主角原死亡主结果前接一次
             s.Actor(GameState.PlayerId).Stats.Health = 0;   // B9a：战斗中 s.Stats 可能指向当前视角的队友，主角终局只改主角
             s.Actor(GameState.PlayerId).Dead = true;   // B47a1（R09 §2）：确实死亡
             s.Progress.Dead = true;
@@ -744,7 +747,7 @@ namespace Survival.Core.Engine
                 LocationId = loc,
             };
             ExpeditionOnDeath(s);   // B21：主角终局，远征停止（不再推进返程、不到父地点）
-            Emit(s, GameEventKind.Death, $"你在{LocName(loc)}倒下了。直接原因：{s.Progress.Death.Cause}。");
+            Emit(s, GameEventKind.Death, $"{failed}你在{LocName(loc)}倒下了。直接原因：{s.Progress.Death.Cause}。");
         }
 
         private static readonly StatId[] ZeroStats = { StatId.Satiety, StatId.Hydration, StatId.Wakefulness, StatId.Energy };

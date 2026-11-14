@@ -68,6 +68,17 @@ namespace Survival.Core.Engine
         /// <summary>R09 Q673／Q681 中央暂停结果正式句：“{行动名}已暂停：{人物}进入濒死状态。”。</summary>
         public static string DyingPauseText(string action, string who) => $"{action}已暂停：{DyingPauseReasonText(who)}。";
 
+        /// <summary>R09 §8／Q689「抵抗失败」前缀：与该人物本次原死亡结果全文直接相接为一条（前缀自带句号）。</summary>
+        public static string FailedResistText(string who) => $"{who}未能抵抗致死。";
+
+        /// <summary>取出并清除“本次死亡是致死抵抗失败”标记（Q689：前缀只接一次）。返回要接在原死亡主结果前的前缀（没有为空串）。</summary>
+        private static string TakeFailedResistPrefix(ActorState actor, string who)
+        {
+            if (!actor.ResistFailed) return "";
+            actor.ResistFailed = false;
+            return FailedResistText(who);
+        }
+
         /// <summary>R09 §8「用药／医疗回血脱离」正式句。</summary>
         public static string LeaveDyingText(string who) => $"{who}脱离濒死状态。";
 
@@ -79,7 +90,7 @@ namespace Survival.Core.Engine
         /// <item>事件前已濒死：按事件开始前的意志等级抽一次 u，抵抗成功仍 H=0（写抵抗句），失败置确死标记（<see cref="DamageOutcome.Died"/>）。</item>
         /// </list>
         /// 死亡后果（主角终局、队友离队与遗物、战斗收束）由调用方在原时序处理（主角“结算写完再终局”、世界段死亡先于自然治愈等）；
-        /// “未能抵抗致死”句待 Q689 答复，本批不写，只写原死亡句。只读预演（SimCopy）不抽随机，按未能抵抗处理（B47a3 预估截断前的过渡口径）。
+        /// B47a2（Q689）：失败时置 ResistFailed，原死亡主结果写出时前接“{人物}未能抵抗致死。”拼成一条。只读预演（SimCopy）不抽随机，按未能抵抗处理（B47a3 预估截断前的过渡口径）。
         /// 状态句写到 notes（调用方在自己的伤害日志之后追加）；notes 为空时立即写：在场我方写战报，其他写普通日志。
         /// </summary>
         public DamageOutcome DamageActor(GameState s, ActorState actor, double d, List<string>? notes = null)
@@ -104,6 +115,7 @@ namespace Survival.Core.Engine
                 return DamageOutcome.Resisted;
             }
             actor.Dead = true;
+            actor.ResistFailed = !s.SimCopy;   // B47a2（Q689）：原死亡主结果前接“未能抵抗致死。”
             return DamageOutcome.Died;
         }
 

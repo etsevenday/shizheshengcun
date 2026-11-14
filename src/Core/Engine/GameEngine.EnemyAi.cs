@@ -892,7 +892,7 @@ namespace Survival.Core.Engine
             if (armorWear != "") extra.Add(armorWear);
             if (outcome == DamageOutcome.Died)
             {
-                // Q689 待答复：不写“未能抵抗致死”句，只沿原死亡句；确死后不再给死者执行感染、控制、出血等后续反应
+                // B47a2（Q689）：“未能抵抗致死。”接在原死亡主结果前（队友战死战报／主角终局句），这条伤害战报不变；确死后不再给死者执行感染、控制、出血等后续反应
                 BattleLog(s, $"{EnemyName(e)}{verb}命中{tn}，健康−{Fmt.N(dmg)}。");
                 BattleDeath(s, cause);
                 return;

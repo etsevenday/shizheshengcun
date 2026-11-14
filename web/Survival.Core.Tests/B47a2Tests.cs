@@ -535,4 +535,108 @@ public class B47a2Tests : BattleTestBase
         Assert.That(ev.Count(e => e.Text == GameEngine.EnterDyingText(E.ActorDisplayName(s, mate.Id))), Is.EqualTo(1), "另一人进入濒死只日志、锁存");
         Assert.That(mate.DyingNotified, Is.True);
     }
+
+    // ───────────── M918 Q688／Q689 战报与失败前缀 ─────────────
+
+    /// <summary>主角 3 号位、同伴 1 号位，对一只蹒跚者入战（蹒跚者只能打到同伴）。</summary>
+    private GameState MateFight(uint seed, out string mate)
+    {
+        var s = New(seed);
+        UnlockCapacity(s, 3);
+        E.DebugQuickParty(s, 2);
+        mate = s.Party.Single(id => id != GameState.PlayerId);
+        E.DebugTeleport(s, "field");
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        s.WorldEnemies.Clear();
+        var id = E.DebugSpawnEnemy(s, "shambler", "field").Id;
+        Assert.That(E.DebugStartBattle(s, new[] { id }, GameEngine.FearEncounter), Is.True);
+        s.Battle!.Allies = new List<string> { mate, "", GameState.PlayerId };
+        return s;
+    }
+
+    /// <summary>
+    /// Q688-A01／Q689-A01：战斗中进入濒死、抵抗成功、医疗脱离、抵抗失败四类只写战报、不另弹即时提醒；真正战死原即时提醒保留（不带前缀）；
+    /// 失败前缀与原战死主结果全文拼成同一条战报，不另写独立失败记录；首次归零与抵抗成功不带死亡句。
+    /// </summary>
+    [Test]
+    public void Q688_A01_Q689_A01_BattleLifeStates_ReportOnly_FailurePrefixMerged()
+    {
+        var s = MateFight(47261, out var mate);
+        var b = s.Battle!;
+        var e = b.Alive.First();
+        var m = s.Actors[mate];
+        var name = E.ActorDisplayName(s, mate);
+        m.Stats.Health = 0.2;
+        var mark = s.Log.Count;
+        void Hit() { Force(s, Draw(), Below(0.01), Any()); EnemyAttack(s, e); }
+        Rolls(E, 0.0, 0.999);
+        Hit();                                   // 进入濒死
+        Hit();                                   // 抵抗成功
+        Assert.That(b.Log.Count(l => l.EndsWith(GameEngine.EnterDyingText(name))), Is.EqualTo(1));
+        Assert.That(b.Log.Count(l => l.EndsWith(GameEngine.ResistedDeathText(name))), Is.EqualTo(1));
+        E.HealActor(s, m, 0.5);                  // 医疗脱离
+        Assert.That(b.Log[^1], Does.EndWith(GameEngine.LeaveDyingText(name)));
+        m.Stats.Health = 0;
+        Hit();                                   // 抵抗失败 → 战死
+        Assert.That(m.Dead, Is.True);
+        var deaths = b.Log.Where(l => l.Contains("未能抵抗致死")).ToList();
+        Assert.That(deaths, Has.Count.EqualTo(1), "前缀只一条、不另写独立失败战报");
+        Assert.That(deaths[0], Does.Contain($" · {GameEngine.FailedResistText(name)}{name}已战死（"), "前缀与原死亡主结果全文直接相接");
+        Assert.That(deaths[0], Does.Contain("恐慌+"), "原恐慌分句照旧");
+        Assert.That(b.Log.Count(l => l.Contains("已战死")), Is.EqualTo(1));
+        Assert.That(b.Log.Where(l => l.Contains("进入濒死") || l.Contains("抵抗了致死")).All(l => !l.Contains("未能抵抗") && !l.Contains("已战死")), Is.True);
+        var world = Since(s, mark);
+        Assert.That(world.Count(x => x.Kind == "Alert"), Is.EqualTo(1), "只有真正战死的原即时提醒");
+        Assert.That(world.Single(x => x.Kind == "Alert").Text, Does.StartWith($"{name}已战死（").And.Not.Contain("未能抵抗"), "原提醒不带新前缀");
+        Assert.That(world.Any(x => x.Text.Contains("濒死") || x.Text.Contains("抵抗")), Is.False, "四类新状态不进即时提醒／普通日志");
+        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(t.Battle!.Log.Count(l => l.Contains("未能抵抗致死")), Is.EqualTo(1), "读档不多条");
+    }
+
+    /// <summary>Q689-A01：世界中同伴、主角致死抵抗失败，前缀接在各自原死亡主结果前（一条）；尸变不加前缀。</summary>
+    [Test]
+    public void Q689_A01_WorldDeaths_PrefixOnce_ZombifyNoPrefix()
+    {
+        var s = New(47262);
+        E.DebugQuickParty(s, 2);
+        var mate = s.Actors[s.Party.Single(id => id != GameState.PlayerId)];
+        var name = E.ActorDisplayName(s, mate.Id);
+        mate.Stats.Health = 0;
+        mate.DyingNotified = true;
+        mate.Stats.Hydration = 0;
+        Start(s, ActionRequest.Wait(30));
+        FailDeathRolls(1);
+        E.Advance(s);
+        Assert.That(mate.Dead, Is.True);
+        var line = s.Log.Single(l => l.Text.Contains("未能抵抗致死"));
+        Assert.That(line.Text, Does.StartWith($"{GameEngine.FailedResistText(name)}{name}死了（"));
+        Assert.That(s.Log.Count(l => l.Text.Contains($"{name}死了（")), Is.EqualTo(1), "同一条，不另写");
+
+        var t = New(47263);
+        t.Player.Stats.Health = 0;
+        t.Player.DyingNotified = true;
+        t.Player.Body.BleedDamage = 2;
+        t.Player.Body.BleedTriggers = 2;
+        Start(t, ActionRequest.Wait(30));
+        FailDeathRolls();
+        E.Advance(t);
+        Assert.That(t.Progress.Dead, Is.True);
+        var death = t.Log.Single(l => l.Kind == "Death");
+        Assert.That(death.Text, Does.StartWith("你未能抵抗致死。你在").And.EndWith("直接原因：出血。"));
+        Assert.That(t.Log.Count(l => l.Text.Contains("未能抵抗")), Is.EqualTo(1));
+
+        var u = New(47264);
+        E.DebugQuickParty(u, 2);
+        var z = u.Actors[u.Party.Single(id => id != GameState.PlayerId)];
+        z.Stats.Health = 0;
+        z.DyingNotified = true;
+        z.Body.Infected = true;
+        z.Body.VirusLoad = 100;
+        Start(u, ActionRequest.Wait(30));
+        E.Advance(u);
+        Assert.That(z.Dead, Is.True);
+        Assert.That(u.Log.Any(l => l.Text.Contains("未能抵抗")), Is.False, "独立尸变未抽抵抗不加前缀");
+    }
 }

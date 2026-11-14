@@ -383,7 +383,9 @@ public class B47a1DyingTests : BattleTestBase
         Attack(s, e);
         Assert.That((s.Progress.Dead, s.Battle == null, E.TestDeathRolls!.Count), Is.EqualTo((true, true, 0)));
         Assert.That(s.Progress.Death!.Cause, Does.StartWith("被"));
-        Assert.That(s.Log.Select(l => l.Text), Has.None.Contains("未能抵抗"), "Q689 待答复：只写原死亡句");
+        // B47a2（Q689 B）：失败前缀接在原死亡主结果前，拼成同一条（不另写独立失败战报）
+        Assert.That(s.Log.Count(l => l.Text.Contains("未能抵抗")), Is.EqualTo(1));
+        Assert.That(s.Log.Single(l => l.Text.Contains("未能抵抗")).Text, Does.StartWith("你未能抵抗致死。你在"));
     }
 
     /// <summary>Q616-A06：主角与全队都 0H 未确死不自动败北；同行者濒死不发死亡恐慌、不迁遗物；真死才处理一次（恐慌+8、离队）。</summary>
