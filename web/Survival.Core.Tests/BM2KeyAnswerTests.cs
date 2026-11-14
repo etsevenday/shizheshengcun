@@ -190,7 +190,7 @@ public class BM2KeyAnswerTests : TestBase
         var screen = Web("Components/BattleScreen.razor");
         Assert.That(screen, Does.Contain("if (aiming && G.BattleAimTarget is int hov && aimSet.Contains(hov))"), "生命条预计条纹与预测同一目标");
         // BM7a（Q632 逐字稿）：默认攻击瞄准引导整句已含「ESC取消」，取消提示并进 AimHint 各分支，不再在调用处追加
-        Assert.That(screen, Does.Contain("<span class=\"bx-hint\">@AimHint(sel)</span>"));
+        Assert.That(screen, Does.Contain("<span class=\"bx-hint\" title=\"@AimHint(sel)\">@AimHint(sel)</span>"));
         // 键盘：焦点在新按钮上时回车按原生语义（只点一次），不在控件上时交给 BattleConfirmHover；按住不重复
         var js = Script();
         Assert.That(js, Does.Contain("if (ev.repeat && k !== 'ArrowLeft' && k !== 'ArrowRight') return;"));

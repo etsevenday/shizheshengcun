@@ -17,6 +17,15 @@ public sealed partial class GameSession
     {
         _aimKbd = index;
         _aimKbdCtx = AimCtx();
+        _aimRailHidden = null;   // 试玩修复（M891）：键盘重新指定目标时右栏叠层回来
+    }
+
+    /// <summary>试玩修复（M891，S14 Q632「悬停亮起的合法敌人……同时右侧信息栏显示该敌人的公开详细属性」）：右栏叠层为让出通用行动区而隐去后，再悬停敌人即重新显示。返回是否有变化。</summary>
+    private bool ShowAimRailAgain()
+    {
+        if (_aimRailHidden == null) return false;
+        _aimRailHidden = null;
+        return true;
     }
 
     private void ClearAimKeyboard() => _aimKbd = null;
@@ -62,7 +71,7 @@ public sealed partial class GameSession
 
     private string? _aimRailHidden;
 
-    /// <summary>鼠标移进右栏叠层：叠层让开，露出下面的通用行动（同 B34 灰卡说明的让位做法），直到明确目标换人或重新瞄准。</summary>
+    /// <summary>鼠标移进右栏叠层：叠层让开，露出下面的通用行动（同 B34 灰卡说明的让位做法），直到再悬停敌人、键盘重新指定目标或重新瞄准。</summary>
     public void HideAimRail()
     {
         if (BattleAimTarget is not int t) return;

@@ -3108,6 +3108,7 @@ public sealed partial class GameSession
         // BM2（Q497）：瞄准中鼠标进入哪只敌人，本次明确目标就改为它；离开锚点（index 为 null）时保留，供移向右栏预测与确认按钮
         var aimChanged = false;
         if (index == null && _aimKbd != null) { ClearAimKeyboard(); aimChanged = true; }   // BM7a（Q632）：鼠标离开合法目标即撤鼠标浮框
+        if (index != null && ShowAimRailAgain()) aimChanged = true;   // BM7a 试玩修复（Q632）：重新悬停敌人时右栏叠层回来
         if (index is int i && BattleAiming && S.Battle!.Enemies.Any(x => x.Index == i && x.Alive) && BattleAimTarget != i)
         {
             SetAimTarget(i);

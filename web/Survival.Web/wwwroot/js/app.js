@@ -283,7 +283,7 @@ window.survival = {
     }
     // BM7a（Q655）：最上层的游戏菜单／战斗菜单／手动存档子页（.menu-modal，可见且不在 inert 里）
     function topMenu() {
-      var ms = Array.prototype.filter.call(document.querySelectorAll('.menu-modal'), function (m) { return shown(m) && !(m.closest && m.closest('[inert]')); });
+      var ms = Array.prototype.filter.call(document.querySelectorAll('.menu-modal'), function (m) { return shown(m) && !(m.closest && m.closest('[inert], .pop-ghosts')); });
       return ms.length ? ms[ms.length - 1] : null;
     }
     // 该面板的确认区：面板本身是区就取它；否则取面板里唯一一个顶层的区（如整备里的比较／交接工作区）
@@ -1582,15 +1582,28 @@ window.survivalBattleUi = (function () {
   }
 
   // ── Q655：游戏菜单／战斗菜单（.menu-modal）打开时记下原合法层的触发位置，整层收起后回到它 ──
-  var open = false, opener = null, preEsc = null, preEscAt = 0;
-  document.addEventListener('keydown', function (ev) {
-    // ESC 打开菜单前，背后按钮会被 blur（试玩修复 L6）：先记下当时的焦点
-    if (ev.key === 'Escape' && !ev.repeat && !document.querySelector('.menu-modal')) { preEsc = document.activeElement; preEscAt = Date.now(); }
-  }, true);
+  // BM7a 试玩修复：菜单一打开焦点就进了菜单（「继续游戏」），观察到菜单出现时再读焦点已晚——改在打开前（ESC 按下、指针按下的捕获阶段）记原焦点；
+  // 关闭时 .pop-ghosts 里会留一份淡出残影（约 200ms），残影不算菜单开着
+  function realMenu() {
+    var ms = document.querySelectorAll('.menu-modal');
+    for (var i = 0; i < ms.length; i++) if (!ms[i].closest('.pop-ghosts')) return ms[i];
+    return null;
+  }
+  function inMenu(el) { return !!(el && el.closest && el.closest('.menu-modal')); }
+  var open = false, opener = null, pre = null, preAt = 0;
+  function notePre() {
+    if (realMenu()) return;
+    var a = document.activeElement;
+    pre = a && a !== document.body && a.isConnected && !inMenu(a) ? a : null;
+    preAt = Date.now();
+  }
+  // ESC 打开菜单前，背后按钮会被 blur（试玩修复 L6）；鼠标点「菜单」不让按钮拿焦点：都在捕获阶段先记下当时的焦点
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !ev.repeat) notePre(); }, true);
+  document.addEventListener('pointerdown', notePre, true);
   document.addEventListener('keyup', function (ev) { if (ev.key === 'Escape') window.__survivalMenuEsc = false; }, true);
   function covered(el) {
     var hs = document.querySelectorAll('.modal-back, .overflow-layer, .disk-scrim, .bfs-drawer, .dlg-layer');
-    for (var i = 0; i < hs.length; i++) if (shown(hs[i]) && !hs[i].contains(el)) return true;
+    for (var i = 0; i < hs.length; i++) if (shown(hs[i]) && !hs[i].closest('.pop-ghosts') && !hs[i].contains(el)) return true;
     return false;
   }
   // 原控件失效：回该层现存的安全标题（加工菜单最上层时的菜单标题），否则回原「菜单」入口按钮
@@ -1600,13 +1613,13 @@ window.survivalBattleUi = (function () {
       var t = document.getElementById(trap.getAttribute('data-tab-trap'));
       if (free(t)) return t;
     }
-    var mb = document.querySelector('button[aria-keyshortcuts="Escape"]');
+    var mb = document.querySelector('[data-menu-key], button[aria-keyshortcuts="Escape"]');
     return free(mb) && !covered(mb) ? mb : null;
   }
   function restore(target) {
     var tries = 0;
     function go() {
-      if (document.querySelector('.menu-modal') || !lost()) return;   // 又开了菜单，或别的层／代码已把焦点放到有效位置
+      if (realMenu() || !lost()) return;   // 又开了菜单，或别的层／代码已把焦点放到有效位置
       if (target && free(target) && !covered(target)) { put(target); return; }
       if (repairSrc()) return;   // 原位置是已消失的来源行：按 Q645 回下一／上一可选行或本层标题
       var f = menuFallback();
@@ -1616,21 +1629,97 @@ window.survivalBattleUi = (function () {
     setTimeout(go, 0);
   }
   new MutationObserver(function () {
-    var now = !!document.querySelector('.menu-modal');
+    var now = !!realMenu();
     if (now !== open) {
       open = now;
       if (now) {
+        // 打开前刚记下的原焦点优先；否则菜单外仍有效的当前焦点；打开前本来没有键盘焦点（如鼠标点开）就不记
         var a = document.activeElement;
-        opener = a && a !== document.body && a.isConnected ? a : (preEsc && preEsc !== document.body && preEsc.isConnected && Date.now() - preEscAt < 1500 ? preEsc : null);
-        preEsc = null;
+        opener = pre && pre.isConnected && Date.now() - preAt < 1500 ? pre
+          : (a && a !== document.body && a.isConnected && !inMenu(a) ? a : null);
+        pre = null;
       } else {
         var t = opener;
         opener = null;
-        // 打开前就没有键盘焦点（比如鼠标点开）：不硬塞焦点；原焦点在来源行上则也走一次来源修复
+        // 原焦点在来源行上则也走一次来源修复
         if (t) restore(t); else laterSrc();
       }
       return;
     }
     if (!now) laterSrc();
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-tab-trap'] });
+})();
+
+// ───────────── BM7a 试玩修复（S14 Q632）：敌人旁「战斗信息」浮框的位置 ─────────────
+// 浮框视口定位（不被战场区裁切）。在悬停敌人附近找一个位置：不盖亮起的合法目标锚点（含悬停的这名）、各人物脚下数值与 AP 行、
+// 右侧敌人属性叠层和底部反馈条（执行按钮），也不出视口；完全避不开时取被盖面积最小、再离敌人最近的位置。只改位置，不改内容与输入。
+window.survivalAimPop = (function () {
+  var running = false, lastKey = '';
+  function rect(el) { var r = el.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom }; }
+  // 要避开的区域与权重：合法目标锚点（含悬停的这名）、右栏叠层、底部反馈条 3；人物脚下数值 2；我方 AP 行 1
+  function guards(anchor) {
+    var out = [], sets = [['.bfs-scene .anc.targetable, .bfs-aimrail:not(.ghost), .bfs-feed', 3], ['.bfs-scene .anc .anc-foot', 2], ['.bfs-scene .anc.ally .anc-head', 1]];
+    for (var k = 0; k < sets.length; k++) {
+      var list = document.querySelectorAll(sets[k][0]);
+      for (var i = 0; i < list.length; i++) {
+        var r = list[i].getBoundingClientRect();
+        if (r.width && r.height) { var g = rect(list[i]); g.w = sets[k][1]; out.push(g); }
+      }
+    }
+    var a = rect(anchor); a.w = 3; out.push(a);
+    return out;
+  }
+  function overlap(x, y, w, h, gs) {
+    var s = 0;
+    for (var i = 0; i < gs.length; i++) {
+      var g = gs[i], ow = Math.min(x + w, g.r) - Math.max(x, g.l), oh = Math.min(y + h, g.b) - Math.max(y, g.t);
+      if (ow > 0 && oh > 0) s += ow * oh * (g.w || 1);
+    }
+    return s;
+  }
+  // 返回 [left, top]：被盖面积最小，其次离敌人立绘最近
+  function choose(a, w, h, gs, vw, vh) {
+    var m = 4, cx = (a.l + a.r) / 2, cy = (a.t + a.b) / 2, best = null;
+    var xs = [a.l - w - 6, a.r + 6, cx - w / 2], ys = [a.t, a.t + 50, cy - h / 2, a.b - h];
+    for (var x = m; x <= vw - w - m; x += 12) xs.push(x);
+    for (var y = m; y <= vh - h - m; y += 8) ys.push(y);
+    for (var i = 0; i < xs.length; i++) {
+      var x0 = Math.max(m, Math.min(vw - w - m, xs[i]));
+      for (var j = 0; j < ys.length; j++) {
+        var y0 = Math.max(m, Math.min(vh - h - m, ys[j]));
+        var ov = overlap(x0, y0, w, h, gs);
+        var dx = Math.max(0, a.l - (x0 + w), x0 - a.r), dy = Math.max(0, a.t - (y0 + h), y0 - a.b);
+        var score = ov * 1000 + Math.sqrt(dx * dx + dy * dy);
+        if (!best || score < best[2]) best = [x0, y0, score];
+      }
+    }
+    return best;
+  }
+  function place() {
+    var box = document.querySelector('.bfs-aimpop');
+    if (!box) { lastKey = ''; return false; }
+    var anchor = document.getElementById(box.getAttribute('data-pop-for'));
+    if (!anchor) { box.removeAttribute('data-placed'); return true; }
+    var a = rect(anchor), w = box.offsetWidth, h = box.offsetHeight, vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
+    var rail = document.querySelector('.bfs-aimrail:not(.ghost)');
+    var key = [box.getAttribute('data-pop-for'), box.className, Math.round(a.l), Math.round(a.t), Math.round(a.r), Math.round(a.b), w, h, vw, vh, rail ? 1 : 0].join(',');
+    if (key === lastKey && box.hasAttribute('data-placed')) return true;
+    lastKey = key;
+    var best = choose(a, w, h, guards(anchor), vw, vh);
+    box.style.left = Math.round(best[0]) + 'px';
+    box.style.top = Math.round(best[1]) + 'px';
+    box.setAttribute('data-placed', '');
+    return true;
+  }
+  function loop() {
+    if (!place()) { running = false; return; }
+    requestAnimationFrame(loop);
+  }
+  function kick() {
+    if (!document.querySelector('.bfs-aimpop')) return;
+    place();
+    if (!running) { running = true; requestAnimationFrame(loop); }
+  }
+  new MutationObserver(kick).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-pop-for', 'class'] });
+  return { place: place, choose: choose };
 })();

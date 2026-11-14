@@ -47,13 +47,22 @@ public class BM7aMenuFocusTests
             Assert.That(BM7aBattleTests.Web("Components", f), Does.Contain("<h2 tabindex=\"-1\">"), f + "：本层标题可作安全落点（不进 Tab 序列）");
 
         var restore = BM7aBattleTests.Slice(js, "function restore(target) {", "new MutationObserver(function () {");
-        Assert.That(restore, Does.Contain("if (document.querySelector('.menu-modal') || !lost()) return;"), "别的层或代码已放好焦点时不抢");
+        Assert.That(restore, Does.Not.Contain("document.querySelector('.menu-modal')"), "别的层或代码已放好焦点时不抢（菜单判定见下，排除淡出残影）");
         Assert.That(restore, Does.Contain("if (target && free(target) && !covered(target)) { put(target); return; }"), "回原合法控件");
         Assert.That(restore, Does.Contain("if (repairSrc()) return;").And.Contain("var f = menuFallback();"), "原控件失效：来源行按 Q645，其余回现存安全标题／菜单入口");
         Assert.That(restore, Does.Not.Contain("click()").And.Not.Contain("invokeMethodAsync"), "只恢复焦点，不执行原控件");
-        var obs = BM7aBattleTests.Slice(js, "new MutationObserver(function () {", ".observe(document.body");
-        Assert.That(obs, Does.Contain("Date.now() - preEscAt < 1500 ? preEsc : null"), "ESC 打开前被 blur 的原焦点也记下");
+        // BM7a 试玩修复（M891）：菜单一打开焦点就进了菜单，改在打开前（ESC 按下、指针按下的捕获阶段）记原焦点；关闭淡出残影（.pop-ghosts）不算菜单开着
+        Assert.That(js, Does.Contain("document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !ev.repeat) notePre(); }, true);"));
+        Assert.That(js, Does.Contain("document.addEventListener('pointerdown', notePre, true);"));
+        var pre = BM7aBattleTests.Slice(js, "function notePre() {", "preAt = Date.now();");
+        Assert.That(pre, Does.Contain("if (realMenu()) return;").And.Contain("!inMenu(a) ? a : null"), "菜单里的按钮不当作原位置");
+        Assert.That(BM7aBattleTests.Slice(js, "function realMenu() {", "return null;"), Does.Contain("if (!ms[i].closest('.pop-ghosts')) return ms[i];"));
+        Assert.That(restore, Does.Contain("if (realMenu() || !lost()) return;"));
+        var obs = BM7aBattleTests.Slice(js, "var now = !!realMenu();",".observe(document.body");
+        Assert.That(obs, Does.Contain("opener = pre && pre.isConnected && Date.now() - preAt < 1500 ? pre"), "打开前刚记下的原焦点优先");
+        Assert.That(obs, Does.Contain("!inMenu(a) ? a : null"));
         Assert.That(obs, Does.Contain("if (t) restore(t); else laterSrc();"), "打开前没有键盘焦点时不硬塞焦点");
+        Assert.That(BM7aBattleTests.Slice(js, "function topMenu() {", "}"), Does.Contain("m.closest('[inert], .pop-ghosts')"), "Tab 循环不落到淡出残影");
         // 原规则保持：菜单打开时焦点进菜单底部关闭键；手动存档子页返回仍按 BM2 Q500 回关闭键（与 Q655 的关系另问）
         var mo = BM7aBattleTests.Web("Components", "MenuOverlay.razor");
         Assert.That(mo, Does.Contain("if (firstRender || backFromManual)"));

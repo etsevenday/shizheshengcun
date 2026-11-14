@@ -15,7 +15,7 @@ public class BM7aBattleTests
     public void Q632_A01_PopAndRail_SameFacts_ReadOnly()
     {
         var bs = Web("Components", "BattleScreen.razor");
-        Assert.That(bs, Does.Contain("@if (G.AimPopTarget is int popIdx && e.BattleEnemyAt(b, popIdx) is BattleEnemy popEn)"));
+        Assert.That(bs, Does.Contain("@if (G.AimPopTarget is int popIdx && e.BattleEnemyAt(b, popIdx) is BattleEnemy)"));
         Assert.That(bs, Does.Contain("<BattlePanel Mode=\"pop\" Index=\"popIdx\" />"), "浮框内容由 BattlePanel 同源渲染");
         Assert.That(bs, Does.Contain("@if (G.AimRailTarget is int railIdx)").And.Contain("<BattlePanel Mode=\"foe\" Index=\"railIdx\" />"));
         Assert.That(bs, Does.Contain("<BattlePanel Mode=\"info\" />").And.Contain("<BattlePanel Mode=\"detail\" />"), "下方「战斗信息」与「预测详情」保留");
@@ -56,7 +56,7 @@ public class BM7aBattleTests
         Assert.That(Slice(gs, "public void HoverBattleTarget(int? index)", "\n    }"), Does.Contain("ClearAimKeyboard();"), "鼠标真实移出后不被静止的键盘旧焦点抢回");
         var css = Web("wwwroot", "css", "battle.css");
         var popCss = Slice(css, ".bfs-aimpop {", "}");
-        Assert.That(popCss, Does.Contain("pointer-events: none").And.Contain("position: absolute"), "浮框不接点击，叠在场景上不挤位");
+        Assert.That(popCss, Does.Contain("pointer-events: none").And.Contain("position: fixed"), "浮框不接点击，视口定位不挤位");
         Assert.That(css, Does.Contain(".bfs-console:has(.bc-side:focus-within) .bfs-aimrail { display: none; }"));
         var bs = Web("Components", "BattleScreen.razor");
         var popMarkup = Slice(bs, "<div class=\"bfs-aimpop", "</div>");
@@ -66,6 +66,43 @@ public class BM7aBattleTests
         Assert.That(keys, Does.Not.Contain("AimPop"), "浮框不成 ESC 层");
         // 站位几何不变：八个锚点的 left 规则保留
         Assert.That(css, Does.Contain(".bfs-scene .anc.foe[data-slot=\"1\"] { left: calc(50cqw + 96 * var(--u)); }"));
+    }
+
+    /// <summary>
+    /// BM7a 试玩修复（M891，S14 Q632「浮框就近避让右栏、人物关键数值和可点击目标，靠屏边可换到另一侧」、Q632-A02「浮框不遮目标点击／主要数值」、
+    /// 「1280×720也须读到悬停敌人的命中、伤害和成本」）：浮框放在战场外按视口定位（不被战场区裁切），位置按避让区就近选择、可换到任一侧。
+    /// </summary>
+    [Test]
+    public void M891_Q632_PopAvoidsTargetsAndNumbers_NotClipped()
+    {
+        var bs = Web("Components", "BattleScreen.razor");
+        var scene = Slice(bs, "<section class=\"bfs-scene\"", "</section>");
+        Assert.That(scene, Does.Not.Contain("bfs-aimpop"), "浮框不在 overflow:hidden 的战场区里");
+        Assert.That(bs, Does.Contain("data-pop-for=\"@($\"foe-{popIdx}\")\""), "JS 按所指敌人锚点定位");
+        var css = Web("wwwroot", "css", "battle.css");
+        var pop = Slice(css, ".bfs-aimpop {", "}");
+        Assert.That(pop, Does.Contain("position: fixed").And.Contain("max-height: calc(100vh - 8px)").And.Contain("visibility: hidden"));
+        Assert.That(css, Does.Contain(".bfs-aimpop[data-placed] { visibility: visible; }"), "算好位置才显示，不先闪在旧位置");
+        Assert.That(css, Does.Not.Contain(".bfs-aimpop[data-slot="), "不再固定朝中线一侧");
+        Assert.That(css, Does.Contain(".bfs-aimpop.multi:has(.bi-mem:nth-child(3)) .bi-members { grid-template-columns: repeat(3, minmax(0, 1fr)); }"),
+            "三名及以上受影响成员三列并排，1280 档也放得下、各成员读得到");
+        var js = Web("wwwroot", "js", "app.js");
+        var g = Slice(js, "function guards(anchor) {", "function overlap(");
+        Assert.That(g, Does.Contain(".bfs-scene .anc.targetable, .bfs-aimrail:not(.ghost), .bfs-feed").And.Contain(".bfs-scene .anc .anc-foot").And.Contain(".bfs-scene .anc.ally .anc-head"),
+            "避开合法目标锚点、右栏叠层、底部执行条、各人物脚下数值与我方 AP 行");
+        Assert.That(g, Does.Contain("var a = rect(anchor); a.w = 3; out.push(a);"), "也不盖悬停的这名敌人");
+        var ch = Slice(js, "function choose(a, w, h, gs, vw, vh) {", "function place() {");
+        Assert.That(ch, Does.Contain("var xs = [a.l - w - 6, a.r + 6, cx - w / 2]"), "左侧放不下可换到右侧／上下");
+        Assert.That(ch, Does.Contain("Math.max(m, Math.min(vw - w - m, xs[i]))").And.Contain("Math.max(m, Math.min(vh - h - m, ys[j]))"), "不出视口");
+        Assert.That(ch, Does.Contain("var score = ov * 1000 + Math.sqrt(dx * dx + dy * dy);"), "先少盖、再就近");
+        // 右栏叠层：让开后再悬停敌人或键盘重新指定即回来（沿 Q632「悬停……同时右侧信息栏显示」）
+        var gs = Web("Services", "GameSession.cs");
+        Assert.That(gs, Does.Contain("if (index != null && ShowAimRailAgain()) aimChanged = true;"));
+        var ap = Web("Services", "GameSession.AimPop.cs");
+        Assert.That(Slice(ap, "private void MarkAimKeyboard(int index)", "}"), Does.Contain("_aimRailHidden = null;"));
+        // 底部：执行按钮不再被挤到阅读入口按钮下面
+        Assert.That(css, Does.Contain(".bfs-feed .bp-confirm { flex-shrink: 0; }"));
+        Assert.That(bs, Does.Contain("<span class=\"bx-hint\" title=\"@AimHint(sel)\">@AimHint(sel)</span>"), "引导句被省略时全文在悬停提示里");
     }
 
     // ───── Q633：敌我出手不可跳过 ─────

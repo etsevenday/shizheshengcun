@@ -151,15 +151,17 @@
             <div class="bfs-side foes" aria-label="敌方">
                 @for (var p = 1; p <= slotCount; p++) { @FoeAnchor(p, aiming, aimSet, activeIdx, token, locked) }
             </div>
-            @* BM7a（S14 Q632）：选好攻击技能后，悬停（或键盘指定）亮起的合法敌人，在它立绘旁（朝中线一侧）浮出本次「战斗信息」只读浮框；
-               不接焦点、不接点击（点击穿过到下面的目标）、不成 ESC 层，播放／对白／菜单／只读子页接管或目标失效时不渲染 *@
-            @if (G.AimPopTarget is int popIdx && e.BattleEnemyAt(b, popIdx) is BattleEnemy popEn)
-            {
-                <div class="bfs-aimpop @(G.AreaAction || e.PreviewCommand(s, BattleCommand.Of(G.BattleAction!, popIdx, G.BattleItem)).Targets.Count > 1 ? "multi" : "")" data-slot="@popEn.Pos" role="note" aria-label="@BattleInfoCopy.InfoTab">
-                    <BattlePanel Mode="pop" Index="popIdx" />
-                </div>
-            }
         </section>
+        @* BM7a（S14 Q632）：选好攻击技能后，悬停（或键盘指定）亮起的合法敌人，在它附近浮出本次「战斗信息」只读浮框；
+           不接焦点、不接点击、不成 ESC 层，播放／对白／菜单／只读子页接管或目标失效时不渲染。
+           试玩修复（M891）：浮框改为视口定位（放在战场外，不被战场区裁切），位置由 app.js survivalAimPop 按“就近、避开合法目标锚点、
+           各人物脚下数值、右栏叠层与底部反馈条”选择，左侧放不下就换到右侧、上方或下方 *@
+        @if (G.AimPopTarget is int popIdx && e.BattleEnemyAt(b, popIdx) is BattleEnemy)
+        {
+            <div class="bfs-aimpop @(G.AreaAction || e.PreviewCommand(s, BattleCommand.Of(G.BattleAction!, popIdx, G.BattleItem)).Targets.Count > 1 ? "multi" : "")" data-pop-for="@($"foe-{popIdx}")" role="note" aria-label="@BattleInfoCopy.InfoTab">
+                <BattlePanel Mode="pop" Index="popIdx" />
+            </div>
+        }
 
         @* 操作台（A10 §2.2、§4.2、§5）：左——当前行动者摘要与战斗装备（本页武器/防具/战斗饰品，另一把武器在页签上，七槽在“装备查看”）；
            中——武器Ⅰ/Ⅱ两页签（切页0AP）+ 本页五个技能位（对应 1/3/5/7/10 级；Q227 未解锁的是灰卡，写条件、不可执行）+ 敌方目标位图；
@@ -317,7 +319,7 @@
             }
             else if (sel != null && aiming)
             {
-                <span class="bx-hint">@AimHint(sel)</span>
+                <span class="bx-hint" title="@AimHint(sel)">@AimHint(sel)</span>
                 @* B34a（Q570）：目标切换与「执行{指令名}」留在原操作台／目标处（底部反馈位），不进阅读区 *@
                 @TargetCycle(aimSet.Count)
                 @AimConfirm()
