@@ -107,7 +107,7 @@
                         <header><b>@(n.Level)级 · @n.Name</b><em class="@(on ? "ok" : "muted")">@(on ? "已解锁" : "未解锁")</em></header>
                         <p>@n.Text</p>
                         <small class="muted">@NodeMeta(n)</small>
-                        <small class="@(on ? "muted" : "warn-text")">@(on ? Status(actor, sk, n) : $"解锁条件：{sk.Name}达到{n.Level}级（当前{sk.Level}级）")</small>
+                        <small class="@(on ? "muted" : "warn-text")">@(on ? Status(actor, sk, n) : $"需要{sk.Name}{n.Level}级（当前{sk.Level}级）")</small>
                     </div>
                 }
             </div>

@@ -567,3 +567,6 @@
 .anc.ally.empty.targetable { justify-content: flex-start; padding-top: 18%; cursor: pointer; }
 .anc.ally.empty.targetable .anc-aim { inset: 40% 0 0 0; }
 .anc.ally.empty.targetable:focus-visible { outline: 3px solid #3f8f3a; outline-offset: 2px; }
+
+/* B34（S14 Q579）：锁级卡面写完整「需要{门类}{所需等级}级（当前{当前等级}级）」——允许换两行，不截掉当前等级 */
+.bfs-console .cmdt.locked-card .cmdt-need { white-space: normal; overflow: visible; text-overflow: clip; display: block; max-width: 100%; text-align: center; line-height: 15px; word-break: break-all; }

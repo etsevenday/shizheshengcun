@@ -97,6 +97,34 @@ public class B34R218Tests
                 Assert.That(rx.IsMatch(line) && !line.Contains("外部区按本轮显式清单"), Is.False, $"{Path.GetFileName(f)}：{line.Trim()}");   // 「本轮显式清单」是版本批次，不是战斗计时
     }
 
+    /// <summary>Q579-A01：锁级技能卡面、说明、拒绝原因与成长面板都用「需要{门类}{所需等级}级（当前{当前等级}级）」，不另造「达到…级解锁」。</summary>
+    [Test]
+    public void Q579_SkillLevelText_Unified()
+    {
+        var bs = Web("Components/BattleScreen.razor");
+        Assert.That(bs, Does.Contain("<span class=\"cmdt-why cmdt-need\">@why</span>"), "卡面用 LockedText 原句");
+        Assert.That(bs, Does.Not.Contain("当前@(e.SkillLevel(G.S, node.SkillId))级"));
+        var growth = Web("Components/GrowthOverlay.razor");
+        Assert.That(growth, Does.Contain("$\"需要{sk.Name}{n.Level}级（当前{sk.Level}级）\"").And.Not.Contain("达到{n.Level}级"));
+        var core = File.ReadAllText(Path.Combine(Root(), "src", "Core", "Engine", "GameEngine.CombatSkills.cs"));
+        Assert.That(core, Does.Contain("$\"需要{SkillName(n.SkillId)}{n.Level}级（当前{SkillLevel(s, n.SkillId)}级）\""));
+    }
+
+    /// <summary>Q580-A01：指令一览按最终页面描述；无旧右列几何、空态催促、敌方未执行计划；回合与等级措辞一致。</summary>
+    [Test]
+    public void Q580_HelpActions_FinalLayout()
+    {
+        var help = Web("Services/HelpCatalog.cs");
+        var i = help.IndexOf("Id = \"actions\"");
+        var actions = help[i..help.IndexOf("Figures =", i)];
+        foreach (var must in new[] { "战斗 · {地点}", "第{回合}回合", "占满全宽的战场", "{号位}号位 · {姓名}", "“战斗信息”", "“预测详情”", "“战报”", "“全记录”", "当前行动者：{姓名}",
+                     "需要{门类}{所需等级}级（当前{当前等级}级）", "“调整站位”只有一张卡", "“医疗与物品”", "执行{指令名}", "确认 · {指令名} · {AP}AP", "“系统说明”在右上“菜单”里" })
+            Assert.That(actions, Does.Contain(must), must);
+        foreach (var gone in new[] { "右边是对象信息", "右下是战报", "物资查看", "在底部点“确认”才执行", "意图", "选择技能，再选择目标", "请选择指令" })
+            Assert.That(actions, Does.Not.Contain(gone), gone);
+        Assert.That(help, Does.Not.Contain("敌卡意图写").And.Not.Contain("意图仍写保护").And.Not.Contain("执行一个公开的主意图"));
+    }
+
     /// <summary>Q578：内核每个目的号位一条 swap 选项（ItemInstanceId＝目的槽），合成卡的号位亮起与它同源。</summary>
     [Test]
     public void Q578_EngineSwapOptions_PerDestination()

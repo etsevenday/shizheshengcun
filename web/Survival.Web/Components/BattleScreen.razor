@@ -433,9 +433,9 @@
 
     private static string AimHint(BattleCommandOption sel) =>
         sel.TargetMode == "area" ? $"点亮起的任一1、2号位目标提交{sel.Label}（1、2号位都打）"
-        : sel.TargetMode == "suffix" ? "点起点敌人：从它的号位打到4号位，按离起点的格数×0.65/0.50/0.35/0.25，空位不重排；悬停看右侧逐个预测"
-        : sel.TargetMode == "pair" ? "点1、2号位打12，点3号位打23；悬停看右侧预测"
-        : "把鼠标移到亮起的目标上看右侧预测，点击目标执行";
+        : sel.TargetMode == "suffix" ? "点起点敌人：从它的号位打到4号位，按离起点的格数×0.65/0.50/0.35/0.25，空位不重排；悬停看逐个预测"
+        : sel.TargetMode == "pair" ? "点1、2号位打12，点3号位打23；悬停看预测"
+        : "把鼠标移到亮起的目标上看预测，点击目标执行";
 
     /// <summary>
     /// 我方锚点（A10 §2.1/§4.1）：按我方真实槽数据驱动——空槽画空锚点；有人的画立绘、脚下生命/体力与状态。
@@ -484,7 +484,7 @@
         var awaitCmd = acting && G.BattleAction == null && !G.DialogueLocked && !G.PlaybackActive && G.E.AwaitingPlayer(s);
         <div class="anc ally @Pulse(BattleFxUnit.AllySide, id) @(acting ? "acting" : "") @(awaitCmd ? "await-cmd" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" data-peek="@Peek.Ally(id)" role="button" tabindex="0" aria-pressed="@viewing"
              aria-label="@($"{(acting ? BattleInfoCopy.CurrentActorAria(name) + "，" : "")}我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(targetable ? "，可作为目标" : "")}")"
-             title="@(swapSlot ? SwapTip(G.SwapOptionFor(pos)) : pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, pos, token, locked)" @onkeydown="ev => AllyKey(ev, id, pos, token, locked)"
+             title="@(swapSlot ? SwapTip(G.SwapOptionFor(pos)) : pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在“战斗信息”查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, pos, token, locked)" @onkeydown="ev => AllyKey(ev, id, pos, token, locked)"
              @onmouseenter="() => { if (swapSlot) G.HoverSwapSlot(pos); else G.HoverBattleAlly(targetable ? id : null); }" @onmouseleave="() => { G.HoverSwapSlot(null); G.HoverBattleAlly(null); }"
              @onfocus="() => { if (swapSlot) G.HoverSwapSlot(pos); }">
             @* B34（S14 Q574）：头顶名牌「{号位}号位 · {姓名}」；下一行是 AP／当前行动事实 *@
@@ -604,7 +604,7 @@
         var reachWhy = unreachable ? (e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, idx, G.BattleItem)) ?? "不在本指令范围内") : null;
         var picked = G.BattleTarget == idx;
         var taken = _takenBy.Contains(idx);
-        var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
+        var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（实际预测见“战斗信息”）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
         <div @key="@("foe" + idx)" id="@($"foe-{idx}")" data-slot="@pos" data-peek="@Peek.Foe(idx)" class="anc foe @Pulse(BattleFxUnit.EnemySide, "e" + idx) @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx || (aiming && G.BattleAimTarget == idx) ? "hover" : "")"
              role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))"
              aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}{(en.Acted ? "，本回合已行动" : "")}{(taken ? "，" + BattleInfoCopy.TakenBy : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
@@ -751,7 +751,8 @@
             <span class="cmdt-art">@Icons.Markup(wi?.ItemId ?? "fists")</span>
             <span class="cmdt-text">
                 <span class="cmdt-name">@node.Name</span>
-                <span class="cmdt-why cmdt-need">当前@(e.SkillLevel(G.S, node.SkillId))级</span>
+                @* B34（S14 Q579）：卡面写完整门槛「需要{门类}{所需等级}级（当前{当前等级}级）」，与说明、拒绝原因同一函数、同一受检角色 *@
+                <span class="cmdt-why cmdt-need">@why</span>
             </span>
         </button>
     };
