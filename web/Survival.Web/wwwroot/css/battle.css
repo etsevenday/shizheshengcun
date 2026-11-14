@@ -602,3 +602,35 @@
 .enc-prompt.paused .enc-prompt-text { animation-play-state: paused; }
 @keyframes enc-prompt-in { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .enc-prompt-text { animation: none; } }
+
+/* ───────────── BM7a（S14 Q632）：敌人旁「战斗信息」只读浮框与右侧敌人属性叠层 ─────────────
+   浮框：在悬停（或键盘指定）的合法敌人立绘旁、朝中线一侧（敌方都在右半场，左侧总有空间，不会顶出屏边），顶边对齐立绘区，
+   不盖头顶名牌和脚下生命条；不接点击（点击穿过到下面的目标锚点）、不接焦点。
+   右栏：盖在操作台右块（通用行动区）上的只读叠层，宽度沿 --bc-side 三档；不挤窄、不重排站位。 */
+.bfs-aimpop { position: absolute; z-index: 8; top: calc(10 * var(--u) + 50px); width: 340px; max-width: calc(50cqw - 12px); box-sizing: border-box;
+  padding: 6px 10px 8px; background: #121a1dfa; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 24px #000c; pointer-events: none; }
+.bfs-aimpop.multi { width: 560px; max-width: calc(50cqw + 80 * var(--u)); }
+.bfs-aimpop[data-slot="1"] { right: calc(50cqw - 96 * var(--u) + 6px); }
+.bfs-aimpop[data-slot="2"] { right: calc(50cqw - 265 * var(--u) + 6px); }
+.bfs-aimpop[data-slot="3"] { right: calc(50cqw - 434 * var(--u) + 6px); }
+.bfs-aimpop[data-slot="4"] { right: calc(50cqw - 603 * var(--u) + 6px); }
+.bi-pop-title { font-size: var(--fs-body); font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+.bfs-aimpop .bi-row { grid-template-columns: 6.5em minmax(0, 1fr); }
+.bfs-aimpop .blocked { margin: 4px 0 0; }
+.bi-members { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 10px; padding-top: 2px; }
+.bi-mem { min-width: 0; display: flex; flex-direction: column; }
+.bi-mem-name { font-size: var(--fs-body); padding: 2px 0 1px; border-bottom: 1px solid #ffffff22; overflow-wrap: anywhere; }
+.bi-mem-name em { font-style: normal; color: var(--warn); }
+.bi-mem .bi-row { font-size: var(--fs-aux); padding: 1px 0; }
+.bfs-aimrail { position: absolute; top: 6px; right: 8px; bottom: 6px; width: var(--bc-side); box-sizing: border-box; z-index: 25; overflow: auto;
+  display: flex; flex-direction: column; gap: 6px; padding: 6px 10px 8px; background: #121a1dfa; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 8px 24px #000c; font-size: var(--fs-body); }
+.bfs-aimrail.ghost { opacity: 0; }
+.bfs-console:has(.bc-side:focus-within) .bfs-aimrail { display: none; }
+.bfs-aimrail-tab { align-self: flex-start; font-size: var(--fs-aux); padding: 0 8px; border-radius: 3px; background: #3c4a35; color: #f2ecd8; }
+.bfs-aimrail .rail-head { display: flex; align-items: flex-start; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.bfs-aimrail .rail-thumb { flex: 0 0 44px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 3px; background: #0b1214; overflow: hidden; }
+.bfs-aimrail .rail-thumb > :is(svg, img, span) { width: 38px; height: 38px; transform: none; object-fit: contain; }
+.bfs-aimrail .rail-id { flex: 1 1 auto; min-width: 0; }
+.bfs-aimrail .rail-id h2 { margin: 0; font-size: var(--fs-title); font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.bfs-aimrail .lines { font-size: var(--fs-aux); line-height: 1.5; }
+.bfs-aimrail .risk { font-size: var(--fs-aux); }

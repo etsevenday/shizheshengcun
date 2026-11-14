@@ -107,7 +107,9 @@ public class BM3AimAnswerTests : TestBase
     {
         var g = Web("Services/GameSession.cs");
         var focus = Body(g, "public void FocusBattleTarget(int index)");
-        Assert.That(focus, Does.Contain("if (State == null || S.Battle == null || !BattleAiming || AreaAction) return;"));
+        // BM7a（Q632）：群体也记下键盘目标（浮框按它定位），但群体仍不设单一明确目标
+        Assert.That(focus, Does.Contain("if (State == null || S.Battle == null || !BattleAiming) return;"));
+        Assert.That(focus, Does.Contain("if (AreaAction || BattleAimTarget == index) { if (kbdChanged) Notify(); return; }"));
         Assert.That(focus, Does.Contain("SetAimTarget(index);"));
         Assert.That(focus, Does.Not.Contain("Execute").And.Not.Contain("ClickBattleTarget"), "聚焦只指定，不提交");
         var screen = Web("Components/BattleScreen.razor");

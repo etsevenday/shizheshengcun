@@ -22,6 +22,14 @@
 {
     @DetailView()
 }
+else if (b != null && Mode == "pop")
+{
+    @PopView()
+}
+else if (b != null && Mode == "foe")
+{
+    @FoeView()
+}
 else if (b != null)
 {
     var awaiting = e.AwaitingPlayer(s);
@@ -123,23 +131,7 @@ else if (b != null)
             </div>
             @if (t != null && t.Alive)
             {
-                var ec = e.Enemy(t.EnemyId);
-                <div class="lines">
-                    <div><span>健康</span><b>@Ui.N(t.Hp)/@Ui.N(ec.Hp)</b></div>
-                    @{ var brk = t.ArmorBreak > 0 && t.ArmorBreakUntilRound >= b.Round ? t.ArmorBreak : 0; }
-                    @* 试玩修复 M150 UX9：被破甲时写有效护甲（基础与破甲量在括号里） *@
-                    <div><span>护甲 / 闪避 / 速度</span><b>@(brk > 0 ? $"{Ui.T(Math.Max(0, ec.Armor - brk))}（基础{Ui.T(ec.Armor)}，破甲−{Ui.T(brk)}）" : Ui.T(ec.Armor)) / @Ui.T(ec.Dodge) / @(Ui.Speed(e.EnemyRoundSpeed(b, t).Speed))@(e.EnemyRoundSpeed(b, t).Note)</b></div>
-                    <div><span>行动点 / 站位</span><b>@(ec.Ap)AP@(ec.Elite ? "（精英）" : "") · 己位@(ec.OwnSlots)→目标@(ec.TargetSlots) · 控制抗性@(Ui.T(ec.ControlResist))%</b></div>
-                    <div><span>攻击能力 / 对@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))</b></div>
-                    @* B34（S14 Q574）：不显示敌人尚未执行的计划（锁定的动作、计划伤害、预定目标、前移／迫近分支），只留公开属性与已生效状态 *@
-                </div>
-                @if (ec.IsZombie && !e.CanBite(ec)) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
-                else if (ec.IsZombie) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。抓击、喷吐、尖啸不会感染。</div> }
-                else if (ec.IsHuman) { <div class="risk none">敌对人类的攻击不会传染僵尸病毒。</div> }
-                else { <div class="risk none">动物撕咬不会传染僵尸病毒，@(ec.Intents.Cycle.Any(x => x.BleedPct > 0) ? "但命中有概率出血" : "但仍会造成伤害")。</div> }
-                @if (B7Status(b, t) is string est) { <div class="risk none">@est</div> }
-                @* B41e2（R05 Q537）：敌方先手时，真实未消耗伤害资格的敌人显示「先手伤害加成可用。」 *@
-                @if (e.FirstStrikeReady(b, GameEngine.FirstStrikeKeyOf(t))) { <div class="risk none fs-ready">@GameEngine.FirstStrikeReadyText</div> }
+                @FoeFacts(t)
             }
             <div class="lines">
                 <div><span>恐慌</span><b>@Ui.N(b.Panic)@(e.Config.Panic.PenaltyFor(b.Panic) is PanicPenaltyConfig pp ? $"（≥{Ui.T(pp.Minimum)}：命中能力×{Ui.T(pp.AccuracyRatingFactor)}、撤退×{Ui.T(pp.RetreatFactor)}）" : "")</b></div>
@@ -154,8 +146,12 @@ else if (b != null)
 }
 
 @code {
-    /// <summary>B34a：info＝阅读区「战斗信息」页（五行关键预测／对象事实）；detail＝只读子页「预测详情」（原全部字段）。</summary>
+    /// <summary>B34a：info＝阅读区「战斗信息」页（五行关键预测／对象事实）；detail＝只读子页「预测详情」（原全部字段）。
+    /// BM7a（Q632）：pop＝敌人旁「战斗信息」只读浮框（本次预估，范围技能逐真实成员）；foe＝右侧只读叠层的敌人公开属性（同「对象」详情头）。</summary>
     [Parameter] public string Mode { get; set; } = "info";
+
+    /// <summary>BM7a（Q632）：pop／foe 所指的敌人（本场序号）。</summary>
+    [Parameter] public int? Index { get; set; }
 
     private string Who()
     {
@@ -164,11 +160,65 @@ else if (b != null)
     }
 
     /// <summary>
+    /// 敌人公开属性（原「对象信息」敌人段：健康、护甲／闪避／速度、行动点／站位、攻击能力、感染风险、已生效状态、先手伤害加成）。
+    /// 未瞄准时的「战斗信息」页与 BM7a（Q632）右侧敌人属性叠层共用这一段；不含我方技能预估，不显示敌人尚未执行的计划（Q574）。
+    /// </summary>
+    private RenderFragment FoeFacts(BattleEnemy t) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var b = s.Battle!;
+        var ec = e.Enemy(t.EnemyId);
+        <div class="lines">
+            <div><span>健康</span><b>@Ui.N(t.Hp)/@Ui.N(ec.Hp)</b></div>
+            @{ var brk = t.ArmorBreak > 0 && t.ArmorBreakUntilRound >= b.Round ? t.ArmorBreak : 0; }
+            @* 试玩修复 M150 UX9：被破甲时写有效护甲（基础与破甲量在括号里） *@
+            <div><span>护甲 / 闪避 / 速度</span><b>@(brk > 0 ? $"{Ui.T(Math.Max(0, ec.Armor - brk))}（基础{Ui.T(ec.Armor)}，破甲−{Ui.T(brk)}）" : Ui.T(ec.Armor)) / @Ui.T(ec.Dodge) / @(Ui.Speed(e.EnemyRoundSpeed(b, t).Speed))@(e.EnemyRoundSpeed(b, t).Note)</b></div>
+            <div><span>行动点 / 站位</span><b>@(ec.Ap)AP@(ec.Elite ? "（精英）" : "") · 己位@(ec.OwnSlots)→目标@(ec.TargetSlots) · 控制抗性@(Ui.T(ec.ControlResist))%</b></div>
+            <div><span>攻击能力 / 对@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))</b></div>
+            @* B34（S14 Q574）：不显示敌人尚未执行的计划（锁定的动作、计划伤害、预定目标、前移／迫近分支），只留公开属性与已生效状态 *@
+        </div>
+        @if (ec.IsZombie && !e.CanBite(ec)) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
+        else if (ec.IsZombie) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。抓击、喷吐、尖啸不会感染。</div> }
+        else if (ec.IsHuman) { <div class="risk none">敌对人类的攻击不会传染僵尸病毒。</div> }
+        else { <div class="risk none">动物撕咬不会传染僵尸病毒，@(ec.Intents.Cycle.Any(x => x.BleedPct > 0) ? "但命中有概率出血" : "但仍会造成伤害")。</div> }
+        @if (B7Status(b, t) is string est) { <div class="risk none">@est</div> }
+        @* B41e2（R05 Q537）：敌方先手时，真实未消耗伤害资格的敌人显示「先手伤害加成可用。」 *@
+        @if (e.FirstStrikeReady(b, GameEngine.FirstStrikeKeyOf(t))) { <div class="risk none fs-ready">@GameEngine.FirstStrikeReadyText</div> }
+    };
+
+    /// <summary>
+    /// BM7a（S14 Q632）：敌人旁「战斗信息」只读浮框——与下方「战斗信息」「预测详情」同一次 PreviewCommand（同一行动者、技能、明确目标与实际承伤）。
+    /// 字段与精度复用五行关键预测；群体／成对／贯穿按真实受影响成员分列各自命中、伤害与状态。不可聚焦、不接指令，长来源与附注仍在「预测详情」。
+    /// </summary>
+    private RenderFragment PopView() => __builder =>
+    {
+        if (G.BattleAction == null) return;
+        var p = G.E.PreviewCommand(G.S, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : Index, G.BattleItem));
+        <div class="bi-pop-title">@BattleInfoCopy.InfoTab</div>
+        @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
+        else { @KeyRows(p, allMembers: true) }
+    };
+
+    /// <summary>BM7a（S14 Q632）：右侧只读叠层——该真实敌人实例的公开详细属性，沿「对象」详情头；不是攻击预估，也不叫「预测详情」。</summary>
+    private RenderFragment FoeView() => __builder =>
+    {
+        var e = G.E;
+        if (Index is not int i || e.BattleEnemyAt(G.S.Battle!, i) is not BattleEnemy t || !t.Alive) return;
+        <div class="bfs-aimrail-tab">@ShellText.ObjectTab</div>
+        <RailHead>
+            <Thumb>@Icons.Markup("enemy_" + t.EnemyId)</Thumb>
+            <Name>@($"{t.Slot}号位 {e.EnemyName(t)}")</Name>
+        </RailHead>
+        @FoeFacts(t)
+    };
+
+    /// <summary>
     /// B34a（S14 Q528.1，取 Q570 后的字段合同）：五行关键预测——目标（保护转伤另写实际承伤）、成本、命中与暴击、伤害、目标状态，
     /// 全部取自同一次 PreviewCommand；多目标行 1 写「受影响{数量}个目标」，其余行写当前明确查看的那名成员并标出它。
     /// 无敌方目标的指令只列真实存在的行（成本、撤退成功率、用药效果），不编字段。长构成、注记在「预测详情」。
     /// </summary>
-    private RenderFragment KeyRows(BattlePreview p) => __builder =>
+    private RenderFragment KeyRows(BattlePreview p, bool allMembers = false) => __builder =>
     {
         var s = G.S;
         var e = G.E;
@@ -185,15 +235,38 @@ else if (b != null)
                 <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowTarget</span>
                     <b>@if (p.Targets.Count > 1) {@BattleInfoCopy.Affected(p.Targets.Count)<text> · </text>}@(aimed != null ? $"{aimed.Slot}号 {e.EnemyName(aimed)}" : member)@if (aimed != null) {<em>；@BattleInfoCopy.TakenBy：@member</em>}</b></div>
                 <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowCost</span><b>@cost</b></div>
+                @if (allMembers && p.Targets.Count > 1)
+                {
+                    @* BM7a（Q632）：浮框里范围技能逐真实受影响成员分列，不只拿悬停者代表全体 *@
+                    <div class="bi-members" role="listitem">
+                        @foreach (var mt in p.Targets) { @MemberRows(mt) }
+                    </div>
+                }
+                else
+                {
                 <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowHit</span><b>@(p.Targets.Count > 1 ? member + "：" : "")实际命中率@(Ui.Pct(t.HitChance)) · 暴击（命中后）@Ui.Pct(t.CritChance)</b></div>
                 <div class="bi-row" role="listitem"><span>@BattleInfoCopy.DamageNoCrit</span><b>@(p.Targets.Count > 1 ? member + "：" : "")@Ui.N(t.DamageMin)—@Ui.N(t.DamageMax) · 暴击伤害@(Ui.N(t.CritDamageMin))—@Ui.N(t.CritDamageMax)</b></div>
                 <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowState</span><b>@(p.Targets.Count > 1 ? member + "：" : "")健康@(Ui.N(t.Hp)) · 护甲@(Ui.T(t.Armor))@(t.Guarded ? " · 防御中×0.5" : "")</b></div>
+                }
             }
             else
             {
                 <div class="bi-row" role="listitem"><span>@BattleInfoCopy.RowCost</span><b>@cost</b></div>
                 @if (p.RetreatChance.HasValue) { <div class="bi-row" role="listitem"><span>撤退成功率</span><b>@Ui.Pct(p.RetreatChance.Value)</b></div> }
             }
+        </div>
+    };
+
+    /// <summary>BM7a（Q632）：浮框里一名真实受影响成员的命中与暴击、伤害（未暴击）、目标状态（标签与精度同五行关键预测）。</summary>
+    private RenderFragment MemberRows(BattleTargetPreview t) => __builder =>
+    {
+        var e = G.E;
+        var aimed = t.AimedIndex is int ai ? e.BattleEnemyAt(G.S.Battle!, ai) : null;
+        <div class="bi-mem">
+            <b class="bi-mem-name">@(aimed != null ? $"{aimed.Slot}号 {e.EnemyName(aimed)}" : $"{t.Slot}号 {t.Name}")@if (aimed != null) {<em>；@BattleInfoCopy.TakenBy：@($"{t.Slot}号 {t.Name}")</em>}</b>
+            <div class="bi-row"><span>@BattleInfoCopy.RowHit</span><b>实际命中率@(Ui.Pct(t.HitChance)) · 暴击（命中后）@Ui.Pct(t.CritChance)</b></div>
+            <div class="bi-row"><span>@BattleInfoCopy.DamageNoCrit</span><b>@Ui.N(t.DamageMin)—@Ui.N(t.DamageMax) · 暴击伤害@(Ui.N(t.CritDamageMin))—@Ui.N(t.CritDamageMax)</b></div>
+            <div class="bi-row"><span>@BattleInfoCopy.RowState</span><b>健康@(Ui.N(t.Hp)) · 护甲@(Ui.T(t.Armor))@(t.Guarded ? " · 防御中×0.5" : "")</b></div>
         </div>
     };
 

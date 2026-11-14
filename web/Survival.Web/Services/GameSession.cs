@@ -2832,6 +2832,7 @@ public sealed partial class GameSession
         if (list.Count == 0) return;
         var at = BattleAimTarget is int h ? list.IndexOf(h) : -1;
         var next = at < 0 ? (dir > 0 ? 0 : list.Count - 1) : (at + dir + list.Count) % list.Count;
+        MarkAimKeyboard(list[next]);   // BM7a（Q632）：键盘明确目标也显示同份浮框与右栏
         HoverBattleTarget(list[next]);
     }
 
@@ -2902,6 +2903,7 @@ public sealed partial class GameSession
         var set = AimTargets();
         int? pick = focus is int f && set.Contains(f) ? f : mouse is int m && set.Contains(m) ? m : null;
         if (pick is not int p) return;
+        if (focus == p) MarkAimKeyboard(p);   // BM7a（Q632）：初入瞄准取自合法键盘焦点时，浮框按键盘目标显示
         SetAimTarget(p);
         Notify();
     }
@@ -2912,8 +2914,12 @@ public sealed partial class GameSession
     /// </summary>
     public void FocusBattleTarget(int index)
     {
-        if (State == null || S.Battle == null || !BattleAiming || AreaAction) return;
-        if (!S.Battle.Enemies.Any(x => x.Index == index && x.Alive) || BattleAimTarget == index) return;
+        if (State == null || S.Battle == null || !BattleAiming) return;
+        if (!S.Battle.Enemies.Any(x => x.Index == index && x.Alive)) return;
+        // BM7a（Q632）：键盘焦点到达敌人锚点——浮框与右栏按这名键盘目标显示（群体也按它定位浮框）
+        var kbdChanged = _aimKbd != index || _aimKbdCtx != AimCtx();
+        MarkAimKeyboard(index);
+        if (AreaAction || BattleAimTarget == index) { if (kbdChanged) Notify(); return; }
         SetAimTarget(index);
         Notify();
     }
@@ -3101,6 +3107,7 @@ public sealed partial class GameSession
     {
         // BM2（Q497）：瞄准中鼠标进入哪只敌人，本次明确目标就改为它；离开锚点（index 为 null）时保留，供移向右栏预测与确认按钮
         var aimChanged = false;
+        if (index == null && _aimKbd != null) { ClearAimKeyboard(); aimChanged = true; }   // BM7a（Q632）：鼠标离开合法目标即撤鼠标浮框
         if (index is int i && BattleAiming && S.Battle!.Enemies.Any(x => x.Index == i && x.Alive) && BattleAimTarget != i)
         {
             SetAimTarget(i);

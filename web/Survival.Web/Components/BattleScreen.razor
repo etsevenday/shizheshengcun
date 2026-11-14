@@ -151,6 +151,14 @@
             <div class="bfs-side foes" aria-label="敌方">
                 @for (var p = 1; p <= slotCount; p++) { @FoeAnchor(p, aiming, aimSet, activeIdx, token, locked) }
             </div>
+            @* BM7a（S14 Q632）：选好攻击技能后，悬停（或键盘指定）亮起的合法敌人，在它立绘旁（朝中线一侧）浮出本次「战斗信息」只读浮框；
+               不接焦点、不接点击（点击穿过到下面的目标）、不成 ESC 层，播放／对白／菜单／只读子页接管或目标失效时不渲染 *@
+            @if (G.AimPopTarget is int popIdx && e.BattleEnemyAt(b, popIdx) is BattleEnemy popEn)
+            {
+                <div class="bfs-aimpop @(G.AreaAction || e.PreviewCommand(s, BattleCommand.Of(G.BattleAction!, popIdx, G.BattleItem)).Targets.Count > 1 ? "multi" : "")" data-slot="@popEn.Pos" role="note" aria-label="@BattleInfoCopy.InfoTab">
+                    <BattlePanel Mode="pop" Index="popIdx" />
+                </div>
+            }
         </section>
 
         @* 操作台（A10 §2.2、§4.2、§5）：左——当前行动者摘要与战斗装备（本页武器/防具/战斗饰品，另一把武器在页签上，七槽在“装备查看”）；
@@ -223,6 +231,15 @@
                 }
             </div>
 
+            @* BM7a（S14 Q632）：右侧信息栏＝盖在通用行动区上的只读叠层，显示本次明确目标（合法敌人）的公开详细属性；不挤窄、不重排站位。
+               鼠标移入或键盘焦点进入通用行动区时让开（同 B34 灰卡说明：隐去后再留一小会接住紧跟着的点击） *@
+            @if (G.AimRailTarget is int railIdx)
+            {
+                <div class="bfs-aimrail" role="region" aria-label="@ShellText.ObjectTab" @onmouseenter="HideAimRail">
+                    <BattlePanel Mode="foe" Index="railIdx" />
+                </div>
+            }
+            else if (_railGhost) { <div class="bfs-aimrail ghost" aria-hidden="true"></div> }
             <div class="bc-side">
                 <h3 class="bc-title">@BattleInfoCopy.GeneralPanel</h3>
                 <div class="bc-general" role="toolbar" aria-label="通用动作">
@@ -300,7 +317,7 @@
             }
             else if (sel != null && aiming)
             {
-                <span class="bx-hint">@AimHint(sel) · 右键/ESC 取消</span>
+                <span class="bx-hint">@AimHint(sel)</span>
                 @* B34a（Q570）：目标切换与「执行{指令名}」留在原操作台／目标处（底部反馈位），不进阅读区 *@
                 @TargetCycle(aimSet.Count)
                 @AimConfirm()
@@ -461,11 +478,33 @@
         return $"整队：{N(G.BattleAllyTarget)} ⇄ {N(G.BattleAllyTarget2)}，确认后交换 · 再点任一人改选";
     }
 
+    /// <summary>
+    /// 瞄准引导（底部反馈位）。BM7a（Q632 逐字稿）：默认攻击瞄准整句换「默认攻击瞄准引导」（句内已含 ESC 取消，不再追加）；
+    /// 贯穿／成对里的原「逐个预测」「看预测」两处说法换成「悬停看敌人旁的战斗信息浮框逐个预估／悬停看敌人旁的战斗信息浮框」，其余原数字与点击语义不改。
+    /// </summary>
     private static string AimHint(BattleCommandOption sel) =>
-        sel.TargetMode == "area" ? $"点亮起的任一1、2号位目标提交{sel.Label}（1、2号位都打）"
-        : sel.TargetMode == "suffix" ? "点起点敌人：从它的号位打到4号位，按离起点的格数×0.65/0.50/0.35/0.25，空位不重排；悬停看逐个预测"
-        : sel.TargetMode == "pair" ? "点1、2号位打12，点3号位打23；悬停看预测"
-        : "把鼠标移到亮起的目标上看预测，点击目标执行";
+        sel.TargetMode == "area" ? $"点亮起的任一1、2号位目标提交{sel.Label}（1、2号位都打） · 右键/ESC 取消"
+        : sel.TargetMode == "suffix" ? "点起点敌人：从它的号位打到4号位，按离起点的格数×0.65/0.50/0.35/0.25，空位不重排；悬停看敌人旁的战斗信息浮框逐个预估 · 右键/ESC 取消"
+        : sel.TargetMode == "pair" ? "点1、2号位打12，点3号位打23；悬停看敌人旁的战斗信息浮框 · 右键/ESC 取消"
+        : AimDefaultHint;
+
+    /// <summary>BM7a（逐字稿「默认攻击瞄准引导」）。</summary>
+    public const string AimDefaultHint = "把鼠标移到亮起的敌人上，看敌人旁的战斗信息浮框；右侧信息栏可看敌人详细属性。点击亮起的目标或按Enter执行，ESC取消。";
+
+    /// <summary>BM7a（逐字稿「合法敌人悬停执行说明」「生命条“预计”条纹说明」）。</summary>
+    public const string FoeAimTip = "点击即对它执行所选技能；本次预估见敌人旁的战斗信息浮框，详细属性见右侧信息栏。";
+    public const string ForecastTip = "预计剩余生命（未暴击；暴击预估见战斗信息浮框或预测详情）";
+
+    /// <summary>右栏叠层：鼠标移入即隐去，隐去后再留 400ms 透明层接住紧跟着的点击（同 bc-locknote 的做法）。</summary>
+    private bool _railGhost;
+    private async Task HideAimRail()
+    {
+        _railGhost = true;
+        G.HideAimRail();
+        await Task.Delay(400);
+        _railGhost = false;
+        StateHasChanged();
+    }
 
     /// <summary>
     /// 我方锚点（A10 §2.1/§4.1）：按我方真实槽数据驱动——空槽画空锚点；有人的画立绘、脚下生命/体力与状态。
@@ -637,7 +676,7 @@
         var reachWhy = unreachable ? (e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, idx, G.BattleItem)) ?? "不在本指令范围内") : null;
         var picked = G.BattleTarget == idx;
         var taken = _takenBy.Contains(idx);
-        var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（实际预测见“战斗信息”）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
+        var tip = reachWhy ?? (targetable ? FoeAimTip : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
         <div @key="@("foe" + idx)" id="@($"foe-{idx}")" data-slot="@pos" data-peek="@Peek.Foe(idx)" class="anc foe @Pulse(BattleFxUnit.EnemySide, "e" + idx) @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx || (aiming && G.BattleAimTarget == idx) ? "hover" : "")"
              role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))"
              aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}{(en.Acted ? "，本回合已行动" : "")}{(taken ? "，" + BattleInfoCopy.TakenBy : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
@@ -656,7 +695,7 @@
             </div>
             <div class="anc-foot">
                 @FoeChips(b, en, ec)
-                <div class="anc-nums @(ForecastText(en) != null ? "fc-on" : "")">@if (ForecastText(en) is string fct) {<span class="fc-tag" title="预计剩余生命（未暴击；暴击见右侧）">预计</span><span title="预计剩余生命（未暴击；暴击见右侧）">@fct</span>} else {<span title="健康">♥@(Ui.N(en.Hp))/@(Ui.N(ec.Hp))</span>}</div>
+                <div class="anc-nums @(ForecastText(en) != null ? "fc-on" : "")">@if (ForecastText(en) is string fct) {<span class="fc-tag" title="@ForecastTip">预计</span><span title="@ForecastTip">@fct</span>} else {<span title="健康">♥@(Ui.N(en.Hp))/@(Ui.N(ec.Hp))</span>}</div>
                 <div class="track hp">@HpForecast(en, ec)<i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
                 @if (unreachable) { <div class="anc-why" title="@reachWhy">@ShortReach(reachWhy)</div> }
             </div>

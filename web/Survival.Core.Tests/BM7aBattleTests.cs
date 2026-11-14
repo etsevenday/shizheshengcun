@@ -8,6 +8,66 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class BM7aBattleTests
 {
+    // ───── Q632：攻击预估在敌人旁，属性在右栏 ─────
+
+    /// <summary>Q632-A01：选攻击悬停合法敌人——其旁「战斗信息」浮框（目标／实际承伤、成本、命中与暴击、伤害、目标状态，同一次预演），右栏该实例公开属性；下方入口保留；引导文字按逐字稿。</summary>
+    [Test]
+    public void Q632_A01_PopAndRail_SameFacts_ReadOnly()
+    {
+        var bs = Web("Components", "BattleScreen.razor");
+        Assert.That(bs, Does.Contain("@if (G.AimPopTarget is int popIdx && e.BattleEnemyAt(b, popIdx) is BattleEnemy popEn)"));
+        Assert.That(bs, Does.Contain("<BattlePanel Mode=\"pop\" Index=\"popIdx\" />"), "浮框内容由 BattlePanel 同源渲染");
+        Assert.That(bs, Does.Contain("@if (G.AimRailTarget is int railIdx)").And.Contain("<BattlePanel Mode=\"foe\" Index=\"railIdx\" />"));
+        Assert.That(bs, Does.Contain("<BattlePanel Mode=\"info\" />").And.Contain("<BattlePanel Mode=\"detail\" />"), "下方「战斗信息」与「预测详情」保留");
+        var panel = Web("Components", "BattlePanel.razor");
+        var pop = Slice(panel, "private RenderFragment PopView()", "private RenderFragment FoeView()");
+        Assert.That(pop, Does.Contain("G.E.PreviewCommand(G.S, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : Index, G.BattleItem))"), "与下方同一次只读预演（同行动者、技能、明确目标）");
+        Assert.That(pop, Does.Contain("@BattleInfoCopy.InfoTab").And.Contain("@KeyRows(p, allMembers: true)").And.Contain("@p.Reason"), "标题「战斗信息」；空值写真实原因");
+        var keyRows = Slice(panel, "private RenderFragment KeyRows(", "private RenderFragment MemberRows(");
+        Assert.That(keyRows, Does.Contain("@foreach (var mt in p.Targets) { @MemberRows(mt) }"), "范围技能逐真实受影响成员分列");
+        var mem = Slice(panel, "private RenderFragment MemberRows(", "private RenderFragment DetailView()");
+        Assert.That(mem, Does.Contain("@BattleInfoCopy.RowHit").And.Contain("@BattleInfoCopy.DamageNoCrit").And.Contain("@BattleInfoCopy.RowState").And.Contain("@BattleInfoCopy.TakenBy"));
+        var foe = Slice(panel, "private RenderFragment FoeView()", "    };");
+        Assert.That(foe, Does.Contain("@ShellText.ObjectTab").And.Contain("<RailHead>").And.Contain("@FoeFacts(t)"), "右栏沿「对象」详情头，内容是敌人公开属性");
+        Assert.That(foe, Does.Not.Contain("PreviewCommand").And.Not.Contain("预测详情"), "右栏不冒充攻击预估");
+        var facts = Slice(panel, "private RenderFragment FoeFacts(", "private RenderFragment PopView()");
+        Assert.That(facts, Does.Contain("<span>健康</span>").And.Contain("护甲 / 闪避 / 速度").And.Contain("B7Status(b, t)"));
+        Assert.That(facts, Does.Contain("不显示敌人尚未执行的计划").And.Not.Contain("NextIntent").And.Not.Contain("PlannedTarget"), "沿 Q574：只留公开属性与已生效状态");
+        // 逐字稿：瞄准引导、悬停执行说明、预计条纹说明
+        Assert.That(bs, Does.Contain("public const string AimDefaultHint = \"把鼠标移到亮起的敌人上，看敌人旁的战斗信息浮框；右侧信息栏可看敌人详细属性。点击亮起的目标或按Enter执行，ESC取消。\";"));
+        Assert.That(bs, Does.Contain("public const string FoeAimTip = \"点击即对它执行所选技能；本次预估见敌人旁的战斗信息浮框，详细属性见右侧信息栏。\";"));
+        Assert.That(bs, Does.Contain("public const string ForecastTip = \"预计剩余生命（未暴击；暴击预估见战斗信息浮框或预测详情）\";"));
+        Assert.That(bs, Does.Contain("悬停看敌人旁的战斗信息浮框逐个预估 · 右键/ESC 取消").And.Contain("点1、2号位打12，点3号位打23；悬停看敌人旁的战斗信息浮框 · 右键/ESC 取消"));
+        Assert.That(bs, Does.Contain("$\"点亮起的任一1、2号位目标提交{sel.Label}（1、2号位都打） · 右键/ESC 取消\""), "群体引导原句不变");
+        Assert.That(bs, Does.Not.Contain("悬停看逐个预测").And.Not.Contain("悬停看预测\"").And.Not.Contain("暴击见右侧").And.Not.Contain("实际预测见“战斗信息”").And.Not.Contain("把鼠标移到亮起的目标上看预测"));
+    }
+
+    /// <summary>Q632-A02：浮框不接点击／焦点、不成 ESC 层；播放／对白／遭遇提示／菜单／只读子页接管、目标失效或取消瞄准即撤；右栏叠层不挤窄站位，鼠标或焦点进入通用行动区时让开。</summary>
+    [Test]
+    public void Q632_A02_HiddenOnTakeover_NoFocus_NoLayoutShift()
+    {
+        var a = Web("Services", "GameSession.AimPop.cs");
+        Assert.That(a, Does.Contain("BattleAiming && !DialogueLocked && !PlaybackActive && !EncounterPromptActive").And.Contain("&& !BattleMenuOpen && BattleDrawer == null && !BattleBusy && E.AwaitingPlayer(S);"));
+        var popT = Slice(a, "public int? AimPopTarget", "public int? AimRailTarget");
+        Assert.That(popT, Does.Contain("return BattleHover == t || kbd == t ? t : null;"), "单体：鼠标停在明确目标上或键盘指定它才浮出，离开即撤");
+        Assert.That(popT, Does.Contain("_aimKbdCtx == AimCtx()"), "换技能／重新瞄准后旧键盘目标不兜底");
+        var gs = Web("Services", "GameSession.cs");
+        Assert.That(gs, Does.Contain("MarkAimKeyboard(list[next]);"), "←／→ 换目标即键盘指定");
+        Assert.That(Slice(gs, "public void HoverBattleTarget(int? index)", "\n    }"), Does.Contain("ClearAimKeyboard();"), "鼠标真实移出后不被静止的键盘旧焦点抢回");
+        var css = Web("wwwroot", "css", "battle.css");
+        var popCss = Slice(css, ".bfs-aimpop {", "}");
+        Assert.That(popCss, Does.Contain("pointer-events: none").And.Contain("position: absolute"), "浮框不接点击，叠在场景上不挤位");
+        Assert.That(css, Does.Contain(".bfs-console:has(.bc-side:focus-within) .bfs-aimrail { display: none; }"));
+        var bs = Web("Components", "BattleScreen.razor");
+        var popMarkup = Slice(bs, "<div class=\"bfs-aimpop", "</div>");
+        Assert.That(popMarkup, Does.Not.Contain("tabindex").And.Not.Contain("@onclick").And.Not.Contain("@onkeydown"), "浮框不可聚焦、不接指令");
+        Assert.That(bs, Does.Contain("@onmouseenter=\"HideAimRail\""));
+        var keys = Web("Services", "GameSession.Keys.cs");
+        Assert.That(keys, Does.Not.Contain("AimPop"), "浮框不成 ESC 层");
+        // 站位几何不变：八个锚点的 left 规则保留
+        Assert.That(css, Does.Contain(".bfs-scene .anc.foe[data-slot=\"1\"] { left: calc(50cqw + 96 * var(--u)); }"));
+    }
+
     // ───── Q633：敌我出手不可跳过 ─────
 
     /// <summary>Q633-A01：无「跳到结果」「跳过余下」按钮、键帽与两级跳过逻辑；画面点击、Enter／Space 被播放层接住、什么也不做。</summary>
