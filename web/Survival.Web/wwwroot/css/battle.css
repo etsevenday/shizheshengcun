@@ -596,3 +596,13 @@
 
 /* B34 试玩修复 E2：收束前短反馈停留的透明接收层（在冻结的战斗画面之上，特写层同高） */
 .bfx-hold { position: fixed; inset: 0; z-index: 70; background: transparent; cursor: pointer; }
+
+/* ───── BM5c（S14 Q605）：探索遭遇短提示——战斗画面之上、战斗菜单之下；点击只跳过；减少动态效果时为静态提示 ───── */
+.enc-prompt { position: fixed; inset: 0; z-index: 72; cursor: pointer; display: grid; place-items: center; padding: 16px;
+  background: rgba(5, 7, 8, .72); color: #ece0c4; }
+.enc-prompt-text { margin: 0; max-width: min(720px, 100%); padding: 18px 28px; border: 1px solid #8a3b2a; border-radius: 6px;
+  background: #15191b; font-size: clamp(20px, 2.2vw, 30px); font-weight: 700; line-height: 1.4; text-align: center;
+  box-shadow: 0 0 28px rgba(0, 0, 0, .7); animation: enc-prompt-in calc(240ms * var(--motion-k, 1)) ease-out both; }
+.enc-prompt.paused .enc-prompt-text { animation-play-state: paused; }
+@keyframes enc-prompt-in { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .enc-prompt-text { animation: none; } }

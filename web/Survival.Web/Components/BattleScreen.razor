@@ -64,7 +64,7 @@
     var allyAimSet = G.AllyAimTargets();
     // B34b（S14 Q570／Q572）：特写播放中，播放层是最高输入层——战场、操作台、阅读入口与阅读区都不可操作、点击不穿透（只读子页已开着时它仍在最上层）
     var fxLock = G.PlaybackActive && !G.FxUnderReading;
-    var lockedUi = dlg || fxLock;
+    var lockedUi = dlg || fxLock || G.EncounterPromptActive;   // BM5c（Q605）：探索遭遇短提示期间不接受战斗指令
 }
 
 <div class="bfs" role="region" aria-label="@($"{BattleInfoCopy.Title(e.LocName(b.LocationId))} · {BattleInfoCopy.RoundText(b.Round)}")">
@@ -389,6 +389,13 @@
     </div>
     @* B34b：特写播放层在战斗页之内（菜单之下、只读子页打开时退到子页之下） *@
     <BattleFxLayer />
+    @* BM5c（S14 Q605）：探索遭遇短提示（菜单之下；点击只跳过提示，菜单打开时停在原处） *@
+    @if (G.EncounterPromptActive)
+    {
+        <div class="enc-prompt @(G.FxPaused ? "paused" : "")" data-active role="alert" aria-live="assertive" @onclick="G.SkipEncounterPrompt">
+            <p class="enc-prompt-text">@G.EncounterPrompt</p>
+        </div>
+    }
     @if (G.BattleMenuOpen) { <MenuOverlay Battle="true" /> }
 </div>
 

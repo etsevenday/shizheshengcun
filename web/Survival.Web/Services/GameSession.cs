@@ -1405,6 +1405,7 @@ public sealed partial class GameSession
         SyncUnsaved();
         SyncCommitMark();
         ResetOnLocationChange();
+        OnBattleOnset();   // BM5c（Q605）：真实入战关闭当前最高顶栏页与整条战前返回链，战后不恢复
         ReconcilePanelChain();   // BM4a（Q590）：换场、战斗、终局或原规则直接收盘时返回链作废
         ReconcileFireMenu();
         ReconcileFeed();
@@ -1601,6 +1602,7 @@ public sealed partial class GameSession
         ResetBattleUi();
         BattleBusy = false;
         ResetPlayback();   // B34b（Q572）：读档、新局、回标题清旧播放与跳过意图，旧推进循环随代号退出
+        ResetEncounterPrompt();   // BM5c（Q605）：读档不补播探索遭遇短提示
     }
 
     // ───────────── 选择 ─────────────
@@ -2369,6 +2371,8 @@ public sealed partial class GameSession
             DetailTab = DetailTab.Object;
             ClearHoverNow();
             Notify();
+            await ShowEncounterPrompt();   // BM5c（Q605）：探索遭遇先短提示，再呈现可操作战斗
+            if (State == null || S.Battle == null || S.Progress.Dead) return;
             await BattleLoop();
         }
     }
@@ -2385,11 +2389,7 @@ public sealed partial class GameSession
         Commit();
         Notify();
         if (E.DialogueLocked(S) || S.Progress.Dead) return;
-        if (S.Battle != null)
-        {
-            if (!E.AwaitingPlayer(S)) _ = BattleLoop();
-            else { AutoTarget(); Notify(); }
-        }
+        if (S.Battle != null) _ = PromptThenBattle();   // BM5c（Q605）：对白结束接续的探索遭遇也先短提示
         else if (S.Sub != null || (S.Main != null && S.Main.Status == ActionStatus.Running)) _ = RunLoop();
     }
 
@@ -2452,6 +2452,7 @@ public sealed partial class GameSession
         {
             if (string.IsNullOrEmpty(ev.Text)) continue;
             Recent.Add(ev);
+            NoteEncounterPrompt(ev);   // BM5c（Q605）：探索遭遇入战，战斗画面前播一次短提示
             // 结果提示（档次与 Q330 关键提示保留规则在内核 ResultToast.Pick）：角色行动结果类同批后到顶替先到；来客等非阻断短通知（B13）与
             // 设施完成只在同批没有行动结果时提示；一般提示不顶替尚未处理的危险／行动中止提示
             batch.Add(ev);
@@ -3421,7 +3422,8 @@ public sealed partial class GameSession
             while (State != null && S.Battle != null && !S.Progress.Dead && !E.AwaitingPlayer(S) && gen == _fxGen)
             {
                 // B9（A10 §6.3）：战斗菜单、系统说明是阅读暂停——逐条展示的下一步敌方行动等它们关上再走，不额外推进
-                while (State != null && S.Battle != null && BattleReadingPause && gen == _fxGen) await Task.Delay(120);
+                // BM5c（Q605）：探索遭遇短提示期间也不放敌方走一步
+                while (State != null && S.Battle != null && (BattleReadingPause || EncounterPrompt != null) && gen == _fxGen) await Task.Delay(120);
                 if (State == null || S.Battle == null) break;
                 var at = S.Battle.Cursor < S.Battle.Queue.Count ? S.Battle.Queue[S.Battle.Cursor] : (int?)null;
                 var stepBattle = S.Battle.BattleId;

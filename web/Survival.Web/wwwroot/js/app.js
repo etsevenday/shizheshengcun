@@ -358,7 +358,8 @@ window.survival = {
       }
       // B34b（S14 Q572）：战斗特写播放层在最上层时，Enter／Space 是跳过（按住不重复、一次只走一级），ESC 打开菜单，其余键不穿透到背后的战斗、对白或结算；
       // 只读子页盖在播放层上面时（.under）按键归子页，照原规则处理
-      var fxl = document.querySelector('.bfx-layer[data-active], .bfx-hold[data-active]');
+      // BM5c（S14 Q605）：探索遭遇短提示同一套按键（Enter／Space 只跳过提示，ESC 打开菜单）
+      var fxl = document.querySelector('.bfx-layer[data-active], .bfx-hold[data-active], .enc-prompt[data-active]');
       if (fxl && !fxl.classList.contains('under')) {
         if (mod) return;
         if (k === 'Escape') { send('Escape'); return; }

@@ -419,6 +419,13 @@
     {
         if (G.State == null) return;
         if (G.BattleClosingHold) { if (key is "Skip" or "Escape") G.SkipClosingHold(); return; }   // B34 试玩修复 E2
+        // BM5c（S14 Q605）：探索遭遇短提示——点击／Enter／Space 只跳过提示；ESC 打开战斗菜单（冻结计时），菜单开着时 ESC 按原路由关闭；其余键不穿透
+        if (G.EncounterPromptActive)
+        {
+            if (key == "Skip") G.SkipEncounterPrompt();
+            else if (key == "Escape") { if (!G.BattleMenuOpen && !G.MenuOpen) G.ToggleBattleMenu(true); else Escape(); }
+            return;
+        }
         if (key == "Escape") { Escape(); return; }
         // B34b（S14 Q572）：特写播放层独占画面点击、Enter、Space——一次输入只走一级跳过
         if (key == "Skip") { G.PlaybackSkip(); return; }
