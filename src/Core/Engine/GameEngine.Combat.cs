@@ -1270,7 +1270,9 @@ namespace Survival.Core.Engine
                 case "breathe":
                 {
                     b.BreatheUsed = true;
-                    FxShort(s, ActionName(c.Action), FxAlly(s, actor));
+                    // BM7a（S14 Q631）：调息成功的动作短反馈「{人物名}喘了口气」（主角「你」、同伴实际姓名）；卡面、战报与行动标识不改，只这一条
+                    var fxWho = FxAlly(s, actor);
+                    FxShort(s, BreatheShortText(fxWho.Name), fxWho);
                     var e0 = s.Stats.Energy;
                     s.Stats.Add(StatId.Energy, a.RestoreEnergy);
                     b.Panic = Math.Max(Config.Panic.Range[0], b.Panic - a.ReducePanic);

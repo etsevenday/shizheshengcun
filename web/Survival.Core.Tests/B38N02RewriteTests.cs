@@ -33,7 +33,9 @@ public class B38N02RewriteTests : TestBase
             if (r["note"] != null)
             {
                 notes++;
-                Assert.That(d.Note, Is.EqualTo((string)r["note"]!), id + "：附注为 N02 新稿");
+                // BM7a（S14 Q629）：tutorial_arrive 的 guide 附注已由 Q629 新句取代（BM7aTeachingTextTests 另验），正文仍 N02 新稿
+                if (id == "tutorial_arrive") Assert.That(d.Note, Is.EqualTo(BM7aTeachingTextTests.TutorialArriveNote), id + "：附注为 Q629 新句");
+                else Assert.That(d.Note, Is.EqualTo((string)r["note"]!), id + "：附注为 N02 新稿");
             }
         }
         Assert.That(notes, Is.EqualTo(6));

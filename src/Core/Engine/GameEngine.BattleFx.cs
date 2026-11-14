@@ -139,6 +139,9 @@ namespace Survival.Core.Engine
             }
         }
 
+        /// <summary>BM7a（S14 Q631、逐字稿 Q629—Q636 表「调息短反馈」）：调息成功的动作短反馈原句「{人物名}喘了口气」。</summary>
+        public static string BreatheShortText(string who) => $"{who}喘了口气";
+
         /// <summary>短反馈（R03 §Q571：防御、调息、调整站位、撤退、装填、整队；敌方非攻击意图；支撑护带包）。只记行动者，不造数值。</summary>
         private void FxShort(GameState s, string name, BattleFxUnit actor)
         {
