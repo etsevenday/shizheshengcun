@@ -164,6 +164,7 @@ namespace Survival.Core.Engine
                 // B13：对话结束是序章安全边界（排队的饱饱反应、营地来客抵达）
                 if (!DialogueLocked(s)) PrologueBoundary(s);
                 SubstituteIntroBoundary(s);   // Q243：对白锁放开也是待补播的边界
+                if (!DialogueLocked(s)) ExploreCheckBoundary(s);   // BM5c（R05 Q605 §2）：对白先承接的探索检查在同一安全边界接续一次
                 if (!DialogueLocked(s)) EnemyApproachBoundary(s);   // B41b（R05 Q416 第 4 条）：强制对白结束是敌踪接近边界
             }
             return ActionResult.Success();

@@ -17,9 +17,10 @@ public class B41bEnemyApproachTests : B41bTestBase
         var s = Field(3, "shambler");
         var key = Single(s);
         SetLeft(s, key, 5);
-        var progress = s.Locations["field"].Progress;
-        Start(s, ActionRequest.Explore());
+        // BM5c（R05 Q605、Q620）：探索在原地延后普通到期，这里用同为可暂停多段工作的清理
+        Start(s, ActionRequest.Clear());
         var id = s.Main!.ActionId;
+        var label = s.Main.Label;
         E.DrainEvents(s);
         Assert.That(Step(s), Is.EqualTo(SegmentStatus.Paused));
         var a = s.Main!;
@@ -28,7 +29,7 @@ public class B41bEnemyApproachTests : B41bTestBase
         Assert.That(a.PauseReason, Is.EqualTo(PauseReason.EnemyApproach));
         Assert.That(a.PauseNote, Is.EqualTo("游荡尸主动接近"));
         var ev = E.DrainEvents(s);
-        Assert.That(ev.Where(e => e.Kind == GameEventKind.ActionPaused).Select(e => e.Text), Is.EqualTo(new[] { "游荡尸主动接近了。探索周边已暂停，战后可以继续或退出。" }));
+        Assert.That(ev.Where(e => e.Kind == GameEventKind.ActionPaused).Select(e => e.Text), Is.EqualTo(new[] { $"游荡尸主动接近了。{label}已暂停，战后可以继续或退出。" }));
         var b = s.Battle!;
         Assert.That(b.CardKey, Is.EqualTo(key));
         Assert.That(b.Context, Is.EqualTo(GameEngine.FearEncounter), "敌方主动开战受惊情境系数 1.0");
@@ -39,8 +40,9 @@ public class B41bEnemyApproachTests : B41bTestBase
         Assert.That(s.Main!.Status, Is.EqualTo(ActionStatus.Paused));
         Assert.That(E.ActionProgress(s)!.PauseText, Is.EqualTo("游荡尸主动接近"), "敌人已死，原因仍是开战快照");
         Assert.That(E.Resume(s).Ok, Is.True);
+        var done = s.Main!.ElapsedMinutes;
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(s.Locations["field"].Progress, Is.EqualTo(Math.Min(100, progress + Cfg.Actions.ExploreProgress)), "同一进度续完，不重复提交旧段");
+        Assert.That(done, Is.EqualTo(5), "同一进度续完，不重复提交旧段");
     }
 
     [Test]
@@ -94,7 +96,7 @@ public class B41bEnemyApproachTests : B41bTestBase
         var s = Field(3, "shambler");
         var key = Single(s);
         SetLeft(s, key, 40);
-        Start(s, ActionRequest.Explore());
+        Start(s, ActionRequest.Clear());   // BM5c：探索在原地延后普通到期，这里用清理
         Step(s);
         var m = s.Main!;
         m.Status = ActionStatus.Paused;
@@ -128,12 +130,13 @@ public class B41bEnemyApproachTests : B41bTestBase
         SetLeft(s, Single(s), 5);
         s.Stats.Satiety = 20.05;
         s.AlertLatched[StatId.Satiety] = false;
-        Start(s, ActionRequest.Explore());
+        Start(s, ActionRequest.Clear());   // BM5c：探索在原地延后普通到期，这里用清理
+        var label = s.Main!.Label;
         E.DrainEvents(s);
         Assert.That(Step(s), Is.EqualTo(SegmentStatus.Paused));
         var ev = E.DrainEvents(s);
         Assert.That(ev.Count(e => e.Kind == GameEventKind.Alert && e.Stat == StatId.Satiety), Is.EqualTo(1), "状态提醒日志照常");
-        Assert.That(ev.Where(e => e.Kind == GameEventKind.ActionPaused).Select(e => e.Text), Is.EqualTo(new[] { "游荡尸主动接近了。探索周边已暂停，战后可以继续或退出。" }));
+        Assert.That(ev.Where(e => e.Kind == GameEventKind.ActionPaused).Select(e => e.Text), Is.EqualTo(new[] { $"游荡尸主动接近了。{label}已暂停，战后可以继续或退出。" }));
         Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.EnemyApproach), "暂停原因写敌方接近");
     }
 

@@ -1037,6 +1037,7 @@ namespace Survival.Core.Engine
             if (!p.IsSub) RecordWorkOrigin(s, a);   // B41b（R05 Q440、Q466）：开工所在区、地牢世代与预留来源
             if (p.IsSub) s.Sub = a; else s.Main = a;
             a.NoExit = StartLocks(s, a);   // B41c2（S01 Q506、Q516）：成功开工同一事务认定，之后不重认
+            if (a.Type == ActionType.Explore && !a.IsSub) LockExploreCheck(s, a);   // BM5c（R05 Q605 §2）：同一开工事务锁唯一检查段
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse && !IsStealthCheck(a))   // B41c：潜行接近／躲避只写判定结果句
                 Emit(s, GameEventKind.ActionStarted, $"开始{a.Label}。");
             // Q128：PRO12 引导在打开恢复面板/选睡眠时（提交前），开始睡眠时不再播

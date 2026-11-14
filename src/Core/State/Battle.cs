@@ -304,6 +304,8 @@ namespace Survival.Core.State
         /// </summary>
         public string? CardKey { get; set; }
         public string LocationId { get; set; } = "";
+        /// <summary>BM5c（R05 Q605）：本场是探索自身随机遭遇的被动战（入战来源「探索遭遇」）；其他入战与旧战斗为 false。</summary>
+        public bool ExploreEncounter { get; set; }
         public int Round { get; set; } = 1;
         public int StartMinute { get; set; }
         /// <summary>随机接敌（探索/清理后的敌踪“接敌”）。</summary>

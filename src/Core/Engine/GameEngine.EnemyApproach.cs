@@ -217,10 +217,13 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 此刻的行动边界要不要推迟敌方开战（Q416、Q441、Q467）：有未结束的子行动（暂停中的休息整次做完；补给、点火本就单段）、
         /// 正在移动或撤出（途中不拦截，也不回起点拦截）、主行动是普通休息／等待／原子事务且还没结束（暂停中也算没结束），都推迟。
+        /// BM5c（R05 Q605、Q620）：队伍在一项未结束探索的原地点／区域时也推迟（含开工前已到期的卡），探索结束边界再按原顺序检查。
         /// </summary>
         private static bool EnemyApproachDeferred(GameState s)
         {
             if (s.Sub != null) return true;
+            // BM5c（R05 Q605 §1、Q620）：同一次未结束探索的原地点／区域，普通到期等这次探索结束再检查
+            if (ExploreDefersApproach(s)) return true;
             var m = s.Main;
             if (m == null) return false;
             if (m.Type == ActionType.Travel || m.Type == ActionType.Extract) return true;

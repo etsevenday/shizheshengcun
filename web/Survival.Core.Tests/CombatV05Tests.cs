@@ -518,16 +518,16 @@ public class CombatV05Tests : BattleTestBase
 
     private static double Enemy2Hp(double hurt, GameState s) => hurt;
 
-    /// <summary>B523 探索完成后遇敌：进度/随机物资已提交，不因战斗回滚或重抽（另见 R618）。</summary>
+    /// <summary>B523 清理完成后遇敌：进度/随机物资已提交，不因战斗回滚或重抽（另见 R618；BM5c 起探索的同类验收见 BM5cExploreEncounterTests）。</summary>
     [Test]
-    public void B523_ExploreCommittedBeforeBattle()
+    public void B523_ClearCommittedBeforeBattle()
     {
         var s = New(22);
         E.DebugTeleport(s, "field");
         s.GameMinute = At(2, 9, 0);
         s.SpawnNextCheck = int.MaxValue;
         s.PatrolNextCheck = int.MaxValue;
-        Start(s, ActionRequest.Explore());
+        Start(s, ActionRequest.Clear());   // BM5c（R05 Q605）：探索改为途中直接被动入战，完成后成组卡的路径只剩清理
         ForceLoot(s, "fiber");
         s.Main!.EncounterRoll = 0;
         Run(s);

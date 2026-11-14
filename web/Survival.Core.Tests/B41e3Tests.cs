@@ -25,7 +25,7 @@ public class B41e3Tests : B41cTestBase
         var a = GameEngine.SingleCardKey(s.WorldEnemies[0].Id);
         var b = GameEngine.SingleCardKey(s.WorldEnemies[1].Id);
         SetLeft(s, a, 5);
-        Start(s, ActionRequest.Explore());
+        Start(s, ActionRequest.Clear());   // BM5c：探索在原地延后普通到期，这里用同为可暂停多段工作的清理
         var id = s.Main!.ActionId;
         Assert.That(Step(s), Is.EqualTo(SegmentStatus.Paused), "敌方开战打断推进");
         var first = s.Battle!;

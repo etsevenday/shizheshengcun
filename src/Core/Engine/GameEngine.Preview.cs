@@ -37,6 +37,7 @@ namespace Survival.Core.Engine
 
             var c = s.Clone();
             c.SuppressEnemyApproach = true;   // B41b：模拟副本里敌踪不抽、不扣、不开战
+            c.SimCopy = true;
             SimReadDialogues(c);
             var res = Start(c, r.WithRequestId(null));
             if (!res.Ok) { p.Ok = false; p.Reason = res.Reason; return p; }
@@ -455,6 +456,7 @@ namespace Survival.Core.Engine
             if (a == null) return null;
             var c = s.Clone();
             c.SuppressEnemyApproach = true;   // B41b：模拟副本里敌踪不抽、不扣、不开战
+            c.SimCopy = true;
             SimReadDialogues(c);
             var target = (c.Sub ?? c.Main)!;
             var id = target.ActionId;

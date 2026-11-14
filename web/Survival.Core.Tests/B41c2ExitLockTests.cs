@@ -128,7 +128,7 @@ public class B41c2ExitLockTests : TestBase
         var s = Camping(E);
         Start(s, GameEngine.Deploy(E.CreateItems(s, "folding_stove", 1, ItemInstance.Carried).Single()));
         var t = SaveSerializer.Deserialize(AsSchema48(s), Cfg);
-        Assert.That((t.SchemaVersion, t.Main!.NoExit), Is.EqualTo(("49", true)));
+        Assert.That((t.SchemaVersion, t.Main!.NoExit), Is.EqualTo(("50", true)));
 
         // 10 分钟部署：不锁
         var s2 = Camping(E);

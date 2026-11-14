@@ -262,8 +262,12 @@ namespace Survival.Core.Engine
                 if (ok) SettleCarry(s, a); else RestoreCarry(s, a);
                 if (s.Progress.Dead) return new SegmentResult(SegmentStatus.Dead);
                 status = ok ? SegmentStatus.Completed : SegmentStatus.Aborted;
-                if (ok) CheckRandomEncounter(s, a);
+                // BM5c（R05 Q605 §2—§3）：探索的唯一随机检查落在实际完成边界（含旧开工规则的在办探索）时成果先交、再检查；清理仍原完成后成组卡
+                if (ok && a.Type == ActionType.Explore) ExploreEncounterCheck(s, a, true);
+                else if (ok) CheckRandomEncounter(s, a);
             }
+            // BM5c（R05 Q605 §2）：未完成的新规则探索在第 K 个实际探索段完整提交后检查一次；命中则本段后暂停、直接被动入战
+            else if (ExploreCheckDueMidway(a)) ExploreEncounterCheck(s, a, false);
 
             // B41b（R05 Q416、Q467、Q470）：段提交后的敌踪接近边界——抽首次可操作现身的接近时间；已到期且边界合法的卡开战，
             // 正在进行的可暂停多段主行动先暂停（在阈值提醒之前：同段的状态提醒照常写提醒日志，但不再重复一条状态造成的「已暂停」）

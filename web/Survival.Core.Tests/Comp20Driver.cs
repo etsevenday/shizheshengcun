@@ -492,6 +492,9 @@ public sealed class Comp20Driver
         var before = PartyHealth();
         var loc = E.LocName(Here);
         var t0 = S.GameMinute;
+        // BM5c 起探索开工多一次检查段抽签，随机序列变了：科学院线先种子1在地城连战里把木矛打到耐久见底，剩下后排敌人谁都够不着而僵持；
+        // 守卫战前像出发前一样把耐久不足一半的穿戴装备换新（开发装备，记账本）
+        RefitWorn($"{E.LocName(Here)}守卫战前");
         if (!E.EngageFixed(S).Ok) throw Stuck($"固定战接不了：{E.CanEngageFixed(S)}");
         Fight(allowRetreat: false);
         var won = E.FixedStateAt(S, Here)?.Won == true || !E.FixedEnemiesAt(S, Here).Any();

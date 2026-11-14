@@ -85,6 +85,7 @@ namespace Survival.Core.Save
         public const string Schema46 = "46";
         public const string Schema47 = "47";
         public const string Schema48 = "48";
+        public const string Schema49 = "49";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -148,6 +149,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema46) From46To47(s);
             if (s.SchemaVersion == Schema47) From47To48(s);
             if (s.SchemaVersion == Schema48) From48To49(s);
+            if (s.SchemaVersion == Schema49) From49To50(s);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             NormalizeBattleLog(s);
@@ -1448,6 +1450,15 @@ namespace Survival.Core.Save
         {
             foreach (var a in new[] { s.Main, s.Sub, s.StashedWork })
                 if (a != null) a.NoExit = Survival.Core.Engine.GameEngine.LegacyFixedPlanLock(a);
+            s.SchemaVersion = Schema49;
+        }
+
+        /// <summary>
+        /// 49 → 50（BM5c，R05 Q605 §5「新旧探索按开工规则版本区分」、Q624）：不给在办探索补唯一检查段——缺 EncounterSegment 就是旧开工规则，
+        /// 沿原已锁签在实际完成边界只检查一次，不逆插中途检查、不重抽；同次探索的原地到期延后读档即按新规则。其余新字段默认值即可。
+        /// </summary>
+        private static void From49To50(GameState s)
+        {
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

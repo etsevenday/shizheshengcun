@@ -62,6 +62,11 @@ namespace Survival.Core.Engine
         /// 能继续或不适用为 null。界面据此禁用「继续行动」并写原因。
         /// </summary>
         public string? KeptResumeBlock { get; set; }
+        /// <summary>
+        /// BM5c（R05 Q624）：行动名说明里追加的独立句——仅旧在办、缺新检查段、沿旧原签在结束时检查的那次探索为「本次探索沿原开工规则，在结束时检查随机遭遇。」；
+        /// 其余为 null。只读，不抽签、不推进。
+        /// </summary>
+        public string? LabelNote { get; set; }
     }
 
     public sealed partial class GameEngine
@@ -132,6 +137,7 @@ namespace Survival.Core.Engine
                 PauseText = !a.IsSub && a.Status == ActionStatus.Paused ? PauseText(s, a) : null,
                 DialogueWaiting = DialogueLocked(s),
                 ElapsedMinutes = a.ElapsedMinutes,
+                LabelNote = LegacyExploreNoteFor(a),
             };
             if (a.Type == ActionType.WaitCook)
             {
@@ -201,6 +207,7 @@ namespace Survival.Core.Engine
             PauseReason.StatZero when a.PauseStat.HasValue => AlertText(a.PauseStat.Value, true),
             PauseReason.StatAlert when a.PauseStat.HasValue => AlertText(a.PauseStat.Value, false),
             PauseReason.EnemyApproach => a.PauseNote ?? EnemyApproachPauseNote(null),   // B41b（Q444、Q470）：开战瞬间快照
+            PauseReason.ExploreEncounter => ExploreEncounterPauseNote,   // BM5c（逐字稿 Q621）
             _ => "已暂停",
         };
 

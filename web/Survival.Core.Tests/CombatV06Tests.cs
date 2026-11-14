@@ -618,14 +618,13 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(E.EncounterChance(s, "village", ActionType.Clear), Is.EqualTo(0.01 * 2 / 4).Within(1e-12), "清理1%×2/4");
         Assert.That(E.EncounterChance(s, "camp", ActionType.Clear), Is.EqualTo(0), "营地0");
 
-        // 强制命中：先提交探索结果，再形成组卡（按最早出现、按容量截取）
+        // 强制命中：先提交清理结果，再形成组卡（按最早出现、按容量截取）。BM5c（R05 Q605）起探索改为途中直接被动入战，只有清理仍完成后成组卡
         var expect = E.GroupCardCandidates(s, "village").Select(w => w.Id).ToList();
         Assert.That(expect, Is.Not.Empty);
-        Start(s, ActionRequest.Explore());
+        Start(s, ActionRequest.Clear());
         ForceLoot(s, "cloth");
         s.Main!.EncounterRoll = 0;
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(s.Locations["village"].Progress, Is.EqualTo(25), "原探索已提交");
         Assert.That(Count(s, "cloth", "village"), Is.EqualTo(1), "随机物资已提交、不回滚");
         Assert.That(s.Encounter, Is.Null, "新版不设待处理敌踪");
         var g = s.EnemyCards.Groups.Single();
@@ -635,10 +634,11 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(E.DoInstant(s, InstantRequest.Pickup(First(s, "cloth", "village").InstanceId, 1)).Ok, Is.True);
         Assert.That(E.LocalCount(s, "village"), Is.EqualTo(2), "成组不杀死世界敌人");
 
-        // 已有可见组卡：再探索命中也不成新组
+        // 已有可见组卡：再探索命中也不成新组（探索随机概率为 0，途中不入战）
         Start(s, ActionRequest.Explore());
         s.Main!.EncounterRoll = 0;
         Run(s);
+        Assert.That(s.Battle, Is.Null);
         Assert.That(s.EnemyCards.Groups, Has.Count.EqualTo(1), "已有可见组卡，本次不形成新组卡");
         // 预览不触发接敌、不推进随机
         var json = SaveSerializer.Serialize(s);

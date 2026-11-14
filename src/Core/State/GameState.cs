@@ -18,7 +18,7 @@ namespace Survival.Core.State
     public enum ActionStatus { Running, Paused }
 
     /// <summary>EnemyApproach：B41b 敌方接近到期打断（R05 Q416、Q444、Q470；原因字段见 ActionState.PauseNote）。</summary>
-    public enum PauseReason { None, StatAlert, StatZero, FireOut, EnemyApproach }
+    public enum PauseReason { None, StatAlert, StatZero, FireOut, EnemyApproach, ExploreEncounter }
 
     /// <summary>整局唯一的可序列化状态。内核不持有其他可变数据。</summary>
     public sealed class GameState
@@ -61,8 +61,11 @@ namespace Survival.Core.State
         /// 现身次数与潜行经验领取 EnemyCardsState.Appearances／StealthXpClaims、先手 BattleState.FirstStrike／FirstStrikeDamage
         /// （R05 Q342、Q420—Q428、Q445、Q503—Q508，开发记录 B41c；47→48 只补默认值）。
         /// "49" 起开工 5 分钟不可中途退出标记 ActionState.NoExit（S01 Q506、Q516、Q524，开发记录 B41c2；48→49 只按原固定计划初始化在办行动）。
+        /// "50" 起探索唯一随机检查段与回执 ActionState.EncounterSegment／EncounterChecked／EncounterPending、完成边界待检查快照
+        /// GameState.ExploreCheckPending、探索遭遇战标记 BattleState.ExploreEncounter（R05 Q605、Q620—Q624，开发记录 BM5c；
+        /// 49→50 不补检查段：旧在办探索缺段即旧开工规则，在实际完成边界检查一次）。
         /// </summary>
-        public const string CurrentSchema = "49";
+        public const string CurrentSchema = "50";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -217,6 +220,13 @@ namespace Survival.Core.State
         public ActionState? StashedWork { get; set; }
 
         /// <summary>
+        /// BM5c（R05 Q605 §2）：已在实际完成边界提交成果、唯一随机遭遇检查却因强制对白先承接而待处理的那次探索（完成时的快照）；
+        /// 对白结束的同一安全边界检查一次后清掉。没有为 null。
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public ActionState? ExploreCheckPending { get; set; }
+
+        /// <summary>
         /// B41c 小队队长（R05 Q342／R08）：同行人员 ID；null = 主角（旧档读入为 null）。
         /// 队长死亡、离队或不再同行时立即改回主角。
         /// </summary>
@@ -288,6 +298,8 @@ namespace Survival.Core.State
         /// 测试也可用它冻结接近余量；正式状态恒为 false。
         /// </summary>
         [JsonIgnore] public bool SuppressEnemyApproach { get; set; }
+        /// <summary>BM5c：预览／估时等只读模拟副本（不进存档）。新开探索在副本上不为唯一检查段再嵌套估时、不抽签。</summary>
+        [JsonIgnore] public bool SimCopy { get; set; }
 
         public GameState Clone()
         {
@@ -314,6 +326,7 @@ namespace Survival.Core.State
             c.Main = Main?.Clone();
             c.Sub = Sub?.Clone();
             c.StashedWork = StashedWork?.Clone();
+            c.ExploreCheckPending = ExploreCheckPending?.Clone();
             c.Progress = Progress.Clone();
             c.Log = new List<LogEntry>(Log);
             c.Layout = Layout.ToDictionary(kv => kv.Key, kv => new List<string>(kv.Value));
@@ -1318,6 +1331,16 @@ namespace Survival.Core.State
         public int? XpDay { get; set; }
         /// <summary>开始时锁定的随机接敌判定值 [0,1)（v0.6 §15）；完成时与按当时敌密度算出的概率比较。预览里置为 1（不接敌）。</summary>
         public double EncounterRoll { get; set; } = 1;
+        /// <summary>
+        /// BM5c（R05 Q605 §2）：新开探索在同一开工事务里锁定的唯一随机检查段号 K（只数本次探索实际提交的 5 分钟段）；
+        /// 旧开工规则的在办探索（存档 49 及以前开工）与其他行动为 null，旧探索在实际完成边界检查一次。
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public int? EncounterSegment { get; set; }
+        /// <summary>BM5c（R05 Q605 §2）：本次探索唯一的随机遭遇检查已做（命中、未中、无资格、无人成组都记），之后不再抽／比。</summary>
+        public bool EncounterChecked { get; set; }
+        /// <summary>BM5c（R05 Q605 §2）：检查点到时强制对白先承接，检查待处理（与 EncounterChecked 互斥）；对白结束的同一安全边界接续一次。</summary>
+        public bool EncounterPending { get; set; }
 
         /// <summary>等待烹饪：开始时绑定的本火堆进程 ID（FacilityProcess.ProcessId，含净水→食材链）；TargetId 为火堆所在地点。</summary>
         public List<string> CookTargets { get; set; } = new List<string>();
@@ -1461,6 +1484,8 @@ namespace Survival.Core.State
         /// 普通高亮只闪两下，完成时常被岗位台词盖住）。
         /// </summary>
         public bool HoldHighlight { get; set; }
+        /// <summary>BM5c（R05 Q605 §4）：这条日志对应一次刚锁定的探索遭遇入战——壳在可操作战斗画面前播一次短提示（事件不进存档，读档不重播）。</summary>
+        public bool EncounterPrompt { get; set; }
     }
 
     /// <summary>可序列化的 xorshift32，读档后继续同一序列。</summary>
