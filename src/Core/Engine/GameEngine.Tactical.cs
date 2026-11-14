@@ -152,12 +152,13 @@ namespace Survival.Core.Engine
                 case "enemy":
                 {
                     var e = b.Enemies.First(x => x.Index == c.Target!.Value);
+                    // B34b（R03 §Q571）：闪光标记器——ranged 式，真实对象与实际效果，不造命中伤害。
+                    // B34 试玩修复 B3：先开记录再挂标记，出手前后比对状态时才认得出新挂上的「标记」（Q573 结果带原状态名）
+                    using var fxFlash = FxBegin(s, name, BattleFxMotion.Ranged, FxAlly(s, b.FocusId), noNumbers: true);
                     var was = EnemyMarked(b, e);
                     e.MarkBonus = was ? Math.Max(e.MarkBonus, t.MarkBonus) : t.MarkBonus;
                     e.MarkUntilRound = Math.Max(was ? e.MarkUntilRound : 0, b.Round + t.Rounds);
                     AddNoise(s, b, t.Noise);
-                    // B34b（R03 §Q571）：闪光标记器——ranged 式，真实对象与实际效果，不造命中伤害
-                    using var fxFlash = FxBegin(s, name, BattleFxMotion.Ranged, FxAlly(s, b.FocusId), noNumbers: true);
                     FxHit(FxFoe(e), "effect");
                     BattleLog(s, $"{Who(s)}用{name}标记了{EnemyName(e)}（全队对它命中能力+{Fmt.T(e.MarkBonus)}，到第{e.MarkUntilRound}回合末；噪声+{Fmt.T(t.Noise)}）。");
                     break;

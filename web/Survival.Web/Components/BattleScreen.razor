@@ -209,7 +209,7 @@
                 @RangeMap(sel ?? HoverSkill(skills), aimSet)
                 @if (cards.FirstOrDefault(c => c.LockedText != null && c.Node.Id == lockNote) is { } lockCard)
                 {
-                    @* 说明盖着通用区：鼠标移入就隐去，隐去后再留一小会接住紧跟着的点击，看不见的按钮不会被点中（试玩修复 M504、M516） *@
+                    @* 说明盖在本区标题与武器页签上（B34 试玩修复 E9，不再盖通用区卡片）：鼠标移入就隐去，隐去后再留一小会接住紧跟着的点击，看不见的按钮不会被点中（试玩修复 M504、M516） *@
                     <div class="bc-locknote @(lockShown == null ? "ghost" : "")" role="note" @onmouseenter="() => HideLockNote(lockCard.Node.Id)" @onclick="CloseLockNote">
                         <b>@lockCard.Node.Name</b><span>@(e.SkillName(lockCard.Node.SkillId))@(lockCard.Node.Level)级</span>
                         <p>@lockCard.Node.Text</p>
@@ -283,12 +283,13 @@
             }
             else if (G.BattleSwapAiming)
             {
-                @* B34（Q578）：选位中——悬停／聚焦的目的号位显示同源名称与费用；未指定不代选，明确点亮起的号位才提交 *@
+                @* B34（Q578）：选位中——悬停／聚焦的目的号位显示同源名称与费用；未指定不代选，明确点亮起的号位才提交。
+                   B34 试玩修复 E7：费用按 Q530 写「{AP文案} · 体力−{消耗}」（与战报「体力−」同向），0 消耗不写负零 *@
                 var hs = G.SwapHoverSlot is int hp && G.SwapAimSlots().Contains(hp) ? G.SwapOptionFor(hp) : null;
                 @if (hs != null)
                 {
                     var spv = e.PreviewCommand(s, BattleCommand.Of("swap", null, hs.ItemInstanceId));
-                    <span class="bx-hint @(spv.Ok ? "" : "warn")" title="@(spv.Ok ? string.Join("；", spv.Notes) : spv.Reason)">@(spv.Ok ? $"{spv.EffectText}；{ApText(hs.Ap)}{(hs.Energy > 0 ? $"，体力{Ui.N(hs.Energy)}" : "")}" : spv.Reason)</span>
+                    <span class="bx-hint @(spv.Ok ? "" : "warn")" title="@(spv.Ok ? string.Join("；", spv.Notes) : spv.Reason)">@(spv.Ok ? $"{spv.EffectText}；{ApText(hs.Ap)}{(hs.Energy > 0 && Ui.N(hs.Energy) != Ui.N(0) ? $" · 体力−{Ui.N(hs.Energy)}" : "")}" : spv.Reason)</span>
                 }
                 <button type="button" class="bx-x" aria-label="取消（ESC）" title="取消（ESC/右键），不执行" @onclick="G.ClearBattleAction">×</button>
             }

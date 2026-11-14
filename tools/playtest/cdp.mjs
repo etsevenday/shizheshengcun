@@ -108,6 +108,17 @@ async function waitReady(s, ms = 60000) {
   return false;
 }
 
+// 把真实窗口的内容区也调到 w×h：视口覆盖随每条命令断开而失效，期间页面退回真实窗口（无头窗口还要扣一截边框高度），
+// 两者不一致时滚动读数会被夹到小窗口的上限（B34 试玩 B1 的 scrollTop「回弹」即此）。
+async function fitWindow(s, w, h) {
+  try {
+    await s.send('Emulation.clearDeviceMetricsOverride');
+    const [dw, dh] = await evaluate(s, '[window.outerWidth - window.innerWidth, window.outerHeight - window.innerHeight]');
+    const { windowId } = await s.send('Browser.getWindowForTarget');
+    await s.send('Browser.setWindowBounds', { windowId, bounds: { width: w + dw, height: h + dh } });
+  } catch { }
+}
+
 async function main() {
   if (cmd === 'start') {
     const [w = 1280, h = 720] = args.map(Number);
@@ -121,6 +132,7 @@ async function main() {
     for (let i = 0; i < 40; i++) { try { await pageWs(); break; } catch { await sleep(250); } }
     const s = await session();
     await s.send('Page.enable');
+    await fitWindow(s, w, h);
     writeFileSync(join(DIR, 'size'), `${w} ${h}`);
     s.close(); console.log(`已启动 无头 Chrome 端口 ${PORT}，视口 ${w}×${h}`); return;
   }
@@ -152,6 +164,9 @@ async function main() {
       case 'size': {
         const [w, h] = args.map(Number);
         writeFileSync(join(DIR, 'size'), `${w} ${h}`);
+        // 视口覆盖在每条命令断开后失效，期间页面会退回真实窗口尺寸（无头窗口还扣掉一截“浏览器边框”高度），
+        // 读数会被夹到小窗口的滚动上限（B34 试玩 B1 的 scrollTop 回弹即此）。这里把真实窗口也调到同样的内容尺寸。
+        await fitWindow(s, w, h);
         await s.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
         await sleep(300); console.log(`视口 ${w}×${h}`); break;
       }

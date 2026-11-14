@@ -124,6 +124,22 @@ public class B34bBattleFxTests : BattleTestBase
 
     /// <summary>Q573-A01：新生效的状态名取真实状态（与站位角标同名），出手前已有的不重复算。</summary>
     [Test]
+    public void Q573_FlashMarker_ResultCarriesMarkState()
+    {
+        // B34 试玩修复 B3：闪光标记器特写的结果条带新挂上的「标记」（与战场角标同一判断）
+        var s = Fight(2251, "shambler");
+        ToPlayer(s);
+        Assume.That(E.AwaitingPlayer(s));
+        E.CreateItems(s, "flash_marker", 1, ItemInstance.Carried);
+        var t = s.Battle!.Alive.First();
+        Assume.That(GameEngine.EnemyMarked(s.Battle!, t), Is.False);
+        E.DrainBattleFx();
+        Assert.That(E.ExecuteCommand(s, BattleCommand.Of("tactic_flash_marker", t.Index)).Ok, Is.True);
+        var ev = E.DrainBattleFx().Single(x => !x.Short && x.Actor.IsAlly);
+        Assert.That(ev.Results.Single().States, Does.Contain("标记"));
+    }
+
+    [Test]
     public void Q573_States_OnlyNewlyApplied()
     {
         var s = Fight(15, "shambler");

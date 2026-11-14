@@ -2705,6 +2705,10 @@ public sealed partial class GameSession
         var wasOpen = BattleDrawer != null;
         BattleDrawer = BattleDrawer == drawer ? null : drawer;
         if (wasOpen && BattleDrawer == null) AfterBattleDrawerClosed();   // B34a：只读子页返回焦点回发起入口
+        _drawerBattle = BattleDrawer != null ? S.Battle : null;   // B34 试玩修复 B2：收束时从这里取本场记录
+        // B34 试玩修复 E4：子页占场景与操作台两行，打开时页面回到顶部，让标题、副标与「返回战斗」在视口内；关回时阅读区仍开着就滚回阅读区
+        if (!wasOpen && BattleDrawer != null) BattleScrollTo = "top";
+        else if (wasOpen && BattleDrawer == null && BattleInfoPage != null) BattleScrollTo = "info";
         if (BattleDrawer == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturnStatus = null; }
         MedTrayOpen = false;
         Notify();
@@ -2929,6 +2933,8 @@ public sealed partial class GameSession
         ClearPairDraft();
         BattleShownActor = null;
         ResetBattleInfoUi();   // B34a：阅读区回默认收起
+        EndedLog = null;   // B34 试玩修复 B2：读档、新局、新场次不留上一场的只读记录页
+        _drawerBattle = null;
     }
 
     /// <summary>当前所选指令（B9a：带下指令的成员 = 正在激活的那一名；友方目标技能带所点的我方成员）。</summary>
@@ -3127,6 +3133,10 @@ public sealed partial class GameSession
             E.DrainBattleFx();   // B34b：只播这一次提交产生的出手
             var res = E.ExecuteCommand(S, cmd);
             var fx = E.DrainBattleFx();
+            // B34 试玩修复 E2（Q572-A01）：这一条指令让战斗收束（撤退成功等）且行动者有短反馈——先冻结战斗画面亮完短反馈，再露出收束画面
+            var closing = res.Ok && !res.Duplicate && State != null && S.Battle == null && !S.Progress.Dead
+                ? fx.LastOrDefault(x => x.Short && x.Actor.IsAlly) : null;
+            if (closing != null) BeginClosingHold(closing);
             Notice = res.Ok ? null : res.Reason;
             // Q105：整队提交时目标或号位已变化——整条拒绝、清掉草稿让玩家重选，不自动改选别人
             if (!res.Ok && cmd.AllyTarget2 != null) ClearPairDraft();
@@ -3146,7 +3156,8 @@ public sealed partial class GameSession
             Commit();
             Notify();
             // B34b（R03 §Q572）：真实结果已提交、已存档；再播这次出手的特写（期间仍锁指令，播完或跳过后才承接对白、收束或下一场画面）
-            if (res.Ok && !res.Duplicate) await PlayFx(fx);
+            if (closing != null) { await RunClosingHold(gen); if (gen == _fxGen) Notify(); }
+            if (res.Ok && !res.Duplicate && gen == _fxGen) await PlayFx(closing != null ? fx.Where(x => x != closing).ToList() : fx);
             if (gen == _fxGen && (State == null || S.Battle == null || chainedNow || E.AwaitingPlayer(S) || DialogueLocked)) ClearFxSkip();
         }
         finally
@@ -3437,7 +3448,9 @@ public sealed partial class GameSession
     /// <summary>战斗结束（胜利、撤退、玩家指令直接结束）后的界面收尾：清指令与目标、悬停预测；没有选中对象时右栏回人物页（与 v0.7 试玩修复 B11 同一规则）。</summary>
     private void OnBattleEnded()
     {
+        var ended = TakeEndedLog();   // B34 试玩修复 B2：自然收束时开着的全记录持有本场最终只读内容
         ResetBattleUi();
+        EndedLog = ended;
         ReconcileSelection();
         ClearHoverNow();
         if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;

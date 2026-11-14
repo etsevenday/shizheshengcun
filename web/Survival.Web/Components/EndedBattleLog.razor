@@ -1,0 +1,47 @@
+@inherits GameComponent
+@inject IJSRuntime JS
+@* B34 试玩修复 B2（S14 Q528.2 末段；逐字稿 Q528 记录页表；05 F06-R）：自然胜利／撤退收束时已打开的「战斗记录」持有本场最终只读内容，
+   标「本场战斗已结束。」，返回改「返回当前画面」（ESC 同效）；只读、屏蔽背后输入，不自动跳看另一场。 *@
+@if (G.EndedLog is { } v)
+{
+    <div class="ended-log-mask">
+        <div class="bfs-drawer ended-log" role="dialog" aria-modal="true" aria-label="@BattleInfoCopy.LogTitle">
+            <div class="bfs-drawer-head">
+                <h2>@BattleInfoCopy.LogTitle<small class="bfs-drawer-sub">@BattleInfoCopy.LogSubtitle(v.Lines.Count, v.MayBeIncomplete)</small></h2>
+                <button type="button" class="secondary" id="blog-ended-back" @onclick="G.CloseEndedLog">@BattleInfoCopy.BackToCurrent<EscCap On="@(G.EscOwner == EscOwner.EndedLog)" /></button>
+            </div>
+            <p class="blog-ended" role="status">@BattleInfoCopy.BattleEnded</p>
+            <div class="bfs-drawer-body" id="blog-ended-body" data-wheel="y">
+                @if (v.MayBeIncomplete) { <p class="blog-legacy" role="note">@BattleInfoCopy.LegacyMissing</p> }
+                @if (v.Lines.Count == 0) { <p class="bi-empty">@BattleInfoCopy.LogEmpty</p> }
+                else
+                {
+                    <ol class="notes bfs-full-log">
+                        @for (var i = 0; i < v.Lines.Count; i++)
+                        {
+                            <li @key="i">@BattleInfoCopy.RoundWords(v.Lines[i])</li>
+                        }
+                    </ol>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private EndedBattleLogView? _shown;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // 新持有的一份：停在本场最新一条，焦点交给「返回当前画面」
+        if (G.EndedLog == null || ReferenceEquals(_shown, G.EndedLog)) return;
+        _shown = G.EndedLog;
+        try
+        {
+            await JS.InvokeVoidAsync("survivalBattleUi.logBottom", "blog-ended-body");
+            await JS.InvokeVoidAsync("survivalBattleUi.focus", "blog-ended-back", null, false);
+        }
+        catch (JSException) { }
+        catch (InvalidOperationException) { }
+    }
+}

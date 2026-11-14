@@ -627,9 +627,26 @@ public static class HelpCatalog
                     Figures = (e, s) =>
                     {
                         var weaponArt = e.WeaponOnPage(s, s.Battle?.ActiveWeaponSlot ?? e.DefaultWeaponPage(s), out _)?.ItemId ?? "fists";
-                        return e.CompatibleCommands(s)
-                            .Select(o => new HelpFigure(o.NodeId != null ? weaponArt : CmdIcon(o.Action), o.Label,
+                        // B34 试玩修复 B4（Q578／Q580）：清单与操作台一致——按目的号位拆出的「调整站位」只列一张（费用同源，有一个可去的号位即可用），
+                        // 名称用卡面短名（调息等，GameSession.BattleShortName），技能仍用节点名
+                        var all = e.CompatibleCommands(s).ToList();
+                        var swaps = all.Where(o => o.Action == "swap").ToList();
+                        var swapOk = swaps.FirstOrDefault(o => o.Available);
+                        var list = new List<HelpFigure>();
+                        foreach (var o in all)
+                        {
+                            if (o.Action == "swap")
+                            {
+                                if (o != swaps[0]) continue;
+                                var any = swapOk ?? o;
+                                list.Add(new HelpFigure(CmdIcon("swap"), GameSession.BattleShortName(new BattleCommandOption { Action = "swap" }),
+                                    $"{any.Ap}AP" + (swapOk != null ? "" : $" · {o.Reason}")));
+                                continue;
+                            }
+                            list.Add(new HelpFigure(o.NodeId != null ? weaponArt : CmdIcon(o.Action), o.NodeId != null ? o.Label : GameSession.BattleShortName(o),
                                 (o.Ap < 0 ? "用掉剩余AP" : $"{o.Ap}AP") + (o.CooldownRounds > 0 ? $" · 冷却{o.CooldownRounds}回合" : "") + (o.EffectText != null ? $" · {o.EffectText}" : "") + (o.Available ? "" : $" · {o.Reason}")));
+                        }
+                        return list;
                     },
                 },
                 new HelpEntry

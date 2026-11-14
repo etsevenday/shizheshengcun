@@ -10,7 +10,7 @@
     // 战斗与敌踪选择：顶栏地图/制作/休息/日志入口锁定（v0.5 §16），覆盖层替换地块栏两行
     var battleUi = G.InBattleUi;
     // B9 全屏四对四战斗（A10 §1.2）：战斗中整个应用内容区由 BattleScreen 覆盖，外层顶栏/左右栏/地面随身/底栏留在下面不可操作
-    var fullBattle = G.BattleFullscreen && !s.Progress.Dead;
+    var fullBattle = (G.BattleFullscreen || G.BattleClosingHold) && !s.Progress.Dead;   // B34 试玩修复 E2：收束前短反馈停留期间战斗画面仍在（冻结）
     // 对话读完锁（Q10、S14 §10.1）：整局游戏输入锁定，未被对话层盖住的区域只保持可见
     var dlgLock = G.DialogueLocked;
     var navOff = battleUi || dlgLock;
@@ -200,6 +200,10 @@
 <DropQuantity />
 <EndScreens />
 @* B34b（R03 §Q572）：战斗已经收束（胜利、撤退、死亡）时，最后几段特写在结算画面之上播完或被跳过，再露出收束画面；菜单在它之上 *@
+@* B34 试玩修复 B2（S14 Q528.2）：自然胜利／撤退收束时已打开的全记录持有本场最终只读内容；最后几段特写仍在它之上播完 *@
+@if (G.EndedLog != null && !G.InBattleUi && !G.BattleClosingHold && !G.S.Progress.Dead) { <EndedBattleLog /> }
+@* B34 试玩修复 E2（Q572-A01）：撤退成功等收束前的短反馈停留——透明层接住点击／Enter／Space／ESC（结束停留），不穿透到冻结的战斗画面 *@
+@if (G.BattleClosingHold) { <div class="bfx-hold" data-active @onclick="G.SkipClosingHold"></div> }
 @if (G.PlaybackActive && !G.InBattleUi) { <BattleFxLayer /> }
 @if (G.MenuOpen && G.S.Progress.Dead)
 {
@@ -232,8 +236,19 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>B34 试玩修复 E2：收束前短反馈停留期间外壳照常绘制（承接透明层、点亮冻结画面上的锚点）。</summary>
+    protected override bool RenderDuringClosingHold => true;
+
+    private object? _holdShown;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (G.ClosingPulse is { } hp && !ReferenceEquals(hp, _holdShown))
+        {
+            _holdShown = hp;
+            try { await JS.InvokeVoidAsync("survivalBattleUi.holdPulse", hp.Actor.Side, hp.Actor.Id, hp.Name); }
+            catch (JSException) { }
+        }
         // 对话出现：取消未提交的拖拽（物品保持原归属，不补一次松手），收起键盘焦点，避免回车/空格落到背后的按钮（S07 §7）
         var locked = G.DialogueLocked;
         if (locked && !_lockSeen)
@@ -392,10 +407,12 @@
     public void OnKey(string key)
     {
         if (G.State == null) return;
+        if (G.BattleClosingHold) { if (key is "Skip" or "Escape") G.SkipClosingHold(); return; }   // B34 试玩修复 E2
         if (key == "Escape") { Escape(); return; }
         // B34b（S14 Q572）：特写播放层独占画面点击、Enter、Space——一次输入只走一级跳过
         if (key == "Skip") { G.PlaybackSkip(); return; }
         if (G.PlaybackActive && !G.FxUnderReading) return;
+        if (G.EndedLog != null && !G.InBattleUi) return;   // B34 试玩修复 B2：只读记录页屏蔽背后快捷键，只认 ESC
         // 死亡结算（B31d Q333）：只有 Esc（同结算页「菜单」键），其余快捷键无效
         if (G.S.Progress.Dead) return;
         // 对话读完锁（Q10、S14 §10.1）与菜单打开时：快捷键全部无效，只有 Esc（开关菜单）
@@ -478,6 +495,7 @@
     {
         switch (G.NormalEscOwner())
         {
+            case EscOwner.EndedLog: G.CloseEndedLog(); break;
             case EscOwner.DropQty: G.CancelDropQuantity(); break;
             case EscOwner.Status: G.PinStatus(null); break;
             // B31d（Q338）：居中局部盘是当前操作层，Esc 先撤回本盘（同点遮罩），焦点回到触发控件

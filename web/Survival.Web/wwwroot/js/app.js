@@ -358,7 +358,7 @@ window.survival = {
       }
       // B34b（S14 Q572）：战斗特写播放层在最上层时，Enter／Space 是跳过（按住不重复、一次只走一级），ESC 打开菜单，其余键不穿透到背后的战斗、对白或结算；
       // 只读子页盖在播放层上面时（.under）按键归子页，照原规则处理
-      var fxl = document.querySelector('.bfx-layer[data-active]');
+      var fxl = document.querySelector('.bfx-layer[data-active], .bfx-hold[data-active]');
       if (fxl && !fxl.classList.contains('under')) {
         if (mod) return;
         if (k === 'Escape') { send('Escape'); return; }
@@ -1255,6 +1255,17 @@ window.survivalBattleUi = (function () {
       if (!usable(el)) { if (requireEnabled) return; el = byId(fallback); }
       if (!el || (el.closest && el.closest('[inert]'))) return;
       try { el.focus({ preventScroll: true }); } catch (e) { }
+    },
+    // B34 试玩修复 E2（Q572-A01）：战斗已收束、画面冻结在最后一帧时，在行动者锚点上亮一次短反馈（同 .fx-pulse 与行动名牌）
+    holdPulse: function (side, id, name) {
+      var a = side === 'ally' ? document.querySelector('.bfs .anc.ally[data-actor="' + id + '"]')
+        : document.getElementById('foe-' + String(id).replace(/^e/, ''));
+      if (!a) return false;
+      a.classList.remove('fx-pulse', 'a', 'b'); void a.offsetWidth; a.classList.add('fx-pulse', 'a');
+      var old = a.querySelector('.fx-pulse-name'); if (old) old.remove();
+      var tag = document.createElement('span'); tag.className = 'fx-pulse-name'; tag.setAttribute('aria-hidden', 'true'); tag.textContent = name;
+      var art = a.querySelector('.anc-art'); if (art) a.insertBefore(tag, art); else a.appendChild(tag);
+      return true;
     },
     // 展开阅读区时把它滚进视野；收起时战斗内容区回到顶部（原战场阅读位置）。
     scroll: function (where) {

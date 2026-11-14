@@ -23,7 +23,7 @@
         </div>
         @if (G.FxSkipLabel is string label)
         {
-            <button type="button" class="bfx-skip" title="@G.FxSkipNote" @onclick="G.PlaybackSkip" @onclick:stopPropagation="true">@label<kbd class="keycap">@ShellKeys.EnterSpaceCap</kbd></button>
+            <button type="button" class="secondary bfx-skip" title="@G.FxSkipNote" @onclick="G.PlaybackSkip" @onclick:stopPropagation="true">@label<kbd class="keycap">@ShellKeys.EnterSpaceCap</kbd></button>
         }
     </div>
 }

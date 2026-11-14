@@ -33,6 +33,10 @@ namespace Survival.Core.Engine
         public static string NewRecords(int count) => $"有{count}条新记录";
         public const string LegacyMissing = "旧存档中的较早战斗记录可能未保存，以下为已保存内容。";
         public const string BackToBattle = "返回战斗";
+        /// <summary>逐字稿「自然战斗结束、已打开记录页的状态」（S14 Q528.2）。</summary>
+        public const string BattleEnded = "本场战斗已结束。";
+        /// <summary>逐字稿「自然战斗已收束时记录页返回」。</summary>
+        public const string BackToCurrent = "返回当前画面";
         public const string NoPreview = "当前没有可查看的指令预测。";
 
         // Q528.3 提示

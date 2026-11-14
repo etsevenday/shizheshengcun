@@ -40,6 +40,8 @@ public enum EscOwner
     CharPage,
     Selection,
     FeedTail,
+    /// <summary>B34 试玩修复 B2：战斗自然收束后仍开着的只读「战斗记录」页（「返回当前画面」）。</summary>
+    EndedLog,
     // 全屏战斗（BattleEscape 的顺序）
     MedTray,
     BattleHelp,
@@ -95,6 +97,7 @@ public sealed partial class GameSession
     /// </summary>
     public EscOwner NormalEscOwner()
     {
+        if (EndedLog != null) return EscOwner.EndedLog;   // B34 试玩修复 B2：收束后的只读战斗记录页在最上层
         if (PendingDrop != null) return EscOwner.DropQty;
         if (StatusPinned != null) return EscOwner.Status;
         if (DiskMaskShown) return EscOwner.Disk;

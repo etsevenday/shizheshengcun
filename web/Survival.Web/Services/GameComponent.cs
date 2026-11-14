@@ -15,5 +15,13 @@ public abstract class GameComponent : ComponentBase, IDisposable
 
     private void OnSessionChanged() => InvokeAsync(StateHasChanged);
 
+    /// <summary>
+    /// B34 试玩修复 E2：战斗收束前的短反馈停留中，界面组件一律不重绘（战斗画面冻结在提交前最后一帧，背后组件也不读已收束的战斗）；
+    /// 只有承接停留与收束的外壳（GameScreen）照常绘制。
+    /// </summary>
+    protected virtual bool RenderDuringClosingHold => false;
+
+    protected override bool ShouldRender() => !G.BattleClosingHold || RenderDuringClosingHold;
+
     public virtual void Dispose() => G.Changed -= OnSessionChanged;
 }

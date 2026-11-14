@@ -74,10 +74,32 @@ public sealed partial class GameSession
     {
         if (evs.Count == 0) return false;
         var gen = _fxGen;
-        foreach (var ev in evs.Where(x => x.Short)) Pulse(ev, gen);
-        var main = evs.Where(x => !x.Short && x.Results.Count > 0).ToList();
-        if (main.Count == 0) return false;
+        // B34 试玩修复 E1（R03 §Q572 按真实顺序）：短反馈与特写按发生先后排——短反馈先亮，特写要等锚点上的短反馈播完再盖上来
+        var played = false;
+        var run = new List<BattleFxEvent>();
+        foreach (var ev in evs.OrderBy(x => x.Seq))
+        {
+            if (gen != _fxGen) return played;
+            if (ev.Short)
+            {
+                if (run.Count > 0) { played |= await PlayRun(run, gen); run.Clear(); }
+                if (gen != _fxGen) return played;
+                Pulse(ev, gen);
+                Notify();
+            }
+            else if (ev.Results.Count > 0) run.Add(ev);
+        }
+        if (run.Count > 0) played |= await PlayRun(run, gen);
+        return played;
+    }
+
+    /// <summary>一串相邻的特写：先等此前的短反馈播完（不叠在它上面），再逐段排队播放。</summary>
+    private async Task<bool> PlayRun(List<BattleFxEvent> main, int gen)
+    {
         if (_fxSkipAll) return true;   // 本批已选择跳过余下：结果照常（已结算），只略动画
+        while (gen == _fxGen && !_fxSkipAll && NowMs < _fxPulseUntilMs) await Task.Delay(30);
+        if (gen != _fxGen) return false;
+        if (_fxSkipAll) return true;
         foreach (var ev in main) _fxQueue.Enqueue(ev);
         var sw = Stopwatch.StartNew();
         try
@@ -148,6 +170,8 @@ public sealed partial class GameSession
         FxAtResult = false;
         FxPulses.Clear();
         _fxPulseNames.Clear();
+        _fxPulseUntilMs = 0;
+        EndClosingHold();
         E.DrainBattleFx();
     }
 
@@ -158,7 +182,45 @@ public sealed partial class GameSession
         var seq = FxPulses.TryGetValue(key, out var v) ? v + 1 : 1;
         FxPulses[key] = seq;
         _fxPulseNames[key] = ev.Name;
+        _fxPulseUntilMs = Math.Max(_fxPulseUntilMs, NowMs + MotionMs(FxPulseBaseMs) + 50);   // 与 ClearPulse 撤下名牌同一时刻
         _ = ClearPulse(key, seq, gen);
+    }
+
+    /// <summary>B34 试玩修复 E1：锚点上最后一个短反馈播完的时刻（特写要等它）。</summary>
+    private long _fxPulseUntilMs;
+
+    // ── B34 试玩修复 E2（R03 §Q572、验收 Q572-A01）：撤退成功等「一条指令就收束战斗」时，行动者短反馈先在原战斗画面上播完（或被跳过）再收束 ──
+    private TaskCompletionSource? _holdTcs;
+
+    /// <summary>收束前的短反馈停留中：战斗画面冻结在提交前最后一帧（不重绘、不受理背后输入），只在行动者锚点上亮一次行动名。</summary>
+    public bool BattleClosingHold { get; private set; }
+
+    /// <summary>停留中要亮的那条短反馈（界面在渲染后交给脚本点亮冻结画面上的锚点）。</summary>
+    public BattleFxEvent? ClosingPulse { get; private set; }
+
+    /// <summary>画面点击、Enter、Space、ESC：结束停留，直接收束（不重结算）。</summary>
+    public void SkipClosingHold() => _holdTcs?.TrySetResult();
+
+    private void BeginClosingHold(BattleFxEvent ev)
+    {
+        BattleClosingHold = true;
+        ClosingPulse = ev;
+        _holdTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    private async Task RunClosingHold(int gen)
+    {
+        var tcs = _holdTcs;
+        if (tcs != null) await Task.WhenAny(Task.Delay(MotionMs(FxPulseBaseMs) + 50), tcs.Task);
+        if (gen == _fxGen) EndClosingHold();
+    }
+
+    private void EndClosingHold()
+    {
+        _holdTcs?.TrySetResult();
+        _holdTcs = null;
+        ClosingPulse = null;
+        BattleClosingHold = false;
     }
 
     private async Task ClearPulse(string key, int seq, int gen)
