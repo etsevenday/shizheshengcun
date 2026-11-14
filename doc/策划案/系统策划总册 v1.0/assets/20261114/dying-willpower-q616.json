@@ -1,7 +1,7 @@
 {
-  "contractVersion": 5,
+  "contractVersion": 6,
   "date": "2026-11-15",
-  "purpose": "Q616及已答濒死补充合同，含Q690—Q697成长与生命反馈；唯一正文R09，不是运行配置或已实装声明",
+  "purpose": "Q616及已答濒死补充合同，含Q698—Q699健康提醒与世界段日志；唯一正文R09，不是运行配置或已实装声明",
   "scope": {
     "friendlyActors": [
       "protagonist",
@@ -485,6 +485,51 @@
       "Q695-A01",
       "Q696-A01",
       "Q697-A01"
+    ]
+  },
+  "q698Q699": {
+    "decisions": {
+      "Q698": "A",
+      "Q699": "A"
+    },
+    "dyingHealthAlert": {
+      "suppressOldHealthLowAlertAndPauseWhileDying": true,
+      "notJustHideText": true,
+      "otherStatAlertsUnchanged": true,
+      "normalPositiveHealthThresholdUnchanged": true,
+      "thresholdLatch": "maintain_original_below_truth; rearm_only_original_clear_condition",
+      "dyingEntryLatchUnchanged": true,
+      "noDeferredPauseUnchanged": true,
+      "existingCommittedPauseAndLogsPreserved": true
+    },
+    "worldLifeLogTime": {
+      "timestamp": "actual_committed_world_segment_end_minute_E",
+      "normallyMinutesAfterStart": 5,
+      "categories": [
+        "enter_dying",
+        "resist_death",
+        "legal_medical_leave_dying",
+        "failed_resist_with_original_actual_death_result"
+      ],
+      "actualDamageOrderAndClockUnchanged": true,
+      "allRealFriendlyActorsSamePolicy": true,
+      "perEventLogsAndOriginalOrderUnchanged": true,
+      "instantMedicalAndZeroTimeBattle": "original_current_minute_no_plus_five",
+      "oldLogsRewritten": false,
+      "playbackTimeSubstitutesEventTime": false,
+      "addsWorldTick": false
+    },
+    "readOnly": {
+      "mutateState": false,
+      "consumeRandom": false,
+      "appendLogs": false,
+      "changeAlertLatches": false
+    },
+    "acceptance": [
+      "Q698-A01",
+      "Q698-A02",
+      "Q699-A01",
+      "Q699-A02"
     ]
   }
 }

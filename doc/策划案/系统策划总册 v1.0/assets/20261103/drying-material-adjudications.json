@@ -1,6 +1,6 @@
 {
-  "version": "q214_q215_20261103",
-  "date": "2026-11-03",
+  "version": "q214_q215_q666_20261115",
+  "date": "2026-11-15",
   "rules": {
     "Q214": "选A。系统从主角随身与当前区地面自动配料，同种优先原截止可撑到完成的批，预览逐条明示来源/实例/保质，确认0分钟投料；不取队友包/屋柜/异地。快到期果干原料仅警告不拒绝；肉干因Q215已受保护，展示暂停计时说明，不再虚报制作中腐败。",
     "Q215": "按用户新裁定：肉干开始生产后原料停止腐败，仅作用本批肉干在制期间；投料前已腐败仍拒绝，取消按投料时剩余保质时长恢复，盐退回；成功完成后肉干按168小时正常计时。果干不变；旧已腐败批不复活，旧未腐败在制批从升级时剩余开始保护。"
@@ -45,5 +45,45 @@
       "id": "DRY-Q215-03",
       "criterion": "果干原料仍会在原截止腐败停止；旧已腐败肉批不复活/清理盐仅退一次；旧未腐败在制升级从升级时余量保护，反复读档不多加保质或产物。"
     }
-  ]
+  ],
+  "q666CurrentPriority": {
+    "decision": "user_all_drying_inputs_protected",
+    "followups": {
+      "cancel": "A",
+      "otherUnprotectedWorkLogs": "A"
+    },
+    "supersedes": "Q170/Q214/Q215 fruit_in_progress_spoils_and_meat_only_pause_scope; original selection/recipes/xp unchanged",
+    "scope": "all_actual_started_drying_recipe_inputs_only",
+    "remainingMinutes": "R = originalExpiry - successfulStartMinute; require R > 0; no expiry remains no expiry",
+    "cancelExpiry": "actualReturnMinute + savedR",
+    "initialRDoesNotDecreaseWhileInProgress": true,
+    "refreshFullShelfLife": false,
+    "zeroTimePreviewGrantsProtection": false,
+    "originalWorldPassiveProcessingUnchanged": true,
+    "originalReturnCapacityAndPermissionsUnchanged": true,
+    "successfulOutputsProtected": false,
+    "existingFruitAndMeatOutputExpiryMinutes": 10080,
+    "alreadySpoiledItemsRevived": false,
+    "copy": {
+      "note": "开始制作后暂停原料保质计时，取消后恢复剩余时长",
+      "remaining": "保质暂停，剩余{时长}",
+      "cancel": "取消后恢复投料时剩余的保质时长；已过制作时间不退，没有成品，不给经验。",
+      "help": "晾制中的所有原料暂停保质计时，取消后恢复投料时的剩余保质；晾好的成品从完成时起正常计时，留在架上也会到期。",
+      "unprotectedWorkClause": "腐败部分已变为腐败物。"
+    },
+    "migration": {
+      "existingTrustedMeatR": "preserve_without_recalculation",
+      "oldValidUnprotectedInProgress": "only_if_not_due_at_upgrade_U; R = oldExpiry - U",
+      "alreadyDueOrSpoiledOrFailed": "original_due_conversion_and_failure_no_resurrection",
+      "completedAndAwarded": "preserve",
+      "repeatLoadAddsShelfLife": false
+    },
+    "acceptance": [
+      "Q666-A01",
+      "Q666-A02",
+      "Q666-A03",
+      "Q666-A04",
+      "Q666-A05"
+    ]
+  }
 }
