@@ -1,0 +1,133 @@
+{
+  "contractVersion": 1,
+  "date": "2026-11-14",
+  "purpose": "Q616策划合同，唯一正文R09；不是运行配置或已实现声明",
+  "scope": {
+    "friendlyActors": [
+      "protagonist",
+      "recruited_party",
+      "roster_reserve"
+    ],
+    "enemiesHaveDying": false,
+    "serviceNpcEligibilityUnchanged": true,
+    "independentZombificationUnchanged": true
+  },
+  "lifeStates": [
+    "normal",
+    "dying",
+    "dead"
+  ],
+  "damagePolicy": {
+    "healthPositiveToZero": "enter_dying_without_death_roll",
+    "dyingAndFinalDamagePositive": "one_resistance_roll_per_real_damage_event",
+    "zeroDamageRolls": 0,
+    "compareUnroundedDamageStrictlyGreaterThan": 0,
+    "minimumStoredHealth": 0,
+    "overkillBypassesDying": false,
+    "multiHit": "each_later_positive_hit_can_roll; never_retarget_locked_dead_target",
+    "worldRateDamage": "aggregate_negative_health_rates_once_per_actor_per_original_5_minute_rate_phase",
+    "bleed": "separate_original_damage_event_after_rate_phase",
+    "positiveAndNegativeRatesNetBeforeDamage": false,
+    "replayOrPreviewConsumesRandom": false,
+    "commitKey": [
+      "damageEventId",
+      "actorId"
+    ]
+  },
+  "willpower": {
+    "skillId": "willpower",
+    "name": "意志",
+    "growthGroup": "求生与行动",
+    "trackOnly": true,
+    "initialLevel": 1,
+    "initialXp": 0,
+    "minLevel": 1,
+    "maxLevel": 10,
+    "resistanceFormula": "(65 + 2 * (L - 1)) / 100",
+    "resistanceByLevel": [
+      0.65,
+      0.67,
+      0.69,
+      0.71,
+      0.73,
+      0.75,
+      0.77,
+      0.79,
+      0.81,
+      0.83
+    ],
+    "deathProbabilityFormula": "1 - resistance",
+    "randomRange": "[0,1)",
+    "survivalComparison": "u < resistance",
+    "equalThresholdMeansDeath": true,
+    "resistanceDecreasesAfterSurviving": false,
+    "xpThresholdFormula": "50 * (L + 1)",
+    "totalXpLevel1To10": 2700,
+    "xpPerQualifiedEnemyAction": 10,
+    "maxAwardsPerActorPerWorldEnemy": 3,
+    "maxActualXpPerActorPerWorldDay": 60,
+    "xpSource": "real_hostile_enemy_positive_direct_damage_and_recipient_alive_at_whole_action_commit",
+    "multiHitXp": "at_most_one_award_per_recipient_per_whole_enemy_action",
+    "actualXpFormula": "min(10, remainingDailyXp, remainingXpToLevel10)",
+    "zeroActualXpOccupiesReceipt": false,
+    "nonSources": [
+      "bleed",
+      "disease",
+      "hunger",
+      "thirst",
+      "environment",
+      "self_damage",
+      "friendly_damage",
+      "miss",
+      "zero_damage",
+      "resisting_itself"
+    ],
+    "levelUpTiming": "after_whole_original_action; never_recalculate_prior_death_rolls",
+    "resistancePercentPointsFormula": "65 + 2 * (L - 1), integer"
+  },
+  "dyingPermissions": {
+    "originalLegalBattleActions": true,
+    "originalLegalWorldActions": true,
+    "newStatDebuffs": false,
+    "recoveryDebuffs": false,
+    "countsAsLivingForRosterTargetsAndQueue": true,
+    "healthRegenerationAllowed": false,
+    "otherOriginalRecoveryUnchanged": true,
+    "allFriendlyHealthZeroMeansDefeat": false,
+    "normalResourceCooldownAndPositionChecksRemain": true
+  },
+  "recovery": {
+    "allowedOrigins": [
+      "original_legal_medicine",
+      "original_legal_medical_skill",
+      "existing_medical_service"
+    ],
+    "requiresActualHealthGain": true,
+    "resultingHealthStrictlyGreaterThan": 0,
+    "noHealthGainStatusTreatmentEndsDying": false,
+    "naturalRecoveryDebtAccumulates": false,
+    "medicineCostsAndCooldownsUnchanged": true,
+    "confirmedDeadCanRevive": false
+  },
+  "presentation": {
+    "stateChangesHaveCloseup": [
+      "normal_to_dying",
+      "dying_to_normal",
+      "living_to_dead"
+    ],
+    "mergeIntoExistingAttackOrHealResult": true,
+    "standaloneBleedOrWorldLifeChangeCloseup": true,
+    "enemyRemovedFromDisplayAtDeathResult": true,
+    "enemyBattleCorpseBlocksAttacks": false,
+    "originalGroundLootUnchanged": true,
+    "q617HudFollowsPlayback": true,
+    "saveAndAuthorityAlwaysUseCommittedDomain": true
+  },
+  "migration": {
+    "confirmedOldDeadRemainDead": true,
+    "missingWillpowerForLiving": "level1_xp0_once",
+    "oldLivingHealthZero": "dying_without_retroactive_roll",
+    "retroactiveXpOrDeathRolls": false,
+    "existingDomainStateAndRandomPreserved": true
+  }
+}
