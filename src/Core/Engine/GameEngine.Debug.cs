@@ -263,7 +263,7 @@ namespace Survival.Core.Engine
             foreach (var i in CreateItems(s, "raw_meat", 1, ItemInstance.Carried)) i.ExpiresAt = due;
             Normalize(s, here);
             Normalize(s, ItemInstance.Carried);
-            var text = $"开发：腐败测试物资——当前地面野果早批2份（{minutes}分钟后到期）与晚批6份、草药2份与野狗尸体1具（{minutes}分钟后到期），随身生肉1份（{minutes}分钟后到期）。";
+            var text = $"开发：腐败测试物资——当前地面野果早批2份（{minutes}分钟后到期）与晚批6份、草药2份与{ItemName("carcass_feral_dog")}1具（{minutes}分钟后到期），随身生肉1份（{minutes}分钟后到期）。";
             Emit(s, GameEventKind.Info, text);
             return text;
         }

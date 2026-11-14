@@ -622,4 +622,43 @@ public class BM5b2Tests : TestBase
         var fac = Web("Services", "GameSession.FacMenu.cs");
         Assert.That(fac, Does.Contain("E.Groupable(it) ? $\"g:{it.Owner}|{it.ItemId}|{E.CardSideOf(it)}\" : $\"i:{it.InstanceId}\""), "稳定键为来源组键");
     }
+
+    /// <summary>试玩修复 B1：新转换的腐败物与同地已有同键腐败物合堆时，日志写本次实际转换份数（原位句与随身满落地句），不写合堆后的残余数；开发箱日志按实际物品名。</summary>
+    [Test]
+    public void Fix_B1_SpoilLogCountsActualConversion_WhenMergedIntoExistingRot()
+    {
+        var s = New();
+        var n0 = s.Log.Count;
+        E.DebugSpoilageKit(s, 5);
+        Assert.That(LogSince(s, n0).Single(), Does.Contain($"{E.ItemName("carcass_feral_dog")}1具").And.Not.Contain("野狗"));
+        WaitUntil(s, s.GameMinute + 5);
+        var berry0 = Rotten(s, "berry", "camp");
+        Assert.That(berry0, Is.EqualTo(2));
+        // 不移走旧腐败物，再来一批：合进同地已有的同键腐败物
+        var due = s.GameMinute + 5;
+        Make(s, "berry", 2, "camp", due);
+        Make(s, "herb", 2, "camp", due);
+        var n1 = s.Log.Count;
+        WaitUntil(s, due);
+        Assert.That(Rotten(s, "berry", "camp"), Is.EqualTo(4), "实物合堆数量正确");
+        var log = LogSince(s, n1);
+        Assert.That(log, Has.Some.EqualTo("野果×2已腐败，变为腐败物×2。"));
+        Assert.That(log, Has.Some.EqualTo("草药×2已腐败，变为腐败物×2。"));
+        Assert.That(log, Has.None.Contains("×0"));
+
+        // 随身满落地并合进地面已有的同键腐败物
+        var t = New();
+        CarriedCards(t, 4);
+        var d1 = t.GameMinute + 5;
+        Make(t, "raw_meat", 1, ItemInstance.Carried, d1);
+        WaitUntil(t, d1);
+        Assert.That(Rotten(t, "raw_meat", "camp"), Is.EqualTo(1));
+        var d2 = t.GameMinute + 5;
+        Make(t, "raw_meat", 2, ItemInstance.Carried, d2);
+        var m0 = t.Log.Count;
+        WaitUntil(t, d2);
+        Assert.That(Rotten(t, "raw_meat", "camp"), Is.EqualTo(3));
+        Assert.That(LogSince(t, m0), Has.Some.EqualTo("你的生肉×2已腐败，变为腐败物并放在临时营地地面。"));
+        Assert.That(LogSince(t, m0), Has.None.Contains("×0"));
+    }
 }

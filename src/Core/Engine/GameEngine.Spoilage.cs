@@ -72,7 +72,8 @@ namespace Survival.Core.Engine
             var carriers = due.Select(i => CarrierOf(i.Owner)).Where(a => a != null).Select(a => a!).Distinct().ToList();
             var before = carriers.ToDictionary(a => a, a => cardSnapshot != null && cardSnapshot.TryGetValue(a, out var n) ? n : RootCardCountOf(s, a));
             var work = new HashSet<int>(due.Where(i => WorkOwned(s, i)).Select(i => i.InstanceId));
-            var origin = due.ToDictionary(i => i.InstanceId, i => (Item: i.ItemId, Owner: i.Owner));
+            // 原物、原归属与本次实际转换份数在合堆（Normalize）前记下：合进同地已有腐败物的实例会被并掉或改份数
+            var origin = due.ToDictionary(i => i.InstanceId, i => (Item: i.ItemId, Owner: i.Owner, Count: i.Count));
 
             // 2. 原位转换
             foreach (var i in due) ToSpoiledMatter(i);
@@ -110,19 +111,19 @@ namespace Survival.Core.Engine
             foreach (var i in due)
             {
                 if (work.Contains(i.InstanceId)) continue;
-                var (item, owner) = origin[i.InstanceId];
+                var (item, owner, count) = origin[i.InstanceId];
                 if (NearPlaceOf(s, owner) != s.Ground) continue;
                 var name = ItemName(item);
                 if (dropped.TryGetValue(i.InstanceId, out var place))
                 {
                     var actor = CarrierOf(owner)!;
                     var k = drops.FindIndex(x => x.actor == actor && x.name == name && x.place == place);
-                    if (k < 0) drops.Add((actor, name, place, i.Count)); else drops[k] = (actor, name, place, drops[k].n + i.Count);
+                    if (k < 0) drops.Add((actor, name, place, count)); else drops[k] = (actor, name, place, drops[k].n + count);
                 }
                 else
                 {
                     var k = inPlace.FindIndex(x => x.owner == owner && x.name == name);
-                    if (k < 0) inPlace.Add((owner, name, i.Count)); else inPlace[k] = (owner, name, inPlace[k].n + i.Count);
+                    if (k < 0) inPlace.Add((owner, name, count)); else inPlace[k] = (owner, name, inPlace[k].n + count);
                 }
             }
             foreach (var x in inPlace) lines.Add($"{x.name}×{x.n}已腐败，变为腐败物×{x.n}。");
