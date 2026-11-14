@@ -693,10 +693,13 @@ namespace Survival.Core.Engine
             if (a.HazardHit && res.Hazard != null)
             {
                 var loss = HazardLoss(s, res);
-                s.Stats.Add(StatId.Health, -loss);
+                // B47a1（R09 §3.2）：搜集划伤是一次真实健康伤害事件，走统一受伤入口；归 0 先濒死，濒死后再受伤才判致死
+                var notes = new List<string>();
+                var life = DamageActor(s, s.Player, loss, notes);
                 s.Progress.LastDamageCause = $"搜集时{res.Hazard.Label}";
                 Emit(s, GameEventKind.Hazard, $"{res.Hazard.Label}，健康−{Fmt.T(loss)}。");
-                if (s.Stats.Health <= 0) Kill(s, s.Progress.LastDamageCause);
+                WriteLifeNotes(s, s.Player, notes);
+                if (life == DamageOutcome.Died) Kill(s, s.Progress.LastDamageCause);
             }
             return true;
         }

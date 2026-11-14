@@ -112,6 +112,61 @@ public class B47a1DyingTests : TestBase
         Assert.That(t.Player.Skills.ContainsKey(GameEngine.Willpower), Is.False);
     }
 
+    // ───────────── M2 统一受伤入口 ─────────────
+
+    /// <summary>Q616-A01：正常 H0.3 受 D10 → H0 濒死，本击不抽致死；写进入濒死句；仍可行动。</summary>
+    [Test]
+    public void M2_A01_NormalToZero_EntersDying_NoRoll()
+    {
+        var s = New();
+        s.Player.Stats.Health = 0.3;
+        var rng = s.Rng.State;
+        Assert.That(E.DamageActor(s, s.Player, 10), Is.EqualTo(DamageOutcome.EnteredDying));
+        Assert.That((s.Player.Stats.Health, s.Rng.State, s.Progress.Dead, s.Player.Dead, s.Player.DyingNotified), Is.EqualTo((0.0, rng, false, false, true)), "没有过量穿透、不抽随机");
+        Assert.That(s.Log.Last().Text, Is.EqualTo("你进入濒死状态。必须用药或医疗实际恢复健康才能脱离。"));
+        s.Player.Stats.Health = 5;
+        Assert.That(E.DamageActor(s, s.Player, 1), Is.EqualTo(DamageOutcome.Hurt));
+        Assert.That(s.Rng.State, Is.EqualTo(rng));
+    }
+
+    /// <summary>Q616-A02：意志 1 时 u=0.649999 抵抗、0.65 失败；意志 10 阈值 0.83；0 伤不抽，正但 &lt;0.01 仍抽。</summary>
+    [Test]
+    public void M2_A02_ResistanceThresholds_ZeroDamageNoRoll_TinyDamageRolls()
+    {
+        Assert.That((E.ResistsDeath(1, 0.649999), E.ResistsDeath(1, 0.65)), Is.EqualTo((true, false)));
+        Assert.That((E.ResistsDeath(5, 0.7299999), E.ResistsDeath(5, 0.73)), Is.EqualTo((true, false)));
+        Assert.That((E.ResistsDeath(10, 0.8299999), E.ResistsDeath(10, 0.83)), Is.EqualTo((true, false)), "83% 边界不是 0.8300000000000001");
+        var s = New();
+        s.Player.Stats.Health = 0;
+        var rng = s.Rng.State;
+        Assert.That(E.DamageActor(s, s.Player, 0), Is.EqualTo(DamageOutcome.None));
+        Assert.That(E.DamageActor(s, s.Player, -1), Is.EqualTo(DamageOutcome.None));
+        Assert.That(s.Rng.State, Is.EqualTo(rng), "0 伤不抽");
+        ForceRng(s, u => u < 0.65);
+        rng = s.Rng.State;
+        Assert.That(E.DamageActor(s, s.Player, 0.004), Is.EqualTo(DamageOutcome.Resisted), "正但 <0.01 的伤害仍判");
+        Assert.That(s.Rng.State, Is.Not.EqualTo(rng), "恰好抽一次");
+        Assert.That((s.Player.Stats.Health, s.Player.Dead), Is.EqualTo((0.0, false)));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("你抵抗了致死，仍处于濒死状态。"));
+        ForceRng(s, u => u >= 0.65);
+        Assert.That(E.DamageActor(s, s.Player, 0.004), Is.EqualTo(DamageOutcome.Died));
+        Assert.That(s.Player.Dead, Is.True);
+        rng = s.Rng.State;
+        Assert.That(E.DamageActor(s, s.Player, 5), Is.EqualTo(DamageOutcome.None), "已确死不再接受伤害或判定");
+        Assert.That(s.Rng.State, Is.EqualTo(rng));
+    }
+
+    /// <summary>意志 10 用 83%：u∈[0.65,0.83) 在 1 级会死、10 级抵抗（按事件开始前的有效等级）。</summary>
+    [Test]
+    public void M2_WillpowerLevelUsed()
+    {
+        var s = New();
+        s.Player.Stats.Health = 0;
+        s.Skills[GameEngine.Willpower] = new SkillState { Level = 10 };
+        ForceRng(s, u => u >= 0.70 && u < 0.83);
+        Assert.That(E.DamageActor(s, s.Player, 1), Is.EqualTo(DamageOutcome.Resisted));
+    }
+
     [Test]
     public void M1_DyingCompanion_StillEntersBattleAndLeadsSquad()
     {

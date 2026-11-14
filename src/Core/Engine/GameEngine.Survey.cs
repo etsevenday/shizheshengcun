@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Survival.Core.Config;
 using Survival.Core.State;
@@ -81,10 +82,13 @@ namespace Survival.Core.Engine
             if (a.HazardHit && SurveyHazard(loc) is HazardConfig h)
             {
                 var loss = SurveyHazardLoss(s, loc);
-                s.Stats.Add(StatId.Health, -loss);
+                // B47a1（R09 §3.2）：遗迹勘整风险扣血走统一受伤入口
+                var notes = new List<string>();
+                var life = DamageActor(s, s.Player, loss, notes);
                 s.Progress.LastDamageCause = $"勘整时{h.Label}";
                 Emit(s, GameEventKind.Hazard, $"{h.Label}，健康−{Fmt.T(loss)}。");
-                if (s.Stats.Health <= 0) Kill(s, s.Progress.LastDamageCause);
+                WriteLifeNotes(s, s.Player, notes);
+                if (life == DamageOutcome.Died) Kill(s, s.Progress.LastDamageCause);
             }
             return true;
         }

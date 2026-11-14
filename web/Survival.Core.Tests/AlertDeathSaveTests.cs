@@ -99,12 +99,12 @@ public class AlertDeathSaveTests : TestBase
         SetStats(s, 0.5, 80, 80, 18, 90, 60);
         Start(s, ActionRequest.Gather("wood"));
         s.Main!.HazardHit = true;
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Dead));
-        Assert.That(s.Progress.Dead, Is.True);
+        // B47a1（R09 §3.1、Q616-A01）：正常者被划伤归 0 先进入濒死，本次不判致死；成果照常交（濒死后再受伤的致死见 B47a1DyingTests）
+        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
+        Assert.That((s.Progress.Dead, s.Stats.Health, E.IsDying(s, s.Player)), Is.EqualTo((false, 0.0, true)));
         Assert.That(Count(s, "wood", "woods"), Is.EqualTo(1), "产物留地面");
-        Assert.That(s.Progress.Death!.Cause, Does.Contain("划伤"));
-        Assert.That(E.Start(s, ActionRequest.Wait(30)).Ok, Is.False, "死亡后锁定");
-        Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Dead));
+        Assert.That(s.Log.Select(l => l.Text), Has.Some.EqualTo(GameEngine.EnterDyingText("你")));
+        Assert.That(E.Start(s, ActionRequest.Wait(30)).Ok, Is.True, "濒死仍可行动");
     }
 
     [Test]

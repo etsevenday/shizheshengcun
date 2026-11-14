@@ -48,5 +48,83 @@ namespace Survival.Core.Engine
         /// 一次致死判定（R09 §4）：均匀 u∈[0,1)，u &lt; P/100 抵抗成功，相等判失败。纯函数（不抽随机），真实判定由 DamageActor 抽 u 后调用。
         /// </summary>
         public bool ResistsDeath(int level, double u) => u < ResistancePercent(level) / 100.0;
+
+        // ───────────── 统一受伤入口（R09 §3） ─────────────
+
+        /// <summary>R09 §8「进入濒死」正式句。</summary>
+        public static string EnterDyingText(string who) => $"{who}进入濒死状态。必须用药或医疗实际恢复健康才能脱离。";
+
+        /// <summary>R09 §8「濒死后续正伤且抵抗」正式句（Q678：战外每次真实成功抵抗各一条）。</summary>
+        public static string ResistedDeathText(string who) => $"{who}抵抗了致死，仍处于濒死状态。";
+
+        /// <summary>R09 §8「用药／医疗回血脱离」正式句。</summary>
+        public static string LeaveDyingText(string who) => $"{who}脱离濒死状态。";
+
+        /// <summary>
+        /// 一次真实健康伤害事件（R09 §3.1、§4）：D 是已按原命中、护甲、格挡、保护等结算后实际落到此人身上的正伤害（原内部精度，D&gt;0 即有效）。
+        /// <list type="bullet">
+        /// <item>D≤0 或已确实死亡：不受伤、不判定、不抽随机（<see cref="DamageOutcome.None"/>）。</item>
+        /// <item>事件前 H&gt;0：扣到最低 0；仍 &gt;0 为 <see cref="DamageOutcome.Hurt"/>；归 0 进入濒死（本次不抽致死，没有过量穿透），写进入濒死句、置濒死提醒锁。</item>
+        /// <item>事件前已濒死：按事件开始前的意志等级抽一次 u，抵抗成功仍 H=0（写抵抗句），失败置确死标记（<see cref="DamageOutcome.Died"/>）。</item>
+        /// </list>
+        /// 死亡后果（主角终局、队友离队与遗物、战斗收束）由调用方在原时序处理（主角“结算写完再终局”、世界段死亡先于自然治愈等）；
+        /// “未能抵抗致死”句待 Q689 答复，本批不写，只写原死亡句。只读预演（SimCopy）不抽随机，按未能抵抗处理（B47a3 预估截断前的过渡口径）。
+        /// 状态句写到 notes（调用方在自己的伤害日志之后追加）；notes 为空时立即写：在场我方写战报，其他写普通日志。
+        /// </summary>
+        public DamageOutcome DamageActor(GameState s, ActorState actor, double d, List<string>? notes = null)
+        {
+            if (!(d > 0) || IsDead(s, actor)) return DamageOutcome.None;
+            var st = actor.Stats;
+            if (st.Health > 0)
+            {
+                st.Add(StatId.Health, -d);
+                if (st.Health > 0) return DamageOutcome.Hurt;
+                actor.DyingNotified = true;
+                LifeNote(s, actor, EnterDyingText(ActorDisplayName(s, actor.Id)), notes);
+                return DamageOutcome.EnteredDying;
+            }
+            var level = SkillLevel(actor, Willpower);
+            var resisted = !s.SimCopy && ResistsDeath(level, s.Rng.NextDouble());
+            if (resisted)
+            {
+                LifeNote(s, actor, ResistedDeathText(ActorDisplayName(s, actor.Id)), notes);
+                return DamageOutcome.Resisted;
+            }
+            actor.Dead = true;
+            return DamageOutcome.Died;
+        }
+
+        /// <summary>生命态状态句：notes 非空时交调用方追加；否则在场我方写战报（Q688：战斗中只写战报），其余写普通日志。</summary>
+        private void LifeNote(GameState s, ActorState actor, string text, List<string>? notes)
+        {
+            if (notes != null) { notes.Add(text); return; }
+            WriteLifeNotes(s, actor, new[] { text });
+        }
+
+        /// <summary>把调用方收集的生命态状态句写出（在场我方写战报，其余写普通日志）。</summary>
+        private void WriteLifeNotes(GameState s, ActorState actor, IEnumerable<string> notes)
+        {
+            var battle = s.Battle != null && AllyInBattle(s.Battle, actor.Id);
+            foreach (var n in notes)
+            {
+                if (battle) BattleLog(s, n);
+                else Emit(s, GameEventKind.Info, n);
+            }
+        }
+    }
+
+    /// <summary>一次健康伤害事件的生命结果（R09 §3.1）。</summary>
+    public enum DamageOutcome
+    {
+        /// <summary>没有正伤害或目标已确实死亡：未受伤、未判定。</summary>
+        None,
+        /// <summary>正常者受伤后仍 H&gt;0。</summary>
+        Hurt,
+        /// <summary>正常者归 0，进入濒死（本次不判致死）。</summary>
+        EnteredDying,
+        /// <summary>濒死者再受正伤，抵抗了致死。</summary>
+        Resisted,
+        /// <summary>濒死者再受正伤，未能抵抗：已确实死亡（死亡后果由调用方处理）。</summary>
+        Died,
     }
 }
