@@ -206,6 +206,12 @@
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "willpower", 1))'>意志设为1级（抵抗65%）</button>
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "willpower", 10))'>意志设为10级（抵抗83%）</button>
                 </div>
+                @* B47a2（R09 Q679）：死亡喷溅来源门槛——战斗中把在场敌人健康压到 0.1、挂出血，造主动击杀／出血致死／反击迎击致死的膨胀感染者 *@
+                <div class="eyebrow">喷溅来源、意志经验与濒死暂停（B47a2）</div>
+                <div class="btn-row">
+                    <button class="secondary" title="战斗中：下一次任何正伤即死" @onclick='() => DevDone(G.E.DebugBattleFoes(G.S, "hp01"))'>在场敌人健康→0.1（战斗中）</button>
+                    <button class="secondary" title="战斗中：下个大回合开始流血（无视流血免疫）" @onclick='() => DevDone(G.E.DebugBattleFoes(G.S, "bleed"))'>在场敌人开始出血（战斗中）</button>
+                </div>
                 @* B29（R90—R96）：同行者、随身食水、腐败与锅水，试食饮局部盘和地牢饮水预告 *@
                 <div class="eyebrow">同行食饮与饮水预算（B29）</div>
                 <div class="btn-row">

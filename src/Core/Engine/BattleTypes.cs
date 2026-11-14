@@ -2,6 +2,12 @@ using System.Collections.Generic;
 
 namespace Survival.Core.Engine
 {
+    /// <summary>
+    /// 敌人真实致死子事件的来源（B47a2，R09 Q679）：只有 ActiveAttack（我方主动攻击指令的直接伤害，含应急拳击、多段／多目标、追击）
+    /// 触发死亡喷溅；Bleed（回合开始出血等伤害型负面状态）与 Reaction（反击／迎击）致死不喷溅。按实际致死的那一下分类，不看外层指令。
+    /// </summary>
+    public enum EnemyDeathCause { ActiveAttack, Bleed, Reaction }
+
     /// <summary>一条战斗指令（v0.5 §06、v0.6 §05）：动作 ID（basic_attack、cleave、guard、reload、retreat……）、目标与物品。</summary>
     public sealed class BattleCommand
     {

@@ -182,6 +182,29 @@ namespace Survival.Core.Engine
             }
         }
 
+        /// <summary>
+        /// 开发入口（B47a2，Q679 喷溅来源门槛）：战斗中所有在场敌人——hp01 健康降到最多 0.1（下一次任何正伤即死）；
+        /// bleed 挂上出血（每大回合开始 −原配置值，原次数；开发用，无视流血免疫，便于造“出血致死的喷溅敌”）。
+        /// </summary>
+        public string DebugBattleFoes(GameState s, string what)
+        {
+            var b = s.Battle;
+            if (b == null) return "不在战斗中";
+            var foes = b.Alive.ToList();
+            if (foes.Count == 0) return "没有在场敌人";
+            switch (what)
+            {
+                case "hp01":
+                    foreach (var e in foes) e.Hp = Math.Min(e.Hp, 0.1);
+                    return $"在场敌人健康→0.1（{foes.Count}只，开发用）";
+                case "bleed":
+                    var bl = Config.Statuses.Bleed;
+                    foreach (var e in foes) { e.BleedTriggers = bl.RefreshMaxTriggers; e.BleedDamage = bl.DamagePerOwnActivation; }
+                    return $"在场敌人开始出血（{Fmt.T(bl.DamagePerOwnActivation)}×{bl.RefreshMaxTriggers}，无视流血免疫，开发用）";
+                default: return "未知开发项";
+            }
+        }
+
         public string DebugSetSkillLevel(GameState s, string skillId, int level)
         {
             var lv = Math.Max(1, Math.Min(SkillCap(skillId), level));

@@ -47,10 +47,11 @@ namespace Survival.Core.Engine
         public const string TraitProtectText = "保护同伴：具备保护同伴的能力，需满足实际站位和目标条件。";
 
         /// <summary>
-        /// S14 Q649 死亡喷溅句的前半句（伤害部分）。正式句后半「造成正伤害时可能传播病毒。」依 Q652 多途径暴露，B49 接入感染规则时补上；
-        /// 现行喷溅仍不判感染，故本批只显示前半句、以句号收尾。
+        /// 死亡喷溅特性句。B47a2（S14／R05／逐字稿 Q679）：喷溅只在我方主动攻击直接击杀时触发，取代 Q649 旧“死亡时”句；
+        /// Q652 多途径感染尚未接入（B49），按逐字稿用不冒称感染的过渡版。B49 接入感染后换成含「造成正伤害时可能传播病毒。」的完整版。
         /// </summary>
-        public static string TraitDeathSplashText(double damage) => $"死亡喷溅：死亡时伤及我方1、2号位，基础伤害{Fmt.N(damage)}，护甲照常计算。";
+        public static string TraitDeathSplashText(double damage) =>
+            $"死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害{Fmt.N(damage)}，护甲照常计算。因流血等伤害型负面状态、反击或迎击死亡时不触发。";
 
         /// <summary>S14 Q649：低血逃跑（fleeAtHp 是绝对健康阈值，沿健康数值精度）。</summary>
         public static string TraitFleeText(double hp) => $"低血逃跑：健康不高于{Fmt.N(hp)}时可能尝试逃离。";

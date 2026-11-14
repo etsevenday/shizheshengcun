@@ -629,7 +629,7 @@ namespace Survival.Core.Engine
                     t.Hp -= dmg;
                     parts.Add($"{cfg.Name}{seg}{(crit ? "暴击" : "命中")}−{Fmt.N(dmg)}{(guarded ? "（防御减半）" : "")}");
                     FxHit(FxFoe(t), crit ? "crit" : "hit", dmg, guarded);
-                    if (t.Hp <= 1e-9) { KillEnemy(s, t); FxMarkDown(FxFoe(t)); }
+                    if (t.Hp <= 1e-9) { KillEnemyBy(s, t, EnemyDeathCause.ActiveAttack); FxMarkDown(FxFoe(t)); }   // B47a2（Q679）：主动直接击杀才喷溅
                 }
                 if (anyHit) hitTargets.Add(t);
                 if (anyHit && !sp.Desperate && t.Alive) ApplySkillStatuses(s, b, sp, t, positive, parts);

@@ -583,7 +583,7 @@ namespace Survival.Core.Engine
             var text = dmg <= 0 ? "被护甲完全挡住" : $"{(crit ? "暴击" : "命中")}−{Fmt.N(dmg)}";
             if (dmg > 0) t.Hp -= dmg;
             FxHit(FxFoe(t), dmg <= 0 ? "blocked" : crit ? "crit" : "hit", Math.Max(0, dmg), guarded);
-            if (t.Hp <= 1e-9) { KillEnemy(s, t); FxMarkDown(FxFoe(t)); text += $"，{cfg.Name}倒下"; }
+            if (t.Hp <= 1e-9) { KillEnemyBy(s, t, EnemyDeathCause.Reaction); FxMarkDown(FxFoe(t)); text += $"，{cfg.Name}倒下"; }   // B47a2（Q679）：反击／迎击致死不喷溅
             else CheckFlee(s, t);
             var xp = AttackXp(s, w.SkillId, new[] { t });
             BattleLog(s, $"{Who(s)}{label}（{w.Name}）：{cfg.Name}{text}{xp}。");

@@ -652,9 +652,9 @@ namespace Survival.Core.Engine
                 e.Hp -= e.BleedDamage;
                 e.BleedTriggers--;
                 BattleLog(s, $"{EnemyName(e)}流血，−{Fmt.N(e.BleedDamage)}。");
-                if (e.Hp <= 1e-9) KillEnemy(s, e);
+                if (e.Hp <= 1e-9) KillEnemyBy(s, e, EnemyDeathCause.Bleed);   // B47a2（Q679）：出血致死不喷溅
                 else CheckFlee(s, e);
-                if (PlayerDownAfterSplash(s) || s.Battle == null) return false;   // 膨胀感染者死亡喷溅
+                if (PlayerDownAfterSplash(s) || s.Battle == null) return false;
             }
             if (!b.Alive.Any()) { FinishBattle(s, "victory", false); return false; }
             return true;
@@ -1376,8 +1376,15 @@ namespace Survival.Core.Engine
             }
         }
 
-        /// <summary>敌人死亡：立即移除卡（不留阻挡位），首次死亡锁定掉落，世界实例删除（死亡不计上限、不复活）。</summary>
-        private void KillEnemy(GameState s, BattleEnemy e)
+        /// <summary>
+        /// 敌人死亡：立即移除卡（不留阻挡位），首次死亡锁定掉落，世界实例删除（死亡不计上限、不复活）。
+        /// B47a2（R09 Q679）：cause 是真实致死子事件的来源——只有我方主动攻击的直接伤害击杀才运行死亡喷溅；出血等伤害型负面状态、
+        /// 反击／迎击致死没有喷溅事件（无喷溅伤害、致死／感染随机、意志经验或日志），原死亡、掉落与任务照常一次。
+        /// </summary>
+        /// <summary>旧接口（测试用反射调用）：按我方主动直接击杀处理。</summary>
+        private void KillEnemy(GameState s, BattleEnemy e) => KillEnemyBy(s, e, EnemyDeathCause.ActiveAttack);
+
+        private void KillEnemyBy(GameState s, BattleEnemy e, EnemyDeathCause cause)
         {
             var b = s.Battle!;
             e.Dead = true;
@@ -1413,7 +1420,7 @@ namespace Survival.Core.Engine
                 b.Loot.Add(new BattleLoot { WorldId = e.WorldId, ItemId = xd.ItemId, Count = xd.Count });
             s.WorldEnemies.RemoveAll(w => w.Id == e.WorldId);
             PruneEnemyCards(s);   // B41a：组卡成员死亡从名单删去，全灭即移除组卡
-            DeathSplash(s, b, e, cfg);
+            if (cause == EnemyDeathCause.ActiveAttack) DeathSplash(s, b, e, cfg);
         }
 
         private void CheckVictory(GameState s)
