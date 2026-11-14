@@ -49,14 +49,15 @@ else
     // BM4b（S14 Q589）：紧凑表头（小缩略图＋名称＋来源行）→ 主要数据（标签列＋数值列）→ 当前风险／不可用原因 → 次要折叠组（说明、词条、内容、批次）。
     // 锅归“锅／设施／加工”，武器／装备／工具（有耐久）归“武器／装备／工具”，其余归“食物、饮水、普通材料”；折叠偏好按类型分开记。
     var railType = e.IsPot(inst) ? RailTypes.Facility : cfg.IsEquipment || e.Weapon(cfg.Id) != null || inst.MaxDurability.HasValue ? RailTypes.Gear : RailTypes.Supply;
-    var equipLines = e.EquipDetailLines(s, inst);
+    // BM5b1（S14 Q608）：已具备资格的固定特性进首屏「生效效果」摘要（每条一次），说明组里同一特性不再重复
+    var equipLines = e.RailEquipLines(s, inst, out var activeTraits);
     // Q589「武器／装备／工具」首屏：类型（含速度修正）、固定效果（护甲等已生效摘要）、损坏状态；品质已在名称旁标签，“品质（附加词条n条）”行随词条组，
     // 固定特性（多为相关技能上线后生效）、站位、技能归属、噪声与拆解在说明组
     var mainEquip = equipLines.Where(x => x.Label is "类型" or "固定效果" or "状态").ToList();
     var affixLines = equipLines.Where(x => x.Label == "附加词条" || (x.Label == "品质" && equipLines.Any(y => y.Label == "附加词条"))).ToList();
     var moreEquip = equipLines.Where(x => !mainEquip.Contains(x) && !affixLines.Contains(x)).ToList();
     var descText = cfg.Use != null && cfg.Use.IsMedicine ? (cfg.Use.IsBandage ? "药品：止血、回血、压低病毒（本次实际效果见下）" : cfg.Use.IsAntibiotic ? "药品：抑制病毒（本次实际效果见下）" : "药品：清除感染（本次实际效果见下）")
-                 : cfg.Use != null ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc;
+                 : cfg.Use != null ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : e.RailEquipDesc(inst, cfg.Desc);
     var durRange = inst.MaxDurability.HasValue && inst.Durability.HasValue ? cfg.DurabilityMaxRange : null;
     // B22 试玩修复 M408：本实例地牢战利品（可封存）单独成卡，详情写明是哪一批
     var drN = batches.Where(b => b.Stacks[0].RewardOrigin != null).Sum(b => b.Count);
@@ -137,7 +138,9 @@ else
                 <div><span>伤害</span><b>@(Ui.N(wp.DamageMin))—@(Ui.N(wp.DamageMax))</b></div>
                 <div><span>命中能力</span><b>@(Ui.T(wp.AccuracyRating))</b></div>
                 <div><span>暴击能力</span><b>@(Ui.T(wp.CritRatingBase))</b></div>
-                <div><span>攻击范围</span><b>@($"我方{GameEngine.PosList(GameEngine.OwnPositionsOf(wp))}→敌方{GameEngine.PosList(GameEngine.TargetPositionsOf(wp))}")@(wp.UsesMagazine ? $" · 弹仓{inst.LoadedAmmo}/{wp.MagazineCapacity}（{e.ItemName(wp.AmmoId!)}）" : wp.ConsumesLooseAmmo ? $" · 每射消耗随身{e.ItemName(wp.AmmoId!)}1" : "")</b></div>
+                var rangeText = $"我方{GameEngine.PosList(GameEngine.OwnPositionsOf(wp))}→敌方{GameEngine.PosList(GameEngine.TargetPositionsOf(wp))}" + (wp.UsesMagazine ? $" · 弹仓{inst.LoadedAmmo}/{wp.MagazineCapacity}（{e.ItemName(wp.AmmoId!)}）" : wp.ConsumesLooseAmmo ? $" · 每射消耗随身{e.ItemName(wp.AmmoId!)}1" : "");
+                @* BM5b1（Q608）：长效果单独整行（与类型等行同一 14 字界线） *@
+                <div class="@(rangeText.Length > 14 ? "wide" : "")"><span>攻击范围</span><b>@rangeText</b></div>
             }
             @* B4（A05 §1、§2、§4、§5）：品质、类型、固定特性／效果、生效情况在首屏；附加词条、站位、技能归属、噪声与拆解在折叠组 *@
             @foreach (var (label, value) in mainEquip)
@@ -150,6 +153,11 @@ else
             {
                 <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(inst))</b></div>
                 <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(inst))</b></div>
+            }
+            @* BM5b1（S14 Q608）：主要数值之后的「生效效果」摘要——已具备资格的固定特性按原配置顺序、每条一次，整行 *@
+            @foreach (var fx in activeTraits)
+            {
+                <div class="wide rail-fx"><span>@GameEngine.ActiveEffectsLabel</span><b>@fx</b></div>
             }
             @if (chosen.ExpiresAt.HasValue || chosen.Reserved)
             {

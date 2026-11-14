@@ -10,13 +10,14 @@
     var it = Item;
     var cfg = e.Item(it.ItemId);
     var railType = e.IsPot(it) ? RailTypes.Facility : cfg.IsEquipment || e.Weapon(cfg.Id) != null || it.MaxDurability.HasValue ? RailTypes.Gear : RailTypes.Supply;
-    var equipLines = e.EquipDetailLines(s, it);
+    // BM5b1（S14 Q608）：同对象详情——已具备资格的固定特性进首屏「生效效果」摘要，说明组同一特性不重复
+    var equipLines = e.RailEquipLines(s, it, out var activeTraits);
     // Q589「武器／装备／工具」首屏：类型（含速度修正）、固定效果（护甲等已生效摘要）、损坏状态；品质已在名称旁标签，“品质（附加词条n条）”行随词条组，
     // 固定特性（多为相关技能上线后生效）、站位、技能归属、噪声与拆解在说明组
     var mainEquip = equipLines.Where(x => x.Label is "类型" or "固定效果" or "状态").ToList();
     var affixLines = equipLines.Where(x => x.Label == "附加词条" || (x.Label == "品质" && equipLines.Any(y => y.Label == "附加词条"))).ToList();
     var moreEquip = equipLines.Where(x => !mainEquip.Contains(x) && !affixLines.Contains(x)).ToList();
-    var descText = cfg.Use != null && !cfg.Use.IsMedicine ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc;
+    var descText = cfg.Use != null && !cfg.Use.IsMedicine ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : e.RailEquipDesc(it, cfg.Desc);
     var potLiquids = e.IsPot(it) ? e.PotLiquids(s, it.InstanceId) : new List<ItemInstance>();
     var potFoods = e.IsPot(it) ? e.PotFood(s, it.InstanceId) : new List<ItemInstance>();
 }
@@ -32,7 +33,8 @@
             <div><span>伤害</span><b>@(Ui.N(wp.DamageMin))—@(Ui.N(wp.DamageMax))</b></div>
             <div><span>命中能力</span><b>@(Ui.T(wp.AccuracyRating))</b></div>
             <div><span>暴击能力</span><b>@(Ui.T(wp.CritRatingBase))</b></div>
-            <div><span>攻击范围</span><b>@($"我方{GameEngine.PosList(GameEngine.OwnPositionsOf(wp))}→敌方{GameEngine.PosList(GameEngine.TargetPositionsOf(wp))}")</b></div>
+            var rangeText = $"我方{GameEngine.PosList(GameEngine.OwnPositionsOf(wp))}→敌方{GameEngine.PosList(GameEngine.TargetPositionsOf(wp))}";
+            <div class="@(rangeText.Length > 14 ? "wide" : "")"><span>攻击范围</span><b>@rangeText</b></div>
         }
         @foreach (var (label, value) in mainEquip)
         {
@@ -44,6 +46,10 @@
         {
             <div><span>耐久</span><b class="@(it.Durability <= 0 ? "danger-text" : "")">@(it.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(it))</b></div>
             <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(it))</b></div>
+        }
+        @foreach (var fx in activeTraits)
+        {
+            <div class="wide rail-fx"><span>@GameEngine.ActiveEffectsLabel</span><b>@fx</b></div>
         }
         @if (it.ExpiresAt.HasValue)
         {
