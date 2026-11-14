@@ -454,4 +454,90 @@ public class B47a1DyingTests : BattleTestBase
         Assert.That((e.Alive, s.Battle!.Alive.Contains(e)), Is.EqualTo((false, false)));
         Assert.That(E.TestDeathRolls, Is.Null, "敌人不判致死");
     }
+
+    // ───────────── M5 医疗脱离 ─────────────
+
+    /// <summary>Q616-A07：濒死者用绷带实际回血即脱离（写在用药结果之后）；再次归 0 重新先入濒死、不抽致死（无隐藏累计惩罚）。</summary>
+    [Test]
+    public void M5_A07_BandageLeavesDying_ThenReentersFresh()
+    {
+        var s = New();
+        SetStats(s, 0, 80, 80, 18, 80, 60);
+        s.Player.DyingNotified = true;
+        E.DebugGive(s, "bandage", 1);
+        var log0 = s.Log.Count;
+        Start(s, ActionRequest.UseItem("bandage"));
+        Assert.That(s.Player.Stats.Health, Is.GreaterThan(0));
+        Assert.That((E.LifeOf(s, s.Player), s.Player.DyingNotified), Is.EqualTo((LifeState.Normal, false)));
+        var texts = s.Log.Skip(log0).Select(l => l.Text).ToList();
+        var leave = texts.IndexOf(GameEngine.LeaveDyingText("你"));
+        Assert.That(leave, Is.GreaterThan(0), "脱离句存在且在用药结果之后");
+        Assert.That(texts[leave - 1], Does.Contain("健康+"));
+        Assert.That(texts.Count(x => x == GameEngine.LeaveDyingText("你")), Is.EqualTo(1));
+        var rng = s.Rng.State;
+        Assert.That(E.DamageActor(s, s.Player, 50), Is.EqualTo(DamageOutcome.EnteredDying), "再次归 0 先入濒死");
+        Assert.That(s.Rng.State, Is.EqualTo(rng));
+    }
+
+    /// <summary>只止血、不回血（回血冷却中）不脱离濒死；食物等非医疗正健康在濒死期间不生效。</summary>
+    [Test]
+    public void M5_BleedStopOnly_NoLeave_FoodHealthGated()
+    {
+        var s = New();
+        SetStats(s, 0, 80, 80, 18, 80, 60);
+        s.BandageReadyAt = s.GameMinute + 30;
+        s.Body.BleedTriggers = 2;
+        s.Body.BleedDamage = 0.4;
+        E.DebugGive(s, "bandage", 1);
+        Start(s, ActionRequest.UseItem("bandage"));
+        Assert.That((s.Body.BleedTriggers, s.Player.Stats.Health, E.IsDying(s, s.Player)), Is.EqualTo((0, 0.0, true)));
+        Assert.That(s.Log.Select(l => l.Text), Has.None.EqualTo(GameEngine.LeaveDyingText("你")));
+        var apply = typeof(GameEngine).GetMethod("ApplyUseEffect", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var food = new Survival.Core.Config.ItemUseConfig { Health = 2 };
+        var parts = new List<string>();
+        apply.Invoke(E, new object[] { s, s.Player, food, parts, false });
+        Assert.That(s.Player.Stats.Health, Is.EqualTo(0.0), "食物正健康不让濒死者脱离");
+        s.Player.Stats.Health = 5;
+        apply.Invoke(E, new object[] { s, s.Player, food, parts, false });
+        Assert.That(s.Player.Stats.Health, Is.EqualTo(7.0), "正常者照旧");
+    }
+
+    /// <summary>战斗中用绷带脱离：脱离句只进战报（Q688），接在用药战报之后。</summary>
+    [Test]
+    public void M5_BattleBandage_LeaveLineInBattleLogOnly()
+    {
+        var s = Fight(4706, "shambler");
+        Ready(s);
+        E.DebugGive(s, "bandage", 1);
+        s.Player.Stats.Health = 0;
+        Assert.That(Cmd(s, "bandage").Ok, Is.True);
+        Assert.That(E.LifeOf(s, s.Player), Is.EqualTo(LifeState.Normal));
+        var log = s.Battle!.Log;
+        Assert.That(log[^1], Does.EndWith(GameEngine.LeaveDyingText("你")));
+        Assert.That(log[^2], Does.Contain("健康+"));
+        Assert.That(s.Log.Select(l => l.Text), Has.None.EqualTo(GameEngine.LeaveDyingText("你")));
+    }
+
+    /// <summary>城内换药（clinic_dressing）给濒死同行者回血：同一入口脱离，脱离句写在换药完成句之后（普通日志）。</summary>
+    [Test]
+    public void M5_ClinicDressing_LeavesDying()
+    {
+        var s = New();
+        s.Progress.Flags.UnionWith(new[] { "registration_authorized", "hub_registered" });
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        E.DebugMapTeleport(s, "h04_infirmary");
+        ReadDialogues(s);
+        E.DebugGive(s, "bandage", 1);
+        E.DebugGive(s, "cloth", 1);
+        s.Player.Stats.Health = 0;
+        Assert.That(E.StartCityService(s, "clinic_dressing", GameState.PlayerId).Ok, Is.True);
+        Run(s);
+        Assert.That(E.LifeOf(s, s.Player), Is.EqualTo(LifeState.Normal));
+        var texts = s.Log.Select(l => l.Text).ToList();
+        var i = texts.LastIndexOf(GameEngine.LeaveDyingText("你"));
+        Assert.That(i, Is.GreaterThan(0));
+        Assert.That(texts[i - 1], Does.StartWith("已为你换药。"));
+    }
 }

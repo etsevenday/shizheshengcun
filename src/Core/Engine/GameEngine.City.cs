@@ -836,6 +836,8 @@ namespace Survival.Core.Engine
                 if (!s.Party.Contains(p.TargetActorId) || !s.Actors.TryGetValue(p.TargetActorId, out target)) fail = "目标已不在同行队伍里";
             }
             var made = new List<string>();
+            var life = new List<string>();   // B47a1：换药的脱离濒死句，接在完成句之后（普通日志）
+            ActorState? lifeOf = null;
             string? whole = null;   // B38b：定稿给出完整成功句的（施济、换药、抄录），日志只写这句、不外包“{服务名}完成：”
             if (fail == null && svc.Kind == KnowledgeCopyKind) fail = CompleteKnowledgeCopy(s, p, out whole);
             else if (fail == null)
@@ -848,7 +850,8 @@ namespace Survival.Core.Engine
                         var why = DressingBlocked(s, target!);
                         if (why != null) { fail = why; break; }
                         var parts = new List<string>();
-                        using (FocusOutOfBattleOn(s, target!.Id)) ApplyMedicine(s, BandageUse!, parts, svc.ActorSkillLevel ?? 1, grantXp: false, gearBonus: false);
+                        using (FocusOutOfBattleOn(s, target!.Id)) ApplyMedicine(s, BandageUse!, parts, svc.ActorSkillLevel ?? 1, grantXp: false, gearBonus: false, life: life);
+                        lifeOf = target;
                         foreach (var kv in svc.Inputs)
                         {
                             var left = kv.Value;
@@ -909,6 +912,7 @@ namespace Survival.Core.Engine
             }
             s.City.Completed++;
             Emit(s, GameEventKind.ActionCompleted, whole ?? $"{svc.Title}完成" + (made.Count > 0 ? "：" + string.Join("；", made) : "") + "。", null, svc.Choices.SelectMany(c => c.Outputs.Keys));
+            if (lifeOf != null) WriteLifeNotes(s, lifeOf, life);
             CityServiceEnd(s, p.NpcId);
         }
 

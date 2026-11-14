@@ -99,6 +99,27 @@ namespace Survival.Core.Engine
             return DamageOutcome.Died;
         }
 
+        // ───────────── 医疗脱离（R09 §6） ─────────────
+
+        /// <summary>
+        /// 明确用药／医疗的实际回血（绷带、战斗医疗技能、城内换药同一入口，R09 §6）：已确死者不受理；
+        /// 回血前濒死（H=0）且回血后 H&gt;0 即脱离濒死——清濒死提醒锁、写“{人物}脱离濒死状态。”（notes 非空时交调用方追加在自己的治疗日志之后）。
+        /// 返回实际增加量。食物等非医疗正健康不走这里（濒死期间不生效）。
+        /// </summary>
+        public double HealActor(GameState s, ActorState actor, double amount, List<string>? notes = null)
+        {
+            if (!(amount > 0) || IsDead(s, actor)) return 0;
+            var st = actor.Stats;
+            var before = st.Health;
+            st.Add(StatId.Health, amount);
+            if (before <= 0 && st.Health > 0)
+            {
+                actor.DyingNotified = false;
+                LifeNote(s, actor, LeaveDyingText(ActorDisplayName(s, actor.Id)), notes);
+            }
+            return st.Health - before;
+        }
+
         /// <summary>生命态状态句：notes 非空时交调用方追加；否则在场我方写战报（Q688：战斗中只写战报），其余写普通日志。</summary>
         private void LifeNote(GameState s, ActorState actor, string text, List<string>? notes)
         {

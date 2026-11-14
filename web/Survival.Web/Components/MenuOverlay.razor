@@ -196,6 +196,16 @@
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "crafting", 3))'>制造熟练设为3级</button>
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "medicine", 5))'>医疗熟练设为5级</button>
                 </div>
+                @* B47a1（R09）：濒死与意志——造健康 0.3／0、持续正伤与出血，调意志等级，试进入濒死、致死抵抗与用药脱离 *@
+                <div class="eyebrow">濒死与意志（B47a1）</div>
+                <div class="btn-row">
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugDying(G.S, "h03"))'>主角健康→0.3</button>
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugDying(G.S, "h0"))'>主角健康→0（濒死）</button>
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugDying(G.S, "starve"))'>主角饱食水分→0（持续正伤）</button>
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugDying(G.S, "bleed"))'>主角开始出血</button>
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "willpower", 1))'>意志设为1级（抵抗65%）</button>
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "willpower", 10))'>意志设为10级（抵抗83%）</button>
+                </div>
                 @* B29（R90—R96）：同行者、随身食水、腐败与锅水，试食饮局部盘和地牢饮水预告 *@
                 <div class="eyebrow">同行食饮与饮水预算（B29）</div>
                 <div class="btn-row">
@@ -446,6 +456,7 @@
                         <span class="tiny">@r.Name（@(G.S.Party.Contains(rid) ? "同行" : "候补")）：</span>
                         <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugToggleActive(st, rid))">切换在队/候补</button>
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "health1"))'>健康→1</button>
+                        <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "health0"))'>健康→0（濒死）</button>
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "virus79"))'>病毒→79</button>
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "food41"))'>饱食水分→41</button>
                         <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "food85"))'>饱食水分精神→85</button>

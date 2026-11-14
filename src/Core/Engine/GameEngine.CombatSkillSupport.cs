@@ -292,6 +292,8 @@ namespace Survival.Core.Engine
             var parts = new List<string>();
             var solo = AllyCount(b) <= 1;
             var page = b.ActiveWeaponSlot;
+            var life = new List<string>();   // B47a1：医疗技能的脱离濒死句，接在本条战报之后
+            ActorState? lifeOf = null;
             IDisposable? fxMed = null;   // B34b：医疗技能的出手快照，到写完本条战报再结束（没有健康变化的不留）
             switch (x.Type)
             {
@@ -456,14 +458,15 @@ namespace Survival.Core.Engine
                     using (FocusOn(s, target))
                     {
                         medH0 = s.Stats.Health;
-                        if (x.UseBandage && BandageItem?.Use is ItemUseConfig bu) effective = ApplyMedicine(s, bu, parts, lv, false);
+                        lifeOf = s.Player;
+                        if (x.UseBandage && BandageItem?.Use is ItemUseConfig bu) effective = ApplyMedicine(s, bu, parts, lv, false, life: life);
                         else
                         {
                             var (bleed, heal, status, _) = MedicalOutcome(s, b, n, x, w, lv);
                             if (bleed) { s.Body.BleedTriggers = 0; s.Body.BleedDamage = 0; parts.Add("已止血"); }
                             if (heal > 0)
                             {
-                                s.Stats.Add(StatId.Health, heal);
+                                HealActor(s, s.Player, heal, life);   // B47a1（R09 §6）：统一医疗回血入口
                                 s.BandageReadyAt = s.GameMinute + Config.ItemActions.BandageCooldownMinutes;
                                 parts.Add("健康" + Fmt.Delta(heal));
                             }
@@ -503,6 +506,7 @@ namespace Survival.Core.Engine
             }
             if (energy > 0) parts.Add($"体力−{Fmt.N(energy)}");
             BattleLog(s, $"{Who(s)}{n.Name}（{w.Name}）：{string.Join("，", parts)}。");
+            if (lifeOf != null) WriteLifeNotes(s, lifeOf, life);
             fxMed?.Dispose();
         }
 

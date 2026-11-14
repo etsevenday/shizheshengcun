@@ -91,7 +91,8 @@ namespace Survival.Core.Engine
             if (sat != 0) AddUseStat(actor, StatId.Satiety, "饱食", sat, parts, actualDelta);
             if (u.Hydration != 0) AddUseStat(actor, StatId.Hydration, "水分", u.Hydration, parts, actualDelta);
             if (u.Morale != 0) AddUseStat(actor, StatId.Morale, "精神", u.Morale, parts, actualDelta);
-            if (u.Health != 0 && !u.IsBandage) AddUseStat(actor, StatId.Health, "健康", u.Health, parts, actualDelta);
+            // B47a1（R09 §6）：食物／普通补给的正健康不能让濒死者脱离（濒死期间不生效）；只有用药／医疗回血脱离
+            if (u.Health != 0 && !u.IsBandage && !(u.Health > 0 && IsDying(s, actor))) AddUseStat(actor, StatId.Health, "健康", u.Health, parts, actualDelta);
             if (u.CausesDiarrhea)
             {
                 actor.DiarrheaUntil = s.GameMinute + Config.ItemActions.DiarrheaMinutes;

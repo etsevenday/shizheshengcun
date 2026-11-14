@@ -167,6 +167,21 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>开发入口（B13b）：某一门熟练度直接设为指定等级（经验清零）。</summary>
+        /// <summary>开发入口（B47a1 濒死与意志）：h03 主角健康→0.3；h0 主角健康→0（直接濒死）；starve 饱食、水分→0（世界段持续正伤）；bleed 主角开始出血。</summary>
+        public string DebugDying(GameState s, string what)
+        {
+            var p = s.Actor(GameState.PlayerId);
+            if (IsDead(s, p)) return "本局已结束";
+            switch (what)
+            {
+                case "h03": p.Stats.Health = 0.3; return "主角健康→0.3（开发用）";
+                case "h0": p.Stats.Health = 0; p.DyingNotified = true; return "主角健康→0，处于濒死（开发用）";
+                case "starve": p.Stats.Satiety = 0; p.Stats.Hydration = 0; SyncLatches(s); return "主角饱食、水分→0（开发用）";
+                case "bleed": ApplyPlayerBleed(s); return $"主角开始出血（{Fmt.T(s.Body.BleedDamage)}×{s.Body.BleedTriggers}，开发用）";
+                default: return "未知开发项";
+            }
+        }
+
         public string DebugSetSkillLevel(GameState s, string skillId, int level)
         {
             var lv = Math.Max(1, Math.Min(SkillCap(skillId), level));

@@ -246,7 +246,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>药物效果在确认时应用（战外 5 分钟 wait、战内 2AP），各冷却只在对应效果实际生效时启动；有效才给医疗经验，同次只发一次。</summary>
-        private bool ApplyMedicine(GameState s, ItemUseConfig u, List<string> parts, int? medLevel = null, bool grantXp = true, bool gearBonus = true)
+        private bool ApplyMedicine(GameState s, ItemUseConfig u, List<string> parts, int? medLevel = null, bool grantXp = true, bool gearBonus = true, List<string>? life = null)
         {
             var b = s.Body;
             var effective = false;
@@ -262,7 +262,7 @@ namespace Survival.Core.Engine
                 var heal = s.BandageReadyAt <= s.GameMinute ? Math.Min(BandageHeal(s, medLevel, gearBonus), s.Stats.HealthMax - s.Stats.Health) : 0;
                 if (heal > 0)
                 {
-                    s.Stats.Add(StatId.Health, heal);
+                    HealActor(s, s.Player, heal, life);   // B47a1（R09 §6）：统一医疗回血入口，濒死者回血即脱离
                     parts.Add("健康" + Fmt.Delta(heal));
                     // 回血冷却只在回血实际生效时启动；只止血不延长原回血冷却
                     s.BandageReadyAt = s.GameMinute + Config.ItemActions.BandageCooldownMinutes;

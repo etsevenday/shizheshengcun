@@ -275,6 +275,7 @@ namespace Survival.Core.Engine
             switch (what)
             {
                 case "health1": a.Stats.Health = 1; return $"{r.Name}健康→1";
+                case "health0": a.Stats.Health = 0; a.DyingNotified = true; return $"{r.Name}健康→0（濒死，开发用）";   // B47a1
                 case "virus79": a.Body.Infected = true; a.Body.VirusLoad = 79; return $"{r.Name}病毒→79";
                 case "food41": a.Stats.Satiety = 41; a.Stats.Hydration = 41; return $"{r.Name}饱食与水分→41";
                 // Q90（B8c）：造自主睡眠/回休息的条件（只改数值，模式在下一真实世界 tick 段首按阈值判定）

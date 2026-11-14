@@ -1305,10 +1305,12 @@ namespace Survival.Core.Engine
                     // B34b（R03 §Q571）：药品自用——治疗式，行动者与受益者同一人，数值取本人真实健康变化（没有健康变化时不显示数值）
                     var h0 = s.Stats.Health;
                     using var fxMed = FxBegin(s, ActionName(c.Action), BattleFxMotion.Heal, FxAlly(s, actor), noNumbers: false);
-                    ApplyMedicine(s, use, parts);
+                    var life = new List<string>();
+                    ApplyMedicine(s, use, parts, life: life);
                     var dh = s.Stats.Health - h0;
                     FxHit(FxAlly(s, actor), dh > 1e-9 ? "heal" : "effect", Math.Max(0, dh));
                     BattleLog(s, $"{Who(s)}{ActionName(c.Action)}：{string.Join("，", parts)}。");
+                    WriteLifeNotes(s, s.Player, life);   // B47a1（Q688）：脱离濒死句只进战报，接在本条之后
                     break;
                 }
                 case "swap":
