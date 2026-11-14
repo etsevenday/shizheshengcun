@@ -35,7 +35,8 @@ public class BM5cShellTests
         var session = Web("Services", "GameSession.cs");
         var run = Slice(session, "private async Task RunLoop()", "public void AckDialogue(string id)");
         Assert.That(run.IndexOf("await ShowEncounterPrompt();", StringComparison.Ordinal), Is.LessThan(run.LastIndexOf("await BattleLoop();", StringComparison.Ordinal)));
-        Assert.That(Slice(session, "public void AckDialogue(string id)", "private int _toastSeq;"), Does.Contain("_ = PromptThenBattle();"));
+        // BM6（Q625／Q628）：同一场战斗里对白结束后先等退场淡出再接续，仍经 PromptThenBattle 先短提示
+        Assert.That(Slice(session, "public void AckDialogue(string id)", "private int _toastSeq;"), Does.Contain("_ = AfterDialogueExit(PromptThenBattle, !newBattle);"));
         Assert.That(Slice(session, "public async Task BattleLoop()", "var at = S.Battle.Cursor"), Does.Contain("BattleReadingPause || EncounterPrompt != null"));
         Assert.That(session, Does.Contain("NoteEncounterPrompt(ev);"));
         // 主循环里 1200／600／1800 来自原单段展示时长

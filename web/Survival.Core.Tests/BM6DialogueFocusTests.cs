@@ -125,8 +125,16 @@ public class BM6DialogueFocusTests
         Assert.That(d, Does.Contain("aria-hidden=\"@(ghost ? \"true\" : null)\""));
         Assert.That(d, Does.Contain("inert=\"@(G.MenuOpen || G.BattleMenuOpen)\""), "菜单开着时对白层不可操作（Q322）");
 
-        // 读档：已在办的对白静态显示，不重播入场；新局／回标题清掉
+        // 退场淡出期间不补世界段、不推进敌方 AI；对白结束即开新场次时不等（不延迟真实接管）
         var session = Web("Services", "GameSession.cs");
+        var ack = Slice(session, "public void AckDialogue(string id)", "/// <summary>\n    /// BM6：对白结束后的原接续");
+        Assert.That(ack, Does.Contain("var newBattle = S.Battle != null && S.Battle.BattleId != battleBefore;"));
+        Assert.That(ack, Does.Contain("_ = AfterDialogueExit(PromptThenBattle, !newBattle);").And.Contain("_ = AfterDialogueExit(RunLoop, true);"));
+        var after = Slice(session, "private async Task AfterDialogueExit(Func<Task> next, bool wait)", "await next();");
+        Assert.That(after, Does.Contain("await Task.Delay(MotionMs(DialogueFocus.ExitMs));"));
+        Assert.That(after, Does.Contain("if (State == null || !ReferenceEquals(State, st) || E.DialogueLocked(S) || S.Progress.Dead) return;"));
+        Assert.That(Slice(session, "public void AnswerRecruit(", "/// <summary>回看已完成委托的对白"), Does.Contain("_ = AfterDialogueExit(RunLoop, true);"));
+        // 读档：已在办的对白静态显示，不重播入场；新局／回标题清掉
         Assert.That(Slice(session, "private void ResetUi()", "// ───────────── 选择"), Does.Contain("FocusStaticDialogue = null;"));
         Assert.That(Slice(session, "public string? LoadSlot(string key)", "public void BackToTitle()"), Does.Contain("ResetUi();\n        FocusStaticDialogue = E.ActiveDialogue(S)?.Id;"));
     }

@@ -1243,7 +1243,7 @@ public sealed partial class GameSession
         Commit();
         Notify();
         if (E.DialogueLocked(S) || S.Progress.Dead) return;
-        if (S.Sub != null || (S.Main != null && S.Main.Status == ActionStatus.Running)) _ = RunLoop();
+        if (S.Sub != null || (S.Main != null && S.Main.Status == ActionStatus.Running)) _ = AfterDialogueExit(RunLoop, true);   // BM6：退场淡出后再推进
     }
 
     /// <summary>回看已完成委托的对白或 AC02 外部医疗线索（0 分钟，只回放）。</summary>
@@ -2392,13 +2392,32 @@ public sealed partial class GameSession
     public void AckDialogue(string id)
     {
         if (State == null) return;
+        var battleBefore = S.Battle?.BattleId;
         E.AckDialogue(S, id);
         Drain();
         Commit();
         Notify();
         if (E.DialogueLocked(S) || S.Progress.Dead) return;
-        if (S.Battle != null) _ = PromptThenBattle();   // BM5c（Q605）：对白结束接续的探索遭遇也先短提示
-        else if (S.Sub != null || (S.Main != null && S.Main.Status == ActionStatus.Running)) _ = RunLoop();
+        // BM6（S14 Q625／Q628）：对白退场淡出期间不补世界段、不推进敌方 AI——等退场表现走完再从原合法推进点继续（不加世界分钟）；
+        // 对白结束即真实开战（新场次）时不等，按原顺序直接接管
+        var newBattle = S.Battle != null && S.Battle.BattleId != battleBefore;
+        if (S.Battle != null) _ = AfterDialogueExit(PromptThenBattle, !newBattle);   // BM5c（Q605）：对白结束接续的探索遭遇也先短提示
+        else if (S.Sub != null || (S.Main != null && S.Main.Status == ActionStatus.Running)) _ = AfterDialogueExit(RunLoop, true);
+    }
+
+    /// <summary>
+    /// BM6：对白结束后的原接续（战斗循环或世界推进）。<paramref name="wait"/> 时先等对白退场淡出（140ms × 动画速度，纯表现时间）；
+    /// 期间读档／新局／回标题、又来对白或终局则不接续（由新局面自己的流程负责）。
+    /// </summary>
+    private async Task AfterDialogueExit(Func<Task> next, bool wait)
+    {
+        if (wait)
+        {
+            var st = State;
+            await Task.Delay(MotionMs(DialogueFocus.ExitMs));
+            if (State == null || !ReferenceEquals(State, st) || E.DialogueLocked(S) || S.Progress.Dead) return;
+        }
+        await next();
     }
 
     private int _toastSeq;
