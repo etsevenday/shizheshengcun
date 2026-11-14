@@ -159,13 +159,11 @@ namespace Survival.Core.Engine
         public const string SkipAnim = "跳过动画";
         public const string SpaceCap = "空格";
         public const string SkipAnimTitle = "只跳过表现，不改变游戏时间与结果";
-        /// <summary>B34b（S14 键表「战斗已有／已批准动画跳过控件」、逐字稿 B34 Q571／Q572 节）：战斗特写两级跳过的业务名与键帽。</summary>
-        public const string SkipToResult = "跳到结果";
-        public const string SkipRest = "跳过余下";
-        public const string EnterSpaceCap = "Enter / Space";
-        /// <summary>B34（S14 Q573）：两级跳过的配套说明逐字（键表说明列与跳过按钮悬停同一句）。</summary>
-        public const string SkipToResultNote = "跳到本段结果，不改变战斗结果。";
-        public const string SkipRestNote = "跳过剩余出手表现，结果照常结算。";
+        /// <summary>
+        /// BM7a（S14 Q633、逐字稿 Q629—Q636 表「战斗表现帮助」）：敌我出手都不可跳过——原战斗特写两级跳过「跳到结果」「跳过余下」及其 Enter / Space 键帽、
+        /// 两句说明从界面、键表与帮助撤下；帮助改写这一句。
+        /// </summary>
+        public const string BattleNoSkipHelp = "敌我出手表现均不可跳过。播放期间可按ESC打开菜单，关闭菜单后从原处继续。";
 
         /// <summary>BM2（Q496）：顶栏、战斗区、结算页「菜单 ESC」按钮的悬停正式句。</summary>
         public const string MenuHover = "点击打开或关闭菜单。按 ESC 时先处理当前可关闭层；没有可关闭层时打开菜单。";
@@ -189,7 +187,7 @@ namespace Survival.Core.Engine
 
     /// <summary>
     /// BM2（Q495、Q501；S14「B43 Q495—Q502」、重墨 V2 逐字稿同日节）：系统说明「入门与操作」里的「键盘快捷键」条目与「ESC 与界面层级」六段。
-    /// 键表标签由 <see cref="ShellKeys"/> 的按钮原文与键帽拼出，与按钮、真实绑定同源；B34 起列出战斗特写两级跳过（Q573）。
+    /// 键表标签由 <see cref="ShellKeys"/> 的按钮原文与键帽拼出，与按钮、真实绑定同源；B34 曾列出战斗特写两级跳过（Q573），BM7a（Q633）撤下。
     /// </summary>
     public static class ShellKeyHelp
     {
@@ -204,7 +202,7 @@ namespace Survival.Core.Engine
             "仅显示“×”的关闭键和手动存档页的“返回”按钮不标 ESC，仍可按 ESC 按界面层级返回。",
         };
 
-        /// <summary>四个区：顶栏 12 项（与 <see cref="ShellKeys.TopLabel"/> 同源）、局部操作、战斗、动画跳过（中央「跳过动画 空格」与战斗特写「跳到结果／跳过余下 Enter / Space」）。</summary>
+        /// <summary>四个区：顶栏 12 项（与 <see cref="ShellKeys.TopLabel"/> 同源）、局部操作、战斗、动画跳过（只剩中央「跳过动画 空格」；BM7a Q633 撤下战斗特写两级跳过）。</summary>
         public static IReadOnlyList<KeyHelpGroup> Groups()
         {
             var top = new List<KeyHelpRow>();
@@ -231,9 +229,6 @@ namespace Survival.Core.Engine
                 new KeyHelpGroup("动画跳过", new[]
                 {
                     new KeyHelpRow($"{ShellKeys.SkipAnim} {ShellKeys.SpaceCap}", "跳过中央行动的表现等待，实际行动仍按原规则逐段结算。"),
-                    // B34（S14 Q573）：战斗特写两级跳过，行名与按钮、键帽同源
-                    new KeyHelpRow($"{ShellKeys.SkipToResult} {ShellKeys.EnterSpaceCap}", ShellKeys.SkipToResultNote),
-                    new KeyHelpRow($"{ShellKeys.SkipRest} {ShellKeys.EnterSpaceCap}", ShellKeys.SkipRestNote),
                 }),
             };
         }

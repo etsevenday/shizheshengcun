@@ -2,16 +2,16 @@
 
 @* B34b（R03 文首「2026-11-13 B34主要Q570—Q572」§Q571／§Q572；a9b93f0 动效合同 battle 七类、《给开发的动效说明》1200ms 时序与近战特写分镜）：
    战斗特写播放层。只读 G.FxNow 这一段出手快照（行动者、承受者、按真实次序的各段结果、同次战报原文），不读当前战斗状态——
-   上一场的最后几段播放时下一场的演员、HP 不会混进来。画面点击＝跳过（第一次到结果帧，再一次跳过余下）；只读子页盖在上面时退到下面、不收点击。
+   上一场的最后几段播放时下一场的演员、HP 不会混进来。BM7a（S14 Q633）：不可跳过——画面点击由这一层接住、什么也不做（不跳、不点穿、不排队）；只读子页盖在上面时退到下面、不收点击。
    B34（S14 Q573）：标题为本次真实指令名；结果字用战报原词「未命中」「格挡」「暴击」「倒地」及这次真实新生效的状态名，恢复「+{数值}」、扣血「−{数值}」取真实变化值；
-   不另加「行动名 · 伤害」结果条（同次战报原句只给读屏）。跳过按钮悬停为两级跳过的逐字说明。人物图沿用战场现有立绘（主角立绘、敌人图标）。 *@
+   不另加「行动名 · 伤害」结果条（同次战报原句只给读屏）。BM7a（Q633）：撤去「跳到结果」「跳过余下」按钮与键帽。人物图沿用战场现有立绘（主角立绘、敌人图标）。 *@
 @if (G.FxNow is BattleFxEvent ev)
 {
     var look = ev.Look;
     var allies = Units(ev, true);
     var foes = Units(ev, false);
-    <div class="bfx-layer @(G.FxUnderReading ? "under" : "") @(G.FxPaused ? "paused" : "") @(G.FxAtResult ? "at-result" : "")" data-active
-         style="--fx-ms:@(G.FxDurationMs)ms" @onclick="G.PlaybackSkip" aria-hidden="@(G.FxUnderReading)">
+    <div class="bfx-layer @(G.FxUnderReading ? "under" : "") @(G.FxPaused ? "paused" : "")" data-active
+         style="--fx-ms:@(G.FxDurationMs)ms" aria-hidden="@(G.FxUnderReading)">
         <h2 class="bfx-title" aria-hidden="true">@ev.Name</h2>
         <div class="bfx-stage bfx-@look bfx-m-@ev.Motion @(ev.Actor.IsAlly ? "from-ally" : "from-foe") @(ev.ContinuesSeq != null ? "cont" : "")" @key="G.FxSegment" aria-hidden="true">
             <div class="bfx-group left">@foreach (var u in allies) { @Figure(ev, u) }</div>
@@ -21,10 +21,6 @@
         <div class="bfx-caption sr-only" aria-live="polite">
             @foreach (var line in ev.Lines) { <p>@line</p> }
         </div>
-        @if (G.FxSkipLabel is string label)
-        {
-            <button type="button" class="secondary bfx-skip" title="@G.FxSkipNote" @onclick="G.PlaybackSkip" @onclick:stopPropagation="true">@label<kbd class="keycap">@ShellKeys.EnterSpaceCap</kbd></button>
-        }
     </div>
 }
 

@@ -36,12 +36,12 @@ public class B34bPlaybackWiringTests
         Assert.That(g, Does.Contain("if (gen != _fxGen) return;   // 读档／新局：旧循环直接退出，不碰新局的锁"));
     }
 
+    /// <summary>BM7a（S14 Q633）取代原两级跳过：播放中的点击／Enter／Space 不跳、不点穿（BM7aBattleTests 另验）；结束帧上的同一次 Enter 仍不确认背后指令。</summary>
     [Test]
-    public void Q572A02_TwoLevelSkip_Debounced_NoConfirmThrough()
+    public void Q572A02_NoSkip_NoConfirmThrough()
     {
         var p = Web("Services/GameSession.Playback.cs");
-        Assert.That(p, Does.Contain("if (!FxAtResult) FxAtResult = true;\n        else _fxSkipAll = true;"), "第一次到结果，再一次跳过余下");
-        Assert.That(p, Does.Contain("if (now - _fxLastSkipMs < FxSkipDebounceMs) return;"), "同一次物理输入不跨两级");
+        Assert.That(p, Does.Not.Contain("FxAtResult").And.Not.Contain("_fxSkipAll").And.Not.Contain("PlaybackSkip"), "BM7a（Q633）：不再有两级跳过");
         var g = Web("Services/GameSession.cs");
         Assert.That(g, Does.Contain("if (PlaybackActive || FxJustEnded) return;"), "播放刚结束的同一次 Enter 不确认背后指令");
         var js = Web("wwwroot/js/app.js");
@@ -68,7 +68,7 @@ public class B34bPlaybackWiringTests
         var p = Web("Services/GameSession.Playback.cs");
         var reset = p[p.IndexOf("private void ResetPlayback()")..];
         reset = reset[..reset.IndexOf("}")];
-        Assert.That(reset, Does.Contain("_fxGen++;").And.Contain("_fxQueue.Clear();").And.Contain("_fxSkipAll = false;").And.Contain("FxNow = null;"));
+        Assert.That(reset, Does.Contain("_fxGen++;").And.Contain("_fxQueue.Clear();").And.Contain("FxNow = null;"));   // BM7a（Q633）：已无跳过意图可清
     }
 
     [Test]

@@ -51,9 +51,9 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("执行（当前指令） Enter"), "BM3（Q509）：帮助表固定泛称");
         Assert.That(all.Select(r => r.Label), Has.None.Contain("{"), "BM3（Q509）：不显示花括号占位符");
         Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("跳过动画 空格"));
-        // B34（S14 Q573）：战斗特写两级跳过已交付，列在「动画跳过」区，说明逐字
-        Assert.That(groups[3].Rows.Select(r => (r.Label, r.Note)), Has.Member(("跳到结果 Enter / Space", "跳到本段结果，不改变战斗结果。")));
-        Assert.That(groups[3].Rows.Select(r => (r.Label, r.Note)), Has.Member(("跳过余下 Enter / Space", "跳过剩余出手表现，结果照常结算。")));
+        // B34（S14 Q573）曾列出战斗特写两级跳过；BM7a（S14 Q633）敌我出手都不可跳过，「动画跳过」区只剩中央「跳过动画 空格」
+        Assert.That(groups[3].Rows.Select(r => r.Label), Is.EqualTo(new[] { "跳过动画 空格" }));
+        Assert.That(all.Select(r => r.Label), Has.None.Contain("跳到结果").And.None.Contain("跳过余下").And.None.Contain("Enter / Space"));
         Assert.That(all.Select(r => r.Label), Has.None.Contain(" F"), "F 不恢复");
         Assert.That(ShellKeyHelp.Notes, Is.EqualTo(new[]
         {
@@ -71,9 +71,6 @@ public class BM2KeyAnswerTests : TestBase
         foreach (var g in ShellKeyHelp.Groups().Skip(1))
             foreach (var r in g.Rows)
             {
-                // B34（Q573）：两级跳过的说明句在逐字稿「B34 Q573—Q580整批定稿」表里，不在 Q495 原表
-                if (r.Note is ShellKeys.SkipToResultNote) { Assert.That(doc, Does.Contain($"| 跳到结果说明 | {r.Note} |")); continue; }
-                if (r.Note is ShellKeys.SkipRestNote) { Assert.That(doc, Does.Contain($"| 跳过余下说明 | {r.Note} |")); continue; }
                 Assert.That(doc, Does.Contain($"| {g.Title} | {r.Label} | {r.Note} |"), r.Label);
             }   // BM3（Q509）：战斗区第四行逐字稿已改「执行（当前指令） Enter」
         Assert.That(doc, Does.Contain($"> {ShellKeyHelp.Lead}"));

@@ -454,9 +454,9 @@
 .bi-detail-wrap { min-height: 0; }
 
 /* ───── B34b 战斗特写播放层（R03 §Q571／§Q572；a9b93f0 动效合同 battle 1200ms：0 锁定 · 150 切入 · 390 接触帧 · 565 数值 · 880 回位 · 1200 释放） ─────
-   时长 --fx-ms＝1200ms×动画速度（GameSession.FxDurationMs）。结束帧即真实结果：fill-mode both，跳到结果（.at-result）与减少动态效果都直接显示它。 */
+   时长 --fx-ms＝1200ms×动画速度（GameSession.FxDurationMs）。结束帧即真实结果：fill-mode both，减少动态效果直接显示它（BM7a Q633：不可跳过，结果帧与跳过按钮的样式已撤）。 */
 .bfx-layer {
-  position: fixed; inset: 0; z-index: 70; cursor: pointer; overflow: hidden;
+  position: fixed; inset: 0; z-index: 70; overflow: hidden;
   display: grid; grid-template-rows: minmax(0, 1fr) auto; align-items: end;
   background: radial-gradient(ellipse at 50% 60%, #1b2226, #07090a 70%);
   color: #ece0c4;
@@ -468,7 +468,6 @@
 .bfx-layer.under { z-index: 30; pointer-events: none; }
 /* 菜单、系统说明打开：停在当前帧 */
 .bfx-layer.paused, .bfx-layer.paused * { animation-play-state: paused !important; }
-.bfx-layer.at-result * { animation: none !important; }
 .bfx-stage { position: relative; z-index: 1; display: flex; justify-content: center; align-items: flex-end; gap: clamp(90px, 20vw, 380px);
   padding: 10vh 4vw 0; animation: bfx-in calc(var(--fx-ms) * .125) ease-out both; }
 .bfx-stage.cont { animation: none; }
@@ -500,8 +499,6 @@
 .bfx-caption { position: relative; z-index: 1; margin: 0 auto 9vh; padding: 10px 6vw 0; max-width: 1200px; text-align: center; font-size: var(--fs-body); line-height: 1.5; color: #d6ccb4;
   animation: bfx-chip calc(var(--fx-ms) * .2) ease-out both; animation-delay: calc(var(--fx-ms) * .47); }
 .bfx-caption p { margin: 0; }
-.bfx-skip { position: absolute; z-index: 2; right: 24px; bottom: calc(7vh + 10px); width: auto; min-height: 36px; padding: 0 12px; display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
-.bfx-skip .keycap { font-size: var(--fs-aux); }
 /* 近战：行动者前压到接触帧再回位；远程、治疗保持站位 */
 .bfx-stage:is(.bfx-m-melee, .bfx-m-area).from-ally .bfx-fig.actor { animation: bfx-lunge-r var(--fx-ms) ease-in-out both; }
 .bfx-stage:is(.bfx-m-melee, .bfx-m-area).from-foe .bfx-fig.actor { animation: bfx-lunge-l var(--fx-ms) ease-in-out both; }
@@ -591,11 +588,10 @@
   display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; }
 .bc-locknote p { margin: 0; }
 .bc-locknote > p:not(.bc-locknote-why) { order: 1; flex-basis: 100%; }
-/* B34 试玩修复 E8：近战前冲整张立绘连同名牌一起走（名牌始终居中在立绘下）；「跳到结果」用战斗通用按钮样式（.secondary），只保留定位 */
-.bfx-skip.secondary { min-height: 36px; padding: 0 12px; }
+/* B34 试玩修复 E8：近战前冲整张立绘连同名牌一起走（名牌始终居中在立绘下）。BM7a（Q633）：「跳到结果」按钮已撤 */
 
 /* B34 试玩修复 E2：收束前短反馈停留的透明接收层（在冻结的战斗画面之上，特写层同高） */
-.bfx-hold { position: fixed; inset: 0; z-index: 70; background: transparent; cursor: pointer; }
+.bfx-hold { position: fixed; inset: 0; z-index: 70; background: transparent; }
 
 /* ───── BM5c（S14 Q605）：探索遭遇短提示——战斗画面之上、战斗菜单之下；点击只跳过；减少动态效果时为静态提示 ───── */
 .enc-prompt { position: fixed; inset: 0; z-index: 72; cursor: pointer; display: grid; place-items: center; padding: 16px;

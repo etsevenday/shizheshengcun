@@ -3168,6 +3168,7 @@ public sealed partial class GameSession
     public async Task ExecuteBattleCommand(string? requestId = null)
     {
         if (State == null || S.Battle == null || BattleBusy || BattleAction == null) return;
+        if (PlaybackActive || FxJustEnded) return;   // BM7a（Q633）：播放中及结束帧上的同一次点击不点穿成指令提交
         var cmd = CurrentBattleCommand().WithRequestId(string.IsNullOrEmpty(requestId) ? Guid.NewGuid().ToString("N") : requestId);
         var battleId = S.Battle.BattleId;
         var gen = _fxGen;
@@ -3199,10 +3200,9 @@ public sealed partial class GameSession
             Drain();
             Commit();
             Notify();
-            // B34b（R03 §Q572）：真实结果已提交、已存档；再播这次出手的特写（期间仍锁指令，播完或跳过后才承接对白、收束或下一场画面）
+            // B34b（R03 §Q572）：真实结果已提交、已存档；再播这次出手的特写（期间仍锁指令，自然播完后才承接对白、收束或下一场画面；BM7a Q633 不可跳过）
             if (closing != null) { await RunClosingHold(gen); if (gen == _fxGen) Notify(); }
             if (res.Ok && !res.Duplicate && gen == _fxGen) await PlayFx(closing != null ? fx.Where(x => x != closing).ToList() : fx);
-            if (gen == _fxGen && (State == null || S.Battle == null || chainedNow || E.AwaitingPlayer(S) || DialogueLocked)) ClearFxSkip();
         }
         finally
         {
@@ -3464,10 +3464,10 @@ public sealed partial class GameSession
                 Drain();
                 Commit();
                 Notify();
-                // B34b（R03 §Q571／§Q572）：这一步的结果已提交；有特写就先播完或跳过（不再叠旧的逐条停顿），之后才承接对白、收束或下一场
+                // B34b（R03 §Q571／§Q572）：这一步的结果已提交；有特写就先自然播完（不再叠旧的逐条停顿；BM7a Q633 不可跳过），之后才承接对白、收束或下一场
                 var played = await PlayFx(fx);
                 if (gen != _fxGen) return;   // 读档／新局：旧循环直接退出，不碰新局的锁
-                if (chained) { ClearFxSkip(); if (!played) await StepPause(); continue; }   // B41e3：上一场结束、下一场已开——接着走下一场（敌方先手等），不停在“已结束”
+                if (chained) { if (!played) await StepPause(); continue; }   // B41e3：上一场结束、下一场已开——接着走下一场（敌方先手等），不停在“已结束”
                 if (r.Kind is BattleStepKind.None or BattleStepKind.Ended or BattleStepKind.Dialogue) break;
                 if (r.Kind is BattleStepKind.EnemyActed or BattleStepKind.RoundEnded && !played)
                     await StepPause();
@@ -3478,7 +3478,6 @@ public sealed partial class GameSession
             if (gen == _fxGen)
             {
                 BattleBusy = false;
-                ClearFxSkip();   // 到玩家指令、对白或战斗收束：本批“跳过余下”不带到下一次
                 if (State != null && S.Battle == null) OnBattleEnded();
                 else AutoTarget();
                 Commit();
@@ -3487,8 +3486,8 @@ public sealed partial class GameSession
         }
     }
 
-    /// <summary>没有特写的一步（短反馈、轮末等）沿原逐条展示间隔；本批已选择跳过余下表现时只让出线程。</summary>
-    private Task StepPause() => Task.Delay(_fxSkipAll ? 1 : EnemyStepDelayMs);
+    /// <summary>没有特写的一步（短反馈、轮末等）沿原逐条展示间隔（BM7a Q633：不可跳过，不再有“跳过余下”的缩短）。</summary>
+    private Task StepPause() => Task.Delay(EnemyStepDelayMs);
 
     /// <summary>战斗结束（胜利、撤退、玩家指令直接结束）后的界面收尾：清指令与目标、悬停预测；没有选中对象时右栏回人物页（与 v0.7 试玩修复 B11 同一规则）。</summary>
     private void OnBattleEnded()

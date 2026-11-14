@@ -209,8 +209,9 @@
 @* B34b（R03 §Q572）：战斗已经收束（胜利、撤退、死亡）时，最后几段特写在结算画面之上播完或被跳过，再露出收束画面；菜单在它之上 *@
 @* B34 试玩修复 B2（S14 Q528.2）：自然胜利／撤退收束时已打开的全记录持有本场最终只读内容；最后几段特写仍在它之上播完 *@
 @if (G.EndedLog != null && !G.InBattleUi && !G.BattleClosingHold && !G.S.Progress.Dead) { <EndedBattleLog /> }
-@* B34 试玩修复 E2（Q572-A01）：撤退成功等收束前的短反馈停留——透明层接住点击／Enter／Space／ESC（结束停留），不穿透到冻结的战斗画面 *@
-@if (G.BattleClosingHold) { <div class="bfx-hold" data-active @onclick="G.SkipClosingHold"></div> }
+@* B34 试玩修复 E2（Q572-A01）：撤退成功等收束前的短反馈停留——透明层接住点击／Enter／Space，不穿透到冻结的战斗画面。
+   BM7a（S14 Q633）：不可跳过，点击什么也不做；ESC 记下，停留自然结束后再开菜单 *@
+@if (G.BattleClosingHold) { <div class="bfx-hold" data-active></div> }
 @if (G.PlaybackActive && !G.InBattleUi) { <BattleFxLayer /> }
 @if (G.MenuOpen && G.S.Progress.Dead)
 {
@@ -422,7 +423,7 @@
     public void OnKey(string key)
     {
         if (G.State == null) return;
-        if (G.BattleClosingHold) { if (key is "Skip" or "Escape") G.SkipClosingHold(); return; }   // B34 试玩修复 E2
+        if (G.BattleClosingHold) { if (key == "Escape") G.ClosingHoldEscape(); return; }   // B34 试玩修复 E2；BM7a（Q633）：停留不可跳过，ESC 停留后开菜单
         // BM5c（S14 Q605）：探索遭遇短提示——点击／Enter／Space 只跳过提示；ESC 打开战斗菜单（冻结计时），菜单开着时 ESC 按原路由关闭；其余键不穿透
         if (G.EncounterPromptActive)
         {
@@ -431,8 +432,8 @@
             return;
         }
         if (key == "Escape") { Escape(); return; }
-        // B34b（S14 Q572）：特写播放层独占画面点击、Enter、Space——一次输入只走一级跳过
-        if (key == "Skip") { G.PlaybackSkip(); return; }
+        // B34b（S14 Q572）：特写播放层独占画面点击、Enter、Space；BM7a（Q633）：敌我出手都不可跳过——这些输入被播放层接住、什么也不做
+        if (key == "Skip") return;
         if (G.PlaybackActive && !G.FxUnderReading) return;
         if (G.EndedLog != null && !G.InBattleUi) return;   // B34 试玩修复 B2：只读记录页屏蔽背后快捷键，只认 ESC
         // 死亡结算（B31d Q333）：只有 Esc（同结算页「菜单」键），其余快捷键无效

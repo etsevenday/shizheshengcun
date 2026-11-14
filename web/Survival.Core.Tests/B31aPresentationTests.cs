@@ -77,7 +77,7 @@ public class B31aPresentationTests
         Assert.That(menu, Does.Not.Contain("(\"慢\", 250)").And.Not.Contain("SetSpeed"));
         var session = Web("Services", "GameSession.cs");
         Assert.That(session, Does.Contain("public int SegmentDelayMs => Presentation.SegmentDelayMs;"));
-        Assert.That(session, Does.Contain("private Task StepPause() => Task.Delay(_fxSkipAll ? 1 : EnemyStepDelayMs);"), "B34b：没有特写的一步沿原逐条停顿（本批已跳过余下时只让出线程）");
+        Assert.That(session, Does.Contain("private Task StepPause() => Task.Delay(EnemyStepDelayMs);"), "B34b：没有特写的一步沿原逐条停顿（BM7a Q633：不再有跳过余下的缩短）");
         Assert.That(session, Does.Not.Contain("SegmentDelayMs * 4"));
         Assert.That(session, Does.Contain("return Math.Max(SegmentDelayMs, (int)Math.Ceiling(ExtractMinVisibleMs / (double)segs));"), "撤出专用最短可见时长沿原边界");
         Assert.That(session, Does.Contain("await Task.Delay(_skip ? 1 : SegmentDelay(S.Sub ?? S.Main));"), "跳过动画与退出响应沿原逻辑");
