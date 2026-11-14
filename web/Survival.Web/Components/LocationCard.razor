@@ -232,7 +232,8 @@ else
             G.Select(new Selection { Kind = kind, Id = LocationId });
             await G.StartAction(r);
             // 最后一次探索完成、探索按钮移除时，选中态不继承给清理（01 案第 3 节，试玩修复 B4）
-            if (kind == SelectionKind.Location && G.S.Locations[LocationId].Progress >= 100 && G.Selected.Kind == SelectionKind.Location)
+            // 等待期间可能已保存并返回标题（G.S 为空），此时不再碰存档（BM5c 试玩）
+            if (kind == SelectionKind.Location && G.State != null && G.S.Locations.TryGetValue(LocationId, out var loc) && loc.Progress >= 100 && G.Selected.Kind == SelectionKind.Location)
                 G.ClearSelection();
         }
         finally
