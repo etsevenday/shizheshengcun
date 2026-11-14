@@ -1,0 +1,1079 @@
+{
+  "version": "Q652-20261114",
+  "status": "策划合同，非运行配置；待开发接入",
+  "authority": "用户允许主控补齐多途径病毒传播，并明确同伴病毒不随时间自然增长。",
+  "baseProbability": {
+    "formula": "clamp(0.05+0.55*(1-clamp(I,0,100)/100),0,1)",
+    "source": "沿原infection.exposureBase/Scale/ImmunityDivisor同源参数"
+  },
+  "profiles": {
+    "none": {
+      "name": "不传播",
+      "factor": 0,
+      "firstLoad": 0,
+      "repeatDelta": 0
+    },
+    "bite": {
+      "name": "咬伤",
+      "factor": 1,
+      "firstLoad": 20,
+      "repeatDelta": 10
+    },
+    "scratch": {
+      "name": "抓伤／刮伤",
+      "factor": 0.5,
+      "firstLoad": 10,
+      "repeatDelta": 5
+    },
+    "tainted_weapon": {
+      "name": "污染器械伤",
+      "factor": 0.35,
+      "firstLoad": 8,
+      "repeatDelta": 4
+    },
+    "mutant_fluid": {
+      "name": "变异体液",
+      "factor": 0.75,
+      "firstLoad": 15,
+      "repeatDelta": 8
+    },
+    "impact_abrasion": {
+      "name": "冲撞擦伤",
+      "factor": 0.25,
+      "firstLoad": 5,
+      "repeatDelta": 3
+    }
+  },
+  "gate": "有命中判定的真实感染源攻击须命中；原无命中判定的死亡喷溅按真实伤害事件。扣甲/格挡/掩护后实际正伤害D>0，且R09生命判定后仍存活（含濒死）；一次真实命中或喷溅每承伤者最多一份暴露。",
+  "selection": "真实bite优先，只取一种profile；其余按已配置敌种+实际动作步骤；追击/迫近/弱近战取defaultPhysicalExposure，不改成咬击。非伤害行为与0伤不暴露。",
+  "rng": "同一命中事件、目标、来源profile的结果与原事务原子保存；u∈[0,1)，u<p成功，等于失败；只读不抽签。",
+  "companionProgress": {
+    "scope": "所有非主角可控同伴，同行/候补/驻屋一致，以稳定actorId区分，非UI焦点",
+    "positiveNaturalRate": 0,
+    "negativeNaturalRate": "沿原高免疫自然下降；r_companion=min(0,r_original)",
+    "repeatExposure": "仍按profile增加病毒量，V到100仍原尸变，不受意志抵抗",
+    "treatment": "原高免疫自然治愈/特效药清感染，普通抑制药及包扎按原减量与冷却；不新增疗法"
+  },
+  "migration": "已提交暴露/病毒/死亡/随机结果原样，未提交的未来攻击用新表；在办已锁意图不重抽，无历史补感染。旧同伴V保留，从下一真实段禁自然正增长，不回滚旧值或复活。",
+  "enemyProfiles": [
+    {
+      "enemyId": "shambler",
+      "name": "游荡尸",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "crawler",
+      "name": "爬行尸",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "扯腿",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "runner",
+      "name": "狂奔尸",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "扑击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "worker",
+      "name": "厚衣工尸",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "挥击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "riot",
+      "name": "防护尸",
+      "family": "zombie",
+      "defaultPhysicalExposure": "impact_abrasion",
+      "deathSplashExposure": "none",
+      "opening": [
+        {
+          "index": 0,
+          "kind": "guard",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "撞击",
+          "exposure": "impact_abrasion",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "howler",
+      "name": "嚎叫尸",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "howl",
+          "verb": "嚎叫",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "feral_dog",
+      "name": "野犬",
+      "family": "animal",
+      "defaultPhysicalExposure": "none",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "撕咬",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "wolf",
+      "name": "灰狼",
+      "family": "animal",
+      "defaultPhysicalExposure": "none",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "撕咬",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "boar",
+      "name": "野猪",
+      "family": "animal",
+      "defaultPhysicalExposure": "none",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "charge_prepare",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "冲撞",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "stag",
+      "name": "警戒雄鹿",
+      "family": "animal",
+      "defaultPhysicalExposure": "none",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "顶撞",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "z_slow",
+      "name": "迟缓感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "z_helmet",
+      "name": "护盔感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "z_spitter",
+      "name": "酸液感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "spit",
+          "verb": "喷吐",
+          "exposure": "mutant_fluid",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "z_hauler",
+      "name": "搬运感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [
+        {
+          "index": 0,
+          "kind": "charge_prepare",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "推撞",
+          "exposure": "impact_abrasion",
+          "biteReplacementExposure": null
+        }
+      ],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "z_darter",
+      "name": "迅捷感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "扑击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "z_screamer",
+      "name": "尖啸感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "howl",
+          "verb": "尖啸",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "z_guard",
+      "name": "重装守卫感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "tainted_weapon",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "protect",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "重击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "z_clinger",
+      "name": "攀附感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "pull",
+          "verb": "拉扯",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "z_bloater",
+      "name": "膨胀感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "mutant_fluid",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "z_nurse",
+      "name": "制服感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "z_engineer",
+      "name": "机修感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "tainted_weapon",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "敲击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "z_signal",
+      "name": "鸣响感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [
+        {
+          "index": 0,
+          "kind": "signal",
+          "verb": "鸣响",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "z_pump_foreman",
+      "name": "泵室领班",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "charge_prepare",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "重击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "z_isolation_guard",
+      "name": "隔离守卫",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "protect",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "bite",
+          "verb": "咬击",
+          "exposure": "bite",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "z_power_guard",
+      "name": "配电守卫",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "charge_prepare",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "冲撞",
+          "exposure": "impact_abrasion",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "guard",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "z_relay_guard",
+      "name": "天线守卫",
+      "family": "zombie",
+      "defaultPhysicalExposure": "tainted_weapon",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "sweep",
+          "verb": "扫击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "重击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "guard",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "raider_melee",
+      "name": "流窜掠夺者",
+      "family": "human",
+      "defaultPhysicalExposure": "none",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "斩击",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "protect",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "attack",
+          "verb": "斩击",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "raider_gunner",
+      "name": "流窜枪手",
+      "family": "human",
+      "defaultPhysicalExposure": "none",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "shoot",
+          "verb": "射击",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "shoot",
+          "verb": "射击",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "reload",
+          "verb": "装填",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "wild_dog_leader",
+      "name": "野犬首领",
+      "family": "animal",
+      "defaultPhysicalExposure": "none",
+      "deathSplashExposure": "none",
+      "opening": [
+        {
+          "index": 0,
+          "kind": "buff",
+          "verb": "蓄势",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "撕咬",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "feral_boar",
+      "name": "暴躁野猪",
+      "family": "animal",
+      "defaultPhysicalExposure": "none",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "charge_prepare",
+          "verb": "",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "冲撞",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_cantor",
+      "name": "低吟感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "rally",
+          "verb": "鼓动",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_labwalker",
+      "name": "试制区感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_cablecrawler",
+      "name": "缠线爬行者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "pull",
+          "verb": "缠线拉扯",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_stockbracer",
+      "name": "货架护卫感染者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "protect",
+          "verb": "护住",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": "bite"
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_boss_crypt",
+      "name": "封锁祭室守卫",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "guard",
+          "verb": "格挡",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "重击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_boss_lab",
+      "name": "隔离核心守卫",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "mark",
+          "verb": "标记",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "guard",
+          "verb": "格挡",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_boss_armory",
+      "name": "军械库守卫",
+      "family": "zombie",
+      "defaultPhysicalExposure": "tainted_weapon",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "charge_prepare",
+          "verb": "蓄力",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "重击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "protect",
+          "verb": "护住",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_boss_relay",
+      "name": "天线台守卫",
+      "family": "zombie",
+      "defaultPhysicalExposure": "tainted_weapon",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "sweep",
+          "verb": "扫击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "重击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "guard",
+          "verb": "防御",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_boss_water",
+      "name": "泵房推挤者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "charge",
+          "verb": "推挤",
+          "exposure": "impact_abrasion",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "protect",
+          "verb": "护住",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_boss_mine",
+      "name": "深井重击者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "charge_prepare",
+          "verb": "蓄力",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "charge",
+          "verb": "重击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_boss_mall",
+      "name": "扶梯拦截者",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "protect",
+          "verb": "护住",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "sweep",
+          "verb": "扫击",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        }
+      ]
+    },
+    {
+      "enemyId": "ec_boss_cold",
+      "name": "仓管守卫",
+      "family": "zombie",
+      "defaultPhysicalExposure": "scratch",
+      "deathSplashExposure": "none",
+      "opening": [],
+      "cycle": [
+        {
+          "index": 0,
+          "kind": "mark",
+          "verb": "标记",
+          "exposure": "none",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 1,
+          "kind": "pull",
+          "verb": "拉扯",
+          "exposure": "tainted_weapon",
+          "biteReplacementExposure": null
+        },
+        {
+          "index": 2,
+          "kind": "attack",
+          "verb": "抓击",
+          "exposure": "scratch",
+          "biteReplacementExposure": null
+        }
+      ]
+    }
+  ]
+}
