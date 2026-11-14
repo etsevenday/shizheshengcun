@@ -173,7 +173,8 @@ public class B45bFacMenuTests : TestBase
         Assert.That(dis, Does.Contain("class=\"fm-src-whybtn"), "独立「原因」控件");
         Assert.That(dis, Does.Contain("@onfocus=\"() => ShowWhy(iid)\""), "键盘可聚焦查看");
         Assert.That(menu, Does.Contain("if ((peekWhy ?? st.Reason) is string note)"), "底部说明位显示，离开恢复当前说明");
-        Assert.That(menu, Does.Contain("if (hasTarget && !taken) why = G.FireMenuBlockWhy(it);"), "同一真实投放规则逐行判定");
+        // BM5b1（Q603）起主层也走同一判定（木材从主层起灰显），其余主层材料仍不判定
+        Assert.That(menu, Does.Contain("if (!taken) why = G.FireMenuBlockWhy(it);"), "同一真实投放规则逐行判定");
         var fac = Web("Services", "GameSession.FacMenu.cs");
         Assert.That(fac, Does.Contain("if (FireMenuBlockWhy(it) != null) return;"), "会话层同源拒绝选为来源");
         Assert.That(fac, Does.Contain("return why ?? (max <= 0 ? GameEngine.NoQtyText : null);"));
@@ -187,7 +188,9 @@ public class B45bFacMenuTests : TestBase
     public void Q588_A02_InvalidatedSourceClearedWithReason()
     {
         var fac = Web("Services", "GameSession.FacMenu.cs");
-        Assert.That(fac, Does.Contain("if (FireMenu is not { } m || !FireMenuTarget(out var slot, out var pot) || slot == null || (m.Taken && pot == null)) return null;"), "主层无目标不判定");
+        // BM5b1（Q603）：主层无目标时只有木材灰显，其余仍不判定
+        Assert.That(fac, Does.Contain("if (slot == null) return it.ItemId == WoodItemId ? GameEngine.WoodSourceWhy : null;"), "主层无目标不判定（木材除外）");
+        Assert.That(fac, Does.Contain("if (m.Taken && pot == null) return null;"));
         var rec = Slice(fac, "private void ReconcileFireMenu()", "private void CloseFireMenuForAction()");
         Assert.That(rec, Does.Contain("else if (!_fireMenuOwnPut && FireMenuBlockWhy(src) is string why)"));
         Assert.That(rec, Does.Contain("m.SrcWhy = why;"));

@@ -377,6 +377,27 @@ window.survival = {
         }
         return;
       }
+      // BM5b1（S14 Q602）：中央加工菜单是当前最高输入层时（由 C# 判定并在菜单根写 data-tab-trap＝安全落点 id，JS 不自己猜层级），
+      // Tab／Shift+Tab 只在该层当前可见、可用、可聚焦的控件间按文档顺序首尾循环，跳过禁用、隐藏与 inert；不点按钮、不换来源。
+      // 一时没有可聚焦控件时留在菜单标题（安全位置）。菜单、对白、反馈窗等更高层已在上面先拦下，被盖住时 C# 不写该属性、这里不接管。
+      if (k === 'Tab' && !mod) {
+        var trap = document.querySelector('[data-tab-trap]');
+        if (trap && shown(trap) && !(trap.closest && trap.closest('[inert]'))) {
+          var items = Array.prototype.filter.call(trap.querySelectorAll('button, a[href], input, select, textarea, [tabindex]'), function (el) {
+            return !el.disabled && el.tabIndex >= 0 && shown(el) && !(el.closest && el.closest('[inert], [hidden]'));
+          });
+          ev.preventDefault();
+          if (!items.length) {
+            var safe = document.getElementById(trap.getAttribute('data-tab-trap'));
+            if (safe) safe.focus();
+            return;
+          }
+          var at = items.indexOf(document.activeElement);
+          var nx2 = at < 0 ? (ev.shiftKey ? items.length - 1 : 0) : (at + (ev.shiftKey ? -1 : 1) + items.length) % items.length;
+          items[nx2].focus();
+          return;
+        }
+      }
       // B46 试玩修复（Q535-A04）：单段 5 分钟行动的展示等待中（中央条 data-single-show），空格就是「跳过动画」——焦点在卡片等控件上或
       // 刚收起的操作盘还在淡出时也一样，不重开操作盘；焦点就在跳过按钮上时交给原生（不重复），输入框里不处理（上面菜单／对白已先拦）
       if (k === ' ' && !mod && !editable(tgt)) {
@@ -826,6 +847,18 @@ window.survivalPop = (function () {
         try { c.focus({ preventScroll: true }); } catch (e) { try { c.focus(); } catch (e2) { } }
         // B45b（Q584）：焦点交给数量框时同数字跳框（Q562）一样全选，接着输入数字即替换
         if (c.tagName === 'INPUT' && c.select) { try { c.select(); } catch (e3) { } }
+      }
+      setTimeout(go, 0);
+    },
+    // BM5b1（S14 Q604）：自动内容变化后的焦点修复——只在焦点已失效（落在页面本身或原元素已卸下）时才交给目标；仍有效的输入／阅读焦点不动
+    focusIdIfLost: function (id) {
+      var tries = 0;
+      function lost() { var a = document.activeElement; return !a || a === document.body || !a.isConnected; }
+      function go() {
+        if (!lost()) return;
+        var c = id.charAt(0) === '#' ? document.querySelector(id) : document.getElementById(id);
+        if (!c || (c.closest && c.closest('[inert]')) || !(c.offsetWidth || c.offsetHeight)) { if (++tries < 20) requestAnimationFrame(go); return; }
+        try { c.focus({ preventScroll: true }); } catch (e) { try { c.focus(); } catch (e2) { } }
       }
       setTimeout(go, 0);
     },

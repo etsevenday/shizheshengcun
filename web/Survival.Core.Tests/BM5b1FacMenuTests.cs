@@ -258,6 +258,120 @@ public class BM5b1FacMenuTests : TestBase
         Assert.That(Web("Services", "GameSession.cs"), Does.Contain("if (r.Kind == InstantKind.MoveToPot) { r.RequestId = requestId; return FireMenuMove(r); }"));
     }
 
+    // ───────────── Q602 最高菜单内 Tab 循环 ─────────────
+
+    /// <summary>Q602-A01：加工菜单是最高输入层时（C# 判定后写 data-tab-trap）Tab／Shift+Tab 在可见可用控件间首尾循环，跳禁用／隐藏／inert；无控件留在标题；不点按钮。</summary>
+    [Test]
+    public void Q602_A01_TabCyclesInsideTopFireMenu()
+    {
+        var menu = Web("Components", "FireMenu.razor");
+        Assert.That(menu, Does.Contain("data-tab-trap=\"@(G.FireMenuTop ? GameSession.FireMenuTitleId : null)\""), "C# 告诉 JS 哪层在最上，值是安全落点（标题）");
+        var js = Web("wwwroot", "js", "app.js");
+        var trap = Slice(js, "if (k === 'Tab' && !mod) {", "// B46 试玩修复（Q535-A04）");
+        Assert.That(trap, Does.Contain("document.querySelector('[data-tab-trap]')"));
+        Assert.That(trap, Does.Contain("!el.disabled && el.tabIndex >= 0 && shown(el) && !(el.closest && el.closest('[inert], [hidden]'))"), "跳过禁用、隐藏与 inert");
+        Assert.That(trap, Does.Contain("(at + (ev.shiftKey ? -1 : 1) + items.length) % items.length"), "首尾循环");
+        Assert.That(trap, Does.Contain("document.getElementById(trap.getAttribute('data-tab-trap'))"), "无控件留在标题");
+        Assert.That(trap, Does.Not.Contain(".click()"), "Tab 只移焦点");
+        // 「原因」按钮是可聚焦按钮（禁用行旁仍可达）
+        Assert.That(Slice(menu, "class=\"fm-src-whybtn", "</button>"), Does.Not.Contain("disabled"));
+    }
+
+    /// <summary>Q602-A02：游戏菜单、对白、反馈窗在前面先拦；就近盘／点火盘／数量框等更高层与被顶栏页盖住时 C# 不写属性；ESC 层级不变。</summary>
+    [Test]
+    public void Q602_A02_HigherLayersOwnTab()
+    {
+        var js = Web("wwwroot", "js", "app.js");
+        var menuModal = js.IndexOf("if (document.querySelector('.menu-modal')) {", StringComparison.Ordinal);
+        var dlg = js.IndexOf("if (document.querySelector('.dlg-layer')) {", StringComparison.Ordinal);
+        var trap = js.IndexOf("var trap = document.querySelector('[data-tab-trap]');", StringComparison.Ordinal);
+        Assert.That(menuModal, Is.GreaterThan(0));
+        Assert.That(dlg, Is.GreaterThan(menuModal));
+        Assert.That(trap, Is.GreaterThan(dlg), "更高层先接管");
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        Assert.That(fac, Does.Contain("public bool FireMenuTop => State != null && Panel == FireMenuPanel && FireMenu != null && EscOwner is EscOwner.FacBack or EscOwner.Panel;"));
+        var keys = Web("Services", "GameSession.Keys.cs");
+        var order = new[] { "if (DiskMaskShown) return EscOwner.Disk;", "if (Pop != null) return EscOwner.Pop;", "if (IgniteMenuOpen) return EscOwner.Ignite;", "if (Panel == FireMenuPanel && FireMenuLevel > 0) return EscOwner.FacBack;" };
+        var at = keys.IndexOf("public EscOwner NormalEscOwner()", StringComparison.Ordinal);
+        foreach (var o in order)
+        {
+            var i = keys.IndexOf(o, at, StringComparison.Ordinal);
+            Assert.That(i, Is.GreaterThan(at), o);
+            at = i;
+        }
+    }
+
+    // ───────────── Q603 木材从主层起灰显 ─────────────
+
+    /// <summary>Q603-A01：主层起木材灰行、不可选／不可拖，独立原因为逐字稿原句；加工位层／锅层仍原句；无木材不造空行。</summary>
+    [Test]
+    public void Q603_A01_WoodGreyFromMainLayer()
+    {
+        var doc = File.ReadAllText(Path.Combine(Root(), "doc", "策划案", "重墨像素风界面与卡片 v0.9", "重墨 V2 开工裁定与界面逐字稿.md"));
+        Assert.That(doc, Does.Contain("| 木材原因 | " + GameEngine.WoodSourceWhy + " |"), "原因逐字");
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        var block = Slice(fac, "public string? FireMenuBlockWhy(ItemInstance it)", "public const string WoodItemId");
+        Assert.That(block, Does.Contain("if (slot == null) return it.ItemId == WoodItemId ? GameEngine.WoodSourceWhy : null;"));
+        Assert.That(fac, Does.Contain("if (FireMenuBlockWhy(it) != null) return;"), "选不上");
+        var menu = Web("Components", "FireMenu.razor");
+        Assert.That(menu, Does.Contain("if (!taken) why = G.FireMenuBlockWhy(it);"));
+        Assert.That(Slice(menu, "<div class=\"fm-src-row no\"", "</div>"), Does.Not.Contain("data-drag"));
+        Assert.That(menu, Does.Contain("if (list.Count == 0) continue;"), "空分组沿原隐藏");
+        // 内核：加工位层的木材原句不变（Q637 待定前保持）
+        var s = New();
+        var wood = s.Items.FirstOrDefault(i => i.ItemId == "wood" && i.IsCarried) ?? E.CreateItems(s, "wood", 2, ItemInstance.Carried).Single();
+        E.MaxPutInFire(s, wood, out var why, 0);
+        Assert.That(why, Does.StartWith("拖木材到火堆卡是添加燃料。"));
+    }
+
+    /// <summary>Q603-A02：投入木材每次 1 份、拖木到火堆仍是加燃料；灰行不改这两条。</summary>
+    [Test]
+    public void Q603_A02_FuelPathsUnchanged()
+    {
+        var s = New();
+        var wood = s.Items.FirstOrDefault(i => i.ItemId == "wood" && i.IsCarried) ?? E.CreateItems(s, "wood", 2, ItemInstance.Carried).Single();
+        var d = E.ResolveDrop(s, DropSource.Parse($"card:{wood.Owner}|wood|{wood.InstanceId}")!, DropTarget.Parse($"fire:{Here}")!);
+        Assert.That(d.Ok, Is.True, d.Reason);
+        Assert.That(d.Verb, Is.EqualTo(DropVerb.AddFuel));
+        var quick = Web("Components", "FireQuickActions.razor");
+        Assert.That(quick, Does.Contain("<strong>投入木材</strong>"));
+        Assert.That(Web("Components", "FireMenu.razor"), Does.Contain("id=\"fc-charcoal\""), "煅烧入口保持");
+    }
+
+    // ───────────── Q604 操作后回到相关工位 ─────────────
+
+    /// <summary>Q604-A01：取出／失效回相关工位（锅仍在时回锅卡）；放入成功回刚放入内容的工位；移入锅成功回目标锅工位；灰行不移焦点。</summary>
+    [Test]
+    public void Q604_A01_FocusReturnsToRelatedSlot()
+    {
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        var rec = Slice(fac, "private void ReconcileFireMenu()", "private void CloseFireMenuForAction()");
+        Assert.That(rec, Does.Contain("if (m.SlotItem != null && FireMenuTop) FocusIdSoftPending = FireMenuSlotId(k);"));
+        Assert.That(rec, Does.Contain("FireMenuSoftBack(k);"), "锅里内容没了回锅卡");
+        Assert.That(fac, Does.Contain("if (FireMenuTop) FocusIdSoftPending = FireMenuReturnFocus(2, k);"));
+        var submit = Slice(fac, "public ActionResult FireMenuSubmit(", "public void FireMenuRefuse(");
+        Assert.That(submit, Does.Contain("if (!res.Duplicate && (req.Slot ?? m.Slot) is int k) FocusIdPending = FireMenuReturnFocus(FireMenuLevel, k);"));
+        var menu = Web("Components", "FireMenu.razor");
+        var dis = Slice(menu, "<div class=\"fm-src-row no\"", "</div>");
+        Assert.That(dis, Does.Contain("@onmousedown:preventDefault=\"true\""), "按灰行不移走焦点");
+        Assert.That(dis, Does.Contain("@onmousedown:stopPropagation=\"true\""), "原因按钮照常可聚焦");
+    }
+
+    /// <summary>Q604-A02：设施失效回菜单标题；更高层显示时不排焦点；自动修复只在焦点已失效时；主动操作的恢复每次更新只做一次。</summary>
+    [Test]
+    public void Q604_A02_SoftFocusOnlyWhenLost()
+    {
+        var fac = Web("Services", "GameSession.FacMenu.cs");
+        Assert.That(fac, Does.Contain("if (!m.Dead && FireMenuTop) FocusIdSoftPending = FireMenuTitleId;"));
+        var screen = Web("Components", "GameScreen.razor");
+        Assert.That(screen, Does.Contain("try { await JS.InvokeVoidAsync(\"survivalPop.focusIdIfLost\", sfid); }"));
+        Assert.That(screen, Does.Contain("else if (G.FocusIdSoftPending is string sfid)"), "主动操作的恢复优先、同一次只做一次");
+        var js = Web("wwwroot", "js", "app.js");
+        var soft = Slice(js, "focusIdIfLost: function (id) {", "// B32g（逐字稿 §1.5 Q401 选 C）");
+        Assert.That(soft, Does.Contain("return !a || a === document.body || !a.isConnected;"));
+        Assert.That(soft, Does.Contain("if (!lost()) return;"), "仍有效的焦点不被抢走");
+    }
+
     private static string Slice(string text, string from, string to)
     {
         var a = text.IndexOf(from, StringComparison.Ordinal);

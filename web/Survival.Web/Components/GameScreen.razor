@@ -297,7 +297,15 @@
         if (G.FocusIdPending is string fid)
         {
             G.FocusIdPending = null;
+            G.FocusIdSoftPending = null;
             try { await JS.InvokeVoidAsync("survivalPop.focusId", fid); }
+            catch (JSException) { /* 旧缓存 app.js：焦点留在原处 */ }
+        }
+        // BM5b1（Q604）：加工菜单里内容自动消失／失效后的焦点修复——只在当前焦点因此失效（落到页面本身）时才交给相关加工位卡或菜单标题
+        else if (G.FocusIdSoftPending is string sfid)
+        {
+            G.FocusIdSoftPending = null;
+            try { await JS.InvokeVoidAsync("survivalPop.focusIdIfLost", sfid); }
             catch (JSException) { /* 旧缓存 app.js：焦点留在原处 */ }
         }
         // BM4a（Q590）：关上层后恢复的那一层取回它自己的滚动与发起焦点（失效回该层标题）；新开的面板不沿用旧记忆

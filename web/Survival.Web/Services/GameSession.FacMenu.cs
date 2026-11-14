@@ -74,6 +74,18 @@ public sealed partial class GameSession
     /// <summary>当前菜单层级：0 设施主层、1 加工位、2 位里的内容（锅，或直烤食材／煅烧批）、3 锅里的水或食材（路径「{设施名} › 加工位{序号} › {锅名} › {内容}」）。</summary>
     public int FireMenuLevel => FireMenu is not { } m ? 0 : m.Inner != null ? 3 : m.Slot == null ? 0 : m.Open && m.SlotItem != null ? 2 : 1;
 
+    /// <summary>
+    /// BM5b1（S14 Q602）：中央加工菜单此刻是最高输入层——菜单开着、在最上面（没有被顶栏页盖住），且这一下 Esc 正由它承接（返回上一层或关闭）；
+    /// 游戏菜单、对白、就近盘、点火盘、食饮浮窗、数量框等更高层开着时为 false（不让被盖住的菜单抢焦点／消费 Tab）。与 <see cref="EscOwner"/> 同源。
+    /// </summary>
+    public bool FireMenuTop => State != null && Panel == FireMenuPanel && FireMenu != null && EscOwner is EscOwner.FacBack or EscOwner.Panel;
+
+    /// <summary>
+    /// BM5b1（S14 Q604）：自动内容变化（取出、内容消失／失效、设施失效）后的焦点修复目标——只在当前焦点因该项消失而失效（落到页面本身）时才交给它，
+    /// 仍有效的输入／阅读焦点不被刷新抢走；更高层盖着菜单时不排（<see cref="FireMenuTop"/>）。GameScreen 渲染后读一次即清；同一次有 <see cref="FocusIdPending"/> 时让位。
+    /// </summary>
+    public string? FocusIdSoftPending { get; set; }
+
     /// <summary>关闭菜单后待恢复焦点的元素 id（GameScreen 渲染后读一次即清）。</summary>
     public string? FocusIdPending { get; set; }
 
@@ -302,10 +314,16 @@ public sealed partial class GameSession
     /// </summary>
     public string? FireMenuBlockWhy(ItemInstance it)
     {
-        if (FireMenu is not { } m || !FireMenuTarget(out var slot, out var pot) || slot == null || (m.Taken && pot == null)) return null;
+        if (FireMenu is not { } m || !FireMenuTarget(out var slot, out var pot)) return null;
+        // BM5b1（Q603）：主层未选目标就把木材灰显——不能选为普通投放源（投入木材、煅烧木炭仍走各自原入口）
+        if (slot == null) return it.ItemId == WoodItemId ? GameEngine.WoodSourceWhy : null;
+        if (m.Taken && pot == null) return null;
         var max = FireMenuMaxFor(it, slot, pot, out var why);
         return why ?? (max <= 0 ? GameEngine.NoQtyText : null);
     }
+
+    /// <summary>BM5b1（Q603）：来源区按“木材”灰显的物品（与「投入木材」同一燃料物品）。</summary>
+    public const string WoodItemId = "wood";
 
     /// <summary>明确目标下这份来源的最大可提交量与原因（同源预演：工位 MaxPutInFire(明确位)、锅 MaxFill／MaxPutFood）。</summary>
     public int FireMenuMaxFor(ItemInstance it, int? slot, ItemInstance? pot, out string? why)
@@ -335,6 +353,8 @@ public sealed partial class GameSession
                 m.Taken = false;
                 m.Fail = null;
                 m.SrcWhy = null;
+                // BM5b1（Q604）：放入成功回刚放入内容的工位卡（锅这一层沿 Q583 回该位里的锅卡），只聚焦、不进入新内容
+                if (!res.Duplicate && (req.Slot ?? m.Slot) is int k) FocusIdPending = FireMenuReturnFocus(FireMenuLevel, k);
             }
             else m.Fail = res.Reason;
             Notify();
@@ -408,6 +428,7 @@ public sealed partial class GameSession
         m.Minute = S.GameMinute;
         if (!E.HasFireAt(S, m.Ground))
         {
+            if (!m.Dead && FireMenuTop) FocusIdSoftPending = FireMenuTitleId;   // Q604：整个设施失效回菜单标题（原关闭仍在），不跳相邻实例
             m.Dead = true;
             m.Slot = null;
             m.SlotItem = null;
@@ -433,6 +454,8 @@ public sealed partial class GameSession
                     // 位里原有的内容没了（取出、吃完、腐败清理）：留在这个加工位（现为空位或新内容）。
                     // Q582（选 B）：新放进来的内容（本菜单放入成功或别处放入）只显示在加工位卡上，不自动进入新物件子层
                     if (m.SlotItem != null && passive) m.Lost = GameEngine.ContentChangedText;
+                    // BM5b1（Q604）：原内容取出／消失使内容页返回时，焦点回这一加工位卡（只在焦点因此失效时）
+                    if (m.SlotItem != null && FireMenuTop) FocusIdSoftPending = FireMenuSlotId(k);
                     m.SlotItem = occ?.InstanceId;
                     m.Open = false;
                     m.Inner = null;
@@ -444,14 +467,14 @@ public sealed partial class GameSession
                 if (inner.Kind == SelectionKind.PotLiquid)
                 {
                     var liquids = E.PotLiquids(S, occ.InstanceId);
-                    if (liquids.Count == 0) { m.Inner = null; if (passive) m.Lost = GameEngine.ContentChangedText; }
+                    if (liquids.Count == 0) { m.Inner = null; if (passive) m.Lost = GameEngine.ContentChangedText; FireMenuSoftBack(k); }
                     else if (liquids.All(l => l.ItemId != inner.Id))
                         m.Inner = new Selection { Kind = SelectionKind.PotLiquid, Id = liquids[0].ItemId, Owner = inner.Owner, InstanceId = inner.InstanceId };
                 }
                 else if (inner.InstanceId is int fid)
                 {
                     var f = E.FindItem(S, fid);
-                    if (f == null || f.Owner != ItemInstance.ContainerOwner(occ.InstanceId)) { m.Inner = null; if (passive) m.Lost = GameEngine.ContentChangedText; }
+                    if (f == null || f.Owner != ItemInstance.ContainerOwner(occ.InstanceId)) { m.Inner = null; if (passive) m.Lost = GameEngine.ContentChangedText; FireMenuSoftBack(k); }
                     else if (f.ItemId != inner.Id) m.Inner = new Selection { Kind = SelectionKind.Tool, Id = f.ItemId, Owner = f.Owner, InstanceId = f.InstanceId };
                 }
             }
@@ -474,6 +497,12 @@ public sealed partial class GameSession
         }
         // 右栏所看的来源被用完（如两份净水全部装进锅）而清空选中时，右栏回这处设施的只读摘要，不跳回人物页（FACPROC 第 2 条）
         if (Selected.Kind == SelectionKind.None) SyncRightSilently(FireSelection);
+    }
+
+    /// <summary>BM5b1（Q604）：锅里所点的水或食材没了、锅仍在——焦点沿 Q583 回该位里的锅卡（只在焦点因此失效时）。</summary>
+    private void FireMenuSoftBack(int k)
+    {
+        if (FireMenuTop) FocusIdSoftPending = FireMenuReturnFocus(2, k);
     }
 
     /// <summary>主动耗时行动成功开始（食饮、点火、等待加工……）：收起加工菜单，交给中央行动进度层（FACPROC 第 5 条、FACPROC-A09）。</summary>

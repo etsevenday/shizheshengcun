@@ -19,7 +19,8 @@
     var name = fac != null ? CardStates.FireName(fac) : "火堆";
     var level = G.FireMenuLevel;
     <div class="fire-menu-wrap">
-        <div class="sub-panel fire-menu" role="dialog" aria-label="@($"{name}加工菜单")">
+        @* BM5b1（S14 Q602）：本菜单是当前最高输入层时（C# 判定 G.FireMenuTop）才写 data-tab-trap（值为安全落点：菜单标题 id），app.js 只按它把 Tab 留在菜单内首尾循环 *@
+        <div class="sub-panel fire-menu" role="dialog" aria-label="@($"{name}加工菜单")" data-tab-trap="@(G.FireMenuTop ? GameSession.FireMenuTitleId : null)">
             <div class="sub-head">
                 <div class="fm-title">
                     <h2 id="@GameSession.FireMenuTitleId" tabindex="-1">@name @if (fac != null && !m.Dead) {<small class="muted">@CardStates.FireStateText(fac)</small>}</h2>
@@ -273,8 +274,9 @@
         {
             if (!MainOk(it, here, firePot)) continue;
             string? why = null;
-            // Q588：明确目标下用同一真实投放规则逐行判定（G.FireMenuBlockWhy）；未选目标沿 Q544 列料不判定
-            if (hasTarget && !taken) why = G.FireMenuBlockWhy(it);
+            // Q588：明确目标下用同一真实投放规则逐行判定（G.FireMenuBlockWhy）；未选目标沿 Q544 列料不判定。
+            // BM5b1（Q603）：木材从主层起就灰显（同一判定给出「木材用于添加燃料；……」），加工位层／锅层仍是原各自拒绝句
+            if (!taken) why = G.FireMenuBlockWhy(it);
             rows.Add(new Row(it, why));
         }
         var srcIt = m.SourceId is int sid ? e.FindItem(s, sid) : null;
@@ -331,14 +333,15 @@
                                不能被鼠标、触屏、Enter／空格选为来源（行本身不可点、不可聚焦），也不从这行发起拖放（不带 data-drag）。
                                行旁「原因」是独立只读控件（可聚焦）：悬停／聚焦／点按时在底部说明位显示该行原真实拒绝句，离开后恢复当前选择的说明；
                                不选材料、不打开数量输入、不投放。悬停整行仍按全局合同只读查看该来源。 *@
-                            <div class="fm-src-row no" aria-disabled="true" data-peek="@peek" title="@($"{nm}×{it.Count}（{label}）：{why}")">
+                            @* BM5b1（Q603／Q604）：灰行本身不接焦点——按下不把焦点移走（也不清已有合法来源）；行旁「原因」按钮照常可聚焦、只读 *@
+                            <div class="fm-src-row no" aria-disabled="true" data-peek="@peek" title="@($"{nm}×{it.Count}（{label}）：{why}")" @onmousedown:preventDefault="true">
                                 <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
                                 <span class="fm-src-name">@nm<b>×@it.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
                                 <span class="fm-src-no">@NotPlaceable</span>
                                 <button type="button" class="fm-src-whybtn @(_whyId == iid ? "on" : "")" title="@why" aria-pressed="@(_whyId == iid)"
                                         @onmouseenter="() => ShowWhy(iid)" @onfocus="() => ShowWhy(iid)" @onclick="() => ShowWhy(iid)"
                                         @onmouseleave="() => HideWhy(iid)" @onblur="() => HideWhy(iid)"
-                                        @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@WhyLabel</button>
+                                        @onmousedown:stopPropagation="true" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@WhyLabel</button>
                             </div>
                         }
                         else
