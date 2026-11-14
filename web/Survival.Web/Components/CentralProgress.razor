@@ -21,9 +21,23 @@
          role="status" aria-live="polite" aria-label="@($"{p.Label}：{(dlg ? "对话中，时间未推进" : remain ?? advanced)}")" inert="@(Fading || G.DialogueLocked)"
          data-single-show="@(G.SingleShowing && !Fading ? "1" : null)">
         <div class="cp-head">
-            <b class="cp-name">@p.Label</b>
+            @if (p.LabelNote is { } labelNote)
+            {
+                @* BM5c（R05 Q624）：旧在办缺检查段的探索——行动名说明追加旧开工规则句；鼠标悬停（title）、键盘聚焦（读屏名含说明）、
+                   点击／Enter／Space／触屏轻点展开同一句（原行动名无说明入口，按 Q624【交开发方定】用轻量查看）；只读，不推进、不抽签 *@
+                <button type="button" class="cp-name cp-name-note" title="@labelNote" aria-expanded="@(_labelNoteOpen ? "true" : "false")"
+                        aria-label="@($"{p.Label}。{labelNote}")" @onclick="() => _labelNoteOpen = !_labelNoteOpen">@p.Label</button>
+            }
+            else
+            {
+                <b class="cp-name">@p.Label</b>
+            }
             <span class="cp-chip @(p.IsSub ? "sub" : p.Paused ? "paused" : "")">@(p.IsSub ? "补给／维护" : dlg ? "等待对话" : p.Paused ? ShellText.ActionPaused : ShellText.ActionRunning)</span>
         </div>
+        @if (p.LabelNote is { } shownNote && _labelNoteOpen)
+        {
+            <p class="cp-note cp-label-note">@shownNote</p>
+        }
         @if (dlg)
         {
             <div class="cp-lines"><span class="cp-remain">对话中，时间未推进</span></div>
@@ -106,4 +120,6 @@
     [Parameter] public bool Fading { get; set; }
     /// <summary>淡出时沿用的最后数据；为 null 时取当前行动。</summary>
     [Parameter] public ActionProgressInfo? Info { get; set; }
+    /// <summary>Q624 旧句是否展开（只在本组件内，不进存档）。</summary>
+    private bool _labelNoteOpen;
 }

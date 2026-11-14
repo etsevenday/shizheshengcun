@@ -121,7 +121,9 @@ public class BM5b1EnemyRailTests : B41cTestBase
         }
         var help = Web("Services", "HelpCatalog.cs");
         Assert.That(help, Does.Not.Contain("CardRetreatGuardMinutes"), "帮助不再透露撤退保护分钟数");
-        Assert.That(help, Does.Not.Contain("接近倒计时").And.Not.Contain("接近时间"));
+        // BM5c（R05 Q623）：探索段正式全文里的「主动接近时间即使在开工前已经到期」是规则说明、不含时长，按原文保留，这里只排除这一句
+        var helpNoQ623 = help.Replace("地点里原有敌踪的主动接近时间即使在开工前已经到期", "");
+        Assert.That(helpNoQ623, Does.Not.Contain("接近倒计时").And.Not.Contain("接近时间"));
         Assert.That(help, Does.Contain("你可以先做其他事。\" + EnemyTimingHelp,"));
         Assert.That(help, Does.Contain("退回处的敌踪照常显示。\" + EnemyTimingHelp + \"失败则这一回合的行动点用尽。"));
     }

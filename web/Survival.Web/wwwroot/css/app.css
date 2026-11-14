@@ -1136,6 +1136,10 @@ kbd { font-size: var(--fs-aux); }
 .cprog.paused .cp-bar i { background: var(--warn); }
 .cp-reason { font-size: var(--fs-body); color: var(--warn); line-height: 1.5; }
 .cp-note { font-size: var(--fs-aux); line-height: 1.5; }
+/* BM5c（Q624）：旧在办探索的行动名可查看说明——外观同原行动名，加虚线下划线表示可查看 */
+button.cp-name-note { background: none; border: 0; padding: 0; margin: 0; width: auto; min-height: 0; color: inherit; font: inherit; text-align: left; cursor: help;
+  text-decoration: underline dotted; text-underline-offset: 3px; }
+.cp-label-note { margin: 0; color: var(--muted); }
 .cp-targets { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: var(--fs-aux); color: var(--muted); }
 .cp-target.done { color: var(--good); }
 .cp-ctrl { display: flex; align-items: center; gap: 8px; }

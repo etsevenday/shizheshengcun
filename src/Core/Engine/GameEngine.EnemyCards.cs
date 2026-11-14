@@ -217,20 +217,29 @@ namespace Survival.Core.Engine
         /// 探索／清理预览里的随机组卡说明（逐字稿「系统说明与旧句替换」预览各句，Q438）。几种“不会形成”的情况沿旧版预览的判断顺序取一条：
         /// 首战未胜 → 未到开放日 → 安全区 → 地牢／城市与公共地点 → 旧档历史全地点保护 → 当前已有组卡 → 普通风险行。
         /// 历史保护与已有组卡同时成立只写历史保护句，到期后才写已有组卡句（R05 Q455 定稿）；预览不改组卡与保护。
+        /// BM5c（R05 Q622）：只替换探索分支——五种排除句与正常风险行改为探索途中随机遭遇的正式句，原优先顺序与判断条件不变；
+        /// 地牢句、旧档保护句与清理全部原句不改。
         /// </summary>
         public string GroupCardPreviewNote(GameState s, string loc, ActionType type)
         {
             var en = Config.Encounters;
-            if (TutorialGateOpen(s)) return "首战胜利前不会形成随机遭遇组卡。";
-            if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay) return $"从第{en.NoRandomBeforeDay}日起，探索或清理后才可能发现随机组卡。";
-            if (en.SafeLocations.Contains(loc)) return "安全区不会形成随机遭遇组卡。";
+            var explore = type == ActionType.Explore;
+            if (TutorialGateOpen(s)) return explore ? "首战胜利前不会触发探索随机遭遇。" : "首战胜利前不会形成随机遭遇组卡。";
+            if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay)
+                return explore ? $"从第{en.NoRandomBeforeDay}日起，探索途中才可能触发随机遭遇。" : $"从第{en.NoRandomBeforeDay}日起，探索或清理后才可能发现随机组卡。";
+            if (en.SafeLocations.Contains(loc)) return explore ? "安全区不会触发探索随机遭遇。" : "安全区不会形成随机遭遇组卡。";
             if (_locs.TryGetValue(loc, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior))
-                return lc.IsDungeon ? "地牢房间按固定敌踪处理。" : "城市与公共地点不会形成随机遭遇组卡。";
+                return lc.IsDungeon ? "地牢房间按固定敌踪处理。" : explore ? "城市与公共地点不会触发探索随机遭遇。" : "城市与公共地点不会形成随机遭遇组卡。";
             // Q438：历史保护沿原截止，到期不再显示。BM5b1（R05 Q639）：不显示剩余时长，改无时长句（内部截止不变）
             if (s.GameMinute < s.EncounterGraceUntil) return LegacyGraceText;
-            if (VisibleGroupCardAt(s, loc) != null) return "当前已有一组敌踪，本次探索或清理不会形成新组卡。";
+            if (VisibleGroupCardAt(s, loc) != null)
+                return explore ? "当前已有一组敌踪，本次探索不会触发探索随机遭遇。" : "当前已有一组敌踪，本次探索或清理不会形成新组卡。";
             var p = EncounterChance(s, loc, type);
-            return $"完成后发现敌踪概率{Fmt.Pct(p)}（本地敌对{LocalHostiles(s, loc).Count}/上限{LocalCapOf(loc)}）。";
+            var n = LocalHostiles(s, loc).Count;
+            var cap = LocalCapOf(loc);
+            return explore
+                ? $"本次探索途中随机遭遇概率{Fmt.Pct(p)}（本地敌对{n}/上限{cap}）；随机遭遇会短暂提示后直接进入战斗。"
+                : $"完成后发现敌踪概率{Fmt.Pct(p)}（本地敌对{n}/上限{cap}）。";
         }
 
         // ───────────── 统一卡视图（R05 Q417–Q419、Q423、Q427） ─────────────

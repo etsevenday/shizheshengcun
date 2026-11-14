@@ -136,24 +136,32 @@ public class B41aGroupCardTests : B41aTestBase
     {
         // 首战未胜
         var story = NewStory();
-        Assert.That(E.EncounterNote(story, "field", ActionType.Explore), Is.EqualTo("首战胜利前不会形成随机遭遇组卡。"));
+        Assert.That(E.EncounterNote(story, "field", ActionType.Explore), Is.EqualTo("首战胜利前不会触发探索随机遭遇。"));   // BM5c（R05 Q622）：探索分支新句
+        Assert.That(E.EncounterNote(story, "field", ActionType.Clear), Is.EqualTo("首战胜利前不会形成随机遭遇组卡。"), "清理保持原句");
 
         // 未到开放日
         var s = New();
-        Assert.That(E.EncounterNote(s, "field", ActionType.Explore), Is.EqualTo($"从第{Cfg.Encounters.NoRandomBeforeDay}日起，探索或清理后才可能发现随机组卡。"));
+        Assert.That(E.EncounterNote(s, "field", ActionType.Explore), Is.EqualTo($"从第{Cfg.Encounters.NoRandomBeforeDay}日起，探索途中才可能触发随机遭遇。"));
+        Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Is.EqualTo($"从第{Cfg.Encounters.NoRandomBeforeDay}日起，探索或清理后才可能发现随机组卡。"));
 
         s = Field(3, "shambler", "wolf");
         Assert.That(E.EncounterNote(s, "camp", ActionType.Clear), Is.EqualTo("安全区不会形成随机遭遇组卡。"));
+        Assert.That(E.EncounterNote(s, "camp", ActionType.Explore), Is.EqualTo("安全区不会触发探索随机遭遇。"));
         var city = Cfg.Locations.First(l => !l.IsDungeon && (!l.RandomEncounterEnabled || l.SafeExterior) && !Cfg.Encounters.SafeLocations.Contains(l.Id)).Id;
-        Assert.That(E.EncounterNote(s, city, ActionType.Explore), Is.EqualTo("城市与公共地点不会形成随机遭遇组卡。"));
+        Assert.That(E.EncounterNote(s, city, ActionType.Explore), Is.EqualTo("城市与公共地点不会触发探索随机遭遇。"));
+        Assert.That(E.EncounterNote(s, city, ActionType.Clear), Is.EqualTo("城市与公共地点不会形成随机遭遇组卡。"));
         var room = Cfg.Locations.First(l => l.IsDungeon).Id;
-        Assert.That(E.EncounterNote(s, room, ActionType.Explore), Is.EqualTo("地牢房间按固定敌踪处理。"));
+        Assert.That(E.EncounterNote(s, room, ActionType.Explore), Is.EqualTo("地牢房间按固定敌踪处理。"), "地牢句不改");
+        Assert.That(E.EncounterNote(s, room, ActionType.Clear), Is.EqualTo("地牢房间按固定敌踪处理。"));
 
         // 普通风险行：本地敌对含动物
         var p = E.EncounterChance(s, "field", ActionType.Explore);
         Assert.That(p, Is.GreaterThan(0));
         Assert.That(E.EncounterNote(s, "field", ActionType.Explore),
-            Is.EqualTo($"完成后发现敌踪概率{Fmt.Pct(p)}（本地敌对2/上限{E.LocalCapOf("field")}）。"));
+            Is.EqualTo($"本次探索途中随机遭遇概率{Fmt.Pct(p)}（本地敌对2/上限{E.LocalCapOf("field")}）；随机遭遇会短暂提示后直接进入战斗。"));
+        var pc = E.EncounterChance(s, "field", ActionType.Clear);
+        Assert.That(E.EncounterNote(s, "field", ActionType.Clear),
+            Is.EqualTo($"完成后发现敌踪概率{Fmt.Pct(pc)}（本地敌对2/上限{E.LocalCapOf("field")}）。"), "清理风险行不改");
     }
 
     [Test]

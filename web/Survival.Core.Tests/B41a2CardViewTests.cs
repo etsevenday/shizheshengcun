@@ -77,7 +77,9 @@ public class B41a2CardViewTests : B41aTestBase
         var s = Field(3, "shambler", "crawler", "runner");
         var g = FormGroup(s);
         var members = g.MemberIds.ToList();
-        Assert.That(E.EncounterNote(s, "field", ActionType.Explore), Is.EqualTo("当前已有一组敌踪，本次探索或清理不会形成新组卡。"));
+        // BM5c（R05 Q622）：探索分支改探索随机遭遇句，清理保持原句
+        Assert.That(E.EncounterNote(s, "field", ActionType.Explore), Is.EqualTo("当前已有一组敌踪，本次探索不会触发探索随机遭遇。"));
+        Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Is.EqualTo("当前已有一组敌踪，本次探索或清理不会形成新组卡。"));
 
         // 旧档历史全地点保护仍有效且已有组卡：只写历史保护句，时长取原截止减当前时刻
         s.EncounterGraceUntil = s.GameMinute + 45;
@@ -89,8 +91,8 @@ public class B41a2CardViewTests : B41aTestBase
 
         // 到期后转已有组卡句；预览不移除组卡、不刷新保护
         s.GameMinute = grace;
-        foreach (var t in new[] { ActionType.Explore, ActionType.Clear })
-            Assert.That(E.EncounterNote(s, "field", t), Is.EqualTo("当前已有一组敌踪，本次探索或清理不会形成新组卡。"));
+        Assert.That(E.EncounterNote(s, "field", ActionType.Explore), Is.EqualTo("当前已有一组敌踪，本次探索不会触发探索随机遭遇。"));
+        Assert.That(E.EncounterNote(s, "field", ActionType.Clear), Is.EqualTo("当前已有一组敌踪，本次探索或清理不会形成新组卡。"));
         Assert.That(s.EncounterGraceUntil, Is.EqualTo(grace));
         Assert.That(s.EnemyCards.Groups.Single().MemberIds, Is.EqualTo(members));
     }
