@@ -457,9 +457,9 @@ public class B47a1DyingTests : BattleTestBase
 
     // ───────────── M5 医疗脱离 ─────────────
 
-    /// <summary>Q616-A07：濒死者用绷带实际回血即脱离（写在用药结果之后）；再次归 0 重新先入濒死、不抽致死（无隐藏累计惩罚）。</summary>
+    /// <summary>Q616-A05：濒死者用绷带实际回血即脱离（写在用药结果之后）；再次归 0 重新先入濒死、不抽致死（无隐藏累计惩罚）。</summary>
     [Test]
-    public void M5_A07_BandageLeavesDying_ThenReentersFresh()
+    public void M5_A05_BandageLeavesDying_ThenReentersFresh()
     {
         var s = New();
         SetStats(s, 0, 80, 80, 18, 80, 60);
