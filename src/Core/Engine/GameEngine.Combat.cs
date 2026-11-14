@@ -225,6 +225,7 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 战斗外对某敌人的命中率估算（接敌浮窗、敌人详情；与战斗中 TargetCalc 同一公式，Q67/A10“预览执行同源”）：
         /// 开战默认页武器的 (武器A+3L+8+装备命中)×疲劳(按支付该页普通攻击体力后)；入战恐慌/失衡开战后才知道，不计。
+        /// BM7b（S14／R05 Q647、Q654）起敌踪右栏与处理盘改用 <see cref="PreBattleHits"/>（入场投影、含确定入场恐慌、看普通攻击合法性），这里只留作静态公式。
         /// </summary>
         public (double Accuracy, double HitChance) OutOfBattleHit(GameState s, EnemyConfig enemy)
         {

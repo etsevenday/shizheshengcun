@@ -57,8 +57,10 @@ public class BM5b1RiskTests : B41cTestBase
         Assert.That(f.DA, Is.EqualTo(0));
         Assert.That(E.EngageRiskFor(s, Card(s)).Text, Is.EqualTo("交战风险：极高"));
         Assert.That(E.OutOfBattleHasAttack(s), Is.False);
+        Assert.That(E.PreBattleHits(s, Card(s)).All(h => !h.Legal), Is.True, "BM7b Q654：命中率行同为无可用攻击");
         Arm(s, "hatchet");
         Assert.That(E.OutOfBattleHasAttack(s), Is.True);
+        Assert.That(E.PreBattleHits(s, Card(s)).All(h => h.Legal), Is.True);
         Assert.That(E.EngageRiskFactorsFor(s, Card(s))!.DA, Is.GreaterThan(0));
     }
 
@@ -193,9 +195,10 @@ public class BM5b1RiskTests : B41cTestBase
         Assert.That(fold, Is.GreaterThan(core));
         Assert.That(status, Is.GreaterThan(fold));
         Assert.That(d, Does.Contain("var risk = G.EngageRisk(card);"));
-        Assert.That(d, Does.Contain("@if (risk.Invalid) { <div class=\"risk\" data-engage-risk=\"invalid\">@GameEngine.EnemyCardInvalidText</div> }"));
+        // BM7b（S14／R05 Q646）：Invalid 只作领域判定，右栏不写失效句；Q654：命中率行看真实入场投影的合法性
+        Assert.That(d, Does.Contain("@if (!risk.Invalid)").And.Not.Contain("@GameEngine.EnemyCardInvalidText"));
         Assert.That(d, Does.Contain("<b>@GameEngine.NoAttackHitText</b>"));
-        Assert.That(d, Does.Contain("@if (e.OutOfBattleHasAttack(s))"));
+        Assert.That(d, Does.Contain("@if (hit.Legal)"));
         Assert.That(RailText.BattleDetail, Is.EqualTo("战斗详情"));
         var session = Web("Services", "GameSession.cs");
         Assert.That(session, Does.Contain("if (_riskCache.ver == Version && ReferenceEquals(_riskCache.state, S) && _riskCache.key == card.Key && _riskCache.risk != null) return _riskCache.risk;"));

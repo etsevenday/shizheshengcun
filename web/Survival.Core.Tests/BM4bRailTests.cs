@@ -134,7 +134,7 @@ public class BM4bRailTests : TestBase
         Assert.That(enemy.IndexOf("@CoreLines(card, members[0])", StringComparison.Ordinal), Is.GreaterThan(0).And.LessThan(ef), "重要属性在主区");
         Assert.That(enemy.Substring(ef), Does.StartWith("<RailFold Type=\"@RailTypes.Enemy\" Group=\"@RailGroups.BattleDetail\" Name=\"@RailText.BattleDetail\">"));
         var battleEnd = enemy.IndexOf("</RailFold>", ef, StringComparison.Ordinal);
-        foreach (var inFold in new[] { "<span>开战武器</span>", "单次咬伤感染概率", "弹仓为0", "@MemberLines(members[0], false)", "@foreach (var m in members.Skip(1))" })
+        foreach (var inFold in new[] { "<span>开战武器</span>", "单次咬伤感染概率", "弹仓为0", "@MemberLines(members[0], hits[0], false)", "@for (var k = 1; k < members.Count; k++)" })
             Assert.That(enemy.IndexOf(inFold, StringComparison.Ordinal), Is.GreaterThan(ef).And.LessThan(battleEnd), inFold);
         Assert.That(enemy, Does.Not.Contain("RailGroups.Members"), "原「成员」组并入战斗详情");
         Assert.That(enemy, Does.Not.Contain("@if (why != null)"), "受阻原因在卡面与中央按钮，右栏主区不重复");

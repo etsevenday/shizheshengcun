@@ -60,10 +60,11 @@
     case SelectionKind.Facility:
         <FireDetail />
         break;
-    case SelectionKind.Enemy:
+    case SelectionKind.Enemy when e.EnemyCardShowable(s, sel.Id):
         <EnemyDetail Sel="sel" />
         break;
     default:
+        @* BM7b（S14／R05 Q646）：敌踪整卡离开或已无有效敌方活成员时也落到这里——直接回当前地块／区域详情，不再显示失效解释与选其他对象提示 *@
         @* Q328：读当前实际地点（不跟随选中的地图节点或未抵达的目的地），字段缺失时省略该行；下面保留当前有效的原反馈 *@
         <div class="empty-detail place-summary">
             <h3>@ShellText.PlaceTitle</h3>

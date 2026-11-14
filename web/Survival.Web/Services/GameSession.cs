@@ -2255,6 +2255,19 @@ public sealed partial class GameSession
         return risk;
     }
 
+    private (int ver, GameState? state, string key, List<PreBattleHit>? hits) _hitCache = (-1, null, "", null);
+
+    /// <summary>BM7b（S14／R05 Q647、Q654）：敌踪右栏与处理盘每名成员的「你的命中率」。与交战风险同一入场投影；缓存键同 <see cref="EngageRisk"/>。</summary>
+    public List<PreBattleHit> PreBattleHits(EnemyCardView card)
+    {
+        if (_hitCache.ver == Version && ReferenceEquals(_hitCache.state, S) && _hitCache.key == card.Key && _hitCache.hits != null) return _hitCache.hits;
+        List<PreBattleHit> hits;
+        try { hits = E.PreBattleHits(S, card); }
+        catch (Exception) { hits = E.EnemyCardPreviewMembers(S, card).Select(_ => new PreBattleHit()).ToList(); }   // 定义缺失等异常：不猜百分比
+        _hitCache = (Version, S, card.Key, hits);
+        return hits;
+    }
+
     public async Task Resume()
     {
         var res = E.Resume(S);

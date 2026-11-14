@@ -47,7 +47,7 @@ public class BM5b1EnemyRailTests : B41cTestBase
             Assert.That(coreDef, Does.Not.Contain(no), $"主区不放我方预估、不读未来意图：{no}");
         // 战斗详情：开战武器、空弹仓、感染、首位成员类别与命中、其他成员完整属性（原成员组并入）
         var fold = d.Substring(battle, d.IndexOf("</RailFold>", battle, StringComparison.Ordinal) - battle);
-        foreach (var x in new[] { "<span>开战武器</span>", "弹仓为0", "单次咬伤感染概率", "@GameEngine.NonBiteNote", "@MemberLines(members[0], false)", "@foreach (var m in members.Skip(1))", "@MemberLines(m)" })
+        foreach (var x in new[] { "<span>开战武器</span>", "弹仓为0", "单次咬伤感染概率", "@GameEngine.NonBiteNote", "@MemberLines(members[0], hits[0], false)", "@for (var k = 1; k < members.Count; k++)", "@MemberLines(m, hits[k])" })
             Assert.That(fold, Does.Contain(x), x);
         Assert.That(d, Does.Not.Contain("RailGroups.Members"));
         var lines = Slice(d, "private RenderFragment MemberLines(", "private RenderFragment MemberKind(");
@@ -59,7 +59,7 @@ public class BM5b1EnemyRailTests : B41cTestBase
             Assert.That(descFold, Does.Contain(x), x);
         // 中央盘：命中、伤害、感染、空弹仓、受惊仍在对应行动预估里
         var pops = Web("Components", "ActionPops.razor");
-        foreach (var x in new[] { "咬伤可能感染", "弹仓为0：开战后需先装填（1AP）", "命中@(Ui.Pct(hit.HitChance))", "@e.EnemyCardFearNote(s, c, false)", "@GameEngine.NonBiteNote" })
+        foreach (var x in new[] { "咬伤可能感染", "弹仓为0：开战后需先装填（1AP）", "\"命中\" + Ui.Pct(hit.HitChance)", "@e.EnemyCardFearNote(s, c, false)", "@GameEngine.NonBiteNote" })
             Assert.That(pops, Does.Contain(x), x);
         Assert.That(pops, Does.Not.Contain("意图里没有咬击"));
         Assert.That(d, Does.Not.Contain("意图里没有咬击"));
@@ -184,7 +184,7 @@ public class BM5b1EnemyRailTests : B41cTestBase
         Assert.That(css, Does.Contain(".ocard.k2.k2-enemy .k2-sub:not(.hp) { -webkit-line-clamp: 1; line-clamp: 1; }"));
         Assert.That(Web("Components", "ObjectCard.razor"), Does.Contain("<div class=\"k2-sub @SubClass\" title=\"@(SubTitle ?? Sub)\">@Sub</div>"), "名单全文仍在副标悬停");
         var d = Web("Components", "EnemyDetail.razor");
-        var core = d.IndexOf("@if (members.Count > 0) { @CoreLines(card, members[0]) }", StringComparison.Ordinal);
+        var core = d.IndexOf("@if (members.Count > 0) { @CoreLines(card, members[0]) @Traits(members[0].EnemyId) }", StringComparison.Ordinal);
         var notice = d.IndexOf("@if (G.RightNotice != null) { <div class=\"notice\">@G.RightNotice</div> }", StringComparison.Ordinal);
         Assert.That(core, Is.GreaterThan(0));
         Assert.That(notice, Is.GreaterThan(core), "提示在六项属性之后");

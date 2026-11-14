@@ -52,7 +52,7 @@ public class B41e1ShellTests
             "B41e3：旧单卡组、固定战组、可选强敌组随开关删除");
         var grp = Segment(ls, "@if (cards.Count > 0)", "@* B17 试玩修复 B1");
         Assert.That(grp, Does.Contain("<div class=\"dg-title\">敌踪</div>"));
-        Assert.That(grp, Does.Contain("Title=\"@c.Title\"").And.Contain("Badge=\"@c.Badge\"").And.Contain("Danger=\"@c.Danger\""), "Q427 标题、角标、危险");
+        Assert.That(grp, Does.Contain("Title=\"@GameEngine.EnemyRailIdentity(c)\"").And.Contain("Badge=\"@c.Badge\"").And.Contain("Danger=\"@c.Danger\""), "Q427 标题、角标、危险");
         Assert.That(grp, Does.Contain("e.CardApproachStatus(s, c)").And.Contain("e.EnemyCardHoverLines(s, c)"), "第二行状态句、Q446 ⑥ 悬停");
         Assert.That(grp, Does.Contain("e.EnemyCardMemberNames(c)").And.Not.Contain("TODO Q539"), "B41e2（Q539）：组卡副标列成员名");
         Assert.That(grp, Does.Contain("OnClick=\"() => OpenEnemyCard(key)\""));
@@ -85,7 +85,7 @@ public class B41e1ShellTests
     public void Detail_V2Branch_Q446_4()
     {
         var d = Web("Components/EnemyDetail.razor");
-        var v2 = Segment(d, "@if (card == null)", "@code {");
+        var v2 = Segment(d, "@if (card != null)", "@code {");   // BM7b（Q646）：卡已失效时不进本组件
         Assert.That(v2, Does.Contain("GameEngine.EnemyCardDetailTitle"));
         Assert.That(v2, Does.Contain("GameEngine.EnemyCardFootnote"));
         Assert.That(v2, Does.Contain("@if (card.KeyEnemy) { <li>@GameEngine.KeyEnemyDetailNote</li> }"));

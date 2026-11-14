@@ -21,6 +21,15 @@ namespace Survival.Core.Engine
         public string Text { get; set; } = "";
     }
 
+    /// <summary>BM7b（S14 Q647／Q654）：战前「你的命中率」一行（派生值，不存档）。Legal=false 显示「当前无可用攻击」。</summary>
+    public sealed class PreBattleHit
+    {
+        public bool Legal { get; set; }
+        /// <summary>命中能力（原预演，含疲劳与确定入场恐慌门槛）。</summary>
+        public double Accuracy { get; set; }
+        public double HitChance { get; set; }
+    }
+
     /// <summary>后台六项（测试与开发查看用；不进玩家界面）。</summary>
     public sealed class EngageRiskFactors
     {
@@ -112,6 +121,18 @@ namespace Survival.Core.Engine
         /// </summary>
         public EngageRiskFactors? EngageRiskFactorsFor(GameState s, EnemyCardView card)
         {
+            if (EntryProjection(s, card) is not var (c, b)) return null;
+            return EngageRiskFactorsOn(c, b);
+        }
+
+        /// <summary>
+        /// 只读入场投影（R05 Q613 临时战斗；BM7b 起 S14／R05 Q647 计入确定的入场恐慌）：在状态副本上按 <see cref="StartBattle"/> 的容量、<see cref="EntryAllies"/> 入场号位、
+        /// 各成员开战武器页搭一场临时战斗；敌方是这张卡此刻实际会入场的名单（随机组不计隐藏成员；可选强敌未生成实体时只读其既定配置），按真实容量截取，不生成实体。
+        /// 每名我方参战者的恐慌取 <see cref="DeterministicEntryPanic"/>（本人精神、仍有效的惊魂未定），不抽受惊／同速随机／先手、不锁意图、不清惊魂未定。
+        /// 没有有效敌方活成员为 null。交战风险与战前「你的命中率」共用这一份投影。
+        /// </summary>
+        private (GameState c, BattleState b)? EntryProjection(GameState s, EnemyCardView card)
+        {
             // 敌方：这张卡此刻实际主动处理会纳入的名单（随机组不计隐藏成员；可选强敌未生成实体时只读其既定配置），按真实容量截取，不生成实体
             var members = EnemyCardPreviewMembers(s, card).Where(m => (m.Enemy?.Hp ?? _enemies[m.EnemyId].Hp) > 1e-9).ToList();
             if (members.Count == 0) return null;
@@ -143,7 +164,27 @@ namespace Survival.Core.Engine
                     Hp = we?.Hp ?? _enemies[enemyId].Hp, Hostile = we?.Hostile ?? true, JoinRound = 1,
                 }));
             }
+            // BM7b（S14／R05 Q647）：每人本人的确定入场恐慌（原 clamp）；命中能力等查询随后按原恐慌门槛（≥60×0.9、≥90×0.8 择一）读取
+            foreach (var id in b.Members)
+                using (FocusOn(c, id)) b.Panic = b.PanicPeak = DeterministicEntryPanic(c, id);
+            return (c, b);
+        }
 
+        /// <summary>
+        /// BM7b（S14／R05 Q647）：只读的确定入场恐慌 P_det=clamp((InitialBase−本人精神)/InitialDivisor＋本人仍有效的惊魂未定加值, 原范围)，与 <see cref="StartBattle"/> 同一公式；
+        /// 惊魂未定截止等于当前分钟即不再有效（同 TakeShakenPanic 的 &gt; 判断），但不清标记。不含随机受惊、不假定先手。
+        /// </summary>
+        public double DeterministicEntryPanic(GameState s, string actorId)
+        {
+            var pc = Config.Panic;
+            if (!s.Actors.TryGetValue(actorId, out var a)) return pc.Range[0];
+            var shake = a.ShakenUntil.HasValue && a.ShakenUntil.Value > s.GameMinute ? DX.ShakenPanic : 0;
+            return Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - a.Stats.Morale) / pc.InitialDivisor + shake));
+        }
+
+        /// <summary>在入场投影上求后台六项。</summary>
+        private EngageRiskFactors EngageRiskFactorsOn(GameState c, BattleState b)
+        {
             var f = new EngageRiskFactors();
             // 我方：按已保存编队与原入战资格真正参战的存活成员（含主角）；当前健康、体力、清醒、技能、装备、武器页、弹药均取现在事实
             var allySpeed = new List<double>();
@@ -322,7 +363,51 @@ namespace Survival.Core.Engine
             return sum / cands.Count;
         }
 
+        /// <summary>BM7b（S14／R05 Q647 逐字稿「战前命中口径说明」）：战前命中预估的口径说明。</summary>
+        public const string PreBattleHitNote = "已计入确定的入场恐慌；未计入随机受惊。";
+
+        /// <summary>
+        /// BM7b（S14／R05 Q647、Q654）：敌踪右栏与中央处理盘里每名成员的「你的命中率」，与 <see cref="EnemyCardPreviewMembers"/> 同序。
+        /// 在同一份入场投影（<see cref="EntryProjection"/>，含确定入场恐慌）上，主角以开战默认武器页的普通攻击对该成员的入场号位：原 <see cref="CommandBlocked"/>
+        /// （解锁、AP 预算、体力、耐久、弹药、己方站位、目标位）合法才取原预演 <see cref="PreviewCommand"/> 的命中能力与命中率；不合法、该成员不在入场名单内、
+        /// 主角不参战或卡已无有效成员时 Legal=false（显示「当前无可用攻击」），不预演装填、移位或换页，也不拿别的技能／应急拳击的数值顶替。只读。
+        /// </summary>
+        public List<PreBattleHit> PreBattleHits(GameState s, EnemyCardView card)
+        {
+            var preview = EnemyCardPreviewMembers(s, card);
+            var list = preview.Select(_ => new PreBattleHit()).ToList();
+            if (EntryProjection(s, card) is not var (c, b)) return list;
+            if (!b.Members.Contains(GameState.PlayerId) || c.Progress.Dead || c.Actors[GameState.PlayerId].Stats.Health <= 1e-9) return list;
+            using (FocusOn(c, GameState.PlayerId))
+            {
+                var me = b.Me;
+                var ap = NormalActivationAp(c.Player);
+                me.Acting = true;
+                me.Ap = ap;
+                me.ActivationAp = ap;
+                me.RoundStartEnergy = c.Stats.Energy;
+                try
+                {
+                    for (var k = 0; k < preview.Count; k++)
+                    {
+                        var (enemyId, we) = preview[k];
+                        var be = we != null ? b.Enemies.FirstOrDefault(x => x.WorldId == we.Id) : b.Enemies.FirstOrDefault(x => x.WorldId < 0 && x.EnemyId == enemyId);
+                        if (be == null) continue;
+                        var cmd = BattleCommand.Of(BasicAttack, be.Index);
+                        if (CommandBlocked(c, cmd) != null) continue;
+                        var p = PreviewCommand(c, cmd);
+                        var t = p.Targets.FirstOrDefault(x => x.Index == be.Index) ?? p.Targets.FirstOrDefault();
+                        if (!p.Ok || t == null) continue;
+                        list[k] = new PreBattleHit { Legal = true, Accuracy = t.AccuracyRating, HitChance = t.HitChance };
+                    }
+                }
+                finally { me.Acting = false; me.Ap = 0; }
+            }
+            return list;
+        }
+
         /// <summary>「战斗详情」命中率行有没有可预估的攻击：开战默认页武器能直接攻击且普通攻击已可用；否则写「当前无可用攻击」。</summary>
+        /// <remarks>BM7b 起右栏与处理盘改用 <see cref="PreBattleHits"/>（另看真实入场位置、弹药、AP、体力等），这里只留作静态口径。</remarks>
         public bool OutOfBattleHasAttack(GameState s)
         {
             WeaponOnPage(s, DefaultWeaponPage(s), out var w);

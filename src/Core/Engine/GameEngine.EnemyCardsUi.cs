@@ -22,11 +22,53 @@ namespace Survival.Core.Engine
         /// BM5b1（R05 Q639）：右栏身份「{身份}·{原卡名}」——只在真实守卫标记（固定战 guardian）时写「守卫·{原卡名}」，原卡名已含同前缀不重复；
         /// 其他卡沿原卡名（身份类别仍在原角标）。不凭风险或“强敌”造身份；只影响文字。
         /// </summary>
-        public static string EnemyRailIdentity(EnemyCardView card) =>
-            card.Guardian && !card.Title.StartsWith(GuardianIdentity) ? $"{GuardianIdentity}·{card.Title}" : card.Title;
+        /// <remarks>
+        /// BM7b（R05 Q648，取代 Q639 守卫前缀的对应部分）：地牢最终守卫（guardNode 上的 guardian 固定战）写「BOSS·{BOSS名字}」，其他真实守卫「守卫·{守卫名字}」；
+        /// 名字是原卡名（守卫卡取固定战名单首名本体的公开名），专名里的「守卫」保留，只去重复的身份前缀。卡面、悬停、右栏、中央处理盘的当前标题都用这里。
+        /// </remarks>
+        public static string EnemyRailIdentity(EnemyCardView card)
+        {
+            if (card.Boss) return card.Title.StartsWith(BossIdentity + "·") ? card.Title : $"{BossIdentity}·{card.Title}";
+            return card.Guardian && !card.Title.StartsWith(GuardianIdentity) ? $"{GuardianIdentity}·{card.Title}" : card.Title;
+        }
 
         /// <summary>R05 Q639：真实守卫标记的身份名（沿原角标「守卫」）。</summary>
         public const string GuardianIdentity = "守卫";
+
+        /// <summary>R05 Q648：地牢最终守卫的身份名。</summary>
+        public const string BossIdentity = "BOSS";
+
+        // ───────────── 公开特性（S14／逐字稿 Q649 正式特性句表） ─────────────
+
+        /// <summary>S14 Q649：右栏特性组名（在 Q639 主要属性之后）。</summary>
+        public const string EnemyTraitsLabel = "特性";
+        public const string TraitImmuneBleedText = "流血免疫：不会流血。";
+        public const string TraitStaggerOnceText = "护盔：抵挡本场首次失衡效果。";
+        public const string TraitProtectText = "保护同伴：具备保护同伴的能力，需满足实际站位和目标条件。";
+
+        /// <summary>
+        /// S14 Q649 死亡喷溅句的前半句（伤害部分）。正式句后半「造成正伤害时可能传播病毒。」依 Q652 多途径暴露，B49 接入感染规则时补上；
+        /// 现行喷溅仍不判感染，故本批只显示前半句、以句号收尾。
+        /// </summary>
+        public static string TraitDeathSplashText(double damage) => $"死亡喷溅：死亡时伤及我方1、2号位，基础伤害{Fmt.N(damage)}，护甲照常计算。";
+
+        /// <summary>S14 Q649：低血逃跑（fleeAtHp 是绝对健康阈值，沿健康数值精度）。</summary>
+        public static string TraitFleeText(double hp) => $"低血逃跑：健康不高于{Fmt.N(hp)}时可能尝试逃离。";
+
+        /// <summary>
+        /// S14 Q649：该敌种实际具备的身体能力与固定行为倾向，按正式表稳定顺序、每条一次，无则空表。只读静态配置：保护能力按全部意图步骤（opening＋cycle）里有无 protect，
+        /// 不读本回合已锁意图；中立沿卡面身份状态，不进特性。
+        /// </summary>
+        public List<string> EnemyPublicTraits(EnemyConfig ec)
+        {
+            var list = new List<string>();
+            if (ec.ImmuneBleed) list.Add(TraitImmuneBleedText);
+            if (ec.StaggerImmuneOnce) list.Add(TraitStaggerOnceText);
+            if (ec.DeathSplash > 1e-12) list.Add(TraitDeathSplashText(ec.DeathSplash));
+            if (ec.FleeAtHp is double flee) list.Add(TraitFleeText(flee));
+            if (ec.Intents.Opening.Concat(ec.Intents.Cycle).Any(st => st.Kind == "protect")) list.Add(TraitProtectText);
+            return list;
+        }
 
         /// <summary>
         /// BM5b1（R05 Q639）：敌踪卡面的受阻原因——卡自身的真实优先限制：首战门控时 <see cref="TutorialGateReason"/>，固定关键敌人（教学、固定战、守卫、检查哨）
@@ -69,6 +111,13 @@ namespace Survival.Core.Engine
         /// <summary>当前地点、当前区域可操作的这张卡（不在 <see cref="EnemyCardsHere"/> 里为 null）：界面开盘、选中、刷新与提交前的重验都用它（R05 Q457）。</summary>
         public EnemyCardView? EnemyCardHere(GameState s, string? cardKey) =>
             string.IsNullOrEmpty(cardKey) ? null : EnemyCardsHere(s).FirstOrDefault(c => c.Key == cardKey);
+
+        /// <summary>
+        /// BM7b（S14／R05 Q646）：右栏能否显示这张敌踪的详情——卡还在当前地点／区域，且仍有有效敌方活成员（与交战风险 Invalid 同一判定）。
+        /// 否则右栏直接回当前地块／区域详情（无法解析时原默认信息），不显示失效解释页。只读。
+        /// </summary>
+        public bool EnemyCardShowable(GameState s, string? cardKey) =>
+            EnemyCardHere(s, cardKey) is EnemyCardView card && EnemyCardPreviewMembers(s, card).Any(m => (m.Enemy?.Hp ?? _enemies[m.EnemyId].Hp) > 1e-9);
 
         /// <summary>
         /// 敌踪卡悬停（Q446 ⑥、Q539、Q550、Q551）：按行返回，界面自行排版。顺序：通用句 → 关键句（固定关键敌人，含教学卡；Q550）

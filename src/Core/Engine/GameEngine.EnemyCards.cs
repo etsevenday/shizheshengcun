@@ -56,6 +56,8 @@ namespace Survival.Core.Engine
         public bool Danger { get; set; }
         /// <summary>BM5b1（R05 Q639）：真实守卫标记（固定战配置 guardian），右栏身份「守卫·{原卡名}」用；只影响文字。</summary>
         public bool Guardian { get; set; }
+        /// <summary>BM7b（R05 Q648）：地牢最终守卫——地牢配置 guardNode 上的 guardian 固定战；当前标题「BOSS·{BOSS名字}」用，只影响文字。</summary>
+        public bool Boss { get; set; }
     }
 
     /// <summary>
@@ -315,11 +317,13 @@ namespace Survival.Core.Engine
                 return new EnemyCardView
                 {
                     Key = cardKey, Kind = "fixed", LocationId = node,
-                    Title = f.Guardian ? _enemies[members[0].EnemyId].Name : f.IsCampaign ? CheckpointCardTitle : FixedCardTitle,
+                    // BM7b（R05 Q648）：守卫卡的名字取固定战名单首名本体（enemyOrder[0]）的公开名，本体被击杀／移出后不改称幸存杂兵
+                    Title = f.Guardian ? _enemies[f.EnemyOrder.Count > 0 ? f.EnemyOrder[0] : members[0].EnemyId].Name : f.IsCampaign ? CheckpointCardTitle : FixedCardTitle,
                     Members = members, EnemyIds = members.Select(w => w.EnemyId).ToList(),
                     Vigilance = vig, KeyEnemy = true, TutorialGated = TutorialGateOpen(s),
                     Hidden = false, Engaged = members.Any(w => w.Engaged),
                     Badge = f.Guardian ? "守卫" : "固定", Danger = true, Guardian = f.Guardian,
+                    Boss = f.Guardian && f.DungeonId != null && DungeonCfg(f.DungeonId)?.GuardNode == node,
                 };
             }
             if (cardKey.StartsWith(ElitePrefix))

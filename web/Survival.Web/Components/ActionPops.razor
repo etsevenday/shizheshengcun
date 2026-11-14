@@ -102,12 +102,13 @@
             var whyEvade = e.CanStealthCard(s, key, GameEngine.EvadeKind, leader, evadeRate);
             var status = e.CardApproachStatus(s, c);
             var members = e.EnemyCardPreviewMembers(s, c);
+            var hits = G.PreBattleHits(c);
             var weapon = e.CurrentWeapon(s, out var wi);
             var labels = GameEngine.EnemyDiskLabels;
             var sneakName = GameEngine.StealthActionName(GameEngine.SneakKind);
             var evadeName = GameEngine.StealthActionName(GameEngine.EvadeKind);
             var reasons = new[] { whyApproach, whySneak, whyEvade }.Where(x => x != null).Distinct().ToList();
-            <AnchorPop AnchorId="@pop.AnchorId" Title="@c.Title" Sub="@c.Badge" CssClass="@("approach enemycard" + G.MenuHideCss)" OnClose="G.ClosePop">
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@GameEngine.EnemyRailIdentity(c)" Sub="@c.Badge" CssClass="@("approach enemycard" + G.MenuHideCss)" OnClose="G.ClosePop">
                 <Art>@Icons.Markup("enemy_" + c.EnemyIds[0])</Art>
                 <ChildContent>
                     <div class="lines ecard-lines">
@@ -117,14 +118,16 @@
                         <div><span>@labels[3]</span><b>@sneakName @GameEngine.StealthRateText(sneakRate)@if (!c.KeyEnemy) {<text> · @evadeName @GameEngine.StealthRateText(evadeRate)</text>}</b></div>
                         <div><span>@labels[4]</span><b>@e.StealthCheckMinutesText</b></div>
                     </div>
-                    @foreach (var m in members)
+                    @* BM7b（S14／R05 Q647、Q654）：命中与右栏「你的命中率」同一入场投影（含确定入场恐慌）；普通攻击不合法时写「当前无可用攻击」 *@
+                    @for (var k = 0; k < members.Count; k++)
                     {
+                        var m = members[k];
                         var ec = e.Enemy(m.EnemyId);
-                        var hit = e.OutOfBattleHit(s, ec);   // Q67：与战斗中同一公式（+8、疲劳一次×0.95）
+                        var hit = hits[k];
                         <div class="apop-note ecard-member"><b>@ec.Name</b> 健康@(Ui.N(m.Enemy?.Hp ?? ec.Hp))/@(Ui.N(ec.Hp))</div>
                         <div class="apop-facts">
                             <span title="敌人对你的命中率与伤害"><i class="pf-ico">⚔</i>对你@(Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))) · 伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax))</span>
-                            <span title="开战默认页（第一个有武器的页）的命中率（战斗中可切换武器页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(e.DefaultWeaponPage(s) == 1 ? "Ⅰ" : "Ⅱ") @(wi == null ? "拳" : weapon.Name) · 命中@(Ui.Pct(hit.HitChance))</span>
+                            <span title="开战默认页（第一个有武器的页）的命中率（战斗中可切换武器页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(e.DefaultWeaponPage(s) == 1 ? "Ⅰ" : "Ⅱ") @(wi == null ? "拳" : weapon.Name) · @(hit.Legal ? "命中" + Ui.Pct(hit.HitChance) : GameEngine.NoAttackHitText)</span>
                         </div>
                         @if (e.CanBite(ec)) { <div class="apop-risk">咬伤可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）</div> }
                         else if (ec.IsZombie) { <div class="apop-note">@GameEngine.NonBiteNote</div> }

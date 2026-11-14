@@ -9,13 +9,12 @@
 }
 @* B41e1 敌踪详情（逐字稿「右栏原「接敌还是绕行？」标题」→「敌踪详情」；Q446 ④：删旧「不受随机接敌保护期限制」，保留真实受惊预览，单卡／固定名单按真实卡写参战范围，
    组卡不写「只与这一只交战」；脚注与固定关键敌人补句复用逐字稿原句）。组卡、固定战按锁定名单原顺序逐个成员列原详情行。 *@
-@if (card == null)
-{
-    <div class="empty-detail">这个敌人已经离开。<br />选择地点、路线、资源或物品查看信息</div>
-}
-else
+@* BM7b（S14／R05 Q646）：卡已离开或没有有效敌方活成员时 SelectionDetail 不进这里（直接回当前地块／区域详情），这里不再写旧的失效解释与选其他对象提示 *@
+@if (card != null)
 {
     var members = e.EnemyCardPreviewMembers(s, card);
+    // BM7b（S14／R05 Q647、Q654）：每名成员的「你的命中率」——同一份含确定入场恐慌的入场投影，普通攻击不合法时「当前无可用攻击」
+    var hits = G.PreBattleHits(card);
     var weapon = e.CurrentWeapon(s, out var wi);
     var page = e.DefaultWeaponPage(s);
     var pageName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page)!);
@@ -36,15 +35,15 @@ else
             <Sub>
                 <div class="rail-src">@card.Badge · @GameEngine.VigilanceText(card.Vigilance)</div>
                 @* R05 Q613：只显示等级与通用提示，不展示后台分值。没有有效敌方活成员时不留旧等级 *@
-                @if (risk.Invalid) { <div class="risk" data-engage-risk="invalid">@GameEngine.EnemyCardInvalidText</div> }
-                else
+                @* BM7b（Q646）：Invalid 只作领域判定，不把其原因文字当右栏内容 *@
+                @if (!risk.Invalid)
                 {
                     <div class="rail-risk" data-engage-risk="@(risk.Unknown ? "unknown" : risk.Level.ToString())">@risk.Text</div>
                     <div class="rail-risk-note">@GameEngine.EngageRiskNote</div>
                 }
             </Sub>
         </RailHead>
-        @if (members.Count > 0) { @CoreLines(card, members[0]) }
+        @if (members.Count > 0) { @CoreLines(card, members[0]) @Traits(members[0].EnemyId) }
         @* BM5b1 试玩修复：右栏提示沿其他右栏（物品／火堆）放在主区数值之后、折叠组之前，不插进风险→六项属性之间 *@
         @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
 
@@ -60,10 +59,11 @@ else
                 }
                 @if (anyBite) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div> }
                 @if (!e.CanBite(e.Enemy(members[0].EnemyId)) && e.Enemy(members[0].EnemyId).IsZombie) { <div class="risk none">@GameEngine.NonBiteNote</div> }
-                @MemberLines(members[0], false)
-                @foreach (var m in members.Skip(1))
+                @MemberLines(members[0], hits[0], false)
+                @for (var k = 1; k < members.Count; k++)
                 {
-                    @MemberLines(m)
+                    var m = members[k];
+                    @MemberLines(m, hits[k])
                     @if (!e.CanBite(e.Enemy(m.EnemyId)) && e.Enemy(m.EnemyId).IsZombie) { <div class="risk none">@GameEngine.NonBiteNote</div> }
                 }
             </RailFold>
@@ -110,12 +110,10 @@ else
 
     /// <summary>一名成员在「战斗详情」里的原详情行（锁定名单原顺序）：类别／AP／站位／控制抗性、健康与攻防速、对你命中率与你的命中率。</summary>
     /// <param name="withKind">false：首位成员的健康与攻防速已在主区，这里只列类别与交战预估。</param>
-    private RenderFragment MemberLines((string EnemyId, WorldEnemy? Enemy) m, bool withKind = true) => __builder =>
+    private RenderFragment MemberLines((string EnemyId, WorldEnemy? Enemy) m, PreBattleHit hit, bool withKind = true) => __builder =>
     {
-        var s = G.S;
         var e = G.E;
         var ec = e.Enemy(m.EnemyId);
-        var hit = e.OutOfBattleHit(s, ec);
         <div class="lines rail-main enemy-lines">
             @MemberKind(m)
             @if (withKind)
@@ -124,15 +122,30 @@ else
                 <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.Speed(ec.Speed)</b></div>
                 <div><span>攻击能力</span><b>@Ui.T(ec.AttackRating)</b></div>
                 <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
+                @* BM7b（S14 Q649）：其他成员的特性跟随各自完整属性 *@
+                @foreach (var t in e.EnemyPublicTraits(ec)) { <div class="wide rail-fx" data-enemy-trait><span>@GameEngine.EnemyTraitsLabel</span><b>@t</b></div> }
             }
             <div><span>对你命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
-            @* R05 Q613：没有合适攻击者／目标时写「当前无可用攻击」，不造 0% 占位 *@
-            @if (e.OutOfBattleHasAttack(s))
+            @* R05 Q613、BM7b Q654：开战武器普通攻击在真实入场位置／弹药／技能／AP／体力等条件下不合法时只写「当前无可用攻击」，不造 0%、不出百分比；
+               合法时为含确定入场恐慌的原预演（Q647），悬停口径说明换 Q647 原句 *@
+            @if (hit.Legal)
             {
-                <div title="开战默认页普通攻击：(武器命中+3×熟练等级+8+装备命中)×疲劳；恐慌、失衡开战后才计"><span>你的命中率</span><b>@Ui.Pct(hit.HitChance)（命中能力@(Ui.N(hit.Accuracy))）</b></div>
+                <div title="开战默认页普通攻击：(武器命中+3×熟练等级+8+装备命中)×疲劳；@GameEngine.PreBattleHitNote"><span>你的命中率</span><b>@Ui.Pct(hit.HitChance)（命中能力@(Ui.N(hit.Accuracy))）</b></div>
             }
             else { <div><span>你的命中率</span><b>@GameEngine.NoAttackHitText</b></div> }
         </div>
+    };
+
+    /// <summary>BM7b（S14 Q649）：主区当前查看成员的公开特性（Q639 主要属性之后；正式表顺序、每条一次，无则不列）。</summary>
+    private RenderFragment Traits(string enemyId) => __builder =>
+    {
+        var traits = G.E.EnemyPublicTraits(G.E.Enemy(enemyId));
+        if (traits.Count > 0)
+        {
+            <div class="lines rail-main enemy-traits" data-enemy-traits>
+                @foreach (var t in traits) { <div class="wide rail-fx"><span>@GameEngine.EnemyTraitsLabel</span><b>@t</b></div> }
+            </div>
+        }
     };
 
     /// <summary>成员类别行：名称、族类、稀有层级、AP、站位、控制抗性（原句不改）。</summary>
