@@ -2540,6 +2540,8 @@ public sealed partial class GameSession
             return res;
         }
         var toCarried = owner != ItemInstance.Carried;
+        // BM5b2（S06 Q606）：卡角箭头与按钮、拖放同一配批语义——可堆叠物品按所点卡侧的物品组转 1 份（最早有效到期先取）
+        if (E.Groupable(inst)) return TransferGroup(inst.Owner, inst.ItemId, E.CardSideOf(inst), 1, toCarried);
         return Instant(toCarried ? InstantRequest.Pickup(inst.InstanceId, 1) : InstantRequest.Drop(inst.InstanceId, 1));
     }
 

@@ -615,6 +615,7 @@ public class BM5b2Tests : TestBase
         var session = Web("Services", "GameSession.cs");
         Assert.That(session, Does.Not.Contain("CraftPreferred"));
         Assert.That(session, Does.Contain("public ActionResult TransferGroup(string owner, string itemId, string? side, int count, bool toCarried"));
+        Assert.That(session, Does.Contain("if (E.Groupable(inst)) return TransferGroup(inst.Owner, inst.ItemId, E.CardSideOf(inst), 1, toCarried);"), "卡角箭头同一配批语义");
         var fire = Web("Components", "FireMenu.razor");
         Assert.That(fire, Does.Contain("if (e.Groupable(src)) req = e.AsGroup(req, src);"), "火堆来源按组提交");
         Assert.That(fire, Does.Contain("<span class=\"fm-src-name\">@nm<b>×@r.Count</b>"), "来源行显示本组合计");
