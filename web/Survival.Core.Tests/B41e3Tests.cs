@@ -69,9 +69,9 @@ public class B41e3Tests : B41cTestBase
         Assert.That(chained, Does.Contain("OnBattleEnded();"), "先按战斗结束收尾上一场");
         Assert.That(chained, Does.Contain("Selected = new Selection();").And.Contain("DetailTab = DetailTab.Object;").And.Contain("AutoTarget();"), "再按原入战流程接下一场");
         // 执行指令与逐条推进两处都按战斗号判断“换了一场”
-        Assert.That(g, Does.Contain("else if (State != null && S.Battle != null && S.Battle.BattleId != battleId) OnChainedBattle();"));
+        Assert.That(g, Does.Contain("var chainedNow = State != null && S.Battle != null && S.Battle.BattleId != battleId;").And.Contain("else if (chainedNow) OnChainedBattle();"));
         Assert.That(g, Does.Contain("var chained = State != null && S.Battle != null && S.Battle.BattleId != stepBattle;"));
-        Assert.That(g, Does.Contain("if (chained) { await Task.Delay(EnemyStepDelayMs); continue; }"), "下一场接着走，不停在“已结束”");
+        Assert.That(g, Does.Contain("if (chained) { ClearFxSkip(); if (!played) await StepPause(); continue; }"), "下一场接着走，不停在“已结束”（B34b：上一场的特写先播完，跳过意图不带进下一场）");
     }
 
     [Test]

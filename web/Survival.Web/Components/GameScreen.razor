@@ -199,6 +199,8 @@
 
 <DropQuantity />
 <EndScreens />
+@* B34b（R03 §Q572）：战斗已经收束（胜利、撤退、死亡）时，最后几段特写在结算画面之上播完或被跳过，再露出收束画面；菜单在它之上 *@
+@if (G.PlaybackActive && !G.InBattleUi) { <BattleFxLayer /> }
 @if (G.MenuOpen && G.S.Progress.Dead)
 {
     @* B31d（逐字稿 §1.2 Q333 选 A）：死亡结算页的「菜单」或 Esc 打开的游戏菜单——盖在结算层之上（结算层在 .game 之外），只开放阅读字体、动画速度与
@@ -391,6 +393,9 @@
     {
         if (G.State == null) return;
         if (key == "Escape") { Escape(); return; }
+        // B34b（S14 Q572）：特写播放层独占画面点击、Enter、Space——一次输入只走一级跳过
+        if (key == "Skip") { G.PlaybackSkip(); return; }
+        if (G.PlaybackActive && !G.FxUnderReading) return;
         // 死亡结算（B31d Q333）：只有 Esc（同结算页「菜单」键），其余快捷键无效
         if (G.S.Progress.Dead) return;
         // 对话读完锁（Q10、S14 §10.1）与菜单打开时：快捷键全部无效，只有 Esc（开关菜单）
@@ -424,6 +429,15 @@
     /// </summary>
     private void Escape()
     {
+        // B34b（S14 Q572）：播放中只有 ESC 打开当前情境菜单（战斗中为战斗菜单，已收束为游戏菜单）；菜单沿原阅读暂停停住当前帧。
+        // 只读子页开着时它是最上层，ESC 先按原层级收它。菜单已开时交给下面的原路由关闭。
+        if (G.PlaybackActive && !G.MenuOpen && !G.BattleMenuOpen)
+        {
+            if (G.FxUnderReading) G.BattleEscape();
+            else if (G.InBattleUi && !G.S.Progress.Dead) G.ToggleBattleMenu(true);
+            else G.SetMenu(true);
+            return;
+        }
         var full = G.BattleFullscreen;
         var dead = G.S.Progress.Dead;
         var route = ShellEsc.Route(new ShellEscInput

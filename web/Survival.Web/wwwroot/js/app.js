@@ -356,6 +356,16 @@ window.survival = {
         if (k === 'Escape' && !mod) send('Escape');
         return;
       }
+      // B34b（S14 Q572）：战斗特写播放层在最上层时，Enter／Space 是跳过（按住不重复、一次只走一级），ESC 打开菜单，其余键不穿透到背后的战斗、对白或结算；
+      // 只读子页盖在播放层上面时（.under）按键归子页，照原规则处理
+      var fxl = document.querySelector('.bfx-layer[data-active]');
+      if (fxl && !fxl.classList.contains('under')) {
+        if (mod) return;
+        if (k === 'Escape') { send('Escape'); return; }
+        if (k === 'Enter' || k === ' ') { ev.preventDefault(); if (!ev.repeat) dotnet.invokeMethodAsync('OnKey', 'Skip'); return; }
+        if (k !== 'Tab') ev.preventDefault();
+        return;
+      }
       // 人物对话读完锁（Q10、S14 §10.1）：数字、字母一律不转给游戏；Esc 不结束对白，交给游戏打开当前情境的菜单（B31b，Q322）。
       // B43：唯一无分支的「继续／结束对话」（data-dlg-next）在焦点不在具体控件上时收 Enter，一次只确认当前行一次；招募等分支不由 Enter 代选。
       if (document.querySelector('.dlg-layer')) {

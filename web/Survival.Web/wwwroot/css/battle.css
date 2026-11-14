@@ -452,3 +452,74 @@
 .blog-foot button { width: auto; min-height: 34px; padding: 0 12px; font-size: var(--fs-body); }
 .blog-new { border-color: var(--accent); color: var(--accent); }
 .bi-detail-wrap { min-height: 0; }
+
+/* ───── B34b 战斗特写播放层（R03 §Q571／§Q572；a9b93f0 动效合同 battle 1200ms：0 锁定 · 150 切入 · 390 接触帧 · 565 数值 · 880 回位 · 1200 释放） ─────
+   时长 --fx-ms＝1200ms×动画速度（GameSession.FxDurationMs）。结束帧即真实结果：fill-mode both，跳到结果（.at-result）与减少动态效果都直接显示它。 */
+.bfx-layer {
+  position: fixed; inset: 0; z-index: 70; cursor: pointer; overflow: hidden;
+  display: grid; grid-template-rows: minmax(0, 1fr) auto; align-items: end;
+  background: radial-gradient(ellipse at 50% 60%, #1b2226, #07090a 70%);
+  color: #ece0c4;
+}
+.bfx-layer::before, .bfx-layer::after { content: ""; position: absolute; left: 0; right: 0; height: 7vh; background: #000; z-index: 0; pointer-events: none; }
+.bfx-layer::before { top: 0; }
+.bfx-layer::after { bottom: 0; }
+/* 只读子页（全记录、预测详情等）开着时：播放照常，但退到子页之下，点击归子页 */
+.bfx-layer.under { z-index: 30; pointer-events: none; }
+/* 菜单、系统说明打开：停在当前帧 */
+.bfx-layer.paused, .bfx-layer.paused * { animation-play-state: paused !important; }
+.bfx-layer.at-result * { animation: none !important; }
+.bfx-stage { position: relative; z-index: 1; display: flex; justify-content: center; align-items: flex-end; gap: clamp(90px, 20vw, 380px);
+  padding: 10vh 4vw 0; animation: bfx-in calc(var(--fx-ms) * .125) ease-out both; }
+.bfx-stage.cont { animation: none; }
+.bfx-group { display: flex; align-items: flex-end; gap: clamp(12px, 2vw, 32px); }
+.bfx-group.left { flex-direction: row-reverse; }
+.bfx-fig { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; width: clamp(110px, 13vw, 210px); }
+.bfx-art { position: relative; width: 100%; height: clamp(170px, 34vh, 330px); display: grid; place-items: end center; }
+.bfx-art > img, .bfx-art > svg { height: 100%; width: auto; max-width: 100%; object-fit: contain; }
+.bfx-name { font-size: var(--fs-body); font-weight: 600; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.bfx-chips { position: absolute; top: -4px; left: 50%; translate: -50% -100%; display: flex; gap: 8px; justify-content: center; white-space: nowrap; min-height: 1.4em; }
+.bfx-chip { font-size: clamp(22px, 2.6vw, 40px); font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; text-shadow: 0 2px 0 #000, 0 0 10px #000;
+  animation: bfx-chip calc(var(--fx-ms) * .2) ease-out both; animation-delay: calc(var(--fx-ms) * (.33 + var(--i) * .09)); }
+.bfx-chip.o-crit { color: #ffb347; font-size: clamp(26px, 3vw, 46px); }
+.bfx-chip.o-heal { color: #9be38b; }
+.bfx-chip:is(.o-miss, .o-blocked, .o-effect) { width: 22px; height: 22px; border: 3px solid #b9b2a2; border-radius: 50%; align-self: center; }
+.bfx-chip.o-blocked, .bfx-chip.g:empty { border-color: #d4a84a; border-radius: 3px; }
+.bfx-caption { position: relative; z-index: 1; margin: 0 auto 9vh; padding: 10px 6vw 0; max-width: 1200px; text-align: center; font-size: var(--fs-body); line-height: 1.5; color: #d6ccb4;
+  animation: bfx-chip calc(var(--fx-ms) * .2) ease-out both; animation-delay: calc(var(--fx-ms) * .47); }
+.bfx-caption p { margin: 0; }
+.bfx-skip { position: absolute; z-index: 2; right: 24px; bottom: calc(7vh + 10px); width: auto; min-height: 36px; padding: 0 12px; display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
+.bfx-skip .keycap { font-size: var(--fs-aux); }
+/* 近战：行动者前压到接触帧再回位；远程、治疗保持站位 */
+.bfx-stage:is(.bfx-m-melee, .bfx-m-area).from-ally .bfx-fig.actor .bfx-art { animation: bfx-lunge-r var(--fx-ms) ease-in-out both; }
+.bfx-stage:is(.bfx-m-melee, .bfx-m-area).from-foe .bfx-fig.actor .bfx-art { animation: bfx-lunge-l var(--fx-ms) ease-in-out both; }
+.bfx-stage.bfx-m-ranged .bfx-fig.actor .bfx-art, .bfx-stage.bfx-m-heal .bfx-fig.actor .bfx-art { animation: bfx-cast var(--fx-ms) ease-out both; }
+.bfx-group.right .bfx-fig.hurt .bfx-art { animation: bfx-hit-r var(--fx-ms) ease-out both; }
+.bfx-group.left .bfx-fig.hurt .bfx-art { animation: bfx-hit-l var(--fx-ms) ease-out both; }
+.bfx-fig.dodge .bfx-art { animation: bfx-dodge var(--fx-ms) ease-out both; }
+.bfx-fig.down .bfx-art { animation: bfx-down var(--fx-ms) ease-in both; opacity: .5; filter: grayscale(1); rotate: 10deg; translate: 0 6%; }
+.bfx-shield { position: absolute; inset: 14% 6% 6%; border: 4px solid #d4a84a; border-radius: 50%; opacity: .55; animation: bfx-flash var(--fx-ms) ease-out both; }
+.bfx-glow { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(closest-side, #8fe37a66, transparent); opacity: .7; animation: bfx-flash var(--fx-ms) ease-out both; }
+.bfx-trail { position: absolute; z-index: 0; top: 45%; left: 30%; right: 30%; height: 4px; opacity: 0; background: linear-gradient(90deg, transparent, #f2c27b, transparent);
+  animation: bfx-trail var(--fx-ms) linear both; }
+.bfx-trail.rtl { transform-origin: right; }
+.bfx-trail.ltr { transform-origin: left; }
+@keyframes bfx-in { from { opacity: 0; scale: .96; } to { opacity: 1; scale: 1; } }
+@keyframes bfx-chip { from { opacity: 0; translate: 0 10px; } to { opacity: 1; translate: 0 0; } }
+@keyframes bfx-lunge-r { 0%, 12.5% { translate: 0 0; } 30% { translate: 7vw 0; } 34% { translate: 6vw 0; } 73% { translate: 6vw 0; } 100% { translate: 0 0; } }
+@keyframes bfx-lunge-l { 0%, 12.5% { translate: 0 0; } 30% { translate: -7vw 0; } 34% { translate: -6vw 0; } 73% { translate: -6vw 0; } 100% { translate: 0 0; } }
+@keyframes bfx-cast { 0%, 12.5% { filter: none; } 26% { filter: brightness(1.5); } 40%, 100% { filter: none; } }
+@keyframes bfx-hit-r { 0%, 32% { translate: 0 0; filter: none; } 35% { translate: 18px 0; filter: brightness(2.2); } 48% { translate: 6px 0; filter: none; } 100% { translate: 0 0; } }
+@keyframes bfx-hit-l { 0%, 32% { translate: 0 0; filter: none; } 35% { translate: -18px 0; filter: brightness(2.2); } 48% { translate: -6px 0; filter: none; } 100% { translate: 0 0; } }
+@keyframes bfx-dodge { 0%, 30% { translate: 0 0; } 38% { translate: 0 0; skew: -6deg; } 46% { translate: 34px -6px; skew: 0deg; } 80% { translate: 34px 0; } 100% { translate: 0 0; } }
+@keyframes bfx-down { 0%, 32% { opacity: 1; filter: none; rotate: 0deg; translate: 0 0; } 40% { filter: brightness(2); } 70%, 100% { opacity: .5; filter: grayscale(1); rotate: 10deg; translate: 0 6%; } }
+@keyframes bfx-flash { 0%, 30% { opacity: 0; scale: .8; } 36% { opacity: 1; scale: 1.06; } 100% { opacity: .55; scale: 1; } }
+@keyframes bfx-trail { 0%, 16% { opacity: 0; scale: 0 1; } 30% { opacity: 1; scale: 1 1; } 42%, 100% { opacity: 0; scale: 1 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .bfx-layer * { animation-delay: 0s !important; }
+}
+/* 短反馈（防御、调息、调整站位、撤退、装填、整队、支撑护带包；敌方非攻击意图）：行动者锚点亮一下，不挡输入、不进队列 */
+.anc.fx-pulse.a .anc-art { animation: fx-pulse-a calc(600ms * var(--motion-k)) ease-out 1; }
+.anc.fx-pulse.b .anc-art { animation: fx-pulse-b calc(600ms * var(--motion-k)) ease-out 1; }
+@keyframes fx-pulse-a { 0% { filter: none; } 35% { filter: brightness(1.6) drop-shadow(0 0 10px #d4a84a); } 100% { filter: none; } }
+@keyframes fx-pulse-b { 0% { filter: none; } 35% { filter: brightness(1.6) drop-shadow(0 0 10px #d4a84a); } 100% { filter: none; } }

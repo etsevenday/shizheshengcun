@@ -1,0 +1,72 @@
+@inherits GameComponent
+
+@* B34b（R03 文首「2026-11-13 B34主要Q570—Q572」§Q571／§Q572；a9b93f0 动效合同 battle 七类、《给开发的动效说明》1200ms 时序与近战特写分镜）：
+   战斗特写播放层。只读 G.FxNow 这一段出手快照（行动者、承受者、按真实次序的各段结果、同次战报原文），不读当前战斗状态——
+   上一场的最后几段播放时下一场的演员、HP 不会混进来。画面点击＝跳过（第一次到结果帧，再一次跳过余下）；只读子页盖在上面时退到下面、不收点击。
+   标题与结果用字等 Q573 答复：现在不加标题，结果只显示与战报同格式的数值，文字取同次战报原句。人物图沿用战场现有立绘（主角立绘、敌人图标）。 *@
+@if (G.FxNow is BattleFxEvent ev)
+{
+    var look = ev.Look;
+    var allies = Units(ev, true);
+    var foes = Units(ev, false);
+    <div class="bfx-layer @(G.FxUnderReading ? "under" : "") @(G.FxPaused ? "paused" : "") @(G.FxAtResult ? "at-result" : "")" data-active
+         style="--fx-ms:@(G.FxDurationMs)ms" @onclick="G.PlaybackSkip" aria-hidden="@(G.FxUnderReading)">
+        <div class="bfx-stage bfx-@look bfx-m-@ev.Motion @(ev.Actor.IsAlly ? "from-ally" : "from-foe") @(ev.ContinuesSeq != null ? "cont" : "")" @key="G.FxSegment" aria-hidden="true">
+            <div class="bfx-group left">@foreach (var u in allies) { @Figure(ev, u) }</div>
+            <div class="bfx-group right">@foreach (var u in foes) { @Figure(ev, u) }</div>
+            @if (ev.Motion == BattleFxMotion.Ranged) { <i class="bfx-trail @(ev.Actor.IsAlly ? "ltr" : "rtl")"></i> }
+        </div>
+        <div class="bfx-caption" aria-live="polite">
+            @foreach (var line in ev.Lines) { <p>@line</p> }
+        </div>
+        @if (G.FxSkipLabel is string label)
+        {
+            <button type="button" class="bfx-skip" @onclick="G.PlaybackSkip" @onclick:stopPropagation="true">@label<kbd class="keycap">@ShellKeys.EnterSpaceCap</kbd></button>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>这一段里出现的角色（行动者在前，再按结果出现的先后），按阵营分到左（我方）右（敌方）。</summary>
+    private static List<BattleFxUnit> Units(BattleFxEvent ev, bool ally)
+    {
+        var list = new List<BattleFxUnit>();
+        void Add(BattleFxUnit u) { if (u.IsAlly == ally && !list.Any(x => x.Id == u.Id)) list.Add(u); }
+        Add(ev.Actor);
+        foreach (var r in ev.Results) Add(r.Target);
+        return list;
+    }
+
+    private RenderFragment Figure(BattleFxEvent ev, BattleFxUnit u) => __builder =>
+    {
+        var isActor = u.Side == ev.Actor.Side && u.Id == ev.Actor.Id;
+        var rs = ev.Results.Where(r => r.Target.Side == u.Side && r.Target.Id == u.Id).ToList();
+        var down = rs.Any(r => r.Down);
+        var allMiss = rs.Count > 0 && rs.All(r => r.Outcome == "miss");
+        var guarded = rs.Any(r => r.Guarded || r.Outcome == "blocked");
+        var hurt = rs.Any(r => r.Outcome is "hit" or "crit");
+        var healed = rs.Any(r => r.Outcome == "heal") || (ev.Motion == BattleFxMotion.Heal && rs.Count > 0);
+        <div class="bfx-fig @(isActor ? "actor" : "") @(rs.Count > 0 ? "target" : "") @(down ? "down" : "") @(allMiss ? "dodge" : "") @(guarded ? "guard" : "") @(hurt ? "hurt" : "") @(healed ? "healed" : "")">
+            <div class="bfx-chips">
+                @for (var i = 0; i < rs.Count; i++)
+                {
+                    var r = rs[i];
+                    var text = ev.NoNumbers ? null : r.Outcome switch
+                    {
+                        "hit" or "crit" => "−" + Ui.N(r.Amount),
+                        "heal" => "+" + Ui.N(r.Amount),
+                        _ => null,
+                    };
+                    <span class="bfx-chip o-@r.Outcome @(r.Guarded ? "g" : "")" style="--i:@i">@if (text != null) {@text}</span>
+                }
+            </div>
+            <div class="bfx-art">
+                @if (u.IsAlly) { <img src="img/portraits/protagonist.svg" alt="" draggable="false" /> }
+                else { @Icons.Markup("enemy_" + u.EnemyId) }
+                @if (guarded) { <i class="bfx-shield"></i> }
+                @if (healed) { <i class="bfx-glow"></i> }
+            </div>
+            <b class="bfx-name">@u.Name</b>
+        </div>
+    };
+}

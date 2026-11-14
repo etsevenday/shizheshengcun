@@ -67,6 +67,7 @@ public sealed partial class GameSession
             if (S.Progress.Dead) return MenuOpen ? EscOwner.Menu : DeathLogOpen ? EscOwner.DeathLog : EscOwner.OpenMenu;
             if (MenuOpen) return EscOwner.Menu;
             if (BattleMenuOpen) return EscOwner.BattleMenu;
+            if (PlaybackActive && !FxUnderReading) return EscOwner.OpenMenu;   // B34b（Q572）：播放中只有 ESC 开菜单
             if (DialogueLocked) return EscOwner.OpenMenu;
             if (BattleFullscreen) return BattleEscOwner();
             return NormalEscOwner();

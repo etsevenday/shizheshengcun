@@ -1600,6 +1600,7 @@ public sealed partial class GameSession
         Running = false;
         ResetBattleUi();
         BattleBusy = false;
+        ResetPlayback();   // B34b（Q572）：读档、新局、回标题清旧播放与跳过意图，旧推进循环随代号退出
     }
 
     // ───────────── 选择 ─────────────
@@ -2793,6 +2794,7 @@ public sealed partial class GameSession
     public async Task BattleConfirmHover()
     {
         if (State == null || S.Battle == null || BattleAction == null || BattleBusy || DialogueLocked || BattleMenuOpen || !E.AwaitingPlayer(S)) return;
+        if (PlaybackActive || FxJustEnded) return;   // B34b（Q572）：播放结束的同一次 Enter 不接着确认指令
         if (BattleAiming)
         {
             // BM2（Q497）：瞄准中回车与目标预测区「执行{指令名}」同一入口、同一校验
@@ -3116,10 +3118,13 @@ public sealed partial class GameSession
         if (State == null || S.Battle == null || BattleBusy || BattleAction == null) return;
         var cmd = CurrentBattleCommand().WithRequestId(string.IsNullOrEmpty(requestId) ? Guid.NewGuid().ToString("N") : requestId);
         var battleId = S.Battle.BattleId;
+        var gen = _fxGen;
         BattleBusy = true;
         try
         {
+            E.DrainBattleFx();   // B34b：只播这一次提交产生的出手
             var res = E.ExecuteCommand(S, cmd);
+            var fx = E.DrainBattleFx();
             Notice = res.Ok ? null : res.Reason;
             // Q105：整队提交时目标或号位已变化——整条拒绝、清掉草稿让玩家重选，不自动改选别人
             if (!res.Ok && cmd.AllyTarget2 != null) ClearPairDraft();
@@ -3132,17 +3137,21 @@ public sealed partial class GameSession
                 if (S.Battle != null && BattleTarget != null && S.Battle.Enemies.All(e => e.Index != BattleTarget || !e.Alive)) BattleTarget = null;
                 AutoTarget();
             }
+            var chainedNow = State != null && S.Battle != null && S.Battle.BattleId != battleId;
             if (State != null && S.Battle == null) OnBattleEnded();
-            else if (State != null && S.Battle != null && S.Battle.BattleId != battleId) OnChainedBattle();
+            else if (chainedNow) OnChainedBattle();
             Drain();
             Commit();
             Notify();
+            // B34b（R03 §Q572）：真实结果已提交、已存档；再播这次出手的特写（期间仍锁指令，播完或跳过后才承接对白、收束或下一场画面）
+            if (res.Ok && !res.Duplicate) await PlayFx(fx);
+            if (gen == _fxGen && (State == null || S.Battle == null || chainedNow || E.AwaitingPlayer(S) || DialogueLocked)) ClearFxSkip();
         }
         finally
         {
-            BattleBusy = false;
+            if (gen == _fxGen) BattleBusy = false;
         }
-        await BattleLoop();
+        if (gen == _fxGen) await BattleLoop();
     }
 
     // ───────────── B41e1 新版敌踪卡 ─────────────
@@ -3377,16 +3386,19 @@ public sealed partial class GameSession
     {
         if (State == null || S.Battle == null || BattleBusy) return;
         BattleBusy = true;
+        var gen = _fxGen;
         try
         {
-            while (State != null && S.Battle != null && !S.Progress.Dead && !E.AwaitingPlayer(S))
+            while (State != null && S.Battle != null && !S.Progress.Dead && !E.AwaitingPlayer(S) && gen == _fxGen)
             {
                 // B9（A10 §6.3）：战斗菜单、系统说明是阅读暂停——逐条展示的下一步敌方行动等它们关上再走，不额外推进
-                while (State != null && S.Battle != null && BattleReadingPause) await Task.Delay(120);
+                while (State != null && S.Battle != null && BattleReadingPause && gen == _fxGen) await Task.Delay(120);
                 if (State == null || S.Battle == null) break;
                 var at = S.Battle.Cursor < S.Battle.Queue.Count ? S.Battle.Queue[S.Battle.Cursor] : (int?)null;
                 var stepBattle = S.Battle.BattleId;
+                E.DrainBattleFx();
                 var r = E.BattleStep(S);
+                var fx = E.DrainBattleFx();
                 var chained = State != null && S.Battle != null && S.Battle.BattleId != stepBattle;
                 if (chained) { OnChainedBattle(); at = null; }
                 // B9 遗留 1：敌人这一步结算完游标已经往后走，展示停顿期间按“刚出手的那一只”点名
@@ -3394,21 +3406,31 @@ public sealed partial class GameSession
                 Drain();
                 Commit();
                 Notify();
-                if (chained) { await Task.Delay(EnemyStepDelayMs); continue; }   // B41e3：上一场结束、下一场已开——接着走下一场（敌方先手等），不停在“已结束”
+                // B34b（R03 §Q571／§Q572）：这一步的结果已提交；有特写就先播完或跳过（不再叠旧的逐条停顿），之后才承接对白、收束或下一场
+                var played = await PlayFx(fx);
+                if (gen != _fxGen) return;   // 读档／新局：旧循环直接退出，不碰新局的锁
+                if (chained) { ClearFxSkip(); if (!played) await StepPause(); continue; }   // B41e3：上一场结束、下一场已开——接着走下一场（敌方先手等），不停在“已结束”
                 if (r.Kind is BattleStepKind.None or BattleStepKind.Ended or BattleStepKind.Dialogue) break;
-                if (r.Kind is BattleStepKind.EnemyActed or BattleStepKind.RoundEnded)
-                    await Task.Delay(EnemyStepDelayMs);
+                if (r.Kind is BattleStepKind.EnemyActed or BattleStepKind.RoundEnded && !played)
+                    await StepPause();
             }
         }
         finally
         {
-            BattleBusy = false;
-            if (State != null && S.Battle == null) OnBattleEnded();
-            else AutoTarget();
-            Commit();
-            Notify();
+            if (gen == _fxGen)
+            {
+                BattleBusy = false;
+                ClearFxSkip();   // 到玩家指令、对白或战斗收束：本批“跳过余下”不带到下一次
+                if (State != null && S.Battle == null) OnBattleEnded();
+                else AutoTarget();
+                Commit();
+                Notify();
+            }
         }
     }
+
+    /// <summary>没有特写的一步（短反馈、轮末等）沿原逐条展示间隔；本批已选择跳过余下表现时只让出线程。</summary>
+    private Task StepPause() => Task.Delay(_fxSkipAll ? 1 : EnemyStepDelayMs);
 
     /// <summary>战斗结束（胜利、撤退、玩家指令直接结束）后的界面收尾：清指令与目标、悬停预测；没有选中对象时右栏回人物页（与 v0.7 试玩修复 B11 同一规则）。</summary>
     private void OnBattleEnded()

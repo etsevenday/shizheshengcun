@@ -159,6 +159,10 @@ namespace Survival.Core.Engine
         public const string SkipAnim = "跳过动画";
         public const string SpaceCap = "空格";
         public const string SkipAnimTitle = "只跳过表现，不改变游戏时间与结果";
+        /// <summary>B34b（S14 键表「战斗已有／已批准动画跳过控件」、逐字稿 B34 Q571／Q572 节）：战斗特写两级跳过的业务名与键帽。</summary>
+        public const string SkipToResult = "跳到结果";
+        public const string SkipRest = "跳过余下";
+        public const string EnterSpaceCap = "Enter / Space";
 
         /// <summary>BM2（Q496）：顶栏、战斗区、结算页「菜单 ESC」按钮的悬停正式句。</summary>
         public const string MenuHover = "点击打开或关闭菜单。按 ESC 时先处理当前可关闭层；没有可关闭层时打开菜单。";
