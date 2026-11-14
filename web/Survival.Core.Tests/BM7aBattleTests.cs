@@ -57,6 +57,32 @@ public class BM7aBattleTests
         Assert.That(js, Does.Contain("if (k === 'Enter' || k === ' ') { ev.preventDefault(); if (!ev.repeat) dotnet.invokeMethodAsync('OnKey', 'Skip'); return; }"), "播放层接住 Enter／Space，不落到背后");
     }
 
+    // ───── Q634：不可去的位置不可选 ─────
+
+    /// <summary>Q634-A01：选位中不合法号位不进 Tab 序列、点击／键盘激活不移动不扣费不取消不提示；无“可移过来”错误承诺；合法号位仍原提交与重验。</summary>
+    [Test]
+    public void Q634_A01_IllegalSlotsNotSelectable()
+    {
+        var swap = Web("Services", "GameSession.BattleSwap.cs");
+        var click = Slice(swap, "public async Task ClickSwapSlot(int pos, string token)", "BattleItem = pos;");
+        Assert.That(click, Does.Contain("if (!SwapAimSlots().Contains(pos)) return;"), "不合法：什么也不做");
+        Assert.That(click, Does.Not.Contain("Notice").And.Not.Contain("ClearBattleAction"), "不新增提示、不退出选位");
+        Assert.That(swap, Does.Contain("await ExecuteBattleCommand(token);"), "合法号位仍走原请求与内核重验");
+
+        var bs = Web("Components", "BattleScreen.razor");
+        Assert.That(bs, Does.Contain("var swapOff = G.BattleSwapAiming && !swapSlot;"));
+        Assert.That(bs, Does.Contain("tabindex=\"@(swapOff ? -1 : 0)\""), "不合法的有人号位不进键盘序列");
+        Assert.That(bs, Does.Contain("aria-disabled=\"@(swapOff ? \"true\" : null)\""));
+        // 空号位：选位中的不合法空位没有 role／tabindex（不可激活），说明去掉“可移过来”
+        var empty = Slice(bs, "<div class=\"anc ally empty @(G.BattleSwapAiming ? \"unreachable\" : \"\")\"", ">");
+        Assert.That(empty, Does.Not.Contain("tabindex").And.Not.Contain("@onclick").And.Not.Contain("role="));
+        Assert.That(empty, Does.Contain("G.BattleSwapAiming ? $\"我方{pos}号位：空位（空位不是未解锁）\""));
+        Assert.That(bs, Does.Not.Contain("这里不能移过去"), "不新增提示句");
+        // 合法号位仍亮起可点、可键盘激活；ESC／×／再点卡取消沿原规则
+        Assert.That(bs, Does.Contain("@onclick=\"() => G.ClickSwapSlot(pos, token)\" @onkeydown=\"ev => EmptySlotKey(ev, pos, token, locked)\""));
+        Assert.That(bs, Does.Contain("<button type=\"button\" class=\"bx-x\" aria-label=\"取消（ESC）\" title=\"取消（ESC/右键），不执行\" @onclick=\"G.ClearBattleAction\">×</button>"));
+    }
+
     internal static string Slice(string text, string from, string to)
     {
         var a = text.IndexOf(from, StringComparison.Ordinal);

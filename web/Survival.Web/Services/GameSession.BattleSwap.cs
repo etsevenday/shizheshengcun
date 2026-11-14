@@ -32,18 +32,14 @@ public sealed partial class GameSession
         State == null || S.Battle == null ? null : E.BattleOptions(S).FirstOrDefault(o => o.Action == "swap" && o.ItemInstanceId == pos);
 
     /// <summary>
-    /// 明确选了一个目的号位：合法就按原请求提交一次（同一 requestId 防连点）；不合法写原因，不代选别的号位。
+    /// 明确选了一个目的号位：合法就按原请求提交一次（同一 requestId 防连点）；不代选别的号位。
+    /// BM7a（S14 Q634）：不合法号位不可选——点击／键盘激活什么也不做：不移动、不扣费、不退出选位、不清草稿，也不新增提示。
     /// 提交没成功（目的地被占、费用不够等重验失败）时回到选位状态，原因照原文显示。
     /// </summary>
     public async Task ClickSwapSlot(int pos, string token)
     {
         if (!BattleSwapAiming || BattleBusy) return;
-        if (!SwapAimSlots().Contains(pos))
-        {
-            Notice = E.CommandBlocked(S, BattleCommand.Of("swap", null, pos)) ?? SwapOptionFor(pos)?.Reason ?? E.CommandBlocked(S, BattleCommand.Of("swap"));
-            Notify();
-            return;
-        }
+        if (!SwapAimSlots().Contains(pos)) return;
         BattleItem = pos;
         SwapHoverSlot = null;
         await ExecuteBattleCommand(token);
