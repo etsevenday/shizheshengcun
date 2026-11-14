@@ -154,10 +154,15 @@ else
                 <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(inst))</b></div>
                 <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(inst))</b></div>
             }
-            @* BM5b1（S14 Q608）：主要数值之后的「生效效果」摘要——已具备资格的固定特性按原配置顺序、每条一次，整行 *@
+            @* BM5b1（S14 Q608／Q638）：主要数值之后的特性摘要（穿戴中「生效效果」、未穿戴「具备特性」）——已具备资格的固定特性按原配置顺序、每条一次，整行 *@
             @foreach (var fx in activeTraits)
             {
-                <div class="wide rail-fx"><span>@GameEngine.ActiveEffectsLabel</span><b>@fx</b></div>
+                <div class="wide rail-fx"><span>@e.EquipTraitGroupLabel(inst)</span><b>@fx</b></div>
+            }
+            @if (activeTraits.Count > 0 && !inst.IsWorn)
+            {
+                @* BM5b1（S14 Q638）：未穿戴也可介绍，组名「具备特性」，必要说明「穿戴后可触发」，不写生效中、不加人物属性 *@
+                <div class="wide rail-fx-note">@GameEngine.WornTriggerHint</div>
             }
             @if (chosen.ExpiresAt.HasValue || chosen.Reserved)
             {

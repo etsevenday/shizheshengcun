@@ -22,7 +22,7 @@ public class BM5b1RailTests : TestBase
         var shield = Make(s, "wooden_shield");
         var pct = Fmt.T((1 - E.Config.CombatMath.ShieldGuardFactor) * 100);
         Assert.That(pct, Is.EqualTo("60"), "当前配置 0.4");
-        var active = E.EquipActiveTraitLines(shield);
+        var active = E.EquipActiveTraitLines(s, shield);
         Assert.That(active, Is.EqualTo(new[] { $"盾面：格挡时减伤{pct}%。" }));
         Assert.That(active[0], Does.Contain("格挡时"), "满足格挡触发时的能力，不是常驻");
         var lines = E.RailEquipLines(s, shield, out var act2);
@@ -33,10 +33,10 @@ public class BM5b1RailTests : TestBase
         Assert.That(E.RailEquipDesc(shield, E.Item("wooden_shield").Desc), Is.Null);
         // 耐久为 0：按原规则效果暂停，不列生效效果
         shield.Durability = 0;
-        Assert.That(E.EquipActiveTraitLines(shield), Is.Empty);
+        Assert.That(E.EquipActiveTraitLines(s, shield), Is.Empty);
     }
 
-    /// <summary>Q608-A01：原已标「生效中」的忽略护甲类特性进首屏（原特性句一次），说明组不再重复；其余固定特性资格待 Q638，仍在说明原句。</summary>
+    /// <summary>Q608-A01：原已标「生效中」的忽略护甲类特性进首屏（原特性句一次），说明组不再重复；其余固定特性按 Q638 资格（BM5b1TraitTests）。</summary>
     [Test]
     public void Q608_A01_ArmorIgnoreTraitsOnFirstScreenOnce()
     {
@@ -46,13 +46,13 @@ public class BM5b1RailTests : TestBase
             var it = Make(s, id);
             var w = E.Weapon(id)!;
             Assert.That(w.ArmorIgnore, Is.GreaterThan(0));
-            Assert.That(E.EquipActiveTraitLines(it), Is.EqualTo(new[] { w.TraitText }), id);
+            Assert.That(E.EquipActiveTraitLines(s, it), Is.EqualTo(new[] { w.TraitText }), id);
             Assert.That(E.RailEquipLines(s, it, out _).Any(x => x.Label == "固定特性"), Is.False, $"{id}：每条一次");
             Assert.That(E.EquipDetailLines(s, it).Any(x => x.Label == "固定特性"), Is.True, $"{id}：一级面板内页（整备比较）原行不改（Q609）");
         }
         var machete = Make(s, "machete");
-        Assert.That(E.EquipActiveTraitLines(machete), Is.Empty);
-        Assert.That(E.RailEquipLines(s, machete, out _).Single(x => x.Label == "固定特性").Value, Does.EndWith("（相关技能或多人战斗上线后生效）"), "Q638 待定前原文不改");
+        Assert.That(E.EquipActiveTraitLines(s, machete), Is.Empty);
+        Assert.That(E.RailEquipLines(s, machete, out _).Single(x => x.Label == "固定特性").Value, Is.EqualTo(E.Weapon("machete")!.TraitText), "Q638：已实装但割伤未解锁，说明组留原特性句、不再写上线后生效");
     }
 
     /// <summary>Q608：说明首行与类型／固定特性／固定效果完全同义时只显示一份；有独有内容的原描述原样保留。</summary>
@@ -74,7 +74,7 @@ public class BM5b1RailTests : TestBase
         {
             var src = Web("Components", file);
             Assert.That(src, Does.Contain("e.RailEquipLines(s, "), file);
-            Assert.That(src, Does.Contain("<div class=\"wide rail-fx\"><span>@GameEngine.ActiveEffectsLabel</span><b>@fx</b></div>"), file);
+            Assert.That(src, Does.Contain("<div class=\"wide rail-fx\"><span>@e.EquipTraitGroupLabel("), file);
             Assert.That(src, Does.Contain("e.RailEquipDesc("), file);
             Assert.That(src, Does.Contain("<div class=\"@(rangeText.Length > 14 ? \"wide\" : \"\")\"><span>攻击范围</span><b>@rangeText</b></div>"), file);
             Assert.That(src, Does.Not.Contain("e.EquipDetailLines("), file);

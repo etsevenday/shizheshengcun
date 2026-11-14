@@ -85,6 +85,8 @@
 /* BM5b1（R05 Q613）：敌踪交战风险——等级一行（正文字号、不缩字）＋通用提示（辅助字号） */
 [data-detail-rail] .rail-risk { font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
 [data-detail-rail] .rail-risk-note { font-size: var(--fs-aux); color: var(--muted); line-height: 1.4; }
+/* BM5b1（S14 Q638）：未穿戴特性组的「穿戴后可触发」小字，整行 */
+[data-detail-rail] .lines > div.rail-fx-note { font-size: var(--fs-aux); color: var(--muted); line-height: 1.4; }
 /* M835：火源「内容」组工位头——状态句放不下时整句换到工位名下一行，句内只在数值片段之间换行，不再截成省略号 */
 [data-detail-rail] .fire-detail .fs-head { flex-wrap: wrap; row-gap: 0; }
 [data-detail-rail] .fire-detail .fs-head > span { flex: 1 1 auto; overflow: visible; text-overflow: clip; }

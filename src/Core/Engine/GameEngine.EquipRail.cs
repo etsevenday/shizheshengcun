@@ -15,34 +15,132 @@ namespace Survival.Core.Engine
         /// <summary>S14 Q608：首屏摘要的标签。</summary>
         public const string ActiveEffectsLabel = "生效效果";
 
-        /// <summary>木盾固定特性名（S14 Q608 木盾例）：盾类格挡是真实已接入的机制。</summary>
+        /// <summary>木盾固定特性名（S14 Q608 木盾例）：盾类格挡是真实已接入的机制（普通防御，无技能前提）。</summary>
         private const string ShieldFaceTrait = "盾面：";
 
+        /// <summary>S14 Q638（逐字稿「未穿戴但已实装且具备技能资格的特性组」）：未穿戴时的组名。</summary>
+        public const string HeldTraitsLabel = "具备特性";
+
+        /// <summary>S14 Q638：未穿戴时组内的必要说明（不写“生效中”）。</summary>
+        public const string WornTriggerHint = "穿戴后可触发";
+
+        /// <summary>首屏特性组名：穿戴中为「生效效果」（Q608），未穿戴为「具备特性」（Q638）。</summary>
+        public string EquipTraitGroupLabel(ItemInstance it) => it.IsWorn ? ActiveEffectsLabel : HeldTraitsLabel;
+
         /// <summary>
-        /// 这件装备当前进首屏「生效效果」的固定特性（按原配置顺序、每条一次）：木盾「盾面：格挡时减伤{(1−盾类格挡系数)×100}%。」（取实际配置，表示满足格挡时的真实能力），
-        /// 以及原已标「生效中」的忽略护甲类特性（原特性句）。其余固定特性资格待 Q638，仍在「说明」组原句。耐久为 0 时按原规则效果暂停，不列。
+        /// 这件装备当前进首屏特性组的固定特性（按原配置顺序、每条一次）：资格见 <see cref="WeaponTraitQualify"/>（Q638：机制已实装，且有绑定技能时实际持有人／穿戴者已解锁）。
+        /// 木盾写「盾面：格挡时减伤{(1−盾类格挡系数)×100}%。」（取实际配置，表示满足格挡时的真实能力），其余沿原特性句（已含触发条件）。
+        /// 耐久为 0 时按原规则效果暂停，不列（原「状态」行说明暂停）。只读，不加任何人物属性。
         /// </summary>
-        public List<string> EquipActiveTraitLines(ItemInstance it)
+        public List<string> EquipActiveTraitLines(GameState s, ItemInstance it)
         {
             var list = new List<string>();
             if (Weapon(it.ItemId) is not WeaponConfig w || w.TraitText == null) return list;
             if (it.Durability.HasValue && it.Durability.Value <= 1e-9) return list;
-            if (w.WeaponKind == "shield" && w.TraitText.StartsWith(ShieldFaceTrait))
-                list.Add($"{ShieldFaceTrait}格挡时减伤{Fmt.T((1 - Config.CombatMath.ShieldGuardFactor) * 100)}%。");
-            else if (w.ArmorIgnore > 0)
-                list.Add(w.TraitText);
+            if (WeaponTraitQualify(s, it, w) != TraitQualify.Qualified) return list;
+            list.Add(IsShieldFace(w) ? $"{ShieldFaceTrait}格挡时减伤{Fmt.T((1 - Config.CombatMath.ShieldGuardFactor) * 100)}%。" : w.TraitText);
             return list;
         }
 
+        private static bool IsShieldFace(WeaponConfig w) => w.WeaponKind == "shield" && w.TraitText != null && w.TraitText.StartsWith(ShieldFaceTrait);
+
+        /// <summary>Q638 固定特性资格：已具备／已实装但绑定技能未解锁／未实装。</summary>
+        public enum TraitQualify { Qualified, SkillLocked, NotImplemented }
+
         /// <summary>
-        /// 右栏用的装备行：<see cref="EquipDetailLines"/> 原行里，已逐字进首屏摘要的固定特性行去掉（每条一次）；摘要改写过的（木盾）在「说明」留原特性句，
-        /// 去掉与首屏摘要矛盾的「（相关技能或多人战斗上线后生效）」注记，原条件（如「不被动增加护甲」）保留。
+        /// Q638：这件物品的真实持有人——穿戴取穿戴者，随身取其持有人（锅等容器按容器所在逐层上溯）；地面、屋柜、设施、遗物等无人物持有人一律按主角「你」。
+        /// 不用当前右栏人物页或查看者；持有人已不在名册时按主角。
+        /// </summary>
+        public string TraitHolderId(GameState s, ItemInstance it)
+        {
+            var cur = it;
+            for (var depth = 0; depth < 8; depth++)
+            {
+                if (ItemInstance.TryEquip(cur.Owner, out var wearer, out _)) return Known(wearer);
+                if (cur.IsCarried) return GameState.PlayerId;
+                if (cur.Owner.StartsWith(ItemInstance.Carried + ":")) return Known(cur.Owner.Substring(ItemInstance.Carried.Length + 1));
+                if (cur.InContainer && int.TryParse(cur.Owner.Substring(ItemInstance.ContainerPrefix.Length), out var cid)
+                    && s.Items.FirstOrDefault(i => i.InstanceId == cid) is ItemInstance box) { cur = box; continue; }
+                break;
+            }
+            return GameState.PlayerId;
+            string Known(string id) => s.Actors.ContainsKey(id) ? id : GameState.PlayerId;
+        }
+
+        /// <summary>
+        /// Q638：固定特性资格，同源读取现有特性、技能解锁与效果查询，不新加门槛。
+        /// 机制已实装（<see cref="TraitTrigger"/> 为 true）且——无绑定技能前提直接具备；有绑定技能时，实际持有人／穿戴者已解锁本武器门下任一触发该特性的技能节点即具备。
+        /// 动作当刻的 AP、弹药、目标或冷却不足不影响资格（只看解锁）。
+        /// </summary>
+        public TraitQualify WeaponTraitQualify(GameState s, ItemInstance it, WeaponConfig w)
+        {
+            if (!TraitTrigger(w, out var pred)) return TraitQualify.NotImplemented;
+            if (pred == null) return TraitQualify.Qualified;
+            var nodes = Config.SkillNodes.Where(n => n.SkillId == w.SkillId && _exec.TryGetValue(n.Id, out var x) && pred(x)).ToList();
+            if (nodes.Count == 0) return TraitQualify.NotImplemented;
+            var id = TraitHolderId(s, it);
+            var actor = s.Actors.TryGetValue(id, out var a) ? a : new ActorState { Id = id };
+            return nodes.Any(n => SkillLevel(actor, n.SkillId) >= n.Level) ? TraitQualify.Qualified : TraitQualify.SkillLocked;
+        }
+
+        /// <summary>
+        /// 特性机制是否已实装，及其绑定技能（pred 为 null 表示无技能前提）。与实际结算读取处同源：
+        /// bleedAccuracy／bleedTriggers（流血技能）、knockbackAccuracy（逼退类）、suppressAccuracy（枪械削弱）、staggerUntilAttack（失衡）、
+        /// armorBreakBonus（破甲）、interruptSlow（打断）、counterDamage（反击架势）、braceExtra／braceDamage（架矛）、commandRounds（鼓舞／总攻令）、
+        /// firstCommandAccuracy（非保护、非整队的指挥技能）、medicalHealBonus（回血医疗）、criticalCareBonus（危急救护）、postMedicalDamage（医疗）；
+        /// markedAccuracy／markedDamage／animalDamage／protectorDamage（任一直接攻击）、displaceResist（穿戴）与忽略护甲、盾类格挡（普通防御）、
+        /// 锁闭资源点条件工具倍率（Q137 破门）、指挥／医疗器具开放的技能页（号令、医疗）、配置站位（长柄、短枪）无技能前提；
+        /// 霰弹散布绑定 areaWeapons 含本武器的技能。其余（如 reloadMax 快装，及轻巧、撬动、无声、朴素、包铁、护送、集合）尚无结算读取，按未实装。
+        /// </summary>
+        private bool TraitTrigger(WeaponConfig w, out System.Func<SkillExecConfig, bool>? pred)
+        {
+            pred = null;
+            static bool Has(SkillExecConfig x, string st) => x.Effects.Any(e => e.Status == st);
+            if (w.TraitEffects.Count > 0)
+            {
+                var preds = new List<System.Func<SkillExecConfig, bool>>();
+                foreach (var key in w.TraitEffects.Keys)
+                {
+                    switch (key)
+                    {
+                        case "bleedAccuracy": case "bleedTriggers": preds.Add(x => Has(x, "bleed")); break;
+                        case "knockbackAccuracy": preds.Add(x => Has(x, "knockback")); break;
+                        case "suppressAccuracy": if (w.SkillId != "firearms") return false; preds.Add(x => Has(x, "weak")); break;
+                        case "staggerUntilAttack": preds.Add(x => Has(x, "stagger")); break;
+                        case "armorBreakBonus": preds.Add(x => Has(x, "armor_break")); break;
+                        case "interruptSlow": preds.Add(x => Has(x, "cancel_charge")); break;
+                        case "counterDamage": preds.Add(x => x.CounterFactor > 0); break;
+                        case "braceExtra": case "braceDamage": preds.Add(x => x.BraceCharges > 0); break;
+                        case "commandRounds": preds.Add(x => x.InspireAccuracy > 0 || x.AllOutFactor > 0); break;
+                        case "firstCommandAccuracy": preds.Add(x => x.Type == "ally" && !x.Protect && !x.Reorder); break;
+                        case "medicalHealBonus": preds.Add(x => x.Type == "medical" && x.Heal > 0); break;
+                        case "criticalCareBonus": preds.Add(x => x.Type == "medical" && x.Heal > 0 && x.HealMaxRatio.HasValue); break;
+                        case "postMedicalDamage": preds.Add(x => x.Type == "medical"); break;
+                        case "markedAccuracy": case "markedDamage": case "animalDamage": case "protectorDamage": case "displaceResist": break;
+                        default: return false;
+                    }
+                }
+                if (preds.Count > 0) pred = x => preds.All(p => p(x));
+                return true;
+            }
+            if (w.ArmorIgnore > 0 || IsShieldFace(w) || IsConditionalTool(w.Id) || !w.CanAttack || PositionTraitWeapons.Contains(w.Id)) return true;
+            if (_exec.Values.Any(x => x.AreaWeapons.Contains(w.Id))) { pred = x => x.AreaWeapons.Contains(w.Id); return true; }
+            return false;
+        }
+
+        /// <summary>固定特性就是配置站位本身（长柄：基础射程123＝targetPositions；短枪：允许我方2号位＝ownPositions），已按真实站位结算。</summary>
+        private static readonly HashSet<string> PositionTraitWeapons = new HashSet<string> { "wooden_spear", "pistol" };
+
+        /// <summary>
+        /// 右栏用的装备行：<see cref="EquipDetailLines"/> 原行里，已逐字进首屏特性组的固定特性行去掉（每条一次）；摘要改写过的（木盾）在「说明」留原特性句与原条件（如「不被动增加护甲」）。
+        /// Q638：已实装但绑定技能未解锁、或耐久为 0 暂停的特性在「说明」留原特性句（完整条件、数值），不再笼统写「（相关技能或多人战斗上线后生效）」；尚未实装的仍原行。
         /// </summary>
         public List<(string Label, string Value)> RailEquipLines(GameState s, ItemInstance it, out List<string> active)
         {
             var lines = EquipDetailLines(s, it);
-            active = EquipActiveTraitLines(it);
-            if (active.Count == 0 || Weapon(it.ItemId) is not WeaponConfig w || w.TraitText == null) return lines;
+            active = EquipActiveTraitLines(s, it);
+            if (Weapon(it.ItemId) is not WeaponConfig w || w.TraitText == null) return lines;
+            if (WeaponTraitQualify(s, it, w) == TraitQualify.NotImplemented) return lines;
             var trait = w.TraitText;
             var verbatim = active.Contains(trait);
             var outList = new List<(string, string)>();

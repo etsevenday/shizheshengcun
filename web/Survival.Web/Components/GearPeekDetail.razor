@@ -49,7 +49,12 @@
         }
         @foreach (var fx in activeTraits)
         {
-            <div class="wide rail-fx"><span>@GameEngine.ActiveEffectsLabel</span><b>@fx</b></div>
+            <div class="wide rail-fx"><span>@e.EquipTraitGroupLabel(it)</span><b>@fx</b></div>
+        }
+        @if (activeTraits.Count > 0 && !it.IsWorn)
+        {
+            @* BM5b1（S14 Q638）：未穿戴也可介绍，组名「具备特性」，必要说明「穿戴后可触发」，不写生效中、不加人物属性 *@
+            <div class="wide rail-fx-note">@GameEngine.WornTriggerHint</div>
         }
         @if (it.ExpiresAt.HasValue)
         {
