@@ -53,7 +53,8 @@ else
     var equipLines = e.RailEquipLines(s, inst, out var activeTraits);
     // Q589「武器／装备／工具」首屏：类型（含速度修正）、固定效果（护甲等已生效摘要）、损坏状态；品质已在名称旁标签，“品质（附加词条n条）”行随词条组，
     // 固定特性（多为相关技能上线后生效）、站位、技能归属、噪声与拆解在说明组
-    var mainEquip = equipLines.Where(x => x.Label is "类型" or "固定效果" or "状态").ToList();
+    // BM7b（S14 Q650）：非武器固定效果已有真实消费者的分项进主区特性组（activeTraits），其余（未接入／暂停）的「固定效果」行归说明组
+    var mainEquip = equipLines.Where(x => x.Label is "类型" or "状态").ToList();
     var affixLines = equipLines.Where(x => x.Label == "附加词条" || (x.Label == "品质" && equipLines.Any(y => y.Label == "附加词条"))).ToList();
     var moreEquip = equipLines.Where(x => !mainEquip.Contains(x) && !affixLines.Contains(x)).ToList();
     var descText = cfg.Use != null && cfg.Use.IsMedicine ? (cfg.Use.IsBandage ? "药品：止血、回血、压低病毒（本次实际效果见下）" : cfg.Use.IsAntibiotic ? "药品：抑制病毒（本次实际效果见下）" : "药品：清除感染（本次实际效果见下）")

@@ -400,7 +400,9 @@ namespace Survival.Core.Engine
                 var nodes = Config.SkillNodes.Where(x => x.SkillId == w.SkillId).OrderBy(x => x.Level).ToList();
                 if (nodes.Count > 0)
                 {
-                    var lv = SkillLevel(s, w.SkillId);
+                    // BM7b（S14 Q651）：当前等级与已解锁数取该物品真实持有人／穿戴者（与 Q638 资格同源 TraitHolderId），无人物归属按主角，不取查看者
+                    var holder = TraitHolderId(s, it);
+                    var lv = SkillLevel(s.Actors.TryGetValue(holder, out var ha) ? ha : s.Player, w.SkillId);
                     list.Add(("技能归属", $"{SkillName(w.SkillId)}熟练（当前{lv}级，已解锁{nodes.Count(x => x.Level <= lv)}个）：{string.Join("、", nodes.Select(x => $"{x.Name}{x.Level}级"))}"));
                 }
                 // B7a Q45：攻击噪声按类型；隐声只算本把武器、最低0
@@ -418,11 +420,12 @@ namespace Survival.Core.Engine
             else if (Gear(it.ItemId) is GearConfig g)
             {
                 list.Add(("类型", $"{EquipSlots.Name(g.Slot)}·T{g.Tier}"));
-                var live = g.Effects.Where(EffectLive).ToList();
-                var shown = g.Effects.Count > live.Count || (g.Effects.Count == 0 && g.UnarmedBasicTargets == null);
-                if (g.UnarmedBasicTargets != null) live.Add(new EquipEffectConfig { Key = "combat.unarmedBasicTargets" });   // 护拳绑带：拳路扩展已接入
+                // BM7b（S14 Q650）：生效情况按原效果句逐项的真实消费者（GearEffectClauses）判断，不看 effects 非空或旧 EffectLive：
+                // 只有描述的分项（如救护背心「接受的非病毒医疗恢复×1.10」）不再随整件写「生效中」，位移抵抗等已接入的不再写「其余上线后生效」；原三种注记句不变
+                var clauses = GearEffectClauses(g);
+                var liveN = clauses.Count(c => c.Live);
                 var on = worn ? "生效中" : "穿戴后生效";
-                list.Add(("固定效果", g.EffectText + (live.Count > 0 && !shown ? $"（{on}）" : live.Count > 0 ? $"（部分{on}；其余在相关技能上线后生效）" : "（相关技能上线后生效，当前只显示）")));
+                list.Add(("固定效果", g.EffectText + (liveN > 0 && liveN == clauses.Count ? $"（{on}）" : liveN > 0 ? $"（部分{on}；其余在相关技能上线后生效）" : "（相关技能上线后生效，当前只显示）")));
             }
             if (it.Durability.HasValue && it.Durability.Value <= 1e-9) list.Add(("状态", "耐久为0：效果暂停（仍占槽、计重），维护后恢复"));
             list.Add(("拆解", SalvageText(it)));

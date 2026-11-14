@@ -35,6 +35,13 @@ namespace Survival.Core.Engine
         public List<string> EquipActiveTraitLines(GameState s, ItemInstance it)
         {
             var list = new List<string>();
+            if (Gear(it.ItemId) is GearConfig g)
+            {
+                // BM7b（S14 Q650）：非武器固定效果逐项——已有真实消费者的分项进同一特性组；耐久为 0 暂停时不列（原「状态」行说明暂停）
+                if (it.Durability.HasValue && it.Durability.Value <= 1e-9) return list;
+                list.AddRange(GearEffectClauses(g).Where(c => c.Live).Select(c => c.Text));
+                return list;
+            }
             if (Weapon(it.ItemId) is not WeaponConfig w || w.TraitText == null) return list;
             if (it.Durability.HasValue && it.Durability.Value <= 1e-9) return list;
             if (WeaponTraitQualify(s, it, w) != TraitQualify.Qualified) return list;
@@ -139,6 +146,13 @@ namespace Survival.Core.Engine
         {
             var lines = EquipDetailLines(s, it);
             active = EquipActiveTraitLines(s, it);
+            if (Gear(it.ItemId) is GearConfig g)
+            {
+                // BM7b（S14 Q650）：已进特性组的分项不再在「固定效果」行重复；暂停的分项留原句，确实没有消费者的分项才写旧「上线后生效」
+                var shown = active;
+                var rest = GearEffectClauses(g).Where(c => !shown.Contains(c.Text)).Select(c => c.Live ? c.Text : c.Text + GearNotLiveNote).ToList();
+                return lines.SelectMany(x => x.Label != "固定效果" ? new[] { x } : rest.Count == 0 ? new (string, string)[0] : new[] { (x.Label, string.Join("；", rest)) }).ToList();
+            }
             if (Weapon(it.ItemId) is not WeaponConfig w || w.TraitText == null) return lines;
             if (WeaponTraitQualify(s, it, w) == TraitQualify.NotImplemented) return lines;
             var trait = w.TraitText;
@@ -154,6 +168,63 @@ namespace Survival.Core.Engine
                 outList.Add((label, value));
             }
             return outList;
+        }
+
+        /// <summary>原「固定效果」行里确实未接入部分的注记（沿原句，只用于没有真实消费者的分项）。</summary>
+        public const string GearNotLiveNote = "（相关技能上线后生效，当前只显示）";
+
+        /// <summary>
+        /// BM7b（S14 Q650）：有真实结算消费者的装备效果键。只认实际读取处（战斗合计、求生乘数／加值、修理、包扎、食用），不看 effects 列表非空或旧 <see cref="EffectLive"/>：
+        /// combat.displaceResist 已由位移抵抗判定（<see cref="PlayerControlResist"/>）读取；work.purificationTablet 未找到工作量读取，不在此列。
+        /// </summary>
+        private static readonly HashSet<string> GearConsumedKeys = new HashSet<string>
+        {
+            "combat.armor", "combat.speed", "combat.accuracy", "combat.crit", "combat.displaceResist",
+            "work.craft", "work.scavenge", "work.move", "work.route",
+            "rate.gather.energy", "rate.move.energy", "rate.scavengeClear.energy", "rate.nonCombat.satiety", "rate.nonCombat.hydration",
+            "hazard.health", "hazard.woodScrapChance", "pos.shelteredRest.energy", "pos.sleep.energy",
+            "repair.fraction", "bandage.health", "eat.satiety",
+        };
+
+        /// <summary>原效果句分项里认结构化键的词（同一分项含其中一个词、且本件确有该键才算这一键的分项）。</summary>
+        private static readonly (string Word, string Prefix)[] GearClauseWords =
+        {
+            ("护甲", "combat.armor"), ("速度", "combat.speed"), ("命中能力", "combat.accuracy"), ("暴击能力", "combat.crit"), ("位移抵抗", "combat.displaceResist"),
+            ("工作量", "work."), ("小时率", "rate."), ("划伤", "hazard."), ("恢复额外", "pos."), ("维护", "repair."), ("包扎", "bandage."), ("食用", "eat."),
+        };
+
+        /// <summary>
+        /// BM7b（S14 Q650）：非武器装备原效果句（<see cref="GearConfig.EffectText"/>）按「；」分项，以「不」起头的限定句（如「不改即时效果」「不增物资卡」）接回前一项；
+        /// 每项按本件的结构化效果键（或护拳绑带的 <see cref="GearConfig.UnarmedBasicTargets"/>，普通拳击查询读取）判是否有真实消费者。
+        /// 写明为 0 的数值项（如「速度0」）是原配置的真实数值，随本件一同生效。分项文字逐字取原句，不改数值、不新编。
+        /// </summary>
+        public List<(string Text, bool Live)> GearEffectClauses(GearConfig g)
+        {
+            var parts = new List<string>();
+            foreach (var raw in (g.EffectText ?? "").Split('；'))
+            {
+                var t = raw.Trim();
+                if (t.Length == 0) continue;
+                if (parts.Count > 0 && t.StartsWith("不")) parts[parts.Count - 1] += "；" + t;
+                else parts.Add(t);
+            }
+            var keys = g.Effects.Select(e => e.Key).ToList();
+            var list = new List<(string, bool)>();
+            foreach (var p in parts)
+            {
+                var head = p.Split('；')[0];
+                bool live;
+                if (g.UnarmedBasicTargets != null && head.Contains("拳击")) live = true;
+                else if (System.Text.RegularExpressions.Regex.IsMatch(head, "^(速度|护甲)0$")) live = keys.Count > 0 && keys.All(GearConsumedKeys.Contains);
+                else
+                {
+                    var hit = GearClauseWords.Where(cw => head.Contains(cw.Word)).Select(cw => cw.Prefix)
+                        .SelectMany(pre => keys.Where(k => k == pre || (pre.EndsWith(".") && k.StartsWith(pre)))).ToList();
+                    live = hit.Count > 0 && hit.All(GearConsumedKeys.Contains);
+                }
+                list.Add((p, live));
+            }
+            return list;
         }
 
         /// <summary>
