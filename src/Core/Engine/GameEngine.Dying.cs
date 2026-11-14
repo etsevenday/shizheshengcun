@@ -99,6 +99,81 @@ namespace Survival.Core.Engine
             return DamageOutcome.Died;
         }
 
+        // ───────────── 意志经验结账（R09 §4.1、Q676、Q677；B47a2） ─────────────
+
+        /// <summary>Q677 意志经验日志：主角“意志经验+{n}”，同伴“{姓名}：意志经验+{n}”（沿现有 ActorPrefix 与“{前缀}{技能}经验+{n}”）。</summary>
+        public string WillpowerXpText(ActorState actor, int n) => $"{ActorPrefix(actor)}{SkillName(Willpower)}经验+{n}";
+
+        /// <summary>开始一次完整出手的意志经验结账范围（敌方一次激活、我方一次攻击指令）；可嵌套，最外层结束才结账。</summary>
+        private void WillpowerBegin(GameState s)
+        {
+            if (s.WillpowerDepth++ == 0) s.WillpowerPending = new List<(string, int)>();
+        }
+
+        /// <summary>结束结账范围：最外层结束时按 <see cref="SettleWillpower"/> 结一次。</summary>
+        private void WillpowerEnd(GameState s)
+        {
+            if (s.WillpowerDepth <= 0) return;
+            if (--s.WillpowerDepth == 0) { SettleWillpower(s); s.WillpowerPending = null; }
+        }
+
+        /// <summary>
+        /// 记一次真实敌源正直接伤害（敌方攻击命中且实际 D&gt;0、合法死亡喷溅 D&gt;0）：承伤者 actorId、来源敌稳定 worldEnemyId（敌人已死也用原 ID）。
+        /// 不在结账范围内（只读预演、旧测试反射直调等）或没有可信敌 ID 时不记；同一完整出手同人同敌只记一次。
+        /// </summary>
+        private void NoteWillpowerHit(GameState s, string actorId, int worldEnemyId)
+        {
+            if (s.WillpowerPending == null || worldEnemyId <= 0) return;
+            if (!s.WillpowerPending.Contains((actorId, worldEnemyId))) s.WillpowerPending.Add((actorId, worldEnemyId));
+        }
+
+        /// <summary>
+        /// 意志经验结账（R09 §4.1、Q676、Q677）：本次完整出手里每个（承伤者, 来源敌）各一份——承伤者此刻已确死不得；
+        /// 实际给值 = min(10, 当日剩余 60, 距 10 级尚可获得)，&gt;0 才占该敌一次回执（每人每敌本局最多 3 次）并累加日账；跨世界日日账从 0 重计。
+        /// 每位实际得到经验的人一行（多个来源合计），战斗中写战报、战外写普通日志；升级沿 GainXp 原句。主角已终局不再结账。
+        /// </summary>
+        private void SettleWillpower(GameState s)
+        {
+            var pending = s.WillpowerPending;
+            if (pending == null || pending.Count == 0) return;
+            s.WillpowerPending = new List<(string, int)>();
+            if (s.Progress.Dead) return;
+            var d = DyingCfg;
+            var day = Clock.Day(s.GameMinute);
+            var order = new List<ActorState>();
+            var gained = new Dictionary<string, int>();
+            foreach (var (id, enemy) in pending)
+            {
+                if (!s.Actors.TryGetValue(id, out var actor) || IsDead(s, actor)) continue;
+                var key = enemy.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                var awards = actor.WillpowerEnemyAwards.TryGetValue(key, out var n) ? n : 0;
+                if (awards >= d.WillpowerMaxAwardsPerActorPerEnemy) continue;
+                var today = actor.WillpowerXpDay == day ? actor.WillpowerXpToday : 0;
+                var give = (int)Math.Min(Math.Min(d.WillpowerXpPerEnemyAction, d.WillpowerMaxXpPerActorPerDay - today), XpToCap(actor, Willpower));
+                if (give <= 0) continue;
+                GainXp(s, actor, Willpower, give);
+                actor.WillpowerEnemyAwards[key] = awards + 1;
+                actor.WillpowerXpDay = day;
+                actor.WillpowerXpToday = today + give;
+                if (!gained.ContainsKey(id)) { gained[id] = 0; order.Add(actor); }
+                gained[id] += give;
+            }
+            foreach (var actor in order) WriteLifeNotes(s, actor, new[] { WillpowerXpText(actor, gained[actor.Id]) });
+        }
+
+        /// <summary>该角色这一门距上限尚可获得的经验（已满级为 0）。</summary>
+        private long XpToCap(ActorState actor, string id)
+        {
+            var cap = SkillCap(id);
+            if (cap == int.MaxValue) return long.MaxValue;
+            var lv = SkillLevel(actor, id);
+            if (lv >= cap) return 0;
+            long need = 0;
+            for (var l = lv; l < cap; l++) need = checked(need + NextLevelXp(id, l));
+            var xp = actor.Skills.TryGetValue(id, out var sk) ? sk.Xp : 0;
+            return Math.Max(0, need - xp);
+        }
+
         // ───────────── 医疗脱离（R09 §6） ─────────────
 
         /// <summary>

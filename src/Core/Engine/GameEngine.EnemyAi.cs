@@ -881,6 +881,7 @@ namespace Survival.Core.Engine
             // B47a1（R09 §3.1）：统一受伤入口——正常者归 0 只入濒死，濒死者每次正伤判一次致死；状态句在本条伤害战报之后追加（Q688：只写战报）
             var life = new List<string>();
             var outcome = DamageActor(s, s.Player, dmg, life);
+            NoteWillpowerHit(s, MeId(s), e.WorldId);   // B47a2（R09 §4.1）：敌方正直接伤害，本次激活结束时承伤者仍活才结账
             FxHit(FxAlly(s, MeId(s)), "hit", dmg, guarded, outcome == DamageOutcome.Died);
             var cause = $"被{EnemyName(e)}{verb}";
             if (me) s.Progress.LastDamageCause = cause;
@@ -975,6 +976,7 @@ namespace Survival.Core.Engine
                     if (dmg <= 0) { BattleLog(s, $"{cfg.Name}死亡喷溅被{(id == GameState.PlayerId ? "" : Who(s) + "的")}护甲挡住。"); continue; }
                     var life = new List<string>();
                     var outcome = DamageActor(s, s.Player, dmg, life);   // B47a1：统一受伤入口（濒死者喷溅也判致死）
+                    NoteWillpowerHit(s, id, e.WorldId);   // B47a2（Q676）：合法喷溅正伤按死敌原 ID，在引发它的我方指令末结账
                     if (id == GameState.PlayerId) s.Progress.LastDamageCause = $"{cfg.Name}死亡喷溅";
                     BattleLog(s, $"{cfg.Name}死亡喷溅：{Who(s)}健康−{Fmt.N(dmg)}（不感染）。");
                     WriteLifeNotes(s, s.Player, life);

@@ -304,6 +304,13 @@ namespace Survival.Core.State
         [JsonIgnore] public bool SuppressEnemyApproach { get; set; }
         /// <summary>BM5c：预览／估时等只读模拟副本（不进存档）。新开探索在副本上不为唯一检查段再嵌套估时、不抽签。</summary>
         [JsonIgnore] public bool SimCopy { get; set; }
+        /// <summary>
+        /// B47a2（R09 §4.1、Q676）：正在进行的完整出手（敌方一次激活／我方一次攻击指令）里，真实敌源正直接伤害的承伤者与来源敌（actorId, worldEnemyId），
+        /// 按首次出现顺序、每对一次；出手结束时结账意志经验后清空。只在同一次原子调用内存在，不进存档。null 表示当前不在结账范围内。
+        /// </summary>
+        [JsonIgnore] public List<(string ActorId, int WorldEnemyId)>? WillpowerPending { get; set; }
+        /// <summary>B47a2：意志经验结账范围的嵌套深度（最外层结束才结账）。不进存档。</summary>
+        [JsonIgnore] public int WillpowerDepth { get; set; }
 
         public GameState Clone()
         {
@@ -327,6 +334,8 @@ namespace Survival.Core.State
             c.WorkCarry = new Dictionary<string, double>(WorkCarry);
             c.Resources = Resources.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.Items = Items.Select(i => i.Clone()).ToList();
+            c.WillpowerPending = null;   // B47a2：结账范围是单次原子调用内的临时账，副本不共享
+            c.WillpowerDepth = 0;
             c.Main = Main?.Clone();
             c.Sub = Sub?.Clone();
             c.StashedWork = StashedWork?.Clone();

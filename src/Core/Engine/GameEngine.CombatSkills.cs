@@ -556,6 +556,7 @@ namespace Survival.Core.Engine
             var sp = SpecFor(s, c.Action, w);
             var weapon = sp.Weapon;
             var spent = new List<string>();
+            WillpowerBegin(s);   // B47a2（Q676）：本次主动攻击指令引发的合法喷溅，在指令末结账意志经验
             var energy = sp.Desperate ? 0 : SkillEnergy(s, sp.Node!, w);
             s.Stats.Add(StatId.Energy, -energy);
             if (energy > 0) spent.Add($"体力−{Fmt.N(energy)}");
@@ -643,6 +644,7 @@ namespace Survival.Core.Engine
             if (midLines.Count > 0) b.Log.RemoveRange(logMark, midLines.Count);
             BattleLog(s, $"{Who(s)}{(sp.Desperate ? ActionName(DesperatePunch) : sp.Node!.Name)}{(sp.Desperate ? "" : $"（{weapon.Name}）")}：{string.Join("，", parts)}{(spent.Count > 0 ? "；" + string.Join("，", spent) : "")}{xpNote}。");
             b.Log.AddRange(midLines);
+            WillpowerEnd(s);   // 意志经验行在本次出手结果与喷溅之后（Q677）
             if (PlayerDownAfterSplash(s) || s.Battle == null) return;
             CheckVictory(s);
         }

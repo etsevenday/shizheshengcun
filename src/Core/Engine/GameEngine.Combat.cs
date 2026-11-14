@@ -714,7 +714,10 @@ namespace Survival.Core.Engine
             var e = BattleEnemyAt(b, idx);
             b.Cursor++;
             if (e == null || !e.Alive) return new BattleStepResult { Kind = BattleStepKind.EnemyActed, Text = "" };
-            EnemyActivation(s, e, chase);
+            // B47a2（R09 §4.1）：敌方一次完整激活是一个意志经验结账范围（多段打同人只给一次）
+            WillpowerBegin(s);
+            try { EnemyActivation(s, e, chase); }
+            finally { WillpowerEnd(s); }
             return new BattleStepResult { Kind = s.Battle == null ? BattleStepKind.Ended : BattleStepKind.EnemyActed, Text = b.Log.LastOrDefault() ?? "" };
         }
 
@@ -1475,6 +1478,7 @@ namespace Survival.Core.Engine
         private void FinishBattle(GameState s, string outcome, bool tick = true)
         {
             var b = s.Battle!;
+            SettleWillpower(s);   // B47a2：出手中途就收场（反击打死最后一只等）时，先在战报里结完本次出手的意志经验
             b.FocusOverride = null;
             b.ActiveAlly = "";
             if (tick && !BattleTick(s)) return;
