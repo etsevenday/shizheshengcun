@@ -44,7 +44,7 @@ public class B34aBattleInfoUiTests
         Assert.That(BattleInfoCopy.AimNoTargetHeader("2AP", 0.29, 1, 0), Is.EqualTo("2AP · 体力−0.29 · 可选目标1个"));
         Assert.That(BattleInfoCopy.AimNoTargetHeader("1AP", 0, 3, 0), Is.EqualTo("1AP · 可选目标3个"), "消耗为 0 省略体力项");
         Assert.That(BattleInfoCopy.AimNoTargetHeader("1AP", 0.0001, 3, 0), Does.Not.Contain("−0"), "按原精度显示为 0 时也省略，不写负零");
-        Assert.That(BattleInfoCopy.AimNoTargetHeader("2AP", 0.5, 2, 2), Does.EndWith(" · 冷却2轮"));
+        Assert.That(BattleInfoCopy.AimNoTargetHeader("2AP", 0.5, 2, 2), Does.EndWith(" · 冷却2回合"));
     }
 
     [Test]

@@ -233,7 +233,7 @@ namespace Survival.Core.Engine
             if (st.Control == "stagger") extra.Add("命中后可能失衡");
             if (st.BleedPct > 0) extra.Add($"{Fmt.T(st.BleedPct)}%流血");
             if (st.Knockback > 0) extra.Add($"击退{st.Knockback}位");
-            if (st.ArmorBreak > 0) extra.Add($"破甲{Fmt.T(st.ArmorBreak)}（{st.ArmorBreakRounds}轮）");
+            if (st.ArmorBreak > 0) extra.Add($"破甲{Fmt.T(st.ArmorBreak)}（{st.ArmorBreakRounds}回合）");
             if (cfg.DeathSplash > 0) extra.Add($"死亡时喷溅1、2号位各{Fmt.T(cfg.DeathSplash)}");
             if (st.TargetMarked && st.Kind != "pull") extra.Add("优先打它标记的目标");
             var tail = extra.Count > 0 ? "，" + string.Join("，", extra) : "";
@@ -245,7 +245,7 @@ namespace Survival.Core.Engine
                 case "charge_prepare":
                 {
                     var next = AllSteps(cfg).FirstOrDefault(x => x.Kind == "charge");
-                    return $"蓄力（下轮{(next?.Verb is string v && v != "" ? v : "冲撞")}）";
+                    return $"蓄力（下回合{(next?.Verb is string v && v != "" ? v : "冲撞")}）";
                 }
                 case "guard": return "防御";
                 case "howl": return $"{verb}（恐慌+{Fmt.T(st.Panic)}）";
@@ -383,19 +383,19 @@ namespace Survival.Core.Engine
             var st = StepOf(e);
             // Q95：不需要够到目标的主意图（防御/嚎叫/蓄力/保护/鸣响/增益 2AP、装填 1AP）先扣本轮已花与补位预扣再重验，付不起就本次结束（与 EnemyActivation 同源）
             if (!e.Acted && !ReachKinds.Contains(st.Kind) && MainIntentCost(e, st) > EnemyApLeft(e))
-                return $"等待（本轮只剩{EnemyApLeft(e)}AP，替同伴补位预扣了{e.RoundApUsed}AP，不够{IntentLabel(e, b)}）";
+                return $"等待（本回合只剩{EnemyApLeft(e)}AP，替同伴补位预扣了{e.RoundApUsed}AP，不够{IntentLabel(e, b)}）";
             var cfg = _enemies[e.EnemyId];
             var verb = e.Intent == "bite" ? "咬击" : st.Verb != "" ? st.Verb : AttackVerb(cfg);
             var ea = Config.CombatMath.ExposureApproach;
             var plan = PlanFor(b, e, st);
             // B8a-1：本轮账已用完（没行动的剩余 <1AP）时不前移、不叫补位；够不到又付不起 2AP 兜底防御时也不防御（与 ExecuteReach 同源）
-            if (!e.Acted && IsAdvance(plan) && EnemyApLeft(e) < 1) return "等待（够不到，本轮没有AP前移）";
-            if (!e.Acted && plan == ReachPlan.Guard && EnemyApLeft(e) < EnemyMainIntentAp) return $"等待（够不到，本轮只剩{EnemyApLeft(e)}AP，不够防御）";
-            if (!e.Acted && plan is ReachPlan.Execute or ReachPlan.Weak && ReachKinds.Contains(st.Kind) && EnemyApLeft(e) < 2) return $"等待（本轮只剩{EnemyApLeft(e)}AP，不够出手）";
+            if (!e.Acted && IsAdvance(plan) && EnemyApLeft(e) < 1) return "等待（够不到，本回合没有AP前移）";
+            if (!e.Acted && plan == ReachPlan.Guard && EnemyApLeft(e) < EnemyMainIntentAp) return $"等待（够不到，本回合只剩{EnemyApLeft(e)}AP，不够防御）";
+            if (!e.Acted && plan is ReachPlan.Execute or ReachPlan.Weak && ReachKinds.Contains(st.Kind) && EnemyApLeft(e) < 2) return $"等待（本回合只剩{EnemyApLeft(e)}AP，不够出手）";
             // Q87：够不到要前移时，前方同伴能出手且它前面空着——先由同伴花自己本轮 1AP 补位，再由它花自己 1AP 跟进；同伴没 AP 就等待
             BattleEnemy? f = null;
             var assist = IsAdvance(plan) && !e.Acted ? AssistFor(b, e, out f) : AssistKind.None;
-            if (assist == AssistKind.Wait) return $"等待（{EnemyName(f!)}已能出手、前面有空位，但它本轮没有AP补位；不换位）";
+            if (assist == AssistKind.Wait) return $"等待（{EnemyName(f!)}已能出手、前面有空位，但它本回合没有AP补位；不换位）";
             var lead = assist == AssistKind.Assist ? $"等{EnemyName(f!)}补到{e.Pos - 2}号位（它花自己1AP），再" : "";
             switch (plan)
             {
@@ -492,7 +492,7 @@ namespace Survival.Core.Engine
             var cost = MainIntentCost(e, st);
             if (cost > budget)
             {
-                BattleLog(s, $"{EnemyName(e)}本轮只剩{budget}AP（替同伴补位预扣了{e.RoundApUsed}AP），不够{IntentLabel(e, b)}，结束行动。");
+                BattleLog(s, $"{EnemyName(e)}本回合只剩{budget}AP（替同伴补位预扣了{e.RoundApUsed}AP），不够{IntentLabel(e, b)}，结束行动。");
                 return;
             }
             SpendAp(e, cost, false);
@@ -531,7 +531,7 @@ namespace Survival.Core.Engine
                 case "charge_prepare":
                     e.Charged = true;
                     FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
-                    BattleLog(s, $"{EnemyName(e)}蓄力，下轮{(AllSteps(cfg).FirstOrDefault(x => x.Kind == "charge")?.Verb is string v && v != "" ? v : "冲撞")}。");
+                    BattleLog(s, $"{EnemyName(e)}蓄力，下回合{(AllSteps(cfg).FirstOrDefault(x => x.Kind == "charge")?.Verb is string v && v != "" ? v : "冲撞")}。");
                     return;
                 case "protect":
                 {
@@ -560,7 +560,7 @@ namespace Survival.Core.Engine
                     if (!b.ReinforcementUsed && !b.ReinforcementRequested && !b.Tutorial && Config.Noise.MaxReinforcementsPerBattle > 0)
                     {
                         b.ReinforcementRequested = true;
-                        BattleLog(s, $"{EnemyName(e)}{st.Verb}：附近的同类可能被吸引过来（下一轮开始时，只调用本地已有的）。");
+                        BattleLog(s, $"{EnemyName(e)}{st.Verb}：附近的同类可能被吸引过来（下一回合开始时，只调用本地已有的）。");
                     }
                     else BattleLog(s, $"{EnemyName(e)}{st.Verb}，没有回应（本场已请求过增援）。");
                     return;
@@ -621,11 +621,11 @@ namespace Survival.Core.Engine
                     return;
                 case ReachPlan.Execute:
                     if (ap >= 2) { SpendAp(e, 2, pursuit); DoAttackStep(s, b, e, st, plain, 1, pursuit); }
-                    else BattleLog(s, $"{EnemyName(e)}本轮只剩{ap}AP，不够出手，结束行动。");
+                    else BattleLog(s, $"{EnemyName(e)}本回合只剩{ap}AP，不够出手，结束行动。");
                     return;
                 case ReachPlan.Weak:
                     if (ap >= 2) { SpendAp(e, 2, pursuit); DoAttackStep(s, b, e, st, true, WeakAttackFactor, pursuit); }
-                    else BattleLog(s, $"{EnemyName(e)}本轮只剩{ap}AP，不够出手，结束行动。");
+                    else BattleLog(s, $"{EnemyName(e)}本回合只剩{ap}AP，不够出手，结束行动。");
                     return;
                 case ReachPlan.AdvanceThenAttack:
                 case ReachPlan.AdvanceThenApproach:
@@ -634,14 +634,14 @@ namespace Survival.Core.Engine
                     // B8a-1：前移也先看本次剩余 AP（正常激活=本轮账剩余，追击=2AP），不够 1AP 不前移、不叫同伴补位（试玩修复 B8a 第 1 轮 B8）
                     if (ap < 1)
                     {
-                        BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到，本轮没有AP前移，结束行动。");
+                        BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到，本回合没有AP前移，结束行动。");
                         return;
                     }
                     BattleEnemy? f = null;
                     var assist = pursuit ? AssistKind.None : AssistFor(b, e, out f);
                     if (assist == AssistKind.Wait)
                     {
-                        BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到；前面的{EnemyName(f!)}已能出手、前方有空位，但它本轮没有AP补位，{EnemyName(e)}等待（不换位）。");
+                        BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到；前面的{EnemyName(f!)}已能出手、前方有空位，但它本回合没有AP补位，{EnemyName(e)}等待（不换位）。");
                         return;
                     }
                     if (assist == AssistKind.Assist)
@@ -669,7 +669,7 @@ namespace Survival.Core.Engine
                         e.Guard = true;
                         BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到目标，也无法前压，改为防御。");
                     }
-                    else BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到目标{(pursuit ? "" : $"（本轮只剩{ap}AP，不够防御），结束行动")}。");
+                    else BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到目标{(pursuit ? "" : $"（本回合只剩{ap}AP，不够防御），结束行动")}。");
                     return;
             }
         }
@@ -686,7 +686,7 @@ namespace Survival.Core.Engine
             var acted = f.Acted;
             f.RoundApUsed += ca.HelperAp;
             f.Slot = target.ToString();
-            BattleLog(s, $"{EnemyName(f)}主动补到{PosName(target)}（花它自己本轮{ca.HelperAp}AP，{(acted ? $"行动后还剩{EnemyApLeft(f)}AP" : $"轮到它时只剩{EnemyApLeft(f)}AP")}），给{EnemyName(e)}让出{PosName(target + 1)}。");
+            BattleLog(s, $"{EnemyName(f)}主动补到{PosName(target)}（花它自己本回合{ca.HelperAp}AP，{(acted ? $"行动后还剩{EnemyApLeft(f)}AP" : $"轮到它时只剩{EnemyApLeft(f)}AP")}），给{EnemyName(e)}让出{PosName(target + 1)}。");
             TryBrace(s, b, f);
             if (s.Battle == null || s.Progress.Dead || !e.Alive) return false;
             var front = target + 1;
@@ -864,7 +864,7 @@ namespace Survival.Core.Engine
                 var on = PlayerArmorBroken(b);
                 b.PlayerArmorBreak = on ? Math.Max(b.PlayerArmorBreak, st.ArmorBreak) : st.ArmorBreak;
                 b.PlayerArmorBreakUntilRound = Math.Max(on ? b.PlayerArmorBreakUntilRound : 0, b.Round + st.ArmorBreakRounds);
-                extra.Add($"{Who(s)}被破甲（护甲−{Fmt.T(b.PlayerArmorBreak)}，到第{b.PlayerArmorBreakUntilRound}轮末）");
+                extra.Add($"{Who(s)}被破甲（护甲−{Fmt.T(b.PlayerArmorBreak)}，到第{b.PlayerArmorBreakUntilRound}回合末）");
             }
             // 击退（Q80）：命中（含被护甲完全挡住）后判控制，成功则真实后移一格；4 号位边界不移、不判控制，伤害照算
             if (!plain && st.Knockback > 0) DisplacePlayer(s, b, st.Knockback, "knockback", extra);
@@ -915,7 +915,7 @@ namespace Survival.Core.Engine
                     if (RollControl(s, b, PlayerControlResist(s, b, st.Control), ref steady, out var cc))
                     {
                         b.PlayerSteadyUntilRound = steady;
-                        if (st.Control == "slow") { b.PlayerSlowPending = true; extra.Add($"{Who(s)}被{st.Verb}，下轮速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}（控制{Fmt.Pct(cc)}）"); }
+                        if (st.Control == "slow") { b.PlayerSlowPending = true; extra.Add($"{Who(s)}被{st.Verb}，下回合速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}（控制{Fmt.Pct(cc)}）"); }
                         else { b.PlayerStagger = true; b.PlayerStaggerRound = b.Round; extra.Add($"{Who(s)}失衡了（控制{Fmt.Pct(cc)}）"); }
                     }
                     else extra.Add($"{Who(s)}稳住了，没有被{(st.Control == "slow" ? "扯慢" : "打得失衡")}（控制{Fmt.Pct(cc)}）");

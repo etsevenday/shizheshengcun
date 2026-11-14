@@ -1,5 +1,6 @@
 using Newtonsoft.Json.Linq;
 using Survival.Core.Config;
+using Survival.Core.Engine;
 using Survival.Core.State;
 
 namespace Survival.Core.Tests;
@@ -137,7 +138,7 @@ public class B4CatalogTests : TestBase
             Assert.That(w.WeightGrams, Is.EqualTo((int)j["weight_g"]!), id);
             Assert.That(w.DurabilityMaxRange, Is.EqualTo(dur), id);
             Assert.That((w.OwnPositions, w.TargetPositions), Is.EqualTo(((string)j["own"]!, (string)j["target"]!)), id);
-            Assert.That(w.TraitText, Is.EqualTo((string)j["trait"]!), id);
+            Assert.That(w.TraitText, Is.EqualTo(BattleInfoCopy.RoundWords((string)j["trait"]!)), id);   // B34（Q576）：战斗计时「轮」统一显示为「回合」
             // 弹仓表（A05“弹药、弹仓与实际出手实例补全”）
             var ammo = (string)j["ammo"]!;
             Assert.That(w.AmmoId, Is.EqualTo(ammo == "" ? null : ammo), id);

@@ -505,7 +505,7 @@ namespace Survival.Core.Config
             if (stl.HideStepMinutes <= 0 || stl.HideStepMinutes % tick != 0 || stl.HideMinMinutes <= 0 || stl.HideMaxMinutes < stl.HideMinMinutes
                 || (stl.HideMaxMinutes - stl.HideMinMinutes) % stl.HideStepMinutes != 0 || stl.HideMinMinutes % tick != 0) e.Add("躲避隐藏时长档位无效");
             if (c.Encounters.FirstStrike.SpeedFactor <= 0 || c.Encounters.FirstStrike.DamageFactor <= 0) e.Add("先手倍率须为正");
-            if (c.BattleTime.RoundWorldMinutes != tick) e.Add("战斗每轮世界分钟须等于时间段长度");
+            if (c.BattleTime.RoundWorldMinutes != tick) e.Add("战斗每回合世界分钟须等于时间段长度");
 
             foreach (var en in c.ZombieLoot.Entries)
                 if (en.ItemId != null && !items.Contains(en.ItemId)) e.Add($"丧尸掉落引用了不存在的物品 {en.ItemId}");

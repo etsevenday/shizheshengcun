@@ -121,11 +121,11 @@ namespace Survival.Core.Engine
                 p.NoiseAfter = b.Noise + t.Noise;
                 if (c.Target is int ti && b.Enemies.FirstOrDefault(x => x.Index == ti) is BattleEnemy e)
                     p.EffectText = EnemyMarked(b, e)
-                        ? $"{EnemyName(e)}：标记 命中能力+{Fmt.T(Math.Max(e.MarkBonus, t.MarkBonus))}，到第{Math.Max(e.MarkUntilRound, b.Round + t.Rounds)}轮末（已有标记取强、不叠层）"
-                        : $"{EnemyName(e)}：标记 全队对它命中能力+{Fmt.T(t.MarkBonus)}，到第{b.Round + t.Rounds}轮末";
+                        ? $"{EnemyName(e)}：标记 命中能力+{Fmt.T(Math.Max(e.MarkBonus, t.MarkBonus))}，到第{Math.Max(e.MarkUntilRound, b.Round + t.Rounds)}回合末（已有标记取强、不叠层）"
+                        : $"{EnemyName(e)}：标记 全队对它命中能力+{Fmt.T(t.MarkBonus)}，到第{b.Round + t.Rounds}回合末";
             }
             else if (t.Target == "self")
-                p.EffectText = $"你：位移抵抗+{Fmt.T(t.DisplaceResist)}个百分点，到第{b.Round + t.Rounds}轮末（与稳固取强）";
+                p.EffectText = $"你：位移抵抗+{Fmt.T(t.DisplaceResist)}个百分点，到第{b.Round + t.Rounds}回合末（与稳固取强）";
             else
             {
                 var target = c.AllyTarget ?? b.FocusId;
@@ -159,7 +159,7 @@ namespace Survival.Core.Engine
                     // B34b（R03 §Q571）：闪光标记器——ranged 式，真实对象与实际效果，不造命中伤害
                     using var fxFlash = FxBegin(s, name, BattleFxMotion.Ranged, FxAlly(s, b.FocusId), noNumbers: true);
                     FxHit(FxFoe(e), "effect");
-                    BattleLog(s, $"{Who(s)}用{name}标记了{EnemyName(e)}（全队对它命中能力+{Fmt.T(e.MarkBonus)}，到第{e.MarkUntilRound}轮末；噪声+{Fmt.T(t.Noise)}）。");
+                    BattleLog(s, $"{Who(s)}用{name}标记了{EnemyName(e)}（全队对它命中能力+{Fmt.T(e.MarkBonus)}，到第{e.MarkUntilRound}回合末；噪声+{Fmt.T(t.Noise)}）。");
                     break;
                 }
                 case "self":
@@ -169,7 +169,7 @@ namespace Survival.Core.Engine
                     f.DisplaceResist = active ? Math.Max(f.DisplaceResist, t.DisplaceResist) : t.DisplaceResist;
                     f.DisplaceUntilRound = Math.Max(active ? f.DisplaceUntilRound : 0, b.Round + t.Rounds);
                     FxShort(s, name, FxAlly(s, b.FocusId));   // B34b：支撑护带包只给短反馈
-                    BattleLog(s, $"{Who(s)}系上{name}（位移抵抗+{Fmt.T(f.DisplaceResist)}个百分点，到第{f.DisplaceUntilRound}轮末）。");
+                    BattleLog(s, $"{Who(s)}系上{name}（位移抵抗+{Fmt.T(f.DisplaceResist)}个百分点，到第{f.DisplaceUntilRound}回合末）。");
                     break;
                 }
                 default:

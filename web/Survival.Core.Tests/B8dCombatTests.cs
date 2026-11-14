@@ -164,12 +164,12 @@ public class B8dCombatTests : BattleTestBase
         SetIntent(z, "howl");
         z.RoundApUsed = 2;   // 替同伴补位预扣两次
         var label = E.IntentLabel(z, b);
-        Assert.That(E.IntentShown(b, z), Is.EqualTo($"等待（本轮只剩1AP，替同伴补位预扣了2AP，不够{label}）"), "敌卡与执行同源");
+        Assert.That(E.IntentShown(b, z), Is.EqualTo($"等待（本回合只剩1AP，替同伴补位预扣了2AP，不够{label}）"), "敌卡与执行同源");
         var panic = b.Panic;
         var rng = s.Rng.State;
         var n0 = b.Log.Count;
         EnemyAct(s, z);
-        Assert.That(b.Log.Skip(n0).Single(), Does.EndWith($"{E.EnemyName(z)}本轮只剩1AP（替同伴补位预扣了2AP），不够{label}，结束行动。"));
+        Assert.That(b.Log.Skip(n0).Single(), Does.EndWith($"{E.EnemyName(z)}本回合只剩1AP（替同伴补位预扣了2AP），不够{label}，结束行动。"));
         Assert.That(z.RoundApUsed, Is.EqualTo(2), "不扣未发生费用，旧补位成本不返");
         Assert.That(b.Panic, Is.EqualTo(panic), "嚎叫没执行");
         Assert.That((z.Intent, z.Guard), Is.EqualTo(("howl", false)), "不换意图、不自动防御");
@@ -186,7 +186,7 @@ public class B8dCombatTests : BattleTestBase
         g.Reserve = 4;
         SetIntent(g, "reload");
         g.RoundApUsed = 3;
-        Assert.That(E.IntentShown(t.Battle!, g), Does.StartWith("等待（本轮只剩0AP"));
+        Assert.That(E.IntentShown(t.Battle!, g), Does.StartWith("等待（本回合只剩0AP"));
         EnemyAct(t, g);
         Assert.That((g.Mag, g.RoundApUsed), Is.EqualTo((0, 3)));
         g.Acted = false;

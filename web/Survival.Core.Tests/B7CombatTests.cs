@@ -125,7 +125,7 @@ public class B7CombatTests : BattleTestBase
         var r = s.Battle.Round;
         Force(s, AtLeast(0.99));
         Assert.That(Cmd(s, "blade_03", 1).Ok, Is.True);
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("blade_03", 1)), Is.EqualTo($"冷却中（第{r + 2}轮起可用）"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("blade_03", 1)), Is.EqualTo($"冷却中（第{r + 2}回合起可用）"));
         E.SelectWeaponPage(s, 2);
         E.SelectWeaponPage(s, 1);
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("blade_03", 1)), Does.StartWith("冷却中"), "切页不刷新冷却");
@@ -579,7 +579,7 @@ public class B7CombatTests : BattleTestBase
         var sp = Enemy(s, 3);
         Assert.That(sp.Intent, Is.EqualTo("spit"), "第1次正常激活：喷吐");
         Assert.That(E.IntentOutOfReach(b, sp), Is.False, "3号位可喷吐（34→1234）");
-        Assert.That(sp.IntentLabel, Does.Contain("破甲0.15（2轮）").And.Contain("不感染"));
+        Assert.That(sp.IntentLabel, Does.Contain("破甲0.15（2回合）").And.Contain("不感染"));
         var v0 = s.Body.VirusLoad;
         for (var i = 0; i < 30 && !sp.Acted && s.Battle != null; i++) { if (E.AwaitingPlayer(s)) Cmd(s, "end_turn"); else { if (b.Queue[b.Cursor] == sp.Index) Force(s, Draw(), Below(0.01), Any()); E.BattleStep(s); } }
         Assert.That(b.PlayerArmorBreak, Is.EqualTo(0.15).Within(1e-9));

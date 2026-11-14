@@ -480,7 +480,7 @@ namespace Survival.Core.Engine
         {
             var b = s.Battle;
             if (b == null) return;
-            b.Log.Add($"第{b.Round}轮 · {text}");   // B34（Q528.2／Q570）：本场全部保留，不再截存 80 条
+            b.Log.Add($"第{b.Round}回合 · {text}");   // B34（Q528.2／Q570）：本场全部保留，不再截存 80 条
             FxLine(b.Log[b.Log.Count - 1]);   // B34b：同一句战报归到正在记的出手（特写底部显示原文）
         }
 
@@ -1130,8 +1130,8 @@ namespace Survival.Core.Engine
                         // B21（R03 D4）：地牢远征里撤退成功退到来路上第一个没有敌人的房间（仍在远征里，不算离开地牢）
                         var retreatTo = DungeonRetreatTarget(s, s.CurrentLocation);
                         p.Notes.Add(retreatTo != null
-                            ? $"成功：本轮推进5分钟后脱战，全队退到{LocName(retreatTo)}（来路上第一个没有敌人的房间，仍在本次远征里、不扣终止惩罚），存活敌人保留血量；失败：本回合行动点用尽"
-                            : $"成功：本轮推进5分钟后脱战，{WorldRetreatPreview(s, b)}，存活敌人保留血量与位置；失败：本回合行动点用尽");
+                            ? $"成功：本回合推进5分钟后脱战，全队退到{LocName(retreatTo)}（来路上第一个没有敌人的房间，仍在本次远征里、不扣终止惩罚），存活敌人保留血量；失败：本回合行动点用尽"
+                            : $"成功：本回合推进5分钟后脱战，{WorldRetreatPreview(s, b)}，存活敌人保留血量与位置；失败：本回合行动点用尽");
                         if (low) p.Notes.Add($"体力不足{Fmt.N(a.Energy ?? 0)}：强行撤退不耗体力，成功率×{Fmt.T(a.LowEnergyChanceFactor)}");
                         break;
                     }
@@ -1140,7 +1140,7 @@ namespace Survival.Core.Engine
                     case "use_antiviral_cure":
                         // 效果数值放在第一条（与执行同一份计算 MedicineEffectText），战斗区执行条直接显示它
                         if (CarriedItem(s, a.ItemId!, c.ItemInstanceId) is ItemInstance med && _items[med.ItemId].Use is ItemUseConfig mu && MedicineEffectText(s, mu) is string mt) { p.EffectText = mt; p.Notes.Add(mt); }
-                        p.Notes.Add("效果在确认时应用，不另跳5分钟；本轮结束时统一推进一次世界时间");
+                        p.Notes.Add("效果在确认时应用，不另跳5分钟；本回合结束时统一推进一次世界时间");
                         break;
                     case "swap":
                     {
@@ -1154,7 +1154,7 @@ namespace Survival.Core.Engine
                         p.Notes.Add(PositionHint(s, b, to));
                         break;
                     }
-                    case "end_turn": p.Notes.Add("剩余行动点清零，不积攒到下轮"); break;
+                    case "end_turn": p.Notes.Add("剩余行动点清零，不积攒到下回合"); break;
                 }
             }
             p.ConfirmText = p.Ok ? $"执行{ActionName(c.Action)}·{p.Ap}AP" : ActionName(c.Action);
@@ -1421,7 +1421,7 @@ namespace Survival.Core.Engine
         /// </summary>
         private void EmitLastRoundLog(GameState s, BattleState b)
         {
-            var prefix = $"第{b.Round}轮 · ";
+            var prefix = $"第{b.Round}回合 · ";
             foreach (var line in b.Log.Where(l => l.StartsWith(prefix)).ToList())
                 Emit(s, GameEventKind.Battle, "战斗记录 " + line);
         }
@@ -1514,7 +1514,7 @@ namespace Survival.Core.Engine
             // 撤退：只有场上确有倒下敌人的掉落/尸体时才写“放弃”（试玩修复 L3）
             var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品")
                 : b.Loot.Any(l => l.ItemId != null && l.Count > 0) ? "放弃了场上的尸体与掉落" : null;
-            var text = $"{head}：共{b.Round}轮（世界时间{Clock.Duration(b.Ticks * Tick)}）{(loss > 1e-9 ? $"，精神−{Fmt.N(loss)}" : "")}{(mateLoss.Count > 0 ? "，" + string.Join("、", mateLoss) : "")}{(loot != null ? "；" + loot : "")}{(fixedLines.Count > 0 ? "；" + string.Join("；", fixedLines) : "")}。";   // 试玩修复 B7c-1：精神没变时不写“精神−0.00”
+            var text = $"{head}：共{b.Round}回合（世界时间{Clock.Duration(b.Ticks * Tick)}）{(loss > 1e-9 ? $"，精神−{Fmt.N(loss)}" : "")}{(mateLoss.Count > 0 ? "，" + string.Join("、", mateLoss) : "")}{(loot != null ? "；" + loot : "")}{(fixedLines.Count > 0 ? "；" + string.Join("；", fixedLines) : "")}。";   // 试玩修复 B7c-1：精神没变时不写“精神−0.00”
             BattleLog(s, text);
             s.Battle = null;
             Emit(s, GameEventKind.BattleEnd, text, null, outcome == "victory" ? b.Loot.Where(l => l.ItemId != null).Select(l => l.ItemId!) : null);

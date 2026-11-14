@@ -711,7 +711,7 @@ namespace Survival.Core.Save
                 // 旧战斗保持旧口径直到结束（Q62：activeLegacyBattleCapacityPreserved）：schema 11 时单场最多 3 敌
                 b.Capacity = Math.Max(LegacyBattleCapacity, b.Enemies.Count);
                 b.Allies = new List<string> { GameState.PlayerId };
-                var note = "进行中的战斗改为四对四站位：敌人按原顺序排到1—" + (k - 1) + "号位，本轮照旧走完，下一轮起按新的速度与行动点规则";
+                var note = "进行中的战斗改为四对四站位：敌人按原顺序排到1—" + (k - 1) + "号位，本回合照旧走完，下一回合起按新的速度与行动点规则";
                 notes.Add(note);
                 s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
             }

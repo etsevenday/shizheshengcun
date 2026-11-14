@@ -98,7 +98,7 @@ public class B41e2ShellTests
         Assert.That(p, Does.Contain("e.PlayerSpeedParts(s, b, null, vFs)").And.Contain("GameEngine.FirstStrikeTag(vFs)"), "构成说明追加先手项");
         Assert.That(p, Does.Contain("e.EnemyRoundSpeed(b, t).Note"));
         var q = Web("Components/BattleScreen.razor");
-        Assert.That(q, Does.Contain("轮初有效速度{qSpeed}{qSrc}"));
+        Assert.That(q, Does.Contain("回合初有效速度{qSpeed}{qSrc}"));
     }
 
     [Test]

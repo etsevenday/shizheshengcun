@@ -90,7 +90,7 @@ else if (b != null)
         <div class="detail-scroll">
             @if (G.RightNotice != null) { <div class="blocked pin">@G.RightNotice</div> }
             <div class="op-head">
-                <div class="eyebrow">战斗第@(b.Round)轮 · 我方@(GameEngine.AllyPos(b, vid))号位 · 只查看</div>
+                <div class="eyebrow">战斗第@(b.Round)回合 · 我方@(GameEngine.AllyPos(b, vid))号位 · 只查看</div>
                 <h2>@(vid == GameState.PlayerId ? "你" : e.ActorDisplayName(s, vid))</h2>
             </div>
             <div class="lines">
@@ -117,7 +117,7 @@ else if (b != null)
                试玩修复 M503：1280×720 首战系统提示开着时右栏只剩一百多像素，放到说明之下会被裁，所以放在滚动区最顶并贴住 *@
             @if (G.RightNotice != null) { <div class="blocked pin">@G.RightNotice</div> }
             <div class="op-head">
-                <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"{(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))}的行动（剩{b.PlayerAp}AP）" : G.BattleShownActor > 0 ? "敌方行动中" : b.Cursor >= b.Queue.Count ? "轮末结算" : b.Queue[b.Cursor] <= 0 ? "等待我方行动" : "敌方行动中")</div>
+                <div class="eyebrow">战斗第@(b.Round)回合 · @(awaiting ? $"{(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))}的行动（剩{b.PlayerAp}AP）" : G.BattleShownActor > 0 ? "敌方行动中" : b.Cursor >= b.Queue.Count ? "回合末结算" : b.Queue[b.Cursor] <= 0 ? "等待我方行动" : "敌方行动中")</div>
                 @* B34（S14 Q577）：没有选动作时不写文字催促（原「选择指令」与操作说明句取消），只留真实对象信息 *@
                 @if (t != null && t.Alive) { <h2>@($"{t.Slot}号位 {e.EnemyName(t)}")</h2> }
             </div>
@@ -145,7 +145,7 @@ else if (b != null)
                 <div><span>恐慌</span><b>@Ui.N(b.Panic)@(e.Config.Panic.PenaltyFor(b.Panic) is PanicPenaltyConfig pp ? $"（≥{Ui.T(pp.Minimum)}：命中能力×{Ui.T(pp.AccuracyRatingFactor)}、撤退×{Ui.T(pp.RetreatFactor)}）" : "")</b></div>
                 <div><span>@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))的闪避能力</span><b>@Ui.T(e.MyBaseDodge(s))</b></div>
                 <div title="控制成功率=clamp(75%+控制能力−抗性, 10%, 95%)；稳态期间抗性再+30；装备“位移抵抗”只防拉扯/击退，不防失衡/减速"><span>@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))的控制抗性</span><b>基础@(Ui.T(e.MyBaseControlResist(s))) · 拉扯/击退@(Ui.T(e.PlayerControlResist(s, b, "pull")))@(b.PlayerSteadyUntilRound >= b.Round ? "（稳态另+30）" : "")</b></div>
-                <div><span>本场世界时间</span><b>@Clock.Duration(b.Ticks * e.Config.Time.TickMinutes)（每轮5分钟）</b></div>
+                <div><span>本场世界时间</span><b>@Clock.Duration(b.Ticks * e.Config.Time.TickMinutes)（每回合5分钟）</b></div>
             </div>
             @* B9：最近战斗记录移到右下“战报”（完整记录点“查看记录”），这里只放对象信息 *@
         </div>
@@ -218,7 +218,7 @@ else if (b != null)
         var p = e.PreviewCommand(s, cmd);
         <div class="detail-scroll bi-detail">
             <div class="op-head">
-                <div class="eyebrow">战斗第@(b.Round)轮 · 指令预览</div>
+                <div class="eyebrow">战斗第@(b.Round)回合 · 指令预览</div>
                 <h2>@p.Title</h2>
                 <p>@(p.Ap)AP · 体力@(Ui.N(p.EnergyBefore))→@(Ui.N(p.EnergyAfter))@(p.EnergyCost > 0 ? $"（−{Ui.N(p.EnergyCost)}）" : "")</p>
             </div>
@@ -274,9 +274,9 @@ else if (b != null)
     private static string? B7Status(BattleState b, BattleEnemy t)
     {
         var parts = new List<string>();
-        if (GameEngine.EnemyMarked(b, t)) parts.Add($"被标记：命中能力+{Ui.T(t.MarkBonus)}（到第{t.MarkUntilRound}轮末）");
-        if (t.ArmorBreak > 0 && t.ArmorBreakUntilRound >= b.Round) parts.Add($"破甲−{Ui.T(t.ArmorBreak)}（到第{t.ArmorBreakUntilRound}轮末）");
-        if (GameEngine.EnemyWeak(b, t)) parts.Add($"虚弱：伤害×{Ui.T(t.WeakFactor)}（到第{t.WeakUntilRound}轮末）");
+        if (GameEngine.EnemyMarked(b, t)) parts.Add($"被标记：命中能力+{Ui.T(t.MarkBonus)}（到第{t.MarkUntilRound}回合末）");
+        if (t.ArmorBreak > 0 && t.ArmorBreakUntilRound >= b.Round) parts.Add($"破甲−{Ui.T(t.ArmorBreak)}（到第{t.ArmorBreakUntilRound}回合末）");
+        if (GameEngine.EnemyWeak(b, t)) parts.Add($"虚弱：伤害×{Ui.T(t.WeakFactor)}（到第{t.WeakUntilRound}回合末）");
         if (t.ProtectingIndex > 0) parts.Add("正在保护同伴：对同伴的单体攻击由它接下");
         if (t.Mag >= 0) parts.Add($"弹仓{t.Mag}，备弹{t.Reserve}（打空不补）");
         return parts.Count == 0 ? null : string.Join("；", parts);

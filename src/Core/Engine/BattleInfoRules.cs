@@ -61,6 +61,18 @@ namespace Survival.Core.Engine
         public const string EquipEntry = "查看装备";
         public const string EquipTitle = "战斗装备";
 
+        /// <summary>
+        /// B34（S14 Q576）：旧档里已保存战报的战斗计时「轮」在展示层同义显示为「回合」（第N轮、本轮、下轮、每轮、轮末、N轮……），
+        /// 「轮到」「轮流」等自然语不动；只改显示，保存原文与历史事实不改、不补造。
+        /// </summary>
+        public static string RoundWords(string? line)
+        {
+            if (string.IsNullOrEmpty(line) || !line.Contains('轮')) return line ?? "";
+            return RoundWordRx.Replace(line.Replace("轮次", "回合"), "回合");
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex RoundWordRx = new("(?<![滚车])轮(?![到流换廓胎])");
+
         /// <summary>B34（S14 Q576）：首战与普通战统一主标题「战斗 · {地点}」。</summary>
         public static string Title(string location) => $"战斗 · {location}";
 
@@ -95,7 +107,7 @@ namespace Survival.Core.Engine
         public static string AimNoTargetHeader(string apText, double energyCost, int candidates, int cooldownRounds)
         {
             var energy = energyCost > 0 && Fmt.N(energyCost) != Fmt.N(0) ? $" · 体力−{Fmt.N(energyCost)}" : "";
-            var cd = cooldownRounds > 0 ? $" · 冷却{cooldownRounds}轮" : "";
+            var cd = cooldownRounds > 0 ? $" · 冷却{cooldownRounds}回合" : "";
             return $"{apText}{energy} · 可选目标{candidates}个{cd}";
         }
     }

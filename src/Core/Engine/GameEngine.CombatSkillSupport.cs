@@ -195,12 +195,12 @@ namespace Survival.Core.Engine
                     var f = shield != null ? Config.CombatMath.ShieldGuardFactor : Config.CombatMath.GuardFactor;
                     p.Notes.Add($"格挡{x.GuardCharges}次：下一次受到的直接伤害×{Fmt.T(f)}{(shield != null ? $"（盾类格挡：当前页{ItemName(shield.ItemId)}耐久−{Fmt.T(Config.Wear.PerExecutedAttackCommand)}）" : GuardShieldMissingReason(s) is string gw ? $"（{gw}）" : "")}，到你下次正常行动开始清除");
                     if (x.CounterFactor > 0) p.Notes.Add($"反击：受到直接攻击命中后，用{w.Name}反击1次，伤害×{Fmt.T(x.CounterFactor * w.Trait("counterDamage", 1))}（反击不再触发反应）");
-                    if (x.DisplaceResist > 0) p.Notes.Add($"位移抵抗+{Fmt.T(x.DisplaceResist)}个百分点，到第{b.Round + x.BuffRounds}轮末（被拉扯/击退判控制时生效，与装备位移抵抗取强）");
+                    if (x.DisplaceResist > 0) p.Notes.Add($"位移抵抗+{Fmt.T(x.DisplaceResist)}个百分点，到第{b.Round + x.BuffRounds}回合末（被拉扯/击退判控制时生效，与装备位移抵抗取强）");
                     if (x.TeamGuardFactor > 0 && solo) p.Notes.Add("其他队员的减伤：现在只有你一人，没有效果");
                     break;
                 }
                 case "buff":
-                    if (x.ChargeFactor > 0) p.Notes.Add($"下次用这把斧攻击伤害×{Fmt.T(x.ChargeFactor)}，到第{b.Round + 1}轮末；不叠");
+                    if (x.ChargeFactor > 0) p.Notes.Add($"下次用这把斧攻击伤害×{Fmt.T(x.ChargeFactor)}，到第{b.Round + 1}回合末；不叠");
                     if (x.BraceCharges > 0)
                     {
                         var charges = Math.Min(Math.Max(x.BraceMax, 1), x.BraceCharges + (int)w.Trait("braceExtra"));
@@ -228,14 +228,14 @@ namespace Survival.Core.Engine
                             p.Notes.Insert(0, p.EffectText);
                         }
                         else p.Notes.Add(ra == null ? "先点要交换的第一名友方A（可以是自己），再点与A相邻的友方B，然后确认" : $"已选{ActorDisplayName(s, ra)}（{PosName(AllyPos(b, ra))}）；再点与他相邻的一名友方");
-                        p.Notes.Add($"由{Who(s)}付一次成本（{n.Ap}AP、体力、冷却{n.CooldownRounds}轮{(wi?.Durability != null ? $"、{w.Name}耐久−1" : "")}），两人不另付调整站位费；只交换号位，不多激活、不改行动顺序、不改战前编队；换位无经验，也不触发架矛迎击");
+                        p.Notes.Add($"由{Who(s)}付一次成本（{n.Ap}AP、体力、冷却{n.CooldownRounds}回合{(wi?.Durability != null ? $"、{w.Name}耐久−1" : "")}），两人不另付调整站位费；只交换号位，不多激活、不改行动顺序、不改战前编队；换位无经验，也不触发架矛迎击");
                         p.Notes.Add("交换后两人的技能仍按真实号位判断（可能暂时站在不适合自己武器的号位）");
                     }
                     else if (x.Protect || x.ApBonus > 0)
                     {
                         var pt = AllyTargetOf(b, c, x);
                         p.Notes.Add(pt != null ? $"目标：{ActorDisplayName(s, pt)}（{PosName(AllyPos(b, pt))}）" : x.Protect ? "目标：与你相邻的一名队友" : "目标：一名其他队友");
-                        if (x.Protect) p.Notes.Add($"接下目标下一次单体直接攻击（范围攻击、流血不转移），到{Who(s)}下次正常行动开始" + (x.TeamGuardFactor > 0 ? $"；双方下一次受到的直接伤害×{Fmt.T(x.TeamGuardFactor)}，到第{b.Round + x.BuffRounds}轮末" : ""));
+                        if (x.Protect) p.Notes.Add($"接下目标下一次单体直接攻击（范围攻击、流血不转移），到{Who(s)}下次正常行动开始" + (x.TeamGuardFactor > 0 ? $"；双方下一次受到的直接伤害×{Fmt.T(x.TeamGuardFactor)}，到第{b.Round + x.BuffRounds}回合末" : ""));
                         if (x.ApBonus > 0) p.Notes.Add($"目标下一次正常行动 AP+{x.ApBonus}（总数不超过{Config.Scope.ApCap}，不加追击）");
                         p.Notes.Add(x.Protect ? "有效拦截时得盾经验（每场每目标一次）" : "增益被实际用掉才得指挥经验（每场每目标每技能一次）");
                     }
@@ -243,9 +243,9 @@ namespace Survival.Core.Engine
                     {
                         var at = AllyTargetOf(b, c, x) ?? b.FocusId;
                         p.Notes.Add(solo ? "目标：你自己（我方只有你一人）" : $"目标：{(at == b.FocusId ? "自己" : ActorDisplayName(s, at))}（可点我方任一在场成员）");
-                        if (x.InspireAccuracy > 0) p.Notes.Add($"下一次攻击命中能力+{Fmt.T(x.InspireAccuracy)}，到第{b.Round + x.BuffRounds + (int)w.Trait("commandRounds")}轮末");
+                        if (x.InspireAccuracy > 0) p.Notes.Add($"下一次攻击命中能力+{Fmt.T(x.InspireAccuracy)}，到第{b.Round + x.BuffRounds + (int)w.Trait("commandRounds")}回合末");
                         if (x.PanicReduce > 0) { var tp = b.Fighter(at).Panic; p.Notes.Add($"恐慌{Fmt.N(tp)}→{Fmt.N(Math.Max(Config.Panic.Range[0], tp - x.PanicReduce))}；同目标每大回合一次"); }
-                        if (x.AllOutFactor > 0) p.Notes.Add($"下一次攻击伤害×{Fmt.T(x.AllOutFactor)}，到第{b.Round + x.BuffRounds + (int)w.Trait("commandRounds")}轮末；同名不叠");
+                        if (x.AllOutFactor > 0) p.Notes.Add($"下一次攻击伤害×{Fmt.T(x.AllOutFactor)}，到第{b.Round + x.BuffRounds + (int)w.Trait("commandRounds")}回合末；同名不叠");
                         if (w.Trait("firstCommandAccuracy") > 0 && !b.FirstCommandUsed) p.Notes.Add($"{w.Name}“预判”：本场首次号令，另加下一击命中能力+{Fmt.T(w.Trait("firstCommandAccuracy"))}");
                         p.Notes.Add($"{w.Name}耐久−1（有效时）；" + (SkillMaxed(s, "command") ? XpText(s, "command", 0) : $"增益被实际用掉才得指挥经验+{Config.Xp.DamagingAttackCommand}（每场每技能一次）"));
                     }
@@ -281,7 +281,7 @@ namespace Survival.Core.Engine
                     }
                     break;
             }
-            if (n.CooldownRounds > 0) p.Notes.Add($"冷却{n.CooldownRounds}轮：本轮用后第{b.Round + n.CooldownRounds + 1}轮起可再用");
+            if (n.CooldownRounds > 0) p.Notes.Add($"冷却{n.CooldownRounds}回合：本回合用后第{b.Round + n.CooldownRounds + 1}回合起可再用");
         }
 
         private void ExecuteNonAttack(GameState s, BattleState b, BattleCommand c, SkillNodeConfig n, SkillExecConfig x, WeaponConfig w, ItemInstance? wi)
@@ -310,7 +310,7 @@ namespace Survival.Core.Engine
                     {
                         b.DisplaceResist = x.DisplaceResist;
                         b.DisplaceUntilRound = b.Round + x.BuffRounds;
-                        parts.Add($"位移抵抗+{Fmt.T(x.DisplaceResist)}个百分点到第{b.DisplaceUntilRound}轮末");
+                        parts.Add($"位移抵抗+{Fmt.T(x.DisplaceResist)}个百分点到第{b.DisplaceUntilRound}回合末");
                     }
                     if (x.TeamGuardFactor > 0 && solo) parts.Add("没有其他队员可受减伤");
                     else if (x.TeamGuardFactor > 0)
@@ -318,7 +318,7 @@ namespace Survival.Core.Engine
                         // 坚守（shield_10，B9a）：其他在场队员下一次直接伤害×0.8，持续 buffRounds 轮
                         var others = AlliesOnField(b).Where(a => a != b.FocusId).ToList();
                         foreach (var o in others) { var of = b.Fighter(o); of.CoverFactor = Math.Min(of.CoverUntilRound >= b.Round ? of.CoverFactor : 1, x.TeamGuardFactor); of.CoverUntilRound = Math.Max(of.CoverUntilRound, b.Round + x.BuffRounds); }
-                        parts.Add($"{string.Join("、", others.Select(o => ActorDisplayName(s, o)))}下一次直接伤害×{Fmt.T(x.TeamGuardFactor)}（到第{b.Round + x.BuffRounds}轮末）");
+                        parts.Add($"{string.Join("、", others.Select(o => ActorDisplayName(s, o)))}下一次直接伤害×{Fmt.T(x.TeamGuardFactor)}（到第{b.Round + x.BuffRounds}回合末）");
                     }
                     break;
                 }
@@ -328,7 +328,7 @@ namespace Survival.Core.Engine
                         b.ChargeFactor = x.ChargeFactor;
                         b.ChargeUntilRound = b.Round + 1;
                         b.ChargeItem = wi?.InstanceId;
-                        parts.Add($"下次用{w.Name}攻击伤害×{Fmt.T(x.ChargeFactor)}（到第{b.ChargeUntilRound}轮末）");
+                        parts.Add($"下次用{w.Name}攻击伤害×{Fmt.T(x.ChargeFactor)}（到第{b.ChargeUntilRound}回合末）");
                     }
                     if (x.BraceCharges > 0)
                     {
@@ -386,7 +386,7 @@ namespace Survival.Core.Engine
                                 of.CoverFactor = Math.Min(of.CoverUntilRound >= b.Round ? of.CoverFactor : 1, x.TeamGuardFactor);
                                 of.CoverUntilRound = Math.Max(of.CoverUntilRound, b.Round + x.BuffRounds);
                             }
-                        if (x.TeamGuardFactor > 0) parts.Add($"双方下一次直接伤害×{Fmt.T(x.TeamGuardFactor)}（到第{b.Round + x.BuffRounds}轮末）");
+                        if (x.TeamGuardFactor > 0) parts.Add($"双方下一次直接伤害×{Fmt.T(x.TeamGuardFactor)}（到第{b.Round + x.BuffRounds}回合末）");
                         effective = true;
                     }
                     if (x.ApBonus > 0)
@@ -405,7 +405,7 @@ namespace Survival.Core.Engine
                             b.InspireBonus = x.InspireAccuracy;
                             b.InspireUntilRound = b.Round + x.BuffRounds + (int)w.Trait("commandRounds");
                             if (!b.PendingCommandXp.Contains(key)) b.PendingCommandXp.Add(key);
-                            parts.Add($"下一次攻击命中能力+{Fmt.T(b.InspireBonus)}（到第{b.InspireUntilRound}轮末）");
+                            parts.Add($"下一次攻击命中能力+{Fmt.T(b.InspireBonus)}（到第{b.InspireUntilRound}回合末）");
                             effective = true;
                         }
                         if (x.PanicReduce > 0)
@@ -422,7 +422,7 @@ namespace Survival.Core.Engine
                             b.AllOutFactor = x.AllOutFactor;
                             b.AllOutUntilRound = b.Round + x.BuffRounds + (int)w.Trait("commandRounds");
                             if (!b.PendingCommandXp.Contains(key)) b.PendingCommandXp.Add(key);
-                            parts.Add($"下一次攻击伤害×{Fmt.T(b.AllOutFactor)}（到第{b.AllOutUntilRound}轮末）");
+                            parts.Add($"下一次攻击伤害×{Fmt.T(b.AllOutFactor)}（到第{b.AllOutUntilRound}回合末）");
                             effective = true;
                         }
                         var first = w.Trait("firstCommandAccuracy");

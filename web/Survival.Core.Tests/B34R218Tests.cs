@@ -78,6 +78,25 @@ public class B34R218Tests
         Assert.That(sw, Does.Contain("BattleItem = pos;").And.Contain("await ExecuteBattleCommand(token);"), "提交走原指令入口");
     }
 
+    /// <summary>Q576-A01：战斗计时「轮」统一显示为「回合」；「轮到」等自然语不动；旧档已保存战报只在展示层同义转换。</summary>
+    [Test]
+    public void Q576_RoundWord_Unified()
+    {
+        Assert.That(BattleInfoCopy.RoundWords("第3轮 · 游荡尸本轮只剩1AP，下轮速度−2（到第5轮末），冷却2轮"),
+            Is.EqualTo("第3回合 · 游荡尸本回合只剩1AP，下回合速度−2（到第5回合末），冷却2回合"));
+        Assert.That(BattleInfoCopy.RoundWords("第2轮 · 轮到你行动：3AP。"), Is.EqualTo("第2回合 · 轮到你行动：3AP。"));
+        Assert.That(BattleInfoCopy.RoundWords(null), Is.EqualTo(""));
+        var bs = Web("Components/BattleScreen.razor");
+        Assert.That(bs, Does.Contain("@BattleInfoCopy.RoundWords(b.Log.LastOrDefault())").And.Contain("@BattleInfoCopy.RoundWords(b.Log[i])").And.Contain("var shown = BattleInfoCopy.RoundWords(line);"),
+            "最新一条、最近5条、全记录都过展示层转换");
+        // 内核与界面的玩家可见字面量里不再有战斗计时「轮」
+        var rx = new System.Text.RegularExpressions.Regex("\"[^\"\\n]*(第\\{[^}]+\\}轮|本轮|下轮|每轮|轮末|轮初|\\}轮)[^\"\\n]*\"");
+        foreach (var f in Directory.GetFiles(Path.Combine(Root(), "src", "Core", "Engine"), "GameEngine.*.cs")
+                     .Concat(new[] { "Components/BattleScreen.razor", "Components/BattlePanel.razor", "Components/GrowthOverlay.razor", "Services/HelpCatalog.cs" }.Select(x => Path.Combine(Root(), "web", "Survival.Web", x))))
+            foreach (var line in File.ReadLines(f).Where(l => !l.TrimStart().StartsWith("//") && !l.TrimStart().StartsWith("@*")))
+                Assert.That(rx.IsMatch(line) && !line.Contains("外部区按本轮显式清单"), Is.False, $"{Path.GetFileName(f)}：{line.Trim()}");   // 「本轮显式清单」是版本批次，不是战斗计时
+    }
+
     /// <summary>Q578：内核每个目的号位一条 swap 选项（ItemInstanceId＝目的槽），合成卡的号位亮起与它同源。</summary>
     [Test]
     public void Q578_EngineSwapOptions_PerDestination()

@@ -183,7 +183,7 @@
         var parts = new List<string>();
         if (n.Ap > 0) parts.Add($"{n.Ap}AP");
         if (n.Positions != "") parts.Add(n.Positions);
-        if (n.CooldownRounds > 0) parts.Add($"冷却{n.CooldownRounds}轮");
+        if (n.CooldownRounds > 0) parts.Add($"冷却{n.CooldownRounds}回合");
         return parts.Count == 0 ? "战斗技能" : string.Join(" · ", parts);
     }
 

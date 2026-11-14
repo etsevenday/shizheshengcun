@@ -302,7 +302,7 @@ namespace Survival.Core.Engine
             }
             var x = _exec[n.Id];
             if (!SkillUnlocked(s, n)) return SkillLockedText(s, n);
-            if (CooldownReadyRound(b, n) is int ready) return $"冷却中（第{ready}轮起可用）";
+            if (CooldownReadyRound(b, n) is int ready) return $"冷却中（第{ready}回合起可用）";
             // 结构性原因（需要队友、耐久、单发弩、弹药、随身物资、弹仓满）先于“行动点不足”显示（试玩修复 M150 UX6）
             var structural = x.IsAttack
                 ? wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand) ? $"{w.Name}耐久不足（{DurabilityText(wi)}），可切换武器页"
@@ -524,7 +524,7 @@ namespace Survival.Core.Engine
                 var cc = fx.Control && t0 != null ? $"，控制率{Fmt.Pct(ControlChance(0, _enemies[t0.EnemyId].ControlResist + (t0.SteadyUntilRound >= b.Round ? Config.CombatMath.SteadyResistBonus : 0)))}" : "";
                 notes.Add(StatusNote(fx, w) + (fx.Control ? $"（命中后判控制{cc}）" : fx.Positive ? "（须造成正伤害）" : "（命中即施加）"));
             }
-            if (n.CooldownRounds > 0) notes.Add($"冷却{n.CooldownRounds}轮：本轮用后第{b.Round + n.CooldownRounds + 1}轮起可再用（两武器页与追击共享）");
+            if (n.CooldownRounds > 0) notes.Add($"冷却{n.CooldownRounds}回合：本回合用后第{b.Round + n.CooldownRounds + 1}回合起可再用（两武器页与追击共享）");
             if (InspireActive(b)) notes.Add($"鼓舞：本次命中能力+{Fmt.T(b.InspireBonus)}（用掉）");
             if (AllOutActive(b)) notes.Add($"总攻令：本次伤害×{Fmt.T(b.AllOutFactor)}（用掉）");
             if (AxeChargeActive(s, b, sp)) notes.Add($"斧蓄力：本次伤害×{Fmt.T(b.ChargeFactor)}（用掉）");
@@ -535,12 +535,12 @@ namespace Survival.Core.Engine
         private string StatusNote(SkillStatusConfig fx, WeaponConfig w) => fx.Status switch
         {
             "stagger" => w.Trait("staggerUntilAttack") > 0 ? "失衡：目标下一次攻击命中能力×0.9，持续到它下次攻击后" : "失衡：目标下一次攻击命中能力×0.9",
-            "slow" => $"减速：目标下轮速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}",
-            "weak" => $"虚弱：目标直接伤害×{Fmt.T(fx.Value)}，{fx.Rounds}轮",
-            "mark" => $"标记：我方对它攻击命中能力+{Fmt.T(fx.Value)}，{fx.Rounds}轮",
-            "armor_break" => $"破甲：护甲−{Fmt.T(fx.Value + w.Trait("armorBreakBonus"))}，{fx.Rounds}轮（最低0）",
+            "slow" => $"减速：目标下回合速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}",
+            "weak" => $"虚弱：目标直接伤害×{Fmt.T(fx.Value)}，{fx.Rounds}回合",
+            "mark" => $"标记：我方对它攻击命中能力+{Fmt.T(fx.Value)}，{fx.Rounds}回合",
+            "armor_break" => $"破甲：护甲−{Fmt.T(fx.Value + w.Trait("armorBreakBonus"))}，{fx.Rounds}回合（最低0）",
             "knockback" => "击退：目标往后移1格（后面空着就移过去，有同伴就互换；已在4号位不移、不判控制）",
-            "cancel_charge" => "打断：取消目标本轮还没执行的蓄力，改为普通攻击" + (w.Trait("interruptSlow") > 0 ? $"，下轮速度额外−{Fmt.T(w.Trait("interruptSlow"))}" : ""),
+            "cancel_charge" => "打断：取消目标本回合还没执行的蓄力，改为普通攻击" + (w.Trait("interruptSlow") > 0 ? $"，下回合速度额外−{Fmt.T(w.Trait("interruptSlow"))}" : ""),
             "bleed" => $"流血：每大回合开始−{Fmt.T(Config.Statuses.Bleed.DamagePerOwnActivation)}，共{Config.Statuses.Bleed.RefreshMaxTriggers + (int)w.Trait("bleedTriggers")}次（丧尸免疫）",
             _ => fx.Status,
         };
@@ -745,17 +745,17 @@ namespace Survival.Core.Engine
                         break;
                     case "slow":
                         t.SlowPending = true;
-                        parts.Add($"{cfg.Name}下轮速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}{ctl}");
+                        parts.Add($"{cfg.Name}下回合速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}{ctl}");
                         break;
                     case "weak":
                         t.WeakFactor = EnemyWeak(b, t) ? Math.Min(t.WeakFactor, fx.Value) : fx.Value;
                         t.WeakUntilRound = Math.Max(EnemyWeak(b, t) ? t.WeakUntilRound : 0, b.Round + fx.Rounds);
-                        parts.Add($"{cfg.Name}虚弱（伤害×{Fmt.T(t.WeakFactor)}，到第{t.WeakUntilRound}轮末）{ctl}");
+                        parts.Add($"{cfg.Name}虚弱（伤害×{Fmt.T(t.WeakFactor)}，到第{t.WeakUntilRound}回合末）{ctl}");
                         break;
                     case "mark":
                         t.MarkBonus = EnemyMarked(b, t) ? Math.Max(t.MarkBonus, fx.Value) : fx.Value;
                         t.MarkUntilRound = Math.Max(EnemyMarked(b, t) ? t.MarkUntilRound : 0, b.Round + fx.Rounds);
-                        parts.Add($"{cfg.Name}被标记（命中能力+{Fmt.T(t.MarkBonus)}，到第{t.MarkUntilRound}轮末）");
+                        parts.Add($"{cfg.Name}被标记（命中能力+{Fmt.T(t.MarkBonus)}，到第{t.MarkUntilRound}回合末）");
                         break;
                     case "armor_break":
                     {
@@ -763,7 +763,7 @@ namespace Survival.Core.Engine
                         var on = Active(t.ArmorBreakUntilRound, b) && t.ArmorBreak > 0;
                         t.ArmorBreak = on ? Math.Max(t.ArmorBreak, v) : v;
                         t.ArmorBreakUntilRound = Math.Max(on ? t.ArmorBreakUntilRound : 0, b.Round + fx.Rounds);
-                        parts.Add($"{cfg.Name}破甲（护甲−{Fmt.T(t.ArmorBreak)}，到第{t.ArmorBreakUntilRound}轮末）");
+                        parts.Add($"{cfg.Name}破甲（护甲−{Fmt.T(t.ArmorBreak)}，到第{t.ArmorBreakUntilRound}回合末）");
                         break;
                     }
                     case "knockback":
@@ -785,8 +785,8 @@ namespace Survival.Core.Engine
                             RelockAsAttack(s, t);
                             parts.Add($"{cfg.Name}的蓄力被打断，改为普通攻击{ctl}");
                         }
-                        else parts.Add($"{cfg.Name}被打断（本轮没有待执行的蓄力）{ctl}");
-                        if (extra > 0) parts.Add($"{cfg.Name}下轮速度额外−{Fmt.T(extra)}");
+                        else parts.Add($"{cfg.Name}被打断（本回合没有待执行的蓄力）{ctl}");
+                        if (extra > 0) parts.Add($"{cfg.Name}下回合速度额外−{Fmt.T(extra)}");
                         break;
                     }
                 }

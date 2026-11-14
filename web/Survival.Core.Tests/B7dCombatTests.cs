@@ -636,7 +636,7 @@ public class B7dCombatTests : BattleTestBase
         Force(s, Draw(), Below(0.01), Any(), Below(0.01), AtLeast(0.99), Any());
         typeof(GameEngine).GetMethod("DoAttackStep", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, b, z, E.StepOf(z), true, 1.0, false, false });
-        Assert.That(b.Log.Last(), Does.StartWith($"第{b.Round}轮 · 你反击（石刀）"));
+        Assert.That(b.Log.Last(), Does.StartWith($"第{b.Round}回合 · 你反击（石刀）"));
         Assert.That(b.CounterFactor, Is.EqualTo(0), "反击用掉");
         Assert.That((s.Stats.Energy, knife.Durability), Is.EqualTo((e0, d0)), "不另扣体力、耐久");
         Assert.That((GameEngine.InspireActive(b), GameEngine.AllOutActive(b)), Is.EqualTo((true, true)), "反应不消耗鼓舞/总攻令");
@@ -752,7 +752,7 @@ public class B7dCombatTests : BattleTestBase
         Force(s, Below(0.01), AtLeast(0.99), Any());
         Assert.That(Cmd(s, "axe_03", 1).Ok, Is.True);
         Assert.That(Enemy(s, 1).ArmorBreakUntilRound, Is.EqualTo(6), "破甲 2 轮：第 4 轮施加到第 6 轮末");
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("axe_03", 1)), Does.StartWith("冷却中（第6轮起可用）"), "CD1：r+1 禁用、r+2 可用，与持续时间分开");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("axe_03", 1)), Does.StartWith("冷却中（第6回合起可用）"), "CD1：r+1 禁用、r+2 可用，与持续时间分开");
         Assert.That(Cmd(s, "axe_05").Ok, Is.True);
         Assert.That(b.ChargeUntilRound, Is.EqualTo(5), "蓄力“下一大回合末”到 r+1");
         Assert.That(E.SkillExecOf("command_01")!.BuffRounds, Is.EqualTo(2), "鼓舞持续 2 轮（r+2 轮末，与破甲同口径）");

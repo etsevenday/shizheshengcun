@@ -409,7 +409,7 @@ public class B8aCombatTests : BattleTestBase
         EnemyAct(s, z);
         Assert.That(z.Pos, Is.EqualTo(3), "没 AP 不前移：" + string.Join(" | ", b.Log.Skip(n0)));
         Assert.That(z.RoundApUsed, Is.EqualTo(E.EnemyAp(z)), "账不超过面板 AP");
-        Assert.That(b.Log.Last(), Does.Contain("本轮没有AP前移"));
+        Assert.That(b.Log.Last(), Does.Contain("本回合没有AP前移"));
 
         // 余 1AP：前移到 2 号位后不够 2AP 攻击
         var h0 = s.Stats.Health;
@@ -420,7 +420,7 @@ public class B8aCombatTests : BattleTestBase
 
         // 在己位够得到但账已用完：不出手
         z.Slot = "1"; z.Acted = false; z.RoundApUsed = E.EnemyAp(z) - 1;
-        Assert.That(E.IntentShown(b, z), Does.StartWith("等待（本轮只剩1AP"));
+        Assert.That(E.IntentShown(b, z), Does.StartWith("等待（本回合只剩1AP"));
         EnemyAct(s, z);
         Assert.That(z.RoundApUsed, Is.EqualTo(E.EnemyAp(z) - 1), "付不起 2AP 不扣");
         Assert.That(s.Stats.Health, Is.EqualTo(h0));

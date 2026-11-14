@@ -505,7 +505,7 @@ public class B6CombatTests : BattleTestBase
         Assert.That(b.Round, Is.EqualTo(2));
         Assert.That(s.Body.BleedTriggers, Is.EqualTo(2), "一个大回合只扣一次（追击不多扣）");
         Assert.That(h0 - s.Stats.Health, Is.EqualTo(0.4).Within(1e-9));
-        Assert.That(b.Log.Any(x => x.StartsWith("第2轮") && x.Contains("你流血")), Is.True, "在第2轮开始扣");
+        Assert.That(b.Log.Any(x => x.StartsWith("第2回合") && x.Contains("你流血")), Is.True, "在第2回合开始扣");
     }
 
     [Test]

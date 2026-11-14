@@ -4,7 +4,7 @@
 @* 全屏四对四战斗（A10 §1.2/§2.2/§3，S14「2026-10-30 全系统更新目标」，R03 §7；开发计划 v0.9 批次 B9）：
    战斗覆盖整个应用内容区，取代两行战斗（S14 §18.1/§18.4、R03 §7/§7.2/§7.4 的冲突展示条款）。外层顶栏、左右栏、地面/随身与底栏留在下面不可操作（inert），
    战后原样露出；对象信息改用战斗内右栏，地面与随身收进只读“物资查看”。
-   五条纵区：顶条（地点·轮次·当前激活·菜单）/ 行动队列 / 场景（八锚点）/ 操作台 / 底部短反馈与阅读入口。
+   五条纵区：顶条（地点·回合·当前激活·菜单）/ 行动队列 / 场景（八锚点）/ 操作台 / 底部短反馈与阅读入口。
    B34a（S14 2026-11-13 Q570 选 B；新稿 a9b93f0 P05a）：右栏撤掉，战场八站位与操作台三区用全宽；1600×900 站位足底 y=466、同队间距 169、敌我最近 360、人形高 244。
    对象信息、关键预测与战报改到操作台下方默认收起的「战斗信息／战报」阅读区（底部两个入口展开），执行与目标切换留在底部反馈位。 *@
 @{
@@ -82,7 +82,7 @@
 
         @* 行动队列（R03 §2、A10 §4.1）：本轮已排定的实际顺序，最多 8 个头像；追击用同一角色再出现并带“追”角标。
            未来的追击还没判定，只在“追击条件”里写进度与条件，不伪造确定队列；悬停写速度来源，点击只固定查看（不夺回合）。 *@
-        <div class="bfs-queue" inert="@lockedUi" role="list" aria-label="本轮行动顺序">
+        <div class="bfs-queue" inert="@lockedUi" role="list" aria-label="本回合行动顺序">
             <span class="bq-label">顺序</span>
             @{
                 var shown = 0;
@@ -109,7 +109,7 @@
                 shown++;
                 var qIdx = qi;
                 <button type="button" role="listitem" class="q-av @(now ? "now" : "") @(done ? "done" : "") @(qi <= 0 ? "me" : "q-foe") @(chase ? "chase" : "")" data-peek="@(qi <= 0 ? Peek.Ally(qAlly!) : Peek.Foe(qi))"
-                        title="@($"{qName}：轮初有效速度{qSpeed}{qSrc}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
+                        title="@($"{qName}：回合初有效速度{qSpeed}{qSrc}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
                         aria-label="@($"{(chase ? "追击 " : "")}{qName}{(now ? "，行动中" : done ? "，已行动" : "")}")"
                         @onclick="() => QueueClick(qIdx)">
                     <span class="q-art" aria-hidden="true">@if (qi <= 0) {<img src="img/portraits/protagonist.svg" alt="" />} else { @Icons.Markup("enemy_" + be!.EnemyId) }</span>
@@ -264,7 +264,7 @@
                     <button type="button" class="secondary @(G.BattleDrawer == "equip" ? "on" : "")" @onclick='() => G.OpenBattleDrawer("equip")' title="只读查看七个装备槽（战斗中不能换装或换入第三把武器）">@BattleInfoCopy.EquipEntry</button>
                     @if (general.FirstOrDefault(x => x.Action == "end_turn") is BattleCommandOption endOpt)
                     {
-                        <button type="button" class="secondary bfs-end @(sel?.Action == "end_turn" ? "on" : "")" id="cmd-end_turn" disabled="@locked" title="@(endOpt.Reason ?? "结束本次行动：剩余AP清零，不积攒到下轮（点后再确认）")"
+                        <button type="button" class="secondary bfs-end @(sel?.Action == "end_turn" ? "on" : "")" id="cmd-end_turn" disabled="@locked" title="@(endOpt.Reason ?? "结束本次行动：剩余AP清零，不积攒到下回合（点后再确认）")"
                                 @onclick='() => { if (endOpt.Available) G.PickBattleAction("end_turn"); else G.ExplainBlocked(endOpt.Label, endOpt.Reason); }'>结束行动</button>
                     }
                 </div>
@@ -315,7 +315,7 @@
             else
             {
                 @* B34（S14 Q577）：没选动作时不写文字催促；有真实战报就显示最新一条，没有就留空 *@
-                <span class="bx-last">@b.Log.LastOrDefault()</span>
+                <span class="bx-last">@BattleInfoCopy.RoundWords(b.Log.LastOrDefault())</span>
             }
             @* B34a（Q570）：主画面两个阅读入口——只展开对应页并聚焦页签，不选人、不确认 *@
             <span class="bfs-feed-btns" role="group" aria-label="阅读区入口">
@@ -400,10 +400,10 @@
     {
         var b = G.S.Battle!;
         if (turnFoe != null) return $"敌方行动中：{turnName}";
-        if (b.Cursor >= b.Queue.Count) return "轮末结算（本轮推进5分钟）";
+        if (b.Cursor >= b.Queue.Count) return "回合末结算（本回合推进5分钟）";
         var q = b.Queue[b.Cursor];
         if (q <= 0 && GameEngine.QueueActor(b, q) is string next) return $"轮到{(next == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.S, next))}";
-        return "轮末结算（本轮推进5分钟）";
+        return "回合末结算（本回合推进5分钟）";
     }
 
     /// <summary>B34b（R03 §Q571）：短反馈——锚点上亮一下（两套同样的动画交替，连续两次也能重播）。</summary>
@@ -607,7 +607,7 @@
         var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
         <div @key="@("foe" + idx)" id="@($"foe-{idx}")" data-slot="@pos" data-peek="@Peek.Foe(idx)" class="anc foe @Pulse(BattleFxUnit.EnemySide, "e" + idx) @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx || (aiming && G.BattleAimTarget == idx) ? "hover" : "")"
              role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))"
-             aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}{(en.Acted ? "，本轮已行动" : "")}{(taken ? "，" + BattleInfoCopy.TakenBy : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
+             aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}{(en.Acted ? "，本回合已行动" : "")}{(taken ? "，" + BattleInfoCopy.TakenBy : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
              title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"
              @onmouseenter="() => G.HoverBattleTarget(idx)" @onmouseleave="() => G.HoverBattleTarget(null)" @onfocus="() => G.FocusBattleTarget(idx)">
             @* B34（S14 Q574）：头顶名牌「{号位}号位 · {姓名}」；不显示敌人尚未执行的计划（意图图标、动作、计划伤害、目标与分支），悬停与读屏也不写 *@
@@ -616,7 +616,7 @@
             @if (G.PulseNameOf(BattleFxUnit.EnemySide, "e" + idx) is string pulseName) { <span class="fx-pulse-name" aria-hidden="true">@pulseName</span> }
             <div class="anc-art">
                 @Icons.Markup("enemy_" + ec.Id)
-                @if (en.Acted) { <span class="anc-done bdg" title="本轮已行动">已动</span> }
+                @if (en.Acted) { <span class="anc-done bdg" title="本回合已行动">已动</span> }
                 @if (taken) { <span class="anc-taken bdg">@BattleInfoCopy.TakenBy</span> }
                 @if (targetable) { <span class="anc-aim" aria-hidden="true">⌖</span> }
                 @if (unreachable) { <span class="anc-no" aria-hidden="true"></span> }
@@ -687,7 +687,7 @@
         var e = G.E;
         var parts = GameEngine.AlliesOnField(b).Select(id => $"{(id == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.S, id))}{Ui.T(b.Fighter(id).Pursuit)}/100").ToList();
         parts.AddRange(b.Alive.OrderBy(x => x.Pos).Select(x => $"{x.Pos}号{e.EnemyName(x)}{Ui.T(x.PursuitProgress)}/100"));
-        return "追击条件：每轮初按“自己的轮初速度÷对方最快者−1”×50 攒进度，满100在本轮正常激活之后多一次2AP（每轮至多一次）；速度变化从下轮起算。现在进度：" + string.Join("，", parts);
+        return "追击条件：每回合初按“自己的回合初速度÷对方最快者−1”×50 攒进度，满100在本回合正常激活之后多一次2AP（每回合至多一次）；速度变化从下回合起算。现在进度：" + string.Join("，", parts);
     }
 
     /// <summary>
@@ -876,7 +876,7 @@
         <button type="button" id="@($"cmd-{o.Action}{(o.ItemInstanceId is int ii ? "-" + ii : "")}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off") @(o.NodeId != null || o.Action == "desperate_punch" ? "skill" : "plain")" disabled="@locked" aria-disabled="@(!o.Available)" data-level="@(level > 0 ? level : null)"
                 @onmouseenter="() => SetHoverSkill(oo.Action)" @onmouseleave="() => SetHoverSkill(null)" @onfocus="() => SetHoverSkill(oo.Action)" @onblur="() => SetHoverSkill(null)"
                 aria-label="@($"{ShortName(o)}，{ApText(o.Ap)}{(qty != null ? "，" + qty : "")}{(o.Reason != null ? "；不可用：" + o.Reason : "")}")"
-                title="@(o.Reason ?? $"{o.Label}：{ApText(o.Ap)}{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}{(o.CooldownRounds > 0 ? $"，冷却{o.CooldownRounds}轮" : "")}；{range}。{(o.EffectText != null ? o.EffectText + "。" : "")}{(o.NeedsTarget || o.TargetMode == "area" ? "点选后点亮起的目标执行" : "点选后在旁边确认")}")"
+                title="@(o.Reason ?? $"{o.Label}：{ApText(o.Ap)}{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}{(o.CooldownRounds > 0 ? $"，冷却{o.CooldownRounds}回合" : "")}；{range}。{(o.EffectText != null ? o.EffectText + "。" : "")}{(o.NeedsTarget || o.TargetMode == "area" ? "点选后点亮起的目标执行" : "点选后在旁边确认")}")"
                 @onclick="() => { if (oo.Available) G.PickBattleAction(oo.Action, oo.ItemInstanceId); else G.ExplainBlocked(oo.Label, oo.Reason); }">
             @if (level > 0) { <span class="cmdt-lv bdg" aria-hidden="true">@(level)级</span>@SlotCap(level) }
             <span class="cmdt-ap bdg" aria-hidden="true">@ApText(o.Ap)</span>
@@ -938,7 +938,7 @@
         if (why.Contains("耐久不足")) return "耐久不足";
         if (why.Contains("冷却") || why.Contains("间隔中")) return "冷却中";
         if (why.Contains("没有效果")) return "无效果";
-        if (why.StartsWith("本回合已")) return "本轮已用";
+        if (why.StartsWith("本回合已")) return "本回合已用";
         if (why.StartsWith("已在防御")) return "已防御";
         if (why.StartsWith("需要") && why.Contains("级")) return "等级不足";
         if (why.StartsWith("射程不足")) return "射程不足";
@@ -982,7 +982,8 @@
                     @foreach (var (idx, line) in recent)
                     {
                         var at = idx;
-                        <li @key="@($"{b.BattleId}-{at}")"><button type="button" class="bi-rec" id="@($"bi-rec-{at}")" title="@line" @onclick='() => G.OpenBattleSub("log", $"bi-rec-{at}", at)'>@line</button></li>
+                        var shown = BattleInfoCopy.RoundWords(line);
+                        <li @key="@($"{b.BattleId}-{at}")"><button type="button" class="bi-rec" id="@($"bi-rec-{at}")" title="@shown" @onclick='() => G.OpenBattleSub("log", $"bi-rec-{at}", at)'>@shown</button></li>
                     }
                 </ol>
             }
@@ -997,7 +998,7 @@
         <ol class="notes bfs-full-log" id="blog-list">
             @for (var i = 0; i < b.Log.Count; i++)
             {
-                <li @key="i" id="@($"blog-{i}")" tabindex="-1">@b.Log[i]</li>
+                <li @key="i" id="@($"blog-{i}")" tabindex="-1">@BattleInfoCopy.RoundWords(b.Log[i])</li>
             }
         </ol>
     };

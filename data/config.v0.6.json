@@ -2335,7 +2335,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "矛·T2；固定特性：架阵：每轮迎击额外触发次数+1（最多2）"
+      "desc": "矛·T2；固定特性：架阵：每回合迎击额外触发次数+1（最多2）"
     },
     {
       "id": "barbed_spear",
@@ -2407,7 +2407,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "钝器·T3；固定特性：压制：打断成功后目标下轮速度额外−1（不叠）"
+      "desc": "钝器·T3；固定特性：压制：打断成功后目标下回合速度额外−1（不叠）"
     },
     {
       "id": "recurve_bow",
@@ -2623,7 +2623,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "指挥器具·T2；固定特性：协同：指挥增益持续多1轮；同名不叠"
+      "desc": "指挥器具·T2；固定特性：协同：指挥增益持续多1回合；同名不叠"
     },
     {
       "id": "command_terminal",
@@ -20920,7 +20920,7 @@
       "speed": 0,
       "ownPositions": "12",
       "targetPositions": "12",
-      "traitText": "轻巧：首次相邻换位体力−0.1（每轮一次）",
+      "traitText": "轻巧：首次相邻换位体力−0.1（每回合一次）",
       "salvage": {
         "itemId": "stone",
         "counts": {
@@ -20957,7 +20957,7 @@
       "speed": 0,
       "ownPositions": "12",
       "targetPositions": "12",
-      "traitText": "锋口：流血持续轮数+1（仍不叠层）",
+      "traitText": "锋口：流血持续回合数+1（仍不叠层）",
       "salvage": {
         "itemId": "scrap",
         "counts": {
@@ -21533,7 +21533,7 @@
       "speed": -1,
       "ownPositions": "123",
       "targetPositions": "123",
-      "traitText": "架阵：每轮迎击额外触发次数+1（最多2）",
+      "traitText": "架阵：每回合迎击额外触发次数+1（最多2）",
       "salvage": {
         "itemId": "scrap",
         "counts": {
@@ -21690,7 +21690,7 @@
       "speed": 1,
       "ownPositions": "12",
       "targetPositions": "12",
-      "traitText": "压制：打断成功后目标下轮速度额外−1（不叠）",
+      "traitText": "压制：打断成功后目标下回合速度额外−1（不叠）",
       "salvage": {
         "itemId": "scrap",
         "counts": {
@@ -22155,7 +22155,7 @@
       "speed": 0,
       "ownPositions": "234",
       "targetPositions": "友方",
-      "traitText": "协同：指挥增益持续多1轮；同名不叠",
+      "traitText": "协同：指挥增益持续多1回合；同名不叠",
       "salvage": {
         "itemId": "electronics",
         "counts": {
@@ -30699,13 +30699,13 @@
       "ap": 2,
       "baseEnergy": 0.8,
       "positions": "12→1",
-      "effectText": "伤害×0.80；护甲−0.25持续2轮",
+      "effectText": "伤害×0.80；护甲−0.25持续2回合",
       "cooldownRounds": 1,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "伤害×0.80；护甲−0.25持续2轮"
+      "displayText": "伤害×0.80；护甲−0.25持续2回合"
     },
     {
       "id": "axe_05",
@@ -30795,13 +30795,13 @@
       "ap": 1,
       "baseEnergy": 0.3,
       "positions": "123→自身",
-      "effectText": "本轮至下一正常激活前，敌主动前移后迎击1次，伤害×0.75",
+      "effectText": "本回合至下一正常激活前，敌主动前移后迎击1次，伤害×0.75",
       "cooldownRounds": 2,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "本轮至下一正常激活前，敌主动前移后迎击1次，伤害×0.75"
+      "displayText": "本回合至下一正常激活前，敌主动前移后迎击1次，伤害×0.75"
     },
     {
       "id": "spear_07",
@@ -30875,13 +30875,13 @@
       "ap": 2,
       "baseEnergy": 0.65,
       "positions": "12→12",
-      "effectText": "伤害×0.50；控制成功后目标下轮速度−2",
+      "effectText": "伤害×0.50；控制成功后目标下回合速度−2",
       "cooldownRounds": 1,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "伤害×0.50；控制成功后目标下轮速度−2"
+      "displayText": "伤害×0.50；控制成功后目标下回合速度−2"
     },
     {
       "id": "blunt_07",
@@ -30891,13 +30891,13 @@
       "ap": 2,
       "baseEnergy": 0.8,
       "positions": "12→12",
-      "effectText": "伤害×0.50；控制成功取消目标本轮尚未执行的蓄力意图，改普通攻击",
+      "effectText": "伤害×0.50；控制成功取消目标本回合尚未执行的蓄力意图，改普通攻击",
       "cooldownRounds": 2,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "伤害×0.50；控制成功取消目标本轮尚未执行的蓄力意图，改普通攻击"
+      "displayText": "伤害×0.50；控制成功取消目标本回合尚未执行的蓄力意图，改普通攻击"
     },
     {
       "id": "blunt_10",
@@ -30907,13 +30907,13 @@
       "ap": 3,
       "baseEnergy": 1.1,
       "positions": "12→1",
-      "effectText": "伤害×1.60；控制成功施加虚弱（伤害×0.8）2轮",
+      "effectText": "伤害×1.60；控制成功施加虚弱（伤害×0.8）2回合",
       "cooldownRounds": 2,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "伤害×1.60；控制成功施加虚弱（伤害×0.8）2轮"
+      "displayText": "伤害×1.60；控制成功施加虚弱（伤害×0.8）2回合"
     },
     {
       "id": "archery_01",
@@ -30939,13 +30939,13 @@
       "ap": 2,
       "baseEnergy": 0.55,
       "positions": "234→1234",
-      "effectText": "伤害×0.75；正伤且控制成功后下轮速度−2",
+      "effectText": "伤害×0.75；正伤且控制成功后下回合速度−2",
       "cooldownRounds": 1,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "伤害×0.75；正伤且控制成功后下轮速度−2"
+      "displayText": "伤害×0.75；正伤且控制成功后下回合速度−2"
     },
     {
       "id": "archery_05",
@@ -30955,13 +30955,13 @@
       "ap": 1,
       "baseEnergy": 0.25,
       "positions": "234→1234",
-      "effectText": "命中无伤；标记目标2轮，全队对其攻击命中能力+6",
+      "effectText": "命中无伤；标记目标2回合，全队对其攻击命中能力+6",
       "cooldownRounds": 1,
       "extraCost": "弹药1",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "命中无伤；标记目标2轮，全队对其攻击命中能力+6"
+      "displayText": "命中无伤；标记目标2回合，全队对其攻击命中能力+6"
     },
     {
       "id": "archery_07",
@@ -31019,13 +31019,13 @@
       "ap": 2,
       "baseEnergy": 0.45,
       "positions": "按武器→按武器",
-      "effectText": "单体伤害×0.70；命中后虚弱2轮",
+      "effectText": "单体伤害×0.70；命中后虚弱2回合",
       "cooldownRounds": 1,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "单体伤害×0.70；命中后虚弱2轮"
+      "displayText": "单体伤害×0.70；命中后虚弱2回合"
     },
     {
       "id": "firearms_05",
@@ -31115,13 +31115,13 @@
       "ap": 1,
       "baseEnergy": 0.2,
       "positions": "12→自身",
-      "effectText": "格挡1次且位移抵抗+25个百分点，2轮",
+      "effectText": "格挡1次且位移抵抗+25个百分点，2回合",
       "cooldownRounds": 2,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "格挡1次且位移抵抗+25个百分点，2轮"
+      "displayText": "格挡1次且位移抵抗+25个百分点，2回合"
     },
     {
       "id": "shield_07",
@@ -31131,13 +31131,13 @@
       "ap": 2,
       "baseEnergy": 0.45,
       "positions": "12→相邻友方",
-      "effectText": "保护1次；双方获得下一次直接伤害×0.8，2轮",
+      "effectText": "保护1次；双方获得下一次直接伤害×0.8，2回合",
       "cooldownRounds": 2,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "保护1次；双方获得下一次直接伤害×0.8，2轮"
+      "displayText": "保护1次；双方获得下一次直接伤害×0.8，2回合"
     },
     {
       "id": "shield_10",
@@ -31147,13 +31147,13 @@
       "ap": 3,
       "baseEnergy": 0.7,
       "positions": "1→全队",
-      "effectText": "自己格挡2次；其他队员下一次直接伤害×0.8，持续1轮",
+      "effectText": "自己格挡2次；其他队员下一次直接伤害×0.8，持续1回合",
       "cooldownRounds": 3,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "自己格挡2次；其他队员下一次直接伤害×0.8，持续1轮"
+      "displayText": "自己格挡2次；其他队员下一次直接伤害×0.8，持续1回合"
     },
     {
       "id": "command_01",
@@ -31163,13 +31163,13 @@
       "ap": 1,
       "baseEnergy": 0.2,
       "positions": "234→任一友方",
-      "effectText": "目标下一次攻击命中能力+6；持续2轮",
+      "effectText": "目标下一次攻击命中能力+6；持续2回合",
       "cooldownRounds": 1,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "目标下一次攻击命中能力+6；持续2轮"
+      "displayText": "目标下一次攻击命中能力+6；持续2回合"
     },
     {
       "id": "command_03",
@@ -31227,13 +31227,13 @@
       "ap": 3,
       "baseEnergy": 0.65,
       "positions": "234→全队",
-      "effectText": "全队下一次攻击伤害×1.15，最多持续2轮；同名不叠",
+      "effectText": "全队下一次攻击伤害×1.15，最多持续2回合；同名不叠",
       "cooldownRounds": 3,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "全队下一次攻击伤害×1.15，最多持续2轮；同名不叠"
+      "displayText": "全队下一次攻击伤害×1.15，最多持续2回合；同名不叠"
     },
     {
       "id": "medicine_01",
@@ -34940,7 +34940,7 @@
         "title": "第一次交手",
         "suggestedStage": "D1",
         "stage": "D1",
-        "completionRule": "沿原S15保留游荡尸，最终胜利且唯一轮末tick存活",
+        "completionRule": "沿原S15保留游荡尸，最终胜利且唯一回合末tick存活",
         "goal": "处理农野荒地的游荡尸，战斗结束时活着。",
         "guidance": "先选技能，悬停合法目标看预测，再点目标提交；也可查看防御和结束行动。",
         "exitGate": true,

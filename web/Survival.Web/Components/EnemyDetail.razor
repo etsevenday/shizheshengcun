@@ -67,7 +67,7 @@ else
         <RailFold Type="@RailTypes.Enemy" Group="@RailGroups.Desc" Name="@RailText.Desc">
             <ul class="notes">
                 <li>@GameEngine.ApproachCardButton：@e.EnemyCardFearNote(s, card, false)@(range != null ? "；" + range : "")。</li>
-                <li>每轮推进5分钟世界时间；@e.RetreatOutlookHere(s)。</li>
+                <li>每回合推进5分钟世界时间；@e.RetreatOutlookHere(s)。</li>
                 @if (card.KeyEnemy) { <li>@GameEngine.KeyEnemyDetailNote</li> }
                 @* B41e2（Q551）：可选强敌的特殊掉落说明，与卡悬停同源 *@
                 @if (e.EliteDropNote(card) is string drop) { <li class="ecard-drop">@drop</li> }
