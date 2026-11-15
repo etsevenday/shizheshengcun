@@ -26,10 +26,10 @@ namespace Survival.Core.Engine
         public const string MainKeep = ".center-scroll.four > .dlg-layer, .top [data-menu-key], .footer .save button, .toast > button";
 
         /// <summary>
-        /// 全屏战斗白名单（Q628）：只有战斗对白层本身。战斗顶条（含战斗「菜单」键）在对白期间原本就不受理点击（ESC 开菜单），
-        /// 外层顶栏／底栏被全屏战斗盖住，不因白名单获得本来没有的点击或保存权限。
+        /// 全屏战斗白名单（Q628；BM8 起 Q658 选B）：战斗对白层本身，以及战斗顶条原「菜单 ESC」按钮（清晰、可点、可 Tab，打开与 ESC 相同的原战斗菜单）。
+        /// 顶条其余文字仍压暗模糊；外层顶栏／底栏被全屏战斗盖住，不因白名单获得本来没有的点击或保存权限。
         /// </summary>
-        public const string BattleKeep = ".bfs-dlg > .dlg-layer";
+        public const string BattleKeep = ".bfs-dlg > .dlg-layer, .bfs-top .bfs-top-btns > button";
 
         /// <summary>主界面遮罩是否亮着：对白锁期间，且不在全屏战斗（含收束停留）、未进入死亡结算。</summary>
         public static bool MainOn(bool dialogueLocked, bool fullBattle, bool dead) => dialogueLocked && !fullBattle && !dead;

@@ -156,9 +156,10 @@ else
                 <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(inst))</b></div>
             }
             @* BM5b1（S14 Q608／Q638）：主要数值之后的特性摘要（穿戴中「生效效果」、未穿戴「具备特性」）——已具备资格的固定特性按原配置顺序、每条一次，整行 *@
-            @foreach (var fx in activeTraits)
+            @* BM8（S14 Q664）：组名只在本组第一行写一次，后续条目缩进对齐（读屏仍带组名） *@
+            @for (var ti = 0; ti < activeTraits.Count; ti++)
             {
-                <div class="wide rail-fx"><span>@e.EquipTraitGroupLabel(inst)</span><b>@fx</b></div>
+                <div class="wide rail-fx"><span class="@(ti > 0 ? "sr-only" : null)">@e.EquipTraitGroupLabel(inst)</span><b>@activeTraits[ti]</b></div>
             }
             @if (activeTraits.Count > 0 && !inst.IsWorn)
             {

@@ -20,7 +20,7 @@
             </div>
             @if (invalid) { <div class="tbar-note bad">请输入 1 到 @d.MaxQuantity 之间的数字</div> }
             <div class="btn-row">
-                <button class="primary" data-enter disabled="@invalid" @onclick="Confirm">确认@(invalid ? "" : $" {n}")<EnterCap On="@(!invalid)" /></button>
+                <button class="primary" data-enter disabled="@invalid" @onclick="Confirm">确认@(invalid ? "" : $" {n}")<EnterCap On="@(!invalid)" Edit="true" /></button>
                 <button class="secondary" @onclick="Cancel">取消<EscCap On="@(G.EscOwner == EscOwner.DropQty)" /></button>
             </div>
         </div>

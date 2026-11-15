@@ -123,12 +123,19 @@
                 <div><span>攻击能力</span><b>@Ui.T(ec.AttackRating)</b></div>
                 <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
                 @* BM7b（S14 Q649）：其他成员的特性跟随各自完整属性 *@
-                @foreach (var t in e.EnemyPublicTraits(ec)) { <div class="wide rail-fx" data-enemy-trait><span>@GameEngine.EnemyTraitsLabel</span><b>@t</b></div> }
+                @* BM8（S14 Q664）：组名只在本组第一行写一次，后续条目缩进对齐（读屏仍带组名） *@
+                var mts = e.EnemyPublicTraits(ec);
+                @for (var ti = 0; ti < mts.Count; ti++) { <div class="wide rail-fx" data-enemy-trait><span class="@(ti > 0 ? "sr-only" : null)">@GameEngine.EnemyTraitsLabel</span><b>@mts[ti]</b></div> }
             }
             <div><span>对你命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
             @* R05 Q613、BM7b Q654：开战武器普通攻击在真实入场位置／弹药／技能／AP／体力等条件下不合法时只写「当前无可用攻击」，不造 0%、不出百分比；
                合法时为含确定入场恐慌的原预演（Q647），悬停口径说明换 Q647 原句 *@
-            @if (hit.Legal)
+            @* BM8（S14／R05 Q663）：因本场容量不入场的有效成员，原命中位置只写「本场战斗不入场」（不带标签／百分比，不整行隐藏） *@
+            @if (hit.NotEntering)
+            {
+                <div class="wide" data-not-entering><b>@GameEngine.NotEnteringHitText</b></div>
+            }
+            else if (hit.Legal)
             {
                 <div title="开战默认页普通攻击：(武器命中+3×熟练等级+8+装备命中)×疲劳；@GameEngine.PreBattleHitNote"><span>你的命中率</span><b>@Ui.Pct(hit.HitChance)（命中能力@(Ui.N(hit.Accuracy))）</b></div>
             }
@@ -143,7 +150,8 @@
         if (traits.Count > 0)
         {
             <div class="lines rail-main enemy-traits" data-enemy-traits>
-                @foreach (var t in traits) { <div class="wide rail-fx"><span>@GameEngine.EnemyTraitsLabel</span><b>@t</b></div> }
+                @* BM8（S14 Q664）：组名只在本组第一行写一次，后续条目缩进对齐（读屏仍带组名） *@
+                @for (var ti = 0; ti < traits.Count; ti++) { <div class="wide rail-fx"><span class="@(ti > 0 ? "sr-only" : null)">@GameEngine.EnemyTraitsLabel</span><b>@traits[ti]</b></div> }
             </div>
         }
     };

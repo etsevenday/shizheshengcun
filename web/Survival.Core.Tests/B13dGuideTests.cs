@@ -140,7 +140,7 @@ public class B13dGuideTests : BattleTestBase
             E.AckDialogue(s, E.CurrentDialogueLine(s)!.LineId);
         }
         Assert.That(events, Is.EqualTo(new[] { "tutorial_arrive", "PRO04_reaction" }), "原警告在前");
-        Assert.That(E.BattleHint(s)!.Value.Text, Is.EqualTo("先选技能，悬停合法目标看预测，再点目标提交；也可查看防御和结束行动。"));
+        Assert.That(E.BattleHint(s)!.Value.Text, Is.EqualTo("先选攻击技能，把鼠标移到亮起的敌人上查看旁边的战斗信息浮框；点击目标或按空格执行（Enter也可）。右侧信息栏看敌人详细属性。防御、结束行动需选中后再确认。"));   // BM8（逐字稿 Q661）：PRO04 顶部系统提示替换全文
         Assert.That((s.Battle.PlayerAp, s.Battle.Round, s.GameMinute), Is.EqualTo((ap, round, minute)), "不给 AP、不推进");
         Assert.That(s.Battle.Log.Count(l => l.Contains("伤害")), Is.EqualTo(0), "不替你攻击");
     }

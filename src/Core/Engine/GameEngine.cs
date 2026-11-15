@@ -270,14 +270,15 @@ namespace Survival.Core.Engine
 
         // ───────────────────────── 事件 ─────────────────────────
 
-        private void Emit(GameState s, GameEventKind kind, string text, StatId? stat = null, IEnumerable<string>? highlight = null)
+        private void Emit(GameState s, GameEventKind kind, string text, StatId? stat = null, IEnumerable<string>? highlight = null, int? at = null)
         {
-            var ev = new GameEvent { Kind = kind, Minute = s.GameMinute, Text = text, Stat = stat };
+            var minute = at ?? s.GameMinute;   // BM8（Q699）：世界段生命态日志可指定段末分钟
+            var ev = new GameEvent { Kind = kind, Minute = minute, Text = text, Stat = stat };
             if (highlight != null) ev.HighlightIds.AddRange(highlight);
             s.PendingEvents.Add(ev);
             if (!string.IsNullOrEmpty(text))
             {
-                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = kind.ToString(), Text = text });
+                s.Log.Add(new LogEntry { Minute = minute, Kind = kind.ToString(), Text = text });
                 if (s.Log.Count > 500) s.Log.RemoveRange(0, s.Log.Count - 500);
             }
         }

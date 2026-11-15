@@ -530,7 +530,9 @@ public class B47a2Tests : BattleTestBase
         Assert.That(ev.Single(e => e.Kind == "ActionPaused").Text, Is.EqualTo($"{s.Main!.Label}已暂停：你进入濒死状态。"), "濒死优先，同级按原触发顺序（主角在前）");
         Assert.That(s.Main.PauseReason, Is.EqualTo(PauseReason.Dying));
         var alerts = ev.Where(e => e.Kind == "Alert").Select(e => e.Text).ToList();
-        Assert.That(alerts, Does.Contain(E.AlertText(StatId.Satiety, true)).And.Contain(E.AlertText(StatId.Hydration, true)).And.Contain(E.AlertText(StatId.Health, false)), "其他真实原因照原日志");
+        Assert.That(alerts, Does.Contain(E.AlertText(StatId.Satiety, true)).And.Contain(E.AlertText(StatId.Hydration, true)), "其他真实原因照原日志");
+        // BM8（R09 Q698）：已濒死者不再出旧「健康降至5」高危提醒（同段进入濒死也算），濒死状态与濒死句代替
+        Assert.That(alerts, Does.Not.Contain(E.AlertText(StatId.Health, false)), "Q698：濒死不写健康高危提醒");
         Assert.That(ev.Count(e => e.Text == GameEngine.EnterDyingText("你")), Is.EqualTo(1));
         Assert.That(ev.Count(e => e.Text == GameEngine.EnterDyingText(E.ActorDisplayName(s, mate.Id))), Is.EqualTo(1), "另一人进入濒死只日志、锁存");
         Assert.That(mate.DyingNotified, Is.True);

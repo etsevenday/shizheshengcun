@@ -287,7 +287,7 @@ public class BM7bTests : B41cTestBase
         Assert.That(GameEngine.NoAttackHitText, Is.EqualTo("当前无可用攻击"));
         // 右栏与处理盘：不合法只写原句，不出百分比
         var d = Web("Components", "EnemyDetail.razor");
-        Assert.That(d, Does.Contain("@if (hit.Legal)").And.Contain("else { <div><span>你的命中率</span><b>@GameEngine.NoAttackHitText</b></div> }"));
+        Assert.That(d, Does.Contain("else if (hit.Legal)").And.Contain("else { <div><span>你的命中率</span><b>@GameEngine.NoAttackHitText</b></div> }"));
         Assert.That(Web("Components", "ActionPops.razor"), Does.Contain("@(hit.Legal ? \"命中\" + Ui.Pct(hit.HitChance) : GameEngine.NoAttackHitText)"));
         // 风险评分仍枚举原合法攻击（不读命中率行）
         var risk = File.ReadAllText(Path.Combine(Root(), "src", "Core", "Engine", "GameEngine.EngageRisk.cs"));

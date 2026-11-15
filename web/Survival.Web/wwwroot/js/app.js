@@ -359,8 +359,20 @@ window.survival = {
     };
     document.addEventListener('mousedown', window.__survivalMouseDown, true);
     document.addEventListener('click', window.__survivalMouseClick, true);
+    // BM8（S14 Q660）：路由把一次空格当作默认确认／战斗确认消费后，同一次按键的 keyup 不再落到焦点按钮上触发原生 click（键鼠合流只对应一个请求）
+    var spaceEaten = false;
+    function eatSpace(ev) { if (ev.key === ' ') spaceEaten = true; }
+    if (window.__survivalSpaceUp) window.removeEventListener('keyup', window.__survivalSpaceUp, true);
+    window.__survivalSpaceUp = function (ev) {
+      if (ev.key !== ' ' || !spaceEaten) return;
+      spaceEaten = false;
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+    };
+    window.addEventListener('keyup', window.__survivalSpaceUp, true);
     window.__survivalKeys = function (ev) {
       var tgt = ev.target, t = tgt && tgt.tagName, k = ev.key;
+      if (k === ' ' && !ev.repeat) spaceEaten = false;
       // 输入法组合输入中：一律不处理
       if (ev.isComposing || ev.keyCode === 229) return;
       var mod = ev.ctrlKey || ev.altKey || ev.metaKey;
@@ -398,12 +410,13 @@ window.survival = {
       }
       // 人物对话读完锁（Q10、S14 §10.1）：数字、字母一律不转给游戏；Esc 不结束对白，交给游戏打开当前情境的菜单（B31b，Q322）。
       // B43：唯一无分支的「继续／结束对话」（data-dlg-next）在焦点不在具体控件上时收 Enter，一次只确认当前行一次；招募等分支不由 Enter 代选。
+      // BM8（S14 Q660）：空格是主键、Enter 兼容，同一按钮 click 一次；焦点在具体控件（含战斗顶条「菜单」）或编辑框里时按它自己的语义
       if (document.querySelector('.dlg-layer')) {
         if (mod) return;
         if (k === 'Escape') { send('Escape'); return; }
-        if (k === 'Enter' && !control(document.activeElement)) {
+        if ((k === 'Enter' || (k === ' ' && !editable(document.activeElement))) && !control(document.activeElement)) {
           var nx = document.querySelector('.dlg-layer [data-dlg-next]');
-          if (nx && !nx.disabled && !(nx.closest && nx.closest('[inert]'))) { ev.preventDefault(); nx.click(); }
+          if (nx && !nx.disabled && !(nx.closest && nx.closest('[inert]'))) { ev.preventDefault(); eatSpace(ev); nx.click(); }
         }
         return;
       }
@@ -417,6 +430,21 @@ window.survival = {
           return;
         }
       }
+      // 局部唯一主确认（B43）：数量框、转移条、整备比较／交接、就近盘、强制整理与确认窗、二级面板……
+      // 焦点停在被打开着的二级面板盖住的背后控件上（如先点过地面卡再按 R）时，当作焦点不在任何控件上，归该面板
+      var fae = document.activeElement, pnl = topPanel();
+      // B44（Q492）：右栏不被二级面板盖住，键盘 Tab 聚焦在右栏控件（人物页名称与行内按钮）上时回车只作用该控件，不穿透到面板的唯一确认
+      if (pnl && fae && fae !== document.body && control(fae) && !pnl.contains(fae) && !fae.closest('.top, .apop, .modal, .overflow-layer')
+          && !(fae.closest('[data-detail-rail]') && (focusVisible(fae) || fae.hasAttribute('data-peek-name')))) fae = null;
+      // BM8（S14 Q660）：空格是局部唯一默认确认的主键（Enter 兼容，同一按钮 click）。编辑框里的空格归输入；焦点在具体控件上按它自己的语义；
+      // 前景默认确认先于中央「跳过动画」（不穿透）。没有唯一可用确认时空格照下方原规则（中央跳过／战斗确认／不处理）
+      if ((k === 'Enter' || (k === ' ' && !editable(tgt))) && !mod && !control(fae)) {
+        var sc = enterScope(fae);
+        if (sc) {
+          var go = uniqueEnter(sc);
+          if (go) { ev.preventDefault(); eatSpace(ev); go.click(); return; }
+        }
+      }
       // B46 试玩修复（Q535-A04）：单段 5 分钟行动的展示等待中（中央条 data-single-show），空格就是「跳过动画」——焦点在卡片等控件上或
       // 刚收起的操作盘还在淡出时也一样，不重开操作盘；焦点就在跳过按钮上时交给原生（不重复），输入框里不处理（上面菜单／对白已先拦）
       if (k === ' ' && !mod && !editable(tgt)) {
@@ -425,19 +453,6 @@ window.survival = {
           ev.preventDefault();
           ss.click();
           return;
-        }
-      }
-      // 局部唯一主确认（B43）：数量框、转移条、整备比较／交接、就近盘、强制整理与确认窗、二级面板……
-      // 焦点停在被打开着的二级面板盖住的背后控件上（如先点过地面卡再按 R）时，当作焦点不在任何控件上，归该面板
-      var fae = document.activeElement, pnl = topPanel();
-      // B44（Q492）：右栏不被二级面板盖住，键盘 Tab 聚焦在右栏控件（人物页名称与行内按钮）上时回车只作用该控件，不穿透到面板的唯一确认
-      if (pnl && fae && fae !== document.body && control(fae) && !pnl.contains(fae) && !fae.closest('.top, .apop, .modal, .overflow-layer')
-          && !(fae.closest('[data-detail-rail]') && (focusVisible(fae) || fae.hasAttribute('data-peek-name')))) fae = null;
-      if (k === 'Enter' && !mod && !control(fae)) {
-        var sc = enterScope(fae);
-        if (sc) {
-          var go = uniqueEnter(sc);
-          if (go) { ev.preventDefault(); go.click(); return; }
         }
       }
       // 就近操作浮窗（S14 §14.1）里的按钮：回车/空格/数字只作用于浮窗自身，不转给卡下操作条；Esc 照常交给 Esc 栈（先收起浮窗）
@@ -455,7 +470,8 @@ window.survival = {
       // BM2（Q502）：中央行动进度条「跳过动画 空格」。只在跳过按钮真实可见、可用、所在行动层可受理输入时，点同一按钮一次（与鼠标点击同效）；
       // 编辑／输入法（上面已挡）、菜单、对白、模态盘、前景面板与浮窗、拖拽中不穿透；焦点在其他具体控件或就在该按钮上时按原生语义（不重复）；
       // 按住的重复 keydown 已由捕获阶段的 __survivalKeyGuard 挡掉。处理时阻止本次空格滚动页面。没有可用的跳过按钮时空格不做任何事。
-      if (k === ' ') {
+      // BM8（Q660）：全屏战斗里的空格归下方战斗确认（战斗不再有跳过键帽）
+      if (k === ' ' && !document.querySelector('.bfs')) {
         var sk = document.querySelector('.cprog:not(.fading) [data-skip-anim]');
         if (!sk || sk.disabled || !shown(sk) || (sk.closest && sk.closest('[inert]'))) return;
         var sae = document.activeElement;
@@ -469,15 +485,19 @@ window.survival = {
       }
       // 全屏战斗（A10 §6.4）：1—5 只选本页技能位、Q/E 切武器Ⅰ/Ⅱ页（0AP）、←/→ 在合法目标间移动预测、回车提交当前预测的目标；
       // 焦点在按钮或可点锚点上时回车/空格交给它自己（浏览器原生），不重复提交
+      // BM8（S14／R03 Q660）：空格是战斗确认主键、Enter 兼容——两者走同一 C# 入口（OnKey 'Enter' → BattleConfirmHover：瞄准中同「执行{指令名}」，
+      // 无目标指令同操作台确认），按住不重复；焦点在其他按钮／锚点上时按它自己的语义（我方号位上已明确目标的例外在 BattleScreen.AllyKey）
       if (document.querySelector('.bfs')) {
         var onCtl = document.activeElement && document.activeElement.closest && document.activeElement.closest('button, [role=button]');
-        // 试玩修复 B9-7：刚点过的技能/指令按钮仍带焦点时，已有待确认指令或正在瞄准，回车是“提交”而不是再点一次该按钮（会把选择收起）
-        if (k === 'Enter' && onCtl && onCtl.closest('.bfs-console') && document.querySelector('#bt-confirm, .bfs .anc.targetable')) onCtl = null;
-        if (/^[1-5]$/.test(k) || k === 'q' || k === 'Q' || k === 'e' || k === 'E' || k === 'ArrowLeft' || k === 'ArrowRight' || (k === 'Enter' && !onCtl)) {
+        var isOk = k === 'Enter' || k === ' ';
+        // 试玩修复 B9-7：刚点过的技能/指令按钮仍带焦点时，已有待确认指令或正在瞄准，回车（BM8 起空格同）是“提交”而不是再点一次该按钮（会把选择收起）
+        if (isOk && onCtl && onCtl.closest('.bfs-console') && document.querySelector('#bt-confirm, .bfs .anc.targetable')) onCtl = null;
+        if (/^[1-5]$/.test(k) || k === 'q' || k === 'Q' || k === 'e' || k === 'E' || k === 'ArrowLeft' || k === 'ArrowRight' || (isOk && !onCtl && !editable(tgt))) {
           ev.preventDefault();
-          // 方向键沿原规则可连续移动预测；技能位、切页与回车按住不重复
+          // 方向键沿原规则可连续移动预测；技能位、切页与确认按住不重复
           if (ev.repeat && k !== 'ArrowLeft' && k !== 'ArrowRight') return;
-          send(k.length === 1 ? k.toUpperCase() : k);
+          eatSpace(ev);
+          send(k === ' ' ? 'Enter' : k.length === 1 ? k.toUpperCase() : k);
           return;
         }
       }

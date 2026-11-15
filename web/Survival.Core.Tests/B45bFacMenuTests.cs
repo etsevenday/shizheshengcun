@@ -114,7 +114,7 @@ public class B45bFacMenuTests : TestBase
         var menu = Web("Components", "FireMenu.razor");
         Assert.That(menu, Does.Contain("HideEnterCap=\"@(pot != null && m.Inner == null && src is { Show: true })\""));
         Assert.That(menu, Does.Contain("var cap = pot == null;"));
-        Assert.That(menu, Does.Contain("<EnterCap On=\"@(go && cap)\" />"));
+        Assert.That(menu, Does.Contain("<EnterCap On=\"@(go && cap)\" Edit=\"true\" />"), "BM8（Q660）：数量框旁提交位仍标 Enter");
         Assert.That(menu, Does.Contain("id=\"@GameSession.FireMenuQtyId\" data-qty-jump"));
         var actions = Web("Components", "CardActions.razor");
         Assert.That(actions, Does.Contain("[Parameter] public bool HideEnterCap"));

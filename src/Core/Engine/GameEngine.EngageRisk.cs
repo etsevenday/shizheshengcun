@@ -25,6 +25,8 @@ namespace Survival.Core.Engine
     public sealed class PreBattleHit
     {
         public bool Legal { get; set; }
+        /// <summary>BM8（S14／R05 Q663）：该有效成员因超出本场容量不会入场——原命中位置只写「本场战斗不入场」（不带标签、百分比或无可用攻击）。</summary>
+        public bool NotEntering { get; set; }
         /// <summary>命中能力（原预演，含疲劳与确定入场恐慌门槛）。</summary>
         public double Accuracy { get; set; }
         public double HitChance { get; set; }
@@ -58,6 +60,8 @@ namespace Survival.Core.Engine
         public const string EnemyCardInvalidText = "这处敌踪已失效，请重新选择。";
         /// <summary>「战斗详情」里没有合适攻击者／目标时的命中率值。</summary>
         public const string NoAttackHitText = "当前无可用攻击";
+        /// <summary>BM8（S14／R05 Q663 逐字稿）：有效成员因超出本场容量不会入场时，原命中预估位置的状态。</summary>
+        public const string NotEnteringHitText = "本场战斗不入场";
 
         public static readonly string[] EngageRiskLevelNames = { "很低", "较低", "中等", "较高", "极高" };
 
@@ -203,7 +207,7 @@ namespace Survival.Core.Engine
                     me.Ap = ap;
                     me.ActivationAp = ap;
                     me.RoundStartEnergy = c.Stats.Energy;
-                    try { f.DA += BestAllyAttackScore(c, b, ap); }
+                    try { f.DA += BestAllyPagesScore(c, b, ap); }
                     finally { me.Acting = false; me.Ap = 0; }
                 }
             }
@@ -219,6 +223,24 @@ namespace Survival.Core.Engine
             }
             f.VE = enemySpeed.Count > 0 ? Math.Max(1, enemySpeed.Average()) : 1;
             return f;
+        }
+
+        /// <summary>
+        /// BM8（R05／S14 Q665）：一名我方成员跨武器Ⅰ／Ⅱ页联合枚举的 D_i=max_p(max_c n×d)——开战默认页之外，原切页规则 0AP、0 体力时另一页也作只读候选
+        /// （空槽页按原徒手拳击合法性）；两页各用同一份当前 AP／体力预算，取最大不相加。只在临时战斗里改页号，结束复原，不实际切页。
+        /// </summary>
+        private double BestAllyPagesScore(GameState s, BattleState b, int ap)
+        {
+            var home = b.ActiveWeaponSlot;
+            var best = BestAllyAttackScore(s, b, ap);
+            if (!(Act("switch_weapon") is CombatActionConfig sw && sw.ApCost == 0 && (sw.Energy ?? 0) <= 1e-12)) return best;
+            try
+            {
+                b.ActiveWeaponSlot = home == 1 ? 2 : 1;
+                best = Math.Max(best, BestAllyAttackScore(s, b, ap));
+            }
+            finally { b.ActiveWeaponSlot = home; }
+            return best;
         }
 
         /// <summary>
@@ -377,6 +399,9 @@ namespace Survival.Core.Engine
             var preview = EnemyCardPreviewMembers(s, card);
             var list = preview.Select(_ => new PreBattleHit()).ToList();
             if (EntryProjection(s, card) is not var (c, b)) return list;
+            // BM8（Q663）：入场投影按存活成员原顺序截取本场容量；排在截取数之后的存活成员＝因本场容量不入场（与主角是否参战无关）
+            for (int k = 0, alive = 0; k < preview.Count; k++)
+                if ((preview[k].Enemy?.Hp ?? _enemies[preview[k].EnemyId].Hp) > 1e-9 && alive++ >= b.Enemies.Count) list[k].NotEntering = true;
             if (!b.Members.Contains(GameState.PlayerId) || IsDead(c, c.Actors[GameState.PlayerId])) return list;
             using (FocusOn(c, GameState.PlayerId))
             {
@@ -390,8 +415,7 @@ namespace Survival.Core.Engine
                 {
                     for (var k = 0; k < preview.Count; k++)
                     {
-                        var (enemyId, we) = preview[k];
-                        var be = we != null ? b.Enemies.FirstOrDefault(x => x.WorldId == we.Id) : b.Enemies.FirstOrDefault(x => x.WorldId < 0 && x.EnemyId == enemyId);
+                        var be = EntryEnemyOf(b, preview[k]);
                         if (be == null) continue;
                         var cmd = BattleCommand.Of(BasicAttack, be.Index);
                         if (CommandBlocked(c, cmd) != null) continue;
@@ -405,6 +429,10 @@ namespace Survival.Core.Engine
             }
             return list;
         }
+
+        /// <summary>入场投影里与该预览成员对应的敌人（按世界实体编号；可选强敌未生成实体时按敌种）；不在入场名单内为 null。</summary>
+        private static BattleEnemy? EntryEnemyOf(BattleState b, (string EnemyId, WorldEnemy? Enemy) m) =>
+            m.Enemy != null ? b.Enemies.FirstOrDefault(x => x.WorldId == m.Enemy.Id) : b.Enemies.FirstOrDefault(x => x.WorldId < 0 && x.EnemyId == m.EnemyId);
 
         /// <summary>「战斗详情」命中率行有没有可预估的攻击：开战默认页武器能直接攻击且普通攻击已可用；否则写「当前无可用攻击」。</summary>
         /// <remarks>BM7b 起右栏与处理盘改用 <see cref="PreBattleHits"/>（另看真实入场位置、弹药、AP、体力等），这里只留作静态口径。</remarks>

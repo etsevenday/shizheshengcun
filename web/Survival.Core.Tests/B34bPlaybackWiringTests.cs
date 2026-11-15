@@ -76,8 +76,11 @@ public class B34bPlaybackWiringTests
     {
         var bs = Web("Components/BattleScreen.razor");
         Assert.That(bs, Does.Contain("var fxLock = G.PlaybackActive && !G.FxUnderReading;"));
-        foreach (var part in new[] { "bfs-top", "bfs-queue", "bfs-scene", "bfs-console", "bfs-infoarea" })
+        foreach (var part in new[] { "bfs-queue", "bfs-scene", "bfs-console", "bfs-infoarea" })
             Assert.That(bs, Does.Match(part + "\"[^>]*inert=\"@lockedUi\""), part + " 播放中不可操作");
+        // BM8（S14 Q658）：对白期间顶栏「菜单 ESC」白名单可点，顶栏只在播放／遭遇提示时 inert
+        Assert.That(bs, Does.Contain("var topLocked = fxLock || G.EncounterPromptActive;"));
+        Assert.That(bs, Does.Match("bfs-top\"[^>]*inert=\"@topLocked\""), "bfs-top 播放中不可操作");
         Assert.That(bs, Does.Contain("<BattleFxLayer />"));
         Assert.That(Web("Components/GameScreen.razor"), Does.Contain("@if (G.PlaybackActive && !G.InBattleUi) { <BattleFxLayer /> }"), "已收束时盖在结算画面上播完");
     }

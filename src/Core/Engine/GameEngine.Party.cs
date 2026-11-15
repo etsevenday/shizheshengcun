@@ -539,20 +539,21 @@ namespace Survival.Core.Engine
         private void ReserveRedLines(GameState s, ActorState actor)
         {
             var care = Config.Party.ReserveCare;
-            void Line(string key, bool on, string text)
+            void Line(string key, bool on, string text, bool mute = false)
             {
                 actor.RedLatched.TryGetValue(key, out var latched);
                 if (on && !latched)
                 {
                     actor.RedLatched[key] = true;
-                    Emit(s, GameEventKind.Alert, text);
+                    if (!mute) Emit(s, GameEventKind.Alert, text);
                 }
                 else if (!on && latched) actor.RedLatched[key] = false;
             }
             var name = ActorLabel(actor);
             var where = RosterOf(s, actor.Id) is RosterEntry re ? ReserveWhereName(s, re) : LocName(HubLocation(s));
             // B38b（N02 附录 §4）
-            Line("health", actor.Stats.Health <= care.RedHealth + 1e-9, $"{name}的健康降至{Fmt.T(actor.Stats.Health)}（警戒线≤{Fmt.T(care.RedHealth)}）。请回{where}救治。");
+            // BM8（R09 Q698）：濒死候补不新增这条健康红线（同义健康高危提示），锁存照真实低值置上、恢复过警戒线才清
+            Line("health", actor.Stats.Health <= care.RedHealth + 1e-9, $"{name}的健康降至{Fmt.T(actor.Stats.Health)}（警戒线≤{Fmt.T(care.RedHealth)}）。请回{where}救治。", IsDying(s, actor));
             Line("virus", actor.Body.VirusLoad >= care.RedVirus - 1e-9, $"{name}的病毒程度升至{Fmt.T(actor.Body.VirusLoad)}（警戒线≥{Fmt.T(care.RedVirus)}）。公共照护只能补给和休养，请回去处理。");
         }
 

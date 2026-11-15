@@ -300,7 +300,7 @@ public class BM5b1FacMenuTests : TestBase
         Assert.That(menu, Does.Contain("data-tab-trap=\"@(G.FireMenuTop ? GameSession.FireMenuTitleId : null)\""), "C# 告诉 JS 哪层在最上，值是安全落点（标题）");
         var js = Web("wwwroot", "js", "app.js");
         // BM7a（Q655）：菜单分支里也有 Tab 处理，这里从加工菜单的 data-tab-trap 判定起切
-        var trap = Slice(js, "var trap = document.querySelector('[data-tab-trap]');", "// B46 试玩修复（Q535-A04）");
+        var trap = Slice(js, "var trap = document.querySelector('[data-tab-trap]');", "// 局部唯一主确认（B43）");   // BM8：唯一确认块移到单段跳过之前
         // BM7a（Q655）：循环逻辑抽成 trapTab，游戏菜单与加工菜单共用
         Assert.That(trap, Does.Contain("trapTab(ev, trap, document.getElementById(trap.getAttribute('data-tab-trap')));"), "无控件留在标题");
         var loop = Slice(js, "function trapTab(ev, root, safe) {", "function topMenu()");

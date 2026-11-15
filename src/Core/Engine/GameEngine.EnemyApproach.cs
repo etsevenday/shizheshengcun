@@ -85,6 +85,8 @@ namespace Survival.Core.Engine
 
         /// <summary>BM5b1（R05 Q639 无倒计时正式句）：普通可主动接近的敌对卡。</summary>
         public const string MayApproachText = "可能主动接近。";
+        /// <summary>BM8（R05／S14 Q656 用户原句）：已满足原主动接近条件、真实正被同一次未完探索延后的有效敌对卡。</summary>
+        public const string ExploreStirringText = "有敌人已蠢蠢欲动";
         /// <summary>R05 Q639：中立且原未激怒。</summary>
         public const string NeutralCardText = "中立，受到攻击后才转为敌对。";
         /// <summary>R05 Q639：可选强敌原不主动接近。</summary>
@@ -111,7 +113,10 @@ namespace Survival.Core.Engine
             var legacy = s.EncounterGraceUntil > s.GameMinute ? s.EncounterGraceUntil : (int?)null;
             if (guard != null && (legacy == null || guard >= legacy)) return RetreatGuardText;
             if (legacy != null) return LegacyGraceText;
-            return card.KeyEnemy ? null : MayApproachText;
+            if (card.KeyEnemy) return null;
+            // BM8（Q656）：取代 Q639 的唯一有限例外——接近余量已到 0（已满足原主动接近条件）且正被同一次未完探索延后，原状态位换用户原句；
+            // 不给时长／期限，退出延后资格（探索结束、离开原地点／区域、卡失效）即按真实状态回「可能主动接近。」
+            return t?.Left == 0 && ExploreDefersApproach(s) ? ExploreStirringText : MayApproachText;
         }
 
         /// <summary>

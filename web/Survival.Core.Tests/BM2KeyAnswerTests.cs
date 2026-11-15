@@ -48,7 +48,7 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(groups[0].Rows.Select(r => r.Label), Is.EqualTo(Enumerable.Range(0, 12).Select(ShellKeys.TopLabel)), "顶栏 12 行与按钮原文同源");
         Assert.That(groups[0].Rows.All(r => r.Note == null));
         var all = groups.SelectMany(g => g.Rows).ToList();
-        Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("执行（当前指令） Enter"), "BM3（Q509）：帮助表固定泛称");
+        Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("执行（当前指令） 空格（Enter也可）"), "BM3（Q509）：帮助表固定泛称；BM8（Q660）：键表战斗行");
         Assert.That(all.Select(r => r.Label), Has.None.Contain("{"), "BM3（Q509）：不显示花括号占位符");
         Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("跳过动画 空格"));
         // B34（S14 Q573）曾列出战斗特写两级跳过；BM7a（S14 Q633）敌我出手都不可跳过，「动画跳过」区只剩中央「跳过动画 空格」
@@ -60,7 +60,8 @@ public class BM2KeyAnswerTests : TestBase
             "字母键不区分大小写。",
             "多个并列选项不会由 Enter 自动代选；可用 Tab 选择控件后再激活。",
             "仅显示“×”的关闭键和手动存档页的“返回”按钮不标 ESC，仍可按 ESC 按界面层级返回。",
-        }));
+            "空格用于当前界面的默认确认，Enter也可。编辑文字或数量、调整勾选和选择分支时，先按对应控件的规则操作；菜单只操作当前选中的按钮。中央行动的空格仍是跳过动画，战斗出手表现不可跳过。",
+        }), "BM8（Q660）：末尾加默认确认通用帮助全文");
     }
 
     /// <summary>Q495-A01：局部操作、战斗、动画跳过各行的标签与说明逐字出现在逐字稿 Q495 表里（标签由 ShellKeys 键帽拼出也须一致）。</summary>
@@ -68,13 +69,27 @@ public class BM2KeyAnswerTests : TestBase
     public void Q495_A01_KeyHelp_MatchesVerbatimTable()
     {
         var doc = Verbatim();
+        // BM8（Q660）：三行主键帽改空格——「当前确认」「继续／结束对话」按「默认确认业务名＋主键帽 … 空格」「继续 空格／结束对话 空格」，
+        // 战斗行按「键表战斗行」全文；Q495 原表行（Enter）保留为历史，说明列不变
+        var bm8 = new Dictionary<string, (string Old, string Row)>
+        {
+            ["当前确认 空格"] = ("当前确认 Enter", "| 默认确认业务名＋主键帽 | {原按钮业务文字} 空格 |"),
+            ["继续／结束对话 空格"] = ("继续／结束对话 Enter", "| 唯一无分支对白控制主键帽 | 继续 空格／结束对话 空格 |"),
+            ["执行（当前指令） 空格（Enter也可）"] = ("执行（当前指令） Enter", "| 键表战斗行 | 执行（当前指令） 空格（Enter也可） |"),
+        };
         foreach (var g in ShellKeyHelp.Groups().Skip(1))
             foreach (var r in g.Rows)
             {
-                Assert.That(doc, Does.Contain($"| {g.Title} | {r.Label} | {r.Note} |"), r.Label);
+                if (bm8.TryGetValue(r.Label, out var m))
+                {
+                    Assert.That(doc, Does.Contain($"| {g.Title} | {m.Old} | {r.Note} |"), r.Label + "（Q495 原行）");
+                    Assert.That(doc, Does.Contain(m.Row), r.Label + "（Q660）");
+                }
+                else Assert.That(doc, Does.Contain($"| {g.Title} | {r.Label} | {r.Note} |"), r.Label);
             }   // BM3（Q509）：战斗区第四行逐字稿已改「执行（当前指令） Enter」
         Assert.That(doc, Does.Contain($"> {ShellKeyHelp.Lead}"));
-        foreach (var n in ShellKeyHelp.Notes) Assert.That(doc, Does.Contain($"「{n}」"), n);
+        foreach (var n in ShellKeyHelp.Notes)
+            Assert.That(doc, n == ShellKeys.DefaultConfirmHelp ? Does.Contain($"| 默认确认通用帮助全文 | {n} |") : Does.Contain($"「{n}」"), n);
     }
 
     /// <summary>Q495-A01：H 的「入门与操作」在「界面分区」之后新增「键盘快捷键」，后面原条目顺序不变；系统说明按分区渲染键表与补充句。</summary>
@@ -123,7 +138,7 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(ShellAim.Guide("拳击"), Is.EqualTo("指定目标后，可点击亮起的目标或“执行拳击”按钮，也可按 Enter 执行；右键/ESC 取消。"));
         Assert.That(ShellAim.ReadOnly, Is.EqualTo("查看预测不扣费、不抽随机。"));
         // BM3（Q512）取代原「确认 · {指令名} · {AP}AP」另拼写法：指引引用真实按钮业务文字（见 BM3AimAnswerTests）
-        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(false, "防御", 1)), Is.EqualTo("在操作台点“确认 · 防御 · 1AP”才提交；ESC 取消。"));
+        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(false, "防御", 1)), Is.EqualTo("在操作台点“确认 · 防御 · 1AP”或按空格确认（Enter也可）；ESC取消。"), "BM8（Q660）：无目标指令引导模板");
     }
 
     /// <summary>Q497-A01：原因顺序——通用锁优先；无目标看候选数；失效目标具体句优先、否则「目标已变化」；从未合法的候选沿锚点原句；合法再看成本等预览；群体按真实集合。</summary>
@@ -159,7 +174,7 @@ public class BM2KeyAnswerTests : TestBase
         var panel = Web("Components/BattlePanel.razor");
         var bs = Web("Components/BattleScreen.razor");
         Assert.That(bs, Does.Contain("if (!G.BattleAiming) return;"), "无所选瞄准指令不出现");
-        Assert.That(bs, Does.Contain("data-aim-confirm aria-keyshortcuts=\"Enter\" disabled=\"@(!st.Ok)\" title=\"@st.Why\""));
+        Assert.That(bs, Does.Contain("data-aim-confirm aria-keyshortcuts=\"Space Enter\" disabled=\"@(!st.Ok)\" title=\"@st.Why\""));
         Assert.That(bs, Does.Contain("@onclick=\"() => G.BattleAimSubmit(token)\">@ShellAim.ConfirmLabel(st.Name)<EnterCap On=\"@st.Ok\" /></button>"));
         Assert.That(bs, Does.Contain("<span class=\"bp-why warn-text\" role=\"status\">@st.Why</span>"), "禁用时显示第一条真实原因");
         Assert.That(Regex.Matches(bs, "@AimConfirm\\(").Count, Is.EqualTo(1), "瞄准中在底部反馈位");
@@ -328,7 +343,7 @@ public class BM2KeyAnswerTests : TestBase
     public void Q502_A02_SpaceRouting()
     {
         var js = Script();
-        var at = js.IndexOf("if (k === ' ') {");
+        var at = js.IndexOf("if (k === ' ' && !document.querySelector('.bfs')) {");   // BM8（Q660）：全屏战斗里的空格归战斗确认
         Assert.That(at, Is.GreaterThan(0));
         var block = js.Substring(at, js.IndexOf("\n      }\n", at) - at);
         Assert.That(block, Does.Contain("document.querySelector('.cprog:not(.fading) [data-skip-anim]')"), "淡出旧帧不触发");

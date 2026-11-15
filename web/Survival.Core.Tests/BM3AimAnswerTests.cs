@@ -39,7 +39,7 @@ public class BM3AimAnswerTests : TestBase
     {
         var battle = ShellKeyHelp.Groups().Single(g => g.Title == "战斗").Rows;
         Assert.That(battle.Count, Is.EqualTo(4));
-        Assert.That(battle[3].Label, Is.EqualTo("执行（当前指令） Enter"));
+        Assert.That(battle[3].Label, Is.EqualTo("执行（当前指令） 空格（Enter也可）"), "BM8（逐字稿 Q660 键表战斗行）");
         Assert.That(battle[3].Note, Is.EqualTo("提交当前指令与已指定的合法目标。"));
         Assert.That(ShellKeyHelp.Groups().SelectMany(g => g.Rows).Select(r => r.Label), Has.None.Contain("{").And.None.Contain("}"));
         Assert.That(ShellAim.ConfirmLabel("拳击"), Is.EqualTo("执行拳击"), "真实按钮取所选指令名");
@@ -133,10 +133,11 @@ public class BM3AimAnswerTests : TestBase
     public void Q512_A01_A02_Texts()
     {
         Assert.That(ShellAim.ConsoleConfirmText(true, "结束行动", 1), Is.EqualTo("确认结束行动 · 剩余1AP清零"));
-        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(true, "结束行动", 1)), Is.EqualTo("在操作台点“确认结束行动 · 剩余1AP清零”才提交；ESC 取消。"));
-        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(true, "结束行动", 3)), Is.EqualTo("在操作台点“确认结束行动 · 剩余3AP清零”才提交；ESC 取消。"));
-        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(false, "防御", 1)), Is.EqualTo("在操作台点“确认 · 防御 · 1AP”才提交；ESC 取消。"));
-        Assert.That(ShellAim.ConsoleGuide("x"), Does.Not.Contain("Enter"));
+        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(true, "结束行动", 1)), Is.EqualTo("在操作台点“确认结束行动 · 剩余1AP清零”或按空格确认（Enter也可）；ESC取消。"));
+        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(true, "结束行动", 3)), Is.EqualTo("在操作台点“确认结束行动 · 剩余3AP清零”或按空格确认（Enter也可）；ESC取消。"));
+        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(false, "防御", 1)), Is.EqualTo("在操作台点“确认 · 防御 · 1AP”或按空格确认（Enter也可）；ESC取消。"));
+        // BM8（Q660）：引导句按模板写「按空格确认（Enter也可）」，不再另拼键帽
+        Assert.That(ShellAim.ConsoleGuide("x"), Does.Not.Contain("<kbd").And.Not.Contain("才提交"));
     }
 
     /// <summary>Q512-A01、A02：按钮与指引同一命名结果（GameSession.BattleConsoleConfirmText）；没有该按钮（敌方瞄准、对白锁、未轮到）时不显示指引；不再由预测标题＋AP 另拼。</summary>
@@ -148,7 +149,7 @@ public class BM3AimAnswerTests : TestBase
         Assert.That(src, Does.Contain("BattleAction == null || BattleAiming || DialogueLocked || !E.AwaitingPlayer(S)) return null;"), "没有对应按钮时不伪造");
         Assert.That(src, Does.Contain("ShellAim.ConsoleConfirmText(sel.Action == \"end_turn\", BattleShortName(sel), E.PreviewCommand(S, CurrentBattleCommand()).Ap)"));
         var screen = Web("Components/BattleScreen.razor");
-        Assert.That(screen, Does.Contain("aria-keyshortcuts=\"Enter\" @onclick=\"() => Exec(token)\">@G.BattleConsoleConfirmText()<EnterCap On=\"@(p.Ok && !locked)\" /></button>"), "按钮业务文字与指引同源，键帽另在按钮里");
+        Assert.That(screen, Does.Contain("aria-keyshortcuts=\"Space Enter\" @onclick=\"() => Exec(token)\">@G.BattleConsoleConfirmText()<EnterCap On=\"@(p.Ok && !locked)\" /></button>"), "按钮业务文字与指引同源，键帽另在按钮里");
         Assert.That(screen, Does.Not.Contain("$\"确认结束行动 · 剩余{p.Ap}AP清零\""), "按钮不再自拼");
         Assert.That(screen, Does.Contain("private static string ShortName(BattleCommandOption o) => GameSession.BattleShortName(o);"));
         var panel = Web("Components/BattlePanel.razor");
@@ -163,7 +164,10 @@ public class BM3AimAnswerTests : TestBase
         var doc = Verbatim();
         Assert.That(doc, Does.Contain("| 无目标类指令指引（Q512） | 在操作台点“{确认按钮业务文字}”才提交；ESC 取消。 |"));
         Assert.That(doc, Does.Contain("| 结束行动确认按钮业务文字（保持） | 确认结束行动 · 剩余{剩余AP}AP清零 |"));
-        Assert.That(doc, Does.Contain($"| 剩余1AP时的指引示例 | {ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(true, "结束行动", 1))} |"));
+        Assert.That(doc, Does.Contain("| 剩余1AP时的指引示例 | 在操作台点“确认结束行动 · 剩余1AP清零”才提交；ESC 取消。 |"), "Q512 原表保留为历史");
+        // BM8（Q660）：当前模板与结束行动全文
+        Assert.That(doc, Does.Contain($"| 无目标指令引导模板（实际存在唯一确认时） | {ShellAim.ConsoleGuide("{实际确认按钮业务文字}")} |"));
+        Assert.That(doc, Does.Contain($"| 结束行动引导全文 | {ShellAim.ConsoleGuide("确认结束行动 · 剩余{剩余AP}AP清零")} |"));
     }
 
     // ───────────── Q513 预测伤害行前移 ─────────────

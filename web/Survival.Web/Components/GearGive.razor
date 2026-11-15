@@ -55,7 +55,7 @@
         @if (p.ContainerNote) { <div class="tiny muted">@GearPanelCopy.ContainerNote</div> }
         @if (p.Blocked != null) { <div class="warn-text g3-why">@p.Blocked</div> }
         <div class="g3-actions">
-            <button type="button" class="primary" data-enter disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmGive<EnterCap On="@(p.Blocked == null)" /></button>
+            <button type="button" class="primary" data-enter disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmGive<EnterCap On="@(p.Blocked == null)" Edit="@p.ShowQuantity" /></button>
         </div>
         </div>
     </div>

@@ -74,7 +74,7 @@ public class BM5b1RailTests : TestBase
         {
             var src = Web("Components", file);
             Assert.That(src, Does.Contain("e.RailEquipLines(s, "), file);
-            Assert.That(src, Does.Contain("<div class=\"wide rail-fx\"><span>@e.EquipTraitGroupLabel("), file);
+            Assert.That(src, Does.Contain("<div class=\"wide rail-fx\"><span class=\"@(ti > 0 ? \"sr-only\" : null)\">@e.EquipTraitGroupLabel("), file);   // BM8（Q664）：组名只显示一次
             Assert.That(src, Does.Contain("e.RailEquipDesc("), file);
             Assert.That(src, Does.Contain("<div class=\"@(rangeText.Length > 14 ? \"wide\" : \"\")\"><span>攻击范围</span><b>@rangeText</b></div>"), file);
             Assert.That(src, Does.Not.Contain("e.EquipDetailLines("), file);

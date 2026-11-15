@@ -109,7 +109,7 @@ public class BM5b1TraitTests : TestBase
         foreach (var (file, v) in new[] { ("ItemDetail.razor", "inst"), ("GearPeekDetail.razor", "it") })
         {
             var src = File.ReadAllText(Path.Combine(Root(), "web", "Survival.Web", "Components", file)).Replace("\r\n", "\n");
-            Assert.That(src, Does.Contain($"<div class=\"wide rail-fx\"><span>@e.EquipTraitGroupLabel({v})</span><b>@fx</b></div>"), file);
+            Assert.That(src, Does.Contain($"<div class=\"wide rail-fx\"><span class=\"@(ti > 0 ? \"sr-only\" : null)\">@e.EquipTraitGroupLabel({v})</span><b>@activeTraits[ti]</b></div>"), file);   // BM8（Q664）
             Assert.That(src, Does.Contain($"@if (activeTraits.Count > 0 && !{v}.IsWorn)"), file);
             Assert.That(src, Does.Contain("<div class=\"wide rail-fx-note\">@GameEngine.WornTriggerHint</div>"), file);
         }

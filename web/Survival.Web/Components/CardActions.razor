@@ -187,7 +187,7 @@
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1, m)">+</button>
                         <button type="button" class="tbar-max" @onclick="() => SetN(m.ToCarried ? m.Max : m.Available)">@(m.ToCarried ? $"最多{m.Max}" : "全部")</button>
                     }
-                    <button type="button" class="tbar-go" data-enter disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)<EnterCap On="@(!HideEnterCap && !(invalid || tooHeavy || (m.ToCarried && m.Max < 1)))" /></button>
+                    <button type="button" class="tbar-go" data-enter disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)<EnterCap On="@(!HideEnterCap && !(invalid || tooHeavy || (m.ToCarried && m.Max < 1)))" Edit="true" /></button>
                 </div>
                 @if (m.Instance != null && e.CarcassOf(m.Instance.ItemId) != null)
                 {
@@ -369,7 +369,7 @@
                         <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" aria-label="转移数量" />
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => SetN(Math.Min(max, Parse() + 1))">+</button>
                     }
-                    <button type="button" class="tbar-go" data-enter disabled="@invalid" @onclick="() => Decant(water, zone, max > 1 ? n : 1)">取出@(e.ItemName(water.ItemId))@(max > 1 ? (invalid ? "" : $"{n}份") : "1份")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(!HideEnterCap && !invalid)" /></button>
+                    <button type="button" class="tbar-go" data-enter disabled="@invalid" @onclick="() => Decant(water, zone, max > 1 ? n : 1)">取出@(e.ItemName(water.ItemId))@(max > 1 ? (invalid ? "" : $"{n}份") : "1份")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(!HideEnterCap && !invalid)" Edit="true" /></button>
                 </div>
                 <div class="ca-note">每份@(e.PotConfig(m.PotInstance!).UnitMl)毫升 · 可取@(max)份 · 不耗时</div>
             }

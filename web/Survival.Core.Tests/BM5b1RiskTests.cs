@@ -53,6 +53,8 @@ public class BM5b1RiskTests : B41cTestBase
     {
         var (s, _) = OneShambler();
         Arm(s, "signal_whistle");
+        // BM8（Q665）：武器Ⅱ页也参与联合枚举；Ⅱ页空槽时可徒手拳击，这里同样放信号哨使两页都不能攻击
+        E.CreateItems(s, "signal_whistle", 1, ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon2));
         var f = E.EngageRiskFactorsFor(s, Card(s))!;
         Assert.That(f.DA, Is.EqualTo(0));
         Assert.That(E.EngageRiskFor(s, Card(s)).Text, Is.EqualTo("交战风险：极高"));
@@ -200,7 +202,7 @@ public class BM5b1RiskTests : B41cTestBase
         // BM7b（S14／R05 Q646）：Invalid 只作领域判定，右栏不写失效句；Q654：命中率行看真实入场投影的合法性
         Assert.That(d, Does.Contain("@if (!risk.Invalid)").And.Not.Contain("@GameEngine.EnemyCardInvalidText"));
         Assert.That(d, Does.Contain("<b>@GameEngine.NoAttackHitText</b>"));
-        Assert.That(d, Does.Contain("@if (hit.Legal)"));
+        Assert.That(d, Does.Contain("else if (hit.Legal)"), "BM8（Q663）：不入场成员在前");
         Assert.That(RailText.BattleDetail, Is.EqualTo("战斗详情"));
         var session = Web("Services", "GameSession.cs");
         Assert.That(session, Does.Contain("if (_riskCache.ver == Version && ReferenceEquals(_riskCache.state, S) && _riskCache.key == card.Key && _riskCache.risk != null) return _riskCache.risk;"));

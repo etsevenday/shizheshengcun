@@ -48,9 +48,10 @@
             <div><span>耐久</span><b class="@(it.Durability <= 0 ? "danger-text" : "")">@(it.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(it))</b></div>
             <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(it))</b></div>
         }
-        @foreach (var fx in activeTraits)
+        @* BM8（S14 Q664）：组名只在本组第一行写一次，后续条目缩进对齐（读屏仍带组名） *@
+        @for (var ti = 0; ti < activeTraits.Count; ti++)
         {
-            <div class="wide rail-fx"><span>@e.EquipTraitGroupLabel(it)</span><b>@fx</b></div>
+            <div class="wide rail-fx"><span class="@(ti > 0 ? "sr-only" : null)">@e.EquipTraitGroupLabel(it)</span><b>@activeTraits[ti]</b></div>
         }
         @if (activeTraits.Count > 0 && !it.IsWorn)
         {

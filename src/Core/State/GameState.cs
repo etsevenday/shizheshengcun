@@ -322,6 +322,11 @@ namespace Survival.Core.State
         /// 只在只读预估副本（SimCopy）上由预估循环建立，真实状态恒为 null；不进存档，Clone 不共享。
         /// </summary>
         [JsonIgnore] public SimProbe? SimProbe { get; set; }
+        /// <summary>
+        /// BM8（R09 Q699）：正在结算的世界推进段的段末分钟 E（段首 S + 5）。只在一次 WorldTick 期间存在，
+        /// 这期间写出的生命态普通日志（进入濒死、抵抗致死等）统一记 E；不改真实时钟。不进存档。
+        /// </summary>
+        [JsonIgnore] public int? LifeLogMinute { get; set; }
 
         public GameState Clone()
         {
@@ -349,6 +354,7 @@ namespace Survival.Core.State
             c.WillpowerDepth = 0;
             c.DyingEntries = null;
             c.SimProbe = null;
+            c.LifeLogMinute = null;
             c.Main = Main?.Clone();
             c.Sub = Sub?.Clone();
             c.StashedWork = StashedWork?.Clone();

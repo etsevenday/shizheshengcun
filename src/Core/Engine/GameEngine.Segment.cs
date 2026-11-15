@@ -299,6 +299,15 @@ namespace Survival.Core.Engine
         /// </summary>
         private bool WorldTick(GameState s, Func<ActorState, SegmentContext> ctxOf, ActionState? running, bool battle)
         {
+            // BM8（R09 Q699）：本段生命态日志统一记已提交段末分钟 E（只换记录时间来源，真实时钟与结算顺序不动）
+            var prevLifeMinute = s.LifeLogMinute;
+            s.LifeLogMinute = s.GameMinute + Tick;
+            try { return WorldTickCore(s, ctxOf, running, battle); }
+            finally { s.LifeLogMinute = prevLifeMinute; }
+        }
+
+        private bool WorldTickCore(GameState s, Func<ActorState, SegmentContext> ctxOf, ActionState? running, bool battle)
+        {
             var party = s.PartyActors.ToList();
             var ctxs = party.Select(ctxOf).ToList();
             // 候补（B8，R08 §3、A11 §5.3；Q90/B8c）：同一世界 tick 里按自主 rest/sleep 与营区实际设施各结算一次（战斗轮末也一样，不吃战斗 N/W 冻结）
@@ -807,7 +816,7 @@ namespace Survival.Core.Engine
         private bool CheckAlerts(GameState s, ActionState ran, bool completed)
         {
             var triggers = new List<(ActorState actor, StatId stat, bool zero)>();
-            foreach (var actor in s.PartyActors.ToList()) CollectAlerts(actor, triggers);
+            foreach (var actor in s.PartyActors.ToList()) CollectAlerts(s, actor, triggers);
             // B47a2（R09 Q673、Q681）：本段真实进入濒死、此刻仍活且仍同行的人（原触发顺序；候补、已确死不算）
             var dying = (s.DyingEntries ?? new List<string>()).Distinct()
                 .Where(id => s.Party.Contains(id) && s.Actors.TryGetValue(id, out var da) && !IsDead(s, da)).ToList();
@@ -841,7 +850,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>某角色本段新触发的归零与阈值提醒（锁存按角色）。</summary>
-        private void CollectAlerts(ActorState actor, List<(ActorState actor, StatId stat, bool zero)> triggers)
+        private void CollectAlerts(GameState s, ActorState actor, List<(ActorState actor, StatId stat, bool zero)> triggers)
         {
             foreach (var id in ZeroStats)
             {
@@ -854,7 +863,13 @@ namespace Survival.Core.Engine
             {
                 var below = Config.Thresholds[StatKey(id)].IsBelow(actor.Stats.Get(id));
                 var latched = actor.AlertLatched.TryGetValue(id, out var al) && al;
-                if (below && !latched) { actor.AlertLatched[id] = true; triggers.Add((actor, id, false)); }
+                if (below && !latched)
+                {
+                    actor.AlertLatched[id] = true;
+                    // BM8（R09 Q698）：真实濒死者不新增旧健康高危提醒（也就不据此暂停）；锁仍按真实低值置上，
+                    // 回到低正健康但未过原解除条件时不补刷，恢复到解除条件后再下降才重获资格（与濒死提醒锁 DyingNotified 互不清除）
+                    if (!(id == StatId.Health && IsDying(s, actor))) triggers.Add((actor, id, false));
+                }
                 else if (!below) actor.AlertLatched[id] = false;
             }
         }

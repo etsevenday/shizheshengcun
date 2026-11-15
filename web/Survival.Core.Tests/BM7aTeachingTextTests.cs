@@ -9,9 +9,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class BM7aTeachingTextTests : BattleTestBase
 {
-    /// <summary>逐字稿／N02：tutorial_arrive 的 guide 附注（note）完整新句。</summary>
+    /// <summary>逐字稿／N02：tutorial_arrive 的 guide 附注（note）完整新句（BM8：逐字稿 Q660 首战 tutorial_arrive 完整当前 guide，主键改空格、Enter 兼容）。</summary>
     public const string TutorialArriveNote =
-        "轮到我方某人时，可以使用他的行动点（AP）。先选技能，再把鼠标移到亮起的敌人上，看敌人旁的战斗信息浮框；右侧信息栏可看敌人详细属性，也可用←／→切换合法目标。看好后，点击亮起的目标，或按Enter执行。自用或无目标指令，选好后点击底部确认按钮，或按Enter确认；需要选择我方成员的技能，点击亮起的我方成员。用完行动点，或选“结束行动”后再确认，战斗就会继续。";
+        "轮到我方某人时，可以使用他的行动点（AP）。先选技能，再把鼠标移到亮起的敌人上，看敌人旁的战斗信息浮框；右侧信息栏可看敌人详细属性，也可用←／→切换合法目标。看好后，点击亮起的目标，或按空格执行（Enter也可）。自用或无目标指令，选好后点击底部确认按钮，或按空格确认（Enter也可）；需要选择我方成员的技能，点击亮起的我方成员。用完行动点，或选“结束行动”后再确认，战斗就会继续。";
 
     /// <summary>Q629-A01：只换 note；饱饱正文、说话人、类型、事件与附注类型不变；实时附注即配置原句（记录按展示时的配置快照写）。</summary>
     [Test]

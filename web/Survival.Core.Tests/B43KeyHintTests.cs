@@ -126,7 +126,10 @@ public class B43KeyHintTests : TestBase
     [Test]
     public void A03_UniqueConfirmEnter()
     {
-        Assert.That(Web("Components/EnterCap.razor"), Does.Contain("@if (On) {<kbd class=\"kc\">@ShellKeys.Enter</kbd>}"));
+        // BM8（S14 Q660）：默认确认主键帽改「空格」、悬停写兼容键说明；数量编辑中的提交位（Edit）仍标 Enter
+        var cap = Web("Components/EnterCap.razor");
+        Assert.That(cap, Does.Contain("if (Edit) {<kbd class=\"kc\">@ShellKeys.Enter</kbd>}"));
+        Assert.That(cap, Does.Contain("else {<kbd class=\"kc\" title=\"@ShellKeys.ConfirmKeysTitle\">@ShellKeys.SpaceCap</kbd>}"));
         Assert.That(ShellKeys.Enter, Is.EqualTo("Enter"));
         void Has(string file, string button, int count = 1)
         {
@@ -135,11 +138,11 @@ public class B43KeyHintTests : TestBase
             Assert.That(Regex.Matches(src, "data-enter[ >]").Count, Is.EqualTo(count), file + " 确认按钮数");
             Assert.That(src, Does.Contain(button), file);
         }
-        Has("DropQuantity", "<EnterCap On=\"@(!invalid)\" />");
+        Has("DropQuantity", "<EnterCap On=\"@(!invalid)\" Edit=\"true\" />");   // BM8（Q660）：数量框提交位仍标 Enter
         // B45b（Q584）：加工菜单锅层多个可能动作时由 HideEnterCap 收起键帽，其余同 disabled 条件
         Has("CardActions", "<EnterCap On=\"@(!HideEnterCap && why == null)\" />", 3);
         Has("GearCompare", "@GearPanelCopy.ConfirmEquip<EnterCap On=\"@(p.Blocked == null)\" />");
-        Has("GearGive", "@GearPanelCopy.ConfirmGive<EnterCap On=\"@(p.Blocked == null)\" />");
+        Has("GearGive", "@GearPanelCopy.ConfirmGive<EnterCap On=\"@(p.Blocked == null)\" Edit=\"@p.ShowQuantity\" />");   // BM8（Q660）：有数量框时标 Enter
         Has("OverflowOverlay", "<EnterCap On=\"@(!(over || _busy))\" />");
         Has("DuplicateWeaponOverlay", "@GearPanelCopy.DupConfirm<EnterCap");
         Has("ExpeditionAbort", "确认终止并撤出<EnterCap");
@@ -158,7 +161,7 @@ public class B43KeyHintTests : TestBase
         Assert.That(Web("Components/DropQuantity.razor"), Does.Not.Contain("if (ev.Key == \"Enter\") Confirm();"), "回车只走一条路由，已聚焦的取消键不再同时确认");
         var js = Web("wwwroot/js/app.js");
         Assert.That(js, Does.Contain("return own.length === 1 && !own[0].disabled ? own[0] : null;"), "恰好一个可用确认");
-        Assert.That(js, Does.Contain("if (k === 'Enter' && !mod && !control(fae))"), "已聚焦按钮上的 Enter 走原生语义");
+        Assert.That(js, Does.Contain("if ((k === 'Enter' || (k === ' ' && !editable(tgt))) && !mod && !control(fae))"), "已聚焦按钮上的 Enter 走原生语义（BM8 Q660：空格同，编辑框里的空格归输入）");
     }
 
     /// <summary>A03、A05：对白唯一推进键「继续 Enter／结束对话 Enter」带 data-dlg-next；招募两选项不带；Esc 不结束对白。</summary>
@@ -167,7 +170,9 @@ public class B43KeyHintTests : TestBase
     {
         var dlg = Web("Components/DialogueLayer.razor");
         Assert.That(Regex.Matches(dlg, "data-dlg-next").Count, Is.EqualTo(2), "注释一次、按钮一次");
-        Assert.That(dlg, Does.Contain("@(more ? \"继续\" : \"结束对话\") <kbd class=\"kc\">@ShellKeys.Enter</kbd></button>"));
+        // BM8（逐字稿 Q660「继续 空格／结束对话 空格」）：主键帽与默认确认同一 EnterCap（空格，Enter 兼容）
+        Assert.That(dlg, Does.Contain("aria-keyshortcuts=\"Space Enter\""));
+        Assert.That(dlg, Does.Contain("@(more ? \"继续\" : \"结束对话\") <EnterCap On=\"true\" /></button>"));
         var recruit = dlg.Substring(dlg.IndexOf("@if (v.RecruitQuestId is string rq)"), dlg.IndexOf("else", dlg.IndexOf("@if (v.RecruitQuestId is string rq)")) - dlg.IndexOf("@if (v.RecruitQuestId is string rq)"));
         Assert.That(recruit, Does.Not.Contain("data-dlg-next").And.Not.Contain("ShellKeys.Enter"), "招募分支不由 Enter 代选");
         var js = Web("wwwroot/js/app.js");

@@ -65,6 +65,9 @@
     // B34b（S14 Q570／Q572）：特写播放中，播放层是最高输入层——战场、操作台、阅读入口与阅读区都不可操作、点击不穿透（只读子页已开着时它仍在最上层）
     var fxLock = G.PlaybackActive && !G.FxUnderReading;
     var lockedUi = dlg || fxLock || G.EncounterPromptActive;   // BM5c（Q605）：探索遭遇短提示期间不接受战斗指令
+    // BM8（S14 Q658 选B）：战斗对白期间顶条原「菜单 ESC」进白名单——顶条只在特写独占播放／遭遇短提示时整条不受理；
+    // 顶条里除这个按钮外没有可聚焦控件，标题与回合文字仍在遮罩下压暗模糊（DialogueFocus.BattleKeep 只给按钮挖洞）
+    var topLocked = fxLock || G.EncounterPromptActive;
     // BM6（S14 Q628）：对白结束后战斗对白区再留 140ms（× 动画速度）给退场影子淡出；期间遮罩仍接住点击
     if (dlg) _dlgWas = true;
     else if (_dlgWas) { _dlgWas = false; _ = DlgExit(++_dlgExitSeq); }
@@ -76,7 +79,7 @@
     <div class="bfs-grid @(aiming ? "aiming" : "")" @oncontextmenu="CancelAim" @oncontextmenu:preventDefault="true">
         @* 顶条：「战斗 · {地点}」· 第{回合}回合 · 当前激活 [普通/追击] · AP 当前/本次上限 · 战斗菜单（A10 §2.2、§4.1）。
            B34（S14 Q575／Q576）：首战与普通战同一标题；容量、噪声、追击条件挪到队列行右端；系统说明只在战斗菜单里 *@
-        <header class="bfs-top" inert="@lockedUi">
+        <header class="bfs-top" inert="@topLocked">
             <b class="bfs-title">@BattleInfoCopy.Title(e.LocName(b.LocationId))</b>
             <span class="bfs-where">@BattleInfoCopy.RoundText(b.Round)</span>
             <span class="bfs-actor @(actorWait ? "wait" : "now")" aria-live="polite">@actorText</span>
@@ -334,7 +337,7 @@
                     <span class="bx-hint @(p.Ok ? "" : "warn")" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">@(p.Ok ? (p.RetreatChance.HasValue ? $"成功率{Ui.Pct(p.RetreatChance.Value)}" : p.Notes.FirstOrDefault() ?? ShortName(sel)) : p.Reason)</span>
                 }
                 <button type="button" class="bx-go" id="bt-confirm" disabled="@(!p.Ok || locked)" title="@(p.Ok ? "点击确认才提交；同一指令只提交一次" : p.Reason)"
-                        aria-keyshortcuts="Enter" @onclick="() => Exec(token)">@G.BattleConsoleConfirmText()<EnterCap On="@(p.Ok && !locked)" /></button>
+                        aria-keyshortcuts="Space Enter" @onclick="() => Exec(token)">@G.BattleConsoleConfirmText()<EnterCap On="@(p.Ok && !locked)" /></button>
                 <button type="button" class="bx-x" aria-label="取消（ESC）" title="取消（ESC/右键），不执行" @onclick="G.ClearBattleAction">×</button>
             }
             else
@@ -490,8 +493,8 @@
         : sel.TargetMode == "pair" ? "点1、2号位打12，点3号位打23；悬停看敌人旁的战斗信息浮框 · 右键/ESC 取消"
         : AimDefaultHint;
 
-    /// <summary>BM7a（逐字稿「默认攻击瞄准引导」）。</summary>
-    public const string AimDefaultHint = "把鼠标移到亮起的敌人上，看敌人旁的战斗信息浮框；右侧信息栏可看敌人详细属性。点击亮起的目标或按Enter执行，ESC取消。";
+    /// <summary>BM7a（逐字稿「默认攻击瞄准引导」）；BM8（S14 Q661 逐字稿「默认攻击瞄准引导全文」）：确认键改空格（Enter也可）。</summary>
+    public const string AimDefaultHint = "把鼠标移到亮起的敌人上，看敌人旁的战斗信息浮框；右侧信息栏可看敌人详细属性。点击亮起的目标或按空格执行（Enter也可），ESC取消。";
 
     /// <summary>BM7a（逐字稿「合法敌人悬停执行说明」「生命条“预计”条纹说明」）。</summary>
     public const string FoeAimTip = "点击即对它执行所选技能；本次预估见敌人旁的战斗信息浮框，详细属性见右侧信息栏。";
@@ -588,6 +591,13 @@
         if (ev.Key is not ("Enter" or " ")) return;
         // B34（Q578）：选位中键盘明确激活亮起的号位＝鼠标点它（按住重复不再提交）
         if (G.BattleSwapAiming) { if (!locked && !ev.Repeat) await G.ClickSwapSlot(pos, token); return; }
+        // BM8（S14／R03 Q660 选A）：已选攻击、←／→（或原初始化）已明确合法敌人时，焦点仍在我方号位上按空格／Enter，
+        // 对浮框与「执行{指令名}」同一敌人提交一次（同 FoeKey、全局确认的 BattleAimSubmit 校验）；没有明确目标时什么也不做，不转为查看我方
+        if (G.BattleAiming && !G.BattleAllyAiming)
+        {
+            if (!locked && !ev.Repeat && G.BattleAimTarget != null) await G.BattleAimSubmit(token);
+            return;
+        }
         G.ViewBattleAlly(id);
     }
 
@@ -1113,7 +1123,7 @@
         var st = G.BattleAimConfirm();
         var token = G.BattleExecToken();
         <span class="bp-confirm">
-            <button type="button" class="primary bp-go" data-aim-confirm aria-keyshortcuts="Enter" disabled="@(!st.Ok)" title="@st.Why"
+            <button type="button" class="primary bp-go" data-aim-confirm aria-keyshortcuts="Space Enter" disabled="@(!st.Ok)" title="@st.Why"
                     @onclick="() => G.BattleAimSubmit(token)">@ShellAim.ConfirmLabel(st.Name)<EnterCap On="@st.Ok" /></button>
             @if (!string.IsNullOrEmpty(st.Why)) { <span class="bp-why warn-text" role="status">@st.Why</span> }
         </span>

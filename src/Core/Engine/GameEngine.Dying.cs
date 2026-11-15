@@ -237,7 +237,7 @@ namespace Survival.Core.Engine
             foreach (var n in notes)
             {
                 if (battle) BattleLog(s, n);
-                else Emit(s, GameEventKind.Info, n);
+                else Emit(s, GameEventKind.Info, n, at: s.LifeLogMinute);   // BM8（Q699）：世界段内统一记该段末分钟 E
             }
         }
     }

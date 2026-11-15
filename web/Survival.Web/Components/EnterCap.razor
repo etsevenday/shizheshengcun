@@ -1,7 +1,14 @@
 @* B43（S14 2026-11-12「局部盘唯一主确认 {原确认按钮名} Enter」）：唯一主确认可用时在按钮内常驻「Enter」键帽；不可用时不显示（键与按钮同一禁用条件）。
    所在按钮带 data-enter、所在盘／工作区带 data-enter-scope，回车由 app.js 局部确认路由按同一按钮 click 提交（不另走一条事务）。 *@
-@if (On) {<kbd class="kc">@ShellKeys.Enter</kbd>}
+@* BM8（S14 Q660）：默认确认主键帽改「空格」（Enter 兼容，悬停写兼容键说明）；数量／文字编辑中只能 Enter 提交的位置（Edit）仍按实际可用键显示「Enter」。 *@
+@if (On)
+{
+    if (Edit) {<kbd class="kc">@ShellKeys.Enter</kbd>}
+    else {<kbd class="kc" title="@ShellKeys.ConfirmKeysTitle">@ShellKeys.SpaceCap</kbd>}
+}
 
 @code {
     [Parameter] public bool On { get; set; }
+    /// <summary>所在确认区有数量／文字输入，编辑中空格归输入框、只有 Enter 提交（S14 Q660 情境表第3行）。</summary>
+    [Parameter] public bool Edit { get; set; }
 }

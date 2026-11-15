@@ -98,7 +98,8 @@
                 @* Q385 / Q408-3 / Q411：普通游戏菜单的「手动存档」入口；不可用时显示第一条命中的实际原因（写权限优先）。
                    战斗、敌踪（战斗层菜单）与死亡结算菜单不提供入口。 *@
                 var manualWhy = sv.ManualBlockedText(G.S);
-                <button class="secondary" disabled="@(manualWhy != null)" title="@manualWhy" @onclick="OpenManual">@SaveSlots.ManualPageTitle</button>
+                _manualUsable = manualWhy == null;
+                <button class="secondary" @ref="_manualBtn" disabled="@(manualWhy != null)" title="@manualWhy" @onclick="OpenManual">@SaveSlots.ManualPageTitle</button>
                 @if (manualWhy != null) { <div class="tiny muted">@manualWhy</div> }
             }
         }
@@ -740,13 +741,21 @@
     }
 
     private ElementReference _first;
+    /// <summary>BM8（S14 Q659）：菜单首页的「手动存档」入口（本次渲染里存在且可用时 <see cref="_manualUsable"/> 为真）。</summary>
+    private ElementReference _manualBtn;
+    private bool _manualUsable;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // 菜单打开时键盘焦点进菜单：回车／空格落在菜单自己的按钮上，不会推进背后的对白或下达战斗指令（Q322「菜单不会消费对白继续键」）
-        // BM2（Q500）：从手动存档子页（「返回」或 ESC）回到菜单首页时，焦点同样回到菜单底部关闭键
+        // BM8（S14 Q659 选B，取代 Q500 的焦点结论）：从手动存档子页（「返回」或 ESC）回到菜单首页时，焦点回本次进入它的「手动存档」入口；
+        // 入口不在或被禁用才回底部「继续游戏」。只恢复焦点、不激活（同一次按键已由「返回」／ESC 消费）
         var backFromManual = _wasManual && !G.ManualPageOpen;
         _wasManual = G.ManualPageOpen;
+        if (backFromManual && _manualUsable)
+        {
+            try { await _manualBtn.FocusAsync(); return; } catch (Exception) { /* 入口已不在：回关闭键 */ }
+        }
         if (firstRender || backFromManual)
         {
             try { await _first.FocusAsync(); } catch (Exception) { /* 渲染尚未完成或已关闭 */ }

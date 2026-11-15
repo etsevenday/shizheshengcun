@@ -234,13 +234,13 @@ namespace Survival.Core.Engine
             if (st.BleedPct > 0) extra.Add($"{Fmt.T(st.BleedPct)}%流血");
             if (st.Knockback > 0) extra.Add($"击退{st.Knockback}位");
             if (st.ArmorBreak > 0) extra.Add($"破甲{Fmt.T(st.ArmorBreak)}（{st.ArmorBreakRounds}回合）");
-            if (cfg.DeathSplash > 0) extra.Add($"死亡时喷溅1、2号位各{Fmt.T(cfg.DeathSplash)}");
+            // BM8（Q700 选B）：行动标签不再附带死亡喷溅说明（静态特性与真实喷溅记录另在详情／战报）
             if (st.TargetMarked && st.Kind != "pull") extra.Add("优先打它标记的目标");
             var tail = extra.Count > 0 ? "，" + string.Join("，", extra) : "";
             switch (e.Intent)
             {
                 case "attack": return $"{verb} {Range(cfg, st.Factor, e, b)}{tail}";
-                case "bite": return $"咬击 {Range(cfg, 1, e, b)}（可能感染）{(cfg.DeathSplash > 0 ? $"，死亡时喷溅1、2号位各{Fmt.T(cfg.DeathSplash)}" : "")}";
+                case "bite": return $"咬击 {Range(cfg, 1, e, b)}（可能感染）";
                 case "charge": return $"{verb} {Range(cfg, st.Factor, e, b)}{tail}";
                 case "charge_prepare":
                 {

@@ -41,7 +41,7 @@ public class BM6DialogueFocusTests
     {
         var keep = DialogueFocus.MainKeep.Split(',').Select(x => x.Trim()).ToArray();
         Assert.That(keep, Is.EqualTo(new[] { ".center-scroll.four > .dlg-layer", ".top [data-menu-key]", ".footer .save button", ".toast > button" }));
-        Assert.That(DialogueFocus.BattleKeep, Is.EqualTo(".bfs-dlg > .dlg-layer"));
+        Assert.That(DialogueFocus.BattleKeep, Is.EqualTo(".bfs-dlg > .dlg-layer, .bfs-top .bfs-top-btns > button"), "BM8（Q658 选B）：战斗顶条「菜单 ESC」进白名单");
 
         var g = Web("Components", "GameScreen.razor");
         // 「菜单」本来就在对白锁期间可用（不跟 navOff 禁用），其余顶栏键对白锁时禁用
@@ -55,10 +55,12 @@ public class BM6DialogueFocusTests
         Assert.That(g, Does.Contain("<button aria-label=\"关闭结果提示\" @onclick=\"G.DismissToast\">×</button>"), "结果提示 × 原样");
         Assert.That(g, Does.Contain("<footer class=\"footer\" inert=\"@fullBattle\">"), "底栏对白锁期间原本不 inert");
 
-        // 战斗：顶条（含战斗菜单键）对白期间原本就 inert，不进白名单
+        // 战斗：战场、队列、操作台对白期间仍 inert
         var b = Web("Components", "BattleScreen.razor");
         Assert.That(b, Does.Contain("var lockedUi = dlg || fxLock || G.EncounterPromptActive;"));
-        Assert.That(b, Does.Contain("<header class=\"bfs-top\" inert=\"@lockedUi\">"));
+        // BM8（Q658 选B）：顶条只在特写独占播放／遭遇短提示时整条不受理，对白期间「菜单 ESC」可点可 Tab
+        Assert.That(b, Does.Contain("var topLocked = fxLock || G.EncounterPromptActive;"));
+        Assert.That(b, Does.Contain("<header class=\"bfs-top\" inert=\"@topLocked\">"));
     }
 
     /// <summary>Q625-A01：主界面只有一层遮罩（在底栏之后、全屏战斗之前），亮的条件是对白锁、非全屏战斗、未死亡；遮罩层级在背景之上、更高层之下。</summary>
@@ -157,7 +159,7 @@ public class BM6DialogueFocusTests
         Assert.That(f, Does.Contain("for (var j = 0; j < p.length; j++) { try { p[j].play(); } catch (e) { } }"));
         // 退场影子期间：对白路由仍在（.dlg-layer），影子里的继续键在 inert 里，Enter 不会再点一次
         var app = Web("wwwroot", "js", "app.js");
-        Assert.That(app, Does.Contain("if (nx && !nx.disabled && !(nx.closest && nx.closest('[inert]'))) { ev.preventDefault(); nx.click(); }"));
+        Assert.That(app, Does.Contain("if (nx && !nx.disabled && !(nx.closest && nx.closest('[inert]'))) { ev.preventDefault(); eatSpace(ev); nx.click(); }"), "BM8（Q660）：空格也推进一次，松键不再落到下一层");
     }
 
     // ───── Q626：帮助正式全文 ─────
