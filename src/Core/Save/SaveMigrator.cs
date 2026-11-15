@@ -1516,11 +1516,31 @@ namespace Survival.Core.Save
         }
 
         /// <summary>
-        /// 53 → 54（B51a，S08 文首 Q701「本批生产兼容、时间与验收」）：生产开工原料暂停保质与生产工具本单保障。静默。
+        /// 53 → 54（B51a，S08 文首 Q701「本批生产兼容、时间与验收」、Q701-A09）：生产开工原料暂停保质与生产工具本单保障。静默。
+        /// <para>在办（主／子／收起）的制作、建造、维修、拆解、处理尸体：本行动真实绑定（ReservedBy＝本行动）、尚无可信 R、不是腐败物、且在升级世界分钟 U
+        /// 仍未到原截止的输入，记 R＝旧E−U（不补偿开工至升级已耗保质；原截止保留作合堆键）。已有 R 不重算；U 时已到期的不保护，仍按原路径转换／失败，
+        /// 不复活、不补产物经验。先保护、再由读档后的世界流程做普通到期转换（暂停份不再转）。</para>
+        /// <para>处理尸体：原锁定工具此刻真实 D&gt;0 的为剩余同一单登记本单保障，不改耐久；D=0 且没有可信保障的不补资格，沿原异常复核。
+        /// 设施加工批（陶窑／净水台）、晾制位、锅受热保护不在本条（B51b／原规则）。只在本版本跳转执行一次，重复读档不再加 R。</para>
         /// </summary>
         private static void From53To54(GameState s, GameConfig config)
         {
             s.SchemaVersion = GameState.CurrentSchema;
+            foreach (var a in new[] { s.Main, s.Sub, s.StashedWork })
+            {
+                if (a == null || !Engine.GameEngine.ShelfPauseWork(a.Type)) continue;
+                foreach (var id in a.ReservedItemIds)
+                {
+                    var it = s.Items.FirstOrDefault(i => i.InstanceId == id);
+                    if (it != null && it.ReservedBy == a.ActionId) Engine.GameEngine.PauseShelf(s, it);   // 只建 E>U、未暂停、非腐败物
+                }
+                if (a.Type == ActionType.Butcher && a.ToolGuardId == null && a.ToolInstanceId is int tid
+                    && s.Items.FirstOrDefault(i => i.InstanceId == tid) is ItemInstance tool && Engine.GameEngine.ProductionToolUsable(tool))
+                {
+                    a.ToolGuardId = tid;
+                    a.ToolGuardSpent = false;
+                }
+            }
         }
 
         /// <summary>

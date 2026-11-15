@@ -376,6 +376,63 @@ public class B51aTests : TestBase
         foreach (var f in new[] { "ItemShelf.razor", "ItemDetail.razor", "CardActions.razor", "BattleSupplies.razor" })
             Assert.That(Web("Components", f), Does.Not.Contain("含保质暂停"), f + "：Q773 待定");
     }
+    // ───────────── M962 存档 53→54 ─────────────
+
+    /// <summary>
+    /// Q701-A09：旧在办制作的有效未过期输入从升级 U 起 R＝旧E−U（不补偿已耗）；U 时已到期的不保护（原路径）；无期限不造 R；
+    /// 已有可信 R 不重算；处理尸体正耐久工具登记本单保障；重复读档不再加。
+    /// </summary>
+    [Test]
+    public void Q701_A09_Migrate53To54_ProtectInProgressInputs_Idempotent()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId is "cloth" or "herb");
+        E.DebugGive(s, "cloth", 2);
+        Make(s, "herb", 1, ItemInstance.Carried, s.GameMinute + 100);
+        Start(s, ActionRequest.Craft("bandage"));
+        var id = s.Main!.ActionId;
+        var herb = s.Items.Single(i => i.ItemId == "herb" && i.ReservedBy == id);
+        var cloth = s.Items.Single(i => i.ItemId == "cloth" && i.ReservedBy == id);
+        herb.ShelfPausedMinutes = null;   // 旧档：开工时没有保护
+        s.GameMinute += 40;               // 开工到升级已耗 40 分钟
+        var e0 = herb.ExpiresAt!.Value;
+        var t = SaveSerializer.Deserialize(AsSchema(s, "53"), Cfg);
+        var h = t.Items.Single(i => i.InstanceId == herb.InstanceId);
+        Assert.That((h.ShelfPausedMinutes, h.ExpiresAt), Is.EqualTo(((int?)(e0 - t.GameMinute), (int?)e0)), "R＝旧E−U，原截止保留");
+        Assert.That(t.Items.Single(i => i.InstanceId == cloth.InstanceId).ShelfPausedMinutes, Is.Null, "无期限不造 R");
+        var t2 = SaveSerializer.Deserialize(SaveSerializer.Serialize(t), Cfg);
+        Assert.That(t2.Items.Single(i => i.InstanceId == herb.InstanceId).ShelfPausedMinutes, Is.EqualTo(e0 - t.GameMinute), "重复读档不变");
+        // 已到期的旧输入不保护（原路径）；已有可信 R 不重算
+        var u = SaveSerializer.Deserialize(AsSchema(s, "53", o =>
+        {
+            foreach (var it in o["Items"]!)
+                if ((int)it["InstanceId"]! == herb.InstanceId) it["ExpiresAt"] = s.GameMinute - 1;
+        }), Cfg);
+        Assert.That(u.Items.Single(i => i.InstanceId == herb.InstanceId).ShelfPausedMinutes, Is.Null, "U 时已到期不复活");
+        herb.ShelfPausedMinutes = 77;
+        var w = SaveSerializer.Deserialize(AsSchema(s, "53"), Cfg);
+        Assert.That(w.Items.Single(i => i.InstanceId == herb.InstanceId).ShelfPausedMinutes, Is.EqualTo(77), "可信 R 不重算");
+    }
+
+    [Test]
+    public void Q701_A09_Migrate53To54_ButcherToolGuard()
+    {
+        var s = New();
+        var carcass = E.CreateItems(s, "carcass_feral_dog", 1, s.Ground).Single();
+        var knife = E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried).Single();
+        Start(s, ActionRequest.Butcher(carcass.InstanceId));
+        s.Main!.ToolGuardId = null;
+        carcass.ShelfPausedMinutes = null;
+        knife.Durability = 0.4;
+        var d = knife.Durability;
+        var t = SaveSerializer.Deserialize(AsSchema(s, "53"), Cfg);
+        Assert.That((t.Main!.ToolGuardId, t.Main.ToolGuardSpent), Is.EqualTo(((int?)knife.InstanceId, false)));
+        Assert.That(t.Items.Single(i => i.InstanceId == knife.InstanceId).Durability, Is.EqualTo(d), "不改耐久");
+        Assert.That(t.Items.Single(i => i.InstanceId == carcass.InstanceId).ShelfPausedMinutes, Is.Not.Null, "尸体从升级起保护");
+        knife.Durability = 0;
+        var z = SaveSerializer.Deserialize(AsSchema(s, "53"), Cfg);
+        Assert.That(z.Main!.ToolGuardId, Is.Null, "0 耐久无可信保障不补资格");
+    }
 }
 
 /// <summary>B51a 中撤退离地保留（Q471）的恢复句分组（Q723-A01）：同目的地／物主／卡侧内同名同精确截止合计，不同截止或不同目的地分句。</summary>
