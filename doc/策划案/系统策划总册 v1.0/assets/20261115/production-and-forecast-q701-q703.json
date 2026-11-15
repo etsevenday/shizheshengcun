@@ -1,5 +1,5 @@
 {
-  "version": "Q701-Q720-Q728-production-rules-20261115",
+  "version": "Q701-Q720-Q728-Q791-Q792-production-rules-20261115",
   "date": "2026-11-15",
   "purpose": "S08文首Q701唯一正文的策划合同，不是运行配置或实装声明",
   "decisions": {
@@ -274,5 +274,76 @@
     "passiveProgressDuringCombat": false,
     "battleExitCatchup": false,
     "originalWorldWorkRawProtectionAndCommitsPreserved": true
+  },
+  "q791ToQ792": {
+    "date": "2026-11-15",
+    "sourceBatch": "626d06c B51b 开发中发现 Q791—Q792",
+    "decisions": {
+      "Q791": "A",
+      "Q792": "A"
+    },
+    "status": "planning_only_pending_development_and_verification",
+    "q791": {
+      "scope": [
+        "kiln_batch_completion_missing_inputs_failure",
+        "fixed_water_station_batch_completion_missing_inputs_failure"
+      ],
+      "baseFailureText": "{区域}{设施名}：原料不全，这一批没有产物，剩下的原料已解锁。",
+      "restoreText": "{原料名}×{数量}保质至{日期时刻}。",
+      "appendOnlyIf": "actual_remaining_physical_input_released_with_reliable_saved_R",
+      "expiry": "actual_release_world_minute_C + saved_remaining_R",
+      "groupWithin": [
+        "actual_destination",
+        "owner",
+        "card_side",
+        "item_name",
+        "exact_expiry"
+      ],
+      "order": "first_occurrence_in_actual_release_list",
+      "oneFailureLog": true,
+      "omitIf": [
+        "no_shelf_life",
+        "no_reliable_R",
+        "missing_or_consumed",
+        "no_physical_return"
+      ],
+      "giveCurrentStationInputsNewExpiry": false,
+      "otherFailureCostsOutputsXpAndBatchesUnchanged": true,
+      "applyToUnansweredQ788": false,
+      "rewriteOtherQ723Copy": false
+    },
+    "q792": {
+      "when": "unreliable_complete_plan_and_no_body_danger_cutoff",
+      "currentValue": "actual_current_preview_start_value",
+      "afterValue": "未预估",
+      "lineText": "{当前值} → 未预估",
+      "useIntermediateAfterValue": false,
+      "inferThresholdColorFromUnknown": false,
+      "newAttributeRows": false,
+      "scope": "existing_ordinary_action_body_before_after_fields_and_existing_same_source_detail_accessibility",
+      "preserve": [
+        "reliable_values_at_existing_body_danger_cutoff",
+        "original_health_unknown_when_death_resistance_required",
+        "reliable_complete_plan_values",
+        "actual_current_stats",
+        "known_immediate_costs",
+        "original_independent_risks",
+        "original_plan_failure_reason",
+        "original_extraction_personal_cutoffs"
+      ],
+      "previewReadOnly": true
+    },
+    "compatibility": {
+      "historicalLogsUnchanged": true,
+      "recomputeDerivedPreviewsOnly": true,
+      "saveVersionMigrationAdded": false
+    },
+    "acceptance": [
+      "Q791-A01",
+      "Q791-A02",
+      "Q792-A01",
+      "Q792-A02",
+      "Q791Q792-A03"
+    ]
   }
 }
