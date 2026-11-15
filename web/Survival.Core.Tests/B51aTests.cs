@@ -199,6 +199,51 @@ public class B51aTests : TestBase
         Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消处理尸体。尸体已返还{E.ZoneName(s, s.Ground)}地面。野犬尸体×1恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r)}。没有产物。已耗时间保留。"));
         Assert.That(carcass.ExpiresAt, Is.EqualTo(s.GameMinute + r));
     }
+    // ───────────── M958 Q720 两成品从完成起按自身保质 ─────────────
+
+    private GameState Supply(params (string id, int n, int? left)[] give)
+    {
+        var s = New();
+        E.DebugLearnAllKnowledge(s);
+        E.DebugBuildAllWorkshops(s);
+        foreach (var k in new[] { "crafting", "medicine", "cooking" }) s.Skills[k].Level = 5;
+        var ids = give.Select(g => g.id).ToHashSet();
+        s.Items.RemoveAll(i => ids.Contains(i.ItemId));
+        foreach (var (id, n, left) in give) Make(s, id, n, s.Ground, left is int m ? s.GameMinute + m : null);
+        return s;
+    }
+
+    /// <summary>Q720-A01：两原料合法临期，口粮棒真实完成 F 的新截止严格 F+10080；恢复剂每批两份严格 F+4320；不取旧 E 或 F+minR；预估写各自期限句、旧上限句撤去。</summary>
+    [Test]
+    public void Q720_A01_BarAndTonic_ShelfFromActualFinish()
+    {
+        var s = Supply(("dried_meat", 1, 5), ("dried_berries", 1, 600));
+        var p = E.Preview(s, ActionRequest.Craft("ex_expedition_bar"));
+        Assert.That(p.Notes, Has.Exactly(1).EqualTo("成品从完成起保质168小时。"));
+        Assert.That(p.Notes.Any(n => n.Contains("不晚于原料")), Is.False, "旧 min_inputs 说明撤去");
+        Start(s, ActionRequest.Craft("ex_expedition_bar"));
+        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
+        var bar = s.Items.Single(i => i.ItemId == "expedition_bar");
+        Assert.That((bar.Count, bar.ExpiresAt, bar.ShelfPausedMinutes), Is.EqualTo((1, (int?)(s.GameMinute + 10080), (int?)null)));
+
+        var t = Supply(("herb_extract", 1, 10), ("clean_water", 1, null));
+        Assert.That(E.Preview(t, ActionRequest.Craft("ex_emergency_tonic")).Notes, Has.Exactly(1).EqualTo("成品从完成起保质72小时。"));
+        Start(t, ActionRequest.Craft("ex_emergency_tonic"));
+        Assert.That(Run(t), Is.EqualTo(SegmentStatus.Completed));
+        var tonic = t.Items.Where(i => i.ItemId == "emergency_tonic").ToList();
+        Assert.That(tonic.Sum(i => i.Count), Is.EqualTo(2), "原每批 2 份不变");
+        Assert.That(tonic.All(i => i.ExpiresAt == t.GameMinute + 4320), Is.True);
+    }
+
+    /// <summary>Q720-A02：开工已坏仍拒绝；其他配方期限不变（草药绷带无期限仍无期限）。</summary>
+    [Test]
+    public void Q720_A02_ExpiredInputStillRefused()
+    {
+        var s = Supply(("dried_meat", 1, 5), ("dried_berries", 1, 600));
+        s.GameMinute += 5;
+        Assert.That(E.CanStart(s, ActionRequest.Craft("ex_expedition_bar")), Is.Not.Null, "开工已到期原拒绝");
+        Assert.That(Cfg.Recipes.Count(r => r.ShelfRule != null), Is.EqualTo(2), "只两条配方");
+    }
 }
 
 /// <summary>B51a 中撤退离地保留（Q471）的恢复句分组（Q723-A01）：同目的地／物主／卡侧内同名同精确截止合计，不同截止或不同目的地分句。</summary>

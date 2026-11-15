@@ -577,7 +577,7 @@ namespace Survival.Core.Engine
                     }
                     var rc = _recipes[a.TargetId];
                     var batch = Math.Max(1, a.BatchCount);
-                    // B16（S11 X4、R06 X4）：口粮棒/应急恢复剂成品不晚于原料里最早的截止（非热组装不刷新原料寿命）
+                    // B51a（Q720 选 C）：口粮棒/应急恢复剂成品从真实完成起按自身保质，不再取原料最早截止（取代 B16 min_inputs）
                     // B17（Q107、S09 X2.4）：建造完工时重验地点与所在区，失败不扣料、不多建、不给经验，预留材料返回当前地面
                     if (rc.FacilityResult != null && BuildSiteBlockedAtCompletion(s, rc) is string siteWhy)
                     {
@@ -586,14 +586,13 @@ namespace Survival.Core.Engine
                         Emit(s, GameEventKind.ActionAborted, $"{rc.Name}没有完成：{siteWhy}；预留材料已返还当前地面，没有经验。");
                         return true;
                     }
-                    var expiresCap = rc.ShelfRule == "min_inputs" ? EarliestExpiry(s, a.ReservedItemIds) : null;
                     foreach (var id in a.ReservedItemIds) s.Items.RemoveAll(i => i.InstanceId == id);
                     a.ReservedItemIds.Clear();
                     var made = new List<string>();
                     foreach (var kv in rc.Outputs)
                     {
                         // 制造产物按“普通制造”来源定品质（A05 §4：普通制造默认绿色1条，B4 H4）
-                        var crafted = CreateItems(s, kv.Key, kv.Value * batch, s.Ground, false, null, Config.Equipment.CraftOrigin == "" ? null : Config.Equipment.CraftOrigin, expiresCap);
+                        var crafted = CreateItems(s, kv.Key, kv.Value * batch, s.Ground, false, null, Config.Equipment.CraftOrigin == "" ? null : Config.Equipment.CraftOrigin);
                         made.Add($"{ItemName(kv.Key)}+{kv.Value * batch}{QualitySuffix(crafted)}");
                     }
                     var patchOk = true;

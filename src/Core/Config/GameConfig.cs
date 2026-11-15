@@ -781,8 +781,13 @@ namespace Survival.Core.Config
         /// passive_heat / passive（设施被动加工，不吃加速；陶窑、火堆锅食谱、净水台）。null 视为 active_work。
         /// </summary>
         public string? Mode { get; set; }
-        /// <summary>成品保质规则（S11 X4、R06 X4）：min_inputs = 不晚于原料里最早的截止时间（口粮棒、应急恢复剂）；null 为从完成起按物品保质。</summary>
+        /// <summary>
+        /// 成品保质规则。null 为从完成起按物品保质。B51a（Q720 选 C，S08／A07 q720CurrentPriority）：口粮棒、应急恢复剂由旧 min_inputs（不晚于原料最早截止）
+        /// 改为 actual_finish_plus_own_output_shelf_life＝真实完成 F 起按成品自身保质（F+10080／F+4320），不取原料旧截止或剩余 R；该值只用于预估写“成品从完成起保质{小时}小时。”。
+        /// </summary>
         public string? ShelfRule { get; set; }
+        /// <summary>B51a（Q720 选 C）：真实完成起按成品自身保质。</summary>
+        public const string ShelfFromFinish = "actual_finish_plus_own_output_shelf_life";
         /// <summary>维护目标范围：field_patch = 野外修补包现场修补（B22b，Q168：金属依据的武器/工具/防具，按包品阶公式扣包耐久；取代 B16 metal_non_gun 10%）；null 为所有有耐久的武器与工具。</summary>
         public string? RepairFilter { get; set; }
 

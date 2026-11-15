@@ -166,7 +166,7 @@ def main():
         if isinstance(sr.get("fuel"), dict):
             r["fuel"] = dict(sr["fuel"])
         if "shelfRule" in sr:
-            r["shelfRule"] = "min_inputs"
+            r["shelfRule"] = "actual_finish_plus_own_output_shelf_life"   # B51a Q720 选 C：取代旧 min_inputs
         cfg["recipes"].append(r)
 
     # ── 野外修补包现场修补：hand、制造1、15 分钟。B22b（Q168）取代 B16 的整份消耗/恢复 10%/只修非枪金属：

@@ -330,7 +330,7 @@ namespace Survival.Core.Engine
                     else if (!rc.IsSalvage && rc.XpSkill == Cooking) p.XpGains.Add(CookActiveXpPreview(s, (int)(CraftXp(rc.BaseMinutes) * batch)));   // B22f Q207
                     else if (!rc.IsSalvage) p.XpGains.Add(XpText(s, rc.XpSkill ?? Crafting, CraftXp(rc.BaseMinutes) * batch));
                     if (rc.Mode != null) p.Notes.Add(RecipeModeText(rc));
-                    if (rc.ShelfRule == "min_inputs") p.Notes.Add("成品保质不晚于原料里最早的截止时间（非热组装不刷新原料寿命）");
+                    if (rc.ShelfRule == Survival.Core.Config.RecipeConfig.ShelfFromFinish) p.Notes.AddRange(FinishShelfNotes(rc));   // B51a Q720：替代旧 min_inputs 说明
                     if (plan != null) p.Notes.AddRange(plan.Notes);
                     if (rc.NeedsFire)
                     {

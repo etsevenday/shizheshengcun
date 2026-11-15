@@ -6,7 +6,7 @@ namespace Survival.Core.Tests;
 
 /// <summary>
 /// 开发计划 v0.9 B16（R48）：配方框架三种模式、19 条新配方、知识 expedition_basics / ceramic_methods、按实例预留完成只出一次、
-/// 口粮棒/恢复剂保质不晚于最早原料截止。验收 A07 SUP02、SUP03、ES03、S08 CR01—CR07 中本批能做的部分。
+/// 口粮棒/恢复剂保质原为不晚于最早原料截止（B51a Q720 选 C 改为从完成起按自身保质）。验收 A07 SUP02、SUP03、ES03、S08 CR01—CR07 中本批能做的部分。
 /// </summary>
 public class B16RecipeTests : TestBase
 {
@@ -38,8 +38,8 @@ public class B16RecipeTests : TestBase
         Assert.That(ex.Where(r => r.Knowledge != "ceramic_methods").All(r => r.Knowledge == "expedition_basics"), Is.True);
         Assert.That(Rc("ex_ceramic_shell").Fuel["charcoal"], Is.EqualTo(1));
         Assert.That(Rc("ex_cartridge_water").Catalysts, Is.EqualTo(new[] { "water_filter" }));
-        Assert.That(Rc("ex_expedition_bar").ShelfRule, Is.EqualTo("min_inputs"));
-        Assert.That(Rc("ex_emergency_tonic").ShelfRule, Is.EqualTo("min_inputs"));
+        Assert.That(Rc("ex_expedition_bar").ShelfRule, Is.EqualTo(RecipeConfig.ShelfFromFinish), "B51a Q720 选 C 取代 min_inputs");
+        Assert.That(Rc("ex_emergency_tonic").ShelfRule, Is.EqualTo(RecipeConfig.ShelfFromFinish));
         Assert.That(Rc("ex_purification_tablet").XpSkill, Is.EqualTo("medicine"));
         Assert.That(Rc("ex_expedition_bar").XpSkill, Is.EqualTo("cooking"));
         // 旧新手配方不变（SUP02/CR03）
@@ -132,9 +132,9 @@ public class B16RecipeTests : TestBase
         Assert.That(E.RecipeLocks(s, Rc("ex_station_water")), Is.Empty, "开发入口“建全部工坊”已含固定净水台");
     }
 
-    /// <summary>ES08/SUP05：口粮棒非热组装，保质 = min(完成+168h, 两原料最早截止)；原料新鲜时按 168h。烹饪经验计入每日 30。</summary>
+    /// <summary>ES08/SUP05：口粮棒非热组装；B51a（Q720 选 C）起成品从真实完成起 168h，不再取原料最早截止。烹饪经验计入每日 30。</summary>
     [Test]
-    public void ES08_ExpeditionBar_ShelfNotLaterThanEarliestInput()
+    public void ES08_ExpeditionBar_ShelfFromFinish()
     {
         var s = Camp(("dried_meat", 1), ("dried_berries", 1));
         var meat = First(s, "dried_meat");
@@ -142,7 +142,7 @@ public class B16RecipeTests : TestBase
         Start(s, ActionRequest.Craft("ex_expedition_bar"));
         Run(s);
         var bar = First(s, "expedition_bar");
-        Assert.That(bar.ExpiresAt, Is.EqualTo(meat.ExpiresAt));
+        Assert.That(bar.ExpiresAt, Is.EqualTo(s.GameMinute + 10080), "Q720-A01：不取原料旧截止");
 
         var t = Camp(("dried_meat", 1), ("dried_berries", 1));
         var t0 = t.GameMinute;

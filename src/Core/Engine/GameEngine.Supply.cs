@@ -13,17 +13,13 @@ namespace Survival.Core.Engine
     /// </summary>
     public sealed partial class GameEngine
     {
-        /// <summary>这批实例里最早的截止时间；都无保质为 null（口粮棒/恢复剂成品保质上限）。</summary>
-        private int? EarliestExpiry(GameState s, IEnumerable<int> instanceIds)
-        {
-            int? min = null;
-            foreach (var id in instanceIds)
-            {
-                var it = FindItem(s, id);
-                if (it?.ExpiresAt is int e && (min == null || e < min)) min = e;
-            }
-            return min;
-        }
+        /// <summary>
+        /// B51a（Q720 选 C，copy.barShelf／tonicShelf）：口粮棒、应急恢复剂预估写“成品从完成起保质{小时}小时。”（168／72），
+        /// 取代 B16 旧“成品保质不晚于原料里最早的截止时间”；旧 EarliestExpiry 上限已撤。
+        /// </summary>
+        private IEnumerable<string> FinishShelfNotes(RecipeConfig rc) =>
+            rc.Outputs.Keys.Select(id => Config.Items.FirstOrDefault(i => i.Id == id)?.ShelfLifeMinutes).OfType<int>()
+                .Distinct().Select(m => $"成品从完成起保质{m / 60}小时。");
 
         /// <summary>
         /// 制作完成经验（返回日志短句）：固定等待净水按净化给烹饪经验（B22a，Q166 选 B；开工快照不是烹饪的旧批次不给）；烹饪门类（远征口粮棒）与食品进程合计每角色每日 30（Q60）；

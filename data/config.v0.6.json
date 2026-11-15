@@ -19479,7 +19479,7 @@
       "knowledge": "expedition_basics",
       "mode": "active_work",
       "xpSkill": "cooking",
-      "shelfRule": "min_inputs"
+      "shelfRule": "actual_finish_plus_own_output_shelf_life"
     },
     {
       "id": "ex_stew_portion",
@@ -19758,7 +19758,7 @@
       "knowledge": "expedition_basics",
       "mode": "active_work",
       "xpSkill": "medicine",
-      "shelfRule": "min_inputs"
+      "shelfRule": "actual_finish_plus_own_output_shelf_life"
     },
     {
       "id": "ex_station_water",
