@@ -160,6 +160,7 @@ namespace Survival.Core.Save
             AdoptEnemyCards(s, config);
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
             NormalizeBattleLog(s);
+            CheckSpoiledOrigins(s);
             return notes;
         }
 
@@ -1566,6 +1567,22 @@ namespace Survival.Core.Save
             AdoptEnemyCards(s, config);   // B41a：新版敌踪上线后的第一次读档采纳新版敌踪卡模型（已采纳不做事）
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：当前版本读档同样清一次（无残留不做事，幂等）
             NormalizeBattleLog(s);
+            CheckSpoiledOrigins(s);
+        }
+
+        /// <summary>
+        /// 来源账存档校验（B50a，S06 文首 Q711「来源异常沿原存档校验处理，不编补满额」）：不是腐败物却带账、份数非正、已知合计超过总份数的，
+        /// 整张账作废（按无可信来源、不显示），不改实物份数、重量与业务字段，不按比例缩减或补齐。合格的原样保留（幂等）。
+        /// </summary>
+        public static void CheckSpoiledOrigins(GameState s)
+        {
+            foreach (var i in s.Items)
+            {
+                if (i.SpoiledOrigins == null) continue;
+                if (i.ItemId != Engine.GameEngine.SpoiledMatterId || i.SpoiledOrigins.Count == 0 || i.SpoiledOrigins.Values.Any(v => v <= 0)
+                    || i.SpoiledOrigins.Values.Sum() > i.Count)
+                    i.SpoiledOrigins = null;
+            }
         }
 
         /// <summary>旧版战斗日志截存上限（B34 前）：满这么多条的旧战斗无法确认早段完整。</summary>

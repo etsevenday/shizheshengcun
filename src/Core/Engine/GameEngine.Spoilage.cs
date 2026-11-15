@@ -186,6 +186,50 @@ namespace Survival.Core.Engine
             return sum == null ? new List<(string, int)>() : sum.OrderBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => (kv.Key, kv.Value)).ToList();
         }
 
+        /// <summary>腐败物已知来源标题（逐字稿 Q711「腐败物已知来源标题，无已知项整段隐藏」）。</summary>
+        public const string OriginTitle = "来源";
+
+        /// <summary>
+        /// 腐败物已知来源各项「{原物名}×{已知份数}」（逐字稿 Q711「已知来源单项」）：同原物只一次、按原物 ID 稳定升序、公开名；
+        /// 只计传入这组实物自身的账（整卡传整卡、单批传单批），没有已知项为空表——不写未知、不补满额。
+        /// </summary>
+        public List<string> OriginEntries(IEnumerable<ItemInstance> items)
+        {
+            var named = new List<(string Name, int Count)>();
+            foreach (var (id, n) in KnownOrigins(items))
+            {
+                var name = _items.ContainsKey(id) ? ItemName(id) : id;
+                var k = named.FindIndex(x => x.Name == name);
+                if (k < 0) named.Add((name, n)); else named[k] = (name, named[k].Count + n);
+            }
+            return named.Select(x => $"{x.Name}×{x.Count}").ToList();
+        }
+
+        /// <summary>紧凑来源清单「来源：{来源清单}」（逐字稿 Q711，各项顿号连接）；没有已知项为 null（连标题也不显示）。</summary>
+        public string? OriginListText(IEnumerable<ItemInstance> items)
+        {
+            var e = OriginEntries(items);
+            return e.Count == 0 ? null : $"{OriginTitle}：{string.Join("、", e)}";
+        }
+
+        /// <summary>
+        /// 腐败物物理明细「×{总份数} · 每份{重量}公斤」（逐字稿 Q711，无来源也保留）；needCap 时接「 · 每堆最多{上限}份」（Q669／Q711 必要时附真实继承上限）。
+        /// 重量按这批实物的每份精确克重转两位小数公斤（配置占位 1 克／2 份不参与）。
+        /// </summary>
+        public string SpoiledPhysicalText(IReadOnlyCollection<ItemInstance> stacks, bool needCap)
+        {
+            var head = stacks.First();
+            return $"×{stacks.Sum(i => i.Count)} · 每份{Fmt.KgValue(UnitGrams(head))}公斤" + (needCap ? $" · 每堆最多{StackMaxOf(head)}份" : "");
+        }
+
+        /// <summary>这一批在同一列明细里是否要附上限：另有每份克重相同而继承上限不同的腐败物批（否则两行无法区分）。</summary>
+        public bool NeedsStackCapNote(IEnumerable<ItemBatch> all, ItemBatch b)
+        {
+            var h = b.Stacks[0];
+            if (!IsSpoiledMatter(h)) return false;
+            return all.Any(o => o != b && o.Stacks.Count > 0 && IsSpoiledMatter(o.Stacks[0]) && UnitGrams(o.Stacks[0]) == UnitGrams(h) && StackMaxOf(o.Stacks[0]) != StackMaxOf(h));
+        }
+
         /// <summary>旧档迁移（存档 50→51）：一次转换全部到期物、不写逐物句；有转换时写一次迁移提示。返回是否有转换。</summary>
         internal bool MigrateSpoilage(GameState s)
         {

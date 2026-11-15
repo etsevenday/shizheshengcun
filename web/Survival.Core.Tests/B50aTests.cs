@@ -227,4 +227,95 @@ public class B50aTests : TestBase
         Assert.That(Ledger(s), Is.EquivalentTo(new Dictionary<string, int> { ["raw_root"] = 1, ["berry"] = 2 }));
         AssertLedgerValid(s);
     }
+
+    // ───────────── M948 来源与物理明细（Q711-A03、Q669-A01／A02） ─────────────
+
+    private ItemInstance Rotten(GameState s, string owner, int count, int grams, int cap, Dictionary<string, int>? origins, string from = "raw_meat")
+    {
+        var i = new ItemInstance { InstanceId = s.NextInstanceId++, ItemId = Rot, Count = count, Owner = owner, SpoiledFrom = from, SpoiledUnitGrams = grams, SpoiledStackMax = cap, SpoiledOrigins = origins };
+        s.Items.Add(i);
+        return i;
+    }
+
+    /// <summary>Q711-A03：旧档无账的混堆不猜、不拆，与新已知来源合堆后只显示可信部分；完全无已知项不显示来源标题；总份数／克重仍真值。</summary>
+    [Test]
+    public void Q711_A03_UnknownHidden_PartialKnownOnly_NoTitleWhenNone()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.Owner == "camp" && !E.IsPot(i));
+        var old = Rotten(s, "camp", 4, 300, 20, null);
+        Assert.That(E.OriginListText(new[] { old }), Is.Null, "无已知项整段隐藏，不写未知、不写原物来源未记录");
+        Assert.That(E.OriginEntries(new[] { old }), Is.Empty);
+        Make(s, "cooked_meat", 1, "camp", s.GameMinute + 5);
+        WaitUntil(s, s.GameMinute + 5);
+        var heap = s.Items.Where(i => i.Owner == "camp" && i.ItemId == Rot).ToList();
+        Assert.That(heap.Sum(i => i.Count), Is.EqualTo(5), "新旧合堆");
+        Assert.That(E.OriginListText(heap), Is.EqualTo($"来源：{E.ItemName("cooked_meat")}×1"), "只列可信部分，不按比例补未知");
+        Assert.That(heap.Sum(i => E.ItemGrams(s, i)), Is.EqualTo(1500), "原克重真值");
+        Assert.That(heap.Single().SpoiledFrom, Is.EqualTo("raw_meat"), "业务字段照旧（SpoiledFrom 不被来源账替代）");
+    }
+
+    /// <summary>Q711：已知来源清单同原物合计、按原物 ID 升序、顿号连接；只算所指这组自身的账。</summary>
+    [Test]
+    public void Q711_OriginList_OrderedMergedScopedToGivenItems()
+    {
+        var s = New();
+        var a = Rotten(s, "camp", 3, 300, 20, new Dictionary<string, int> { ["raw_meat"] = 1, ["cooked_meat"] = 2 });
+        var b = Rotten(s, "w01", 2, 300, 20, new Dictionary<string, int> { ["raw_meat"] = 2 });
+        Assert.That(E.OriginEntries(new[] { a }), Is.EqualTo(new[] { $"{E.ItemName("cooked_meat")}×2", $"{E.ItemName("raw_meat")}×1" }));
+        Assert.That(E.OriginListText(new[] { a, b }), Is.EqualTo($"来源：{E.ItemName("cooked_meat")}×2、{E.ItemName("raw_meat")}×3"));
+        Assert.That(E.OriginListText(new[] { b }), Is.EqualTo($"来源：{E.ItemName("raw_meat")}×2"), "不把邻卡来源算进来");
+    }
+
+    /// <summary>
+    /// Q669-A01：不同原物腐败物视觉归一张卡，明细按「×{总份数} · 每份{重量}公斤」写，不再一处已腐败一处不会腐败；
+    /// 同每份克重不同继承上限才附「每堆最多{上限}份」；真实分堆／重量／五卡不被配置占位 1 克／2 份影响。
+    /// </summary>
+    [Test]
+    public void Q669_A01_PhysicalDetail_CapOnlyWhenNeeded_WeightFromInstance()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.IsCarried);
+        Rotten(s, ItemInstance.Carried, 2, 250, 10, new Dictionary<string, int> { ["grain_cake"] = 2 }, "grain_cake");
+        Rotten(s, ItemInstance.Carried, 3, 250, 20, new Dictionary<string, int> { ["expedition_bar"] = 3 }, "expedition_bar");
+        Rotten(s, ItemInstance.Carried, 1, 300, 20, new Dictionary<string, int> { ["raw_meat"] = 1 });
+        var batches = E.BatchesOf(s, ItemInstance.Carried, Rot);
+        Assert.That(batches, Has.Count.EqualTo(3), "按每份克重与继承上限真实分批");
+        var texts = batches.Select(b => E.SpoiledPhysicalText(b.Stacks, E.NeedsStackCapNote(batches, b))).ToList();
+        Assert.That(texts, Is.EquivalentTo(new[] { "×2 · 每份0.25公斤 · 每堆最多10份", "×3 · 每份0.25公斤 · 每堆最多20份", "×1 · 每份0.30公斤" }));
+        Assert.That(E.CarriedGrams(s), Is.EqualTo(2 * 250 + 3 * 250 + 300), "按实例每份克重");
+        Assert.That(E.RootCardCount(s), Is.EqualTo(3), "不同克重／上限不真合堆");
+        Assert.That(E.Item(Rot).WeightGrams, Is.EqualTo(1), "配置占位值仍在、不参与计算");
+    }
+
+    /// <summary>Q669-A02（来源兜底按 Q711 取代）：重开存档、转移后来源元数据保留，不恢复成原食品。</summary>
+    [Test]
+    public void Q669_A02_MetadataKeptThroughReloadAndTransfer_NotRestored()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.IsCarried);
+        var r = Rotten(s, "camp", 2, 300, 20, new Dictionary<string, int> { ["raw_meat"] = 2 });
+        Assert.That(E.DoInstant(s, InstantRequest.Pickup(r.InstanceId, 1)).Ok, Is.True);
+        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        var carried = t.Items.Single(i => i.IsCarried && i.ItemId == Rot);
+        Assert.That((carried.SpoiledFrom, carried.SpoiledUnitGrams, carried.SpoiledStackMax, carried.SpoiledOrigins!["raw_meat"]), Is.EqualTo(("raw_meat", (int?)300, (int?)20, 1)));
+        Assert.That(t.Items.Count(i => i.ItemId == "raw_meat" && (i.IsCarried || i.Owner == "camp")), Is.EqualTo(0), "不恢复成原食品");
+        Assert.That(E.OriginListText(t.Items.Where(i => i.ItemId == Rot)), Is.EqualTo($"来源：{E.ItemName("raw_meat")}×2"));
+    }
+
+    /// <summary>来源账存档校验：已知合计超过总份数、非腐败物带账、非正份数的整张账作废（不显示、不补），实物不变。</summary>
+    [Test]
+    public void Q711_SaveCheck_InvalidLedgerDropped_ValidKept()
+    {
+        var s = New();
+        var bad = Rotten(s, "camp", 2, 300, 20, new Dictionary<string, int> { ["raw_meat"] = 3 });
+        var ok = Rotten(s, "w01", 2, 200, 20, new Dictionary<string, int> { ["berry"] = 1 }, "berry");
+        var stone = E.CreateItems(s, "stone", 1, "w02").Single();
+        stone.SpoiledOrigins = new Dictionary<string, int> { ["raw_meat"] = 1 };
+        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(t.Items.Single(i => i.InstanceId == bad.InstanceId).SpoiledOrigins, Is.Null);
+        Assert.That(t.Items.Single(i => i.InstanceId == bad.InstanceId).Count, Is.EqualTo(2));
+        Assert.That(t.Items.Single(i => i.InstanceId == ok.InstanceId).SpoiledOrigins!["berry"], Is.EqualTo(1));
+        Assert.That(t.Items.Single(i => i.InstanceId == stone.InstanceId).SpoiledOrigins, Is.Null);
+    }
 }
