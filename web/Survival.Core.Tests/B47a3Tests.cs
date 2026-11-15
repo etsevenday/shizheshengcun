@@ -430,7 +430,7 @@ public class B47a3Tests : BattleTestBase
         Assert.That(pv, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : Clock.Duration(p.EstimatedMinutes)"));
         Assert.That(pv, Does.Contain("p.HealthUnknown.Contains(GameState.PlayerId)"));
         Assert.That(pv, Does.Contain("@if (p.Ok && p.BodyCut)"), "无危险不加两区标题");
-        Assert.That(Web("Components/ItemDetail.razor"), Does.Contain("p.HealthUnknown.Contains(GameState.PlayerId) ? GameEngine.NotEstimated"));
+        Assert.That(Web("Components/ItemDetail.razor"), Does.Contain("GameEngine.BodyStatAfterUnknown(p, id) ? GameEngine.NotEstimated"), "B54（Q792）：并入同一未知判定，含 Q683 健康");
         Assert.That(Web("Components/CraftOverlay.razor"), Does.Contain("@if (p.PlanFailed)"));
     }
 

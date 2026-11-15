@@ -273,16 +273,21 @@
 
     private bool starting;
 
-    /// <summary>主角身体前→后（截断时后值取共同截止处；取决于致死判定结果的健康写“未预估”）。</summary>
+    /// <summary>
+    /// 主角身体前→后（截断时后值取共同截止处；取决于致死判定结果的健康写“未预估”）。
+    /// B54（Q792）：完整完成不可信且无身体危险截止时，原各展示行写“{当前值} → 未预估”，不显示副本停下处的值、不据其着色。
+    /// </summary>
     private RenderFragment BodyRows(ActionPreview p) => __builder =>
     {
         var e = G.E;
         foreach (var id in Stats.All)
         {
             var before = Ui.N(p.StatsBefore.Get(id));
-            var unknown = id == StatId.Health && p.HealthUnknown.Contains(GameState.PlayerId);
-            var after = unknown ? GameEngine.NotEstimated : Ui.N(p.StatsAfter.Get(id));
-            if (before == after && id != StatId.Hydration && id != StatId.Energy) continue;
+            var healthUnknown = id == StatId.Health && p.HealthUnknown.Contains(GameState.PlayerId);
+            var shown = healthUnknown ? GameEngine.NotEstimated : Ui.N(p.StatsAfter.Get(id));
+            if (before == shown && id != StatId.Hydration && id != StatId.Energy) continue;   // 原展示行（B47a3 口径）
+            var unknown = GameEngine.BodyStatAfterUnknown(p, id);
+            var after = unknown ? GameEngine.NotEstimated : shown;
             var th = e.Config.Thresholds[GameEngine.StatKey(id)];
             var cls = !unknown && th.IsBelow(p.StatsAfter.Get(id)) ? "warn-text" : "";
             <div><span>@GameEngine.StatName(id)</span><b class="@cls">@before → @after</b></div>

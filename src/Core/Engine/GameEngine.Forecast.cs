@@ -35,6 +35,16 @@ namespace Survival.Core.Engine
         public static string ToolAfterText(ActionPreview p) =>
             p.PlanFailed ? NotEstimated : Fmt.N(p.ToolDurabilityAfter ?? 0);
 
+        /// <summary>
+        /// B54（S08／R09 Q792）：完整完成计划不可信、又没有身体危险共同截止时，身体各展示行后值一律“未预估”（前值仍为当前实值，不按副本停下处着色）；
+        /// 有危险截止时沿 Q682／Q686 截止内可信值，只有原依赖致死判定的健康未预估。
+        /// </summary>
+        public static bool BodyAfterUnknown(ActionPreview p) => p.PlanFailed && !p.BodyCut;
+
+        /// <summary>主角身体某属性的预估后值是否写“未预估”（Q792 整体未知，或 Q683 截止段健康取决于致死判定）。</summary>
+        public static bool BodyStatAfterUnknown(ActionPreview p, StatId id) =>
+            BodyAfterUnknown(p) || (id == StatId.Health && p.HealthUnknown.Contains(GameState.PlayerId));
+
         /// <summary>S08 Q725：完成后经验依赖完成，求不出可信完成时整行值写“未预估”。</summary>
         public static string XpAfterText(ActionPreview p) =>
             p.PlanFailed ? NotEstimated : string.Join("、", p.XpGains);

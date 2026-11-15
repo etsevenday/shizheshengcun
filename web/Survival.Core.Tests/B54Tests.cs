@@ -370,3 +370,40 @@ public class B54CardActionTests : TestBase
         Assert.That(src, Does.Contain("CardStates.TotalAndReserved(all.Where(i => e.CardSideOf(i) == side))"), "不跨卡侧");
     }
 }
+
+/// <summary>B54 Q792：完整完成不可信且无身体危险截断时，身体后值未预估。</summary>
+public class B54BodyUnknownTests : TestBase
+{
+    private static string Web(params string[] parts) =>
+        File.ReadAllText(Path.Combine(new[] { TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "Survival.Web" }.Concat(parts).ToArray()));
+
+    /// <summary>Q792-A01：无截断且完成不可信时所有展示属性后值都未预估；Q792-A02：有危险截止时只有原依赖致死的健康未预估，可信完成恢复正常。</summary>
+    [Test]
+    public void Q792_A01_A02_UnknownJudgement()
+    {
+        var p = new ActionPreview { Ok = true, PlanFailed = true };
+        foreach (var id in Stats.All) Assert.That(GameEngine.BodyStatAfterUnknown(p, id), Is.True, id.ToString());
+        p.BodyCutoffMinutes = 10;
+        Assert.That(GameEngine.BodyAfterUnknown(p), Is.False, "有危险截止：保留截止内可信值");
+        Assert.That(GameEngine.BodyStatAfterUnknown(p, StatId.Satiety), Is.False);
+        Assert.That(GameEngine.BodyStatAfterUnknown(p, StatId.Health), Is.False);
+        p.HealthUnknown.Add(GameState.PlayerId);
+        Assert.That(GameEngine.BodyStatAfterUnknown(p, StatId.Health), Is.True, "原依赖致死的健康仍未预估");
+        Assert.That(GameEngine.BodyStatAfterUnknown(p, StatId.Morale), Is.False);
+        var ok = new ActionPreview { Ok = true, PlanFailed = false };
+        foreach (var id in Stats.All) Assert.That(GameEngine.BodyStatAfterUnknown(ok, id), Is.False, "可信完整完成照常数值");
+    }
+
+    /// <summary>Q792-A01：右栏身体行写「{当前值} → 未预估」，前值仍取当前实值，未知不着色；原展示行判定与失败原因位置不变。</summary>
+    [Test]
+    public void Q792_A01_WebBodyRows()
+    {
+        var pv = Web("Components", "PreviewView.razor");
+        Assert.That(pv, Does.Contain("var unknown = GameEngine.BodyStatAfterUnknown(p, id);"));
+        Assert.That(pv, Does.Contain("var after = unknown ? GameEngine.NotEstimated : shown;"));
+        Assert.That(pv, Does.Contain("var cls = !unknown && th.IsBelow(p.StatsAfter.Get(id)) ? \"warn-text\" : \"\";"), "未知后值不派生低值颜色");
+        Assert.That(pv, Does.Contain("var before = Ui.N(p.StatsBefore.Get(id));"), "前值为当前实值");
+        Assert.That(pv, Does.Contain("<b class=\"@cls\">@before → @after</b>"));
+        Assert.That(pv, Does.Contain("if (p.PlanFailed) yield return GameEngine.PlanFailedText"), "原失败原因一次");
+    }
+}
