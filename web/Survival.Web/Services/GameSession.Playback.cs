@@ -175,6 +175,7 @@ public sealed partial class GameSession
         _fxPulseUntilMs = 0;
         EndClosingHold();
         E.DrainBattleFx();
+        E.DrainLifeFx();   // B47b（Q692-A02）：读档／新局不补播历史生命镜头
     }
 
     private void Pulse(BattleFxEvent ev, int gen)

@@ -55,4 +55,23 @@ public class B47bWebTests
         var css = Web("wwwroot", "css", "battle.css");
         Assert.That(css, Does.Contain(".anc.ally.dying .anc-art img { filter: brightness(var(--dying-dim, .72))"));
     }
+
+    /// <summary>Q692-A01／A02、Q734：世界推进段提交后按真实顺序播远处生命镜头；快进不插入、主角确死不播；读档清掉待播。</summary>
+    [Test]
+    public void Q692_A02_WorldLifeCloseUps_PlayedAtSegmentBoundary()
+    {
+        var gs = Web("Services", "GameSession.cs");
+        var loop = gs[gs.IndexOf("private async Task RunLoop()")..];
+        loop = loop[..loop.IndexOf("public void AckDialogue")];
+        var drain = loop.IndexOf("var lifeFx = E.DrainLifeFx();");
+        Assert.That(drain, Is.GreaterThan(loop.IndexOf("var r = E.Advance(S);")), "段提交后取走");
+        var play = loop.IndexOf("await PlayFx(lifeFx);");
+        Assert.That(play, Is.GreaterThan(loop.IndexOf("CommitSegment();")), "段提交之后");
+        Assert.That(loop, Does.Contain("if (!_skip && lifeFx.Count > 0 && State != null && !S.Progress.Dead)"), "快进时不插入镜头，主角确死不播");
+        var pb = Web("Services", "GameSession.Playback.cs");
+        var reset = pb[pb.IndexOf("private void ResetPlayback()")..];
+        Assert.That(reset[..reset.IndexOf("private void Pulse")], Does.Contain("E.DrainLifeFx();"));
+        var layer = Web("Components", "BattleFxLayer.razor");
+        Assert.That(layer, Does.Contain("<p class=\"bfx-where\" aria-hidden=\"true\">@ev.Where</p>"));
+    }
 }

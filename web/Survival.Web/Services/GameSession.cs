@@ -2329,6 +2329,9 @@ public sealed partial class GameSession
                 var r = E.Advance(S);
                 Drain();
                 segs++;
+                // B47b（R09 Q692 选B）：这一段里在场者与不在场候补／驻屋者的真实生命变化（濒死、死亡）在段提交后的安全边界按真实顺序逐段播放；
+                // 跳过动画（快进）时不插入镜头（Q734 不新增跳过入口、快进逻辑不变），主角确死时终局页优先，不再播远处镜头
+                var lifeFx = E.DrainLifeFx();
                 if (!_skip)
                 {
                     Commit();
@@ -2339,6 +2342,12 @@ public sealed partial class GameSession
                     CommitSegment();   // B40：跳过动画时也逐段提交（跨 06:00 的那一段写每日档、终局立即写）
                     // 跳过动画时每 4 段刷新一次中央条（剩余时间是游戏分钟，由内核按真实状态给出）
                     if (segs % 4 == 0) Notify();
+                }
+                if (!_skip && lifeFx.Count > 0 && State != null && !S.Progress.Dead)
+                {
+                    var lgen = _fxGen;
+                    await PlayFx(lifeFx);
+                    if (lgen != _fxGen) break;   // 读档／新局：旧循环不再推进
                 }
                 if (r.Status is SegmentStatus.Paused or SegmentStatus.Dead or SegmentStatus.Idle or SegmentStatus.Dialogue) break;
                 if (S.Main == null && S.Sub == null) break;
