@@ -1065,14 +1065,15 @@ namespace Survival.Core.Engine
             var keptSrc = keptExit ? KeptSources(s, a) : default;
             var hadReserved = a.ReservedItemIds.Any(id => FindItem(s, id) is ItemInstance ri && ri.ReservedBy == a.ActionId);
             var restored = _restoreSink = new List<ShelfRestore>();   // B51a（Q722／Q723）：本次实际恢复的保质
+            var keptParts = _keptReturnSink = new List<KeptReturnPart>();   // B54（Q787）：本次按来源返还的实际去向
             try { Release(s, a, s.Ground); }
-            finally { _stagedCancelNote = null; _restoreSink = null; }
+            finally { _stagedCancelNote = null; _restoreSink = null; _keptReturnSink = null; }
             var restoreText = RestoreClauses(restored, false);
             if (a.IsSub) s.Sub = null; else s.Main = null;
             // B41b（R05 Q472 第 5 条）：退出暂存期间的当前移动只取消移动；原工作随后放回主行动位、仍暂停，预留不被移动取消释放
             var keptWork = a.IsSub ? null : RestoreStashedWork(s);
 
-            string text = keptExit ? KeptExitText(s, a, keptSrc, true, restoreText) : a.Type switch
+            string text = keptExit ? KeptExitText(s, a, keptSrc, true, restoreText, keptParts) : a.Type switch
             {
                 ActionType.Travel => $"已取消移动，留在{LocName(a.SourceLocation)}；已经流逝的时间与身体消耗保留。",
                 ActionType.Explore => "已取消探索，探索度不变，未获得物资；已消耗的时间保留。",

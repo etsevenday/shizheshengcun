@@ -390,21 +390,39 @@ namespace Survival.Core.Engine
             var carried = false;
             string? ground = null;
             var owners = new HashSet<string>();
+            // B54（S08 Q787）：先按释放此刻的真实 C＋R 与五根卡预演（与只读预告同一 KeptReturnPlan），原随身放不下的份额落原工作地点／区域地面
+            var plan = KeptReturnPlan(s, a);
             foreach (var id in a.ReservedItemIds)
             {
                 var inst = FindItem(s, id);
                 if (inst == null) continue;
                 inst.ReservedBy = null;
                 var src = a.ReserveSources != null && a.ReserveSources.TryGetValue(id, out var o) ? o : inst.Owner;
+                ItemInstance? dropped = null;
                 if (TryPlace(src, out _, out _))
                 {
                     inst.Owner = src;
                     ground ??= src;
                 }
-                else carried = true;
+                else
+                {
+                    var over = plan.FirstOrDefault(p => p.InstanceId == id && p.Overflow);
+                    if (over.Count > 0)
+                    {
+                        if (over.Count >= inst.Count) { inst.Owner = over.Dest; dropped = inst; }
+                        else { dropped = SplitOff(s, inst, over.Count); dropped.Owner = over.Dest; }
+                    }
+                    if (dropped != inst) carried = true;
+                }
                 ResumeReleased(s, inst);   // B51a（Q701.1）：按原来源释放时恢复 C＋R
                 owners.Add(inst.Owner);
+                if (dropped != null && dropped != inst)
+                {
+                    ResumeReleased(s, dropped);
+                    owners.Add(dropped.Owner);
+                }
             }
+            _keptReturnSink?.AddRange(plan);
             a.ReservedItemIds.Clear();
             a.ReserveSources = null;
             foreach (var o in owners) Normalize(s, o);

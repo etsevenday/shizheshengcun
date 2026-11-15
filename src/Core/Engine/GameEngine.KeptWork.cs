@@ -260,7 +260,8 @@ namespace Survival.Core.Engine
         /// Q471 完整句（B51a 按 Q722／Q723 拼接合同）：引句＋真实返还分句＋实际恢复保质分句＋后果＋「已耗时间不退。」（预告）／「已耗时间保留。」（结果）。
         /// 结果的 restore 为本次真实恢复分句；预告不传，按现在立即退出的 C＋R 只读算（restorePreview）。
         /// </summary>
-        private string KeptExitText(GameState s, ActionState a, (bool carried, string? ground) src, bool result, string? restore = null)
+        /// <param name="parts">B54（Q787）：结果为本次实际按来源返还的去向（ReleaseToSources 记下的）；预告不传，按现在立即退出只读预演。有溢出时返还段按实际去向生成。</param>
+        private string KeptExitText(GameState s, ActionState a, (bool carried, string? ground) src, bool result, string? restore = null, IReadOnlyList<KeptReturnPart>? parts = null)
         {
             var (lead, after) = a.Type switch
             {
@@ -271,8 +272,16 @@ namespace Survival.Core.Engine
                 _ => result ? ("已取消制作。", "未生成半成品。") : ("退出将放弃本次制作。", "不会生成半成品。"),
             };
             restore ??= result ? "" : RestorePreview(s, a, true);
-            return lead + KeptReturnClause(s, a, src, result) + restore + after + (result ? "已耗时间保留。" : "已耗时间不退。");
+            parts ??= result ? null : KeptReturnPlan(s, a);
+            return lead + KeptReturnSegment(s, a, src, result, parts) + restore + after + (result ? "已耗时间保留。" : "已耗时间不退。");
         }
+
+        /// <summary>
+        /// Q471 返还段（B54 Q787）：本次实际（或预计）有随身放不下而落原工作地面的份额时，按最终去向逐组写 actual／predicted／overflow 句；
+        /// 没有溢出沿原 Q471 返还句。
+        /// </summary>
+        private string KeptReturnSegment(GameState s, ActionState a, (bool carried, string? ground) src, bool result, IReadOnlyList<KeptReturnPart>? parts) =>
+            parts != null && parts.Any(p => p.Overflow) ? KeptPlanClause(s, parts, result) : KeptReturnClause(s, a, src, result);
 
         /// <summary>撤退离地保留、按 Q471 改写退出句的行动。</summary>
         private bool KeptExitApplies(GameState s, ActionState a) => a.RetreatKept && !a.IsSub && KeptExitHasQ471Row(a);

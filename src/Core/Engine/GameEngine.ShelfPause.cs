@@ -79,15 +79,7 @@ namespace Survival.Core.Engine
         /// </summary>
         internal string RestoreClauses(IEnumerable<ShelfRestore> list, bool preview)
         {
-            var groups = new List<(string owner, string? side, string name, int at, int n)>();
-            foreach (var x in list)
-            {
-                var name = ItemName(x.ItemId);
-                var k = groups.FindIndex(g => g.owner == x.Owner && g.side == x.Side && g.name == name && g.at == x.ExpiresAt);
-                if (k < 0) groups.Add((x.Owner, x.Side, name, x.ExpiresAt, x.Count));
-                else groups[k] = (groups[k].owner, groups[k].side, name, groups[k].at, groups[k].n + x.Count);
-            }
-            return string.Concat(groups.Select(g => preview
+            return string.Concat(RestoreGroups(list).Select(g => preview
                 ? $"{g.name}×{g.n}退回后恢复剩余保质，预计保质到{Clock.DayTime(g.at)}。"
                 : $"{g.name}×{g.n}恢复剩余保质，保质到{Clock.DayTime(g.at)}。"));
         }
@@ -98,17 +90,22 @@ namespace Survival.Core.Engine
         internal string RestorePreview(GameState s, ActionState a, bool bySource)
         {
             var list = new List<ShelfRestore>();
+            if (bySource)
+            {
+                // B54（Q787）：撤退离地保留按来源返还与提交同源（KeptReturnPlan）：随身放不下的份额按原工作地面预告
+                foreach (var p in KeptReturnPlan(s, a))
+                {
+                    var inst = FindItem(s, p.InstanceId);
+                    if (inst == null || inst.ReservedBy != a.ActionId || inst.ShelfPausedMinutes is not int r) continue;
+                    list.Add(new ShelfRestore(p.Dest, CardSideOf(inst), inst.ItemId, s.GameMinute + r, p.Count));
+                }
+                return RestoreClauses(list, true);
+            }
             foreach (var id in a.ReservedItemIds)
             {
                 var inst = FindItem(s, id);
                 if (inst == null || inst.ReservedBy != a.ActionId || inst.ShelfPausedMinutes is not int r) continue;
-                var dest = s.Ground;
-                if (bySource)
-                {
-                    var src = a.ReserveSources != null && a.ReserveSources.TryGetValue(id, out var o) ? o : inst.Owner;
-                    dest = TryPlace(src, out _, out _) ? src : inst.Owner;
-                }
-                list.Add(new ShelfRestore(dest, CardSideOf(inst), inst.ItemId, s.GameMinute + r, inst.Count));
+                list.Add(new ShelfRestore(s.Ground, CardSideOf(inst), inst.ItemId, s.GameMinute + r, inst.Count));
             }
             return RestoreClauses(list, true);
         }
