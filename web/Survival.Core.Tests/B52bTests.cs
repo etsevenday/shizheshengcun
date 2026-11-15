@@ -499,4 +499,26 @@ public class B52bWebTests
         Assert.That(gs, Does.Not.Contain("FxUnderReading"));
         Assert.That(Web("Services", "GameSession.Keys.cs"), Does.Contain("if (PlaybackActive) return EscOwner.OpenMenu;"));
     }
+
+    /// <summary>Q734-A01／A02：战外生命镜头快进中也照常播、不可跳过；播放期间不推进下一段；播完沿原快进设置继续；播放中的跳过输入不排队；菜单冻结。</summary>
+    [Test]
+    public void Q734_A01_WorldLifeCloseUps_PlayDuringFastForward_Unskippable()
+    {
+        var gs = Web("Services", "GameSession.cs");
+        var loop = gs[gs.IndexOf("private async Task RunLoop()")..];
+        loop = loop[..loop.IndexOf("public void AckDialogue")];
+        Assert.That(loop, Does.Contain("if (lifeFx.Count > 0 && State != null && !S.Progress.Dead)"));
+        Assert.That(loop, Does.Not.Contain("!_skip && lifeFx.Count"), "快进不再略过");
+        var play = loop.IndexOf("await PlayFx(lifeFx, rgen);");
+        Assert.That(play, Is.LessThan(loop.IndexOf("if (r.Status is SegmentStatus.Paused")), "播完才看暂停／对白／终局，也才进下一段");
+        Assert.That(loop.IndexOf("var r = E.Advance(S);"), Is.LessThan(play), "播放期间不调度新世界段");
+        var block = loop[loop.IndexOf("if (lifeFx.Count > 0")..play];
+        Assert.That(block, Does.Not.Contain("_skip = false"), "播完恢复进入前的快进设置");
+        var skip = gs[gs.IndexOf("public void SkipAnimation()")..];
+        skip = skip[..skip.IndexOf("}")];
+        Assert.That(skip.IndexOf("if (PlaybackActive) return;"), Is.LessThan(skip.IndexOf("_skip = true;")), "镜头期间不把输入传给下方跳过");
+        var pb = Web("Services", "GameSession.Playback.cs");
+        Assert.That(pb, Does.Contain("public bool FxPaused => MenuOpen || BattleMenuOpen"), "菜单冻结同帧");
+        Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("@if (G.PlaybackActive && !G.InBattleUi) { <BattleFxLayer /> }"));
+    }
 }

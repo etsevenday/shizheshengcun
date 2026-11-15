@@ -2266,6 +2266,8 @@ public sealed partial class GameSession
 
     public void SkipAnimation()
     {
+        // B52b（R09 Q734）：战外生命特写不可跳过——播放中的点击／空格不传给下方「跳过动画」，也不排队成之后的快进
+        if (PlaybackActive) return;
         _skip = true;
     }
 
@@ -2330,8 +2332,9 @@ public sealed partial class GameSession
                 var r = E.Advance(S);
                 Drain();
                 segs++;
-                // B47b（R09 Q692 选B）：这一段里在场者与不在场候补／驻屋者的真实生命变化（濒死、死亡）在段提交后的安全边界按真实顺序逐段播放；
-                // 跳过动画（快进）时不插入镜头（Q734 不新增跳过入口、快进逻辑不变），主角确死时终局页优先，不再播远处镜头
+                // B47b（R09 Q692 选B）：这一段里在场者与不在场候补／驻屋者的真实生命变化（濒死、死亡等）在段提交后的安全边界按真实顺序逐段播放；
+                // 主角确死时终局页优先，不再播远处镜头。B52b（R09 Q734 选A）：跳过动画（快进）开着也照常播、不可跳过，
+                // 播放期间不调度下一段，播完沿进入前的快进设置继续（_skip 不改）；暂停、对白、终局仍按原顺序在下面截住
                 var lifeFx = E.DrainLifeFx();
                 if (!_skip)
                 {
@@ -2344,8 +2347,9 @@ public sealed partial class GameSession
                     // 跳过动画时每 4 段刷新一次中央条（剩余时间是游戏分钟，由内核按真实状态给出）
                     if (segs % 4 == 0) Notify();
                 }
-                if (!_skip && lifeFx.Count > 0 && State != null && !S.Progress.Dead)
+                if (lifeFx.Count > 0 && State != null && !S.Progress.Dead)
                 {
+                    if (_skip) Notify();   // 快进时先把本段已提交的真实状态画出来，再播镜头
                     await PlayFx(lifeFx, rgen);
                     if (rgen != _fxGen) break;   // 读档／新局：旧循环不再推进
                 }
