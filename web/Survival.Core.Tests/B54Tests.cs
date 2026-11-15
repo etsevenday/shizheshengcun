@@ -199,3 +199,116 @@ public class B54KeptTests : B41bTestBase
     }
 }
 
+
+/// <summary>B54 失败返料短恢复句（Q788 建造完工地点失效、Q791 陶窑／净水台缺料失败）、操作窗总数（Q790）与身体未知后值（Q792）。</summary>
+public class B54Tests : TestBase
+{
+    private const string Water = "ex_station_water";
+
+    protected override bool NoEnemyApproach => true;
+
+    private void Ok(ActionResult r) => Assert.That(r.Ok, Is.True, r.Reason);
+
+    private static string Web(params string[] parts) =>
+        File.ReadAllText(Path.Combine(new[] { TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "Survival.Web" }.Concat(parts).ToArray()));
+
+    // ───────────── Q788 建造完工地点失效 ─────────────
+
+    /// <summary>荒地外部区开建野外火堆（石块注入有限截止）；开工后本区已有火堆，完工复核失败。返回 (状态, 石块 R)。</summary>
+    private (GameState s, int? r) WildFireSiteLost(int? stoneLeft)
+    {
+        var s = New();
+        E.DebugTeleport(s, "field");
+        s.WorldEnemies.RemoveAll(w => w.LocationId == "field");
+        s.Items.RemoveAll(i => i.ItemId is "stone" or "wood");
+        foreach (var i in E.CreateItems(s, "stone", 4, s.Ground)) i.ExpiresAt = stoneLeft is int m ? s.GameMinute + m : null;
+        E.CreateItems(s, "wood", 2, s.Ground);
+        Start(s, ActionRequest.Craft("wild_fixed_fire", null, null, 1));
+        var r = s.Items.First(i => i.ItemId == "stone" && i.ReservedBy == s.Main!.ActionId).ShelfPausedMinutes;
+        s.Locations["field"].Facility.FireBuilt = true;   // 开工后本区已有火源（每区一处）
+        Run(s);
+        return (s, r);
+    }
+
+    /// <summary>Q788-A01：仍原失败、当前地面返料、无建筑无经验；有可信 R 时同一结果接「{原料名}×{数量}保质至{日期时刻}。」（实际 C＋R）。</summary>
+    [Test]
+    public void Q788_A01_BuildSiteFailure_RestoreShortClause()
+    {
+        var (s, r) = WildFireSiteLost(100);
+        Assert.That(r, Is.EqualTo(100));
+        var rc = Cfg.Recipes.Single(x => x.Id == "wild_fixed_fire");
+        var stone = s.Items.Single(i => i.ItemId == "stone");
+        Assert.That((stone.Owner, stone.Count, stone.ShelfPausedMinutes, stone.ReservedBy), Is.EqualTo(("field", 4, (int?)null, (int?)null)));
+        var log = s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionAborted));
+        var why = E.WildFireSiteReasons(s).Single();
+        Assert.That(log.Text, Is.EqualTo($"{rc.Name}未完成：{why}。材料已退回{E.ZoneName(s, "field")}地面。{E.ItemName("stone")}×4保质至{Clock.DayTime(stone.ExpiresAt!.Value)}。无经验。"));
+        Assert.That(stone.ExpiresAt!.Value - 100, Is.InRange(log.Minute - 5, log.Minute), "截止＝实际释放 C＋R");
+        Assert.That(s.Log.Count(l => l.Kind == nameof(GameEventKind.ActionAborted)), Is.EqualTo(1), "仍一条日志");
+    }
+
+    /// <summary>Q788-A01：无期限原料无 R 时省略恢复分句，不留占位或重复句号。</summary>
+    [Test]
+    public void Q788_A01_NoShelfLife_NoRestoreClause()
+    {
+        var (s, r) = WildFireSiteLost(null);
+        Assert.That(r, Is.Null);
+        var rc = Cfg.Recipes.Single(x => x.Id == "wild_fixed_fire");
+        var why = E.WildFireSiteReasons(s).Single();
+        Assert.That(s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionAborted)).Text,
+            Is.EqualTo($"{rc.Name}未完成：{why}。材料已退回{E.ZoneName(s, "field")}地面。无经验。"));
+    }
+
+    // ───────────── Q791 陶窑／净水台缺料失败 ─────────────
+
+    private GameState Workshop()
+    {
+        var s = New();
+        s.Skills["crafting"].Level = 3;
+        s.Progress.Flags.Add("h03_ceramic_notice_read");
+        foreach (var (id, n) in new[] { ("stone", 8), ("clay", 6), ("iron_plate", 2) }) E.CreateItems(s, id, n, s.Ground);
+        Start(s, ActionRequest.Craft("build_kiln", null, null, 1));
+        Run(s);
+        foreach (var (id, n) in new[] { ("ceramic_shell", 4), ("plank", 2), ("cloth", 2) }) E.CreateItems(s, id, n, s.Ground);
+        Start(s, ActionRequest.Craft("build_water_station", null, null, 1));
+        Run(s);
+        s.Items.RemoveAll(i => i.ItemId is "clay" or "charcoal" or "dirty_water" or "filter_media" or "ceramic_shell" or "clean_water");
+        return s;
+    }
+
+    /// <summary>净水台一批投料（脏水可注入有限截止）后拿走本批滤料，到时缺料失败。返回失败日志。</summary>
+    private (GameState s, LogEntry log) WaterMissing(int? dirtyLeft)
+    {
+        var s = Workshop();
+        foreach (var i in E.CreateItems(s, "dirty_water", 4, s.Ground)) i.ExpiresAt = dirtyLeft is int m ? s.GameMinute + m : null;
+        E.CreateItems(s, "filter_media", 1, s.Ground);
+        var t0 = s.GameMinute;
+        Ok(E.StartStationBatch(s, Water, "q791"));
+        s.Items.RemoveAll(i => i.ItemId == "filter_media");   // 本批原料不全
+        AdvanceTo(s, t0 + 35);
+        return (s, s.Log.Last(l => l.Text.Contains("原料不全")));
+    }
+
+    /// <summary>Q791-A01：原失败句后按本次实际释放的可信 R 追加 C＋R 实际日期时刻；同物同截止合计；同一条日志。</summary>
+    [Test]
+    public void Q791_A01_StationMissingFailure_RestoreShortClause()
+    {
+        var (s, log) = WaterMissing(20);
+        var dirty = s.Items.Where(i => i.ItemId == "dirty_water").ToList();
+        Assert.That(dirty.Sum(i => i.Count), Is.EqualTo(4));
+        var at = dirty.Select(i => i.ExpiresAt!.Value).Distinct().Single();
+        Assert.That(dirty.All(i => i.ShelfPausedMinutes == null && i.ReservedBy == null), Is.True);
+        Assert.That(log.Text, Does.EndWith($"：原料不全，这一批没有产物，剩下的原料已解锁。{E.ItemName("dirty_water")}×4保质至{Clock.DayTime(at)}。"));
+        Assert.That(at - 20, Is.EqualTo(log.Minute), "截止＝实际释放 C＋R");
+        Assert.That(s.Log.Count(l => l.Text.Contains("原料不全")), Is.EqualTo(1));
+        Assert.That(s.Items.Any(i => i.ItemId == "clean_water"), Is.False, "无产物");
+    }
+
+    /// <summary>Q791-A02：现有无期限原料只原失败句，不造期限。</summary>
+    [Test]
+    public void Q791_A02_NoShelfLife_OnlyOriginalSentence()
+    {
+        var (s, log) = WaterMissing(null);
+        Assert.That(log.Text, Does.EndWith("：原料不全，这一批没有产物，剩下的原料已解锁。"));
+        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water").All(i => i.ExpiresAt == null), Is.True, "不为现有原料新增期限");
+    }
+}

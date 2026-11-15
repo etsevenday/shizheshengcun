@@ -581,9 +581,13 @@ namespace Survival.Core.Engine
                     // B17（Q107、S09 X2.4）：建造完工时重验地点与所在区，失败不扣料、不多建、不给经验，预留材料返回当前地面
                     if (rc.FacilityResult != null && BuildSiteBlockedAtCompletion(s, rc) is string siteWhy)
                     {
-                        Release(s, a, s.Ground, bySource: false);
+                        // B54（S08 Q788）：原失败条件与当前地面返料不变，失败句换逐字稿 buildSiteFailure 并接实际恢复保质短句
+                        var outer = _restoreSink;
+                        var restored = _restoreSink = new List<ShelfRestore>();
+                        try { Release(s, a, s.Ground, bySource: false); }
+                        finally { _restoreSink = outer; }
                         if (a.IsSub) s.Sub = null; else s.Main = null;
-                        Emit(s, GameEventKind.ActionAborted, $"{rc.Name}没有完成：{siteWhy}；预留材料已返还当前地面，没有经验。");
+                        Emit(s, GameEventKind.ActionAborted, BuildSiteFailureText(s, rc.Name, siteWhy, FailureRestoreClauses(restored)));
                         return true;
                     }
                     foreach (var id in a.ReservedItemIds) s.Items.RemoveAll(i => i.InstanceId == id);

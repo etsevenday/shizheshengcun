@@ -192,6 +192,16 @@ namespace Survival.Core.Engine
         internal string FailureRestoreClauses(IEnumerable<ShelfRestore> list) =>
             string.Concat(RestoreGroups(list).Select(g => $"{g.name}×{g.n}保质至{Clock.DayTime(g.at)}。"));
 
+        /// <summary>
+        /// 建造完工时地点失效（逐字稿 buildSiteFailure，Q788）：「{配方名}未完成：{原因}。材料已退回{地点}地面。{恢复保质分句}无经验。」；
+        /// {地点}为原失败规则实际返还的当前地面，原因句末已有标点不重复追加，恢复分句可为空。
+        /// </summary>
+        internal string BuildSiteFailureText(GameState s, string recipeName, string reason, string restore)
+        {
+            var why = reason.EndsWith("。") || reason.EndsWith("！") || reason.EndsWith("？") ? reason : reason + "。";
+            return $"{recipeName}未完成：{why}材料已退回{ZoneName(s, s.Ground)}地面。{restore}无经验。";
+        }
+
         /// <summary>Q723 分组：同返还目的地／物主／卡侧内同原料名＋同一精确截止合计份数，组间沿清单首次出现次序。</summary>
         private List<(string owner, string? side, string name, int at, int n)> RestoreGroups(IEnumerable<ShelfRestore> list)
         {

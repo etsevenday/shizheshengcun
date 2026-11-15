@@ -355,9 +355,13 @@ namespace Survival.Core.Engine
                 var ok = inputs.All(i => i.Owner == place) && rc.AllInputs.All(kv => inputs.Where(i => i.ItemId == kv.Key).Sum(i => i.Count) >= kv.Value);
                 if (!ok)
                 {
-                    ReleaseStationBatch(s, b);
+                    // B54（S08 Q791）：原失败句后只对本次实际释放、有可信 R 的原料接「{原料名}×{数量}保质至{日期时刻}。」（C＋R；同目的地／物主／卡侧同物同截止合计）
+                    var outer = _restoreSink;
+                    var restored = _restoreSink = new List<ShelfRestore>();
+                    try { ReleaseStationBatch(s, b); }
+                    finally { _restoreSink = outer; }
                     Normalize(s, place);
-                    Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}{StationName(b.StationId)}：原料不全，这一批没有产物，剩下的原料已解锁。");
+                    Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}{StationName(b.StationId)}：原料不全，这一批没有产物，剩下的原料已解锁。" + FailureRestoreClauses(restored));
                     continue;
                 }
                 foreach (var it in inputs) s.Items.Remove(it);   // 受保护原料直接核销，不返 R
