@@ -298,5 +298,188 @@
       "Q762-A01",
       "Q762-A02"
     ]
+  },
+  "q763ToQ768": {
+    "date": "2026-11-15",
+    "decisions": {
+      "Q763": "A",
+      "Q764": "A",
+      "Q765": "user_new_rule_normal_drying_no_missing_spoil_failure",
+      "Q766": "user_new_rule_ordinary_item_card_and_rotten_icon_no_identity_danger_overlay",
+      "Q767": "A_and_no_feeding",
+      "Q768": "A",
+      "permanentDiscard": "user_requested",
+      "containerContents": "A_delete_with_container_list_before_confirmation"
+    },
+    "status": "planning_only_pending_implementation",
+    "oldSaveStage": "only_explicitly_answered_Q763_Q764_cases_not_global_resumption",
+    "Q763": {
+      "oldOriginsMigration": "none_including_single_stack_or_single_slot",
+      "oldBusinessFieldRetained": true
+    },
+    "Q764": {
+      "onlyLegacyStoppedWithoutReliableReason": true,
+      "missingInputsAndNoRot": "missing",
+      "wholeInputsAndRot": "spoiled",
+      "other": "unknown",
+      "preserveKnownHistoricalCause": true,
+      "newFailureMechanic": false
+    },
+    "Q765": {
+      "normalFullyFedInputsProtected": true,
+      "partialFeedAllowed": false,
+      "removeIndividualActiveInputAllowed": false,
+      "feedOrUseOrDiscardActiveInputAllowed": false,
+      "newRandomFailure": false,
+      "abnormalGuardUnchanged": true,
+      "normalReproRequiresConcreteSteps": true,
+      "stoppedFallbackShortText": "待清理"
+    },
+    "Q766": {
+      "icon": "永久丢弃与腐败物/腐败物图标.svg",
+      "ordinaryItemLayout": true,
+      "extraDangerOverlayOnlyBecauseSpoiledMatter": false,
+      "line2": "{重量}公斤",
+      "weightScope": "actual_current_card_or_row_represented_set_including_contents_once",
+      "repeatSpoiledText": false,
+      "preserveOtherActualLocksAndSelection": true
+    },
+    "Q767": {
+      "companionRepeatedSuffix": false,
+      "edible": false,
+      "feedCandidate": false,
+      "realRequestMustRevalidate": true,
+      "refusal": "腐败物不可食用。",
+      "refusalChangesItemsBodyTimeXp": false
+    },
+    "Q768": {
+      "places": [
+        "drying_panel_info_tooltip",
+        "system_help_shelf_and_spoilage"
+      ],
+      "shelfText": "晾制时原料暂停保质，退料恢复剩余时长；成品从完成起计时，留在架上也会到期。",
+      "passiveText": "按世界时间推进，不占行动；离开继续，暂停不推进。"
+    },
+    "copy": {
+      "rotName": "腐败物",
+      "rotWeight": "{重量}公斤",
+      "rotNotEdible": "腐败物不可食用。",
+      "dryStopped": "待清理",
+      "dryShelf": "晾制时原料暂停保质，退料恢复剩余时长；成品从完成起计时，留在架上也会到期。",
+      "dryPassive": "按世界时间推进，不占行动；离开继续，暂停不推进。",
+      "discard": "丢弃",
+      "chooseQuantity": "选择数量",
+      "discardAll": "全部丢弃",
+      "available": "可丢弃：{可丢弃数量}",
+      "totalAvailable": "总数{总数}，可丢弃{可丢弃数}",
+      "quantity": "数量",
+      "next": "下一步",
+      "cancel": "取消",
+      "back": "返回",
+      "confirmTitle": "确认丢弃",
+      "confirm": "确认丢弃",
+      "confirmItems": "永久丢弃：{物品清单}。",
+      "contents": "包含：{内容清单}。",
+      "irreversible": "丢弃后无法找回。",
+      "busy": "物品被占用，不能丢弃。",
+      "processing": "加工中：先停止加工。",
+      "worn": "先卸下再丢弃。",
+      "deployed": "先收起再丢弃。",
+      "changed": "物品已变，请重选。",
+      "invalidQuantity": "请输入1至{可丢弃数}的整数。",
+      "noPermission": "当前无法丢弃该物品。",
+      "result": "已永久丢弃：{物品清单}。",
+      "resultContents": "同时丢弃：{内容清单}。"
+    },
+    "acceptance": [
+      "Q763-A01",
+      "Q764-A01",
+      "Q765-A01",
+      "Q765-A02",
+      "Q765-A03",
+      "Q766-A01",
+      "Q767-A01",
+      "Q768-A01"
+    ],
+    "permanentDiscard": {
+      "date": "2026-11-15",
+      "source": "user_explicit_permanent_item_discard_and_container_followup_A",
+      "status": "planning_only_pending_implementation",
+      "entry": "clicked_item_right_info_panel_discard",
+      "submenu": [
+        "选择数量",
+        "全部丢弃"
+      ],
+      "flow": [
+        "open_read_only_submenu",
+        "integer_quantity_or_all_eligible_selected_group",
+        "review_exact_items_and_container_contents",
+        "explicit_confirm_then_atomic_delete"
+      ],
+      "globalUnfocusedSpaceOrEnterDeletes": false,
+      "scope": "original_accessible_authorized_real_item_card_current_owner_and_side_only",
+      "allMeans": "all_eligible_units_in_selected_card_group_not_other_owners_places_or_sides",
+      "protected": [
+        "action_reserved",
+        "action_locked",
+        "active_processing_input_even_without_ReservedBy",
+        "worn_until_unequipped",
+        "deployed_until_stowed",
+        "original_loan_or_custody_disposal_restrictions"
+      ],
+      "activeDryingInputDeletion": false,
+      "containerPolicy": "delete_parent_and_all_confirmed_contents_together_after_listing",
+      "anyProtectedChildBlocksWholeContainer": true,
+      "quantityUnit": "original_physical_portion_or_independent_piece_not_deck_card_count_or_liquid_ml",
+      "selection": "original_deterministic_batch_or_expiry_quality_order_exact_piece_when_expanded",
+      "confirmationBinds": "instance_batch_owner_side_quantity_and_container_contents_snapshot",
+      "stateChanged": "reject_whole_request_no_replacement_no_partial_delete",
+      "worldMinutes": 0,
+      "grantsXpOrProductOrMoney": false,
+      "returnToGroundOrRecoveryBox": false,
+      "splitUsesOriginalOriginLedgerAllocation": true,
+      "preserveRemainingStateAndHistoricalRewardClaims": true,
+      "idempotent": true,
+      "copy": {
+        "rotName": "腐败物",
+        "rotWeight": "{重量}公斤",
+        "rotNotEdible": "腐败物不可食用。",
+        "dryStopped": "待清理",
+        "dryShelf": "晾制时原料暂停保质，退料恢复剩余时长；成品从完成起计时，留在架上也会到期。",
+        "dryPassive": "按世界时间推进，不占行动；离开继续，暂停不推进。",
+        "discard": "丢弃",
+        "chooseQuantity": "选择数量",
+        "discardAll": "全部丢弃",
+        "available": "可丢弃：{可丢弃数量}",
+        "totalAvailable": "总数{总数}，可丢弃{可丢弃数}",
+        "quantity": "数量",
+        "next": "下一步",
+        "cancel": "取消",
+        "back": "返回",
+        "confirmTitle": "确认丢弃",
+        "confirm": "确认丢弃",
+        "confirmItems": "永久丢弃：{物品清单}。",
+        "contents": "包含：{内容清单}。",
+        "irreversible": "丢弃后无法找回。",
+        "busy": "物品被占用，不能丢弃。",
+        "processing": "加工中：先停止加工。",
+        "worn": "先卸下再丢弃。",
+        "deployed": "先收起再丢弃。",
+        "changed": "物品已变，请重选。",
+        "invalidQuantity": "请输入1至{可丢弃数}的整数。",
+        "noPermission": "当前无法丢弃该物品。",
+        "result": "已永久丢弃：{物品清单}。",
+        "resultContents": "同时丢弃：{内容清单}。"
+      },
+      "acceptance": [
+        "PD-A01",
+        "PD-A02",
+        "PD-A03",
+        "PD-A04",
+        "PD-A05",
+        "PD-A06",
+        "PD-A07"
+      ]
+    }
   }
 }

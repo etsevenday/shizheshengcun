@@ -1,5 +1,5 @@
 {
-  "version": "q214_q215_q666_q711_q719_20261115",
+  "version": "q214_q215_q666_q711_q719_q763_q768_20261115",
   "date": "2026-11-15",
   "rules": {
     "Q214": "选A。系统从主角随身与当前区地面自动配料，同种优先原截止可撑到完成的批，预览逐条明示来源/实例/保质，确认0分钟投料；不取队友包/屋柜/异地。快到期果干原料仅警告不拒绝；肉干因Q215已受保护，展示暂停计时说明，不再虚报制作中腐败。",
@@ -115,5 +115,36 @@
       "Q713-A01",
       "Q714-A01"
     ]
+  },
+  "q763ToQ768CurrentPriority": {
+    "source": "../20261115/inventory-provenance-and-decks-q711-q719.json",
+    "Q764": {
+      "onlyLegacyStoppedWithoutReliableReason": true,
+      "missingInputsAndNoRot": "missing",
+      "wholeInputsAndRot": "spoiled",
+      "other": "unknown",
+      "preserveKnownHistoricalCause": true,
+      "newFailureMechanic": false
+    },
+    "Q765": {
+      "normalFullyFedInputsProtected": true,
+      "partialFeedAllowed": false,
+      "removeIndividualActiveInputAllowed": false,
+      "feedOrUseOrDiscardActiveInputAllowed": false,
+      "newRandomFailure": false,
+      "abnormalGuardUnchanged": true,
+      "normalReproRequiresConcreteSteps": true,
+      "stoppedFallbackShortText": "待清理"
+    },
+    "Q768": {
+      "places": [
+        "drying_panel_info_tooltip",
+        "system_help_shelf_and_spoilage"
+      ],
+      "shelfText": "晾制时原料暂停保质，退料恢复剩余时长；成品从完成起计时，留在架上也会到期。",
+      "passiveText": "按世界时间推进，不占行动；离开继续，暂停不推进。"
+    },
+    "normalDryingInputsCannotBePermanentlyDiscarded": true,
+    "oldOtherFieldsRetained": true
   }
 }
