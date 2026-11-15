@@ -37,6 +37,32 @@ namespace Survival.Core.Engine
         /// <summary>有没有足够耐久支付一次磨损（无耐久物品恒为真）。比较容差 1e-8。</summary>
         public static bool HasWear(ItemInstance i, double wear) => i.Durability == null || i.Durability.Value >= wear - 1e-8;
 
+        /// <summary>B51a（Q701.3）生产工具开工资格：无耐久恒真，有耐久者真实内部 D&gt;0（不以显示取整判断）。</summary>
+        public static bool ProductionToolUsable(ItemInstance i) => i.Durability is not double d || d > 0;
+
+        /// <summary>Q726-A02 零耐久拒绝句（逐字稿 B51 表）。</summary>
+        public const string ToolBrokenText = "这件工具已损坏，请更换或维修。";
+
+        /// <summary>开工记下本单工具保障（Q701.3：工具实例＋本单 ActionState，仅本单有效）。</summary>
+        private static void GuardProductionTool(ActionState a, ItemInstance tool)
+        {
+            a.ToolGuardId = tool.InstanceId;
+            a.ToolGuardSpent = false;
+        }
+
+        /// <summary>本单自己的正常生产磨损把工具减到 0：记“本次生产结束后损坏”（ToolGuardSpent），只认本单保障登记过的那件。</summary>
+        private static void MarkToolGuardSpent(ActionState a, ItemInstance tool)
+        {
+            if (a.ToolGuardId == tool.InstanceId && tool.Durability is double d && d <= 0) a.ToolGuardSpent = true;
+        }
+
+        /// <summary>
+        /// 续做／锁定复核的工具耐久门槛（Q701.3）：真实 D&gt;0，或本单保障登记的这件因本单自磨归 0（ToolGuardSpent）；外部损毁不能借保障。
+        /// 位置、所有权等其他条件由调用方照原规则判断。
+        /// </summary>
+        private static bool ProductionToolStillOk(ActionState a, ItemInstance tool) =>
+            ProductionToolUsable(tool) || (a.ToolGuardId == tool.InstanceId && a.ToolGuardSpent);
+
         /// <summary>成色比例 当前/最大；无耐久为 1。</summary>
         public static double Condition(ItemInstance i) =>
             i.Durability.HasValue && i.MaxDurability is double m && m > 0 ? Math.Max(0, i.Durability.Value / m) : 1;

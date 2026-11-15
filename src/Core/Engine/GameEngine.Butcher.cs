@@ -13,11 +13,28 @@ namespace Survival.Core.Engine
     {
         public CarcassConfig? CarcassOf(string itemId) => Config.AnimalCarcasses.FirstOrDefault(c => c.CarcassItemId == itemId);
 
-        /// <summary>处理尸体用的工具：随身、配置列出的刀斧、耐久够一次磨损，成色最高者。</summary>
+        /// <summary>
+        /// 处理尸体用的工具：随身、配置列出的刀斧、成色最高者。B51a（Q701.3、Q726-A01）起资格由“够一次磨损”改为真实内部耐久 D&gt;0（不按显示取整），
+        /// D=0.01 也可开工，成功磨损照原 1 扣到 0 为止。
+        /// </summary>
         public ItemInstance? ButcherTool(GameState s, CarcassConfig c) =>
             s.Items.Where(i => OnPlayer(i) && c.RequiredCarriedTools.Contains(i.ItemId)
- && i.ReservedBy == null && !IsLocked(s, i) && HasWear(i, c.ToolWearOnSuccess))
+ && i.ReservedBy == null && !IsLocked(s, i) && ProductionToolUsable(i))
                 .OrderByDescending(Condition).ThenBy(i => i.InstanceId).FirstOrDefault();
+
+        /// <summary>
+        /// Q726-A02：缺刀斧时的拒绝句。随身合法（未预留、未锁定）的所需刀斧存在但全部真实 D=0，且没有正耐久的同类只是被占用，才用“这件工具已损坏，请更换或维修。”；
+        /// 其余（完全没有、正 D 被占用等）沿原“需要随身有效的{工具清单}”。
+        /// </summary>
+        private string ButcherToolMissingText(GameState s, CarcassConfig c)
+        {
+            var own = s.Items.Where(i => OnPlayer(i) && c.RequiredCarriedTools.Contains(i.ItemId)).ToList();
+            var legal = own.Where(i => i.ReservedBy == null && !IsLocked(s, i)).ToList();
+            var occupiedPositive = own.Any(i => (i.ReservedBy != null || IsLocked(s, i)) && ProductionToolUsable(i));
+            return legal.Count > 0 && legal.All(i => !ProductionToolUsable(i)) && !occupiedPositive
+                ? ToolBrokenText
+                : $"需要随身有效的{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}";
+        }
 
         private string? ValidateButcher(GameState s, ActionRequest r, Plan plan)
         {
@@ -31,7 +48,7 @@ namespace Survival.Core.Engine
             if (inst.ReservedBy != null) return "该尸体已被预留";
             if (IsSpoiled(s, inst)) return "尸体已腐败，不能处理";
             var tool = ButcherTool(s, c);
-            if (tool == null) return $"需要随身有效的{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}";
+            if (tool == null) return ButcherToolMissingText(s, c);
             plan.UseItem = inst;
             plan.Tool = tool;
             plan.BaseWork = c.ButcherBaseMinutes;   // 制造熟练度不作用于处理尸体
@@ -49,6 +66,7 @@ namespace Survival.Core.Engine
             a.ReservedItemIds.Add(inst.InstanceId);
             a.ToolInstanceId = p.Tool!.InstanceId;
             a.LockedItemIds.Add(p.Tool.InstanceId);
+            GuardProductionTool(a, p.Tool);   // B51a Q701.3：开工 D>0 的本单保障
         }
 
         private bool CompleteButcher(GameState s, ActionState a)
@@ -71,7 +89,7 @@ namespace Survival.Core.Engine
                     made.Add($"{ItemName(kv.Key)}+{kv.Value}");
                 }
             var tool = a.ToolInstanceId.HasValue ? FindItem(s, a.ToolInstanceId.Value) : null;
-            if (tool != null && c != null) made.Add(Wear(tool, c.ToolWearOnSuccess));
+            if (tool != null && c != null) { made.Add(Wear(tool, c.ToolWearOnSuccess)); MarkToolGuardSpent(a, tool); }
             ClearAction(s, a);
             Emit(s, GameEventKind.ActionCompleted, $"{a.Label}完成：{string.Join("，", made)}；产物已放在{ZoneName(s, here)}地面。", null, c?.Outputs.Keys);
             return true;

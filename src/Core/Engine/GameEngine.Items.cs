@@ -420,6 +420,17 @@ namespace Survival.Core.Engine
                 .ThenBy(i => i.InstanceId)
                 .ToList();
 
+        /// <summary>
+        /// B51a（Q701.3）生产催化工具：同 AccessibleTool 的来源与排序，但耐久资格为真实 D&gt;0（不要求够一次磨损）；点火等非生产用途仍用 AccessibleTool。
+        /// </summary>
+        public ItemInstance? AccessibleProductionTool(GameState s, string toolTag) =>
+            s.Items.Where(i => (OnPlayer(i) || i.Owner == s.Ground) && i.ReservedBy == null && !IsLocked(s, i)
+                               && _items[i.ItemId].ToolTag == toolTag && ProductionToolUsable(i))
+                .OrderBy(i => OnPlayer(i) ? 0 : 1)
+                .ThenByDescending(Condition)
+                .ThenBy(i => i.InstanceId)
+                .FirstOrDefault();
+
         /// <summary>同地可用的催化工具：随身优先，其次当前地面（锅位视为地面）；未预留、未被锁定、耐久足够。</summary>
         public ItemInstance? AccessibleTool(GameState s, string toolTag) =>
             s.Items.Where(i => (OnPlayer(i) || i.Owner == s.Ground) && i.ReservedBy == null && !IsLocked(s, i)

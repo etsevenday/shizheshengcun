@@ -509,7 +509,7 @@ namespace Survival.Core.Engine
                     // 催化工具可以在随身或当前地面（拖拽与容器案 5）；烧水、烤制、水煮已改为设施自动加工，不再是配方
                     foreach (var tag in rc.Catalysts)
                     {
-                        var cat = AccessibleTool(s, tag);
+                        var cat = AccessibleProductionTool(s, tag);   // B51a Q701.3：生产催化工具按 D>0（点火打火器仍原 AccessibleTool）
                         if (cat == null)
                         {
                             var name = Config.Items.First(i => i.ToolTag == tag).Name;

@@ -335,7 +335,7 @@
                         @foreach (var tag in rc.Catalysts)
                         {
                             var cfg = e.Config.Items.First(i => i.ToolTag == tag);
-                            var tool = e.AccessibleTool(s, tag);
+                            var tool = e.AccessibleProductionTool(s, tag);
                             <ItemRow Icon="@cfg.Id" Name="@(tool == null ? cfg.Name : $"{cfg.Name}")" Qty="催化工具" Missing="@(tool == null)"
                                      Status="@(tool == null ? "缺少：需随身或在当前地面" : $"{(tool.IsCarried ? "随身" : "地面")} · 不消耗")" />
                         }

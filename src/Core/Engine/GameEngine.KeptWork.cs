@@ -115,7 +115,7 @@ namespace Survival.Core.Engine
                     if (IsSpoiled(s, carcass)) return "尸体已腐败，不能处理";
                     var tool = a.ToolInstanceId is int tid ? FindItem(s, tid) : null;
                     if (tool == null) return ResumeToolGone;
-                    if (!OnPlayer(tool) || !HasWear(tool, c.ToolWearOnSuccess)) return $"需要随身有效的{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}";
+                    if (!OnPlayer(tool) || !ProductionToolStillOk(a, tool)) return $"需要随身有效的{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}";
                     return null;
                 }
                 case ActionType.WaitCook:

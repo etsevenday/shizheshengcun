@@ -195,7 +195,7 @@ namespace Survival.Core.Engine
                     if (IsSpoiled(s, carcass)) return LockedResumeVerdict.Perm("尸体已腐败，不能处理");
                     var missing = $"缺少本次处理所需的有效{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}，无法继续。";
                     var tool = a.ToolInstanceId is int tid ? FindItem(s, tid) : null;
-                    if (tool == null || !HasWear(tool, c.ToolWearOnSuccess) || (!OnPlayer(tool) && !OwnGroundTool(s, a, tool))) return LockedResumeVerdict.Perm(missing);
+                    if (tool == null || !ProductionToolStillOk(a, tool) || (!OnPlayer(tool) && !OwnGroundTool(s, a, tool))) return LockedResumeVerdict.Perm(missing);
                     if (!OnPlayer(tool)) return ToolPickupVerdict(s, tool, LockedPickupOwnTool(tool));
                     return LockedResumeVerdict.Ok();
                 }

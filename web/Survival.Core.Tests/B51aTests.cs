@@ -279,6 +279,67 @@ public class B51aTests : TestBase
         var q = E.Preview(s, ActionRequest.Butcher(carcass.InstanceId));
         Assert.That(q.Notes, Does.Contain($"保质暂停，剩余{Clock.Duration(left)}"));
     }
+    // ───────────── M960 工具本单保障（Q701.3、Q726） ─────────────
+
+    /// <summary>Q726-A01：尸体刀 D=0.01 可开工；本单保障登记；成功扣 1 后归 0 且产物一次；完成后 0 刀不能开下一单；取消不扣成功磨损。</summary>
+    [Test]
+    public void Q726_A01_ButcherKnifeTinyPositive_CompletesOnce_ThenBroken()
+    {
+        var s = New();
+        var c1 = E.CreateItems(s, "carcass_feral_dog", 1, s.Ground).Single();
+        var knife = E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried).Single();
+        knife.Durability = 0.01;
+        Assert.That(E.CanStart(s, ActionRequest.Butcher(c1.InstanceId)), Is.Null, "D>0 即可开工（显示取整 0 不代替真值）");
+        Start(s, ActionRequest.Butcher(c1.InstanceId));
+        Assert.That((s.Main!.ToolGuardId, s.Main.ToolGuardSpent), Is.EqualTo(((int?)knife.InstanceId, false)));
+        Steps(s, 2);
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        Assert.That(knife.Durability, Is.EqualTo(0.01).Within(1e-12), "取消不扣成功磨损");
+        Start(s, ActionRequest.Butcher(c1.InstanceId));
+        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
+        Assert.That(knife.Durability, Is.EqualTo(0), "成功磨损归 0、不负");
+        Assert.That(s.Items.Where(i => i.ItemId == "raw_meat").Sum(i => i.Count), Is.EqualTo(2), "成果一次");
+        var c2 = E.CreateItems(s, "carcass_feral_dog", 1, s.Ground).Single();
+        Assert.That(E.CanStart(s, ActionRequest.Butcher(c2.InstanceId)), Is.EqualTo("这件工具已损坏，请更换或维修。"), "保障随单结束");
+    }
+
+    /// <summary>Q726-A02：全 0 刀斧与完全无刀斧分句；正 D 被占用不误判全坏（沿原句）。</summary>
+    [Test]
+    public void Q726_A02_AllZeroVsNone_OccupiedPositiveNotBroken()
+    {
+        var s = New();
+        var carcass = E.CreateItems(s, "carcass_feral_dog", 1, s.Ground).Single();
+        Assert.That(E.CanStart(s, ActionRequest.Butcher(carcass.InstanceId)), Does.StartWith("需要随身有效的"), "完全没有");
+        var k0 = E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried).Single();
+        k0.Durability = 0;
+        Assert.That(E.CanStart(s, ActionRequest.Butcher(carcass.InstanceId)), Is.EqualTo("这件工具已损坏，请更换或维修。"));
+        var k1 = E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried).Single();
+        k1.Durability = 5;
+        k1.ReservedBy = 999;
+        Assert.That(E.CanStart(s, ActionRequest.Butcher(carcass.InstanceId)), Does.StartWith("需要随身有效的"), "正 D 被占用不是全坏");
+        k1.ReservedBy = null;
+        Assert.That(E.CanStart(s, ActionRequest.Butcher(carcass.InstanceId)), Is.Null);
+    }
+
+    /// <summary>Q701.3：续做复核认本单保障（自磨归 0 且已登记），外部归 0 不借保障。</summary>
+    [Test]
+    public void Q701_3_ResumeAcceptsGuardOnlyForOwnWear()
+    {
+        var s = New();
+        var carcass = E.CreateItems(s, "carcass_feral_dog", 1, s.Ground).Single();
+        var knife = E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried).Single();
+        Start(s, ActionRequest.Butcher(carcass.InstanceId));
+        var a = s.Main!;
+        Steps(s, 1);
+        a.Status = ActionStatus.Paused;
+        knife.Durability = 0.01;
+        Assert.That(E.ResumeBlockReason(s), Is.Null, "D>0 不足一次磨损也能续做（原 HasWear 门槛撤去）");
+        knife.Durability = 0;   // 外部归 0
+        Assert.That(E.ResumeBlockReason(s), Does.StartWith("需要随身有效的"), "外部损毁不借保障");
+        a.ToolGuardSpent = true;   // 本单自磨归 0 的记录
+        Assert.That(E.ResumeBlockReason(s), Is.Null, "本单保障登记的这件自磨归 0 仍可走完本单");
+        Assert.That(GameEngine.ProductionToolUsable(new ItemInstance { ItemId = "x", Durability = null }), Is.True, "无耐久工具沿原许可");
+    }
 }
 
 /// <summary>B51a 中撤退离地保留（Q471）的恢复句分组（Q723-A01）：同目的地／物主／卡侧内同名同精确截止合计，不同截止或不同目的地分句。</summary>

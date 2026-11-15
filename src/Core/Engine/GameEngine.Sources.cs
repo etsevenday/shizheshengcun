@@ -195,7 +195,7 @@ namespace Survival.Core.Engine
             }
             if (StationBlocked(s, rc) is string st) list.Add(("设施未到", st, null));
             foreach (var tag in rc.Catalysts)
-                if (AccessibleTool(s, tag) == null) list.Add(("工具/燃料不足", $"缺少{Config.Items.FirstOrDefault(i => i.ToolTag == tag)?.Name ?? tag}（随身或当前地面，不消耗）", null));
+                if (AccessibleProductionTool(s, tag) == null) list.Add(("工具/燃料不足", $"缺少{Config.Items.FirstOrDefault(i => i.ToolTag == tag)?.Name ?? tag}（随身或当前地面，不消耗）", null));
             foreach (var kv in rc.AllInputs)
             {
                 var need = kv.Value * Math.Max(1, batch);
