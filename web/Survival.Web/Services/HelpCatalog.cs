@@ -28,6 +28,8 @@ public sealed class HelpEntry
     public Func<GameEngine, GameState, IEnumerable<string>> Paragraphs { get; init; } = (_, _) => Array.Empty<string>();
     /// <summary>插图/图例（例如方位箭头、状态图标、指令图），为空不显示。</summary>
     public Func<GameEngine, GameState, IEnumerable<HelpFigure>>? Figures { get; init; }
+    /// <summary>B47b（R09 Q697）：段落后附的本人一行（参数为成长页当前所选人物的稳定 ID），为空不显示。</summary>
+    public Func<GameEngine, GameState, string, string?>? PersonLine { get; init; }
     /// <summary>BM2（Q495）：分区键表（「键盘快捷键」条目），为空不显示；排在段落之后。</summary>
     public Func<IReadOnlyList<KeyHelpGroup>>? KeyGroups { get; init; }
     /// <summary>键表之后的补充句（表旁逐字补充），为空不显示。</summary>
@@ -89,6 +91,9 @@ public static class HelpCatalog
     /// 「成组时按当时容量锁定参战名单，超容量者保留独立单卡」，动物按 Q436 不编组。
     /// </summary>
     public const string CapacityCardsV2 = "随机组卡成组时按当时容量锁定参战名单，超容量者保留独立单卡，动物不编入组卡；";
+
+    /// <summary>B47b：系统说明主题「濒死与意志」及其条目的 ID。</summary>
+    public const string DyingTopic = "dying", DyingEntry = "dying-will";
 
     public static readonly IReadOnlyList<HelpTopic> Topics = new List<HelpTopic>
     {
@@ -173,7 +178,7 @@ public static class HelpCatalog
                     {
                         $"新的一局从第1日{HHmm(e.Config.Time.StartAbsoluteMinute % e.Config.Time.MinutesPerDay)}在临时营地开始。营地有一个未点燃的火堆，随身和营地地面有少量起步物资。",
                         "顶栏“生存目标”列出本局的阶段目标和完成情况（实际做到才记录，之后消耗也不回退）；“生存提示”给当前处境的求生建议。它们只是建议，不按日期判失败。",
-                        "健康归0会死亡，病毒达到上限会尸变，两者都会结束本局。七日检查已退役：没有通关倒计时，顶栏“生存目标”是序章任务册（1个主目标、最多2条建议、完整18项）；打开制作、恢复、整备等相关界面或选中相关物资时，右栏任务框先给一条操作提示（可关闭或暂停，不耗时），做完后只短暂显示结果。",
+                        GameEngine.HelpEndings + "七日检查已退役：没有通关倒计时，顶栏“生存目标”是序章任务册（1个主目标、最多2条建议、完整18项）；打开制作、恢复、整备等相关界面或选中相关物资时，右栏任务框先给一条操作提示（可关闭或暂停，不耗时），做完后只短暂显示结果。",
                     },
                 },
             },
@@ -394,6 +399,24 @@ public static class HelpCatalog
                         "防具、战斗饰品、上衣、下衣、求生饰品各有一个穿戴槽。求生类效果（工作量、体力消耗、恢复、划伤、维护比例等）穿上就生效；速度、护甲、命中、暴击、忽略护甲、伤害乘数、招式体力、噪声等战斗类效果在战斗中生效（正速度合计最多+3，护甲最多0.9）；位移抵抗在我方多人时才有用（只剩你一人时被拉扯、击退也没有位置可移动）。耐久为0的装备效果暂停。",
                         "不需要的装备可以在卡下“拆解”：15分钟，按装备的拆解表回收材料（木石装备返木材/石块，金属件返废金属，衣物返布料或皮革，饰品与器具各有对应材料；对象信息栏“拆解”一行写明），产物放在当前地面；能自己做的装备回收价值不超过标准配方材料价值的80%，品质高不一定多给。拆解看制造熟练度：制造1级可拆0阶、3级1阶、7级2阶、10级3阶装备，每件完成制造经验+2。穿戴中的先卸下，弹仓里有弹药的先打空，耐久为0也能拆。",
                     },
+                },
+            },
+        },
+
+        // ───────────── B47b（S14 B34 节「成长、状态详情与帮助逐字」、R09 §8、Q697）：濒死与意志 ─────────────
+        new()
+        {
+            Id = DyingTopic, Title = "濒死与意志", Icon = "bandage", Summary = "",
+            Entries =
+            {
+                new HelpEntry
+                {
+                    Id = DyingEntry, Title = "濒死与意志", Icon = "bandage",
+                    Paragraphs = (e, s) => new[] { GameEngine.HelpThreeStates, GameEngine.HelpEnemies, GameEngine.HelpWillXp },
+                    // 等级／抵抗取成长页当前所选人物本人真实记录；历史死者缺记录写“意志：未记录”，不伪填
+                    PersonLine = (e, s, id) => s.Actors.TryGetValue(id, out var a)
+                        ? (e.IsDead(s, a) && !a.Skills.ContainsKey(GameEngine.Willpower) ? GameEngine.WillUnrecorded : e.WillpowerPersonText(s, a))
+                        : null,
                 },
             },
         },

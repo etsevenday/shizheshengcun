@@ -63,6 +63,45 @@ namespace Survival.Core.Engine
         /// <summary>Q696：仍活着的濒死者常驻健康“0/{上限} · 濒死”（上限按原整数显示）。</summary>
         public static string DyingHealthText(double max) => $"0/{Fmt.T(max)} · {DyingWord}";
 
+        // ───────────── B47b（R09 Q690、A06 文首）：成长页「意志」的日额与五个被动参考格 ─────────────
+
+        /// <summary>Q690：五个固定参考等级（被动成长轨的说明格，不是技能节点）。</summary>
+        public static readonly int[] WillpowerRefLevels = { 1, 3, 5, 7, 10 };
+
+        /// <summary>Q690：参考格正式文字“{L}级 · 致死抵抗{P}%”。</summary>
+        public string WillpowerRefText(int level) => $"{level}级 · 致死抵抗{ResistancePercent(level)}%";
+
+        /// <summary>R09／S14：意志当前主效果“致死抵抗{抵抗率}；濒死后每次受到正伤害时判定。”（本人实际等级派生）。</summary>
+        public string WillpowerEffectText(ActorState actor) => $"{ResistanceShort(actor)}；濒死后每次受到正伤害时判定。";
+
+        /// <summary>
+        /// Q690：本人本世界日还可获得的意志经验 n=clamp(日上限−当日实际已得,0,日上限)；跨世界日按原日账（记账日不是今天即为 0 已得）。
+        /// 满级或已确死返回 null（不显示余额句）。只读，不写日账。
+        /// </summary>
+        public int? WillpowerDayLeft(GameState s, ActorState actor)
+        {
+            if (IsDead(s, actor) || SkillLevel(actor, Willpower) >= SkillCap(Willpower)) return null;
+            var cap = DyingCfg.WillpowerMaxXpPerActorPerDay;
+            var today = actor.WillpowerXpDay == Clock.Day(s.GameMinute) ? actor.WillpowerXpToday : 0;
+            return Math.Max(0, Math.Min(cap, cap - today));
+        }
+
+        // ── R09 §8 系统说明「濒死与意志」（S14 B34 节、R09 Q697） ──
+        public const string HelpThreeStates = "健康归零时先进入濒死，不会立即死亡。濒死后再次受到正伤害，才按意志进行致死判定。濒死不额外降低属性，也不限制原本合法的行动；必须用药或医疗实际回血才能脱离。";
+        public const string HelpEnemies = "敌人没有濒死状态，健康归零即死亡，不留下阻挡攻击的战场残骸。";
+        public const string HelpWillXp = "承受敌人的正直接伤害且在该次出手结束后仍存活，可获得意志经验；同一敌人最多3次，每天最多60点。";
+        /// <summary>Q697：帮助原位置整句（取代旧“健康归0会死亡……两者都会结束本局。”）。</summary>
+        public const string HelpEndings = "健康归0先进入濒死（见“濒死与意志”），濒死后再受伤可能死亡；病毒达到上限会尸变。主角死亡或尸变结束本局。";
+        /// <summary>Q697：历史死者缺意志记录。</summary>
+        public const string WillUnrecorded = "意志：未记录";
+
+        /// <summary>Q697：说明里附的本人一行“{角色名}：意志{等级}级，致死抵抗{抵抗率}”（{角色名}主角为“你”）。</summary>
+        public string WillpowerPersonText(GameState s, ActorState actor) =>
+            $"{(actor.IsPlayer ? "你" : ActorDisplayName(s, actor.Id))}：意志{SkillLevel(actor, Willpower)}级，{ResistanceShort(actor)}";
+
+        /// <summary>Q690：日额余额句“今日还可获得{n}点（每天最多60点）”。</summary>
+        public string WillpowerDayLeftText(int n) => $"今日还可获得{n}点（每天最多{DyingCfg.WillpowerMaxXpPerActorPerDay}点）";
+
         /// <summary>
         /// 一次致死判定（R09 §4）：均匀 u∈[0,1)，u &lt; P/100 抵抗成功，相等判失败。纯函数（不抽随机），真实判定由 DamageActor 抽 u 后调用。
         /// </summary>

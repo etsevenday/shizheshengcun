@@ -76,6 +76,7 @@
                 {
                     <p>@para</p>
                 }
+                @if (entry.PersonLine?.Invoke(e, s, G.GearActorId) is string person) { <p class="help-person"><b>@person</b></p> }
                 @if (entry.Figures != null)
                 {
                     <div class="help-figs" role="list">

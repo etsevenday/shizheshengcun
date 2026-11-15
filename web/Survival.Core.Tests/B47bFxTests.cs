@@ -348,4 +348,31 @@ public class B47bFxTests : BattleTestBase
         Assert.That(GameEngine.DyingHealthText(100), Is.EqualTo("0/100 · 濒死"));
         Assert.That(GameEngine.DyingIconText, Is.EqualTo("濒死时无法自然恢复健康；需要用药或医疗实际回血。"));
     }
+
+    // ───────────── M940：成长页意志与帮助（Q690、Q697） ─────────────
+
+    /// <summary>Q690-A01／A02：日额余额 60／43／0，跨世界日按原日账；10级隐藏；五格 65／69／73／77／83%，2级当前效果 67%。</summary>
+    [Test]
+    public void Q690_A01_DayLeft_AndReferenceCells()
+    {
+        var s = New(4815);
+        var me = s.Actor(GameState.PlayerId);
+        Assert.That(E.WillpowerDayLeft(s, me), Is.EqualTo(60));
+        me.WillpowerXpDay = Clock.Day(s.GameMinute);
+        me.WillpowerXpToday = 17;
+        Assert.That(E.WillpowerDayLeft(s, me), Is.EqualTo(43));
+        Assert.That(E.WillpowerDayLeftText(43), Is.EqualTo("今日还可获得43点（每天最多60点）"));
+        me.WillpowerXpToday = 60;
+        Assert.That(E.WillpowerDayLeft(s, me), Is.EqualTo(0), "余额0也显示0");
+        me.WillpowerXpDay = Clock.Day(s.GameMinute) - 1;
+        Assert.That(E.WillpowerDayLeft(s, me), Is.EqualTo(60), "跨世界日沿原日账");
+        Assert.That(GameEngine.WillpowerRefLevels.Select(E.WillpowerRefText),
+            Is.EqualTo(new[] { "1级 · 致死抵抗65%", "3级 · 致死抵抗69%", "5级 · 致死抵抗73%", "7级 · 致死抵抗77%", "10级 · 致死抵抗83%" }));
+        E.DebugSetSkillLevel(s, GameEngine.Willpower, 2);
+        Assert.That(E.WillpowerEffectText(me), Is.EqualTo("致死抵抗67%；濒死后每次受到正伤害时判定。"));
+        Assert.That(E.WillpowerPersonText(s, me), Is.EqualTo("你：意志2级，致死抵抗67%"));
+        E.DebugSetSkillLevel(s, GameEngine.Willpower, 10);
+        Assert.That(E.WillpowerDayLeft(s, me), Is.Null, "10级隐藏余额句");
+        Assert.That(me.WillpowerXpToday, Is.EqualTo(60), "查看不改日账");
+    }
 }

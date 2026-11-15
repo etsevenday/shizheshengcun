@@ -113,4 +113,22 @@ public class B47bWebTests
         Assert.That(own.IndexOf("EscOwner.SwapDraft"), Is.LessThan(own.IndexOf("return EscOwner.BattleInfo")));
         Assert.That(Web("Components", "BattleScreen.razor"), Does.Contain("G.BattleLockNoteCloser = CloseLockNote;"));
     }
+
+    /// <summary>Q690-A02（Q736 待答复：沿节点卡样式、底部原句不换）、Q697-A01：意志页三处与帮助整句替换、「濒死与意志」主题附成长所选人物一行。</summary>
+    [Test]
+    public void Q690_Q697_GrowthPage_AndHelp()
+    {
+        var g = Web("Components", "GrowthOverlay.razor");
+        Assert.That(g, Does.Contain("@if (sk.Id == GameEngine.Willpower)"));
+        Assert.That(g, Does.Contain("e.WillpowerEffectText(actor)").And.Contain("e.WillpowerDayLeft(s, actor) is int left").And.Contain("e.WillpowerRefText(rl)"));
+        Assert.That(g, Does.Contain("经验只给实际出手/工作的本人；两件同门类武器不叠经验、不多解锁技能。命中、伤害等公式见系统说明。"), "Q736 待答复：底部原句保持");
+        var h = Web("Services", "HelpCatalog.cs");
+        Assert.That(h, Does.Not.Contain("健康归0会死亡"));
+        Assert.That(h, Does.Contain("GameEngine.HelpEndings + \"七日检查已退役"));
+        Assert.That(Survival.Core.Engine.GameEngine.HelpEndings, Is.EqualTo("健康归0先进入濒死（见“濒死与意志”），濒死后再受伤可能死亡；病毒达到上限会尸变。主角死亡或尸变结束本局。"));
+        Assert.That(h, Does.Contain("Title = \"濒死与意志\""));
+        Assert.That(h, Does.Contain("GameEngine.HelpThreeStates, GameEngine.HelpEnemies, GameEngine.HelpWillXp"));
+        Assert.That(Web("Components", "HelpOverlay.razor"), Does.Contain("entry.PersonLine?.Invoke(e, s, G.GearActorId)"), "取成长页当前所选人物");
+        Assert.That(Web("Services", "Ui.cs"), Does.Not.Contain("归0即死亡"));
+    }
 }
