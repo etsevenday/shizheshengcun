@@ -148,7 +148,7 @@ namespace Survival.Core.Engine
         /// </summary>
         public string ExposureResultText(GameState s, ExposureOutcome r)
         {
-            var who = Who(s);
+            var who = ActorDisplayName(s, s.Player.Id);   // 当前视角承伤者（战内 FocusOn，战外 FocusOutOfBattle）
             var pct = Fmt.Pct(r.Chance);
             if (!r.Success) return $"{who}本次{r.ProfileName}未增加感染（判定概率{pct}）";
             return r.WasInfected

@@ -386,7 +386,7 @@ public class B8cReserveCareTests : TestBase
         gu.Body.Infected = true; gu.Body.VirusLoad = 30; gu.Body.Immunity = 30;
         Hours(s, 1);
         Assert.That(gu.Stats.Hydration, Is.EqualTo(70 + 4 + Cfg.ItemActions.DiarrheaExtraHydrationPerHour).Within(1e-6), "腹泻额外失水照常");
-        Assert.That(gu.Body.VirusLoad, Is.GreaterThan(30), "公共照护不清病毒");
+        Assert.That(gu.Body.VirusLoad, Is.EqualTo(30), "公共照护不清病毒（B49 Q652：同伴自然正增长为 0，原 V 保持）");
         Assert.That(gu.DiarrheaUntil, Is.Not.Null, "腹泻计时照常");
         // 段首 N=39.9：本段补过 40 也不倒算本段健康恢复，下一段起才 +0.2/h
         Body(gu, 39.9, 70, 18, 95, 60, 10);

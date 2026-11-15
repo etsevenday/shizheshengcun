@@ -53,6 +53,16 @@ namespace Survival.Core.Engine
             return rate;
         }
 
+        /// <summary>
+        /// B49（R04 Q652「同伴病毒不自然增殖」）：某角色已感染时的自然病毒变化。主角沿原分档（含抗生素正增长×0.5）；
+        /// 同伴 r_companion=min(0,r)——正增长为 0，高免疫下降保留，抗生素不能把 0 变负。饱饱输入另算（只主角有）。
+        /// </summary>
+        public double ActorVirusRate(ActorState actor, double immunity, bool antibiotic)
+        {
+            var r = VirusRate(immunity, antibiotic);
+            return actor.IsPlayer ? r : Math.Min(0, r);
+        }
+
         /// <summary>饱饱持续体内输入（每小时，R04 §7.2）：baobaoPresent=false（旧档）为 0。</summary>
         public double BaobaoInput(GameState s, double immunity) => s.Story.BaobaoPresent ? Inf.BaobaoInput.Rate(immunity) : 0;
 
@@ -65,7 +75,8 @@ namespace Survival.Core.Engine
             var sheltered = a != null ? !a.ForceOutdoor && (a.Type == ActionType.Sleep ? SleepSheltered(s, s.Ground) : IsSheltered(s, s.Ground)) : IsSheltered(s, s.Ground);
             var ir = ImmunityRate(s.Stats, s.Stats.HealthMax, diarrhea, s.Body.Infected, a?.Type, sheltered, why);
             var antibiotic = s.Body.AntibioticUntil.HasValue && s.Body.AntibioticUntil.Value > s.GameMinute;
-            var vr = (s.Body.Infected ? VirusRate(s.Body.Immunity, antibiotic) : 0) + BaobaoInput(s, s.Body.Immunity);
+            // B49：按当前视角角色（主角或同伴）取速率；同伴正增长为 0、无饱饱输入
+            var vr = (s.Body.Infected ? ActorVirusRate(s.Player, s.Body.Immunity, antibiotic) : 0) + BaobaoInput(s, s.Player, s.Body.Immunity);
             return (ir, vr, why);
         }
 
@@ -84,7 +95,7 @@ namespace Survival.Core.Engine
             var input = BaobaoInput(s, actor, start.Immunity);
             if (b.Infected)
             {
-                var vr = (start.Infected ? VirusRate(start.Immunity, start.AntibioticActive) : 0) + input;
+                var vr = (start.Infected ? ActorVirusRate(actor, start.Immunity, start.AntibioticActive) : 0) + input;   // B49：同伴 min(0,r)
                 var v = b.VirusLoad + vr * h;
                 if (v < Inf.NaturalLoadMinimumWhileInfected) v = Inf.NaturalLoadMinimumWhileInfected;
                 b.VirusLoad = Math.Min(Inf.LoadRange[1], v);
@@ -125,7 +136,7 @@ namespace Survival.Core.Engine
                 {
                     if (b.VirusWarned.Contains(stage)) continue;
                     b.VirusWarned.Add(stage);
-                    var rate = VirusRate(b.Immunity, b.AntibioticUntil.HasValue && b.AntibioticUntil.Value > s.GameMinute) + BaobaoInput(s, actor, b.Immunity);
+                    var rate = ActorVirusRate(actor, b.Immunity, b.AntibioticUntil.HasValue && b.AntibioticUntil.Value > s.GameMinute) + BaobaoInput(s, actor, b.Immunity);
                     // B38b（Q289）：主角称“你”；只有速率为正时追加预计尸变句，零或负只写主句
                     var left = rate > 0 ? $"若免疫和用药状态维持现状，按当前速率估计约{Clock.Duration((int)Math.Ceiling((Inf.ZombificationAtLoad - b.VirusLoad) / rate * 60))}后尸变。" : "";
                     Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}的病毒程度达到{Fmt.T(stage)}，当前{Fmt.N(b.VirusLoad)}，每小时{Fmt.SignedT(rate)}。{left}");

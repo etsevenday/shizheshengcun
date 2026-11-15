@@ -238,7 +238,7 @@ public class B8PartyTests : TestBase
         Assert.That(gu.Stats.Wakefulness, Is.EqualTo(62).Within(1e-6));
         Assert.That(gu.Stats.Satiety, Is.EqualTo(38).Within(1e-6), "N 净 +4/h，不瞬托到 40");
         Assert.That(gu.Stats.Hydration, Is.EqualTo(38).Within(1e-6));
-        Assert.That(gu.Body.VirusLoad, Is.GreaterThan(30), "公共照护不清病毒");
+        Assert.That(gu.Body.VirusLoad, Is.EqualTo(30), "公共照护不清病毒（B49 Q652：同伴自然正增长为 0，原 V 保持）");
         while (s.GameMinute < At(2, 6, 0)) { Start(s, ActionRequest.Wait(60)); Run(s); s.Main = null; }
         Assert.That(gu.Stats.Satiety, Is.EqualTo(80).Within(1e-6), "公共补给只补到 80");
         Assert.That(gu.Stats.Hydration, Is.EqualTo(80).Within(1e-6));
@@ -282,7 +282,7 @@ public class B8PartyTests : TestBase
         gu.Stats.Health = 5.02; gu.Stats.Wakefulness = 0;
         Start(s, ActionRequest.Wait(30)); Run(s); s.Main = null;
         Assert.That(s.Log.Count(l => l.Text.Contains("顾承的健康降至")), Is.EqualTo(2), "离开阈值后再跨入再提示");
-        gu.Body.Infected = true; gu.Body.VirusLoad = 79.9; gu.Body.Immunity = 0;
+        gu.Body.Infected = true; gu.Body.VirusLoad = 80; gu.Body.Immunity = 0;   // B49 Q652：同伴病毒不再自然上涨，直接置到警戒线（模拟新暴露加量后）
         Start(s, ActionRequest.Wait(30)); Run(s); s.Main = null;
         Assert.That(s.Log.Count(l => l.Text.Contains("顾承的病毒程度升至")), Is.EqualTo(1));
     }

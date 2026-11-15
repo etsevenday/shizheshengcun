@@ -128,7 +128,7 @@ public class B3ActorTests : TestBase
         Assert.That(p1.ZeroLatched[StatId.Satiety], Is.True, "队友归零提醒按本人锁存");
         Assert.That(s.ZeroLatched[StatId.Satiety], Is.False, "主角不受队友影响");
         Assert.That(s.Log.Any(l => l.Text.Contains("队友p1：饱食归零")), Is.True);
-        Assert.That(p1.Body.VirusLoad, Is.Not.EqualTo(30), "队友病毒按本人免疫推进");
+        Assert.That(p1.Body.VirusLoad, Is.EqualTo(30), "B49（Q652）：队友病毒自然正增长为 0（按本人免疫、不随主角）");
         Assert.That(s.Body.Infected, Is.False);
     }
 

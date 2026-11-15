@@ -130,7 +130,7 @@ namespace Survival.Core.Engine
                     Id = "bleed", Name = "出血", RemainingMinutes = 0, Harmful = true,
                     Effect = $"还要流血{b.BleedTriggers}次，每次健康−{Fmt.T(b.BleedDamage)}；{bandage}可止血",
                 });
-            if (s.Story.BaobaoPresent)
+            if (s.Story.BaobaoPresent && s.Player.IsPlayer)   // B49：饱饱只在主角体内，同伴视角不列
             {
                 var input = BaobaoInput(s, b.Immunity);
                 var bi = Config.Infection.BaobaoInput;
