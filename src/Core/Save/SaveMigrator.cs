@@ -1506,9 +1506,40 @@ namespace Survival.Core.Save
         private static void From52To53(GameState s, GameConfig config)
         {
             s.SchemaVersion = GameState.CurrentSchema;
+            MigrateDryingProtection(s, config);
             foreach (var (_, fac) in DryingFacilities(s))
                 foreach (var b in fac.DryingSlots ?? new List<DryingSlot>())
                     if (b.Status == DryingSlot.Spoiled && b.StopReason == null) b.StopReason = DryingSlot.StopLegacy;
+        }
+
+        /// <summary>
+        /// 旧在办晾制升级为暂停保质（S11 文首 Q666「说明、预估与旧档」、Q714）：只处理晾制中、尚无可信保护快照的位（果干等），且在升级世界分钟 U
+        /// 位内没有腐败物、没有已到原截止的原料时，每份有截止的原料记 R＝旧E−U、清截止，位置保护标记；无截止不造 R，进度／投料者／经验快照不动。
+        /// 已有 Q215 肉干快照的位与原料不重算；已腐败／已停止／已完成的不复活。只在这里初始化一次（读档、转移不重算），静默不写说明。
+        /// 先于到期转换：50→51 的一次转换只转已到截止的物品（与此不重叠），53 起的到期转换在读档后的世界流程里，已受保护的不再转。
+        /// </summary>
+        private static void MigrateDryingProtection(GameState s, GameConfig config)
+        {
+            var u = s.GameMinute;
+            foreach (var (place, fac) in DryingFacilities(s))
+            {
+                foreach (var b in fac.DryingSlots ?? new List<DryingSlot>())
+                {
+                    if (b.Status != DryingSlot.Drying || b.ShelfPaused) continue;
+                    var rc = config.Recipes.FirstOrDefault(r => r.Id == b.RecipeId);
+                    if (rc == null || !rc.IsDrying) continue;
+                    var owner = ItemInstance.DryingOwner(place, b.Slot);
+                    var items = s.Items.Where(i => i.Owner == owner).ToList();
+                    if (items.Any(i => i.ItemId == Engine.GameEngine.SpoiledMatterId || (i.ExpiresAt is int e && e <= u))) continue;
+                    foreach (var it in items)
+                    {
+                        if (it.ShelfPausedMinutes != null || it.ExpiresAt is not int e) continue;
+                        it.ShelfPausedMinutes = e - u;
+                        it.ExpiresAt = null;
+                    }
+                    b.ShelfPaused = true;
+                }
+            }
         }
 
         /// <summary>全部地点的外部区与已建安全屋屋内区设施（晾制位所在）。</summary>

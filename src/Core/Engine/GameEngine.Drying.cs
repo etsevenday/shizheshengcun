@@ -24,9 +24,9 @@ namespace Survival.Core.Engine
         public string OutputText { get; set; } = "";
         public string XpText { get; set; } = "";
         public string Note { get; set; } = "";
-        /// <summary>会在完成前到期的原料（届时停止、没有成品）；只有果干会有（肉干受 Q215 暂停保质保护）。</summary>
+        /// <summary>旧「会在完成前腐败」红字（Q214）；B50a（S11 文首 Q666）起全部晾制原料暂停保质，恒为空表（保留字段供界面兼容）。</summary>
         public List<string> Warnings { get; set; } = new List<string>();
-        /// <summary>肉干（Q215）：开始制作后暂停原料保质计时，取消后恢复剩余时长。</summary>
+        /// <summary>开始制作后暂停原料保质计时，取消后恢复剩余时长（Q215 肉干；B50a Q666 起全部晾制配方）。</summary>
         public bool PausesShelf { get; set; }
         /// <summary>
         /// Q214：这份预览的位号与逐条来源（“3|carried:12x1,ground:9x1”）。确认投料时带上它，内核按实时状态重算，不一致就拒绝并要求看更新后的预览再确认，不悄悄换料。
@@ -55,7 +55,7 @@ namespace Survival.Core.Engine
         /// <summary>取消/取出/清理到随身、到当地地面现在不能做的原因；能做为 null。</summary>
         public string? ToCarriedBlocked { get; set; }
         public string? ToGroundBlocked { get; set; }
-        /// <summary>取消按钮的说明（果干退原截止；肉干恢复投料时的剩余保质，Q215）。</summary>
+        /// <summary>取消按钮的说明（S11 文首 Q666 晾制取消说明）。</summary>
         public string CancelHint { get; set; } = "";
         /// <summary>肉干位原料保质暂停中（Q215）。</summary>
         public bool ShelfPaused { get; set; }
@@ -67,9 +67,8 @@ namespace Survival.Core.Engine
     /// 果干 野果2→1、120 分钟、烹饪1；肉干 生肉1＋盐1→1、180 分钟、烹饪5。当地安全空闲时在晾制架卡选食谱与空位，预览写明取哪几份
     /// （只取主角随身与当前区地面，队友包、异地不取），确认 0 分钟把原料原子迁进该位（owner drying:&lt;place&gt;#&lt;位号&gt;）。
     /// 按世界 5 分钟段被动推进：不吃熟练/装备加速、不耗火与燃料、不占角色行动、不增加身体消耗；离开也继续，暂停/读档不补时间，天气昼夜不改速。
-    /// 果干无受热保护：原料沿原截止计时，到期即标腐败、停止、没有成品；腐败原料留在本位，只能按腐败物清理（取出）。未腐败时可取消，原料按原截止退回随身或当地地面，
-    /// 本批进度清零、已过时间不退。肉干（策划答复 Q215，B22k）：投料成功即暂停本批食品原料保质，快照剩余 R＝原截止−开始分钟，生产中不减；
-    /// 完成前取消/退料时新截止＝退料世界分钟＋R（原无截止仍无），盐原样退回；完成核销生肉与盐、肉干从完成起正常计保质 168 小时。
+    /// 保质（Q215 肉干，B50a S11 文首 Q666 起全部晾制配方含果干）：投料成功即暂停本批食品原料保质，快照剩余 R＝原截止−开始分钟，生产中不减；
+    /// 完成前取消/退料时新截止＝退料世界分钟＋R（原无截止仍无），盐原样退回，本批进度清零、已过时间不退；53 前未受保护的旧在制位到原截止仍按原腐败停止，只能清理（取出）；完成核销生肉与盐、肉干从完成起正常计保质 168 小时。
     /// 选料（Q214 选 A）：只取主角随身与当前区地面；确认按实时状态重算，与预览不一致就拒绝、要求看更新后的预览再确认。完成一次核销原料，成品（完成起保质 168 小时）留在本位占位，直到在当地取出到随身（验五卡与 30 公斤）或当地地面。
     /// 经验：每批成功给首次投料且完成时仍存活的角色烹饪 clamp(ceil(原分钟/10),1,12)＝12（Q60 公式），与食品、净化共用每人每日 30（Q207），
     /// 只在完成那一刻结算一次；腐败/取消 0，取出/读档不重发。投料、取消、取出都带请求号幂等，不复制原料或成品。
@@ -122,13 +121,19 @@ namespace Survival.Core.Engine
         /// <summary>Q215 暂停保质的晾制成品（肉干）。</summary>
         public const string DryingShelfPauseOutput = "dried_meat";
 
-        /// <summary>这条晾制食谱投料成功后暂停原料保质（Q215：仅肉干，果干不变）。</summary>
-        public bool DryingPausesShelf(RecipeConfig rc) => rc.IsDrying && rc.Outputs.ContainsKey(DryingShelfPauseOutput);
+        /// <summary>这条晾制食谱投料成功后暂停原料保质（Q215 原仅肉干；B50a，S11 文首 Q666：所有真正启动的晾制配方，含果干）。</summary>
+        public bool DryingPausesShelf(RecipeConfig rc) => rc.IsDrying;
 
         /// <summary>确认投料时实时重算与玩家看过的预览不一致（Q214）。</summary>
         public const string DryingPreviewChanged = "原料或晾制位有变化，预览已按现在的情况更新：请看新的来源与保质后再确认投料（不会自动换成另一份）";
 
         public const string DryingShelfPauseText = "开始制作后暂停原料保质计时，取消后恢复剩余时长";
+
+        /// <summary>晾制取消说明（逐字稿 Q666「晾制取消说明」）。</summary>
+        public const string DryingCancelHintText = "取消后恢复投料时剩余的保质时长；已过制作时间不退，没有成品，不给经验。";
+
+        /// <summary>晾制保质帮助（逐字稿 Q666「晾制保质帮助」；放置位置 Q768 待定，暂无界面引用）。</summary>
+        public const string DryingShelfHelpText = "晾制中的所有原料暂停保质计时，取消后恢复投料时的剩余保质；晾好的成品从完成时起正常计时，留在架上也会到期。";
 
         /// <summary>暂停保质的原料退出晾制位时的新截止：退料世界分钟＋快照剩余（Q215）；没有暂停的原样。</summary>
         private static int? ResumedExpiry(GameState s, ItemInstance i) =>
@@ -211,11 +216,7 @@ namespace Survival.Core.Engine
             _ => $"{_recipes[b.RecipeId].Name} {b.DoneMinutes}/{b.RequiredMinutes}分钟",
         };
 
-        /// <summary>
-        /// 果干原料到期时刻不晚于完成时刻的警告（B22c 试玩修复 M470：到期＝完成也算）。Q214 选 A 定的红字“会在完成前腐败，届时停止且没有成品”，括号里写保质与完成时刻。
-        /// </summary>
-        private string DryingSpoilWarning(ItemInstance i, int expires, int finish) =>
-            $"{ItemName(i.ItemId)}（保质到{Clock.DayTime(expires)}，完成{Clock.DayTime(finish)}）会在完成前腐败，届时停止且没有成品";
+        // B50a（S11 文首 Q666）：原果干临期红字「会在完成前腐败，届时停止且没有成品」（Q214／M470）随全部晾制暂停保质撤去。
 
         private string InputText(RecipeConfig rc) => string.Join("＋", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"));
 
@@ -243,7 +244,7 @@ namespace Survival.Core.Engine
             o.PausesShelf = pause;
             o.Note = $"被动晾制{Clock.Duration(rc.BaseMinutes)}，预计{Clock.DayTime(finish)}完成：按世界时间推进，不吃熟练和装备加速、不耗火和燃料、不占行动；"
                      + "离开也继续，暂停不推进。"
-                     + (pause ? DryingShelfPauseText + "。" : "原料没有受热保护，照原保质计时，到期即腐败停止、没有成品。")
+                     + DryingShelfPauseText + "。"
                      + "完成品留在这一位，回到这里取出到随身或地面";
             var why = DryingBlocked(s, rc, slot);
             if (why == null || !why.StartsWith("缺少"))
@@ -252,7 +253,6 @@ namespace Survival.Core.Engine
                 foreach (var (inst, take) in src)
                 {
                     o.Sources.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}×{take}（{ExpiryNote(s, inst)}）");
-                    if (!pause && inst.ExpiresAt is int x && x <= finish) o.Warnings.Add(DryingSpoilWarning(inst, x, finish));
                 }
                 o.SourceKey = SourceKeyOf(k, src);
             }
@@ -281,11 +281,9 @@ namespace Survival.Core.Engine
                 return ActionResult.Fail(DryingPreviewChanged);
             var pause = DryingPausesShelf(rc);
             var taken = new List<string>();
-            var warns = new List<string>();
             foreach (var (inst, take) in sources)
             {
                 taken.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}×{take}");
-                if (!pause && inst.ExpiresAt is int x && x <= finish) warns.Add(DryingSpoilWarning(inst, x, finish));
                 ItemInstance moved;
                 if (take < inst.Count) moved = SplitOff(s, inst, take);
                 else moved = inst;
@@ -311,8 +309,7 @@ namespace Survival.Core.Engine
             // B22c 试玩修复 M470：日志经验按这一位自身（self）算，不把刚投的这一位当成“先完成的晾制位”；原料会在完成前到期时日志也写警告
             Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架工位{k + 1}开始{rc.Name}：投入{string.Join("、", taken)}；被动{Clock.Duration(rc.BaseMinutes)}，"
                                         + $"预计{Clock.DayTime(finish)}完成（不占行动，离开也继续）；{DryingXpNote(s, slotRec)}"
-                                        + (pause ? "；" + DryingShelfPauseText : "")
-                                        + string.Concat(warns.Select(w => "；" + w)) + "。");
+                                        + (pause ? "；" + DryingShelfPauseText : "") + "。");
             UpdateFlags(s);
             return ActionResult.Success(id);
         }
@@ -579,14 +576,10 @@ namespace Survival.Core.Engine
                         var finish = s.GameMinute + left;
                         v.RemainingMinutes = left;
                         v.Title = CardStates.DryingSlotName(k);
-                        var early = items.Where(i => i.ExpiresAt is int x && x <= finish).OrderBy(i => i.ExpiresAt).FirstOrDefault();
                         v.ShelfPaused = b.ShelfPaused || items.Any(i => i.ShelfPausedMinutes != null);
-                        v.Line = $"还需{Clock.Duration(left)}，预计{Clock.DayTime(finish)}完成"
-                                 + (v.ShelfPaused ? "；原料保质暂停计时，取消后恢复剩余时长"
-                                    : early != null ? $"；{DryingSpoilWarning(early, early.ExpiresAt!.Value, finish)}" : "");
-                        v.CancelHint = v.ShelfPaused
-                            ? "取消这一批：原料恢复投料时的剩余保质、盐原样退回，已过时间不退，没有成品、不给经验"
-                            : "取消这一批：原料按原保质退回，已过时间不退，没有成品、不给经验";
+                        // B50a（S11 文首 Q666）：在制位说明用正式句，原果干临期红字撤去；取消说明换新句
+                        v.Line = $"还需{Clock.Duration(left)}，预计{Clock.DayTime(finish)}完成" + (v.ShelfPaused ? "；" + DryingShelfPauseText : "");
+                        v.CancelHint = DryingCancelHintText;
                         v.ToCarriedBlocked = DryingCancelBlocked(s, k, true);
                         v.ToGroundBlocked = DryingCancelBlocked(s, k, false);
                         break;

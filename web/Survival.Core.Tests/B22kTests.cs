@@ -67,7 +67,7 @@ public class B22kTests : TestBase
         Assert.That(pv.Sources, Has.Count.EqualTo(2));
         Assert.That(pv.Sources[0], Does.StartWith($"随身野果×1（保质到{Clock.DayTime(t0 + 60)}）"), "BM5b2（Q606）：取代 Q214 能撑到完成先取，最早有效到期先用");
         Assert.That(pv.Sources[1], Does.StartWith($"地面野果×1（保质到{Clock.DayTime(t0 + 300)}）"));
-        Assert.That(pv.Warnings.Single(), Does.Contain($"野果（保质到{Clock.DayTime(t0 + 60)}").And.Contain("会在完成前腐败，届时停止且没有成品"), "临期果干红字但可确认");
+        Assert.That(pv.Warnings, Is.Empty, "B50a（Q666）：果干也暂停保质，临期红字撤去");
         Assert.That((pv.Slot, pv.Minutes, pv.FinishMinute), Is.EqualTo((0, 120, finish)), "预览写位号与时间");
         Assert.That(pv.XpText, Does.Contain("经验+12"));
         Assert.That(s.Items.Select(i => (i.InstanceId, i.Owner, i.Count)).ToList(), Is.EqualTo(before), "开预览不取料、不预留");
@@ -76,7 +76,7 @@ public class B22kTests : TestBase
         Assert.That(E.DryingContents(s, s.Ground, 0).Select(i => i.InstanceId), Is.EquivalentTo(new[] { early.InstanceId, g300.InstanceId }));
         Assert.That(c500.Owner, Is.EqualTo(ItemInstance.Carried));
         Assert.That(g500.Owner, Is.EqualTo(s.Ground));
-        Assert.That(E.DryingSlotViews(s)[0].Line, Does.Contain("会在完成前腐败"));
+        Assert.That(E.DryingSlotViews(s)[0].Line, Does.Not.Contain("会在完成前腐败").And.Contain(GameEngine.DryingShelfPauseText));
         Assert.That(s.Items.Where(i => i.Owner == ItemInstance.CarriedOwner("c1") || i.Owner.StartsWith(ItemInstance.SafehouseStoragePrefix) || i.Owner == "w13_mill")
             .Sum(i => i.Count), Is.EqualTo(12), "队友包、屋柜、异地都不取");
 
@@ -86,7 +86,7 @@ public class B22kTests : TestBase
         Assert.That(pv2.Sources[0], Does.StartWith($"随身野果×1（保质到{Clock.DayTime(t0 + 500)}）"), "同截止随身优先");
         Assert.That(pv2.Sources[1], Does.StartWith($"地面野果×1（保质到{Clock.DayTime(t0 + 500)}）"));
         Assert.That(pv2.Warnings, Is.Empty, "选中的都能撑到完成");
-        Assert.That(pv2.PausesShelf, Is.False);
+        Assert.That(pv2.PausesShelf, Is.True, "B50a（Q666）：所有晾制配方暂停保质");
         Ok(E.StartDrying(s, "dry_berries", null, null, pv2.SourceKey));
         Assert.That(E.DryingSlotViews(s)[1].Line, Does.Not.Contain("会在完成前腐败"));
 
@@ -112,9 +112,9 @@ public class B22kTests : TestBase
         Assert.That(s.Log.Last().Text, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("会在完成前腐败"));
         var v = E.DryingSlotViews(s)[2];
         Assert.That(v.ShelfPaused, Is.True);
-        Assert.That(v.Line, Does.Contain("原料保质暂停计时，取消后恢复剩余时长").And.Not.Contain("腐败"));
+        Assert.That(v.Line, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("腐败"), "B50a（Q666）：在制位说明用正式句");
         Assert.That(v.Contents.First(c => c.StartsWith("生肉")), Does.Contain("保质暂停，剩余30分钟"));
-        Assert.That(v.CancelHint, Does.Contain("恢复投料时的剩余保质"));
+        Assert.That(v.CancelHint, Is.EqualTo(GameEngine.DryingCancelHintText), "B50a（Q666）：晾制取消说明正式句");
     }
 
     /// <summary>
@@ -259,22 +259,21 @@ public class B22kTests : TestBase
     }
 
     /// <summary>
-    /// DRY-Q215-03：果干原料仍在原截止腐败停止；旧档（38）已腐败肉干批不复活、清理时盐只退一次；旧在制未腐败肉干批从升级时刻 U 的余量保护，
+    /// DRY-Q215-03：果干原料同样暂停保质（B50a Q666 取代原「仍在原截止腐败停止」）；旧档（38）已腐败肉干批不复活、清理时盐只退一次；旧在制未腐败肉干批从升级时刻 U 的余量保护，
     /// 保留已晾分钟与经验快照；已完成肉干截止不改；反复读档不多加保质或产物。
     /// </summary>
     [Test]
     public void DRY_Q215_03_BerryStillSpoils_Migration38To39_ProtectFromUpgrade_NoRevive()
     {
-        // 果干不变
+        // B50a（S11 文首 Q666，取代 Q215「果干不变」）：果干原料同样暂停保质，晾满照常完成
         var f = Rack();
         var tf = f.GameMinute;
         var berry = Make(f, "berry", ItemInstance.Carried, tf + 60, 2);
         Ok(E.StartDrying(f, "dry_berries"));
-        Assert.That(berry.ShelfPausedMinutes, Is.Null, "果干不暂停");
-        Assert.That(berry.ExpiresAt, Is.EqualTo(tf + 60));
+        Assert.That((berry.ShelfPausedMinutes, berry.ExpiresAt), Is.EqualTo(((int?)60, (int?)null)), "果干也暂停，R＝E−S");
         AdvanceTo(f, tf + 120);
-        Assert.That(Slots(f).Single().Status, Is.EqualTo(DryingSlot.Spoiled), "果干原料到原截止腐败停止");
-        Assert.That(Count(f, "dried_berries"), Is.EqualTo(0));
+        Assert.That(Slots(f).Single().Status, Is.EqualTo(DryingSlot.Done), "越过原截止仍晾好");
+        Assert.That(Count(f, "dried_berries"), Is.EqualTo(1));
 
         // 旧档：四个位按旧规则（不暂停）布置
         var s = Rack();

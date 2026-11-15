@@ -164,27 +164,22 @@ public class B22cTests : TestBase
         Assert.That(CookXp(s), Is.EqualTo(x0), "取消 0 经验");
         Assert.That(E.CancelDrying(s, 3, true).Reason, Does.Contain("是空的"), "取消幂等");
 
-        // 腐败（果干）：野果在完成前到期 → 到期即停止，不出果干
+        // B50a（S11 文首 Q666-A02，取代 Q214 果干照原截止腐败）：野果在完成前原会到期，投料即暂停保质，晾满 120 分钟照常完成
         s.Items.RemoveAll(i => i.ItemId is "raw_meat" or "salt");
         E.CreateItems(s, "berry", 2, ItemInstance.Carried);
         foreach (var bi in s.Items.Where(i => i.ItemId == "berry")) bi.ExpiresAt = s.GameMinute + 60;
         var t1 = s.GameMinute;
         var pv = E.DryingPreview(s, "dry_berries");
         Assert.That(pv.Ok, Is.True);
-        Assert.That(pv.Warnings, Has.Count.EqualTo(1), "预览提示会在完成前腐败");
+        Assert.That(pv.Warnings, Is.Empty, "不再有在制果干必腐败的假警告");
         Ok(E.StartDrying(s, "dry_berries"));
         AdvanceTo(s, t1 + 120);
         var b = s.Locations["camp"].Facility.DryingSlots.Single();
-        Assert.That(b.Status, Is.EqualTo(DryingSlot.Spoiled));
-        Assert.That(b.DoneMinutes, Is.EqualTo(55), "到期那一段停止（到期时刻不能算完成）");
-        Assert.That(Count(s, "dried_berries"), Is.EqualTo(0), "不产可食干品");
-        Assert.That(CookXp(s), Is.EqualTo(x0), "腐败 0 经验");
-        Assert.That(E.CancelDrying(s, b.Slot, false).Reason, Does.Contain("只能清理"));
-        Ok(E.TakeDrying(s, b.Slot, false));
-        var rotten = First(s, GameEngine.SpoiledMatterId, s.Ground);
-        Assert.That((E.IsSpoiled(s, rotten), rotten.SpoiledFrom), Is.EqualTo((true, "berry")), "腐败原料按原腐败规则，不回活（BM5b2：已是腐败物）");
-        Assert.That(s.Locations["camp"].Facility.DryingSlots, Is.Empty);
+        Assert.That(b.Status, Is.EqualTo(DryingSlot.Done));
+        Assert.That(Count(s, "dried_berries"), Is.EqualTo(1), "晾好果干");
+        Assert.That(CookXp(s), Is.GreaterThan(x0), "完成照常给经验");
         // 已腐败的原料不能投（BM5b2：腐败物是另一物品，野果堆只计新鲜实物）
+        Ok(E.TakeDrying(s, b.Slot, false));
         Assert.That(E.StartDrying(s, "dry_berries").Reason, Does.Contain("缺少野果").And.Not.Contain("已腐败"));
     }
 
@@ -279,9 +274,9 @@ public class B22cTests : TestBase
         var b = E.CreateItems(s, "berry", 2, s.Ground)[0];
         b.ExpiresAt = s.GameMinute + 120;
         var pv = E.DryingPreview(s, "dry_berries");
-        Assert.That(pv.Warnings.Single(), Does.Contain("会在完成前腐败，届时停止且没有成品"), "到期＝完成也警告（B22k 起用 Q214 定的红字）");
+        Assert.That(pv.Warnings, Is.Empty, "B50a（Q666）：果干也暂停保质，不再有会在完成前腐败红字");
         Ok(E.StartDrying(s, "dry_berries"));
-        Assert.That(s.Log.Last().Text, Does.Contain("会在完成前腐败"), "投料日志带腐败警告");
+        Assert.That(s.Log.Last().Text, Does.Not.Contain("会在完成前腐败").And.Contain(GameEngine.DryingShelfPauseText), "投料日志写暂停保质");
         Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "晾制中1", "空7" }));
     }
 

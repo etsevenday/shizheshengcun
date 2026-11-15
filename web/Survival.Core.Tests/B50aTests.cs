@@ -318,4 +318,169 @@ public class B50aTests : TestBase
         Assert.That(t.Items.Single(i => i.InstanceId == ok.InstanceId).SpoiledOrigins!["berry"], Is.EqualTo(1));
         Assert.That(t.Items.Single(i => i.InstanceId == stone.InstanceId).SpoiledOrigins, Is.Null);
     }
+
+    // ───────────── M949 全部晾制暂停保质（Q666-A01—A04、Q714-A01） ─────────────
+
+    private GameState Rack()
+    {
+        var s = New();
+        s.GameMinute = At(2, 8, 0);
+        s.Skills["cooking"].Level = 5;
+        s.Items.RemoveAll(i => i.Owner == s.Ground || i.Owner == ItemInstance.Carried);
+        E.CreateItems(s, "wood", 4, s.Ground);
+        E.CreateItems(s, "rope", 2, s.Ground);
+        Start(s, ActionRequest.Craft("build_drying_rack"));
+        Run(s);
+        Assert.That(E.DryingRackHere(s), Is.True);
+        s.Items.RemoveAll(i => i.Owner == s.Ground || i.Owner == ItemInstance.Carried);
+        return s;
+    }
+
+    private static List<DryingSlot> DrySlots(GameState s) => s.Locations[s.Ground].Facility.DryingSlots;
+
+    private long Xp(GameState s) => s.Skills["cooking"].Xp;
+
+    /// <summary>Q666-A01：野果剩 30 分钟投料，晾 60 分钟后取消仍剩 30；退回后在外 10 分钟再投再取消，按剩 20 恢复，不刷新成完整保质。</summary>
+    [Test]
+    public void Q666_A01_BerryCancel_RestoresRemaining_ReStartUsesTrueRemaining()
+    {
+        var s = Rack();
+        var t0 = s.GameMinute;
+        Make(s, "berry", 2, ItemInstance.Carried, t0 + 30);
+        var x0 = Xp(s);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        Assert.That(s.Items.Where(i => i.ItemId == "berry").Select(i => (i.ShelfPausedMinutes, i.ExpiresAt)),
+            Is.All.EqualTo(((int?)30, (int?)null)), "R＝E−S＝30，截止清空");
+        Assert.That(DrySlots(s).Single().ShelfPaused, Is.True);
+        AdvanceTo(s, t0 + 60);
+        Assert.That(DrySlots(s).Single().Status, Is.EqualTo(DryingSlot.Drying), "越过原截止仍在晾");
+        Assert.That(E.CancelDrying(s, 0, false).Ok, Is.True);
+        var c1 = s.GameMinute;
+        Assert.That(s.Items.Where(i => i.ItemId == "berry").Select(i => (i.Owner, i.ExpiresAt, i.ShelfPausedMinutes)),
+            Is.All.EqualTo((s.Ground, (int?)(c1 + 30), (int?)null)), "新截止＝C＋R，仍剩 30");
+        Assert.That(Xp(s), Is.EqualTo(x0), "取消不给经验");
+        Assert.That(s.Log.Last().Text, Does.Contain("没有成品，不给经验"));
+
+        AdvanceTo(s, c1 + 10);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        Assert.That(s.Items.Where(i => i.ItemId == "berry").Select(i => i.ShelfPausedMinutes), Is.All.EqualTo(20), "按退回后的真实剩余 20 重新快照");
+        AdvanceTo(s, c1 + 40);
+        Assert.That(E.CancelDrying(s, 0, false).Ok, Is.True);
+        Assert.That(s.Items.Where(i => i.ItemId == "berry").Select(i => i.ExpiresAt), Is.All.EqualTo(s.GameMinute + 20), "不刷新成完整保质");
+    }
+
+    /// <summary>Q666-A02：只剩 5 分钟的野果与生肉都能晾满（果干 120、肉干 180）；成品从完成时起按自身保质计时，留在架上照常到期。</summary>
+    [Test]
+    public void Q666_A02_NearExpiryInputsComplete_ProductExpiresFromFinish()
+    {
+        var s = Rack();
+        var t0 = s.GameMinute;
+        Make(s, "berry", 2, ItemInstance.Carried, t0 + 5);
+        Make(s, "raw_meat", 1, ItemInstance.Carried, t0 + 5);
+        Make(s, "salt", 1, s.Ground);
+        var x0 = Xp(s);
+        Assert.That(E.DryingPreview(s, "dry_berries").Warnings, Is.Empty, "不写会在完成前腐败");
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        Assert.That(E.DryingPreview(s, "dry_meat").Warnings, Is.Empty);
+        Assert.That(E.StartDrying(s, "dry_meat").Ok, Is.True);
+        AdvanceTo(s, t0 + 120);
+        var berrySlot = DrySlots(s).Single(b => b.RecipeId == "dry_berries");
+        Assert.That(berrySlot.Status, Is.EqualTo(DryingSlot.Done), "果干 120 分钟完成");
+        var db = s.Items.Single(i => i.ItemId == "dried_berries");
+        Assert.That(db.ShelfPausedMinutes, Is.Null, "保护在转为成品时结束");
+        Assert.That(db.ExpiresAt, Is.EqualTo(t0 + 120 + E.Item("dried_berries").ShelfLifeMinutes), "成品截止＝完成＋自身保质");
+        AdvanceTo(s, t0 + 180);
+        Assert.That(DrySlots(s).Single(b => b.RecipeId == "dry_meat").Status, Is.EqualTo(DryingSlot.Done), "肉干 180 分钟完成");
+        var dm = s.Items.Single(i => i.ItemId == "dried_meat");
+        Assert.That(dm.ExpiresAt, Is.EqualTo(t0 + 180 + E.Item("dried_meat").ShelfLifeMinutes));
+        Assert.That(Xp(s), Is.GreaterThan(x0), "两批都照常给经验");
+        Assert.That(s.Items.Count(i => i.ItemId == Rot), Is.EqualTo(0), "无腐败物");
+        s.GameMinute = dm.ExpiresAt!.Value;
+        Assert.That(E.IsSpoiled(s, dm), Is.True, "留在架上的成品也会到期");
+    }
+
+    /// <summary>Q666-A03：已到期原料不能投；取消目的地不合法整次拒绝，R 与归属不变；同请求号重复取消不重复退料。</summary>
+    [Test]
+    public void Q666_A03_ExpiredRejected_BlockedCancelKeepsSnapshot_Idempotent()
+    {
+        var s = Rack();
+        var t0 = s.GameMinute;
+        Make(s, "berry", 2, ItemInstance.Carried, t0);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.False, "已到期原料不投");
+        Assert.That(DrySlots(s), Is.Empty);
+        s.Items.RemoveAll(i => i.ItemId == "berry");
+
+        var berries = Make(s, "berry", 2, ItemInstance.Carried, t0 + 40);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        AdvanceTo(s, t0 + 30);
+        var knives = new List<ItemInstance>();
+        for (var k = 0; k < 5; k++) knives.AddRange(E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried));
+        Assert.That(E.CancelDrying(s, 0, true).Ok, Is.False, "随身满整次拒绝");
+        Assert.That(berries.Select(i => (i.InDrying, i.ShelfPausedMinutes, i.ExpiresAt)), Is.All.EqualTo((true, (int?)40, (int?)null)), "不半退、快照不变");
+        s.Items.RemoveAll(i => knives.Contains(i));
+
+        Assert.That(E.CancelDrying(s, 0, false, "rq-cancel").Ok, Is.True);
+        var n = s.Items.Where(i => i.ItemId == "berry").Sum(i => i.Count);
+        var logs = s.Log.Count;
+        E.CancelDrying(s, 0, false, "rq-cancel");
+        Assert.That(s.Items.Where(i => i.ItemId == "berry").Sum(i => i.Count), Is.EqualTo(n), "重复请求不重复退料");
+        Assert.That(s.Log.Count, Is.EqualTo(logs), "重复请求不重复写日志");
+        Assert.That(n, Is.EqualTo(2));
+    }
+
+    /// <summary>
+    /// Q666-A04／Q714-A01：52 档在制果干位从升级分钟 U 起保护（R＝旧E−U），进度与经验快照不动；已有肉干快照的不重算；
+    /// 已腐败停止的不复活（标旧档停止原因）；升级时已到期的不保护；反复读档不增加 R；迁移静默；预览、位行不再有腐败假警告。
+    /// </summary>
+    [Test]
+    public void Q666_A04_Q714_A01_Migrate52_ProtectsFromUpgrade_TrustedKept_NoRevive()
+    {
+        var s = Rack();
+        var u = s.GameMinute;
+        var place = s.Ground;
+        var fac = DrySlots(s);
+        DryingSlot Slot(int k, string recipe, string status, int done, int req, bool paused = false)
+        {
+            var b = new DryingSlot { Slot = k, BatchId = 950 + k, RecipeId = recipe, Status = status, StartMinute = u - done, DoneMinutes = done, RequiredMinutes = req,
+                                     InitiatorActorId = GameState.PlayerId, XpSnapshot = 12, ShelfPaused = paused };
+            fac.Add(b);
+            return b;
+        }
+        Slot(0, "dry_berries", DryingSlot.Drying, 40, 120);
+        var fruit = Make(s, "berry", 2, ItemInstance.DryingOwner(place, 0), u + 45);
+        Slot(1, "dry_meat", DryingSlot.Drying, 60, 180, true);
+        var meat = Make(s, "raw_meat", 1, ItemInstance.DryingOwner(place, 1));
+        meat[0].ShelfPausedMinutes = 30;
+        meat[0].ExpiresAt = null;
+        Make(s, "salt", 1, ItemInstance.DryingOwner(place, 1));
+        Slot(2, "dry_berries", DryingSlot.Spoiled, 55, 120);
+        Make(s, "berry", 2, ItemInstance.DryingOwner(place, 2), u - 30);
+        Slot(3, "dry_berries", DryingSlot.Drying, 100, 120);
+        Make(s, "berry", 2, ItemInstance.DryingOwner(place, 3), u);
+        var logs = s.Log.Count;
+
+        var t = SaveSerializer.Deserialize(AsSchema(s, "52"), Cfg);
+        Assert.That(t.SchemaVersion, Is.EqualTo("53"));
+        Assert.That(t.Log.Count, Is.EqualTo(logs), "52→53 静默，不写说明");
+        var ts = DrySlots(t);
+        var f0 = t.Items.Where(i => i.Owner == ItemInstance.DryingOwner(place, 0)).ToList();
+        Assert.That(f0.Select(i => (i.ShelfPausedMinutes, i.ExpiresAt)), Is.All.EqualTo(((int?)45, (int?)null)), "R＝旧E−U，不倒推补偿");
+        var b0 = ts.Single(b => b.Slot == 0);
+        Assert.That((b0.ShelfPaused, b0.DoneMinutes, b0.XpSnapshot, b0.Status), Is.EqualTo((true, 40, 12, DryingSlot.Drying)), "进度与经验快照不动");
+        Assert.That(t.Items.Single(i => i.InstanceId == meat[0].InstanceId).ShelfPausedMinutes, Is.EqualTo(30), "可信肉干快照不重算");
+        var b2 = ts.Single(b => b.Slot == 2);
+        Assert.That((b2.Status, b2.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopLegacy)), "已腐败停止不复活，记旧档停止原因");
+        Assert.That(ts.Single(b => b.Slot == 3).ShelfPaused, Is.False, "升级时已到期的不保护");
+
+        var view = E.DryingSlotViews(t).Single(v => v.Slot == 0);
+        Assert.That(view.Line, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("会在完成前腐败"), "位行不再有腐败假警告");
+
+        var r1 = SaveSerializer.Deserialize(SaveSerializer.Serialize(t), Cfg);
+        AdvanceTo(r1, u + 60);
+        var r2 = SaveSerializer.Deserialize(SaveSerializer.Serialize(r1), Cfg);
+        Assert.That(r2.Items.Where(i => i.Owner == ItemInstance.DryingOwner(place, 0)).Select(i => i.ShelfPausedMinutes), Is.All.EqualTo(45), "反复读档不增加 R");
+        AdvanceTo(r2, u + 80);
+        Assert.That(DrySlots(r2).Single(b => b.Slot == 0).Status, Is.EqualTo(DryingSlot.Done), "越过旧截止照常晾好（40＋80＝120）");
+        Assert.That(r2.Items.Count(i => i.ItemId == "dried_berries"), Is.EqualTo(1), "只出一份");
+    }
 }

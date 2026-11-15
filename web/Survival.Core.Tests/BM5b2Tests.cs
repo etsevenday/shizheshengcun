@@ -253,6 +253,10 @@ public class BM5b2Tests : TestBase
         var t1 = s.GameMinute;
         foreach (var b in s.Items.Where(i => i.ItemId == "berry")) b.ExpiresAt = t1 + 60;
         Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        // B50a（Q666）起新投料都暂停保质；这里还原成 53 前未受保护的旧在制位（升级时已到期的旧档位同样走这条原腐败停工路径）
+        var legacy = s.Locations["camp"].Facility.DryingSlots.Single();
+        legacy.ShelfPaused = false;
+        foreach (var b in s.Items.Where(i => i.InDrying && i.ShelfPausedMinutes != null)) { b.ExpiresAt = t1 + b.ShelfPausedMinutes; b.ShelfPausedMinutes = null; }
         var n0 = s.Log.Count;
         WaitUntil(s, t1 + 70);
         var log = LogSince(s, n0);
