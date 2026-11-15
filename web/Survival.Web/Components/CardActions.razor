@@ -430,7 +430,7 @@
     }
 
     private string BatchFresh(ItemBatch b) =>
-        (b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - G.S.GameMinute)) + G.E.PatchDurabilitySuffix(b.Stacks[0]);   // B22b M463：修补包批次标包耐久
+        Ui.BatchFresh(G.E, G.S, b.Stacks, b.ExpiresAt, b.Spoiled) + G.E.PatchDurabilitySuffix(b.Stacks[0]);   // B51a Q724：保护批读本批 R   // B22b M463：修补包批次标包耐久
 
     /// <summary>BM5b2（Q606）：批次组标题「批次」／「批次（{批数}）」。</summary>
     public static string BatchHead(int count) => count > 1 ? $"批次（{count}）" : "批次";

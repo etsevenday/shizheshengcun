@@ -59,7 +59,7 @@
                 var anyReserved = list.Any(i => i.ReservedBy != null);
                 // Q24：随身同物品按真实批次（到期 + 来源 + 预留状态）叠卡；最早到期在最前，无保质在后；占格仍按内核合堆计数
                 var kb = carried ? sideKb : null;
-                var batches = kb?.Count ?? list.Select(i => i.ExpiresAt).Distinct().Count();
+                var batches = kb?.Count ?? list.Select(i => (i.ExpiresAt, i.ShelfPausedMinutes)).Distinct().Count();   // B51a：保护份按 R 成批
                 var movable = list.Any(i => i.ReservedBy == null);
                 var gSel = sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner
                            && (!split || G.CurrentBatch(Owner, id, allKb) is not { } cur || e.CardSideOf(cur.Stacks[0]) == side);
@@ -89,7 +89,7 @@
                             </button>
                             continue;
                         }
-                        var fresh = b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute);
+                        var fresh = Ui.BatchFresh(e, s, b.Stacks, b.ExpiresAt, b.Spoiled);   // B51a Q724：保护批读本批 R
                         <button type="button" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, bk)" class="stack-layer @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" style="--i:@k"
                                 title="@($"第{k + 1}批×{b.Count}：{fresh}{e.PatchDurabilitySuffix(b.Stacks[0])}{(b.Reserved ? " · 预留" : "")}")" aria-label="@($"第{k + 1}批，{b.Count}份，{fresh}")"
                                 @onclick="() => SelectSide(id, allKb, kb)">
@@ -108,7 +108,10 @@
                     // B32a Q356（取代 Q340 物品副标优先级）：副标固定写本卡实际数量（B32c Q361：部分或全部预留都写「×{总数}（预留{数量}）」），不再出主图数量角标；
                     // 第二行先写已腐败、已损坏等明确状态，其次实际保质/到期，再耐久；效果、重量、批次数与完整信息在悬停、聚焦提示与右栏
                     var spoiledFront = stacked ? kb![0].Spoiled : allSpoiled;
-                    var line2 = spoiledFront ? "已腐败" : Ui.CardLine2(e, s, stacked ? head : whole);
+                    // B51a（Q724）：整卡全部受保护时按保护份 R 写短句；部分保护沿原副标（Q773 待定）
+                    var pausedLine = spoiledFront ? null : Ui.PausedCardLine(e, s, stacked ? kb![0].Stacks : list);
+                    if (pausedLine != null) infoLine = pausedLine + (!stacked && batches > 1 && !pausedLine.Contains("批") ? $" · {batches}批" : "");
+                    var line2 = spoiledFront ? "已腐败" : pausedLine ?? Ui.CardLine2(e, s, stacked ? head : whole);
                     var line2Danger = line2 is "已腐败" or "已损坏";
                 }
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@

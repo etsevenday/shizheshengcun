@@ -340,6 +340,42 @@ public class B51aTests : TestBase
         Assert.That(E.ResumeBlockReason(s), Is.Null, "本单保障登记的这件自磨归 0 仍可走完本单");
         Assert.That(GameEngine.ProductionToolUsable(new ItemInstance { ItemId = "x", Durability = null }), Is.True, "无耐久工具沿原许可");
     }
+    // ───────────── M961 Q724 显示 ─────────────
+
+    /// <summary>Q724-A01／A02（核心侧）：保护份自成真实批次（BatchKey 带 R），不读原截止当腐败；释放后显示 C+R 正常期限、不残留暂停。</summary>
+    [Test]
+    public void Q724_A02_ProtectedPortionOwnBatch_ReleasedShowsNormalExpiry()
+    {
+        var (s, _) = BandageWithHerbs(3, 30);
+        Start(s, ActionRequest.Craft("bandage"));
+        s.GameMinute += 60;   // 越过原截止（模拟合法暂停）
+        var batches = E.BatchesOf(s, ItemInstance.Carried, "herb");
+        Assert.That(batches.Count, Is.EqualTo(2), "保护 1 份与未投入 2 份分批");
+        var prot = batches.Single(b => b.Stacks[0].ShelfPausedMinutes != null);
+        Assert.That((prot.Count, prot.Spoiled, prot.Stacks[0].ShelfPausedMinutes), Is.EqualTo((1, false, (int?)30)));
+        Assert.That(batches.Single(b => b != prot).Spoiled, Is.True, "未投入余料照常腐败");
+        Assert.That(GameEngine.ShelfPausedText(30), Is.EqualTo("保质暂停，剩余30分钟"));
+        Assert.That(GameEngine.ShelfPausedBatchesText(2), Is.EqualTo("保质暂停 · 2批"));
+        s.Main!.Status = ActionStatus.Paused;
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        Assert.That(s.Items.Where(i => i.ItemId == "herb").All(i => i.ShelfPausedMinutes == null), Is.True, "释放后不残留暂停");
+    }
+
+    /// <summary>Q724（界面源码）：卡副标、批次层、详情批次、操作窗批次、装备速览、制作批次、安全屋都先读保护 R，不写“不会腐败”；混合沿原副标（Q773），不接“含保质暂停×”。</summary>
+    [Test]
+    public void Q724_WebReadsShelfPause()
+    {
+        var ui = Web("Services", "Ui.cs");
+        Assert.That(ui, Does.Contain("if (i.ShelfPausedMinutes is int r && !e.IsSpoiled(s, i)) return GameEngine.ShelfPausedText(r);"));
+        Assert.That(ui, Does.Contain("public static string BatchFresh(").And.Contain("public static string? PausedCardLine("));
+        var shelf = Web("Components", "ItemShelf.razor");
+        Assert.That(shelf, Does.Contain("Ui.BatchFresh(e, s, b.Stacks, b.ExpiresAt, b.Spoiled)").And.Contain("Ui.PausedCardLine("));
+        Assert.That(Web("Components", "ItemDetail.razor"), Does.Contain("GroupBy(i => (i.ExpiresAt, i.ShelfPausedMinutes))").And.Contain("Ui.BatchFresh(e, s, b.Stacks, b.ExpiresAt, false)"));
+        Assert.That(Web("Components", "CardActions.razor"), Does.Contain("Ui.BatchFresh(G.E, G.S, b.Stacks, b.ExpiresAt, b.Spoiled)"));
+        Assert.That(Web("Components", "GearPeekDetail.razor"), Does.Contain("it.ShelfPausedMinutes != null ? Ui.FreshOf"));
+        foreach (var f in new[] { "ItemShelf.razor", "ItemDetail.razor", "CardActions.razor", "BattleSupplies.razor" })
+            Assert.That(Web("Components", f), Does.Not.Contain("含保质暂停"), f + "：Q773 待定");
+    }
 }
 
 /// <summary>B51a 中撤退离地保留（Q471）的恢复句分组（Q723-A01）：同目的地／物主／卡侧内同名同精确截止合计，不同截止或不同目的地分句。</summary>

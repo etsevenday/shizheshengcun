@@ -738,7 +738,7 @@ else
     private string BatchText(ItemInstance b, int n)
     {
         var where = b.IsCarried ? "随身" : "地面";
-        var fresh = b.ExpiresAt.HasValue ? " · " + Ui.Fresh(b.ExpiresAt.Value - G.S.GameMinute) : "";
+        var fresh = b.ShelfPausedMinutes != null ? " · " + Ui.FreshOf(G.E, G.S, b) : b.ExpiresAt.HasValue ? " · " + Ui.Fresh(b.ExpiresAt.Value - G.S.GameMinute) : "";   // B51a Q724
         return $"{where}×{n}{fresh}";
     }
 

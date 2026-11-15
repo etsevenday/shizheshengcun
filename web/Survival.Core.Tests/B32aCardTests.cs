@@ -259,7 +259,7 @@ public class B32aCardTests : TestBase
         Assert.That(shelf, Does.Not.Contain("k2-tag qty"), "去掉重复的主图数量角标");
         Assert.That(shelf, Does.Contain("<div class=\"k2-sub is-qty\" title=\"@tLine\">@CardStates.ItemQtyText(t.Count, t.ReservedBy != null ? t.Count : 0)</div>"), "独立工具卡副标「×1」，被预留时「×1（预留1）」");
         Assert.That(shelf, Does.Contain("var tLine2 = deployed ? tLine : Ui.CardLine2(e, s, t);"), "自身阻断（已部署）排在第二行最前");
-        Assert.That(shelf, Does.Contain("var line2 = spoiledFront ? \"已腐败\" : Ui.CardLine2(e, s, stacked ? head : whole);"));
+        Assert.That(shelf, Does.Contain("var line2 = spoiledFront ? \"已腐败\" : pausedLine ?? Ui.CardLine2(e, s, stacked ? head : whole);"), "B51a Q724：全保护卡先写保护短句");
         Assert.That(shelf, Does.Contain("<PotCard @key=\"@(\"t:\" + inst)\" Pot=\"t\" />"), "复合锅卡仍走锅卡（水量与食材）");
         var ui = Web("Services", "Ui.cs");
         var at = ui.IndexOf("public static string? CardLine2(", StringComparison.Ordinal);

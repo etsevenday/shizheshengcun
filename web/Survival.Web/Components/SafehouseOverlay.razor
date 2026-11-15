@@ -119,6 +119,7 @@
     private string ExpiryText(ItemInstance it)
     {
         if (!it.ExpiresAt.HasValue) return "";
+        if (it.ShelfPausedMinutes is int r && !G.E.IsSpoiled(G.S, it)) return " · " + GameEngine.ShelfPausedText(r);   // B51a Q724
         return G.E.IsSpoiled(G.S, it) ? " · 已腐败" : $" · 剩{Clock.Duration(it.ExpiresAt.Value - G.S.GameMinute)}";
     }
 

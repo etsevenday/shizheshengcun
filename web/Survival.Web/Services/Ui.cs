@@ -55,13 +55,41 @@ public static class Ui
         return $"{minutesLeft / 60}小时后腐败";
     }
 
-    /// <summary>保质文字；受本次烹饪保护的写“受热保护中”（Q16：不宣称永久不腐败，过原期限的写明取出即腐败）。</summary>
+    /// <summary>
+    /// 保质文字；受本次烹饪保护的写“受热保护中”（Q16：不宣称永久不腐败，过原期限的写明取出即腐败）。
+    /// B51a（Q724）：本份确有生产／晾制保护 R 时先写“保质暂停，剩余{时长}”（时长来自本份 R），不按原截止倒计时、不写不会腐败。
+    /// </summary>
     public static string FreshOf(GameEngine e, GameState s, ItemInstance i)
     {
+        if (i.ShelfPausedMinutes is int r && !e.IsSpoiled(s, i)) return GameEngine.ShelfPausedText(r);
         if (!i.ExpiresAt.HasValue) return "";
         if (e.IsHeatProtected(s, i))
             return e.PastExpiryButProtected(s, i) ? "受热保护中（已过原期限，取出即腐败）" : $"受热保护中（原期限{FreshLeft(i.ExpiresAt.Value - s.GameMinute)}）";
         return Fresh(i.ExpiresAt.Value - s.GameMinute);
+    }
+
+    /// <summary>
+    /// B51a（Q724-A02）一个真实批次（同 BatchKey，保护份带 R 自成一批）的保质短句：已腐败 → 保护份“保质暂停，剩余{R}” → 无期限“不会腐败”
+    /// → 单份受热保护沿 FreshOf → 原倒计时。
+    /// </summary>
+    public static string BatchFresh(GameEngine e, GameState s, IReadOnlyList<ItemInstance> stacks, int? expiresAt, bool spoiled)
+    {
+        if (spoiled) return "已腐败";
+        if (stacks.Count > 0 && stacks[0].ShelfPausedMinutes is int r) return GameEngine.ShelfPausedText(r);
+        if (!expiresAt.HasValue) return "不会腐败";
+        return stacks.Count == 1 && e.IsHeatProtected(s, stacks[0]) ? FreshOf(e, s, stacks[0]) : Fresh(expiresAt.Value - s.GameMinute);
+    }
+
+    /// <summary>
+    /// B51a（Q724-A02）整卡副标：卡内有期限且未腐败的份全部受保护时，同 R 写“保质暂停，剩余{时长}”，R 不同写“保质暂停 · {批数}批”（批数按保护份真实批次边界）；
+    /// 部分保护（混合）或没有保护返回 null，沿原副标（Q773 待定，“含保质暂停×{数量}”拼法未接）。
+    /// </summary>
+    public static string? PausedCardLine(GameEngine e, GameState s, IEnumerable<ItemInstance> list)
+    {
+        var live = list.Where(i => (i.ExpiresAt.HasValue || i.ShelfPausedMinutes.HasValue) && !e.IsSpoiled(s, i)).ToList();
+        if (live.Count == 0 || live.Any(i => i.ShelfPausedMinutes == null)) return null;
+        var rs = live.Select(i => i.ShelfPausedMinutes!.Value).Distinct().ToList();
+        return rs.Count == 1 ? GameEngine.ShelfPausedText(rs[0]) : GameEngine.ShelfPausedBatchesText(live.Select(i => (i.ExpiresAt, i.ShelfPausedMinutes)).Distinct().Count());
     }
 
     /// <summary>B32a Q356 物品卡第二行：明确状态优先（已腐败、已损坏），其次实际保质/到期（含受热保护），再耐久（不带弹仓）；都没有返回 null（不出第二行）。</summary>

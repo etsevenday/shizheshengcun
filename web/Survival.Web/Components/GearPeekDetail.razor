@@ -61,7 +61,7 @@
         @if (it.ExpiresAt.HasValue)
         {
             @* 只读批次：这一份的到期，不提供点选 *@
-            <div><span>@RailText.Batch</span><b>×@it.Count@(it.ReservedBy != null ? " · 预留" : "") · @(e.IsHeatProtected(s, it) ? Ui.FreshOf(e, s, it) : Ui.Fresh(it.ExpiresAt.Value - s.GameMinute))</b></div>
+            <div><span>@RailText.Batch</span><b>×@it.Count@(it.ReservedBy != null ? " · 预留" : "") · @(e.IsHeatProtected(s, it) || it.ShelfPausedMinutes != null ? Ui.FreshOf(e, s, it) : Ui.Fresh(it.ExpiresAt.Value - s.GameMinute))</b></div>
         }
         @if (e.IsPot(it))
         {

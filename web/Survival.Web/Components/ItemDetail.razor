@@ -19,7 +19,7 @@
     var group = sel.Kind == SelectionKind.ItemGroup;
     var batches = group
         ? e.BatchesOf(s, sel.Owner, sel.Id).Select(b => new Batch(b.Key, b.ExpiresAt, b.Count, b.Reserved, b.Stacks)).ToList()
-        : list.GroupBy(i => i.ExpiresAt).Select(g => new Batch(g.Key?.ToString() ?? "-", g.Key, g.Sum(i => i.Count), g.Any(i => i.ReservedBy != null), g.ToList())).ToList();
+        : list.GroupBy(i => (i.ExpiresAt, i.ShelfPausedMinutes)).Select(g => new Batch((g.Key.ExpiresAt?.ToString() ?? "-") + (g.Key.ShelfPausedMinutes is int r ? "|p:" + r : ""), g.Key.ExpiresAt, g.Sum(i => i.Count), g.Any(i => i.ReservedBy != null), g.ToList())).ToList();   // B51a：保护份按 R 分批，不与同截止未保护份合并
     var busy = e.IsBusy(s) || G.Running;
 }
 
@@ -176,7 +176,7 @@ else
             @if (chosen.ExpiresAt.HasValue || chosen.Reserved)
             {
                 @* Q589：当前（所选或默认）批次的实际到期／腐败与预留状态在首屏；完整批次明细在「批次」组 *@
-                <div><span>@RailText.Batch</span><b class="@(Spoiled(chosen) ? "danger-text" : "")">×@chosen.Count@(chosen.Reserved ? " · 预留" : "")@(chosen.ExpiresAt.HasValue ? " · " + (chosen.Stacks.Count == 1 && e.IsHeatProtected(s, chosen.Stacks[0]) ? Ui.FreshOf(e, s, chosen.Stacks[0]) : Ui.Fresh(chosen.ExpiresAt.Value - s.GameMinute)) : "")</b></div>
+                <div><span>@RailText.Batch</span><b class="@(Spoiled(chosen) ? "danger-text" : "")">×@chosen.Count@(chosen.Reserved ? " · 预留" : "")@(chosen.ExpiresAt.HasValue ? " · " + Ui.BatchFresh(e, s, chosen.Stacks, chosen.ExpiresAt, false) : "")</b></div>
             }
             @if (potInfo)
             {
@@ -292,7 +292,7 @@ else
                     </text> : @<text>
                         <span>×@b.Count@(b.Reserved ? " · 预留" : "")@(b.Stacks[0].RewardOrigin != null ? " · 本实例战利品（可封存）" : "")@(e.IsIdentifiedWhite(b.Stacks[0]) || e.IsIdentifiedTutorial(b.Stacks[0]) ? " · 已鉴定" : "")@(e.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")@(e.PatchDurabilitySuffix(b.Stacks[0]))</span>
                         @* 试玩修复 M77-B9：受本次烹饪保护的食材不显示普通倒计时，写“受热保护中（原期限N小时）” *@
-                        <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(!b.ExpiresAt.HasValue ? "不会腐败" : b.Stacks.Count == 1 && e.IsHeatProtected(s, b.Stacks[0]) ? Ui.FreshOf(e, s, b.Stacks[0]) : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute))</span>
+                        <span class="@(Spoiled(b) ? "danger-text" : "muted")">@Ui.BatchFresh(e, s, b.Stacks, b.ExpiresAt, false)</span>
                     </text>;
                     @* BM5b2（S06 Q606）：批次只读明细——无选中框、不可点选；转移与食用由系统按最早有效到期自动配批 *@
                     <div class="batch readonly">@batchText</div>
