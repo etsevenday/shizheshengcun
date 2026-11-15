@@ -244,6 +244,41 @@ public class B51aTests : TestBase
         Assert.That(E.CanStart(s, ActionRequest.Craft("ex_expedition_bar")), Is.Not.Null, "开工已到期原拒绝");
         Assert.That(Cfg.Recipes.Count(r => r.ShelfRule != null), Is.EqualTo(2), "只两条配方");
     }
+    // ───────────── M959 预估说明：Q724 条件说明、处理尸体三句 ─────────────
+
+    /// <summary>Q724-A01：只有本次将绑定有期限原料才显示一次保护说明；无期限配方不显示；预览不让真实原料取得保护。</summary>
+    [Test]
+    public void Q724_A01_PreviewNoteOnlyWhenBindingPerishable()
+    {
+        var (s, herb) = BandageWithHerbs(2, 300);
+        var p = E.Preview(s, ActionRequest.Craft("bandage", batchCount: 2));
+        Assert.That(p.Notes.Count(n => n == "开工后，所选原料暂停保质；退料恢复剩余保质。"), Is.EqualTo(1));
+        Assert.That(herb.ShelfPausedMinutes, Is.Null, "预览不保护");
+
+        var t = New();
+        t.Items.RemoveAll(i => i.ItemId is "herb");
+        E.DebugGive(t, "cloth", 2);
+        foreach (var i in E.CreateItems(t, "herb", 1, ItemInstance.Carried)) i.ExpiresAt = null;
+        Assert.That(E.Preview(t, ActionRequest.Craft("bandage")).Notes, Has.None.EqualTo(GameEngine.ProductionShelfNote), "无期限原料不造 R，不显示说明");
+    }
+
+    /// <summary>Q722（逐字稿 B51 表）：处理尸体预估改 butcherNote＋“尸体剩余保质：{时长}”，旧假失败句撤去；开工保护后同尸体读“保质暂停，剩余{时长}”；保护说明一次。</summary>
+    [Test]
+    public void Q722_ButcherPreviewSentences()
+    {
+        var s = New();
+        var carcass = E.CreateItems(s, "carcass_feral_dog", 1, s.Ground).Single();
+        E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried);
+        var left = carcass.ExpiresAt!.Value - s.GameMinute;
+        var p = E.Preview(s, ActionRequest.Butcher(carcass.InstanceId));
+        Assert.That(p.Notes, Does.Contain("按制造消耗，制造熟练不加速；取消退回原尸体，无产物。"));
+        Assert.That(p.Notes, Does.Contain($"尸体剩余保质：{Clock.Duration(left)}"));
+        Assert.That(p.Notes.Count(n => n == GameEngine.ProductionShelfNote), Is.EqualTo(1));
+        Assert.That(p.Notes.Any(n => n.Contains("保质期不刷新") || n.Contains("完成时已腐败") || n.Contains("腐败")), Is.False);
+        Start(s, ActionRequest.Butcher(carcass.InstanceId));
+        var q = E.Preview(s, ActionRequest.Butcher(carcass.InstanceId));
+        Assert.That(q.Notes, Does.Contain($"保质暂停，剩余{Clock.Duration(left)}"));
+    }
 }
 
 /// <summary>B51a 中撤退离地保留（Q471）的恢复句分组（Q723-A01）：同目的地／物主／卡侧内同名同精确截止合计，不同截止或不同目的地分句。</summary>

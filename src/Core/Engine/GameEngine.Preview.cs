@@ -54,7 +54,10 @@ namespace Survival.Core.Engine
             }
             if (plan.Type == ActionType.Use) p.StatsAfterImmediate = c.Stats.Clone();
             var a = plan.IsSub ? c.Sub : c.Main;
-            p.NoExit = a != null && ExitLocked(a);   // B41c2（Q516、Q517）：真实开工会不会锁定（与真实开工同一认定，副本上不留标记）
+            p.NoExit = a != null && ExitLocked(a);
+            // B51a（Q724-A01）：副本按真实开工同一规则建 R；只有本次确实绑定了有期限原料才在预估说明显示一次（预览本身不让真实原料取得保护）
+            if (a != null && ShelfPauseWork(a.Type) && a.ReservedItemIds.Any(rid => FindItem(c, rid)?.ShelfPausedMinutes != null)
+                && !p.Notes.Contains(ProductionShelfNote)) p.Notes.Add(ProductionShelfNote);   // B41c2（Q516、Q517）：真实开工会不会锁定（与真实开工同一认定，副本上不留标记）
             if (a != null)
             {
                 a.HazardHit = false;
@@ -362,8 +365,10 @@ namespace Survival.Core.Engine
                         p.ToolMaxDurability = tool.MaxDurability;
                         if (tool.Durability.HasValue) p.ToolDurabilityAfter = Math.Max(0, tool.Durability.Value - c.ToolWearOnSuccess);
                     }
-                    p.Notes.Add("按制造消耗，制造熟练度不加速；取消返还原尸体，保质期不刷新；完成时已腐败则没有产物");
-                    if (inst?.ExpiresAt is int ex) p.Notes.Add($"尸体还有{Clock.Duration(System.Math.Max(0, ex - s.GameMinute))}腐败");
+                    // B51a（Q722／Q701，逐字稿 B51 表 butcherNote／corpseBefore／corpseDuring）：撤“保质期不刷新／完成时已腐败则没有产物／尸体还有…腐败”假失败语义
+                    p.Notes.Add("按制造消耗，制造熟练不加速；取消退回原尸体，无产物。");
+                    if (inst?.ShelfPausedMinutes is int pr) p.Notes.Add($"保质暂停，剩余{Clock.Duration(pr)}");
+                    else if (inst?.ExpiresAt is int ex) p.Notes.Add($"尸体剩余保质：{Clock.Duration(System.Math.Max(0, ex - s.GameMinute))}");
                     break;
                 }
                 case ActionType.Rest:
