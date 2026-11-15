@@ -319,7 +319,7 @@ namespace Survival.Core.Engine
             var healReady = s.BandageReadyAt <= s.GameMinute;
             var heal = healReady ? Math.Min(BandageHeal(s, medLevel), s.Stats.HealthMax - s.Stats.Health) : 0;
             if (!healReady) parts.Add(HealCooldownText(s));
-            else if (heal > 0) parts.Add($"健康{Fmt.N(s.Stats.Health)}→{Fmt.N(s.Stats.Health + heal)}");
+            else if (heal > 0) { parts.Add($"健康{Fmt.N(s.Stats.Health)}→{Fmt.N(s.Stats.Health + heal)}"); if (RevivePreview(s, heal) is string rv) parts.Add(rv); }
             else parts.Add("健康已满，本次不回血");
             if (b.Infected)
             {
@@ -329,6 +329,12 @@ namespace Survival.Core.Engine
             }
             return string.Join("；", parts);
         }
+
+        /// <summary>B47b（S14 2026-11-14 B34 节「成长、状态详情与帮助逐字」、R09 Q695）：包扎／医疗预估真实回血使濒死者脱离濒死时列「脱离濒死状态」；没有实际回血不承诺。</summary>
+        public const string ReviveText = "脱离濒死状态";
+
+        /// <summary>当前（已切到目标本人的）身体这次回血 heal 是否使其脱离濒死：是则返回「脱离濒死状态」。</summary>
+        public string? RevivePreview(GameState s, double heal) => heal > 0 && IsDying(s, s.Player) ? ReviveText : null;
 
         /// <summary>健康恢复冷却行（N02 附录 §4，预览与结算同句）。</summary>
         private static string HealCooldownText(GameState s) => $"健康恢复冷却中（还需{Clock.Duration(s.BandageReadyAt - s.GameMinute)}），本次不恢复健康";

@@ -36,4 +36,23 @@ public class B47bWebTests
         var bp = Web("Components", "BattlePanel.razor");
         Assert.That(bp, Does.Not.Contain("G.S."), "战斗信息读显示快照");
     }
+
+    /// <summary>Q695-A01／Q696-A01：濒死只在濒死时露出——主要状态（左栏、队伍栏）、战斗站位“0/{上限} · 濒死”＋黯淡跪姿＋抵抗率角标、战斗信息常驻、休息预估原因。</summary>
+    [Test]
+    public void Q695_A01_DyingShownOnlyWhileDying()
+    {
+        var sv = Web("Services", "StatusView.cs");
+        Assert.That(sv, Does.Contain("if (e.IsDying(s, s.Player))").And.Contain("Effect = GameEngine.DyingIconText"));
+        var hud = Web("Components", "Hud.razor");
+        Assert.That(hud, Does.Contain("e.IsDying(s, s.Player)").And.Contain("e.ResistanceShort(s.Player)"));
+        Assert.That(Web("Components", "PartyPanel.razor"), Does.Contain("@e.ResistanceShort(a)"));
+        var bs = Web("Components", "BattleScreen.razor");
+        Assert.That(bs, Does.Contain("GameEngine.DyingHealthText(st.HealthMax)"));
+        Assert.That(bs, Does.Contain("@(dying ? \"dying\" : \"\")"));
+        Assert.That(bs, Does.Contain("G.E.ResistanceShort(s.Player)"));
+        Assert.That(Web("Components", "BattlePanel.razor"), Does.Contain("GameEngine.DyingHealthText(va.Stats.HealthMax)"));
+        Assert.That(Web("Components", "RestOverlay.razor"), Does.Contain("GameEngine.DyingIconText"));
+        var css = Web("wwwroot", "css", "battle.css");
+        Assert.That(css, Does.Contain(".anc.ally.dying .anc-art img { filter: brightness(var(--dying-dim, .72))"));
+    }
 }

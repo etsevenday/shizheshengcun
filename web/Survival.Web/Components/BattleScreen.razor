@@ -550,6 +550,9 @@
         var viewing = G.BattleAllyView == id;
         var name = me ? "你" : e.ActorDisplayName(s, id);
         var st = s.Actors.TryGetValue(id, out var act) ? act.Stats : s.Stats;
+        // B47b（S14 B34 Q615／Q616、R09 Q695／Q696）：健康0的活人是“濒死”——常驻“0/{上限} · 濒死”、立绘黯淡跪姿（独立 dying 类，不复用死者不可选），可操作性不变
+        var dying = e.IsDying(s, s.Actor(id));
+        var hpText = dying ? GameEngine.DyingHealthText(st.HealthMax) : $"{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}";
         var fa = b.Fighter(id);
         var apMax = fa.Acting && fa.ActivationAp > 0 ? fa.ActivationAp : e.NormalActivationAp(s.Actor(id));
         var swapSlot = G.BattleSwapAiming && G.SwapAimSlots().Contains(pos);
@@ -561,8 +564,8 @@
         var swapOff = G.BattleSwapAiming && !swapSlot;
         // B34（S14 Q577）：真正等待玩家下令、还没选动作时，当前实际行动者轻微高亮＋微动态待机＋人物局部微聚焦（只作用于立绘层，不改站位与点击对象）
         var awaitCmd = acting && G.BattleAction == null && !G.DialogueLocked && !G.PlaybackActive && G.E.AwaitingPlayer(s);
-        <div class="anc ally @Pulse(BattleFxUnit.AllySide, id) @(acting ? "acting" : "") @(awaitCmd ? "await-cmd" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" data-peek="@Peek.Ally(id)" role="button" tabindex="@(swapOff ? -1 : 0)" aria-pressed="@viewing" aria-disabled="@(swapOff ? "true" : null)"
-             aria-label="@($"{(acting ? BattleInfoCopy.CurrentActorAria(name) + "，" : "")}我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(targetable ? "，可作为目标" : "")}")"
+        <div class="anc ally @Pulse(BattleFxUnit.AllySide, id) @(dying ? "dying" : "") @(acting ? "acting" : "") @(awaitCmd ? "await-cmd" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" data-peek="@Peek.Ally(id)" role="button" tabindex="@(swapOff ? -1 : 0)" aria-pressed="@viewing" aria-disabled="@(swapOff ? "true" : null)"
+             aria-label="@($"{(acting ? BattleInfoCopy.CurrentActorAria(name) + "，" : "")}我方{pos}号位 {name}，健康{hpText}，体力{Ui.N(st.Energy)}{(targetable ? "，可作为目标" : "")}")"
              title="@(swapSlot ? SwapTip(G.SwapOptionFor(pos)) : pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在“战斗信息”查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, pos, token, locked)" @onkeydown="ev => AllyKey(ev, id, pos, token, locked)"
              @onmouseenter="() => { if (swapSlot) G.HoverSwapSlot(pos); else G.HoverBattleAlly(targetable ? id : null); }" @onmouseleave="() => { G.HoverSwapSlot(null); G.HoverBattleAlly(null); }"
              @onfocus="() => { if (swapSlot) G.HoverSwapSlot(pos); }">
@@ -581,7 +584,7 @@
             </div>
             <div class="anc-foot">
                 <div class="anc-chips">@AllyChips(id)</div>
-                <div class="anc-nums"><span title="健康">♥@(Ui.N(st.Health))</span><span title="体力">体@(Ui.N(st.Energy))</span></div>
+                <div class="anc-nums"><span title="健康">♥@(dying ? hpText : Ui.N(st.Health))</span><span title="体力">体@(Ui.N(st.Energy))</span></div>
                 <div class="track hp"><i style="width:@Ui.Bar(st.Health, st.HealthMax)%"></i></div>
                 <div class="track en"><i style="width:@Ui.Bar(st.Energy, st.EnergyMax)%"></i></div>
             </div>
@@ -664,6 +667,8 @@
         if (GameEngine.PlayerWeakActive(b)) { <span class="st bad bdg">虚弱</span> }
         if (s.Body.BleedTriggers > 0) { <span class="st bad bdg">出血×@s.Body.BleedTriggers</span> }
         if (s.Body.Infected) { <span class="st bad bdg" title="@($"已感染：病毒{Ui.N(s.Body.VirusLoad)}")">感染</span> }
+        // B47b（R09 Q695）：仅濒死时露出本人致死抵抗率；悬停为「濒死」图标说明全文
+        if (G.E.IsDying(s, s.Player)) { <span class="st bad bdg dying-res" title="@GameEngine.DyingIconText">@G.E.ResistanceShort(s.Player)</span> }
     };
 
     /// <summary>

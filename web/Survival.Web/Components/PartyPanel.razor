@@ -154,7 +154,7 @@
             }
             </div>
             <div class="party-stats tiny" title="健康/饱食/水分/体力/清醒/精神/病毒">
-                健@(Fmt.T(st.Health)) 饱@(Fmt.T(st.Satiety)) 水@(Fmt.T(st.Hydration)) 体@(Fmt.T(st.Energy)) 醒@(Fmt.T(st.Wakefulness)) 精@(Fmt.T(st.Morale))@(a.Body.Infected ? $" 病毒{Fmt.N(a.Body.VirusLoad)}" : "")
+                健@(Fmt.T(st.Health))@if (e.IsDying(s, a)) {<text> </text><b class="danger-text" title="@GameEngine.DyingIconText">@GameEngine.DyingWord</b><text> </text><span class="dying-res">@e.ResistanceShort(a)</span>} 饱@(Fmt.T(st.Satiety)) 水@(Fmt.T(st.Hydration)) 体@(Fmt.T(st.Energy)) 醒@(Fmt.T(st.Wakefulness)) 精@(Fmt.T(st.Morale))@(a.Body.Infected ? $" 病毒{Fmt.N(a.Body.VirusLoad)}" : "")
             </div>
             @if (!active)
             {

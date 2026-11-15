@@ -653,6 +653,7 @@ namespace Survival.Core.Engine
                 if (s.Body.BleedTriggers > 0) parts.Add("止血");
                 var heal = s.BandageReadyAt <= s.GameMinute ? Math.Min(BandageHeal(s, lv, false), s.Stats.HealthMax - s.Stats.Health) : 0;
                 if (heal > 0) parts.Add($"健康{Fmt.N(s.Stats.Health)}→{Fmt.N(s.Stats.Health + heal)}");
+                if (RevivePreview(s, heal) is string rv) parts.Add(rv);   // B47b
                 if (BandageVirusUseful(s)) parts.Add($"病毒{Fmt.N(s.Body.VirusLoad)}→{Fmt.N(Math.Max(SuppressMin, s.Body.VirusLoad - BandageVirusReduction(s, lv)))}");
                 return (parts.Count > 0 ? "预计：" + string.Join("，", parts) + "；" : "") + ConsultCooldowns(s, a);
             }

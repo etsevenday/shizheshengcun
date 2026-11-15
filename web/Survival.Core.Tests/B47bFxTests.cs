@@ -326,4 +326,26 @@ public class B47bFxTests : BattleTestBase
         Assert.That(E.DrainLifeFx(), Is.Empty);
         Assert.That(s.Log.Select(l => l.Text), Has.One.EqualTo(GameEngine.EnterDyingText("你")));
     }
+
+    // ───────────── M937：濒死显示（Q695、Q696） ─────────────
+
+    /// <summary>Q695-A01：濒死时包扎预估列真实回血及「脱离濒死状态」；正常时不列；抵抗率按本人意志、只带一个百分号。</summary>
+    [Test]
+    public void Q695_A01_BandagePreview_Revive_AndResistanceText()
+    {
+        var s = New(4814);
+        var bu = Cfg.Items.Single(i => i.Id == "bandage").Use!;
+        s.Player.Stats.Health = 0;
+        s.BandageReadyAt = 0;
+        Assert.That(E.MedicineEffectText(s, bu), Does.Contain("健康0.00→").And.EndWith(GameEngine.ReviveText));
+        s.Player.Stats.Health = 30;
+        Assert.That(E.MedicineEffectText(s, bu), Does.Not.Contain(GameEngine.ReviveText));
+        s.Player.Stats.Health = 0;
+        s.BandageReadyAt = s.GameMinute + 30;
+        Assert.That(E.MedicineEffectText(s, bu), Does.Not.Contain(GameEngine.ReviveText), "没有实际回血不承诺脱离");
+        Assert.That(E.ResistanceShort(s.Player), Is.EqualTo($"致死抵抗{E.ResistancePercent(s.Player)}%"));
+        Assert.That(E.ResistanceShort(s.Player), Does.Not.Contain("%%"));
+        Assert.That(GameEngine.DyingHealthText(100), Is.EqualTo("0/100 · 濒死"));
+        Assert.That(GameEngine.DyingIconText, Is.EqualTo("濒死时无法自然恢复健康；需要用药或医疗实际回血。"));
+    }
 }

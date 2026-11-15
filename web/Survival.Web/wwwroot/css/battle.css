@@ -651,3 +651,7 @@
 .bfs-aimrail .rail-id h2 { margin: 0; font-size: var(--fs-title); font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
 .bfs-aimrail .lines { font-size: var(--fs-aux); line-height: 1.5; }
 .bfs-aimrail .risk { font-size: var(--fs-aux); }
+/* ───── B47b（S14 B34 Q615／Q616）：濒死活人的站位立绘——独立 dying 类，黯淡（默认亮度 .72，S14 允许 .65—.80）＋单膝跪式下沉；
+   只改立绘层，姓名、数值与可操作性不变（不复用死者／不可选的压暗与输入禁用） ───── */
+.anc.ally.dying .anc-art img { filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86); transform-origin: bottom center; }
+.anc .st.dying-res { color: #f0a35e; border-color: currentColor; }

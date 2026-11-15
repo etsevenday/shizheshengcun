@@ -49,6 +49,20 @@ namespace Survival.Core.Engine
         /// <summary>该角色当前有效意志等级的致死抵抗百分点（事件开始前的等级）。</summary>
         public int ResistancePercent(ActorState actor) => ResistancePercent(SkillLevel(actor, Willpower));
 
+        // ───────────── B47b（R09 Q695、Q696；S14 B34 Q615／Q616 节）：濒死的显示文字 ─────────────
+
+        /// <summary>主要状态、医疗目标与战斗站位的濒死标识。</summary>
+        public const string DyingWord = "濒死";
+
+        /// <summary>Q695：「濒死」图标说明全文。</summary>
+        public const string DyingIconText = "濒死时无法自然恢复健康；需要用药或医疗实际回血。";
+
+        /// <summary>Q695：濒死时露出的本人抵抗率“致死抵抗{抵抗率}”（{抵抗率}已带一个百分号）。</summary>
+        public string ResistanceShort(ActorState actor) => $"致死抵抗{ResistancePercent(actor)}%";
+
+        /// <summary>Q696：仍活着的濒死者常驻健康“0/{上限} · 濒死”（上限按原整数显示）。</summary>
+        public static string DyingHealthText(double max) => $"0/{Fmt.T(max)} · {DyingWord}";
+
         /// <summary>
         /// 一次致死判定（R09 §4）：均匀 u∈[0,1)，u &lt; P/100 抵抗成功，相等判失败。纯函数（不抽随机），真实判定由 DamageActor 抽 u 后调用。
         /// </summary>

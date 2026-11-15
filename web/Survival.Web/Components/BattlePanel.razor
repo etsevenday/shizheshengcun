@@ -102,7 +102,8 @@ else if (b != null)
                 <h2>@(vid == GameState.PlayerId ? "你" : e.ActorDisplayName(s, vid))</h2>
             </div>
             <div class="lines">
-                <div><span>健康 / 体力</span><b>@Ui.N(va.Stats.Health)/@Ui.T(va.Stats.HealthMax) · @Ui.N(va.Stats.Energy)/@Ui.T(va.Stats.EnergyMax)</b></div>
+                @* B47b（R09 Q695／Q696）：濒死活人常驻“0/{上限} · 濒死”（不另加受伤／抵抗明细行），抵抗率在站位角标 *@
+                <div><span>健康 / 体力</span><b>@(e.IsDying(s, va) ? GameEngine.DyingHealthText(va.Stats.HealthMax) : $"{Ui.N(va.Stats.Health)}/{Ui.T(va.Stats.HealthMax)}") · @Ui.N(va.Stats.Energy)/@Ui.T(va.Stats.EnergyMax)</b></div>
                 <div><span>行动点</span><b>@(vAct ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{vf.Ap}/{apMax}" : $"等待；每次普通激活{e.NormalActivationAp(va)}AP（战术训练阶位{va.TacticalTier}）")</b></div>
                 <div><span>有效速度</span><b>@Ui.Speed(mySpeed.Speed)（基础@(Ui.Speed(mySpeed.Base))、装备@(Ui.SignedT(mySpeed.Gear))@(mySpeed.Status.Count > 0 ? "、" + string.Join("、", mySpeed.Status) : "")@(vFs > 1 ? "、" + GameEngine.FirstStrikeTag(vFs) : "")）</b></div>
                 <div><span>追击进度</span><b>@Ui.T(vf.Pursuit)/100</b></div>

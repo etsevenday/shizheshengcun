@@ -201,6 +201,8 @@ kbd { font-family: inherit; font-size: var(--fs-aux); color: var(--muted); margi
 .vital.critical .track i { background: var(--danger); }
 .vital.critical .vital-label b { color: var(--danger); }
 .vital .flag { font-size: var(--fs-aux); margin-left: 6px; }
+/* B47b（R09 Q695）：濒死时露出的本人致死抵抗率 */
+.dying-res { color: #f0a35e; white-space: nowrap; }
 .weight { padding: 12px 14px; }
 .weight strong { font-size: var(--fs-title); font-weight: 500; }
 .guide { padding: 12px 14px; font-size: var(--fs-aux); line-height: 1.7; }

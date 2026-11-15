@@ -264,6 +264,7 @@ namespace Survival.Core.Engine
                             var fx = new List<string>();
                             if (bleed) fx.Add("止血");
                             if (heal > 0) fx.Add($"健康{Fmt.N(s.Stats.Health)}→{Fmt.N(s.Stats.Health + heal)}（共享绷带60分钟回血冷却）");
+                            if (RevivePreview(s, heal) is string rv) fx.Add(rv);   // B47b
                             if (status) fx.Add(PlayerWeakActive(b) ? "解除虚弱" : "解除失衡");
                             p.EffectText = fx.Count > 0 ? string.Join("；", fx) : why;
                             if (p.EffectText != null) p.Notes.Insert(0, p.EffectText);

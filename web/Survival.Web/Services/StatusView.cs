@@ -55,6 +55,13 @@ public static class StatusView
                 Danger = c.Id is "bleed" or "infected",
             });
         }
+        // B47b（R09 Q695）：真实濒死存活者的「濒死」图标（危险类，挂健康下）；说明全文固定，正常存活时不出现
+        if (e.IsDying(s, s.Player))
+            list.Add(new StatusChip
+            {
+                Id = "dying", Name = GameEngine.DyingWord, Effect = GameEngine.DyingIconText,
+                Harmful = true, Danger = true, Anchor = "health", Icon = "status_unknown",
+            });
         // 归零：健康按配置每小时扣减（S12 §3），文案与暂停提示同源（AlertText）
         foreach (var id in new[] { StatId.Satiety, StatId.Hydration, StatId.Wakefulness, StatId.Energy })
         {
