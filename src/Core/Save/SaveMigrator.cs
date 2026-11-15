@@ -90,6 +90,7 @@ namespace Survival.Core.Save
         public const string Schema51 = "51";
         public const string Schema52 = "52";
         public const string Schema53 = "53";
+        public const string Schema54 = "54";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -158,6 +159,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema51) From51To52(s);
             if (s.SchemaVersion == Schema52) From52To53(s, config);
             if (s.SchemaVersion == Schema53) From53To54(s, config);
+            if (s.SchemaVersion == Schema54) From54To55(s);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
@@ -1525,7 +1527,7 @@ namespace Survival.Core.Save
         /// </summary>
         private static void From53To54(GameState s, GameConfig config)
         {
-            s.SchemaVersion = GameState.CurrentSchema;
+            s.SchemaVersion = Schema54;
             foreach (var a in new[] { s.Main, s.Sub, s.StashedWork })
             {
                 if (a == null || !Engine.GameEngine.ShelfPauseWork(a.Type)) continue;
@@ -1539,6 +1541,32 @@ namespace Survival.Core.Save
                 {
                     a.ToolGuardId = tid;
                     a.ToolGuardSpent = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 54 → 55（B51b，S08 文首 Q701「本批生产兼容、时间与验收」第二段、Q701-A09，production-and-forecast-q701-q703.json migration）：陶窑／固定净水台串行队列改为全部并行。静默。
+        /// <para>旧等候批（Queued）在升级世界分钟 U 转为在办：进度从 0、StartMinute＝U，从未来第一个世界段起各自推进，不补等候期间进度；批次 ID、投料者、经验快照、
+        /// 原预留输入归属不变（不重新选料、不自动补料）。旧在办批保留已耗进度。升级前已腐败／失效的批不在这里处理，仍在其完成段按原「原料不全」路径失败，不借并行复活。</para>
+        /// <para>各批真实预留（ReservedBy＝批次 ID）、尚无可信 R、不是腐败物且在 U 仍未到原截止的有期限输入，记 R＝旧E−U（不补偿投料至升级已耗保质）；U 时已到期的不保护。
+        /// 只在本版本跳转执行一次，重复读档不再改进度或加 R；旧「取消排队」意图不保存、不恢复，读档不自动取消或收获。</para>
+        /// </summary>
+        private static void From54To55(GameState s)
+        {
+            s.SchemaVersion = GameState.CurrentSchema;
+            var u = s.GameMinute;
+            foreach (var (_, fac) in DryingFacilities(s))
+            {
+                foreach (var b in fac.StationBatches)
+                {
+                    if (b.Queued)
+                    {
+                        b.Queued = false;
+                        b.DoneMinutes = 0;
+                        b.StartMinute = u;
+                    }
+                    foreach (var it in s.Items.Where(i => i.ReservedBy == b.BatchId)) Engine.GameEngine.PauseShelf(s, it);   // 只建 E>U、未暂停、非腐败物
                 }
             }
         }
@@ -1573,7 +1601,7 @@ namespace Survival.Core.Save
             }
         }
 
-        /// <summary>全部地点的外部区与已建安全屋屋内区设施（晾制位所在）。</summary>
+        /// <summary>全部地点的外部区与已建安全屋屋内区设施（晾制位、陶窑／净水台批次所在）。</summary>
         private static IEnumerable<(string Place, FacilityState Fac)> DryingFacilities(GameState s)
         {
             foreach (var kv in s.Locations)

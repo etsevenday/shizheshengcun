@@ -39,7 +39,7 @@ public class B51aTests : TestBase
     [Test]
     public void M956_Schema54_ActionFieldsCloneAndSave()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("54"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("55"));
         var a = new ActionState { ToolGuardId = 7, ToolGuardSpent = true };
         var c = a.Clone();
         Assert.That((c.ToolGuardId, c.ToolGuardSpent), Is.EqualTo(((int?)7, true)));

@@ -74,8 +74,11 @@ namespace Survival.Core.State
         /// "54" 起生产开工原料暂停保质（制作、建造、维护、拆解、处理尸体实际绑定的有期限输入带 ItemInstance.ShelfPausedMinutes＝R，原截止 ExpiresAt 保留作合堆／批次键）
         /// 与生产工具本单保障 ActionState.ToolGuardId／ToolGuardSpent（S08 文首 Q701、B51 Q720—Q726，开发记录 B51a）；53→54 在办生产的未到期输入从升级时剩余保护、
         /// 在办处理尸体的正耐久刀斧登记本单保障（静默）。
+        /// "55" 起陶窑与固定净水台每座最多 10 批全部并行（S08 文首 Q701.2、B51 Q721／Q727，开发记录 B51b）：StationBatch.Queued 不再使用（恒为 false），
+        /// 批次输入带暂停保质 R；54→55 旧等候批在升级时刻转为在办、从未来第一个世界段起各自推进（不补等候进度），在办批保留已耗进度，
+        /// 各批真实预留且在升级时刻未到期的有期限输入从升级时剩余保护（静默）。
         /// </summary>
-        public const string CurrentSchema = "54";
+        public const string CurrentSchema = "55";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -527,8 +530,8 @@ namespace Survival.Core.State
         /// <summary>最近完成的加工记录（进程号@完成段号），读档后据此不重复发放。</summary>
         public List<string> Completed { get; set; } = new List<string>();
         /// <summary>
-        /// 本区固定工坊的被动批次（陶窑烧陶壳、固定净水台净水，A07 X1.4、S11 X4，B17）。Q380（B32e）起每座一个加工位＋等待队列：
-        /// 同一座（StationId）的批次按列表先后排队，第一条未排队（Queued=false）的是加工中，其余 Queued=true 按先后等待；含加工中最多 10 批。
+        /// 本区固定工坊的被动批次（陶窑烧陶壳、固定净水台净水，A07 X1.4、S11 X4，B17）。Q380（B32e）原为每座一个加工位＋等待队列；
+        /// B51b（Q701.2，存档 55）起同一座（StationId）的批次全部并行加工、最多 10 批，列表先后为创建先后（显示序号按位置，提交认 BatchId）。
         /// </summary>
         public List<StationBatch> StationBatches { get; set; } = new List<StationBatch>();
         /// <summary>
@@ -616,8 +619,8 @@ namespace Survival.Core.State
         /// </summary>
         public int XpSnapshot { get; set; }
         /// <summary>
-        /// Q380（B32e，存档 45）：true = 排队中（尚未开始，进度 0）；false = 加工中。同一座只有队首一批为 false，
-        /// 完成、失败或取消后由下一条排队批接上（从下一世界段开始计时，StartMinute 改为接上的时刻）。旧档缺这个字段读出 false，即原单批作为加工中续原进度。
+        /// Q380（B32e，存档 45—54）：true = 排队中（尚未开始，进度 0）；false = 加工中。旧档缺这个字段读出 false，即原单批作为加工中续原进度。
+        /// B51b（Q701.2，存档 55）起各批全部并行、没有等候批：54→55 迁移把旧等候批转为在办并清为 false，此后恒为 false，仅为读旧档保留。
         /// </summary>
         public bool Queued { get; set; }
 

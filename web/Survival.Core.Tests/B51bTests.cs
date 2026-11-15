@@ -130,4 +130,52 @@ public class B51bTests : TestBase
         Assert.That(card, Does.Contain("e.StationSummary(s, s.Ground, x.Id)"));
         Assert.That(card, Does.Not.Contain("\"加工中：\""));
     }
+
+    // ───────────── 存档 54→55（Q701-A09） ─────────────
+
+    /// <summary>
+    /// Q701-A09：旧档在办批保留已耗进度，旧等候批在升级 U 转为在办、从未来第一个世界段起推进（不补等候进度）；批次 ID／经验快照／预留不变；
+    /// 各批未到期有期限输入从 U 记 R＝旧E−U，U 时已到期的不保护；重复读档不再改进度或 R。
+    /// </summary>
+    [Test]
+    public void Migrate54To55_QueuedBecomeParallel_InputsProtected_Idempotent()
+    {
+        var s = Workshop();
+        WaterInputs(s, 3, 100);
+        var t0 = s.GameMinute;
+        Ok(E.StartStationBatch(s, Water, "m", 3));
+        AdvanceTo(s, t0 + 20);
+        // 造 54 旧档：首批加工中 20 分钟，其余两批排队（进度 0），输入当时没有暂停保质；第三批的一份脏水在 U 前已到期
+        var q = Batches(s, "water_station");
+        q[1].Queued = true; q[1].DoneMinutes = 0;
+        q[2].Queued = true; q[2].DoneMinutes = 0;
+        foreach (var i in s.Items.Where(i => i.ReservedBy != null)) i.ShelfPausedMinutes = null;   // 原截止 E 一直保留（t0+100）
+        var late = s.Items.First(i => i.ReservedBy == q[2].BatchId && i.ItemId == "dirty_water");
+        late.ExpiresAt = s.GameMinute;
+        var ids = q.Select(b => (b.BatchId, b.XpSnapshot)).ToList();
+        var obj = JObject.Parse(SaveSerializer.Serialize(s));
+        obj["SchemaVersion"] = "54";
+        var old = SaveSerializer.Deserialize(obj.ToString(), Cfg);
+        Assert.That(old.SchemaVersion, Is.EqualTo("55"));
+        var u = old.GameMinute;
+        var nq = Batches(old, "water_station");
+        Assert.That(nq.Select(b => (b.BatchId, b.XpSnapshot)), Is.EqualTo(ids), "批次 ID 与经验快照不变");
+        Assert.That(nq.All(b => !b.Queued), Is.True, "没有等候批");
+        Assert.That(nq.Select(b => b.DoneMinutes), Is.EqualTo(new[] { 20, 0, 0 }), "在办批保留进度、旧等候批不补进度");
+        Assert.That((nq[1].StartMinute, nq[2].StartMinute), Is.EqualTo((u, u)));
+        var bound = old.Items.Where(i => i.ReservedBy == nq[0].BatchId && i.ItemId == "dirty_water").ToList();
+        Assert.That(bound.All(i => i.ShelfPausedMinutes == 80), Is.True, "R＝旧E−U，不补偿已耗");
+        Assert.That(old.Items.Where(i => i.ReservedBy == nq[2].BatchId && i.ExpiresAt == u).All(i => i.ShelfPausedMinutes == null), Is.True, "U 时已到期的不保护");
+
+        var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(old), Cfg);
+        Assert.That(Batches(again, "water_station").Select(b => (b.BatchId, b.DoneMinutes, b.StartMinute)), Is.EqualTo(Batches(old, "water_station").Select(b => (b.BatchId, b.DoneMinutes, b.StartMinute))), "重复读档不变");
+        Assert.That(again.Items.Where(i => i.ShelfPausedMinutes != null).Select(i => (i.InstanceId, i.ShelfPausedMinutes)),
+            Is.EqualTo(old.Items.Where(i => i.ShelfPausedMinutes != null).Select(i => (i.InstanceId, i.ShelfPausedMinutes))), "不重算 R");
+
+        AdvanceTo(again, u + 10);
+        Assert.That(Sum(again, "clean_water"), Is.EqualTo(4), "在办批续原进度完成");
+        AdvanceTo(again, u + 30);
+        Assert.That(Sum(again, "clean_water"), Is.EqualTo(8), "旧等候批从升级起各自 30 分钟完成；含升级前已到期输入的那批按原路径失败");
+        Assert.That(again.Log.Any(l => l.Text.Contains("原料不全")), Is.True);
+    }
 }

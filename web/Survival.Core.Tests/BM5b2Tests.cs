@@ -401,7 +401,7 @@ public class BM5b2Tests : TestBase
         var json = o.ToString();
         Assert.That(json, Does.Contain("\"SchemaVersion\": \"50\""));
         var t = SaveSerializer.Deserialize(json, Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("54"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("55"));
         Assert.That(Rotten(t, "berry", "camp"), Is.EqualTo(3), "过期物一次迁移为腐败物");
         Assert.That(t.Items.Count(i => i.ItemId == "berry"), Is.EqualTo(0), "原名下不留副本");
         Assert.That(t.Items.Single(i => i.InstanceId == r.InstanceId).ItemId, Is.EqualTo("raw_root"), "可信烹饪保护保留");
