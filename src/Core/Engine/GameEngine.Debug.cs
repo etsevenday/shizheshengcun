@@ -221,6 +221,53 @@ namespace Survival.Core.Engine
             }
         }
 
+        /// <summary>
+        /// 开发入口（B47b 支援与生命态特写）：reserve 一名候补留在营区、健康→0.01且饥饿（下一段战斗外进入濒死，试远处生命镜头 Q692）；
+        /// support 组2人队＋全部熟练度10级＋技能器具一组（试支援特写 Q615／Q694）；
+        /// 战斗中：bleed 主角健康→0.2并出血0.4×2（下个大回合开始出血致濒死的独立特写 Q691）；h0 主角健康→0濒死（下一次敌方命中试 −{伤害}＋抵抗致死／死亡 Q696）；
+        /// h0b 主角健康→0濒死并出血0.30×1（下个大回合开始真实正伤 0.30：战报健康−0.30、抵抗句、常驻 0/{上限} · 濒死，Q696-A01）。
+        /// </summary>
+        public string DebugB47b(GameState s, string what)
+        {
+            var p = s.Actor(GameState.PlayerId);
+            if (IsDead(s, p)) return "本局已结束";
+            switch (what)
+            {
+                case "reserve":
+                {
+                    if (s.Battle != null) return "战斗中不能用";
+                    if (!s.Party.Any(id => id != GameState.PlayerId)) DebugQuickParty(s, 2);
+                    var mate = s.Party.FirstOrDefault(id => id != GameState.PlayerId);
+                    if (mate == null) return "没有可留作候补的队友";
+                    s.Party.Remove(mate);
+                    var a = s.Actor(mate);
+                    a.Stats.Health = 0.01; a.Stats.Satiety = 0; a.Stats.Hydration = 80; a.Stats.Wakefulness = 80;
+                    return $"{ActorDisplayName(s, mate)}留作候补、健康→0.01、饱食→0（开始任一行动，下一段在远处进入濒死，开发用）";
+                }
+                case "support":
+                {
+                    if (s.Battle != null) return "战斗中不能用";
+                    var t1 = DebugQuickParty(s, 2);
+                    var t2 = DebugSetSkillLevels(s, 10, false);
+                    var t3 = DebugGiveSkillKit(s);
+                    return $"{t1} {t2} {t3}（装上指挥、医疗等器具后遇敌，试支援特写）";
+                }
+                case "bleed":
+                    if (s.Battle == null) return "不在战斗中";
+                    p.Stats.Health = 0.2; p.DyingNotified = false; p.Body.BleedDamage = 0.4; p.Body.BleedTriggers = 2;
+                    return "主角健康→0.2、出血0.4×2（下个大回合开始出血致濒死，开发用）";
+                case "h0":
+                    if (s.Battle == null) return "不在战斗中";
+                    p.Stats.Health = 0; p.DyingNotified = true;
+                    return "主角健康→0，处于濒死（下一次敌方命中试致死判定特写，开发用）";
+                case "h0b":
+                    if (s.Battle == null) return "不在战斗中";
+                    p.Stats.Health = 0; p.DyingNotified = true; p.Body.BleedDamage = 0.3; p.Body.BleedTriggers = 1;
+                    return "主角健康→0（濒死）、出血0.30×1（下个大回合开始受0.30正伤并判致死，开发用）";
+                default: return "未知开发项";
+            }
+        }
+
         public string DebugSetSkillLevel(GameState s, string skillId, int level)
         {
             var lv = Math.Max(1, Math.Min(SkillCap(skillId), level));

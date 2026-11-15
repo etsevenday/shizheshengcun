@@ -375,4 +375,37 @@ public class B47bFxTests : BattleTestBase
         Assert.That(E.WillpowerDayLeft(s, me), Is.Null, "10级隐藏余额句");
         Assert.That(me.WillpowerXpToday, Is.EqualTo(60), "查看不改日账");
     }
+
+    // ───────────── M941：开发入口 ─────────────
+
+    /// <summary>开发入口 B47b：远处候补濒死、出血致濒死、H0 再受 0.30 正伤（真实伤害 0.30、常驻 0/上限）、支援全开。</summary>
+    [Test]
+    public void Dev_B47b_Entries()
+    {
+        var w = New(4816);
+        Assert.That(E.DebugB47b(w, "reserve"), Does.Contain("留作候补"));
+        var mate = w.Roster.Select(r => r.ActorId).First(id => id != GameState.PlayerId && !w.Party.Contains(id));
+        E.DrainLifeFx();
+        Start(w, ActionRequest.Wait(30));
+        E.Advance(w);
+        Assert.That(E.DrainLifeFx().Single(x => x.Actor.Id == mate).Results.Single().Life, Is.EqualTo(BattleFxLife.Dying));
+        Assert.That(E.DebugB47b(New(4817), "support"), Does.Contain("熟练度设为10级"));
+
+        var s = Fight(4818, "worker");
+        Assert.That(E.DebugB47b(s, "bleed"), Does.Contain("出血"));
+        E.DrainBattleFx();
+        RoundBleed(s);
+        Assert.That(One(E.DrainBattleFx()).Name, Is.EqualTo("出血"));
+
+        var h = Fight(4819, "worker");
+        E.DebugSetSkillLevel(h, GameEngine.Willpower, 10);
+        E.DebugB47b(h, "h0b");
+        Rolls(E, 0.1);
+        var log0 = h.Battle!.Log.Count;
+        RoundBleed(h);
+        Assert.That(E.IsDying(h, h.Player), Is.True, "u=0.1 < 0.83 抵抗");
+        var lines = h.Battle.Log.Skip(log0).ToList();
+        Assert.That(string.Join("|", lines), Does.Contain("0.30"), "真实伤害 0.30，不按健康差写 0");
+        Assert.That(lines, Has.Some.Contains("抵抗了致死"));
+    }
 }

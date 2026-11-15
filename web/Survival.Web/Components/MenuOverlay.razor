@@ -49,6 +49,13 @@
                             <button class="secondary" title="战斗中：下一次任何正伤即死" @onclick='() => DevBattleDone(G.E.DebugBattleFoes(G.S, "hp01"))'>在场敌人健康→0.1（战斗中）</button>
                             <button class="secondary" title="战斗中：下个大回合开始流血（无视流血免疫）" @onclick='() => DevBattleDone(G.E.DebugBattleFoes(G.S, "bleed"))'>在场敌人开始出血（战斗中）</button>
                         </div>
+                        @* B47b：支援与生命态特写——出血致濒死的独立特写、已濒死再受伤（攻击特写／0.30 出血） *@
+                        <div class="eyebrow">支援与生命态特写（B47b）</div>
+                        <div class="btn-row">
+                            <button class="secondary" title="下个大回合开始出血致濒死：独立特写「出血」·「濒死」" @onclick='() => DevBattleDone(G.E.DebugB47b(G.S, "bleed"))'>主角健康→0.2并出血（试出血致濒死）</button>
+                            <button class="secondary" title="下一次敌方命中：特写 −{伤害} 与抵抗致死／死亡" @onclick='() => DevBattleDone(G.E.DebugB47b(G.S, "h0"))'>主角健康→0（濒死，等敌方命中）</button>
+                            <button class="secondary" title="下个大回合开始受 0.30 正伤：战报健康−0.30、抵抗句，常驻 0/上限 · 濒死" @onclick='() => DevBattleDone(G.E.DebugB47b(G.S, "h0b"))'>主角健康→0并出血0.30（试H0再受0.30）</button>
+                        </div>
                     </fieldset>
                 }
                 <button class="secondary" @onclick="Feedback">@ShellText.Feedback</button>
@@ -217,6 +224,12 @@
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugDying(G.S, "bleed"))'>主角开始出血</button>
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "willpower", 1))'>意志设为1级（抵抗65%）</button>
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "willpower", 10))'>意志设为10级（抵抗83%）</button>
+                </div>
+                @* B47b：支援与生命态特写——远处候补进入濒死的生命镜头、支援技能全部可用 *@
+                <div class="eyebrow">支援与生命态特写（B47b）</div>
+                <div class="btn-row">
+                    <button class="secondary" title="留一名队友作候补、健康0.01且饥饿：开始任一行动，下一段在远处进入濒死（标识行“人物 · 地点”）" @onclick='() => DevDone(G.E.DebugB47b(G.S, "reserve"))'>候补健康→0.01并饥饿（试远处濒死镜头）</button>
+                    <button class="secondary" title="组2人队、全部熟练度10级、技能器具一组放地面：装上后遇敌试14个支援技能" @onclick='() => DevDone(G.E.DebugB47b(G.S, "support"))'>支援技能全开（2人队＋10级＋器具）</button>
                 </div>
                 @* B47a2（R09 Q679）：死亡喷溅来源门槛——战斗中把在场敌人健康压到 0.1、挂出血，造主动击杀／出血致死／反击迎击致死的膨胀感染者 *@
                 <div class="eyebrow">喷溅来源、意志经验与濒死暂停（B47a2）</div>
