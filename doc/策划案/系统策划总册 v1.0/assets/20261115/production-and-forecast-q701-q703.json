@@ -1,5 +1,5 @@
 {
-  "version": "Q701-Q720-Q728-Q791-Q792-production-rules-20261115",
+  "version": "Q701-Q720-Q728-Q787-Q792-production-rules-20261115",
   "date": "2026-11-15",
   "purpose": "S08文首Q701唯一正文的策划合同，不是运行配置或实装声明",
   "decisions": {
@@ -344,6 +344,99 @@
       "Q792-A01",
       "Q792-A02",
       "Q791Q792-A03"
+    ]
+  },
+  "q787ToQ790": {
+    "date": "2026-11-15",
+    "sourceBatch": "626d06c B51a 开发中与线上试玩发现 Q787—Q790",
+    "decisions": {
+      "Q787": "A",
+      "Q788": "A",
+      "Q789": "A",
+      "Q790": "A"
+    },
+    "status": "planning_only_pending_development_and_verification",
+    "q787": {
+      "when": "existing_legal_actual_release_of_retreat_kept_work_inputs_not_retreat_itself",
+      "returnScope": "only_actual_owned_reserved_inputs_with_original_carry_return_eligibility",
+      "expiry": "actual_release_C + saved_R",
+      "capacity": "existing_real_root_card_limit_5_after_real_release_state_and_normalization",
+      "excludeOwnOldReservationOccupancyDuringProjection": true,
+      "order": "original_reserved_id_list_order",
+      "returnQuantity": "maximum_legal_quantity_under_original_stack_and_root_rules",
+      "overflowDestination": "original_work_location_zone_and_existing_instance_identity_ground_never_retreat_or_current_ground",
+      "moveUnrelatedCarriedItems": false,
+      "temporarySixthCardAllowed": false,
+      "newWeightRule": false,
+      "originalOtherSourceAndNoExitRulesUnchanged": true,
+      "preExistingOverflowSweep": false
+    },
+    "q788": {
+      "scope": "original_build_completion_site_invalid_failure",
+      "destination": "original_failure_actual_current_ground",
+      "restoreOnly": "actual_released_input_with_reliable_saved_R",
+      "expiry": "actual_release_C + saved_R",
+      "baseFailureAndNoBuildingXpUnchanged": true,
+      "oneLog": true
+    },
+    "q789": {
+      "when": "more_than_one_actual_restore_destination",
+      "labels": "actual_final_owner_place_zone_generation_not_original_source",
+      "groupWithin": [
+        "actual_destination",
+        "owner",
+        "card_side",
+        "item_name",
+        "exact_expiry"
+      ],
+      "order": "actual_return_first_occurrence",
+      "singleDestinationOriginalCopyUnchanged": true,
+      "dryingDuplicate": false,
+      "preview": "read_only_immediate_legal_release_plan_using_current_C_and_real_capacity",
+      "recomputeAtCommit": true
+    },
+    "q790": {
+      "scope": "current_original_card_action_window_real_selected_card_or_group_owner_side",
+      "titleTotalIncludesReserved": true,
+      "showReservationSuffixOnlyIfPositive": true,
+      "reservedMeans": "actual_action_reservation_not_deployed_or_other_lock",
+      "operationLimit": "original_actual_available_quantity",
+      "newActions": false
+    },
+    "copy": {
+      "overflowResult": "随身已满，{原料名}×{数量}留在{地点}地面。",
+      "overflowPreview": "随身放不下，{原料名}×{数量}将留在{地点}地面。",
+      "actualCarryReturn": "{原料名}×{数量}已退回随身。",
+      "actualGroundReturn": "{原料名}×{数量}已退回{地点}地面。",
+      "predictedCarryReturn": "{原料名}×{数量}将退回随身。",
+      "predictedGroundReturn": "{原料名}×{数量}将退回{地点}地面。",
+      "buildSiteFailure": "{配方名}未完成：{原因}。材料已退回{地点}地面。{恢复保质分句}无经验。",
+      "buildFailureRestore": "{原料名}×{数量}保质至{日期时刻}。",
+      "restoreCarry": "随身：{原料名}×{数量}，保质至{日期时刻}。",
+      "restoreGround": "{地点}地面：{原料名}×{数量}，保质至{日期时刻}。",
+      "restoreOtherCarry": "{人物名}随身：{原料名}×{数量}，保质至{日期时刻}。",
+      "previewRestoreCarry": "随身：{原料名}×{数量}，预计保质至{日期时刻}。",
+      "previewRestoreGround": "{地点}地面：{原料名}×{数量}，预计保质至{日期时刻}。",
+      "previewRestoreOtherCarry": "{人物名}随身：{原料名}×{数量}，预计保质至{日期时刻}。",
+      "cardActionTotal": "{来源} · ×{总数}",
+      "cardActionReservedTotal": "{来源} · ×{总数}（预留{预留数}）"
+    },
+    "compatibility": {
+      "historicalReturnsAndLogsUnchanged": true,
+      "oldActiveWorkNextLegalReleaseUsesNewRule": true,
+      "newSaveVersionRequired": false,
+      "previewReadOnly": true,
+      "duplicateRequestDoesNotDoubleReturn": true
+    },
+    "acceptance": [
+      "Q787-A01",
+      "Q787-A02",
+      "Q787-A03",
+      "Q788-A01",
+      "Q789-A01",
+      "Q789-A02",
+      "Q790-A01",
+      "Q790-A02"
     ]
   }
 }
