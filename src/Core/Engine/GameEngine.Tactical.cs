@@ -165,20 +165,24 @@ namespace Survival.Core.Engine
                 }
                 case "self":
                 {
-                    // B47b（R03 §Q615 表）：支撑护带包有实际受益者（行动者本人）——支援特写，呈现真实支撑状态，不伪造回血（位移抵抗没有状态名，Q729 待答复不写结果字）
+                    // B47b（R03 §Q615 表）：支撑护带包有实际受益者（行动者本人）——支援特写，呈现真实支撑状态，不伪造回血；
+                    // B52b（R03 Q729）：位移抵抗真实增量或有效续期写“位移抵抗提升”
                     using var fxSup = FxSupport(s, name, FxAlly(s, b.FocusId), new[] { FxAlly(s, b.FocusId) });
                     var f = b.Me;
                     var active = f.DisplaceUntilRound >= b.Round;
+                    double dr0 = f.DisplaceResist; var du0 = f.DisplaceUntilRound;
                     f.DisplaceResist = active ? Math.Max(f.DisplaceResist, t.DisplaceResist) : t.DisplaceResist;
                     f.DisplaceUntilRound = Math.Max(active ? f.DisplaceUntilRound : 0, b.Round + t.Rounds);
+                    if (BuffGained(dr0, du0, f.DisplaceResist, f.DisplaceUntilRound, b.Round)) FxChange(FxAlly(s, b.FocusId), GainDisplace);
                     BattleLog(s, $"{Who(s)}系上{name}（位移抵抗+{Fmt.T(f.DisplaceResist)}个百分点，到第{f.DisplaceUntilRound}回合末）。");
                     break;
                 }
                 default:
                 {
                     var target = c.AllyTarget ?? b.FocusId;
-                    // B34b（R03 §Q571）：鼓舞提示贴——heal 式动作，不显示虚构治疗数值（B47b：先开记录再改恐慌，显示快照取改动前；Q730 待答复不加结果字）
-                    using var fxRally = FxBegin(s, name, BattleFxMotion.Heal, FxAlly(s, b.FocusId), noNumbers: true);
+                    // B34b（R03 §Q571）：鼓舞提示贴不显示虚构治疗数值（B47b：先开记录再改恐慌，显示快照取改动前）。
+                    // B52b（R03 Q730）：改支援／安抚表现（不画回血加号、绿色治疗光或血条上升），结果字只写真实“恐慌−{实际减少量}”
+                    using var fxRally = FxBegin(s, name, BattleFxMotion.Support, FxAlly(s, b.FocusId), noNumbers: true);
                     var f = b.Fighter(target);
                     var cut = Math.Max(0, Math.Min(Math.Min(t.PanicReduce, f.Panic), t.PerTargetRoundCap - RallyTakenThisRound(b, target)));
                     if (f.RallyRound != b.Round) { f.RallyRound = b.Round; f.RallyAmount = 0; }
@@ -186,6 +190,7 @@ namespace Survival.Core.Engine
                     var before = f.Panic;
                     f.Panic = Math.Max(0, f.Panic - cut);
                     FxHit(FxAlly(s, target), "effect");
+                    if (before - f.Panic > 1e-9) FxChange(FxAlly(s, target), PanicCutText(before - f.Panic));
                     BattleLog(s, $"{Who(s)}给{(target == b.FocusId ? "自己" : ActorDisplayName(s, target))}贴上{name}：恐慌{Fmt.N(before)}→{Fmt.N(f.Panic)}。");
                     break;
                 }

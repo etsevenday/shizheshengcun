@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Survival.Core.Config;
 using Survival.Core.State;
 
@@ -266,6 +267,43 @@ namespace Survival.Core.Engine
         /// <summary>B47b（Q694）：协同真实未来奖励。</summary>
         public static string NextApText(int amount) => $"下次行动点+{amount}";
 
+        // ───────────── B52b（R03 文首 B47b Q729—Q738 §Q729／§Q731；逐字稿同批表 accuracy…charged、mark、watch） ─────────────
+
+        /// <summary>Q729：真实命中能力增益（鼓舞等）。</summary>
+        public const string GainAccuracy = "命中强化";
+        /// <summary>Q729：真实伤害倍率增益（总攻令、敌方增益／鼓动／低吟）。</summary>
+        public const string GainDamage = "伤害强化";
+        /// <summary>Q729：掩护／坚守给实际受益者的下一次直接伤害倍率（原规则也给自身的同类效果）。</summary>
+        public const string GainCover = "减伤";
+        /// <summary>Q729：我方／敌方保护的真实被保护对象取得保护关系（给被保护者，不给施术者）。</summary>
+        public const string GainProtected = "受保护";
+        /// <summary>Q729：支撑护带包、稳固／坚守等真实位移抵抗增量或有效续期。</summary>
+        public const string GainDisplace = "位移抵抗提升";
+        /// <summary>Q729：敌方蓄力（原无现成状态字）实际完成。</summary>
+        public const string GainCharged = "蓄力完成";
+        /// <summary>Q729：已有状态之后六个短名按此表稳定排列。</summary>
+        private static readonly string[] GainOrder = { GainAccuracy, GainDamage, GainCover, GainProtected, GainDisplace, GainCharged };
+
+        /// <summary>Q731：敌方“标记／守卫标记”真实执行后在行动敌人旁的短反馈。</summary>
+        public const string EnemyMarkShort = "标记";
+        /// <summary>Q731：敌方“警戒观察”（含追击分支真正执行观察）真实执行后的短反馈。</summary>
+        public const string EnemyWatchShort = "警戒观察";
+
+        /// <summary>
+        /// Q729：一项有时限的增益在本次提交前后是否真实新增、强化或有效续期（按提交前后快照；0 变化不算）。
+        /// <paramref name="lowerIsStronger"/> 为倍率越小越强（减伤 ×0.8）；未生效时按无效果（加值 0、倍率 1）比较。
+        /// </summary>
+        private static bool BuffGained(double v0, int until0, double v1, int until1, int round, bool lowerIsStronger = false)
+        {
+            var none = lowerIsStronger ? 1.0 : 0.0;
+            var on0 = until0 >= round && (lowerIsStronger ? v0 < 1 - 1e-9 : v0 > 1e-9);
+            var on1 = until1 >= round && (lowerIsStronger ? v1 < 1 - 1e-9 : v1 > 1e-9);
+            if (!on1) return false;
+            var e0 = on0 ? v0 : none;
+            if (lowerIsStronger ? v1 < e0 - 1e-9 : v1 > e0 + 1e-9) return true;
+            return !on0 || until1 > until0;
+        }
+
         /// <summary>B47b（R09 Q692、逐字稿 B47b 表）：远处生命特写标识行“{人物} · {地点}”；缺可信地点只写人物名。</summary>
         public static string LifeWhereText(string who, string? where) => string.IsNullOrEmpty(where) ? who : $"{who} · {where}";
 
@@ -293,7 +331,14 @@ namespace Survival.Core.Engine
                 if (x.RootSeq == root)
                     foreach (var r in x.Results) if (r.Target.Side == target.Side && r.Target.Id == target.Id) last = r;
             if (last == null) return;
-            if (text != "") last.Changes.Add(text);
+            // B52b（Q729）：同一效果只一份；Q694 原结果字在前，六个增益短名之后按表稳定排列
+            if (text != "" && !last.Changes.Contains(text))
+            {
+                last.Changes.Add(text);
+                var sorted = last.Changes.OrderBy(c => Array.IndexOf(GainOrder, c)).ToList();
+                last.Changes.Clear();
+                last.Changes.AddRange(sorted);
+            }
             if (moved) last.Moved = true;
         }
 

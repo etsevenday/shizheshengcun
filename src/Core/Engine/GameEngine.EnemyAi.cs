@@ -173,6 +173,7 @@ namespace Survival.Core.Engine
             e.IntentTarget = t.Index;
             e.ProtectingIndex = t.Index;
             e.ProtectUses++;
+            FxChange(FxFoe(t), GainProtected);   // B52b（R03 Q729）：被保护者“受保护”
             BattleLog(s, $"{EnemyName(e)}护住{EnemyName(t)}（替它挡下一次单体攻击，到{EnemyName(e)}下次行动前）。");
         }
 
@@ -481,7 +482,12 @@ namespace Survival.Core.Engine
             e.Acted = true;
             if (pursuit)
             {
-                if (!e.Hostile || e.Intent is "watch" or "flee") { BattleLog(s, $"{EnemyName(e)}（追击）警戒地观察，没有攻击。"); return; }
+                if (!e.Hostile || e.Intent is "watch" or "flee")
+                {
+                    FxShort(s, EnemyWatchShort, FxFoe(e));   // B52b（R03 Q731）：追击分支真正执行观察，行动敌人旁短反馈“警戒观察”
+                    BattleLog(s, $"{EnemyName(e)}（追击）警戒地观察，没有攻击。");
+                    return;
+                }
                 var ps = PursuitStep(cfg);
                 if (ps.Kind == "shoot" && e.Mag <= 0) ps = PlainStep(cfg);
                 ExecuteReach(s, b, e, ps, Config.CombatMath.PursuitAp, true, true);
@@ -510,6 +516,7 @@ namespace Survival.Core.Engine
                     CheckVictory(s);
                     return;
                 case "watch":
+                    FxShort(s, EnemyWatchShort, FxFoe(e));   // B52b（R03 Q731）：真实执行后行动敌人旁短反馈“警戒观察”
                     BattleLog(s, $"{EnemyName(e)}警戒地观察，没有攻击。");
                     return;
                 case "guard":
@@ -536,7 +543,9 @@ namespace Survival.Core.Engine
                 {
                     // B47b（R03 §Q615 表）：敌方真实执行的蓄力属同类支援特写（行动者即受益者），出手之后才显示，不预告计划
                     using var fxSup = FxSupport(s, FxEnemyActName(e, b), FxFoe(e), new[] { FxFoe(e) });
+                    var wasCharged = e.Charged;
                     e.Charged = true;
+                    if (!wasCharged) FxChange(FxFoe(e), GainCharged);   // B52b（R03 Q729）：蓄力实际完成（原无现成状态字）
                     BattleLog(s, $"{EnemyName(e)}蓄力，下回合{(AllSteps(cfg).FirstOrDefault(x => x.Kind == "charge")?.Verb is string v && v != "" ? v : "冲撞")}。");
                     return;
                 }
@@ -560,6 +569,7 @@ namespace Survival.Core.Engine
                     using var fxProt = FxSupport(s, FxEnemyActName(e, b), FxFoe(e), new[] { FxFoe(t) });
                     e.ProtectingIndex = t.Index;
                     e.ProtectUses++;
+                    FxChange(FxFoe(t), GainProtected);   // B52b（R03 Q729）：被保护者“受保护”
                     BattleLog(s, $"{EnemyName(e)}护住{EnemyName(t)}（替它挡下一次单体攻击，到{EnemyName(e)}下次行动前）。");
                     return;
                 }
@@ -577,7 +587,9 @@ namespace Survival.Core.Engine
                     // B47b（R03 §Q615 表）：敌方真实执行的增益属同类支援特写（行动者即受益者）
                     using var fxSup = FxSupport(s, FxEnemyActName(e, b), FxFoe(e), new[] { FxFoe(e) });
                     // A09 E2“同名buff取强”：已有同名的下一击增益时取较大值，不叠乘
+                    var hf0 = e.NextHitFactor;
                     e.NextHitFactor = Math.Max(e.NextHitFactor, st.NextHitFactor > 0 ? st.NextHitFactor : 1);
+                    if (e.NextHitFactor > Math.Max(1, hf0) + 1e-9) FxChange(FxFoe(e), GainDamage);   // B52b（R03 Q729）：真实伤害倍率增益
                     BattleLog(s, $"{EnemyName(e)}{st.Verb}：下一击伤害×{Fmt.T(e.NextHitFactor)}。");
                     return;
                 }
@@ -588,7 +600,12 @@ namespace Survival.Core.Engine
                     if (ts.Count == 0) { BattleLog(s, $"{EnemyName(e)}{st.Verb}，身边没有同伴回应。"); return; }
                     // B47b（R03 §Q615 表）：敌方真实执行的鼓动属同类支援特写，受益者为实际被鼓动的同伴（同一段）
                     using var fxSup = FxSupport(s, FxEnemyActName(e, b), FxFoe(e), ts.Select(FxFoe));
-                    foreach (var t in ts) t.RallyFactor = Math.Max(t.RallyFactor, st.NextHitFactor);
+                    foreach (var t in ts)
+                    {
+                        var rf0 = t.RallyFactor;
+                        t.RallyFactor = Math.Max(t.RallyFactor, st.NextHitFactor);
+                        if (t.RallyFactor > Math.Max(1, rf0) + 1e-9) FxChange(FxFoe(t), GainDamage);   // B52b（R03 Q729）：实际被鼓动且倍率真实提高
+                    }
                     BattleLog(s, $"{EnemyName(e)}低声{st.Verb}：{string.Join("、", ts.Select(t => $"{EnemyName(t)}（{PosName(t.Pos)}）"))}下一击伤害×{Fmt.T(st.NextHitFactor)}（不叠层）。");
                     return;
                 }
@@ -602,6 +619,7 @@ namespace Survival.Core.Engine
                     else who = DrawEnemyTarget(s, b, e, EnemyTargetCandidates(b, new HashSet<int> { 1, 2, 3, 4 }), st.Verb);
                     if (who == null) { BattleLog(s, $"{EnemyName(e)}{st.Verb}落空（没有可标记的人）。"); return; }
                     e.MarkedActor = who;
+                    FxShort(s, EnemyMarkShort, FxFoe(e));   // B52b（R03 Q731）：真实执行后行动敌人旁短反馈“标记”（落空不出，见 Q785 待答）
                     BattleLog(s, $"{EnemyName(e)}{st.Verb}了{ActorDisplayName(s, who)}（{PosName(b.Allies.IndexOf(who) + 1)}）：它接下来的指定攻击优先打这个人。");
                     return;
                 }

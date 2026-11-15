@@ -297,7 +297,7 @@ namespace Survival.Core.Engine
             ActorState? lifeOf = null;
             IDisposable? fxMed = null;   // B34b：医疗技能的出手快照，到写完本条战报再结束（没有健康变化的不留）
             // B47b（R03 文首 B34 §Q615 表）：自身／指定同伴／全队技能增益都是支援特写——行动者与实际受益者动效，同一人只一条、全队同一段，
-            // 到写完本条战报再结束；结果字只写新生效状态名与 Q694 三种真实变化（Q729 无状态名的增益本批不写结果字）
+            // 到写完本条战报再结束；结果字写新生效状态名、Q694 三种真实变化与 B52b（Q729）六个真实增益短名
             IDisposable? fxSup = null;
             var me = FxAlly(s, b.FocusId);
             switch (x.Type)
@@ -317,8 +317,11 @@ namespace Survival.Core.Engine
                     }
                     if (x.DisplaceResist > 0)
                     {
+                        double dr0 = b.DisplaceResist; var du0 = b.DisplaceUntilRound;
                         b.DisplaceResist = x.DisplaceResist;
                         b.DisplaceUntilRound = b.Round + x.BuffRounds;
+                        // B52b（R03 Q729）：位移抵抗真实增量或有效续期才写“位移抵抗提升”
+                        if (BuffGained(dr0, du0, b.DisplaceResist, b.DisplaceUntilRound, b.Round)) FxChange(me, GainDisplace);
                         parts.Add($"位移抵抗+{Fmt.T(x.DisplaceResist)}个百分点到第{b.DisplaceUntilRound}回合末");
                     }
                     if (x.TeamGuardFactor > 0 && solo) parts.Add("没有其他队员可受减伤");
@@ -327,7 +330,15 @@ namespace Survival.Core.Engine
                         // 坚守（shield_10，B9a）：其他在场队员下一次直接伤害×0.8，持续 buffRounds 轮
                         var others = AlliesOnField(b).Where(a => a != b.FocusId).ToList();
                         foreach (var o in others) FxHit(FxAlly(s, o), "effect");   // B47b：坚守的实际受益者（其他在场队员）同一段
-                        foreach (var o in others) { var of = b.Fighter(o); of.CoverFactor = Math.Min(of.CoverUntilRound >= b.Round ? of.CoverFactor : 1, x.TeamGuardFactor); of.CoverUntilRound = Math.Max(of.CoverUntilRound, b.Round + x.BuffRounds); }
+                        foreach (var o in others)
+                        {
+                            var of = b.Fighter(o);
+                            double cf0 = of.CoverFactor; var cu0 = of.CoverUntilRound;
+                            of.CoverFactor = Math.Min(of.CoverUntilRound >= b.Round ? of.CoverFactor : 1, x.TeamGuardFactor);
+                            of.CoverUntilRound = Math.Max(of.CoverUntilRound, b.Round + x.BuffRounds);
+                            // B52b（R03 Q729）：实际受益队友的下一次直接伤害倍率新增／强化／续期才写“减伤”
+                            if (BuffGained(cf0, cu0, of.CoverFactor, of.CoverUntilRound, b.Round, lowerIsStronger: true)) FxChange(FxAlly(s, o), GainCover);
+                        }
                         parts.Add($"{string.Join("、", others.Select(o => ActorDisplayName(s, o)))}下一次直接伤害×{Fmt.T(x.TeamGuardFactor)}（到第{b.Round + x.BuffRounds}回合末）");
                     }
                     break;
@@ -399,14 +410,17 @@ namespace Survival.Core.Engine
                         // 保护/掩护（B9a）：接下目标下一次单体直接攻击，到施术者下次正常激活开始；掩护另给双方下一次直接伤害×0.8（buffRounds 轮）
                         b.Protections[caster] = target;
                         gains.Add(target);
+                        changes.Add((target, GainProtected));   // B52b（R03 Q729）：“受保护”只给被保护者
                         if (x.TeamGuardFactor > 0) gains.Add(caster);
                         parts.Add($"护住{ActorDisplayName(s, target)}（接下它下一次单体直接攻击，到{Who(s)}下次正常行动前）");
                         if (x.TeamGuardFactor > 0)
                             foreach (var o in new[] { caster, target })
                             {
                                 var of = b.Fighter(o);
+                                double cf0 = of.CoverFactor; var cu0 = of.CoverUntilRound;
                                 of.CoverFactor = Math.Min(of.CoverUntilRound >= b.Round ? of.CoverFactor : 1, x.TeamGuardFactor);
                                 of.CoverUntilRound = Math.Max(of.CoverUntilRound, b.Round + x.BuffRounds);
+                                if (BuffGained(cf0, cu0, of.CoverFactor, of.CoverUntilRound, b.Round, lowerIsStronger: true)) changes.Add((o, GainCover));   // B52b（Q729）
                             }
                         if (x.TeamGuardFactor > 0) parts.Add($"双方下一次直接伤害×{Fmt.T(x.TeamGuardFactor)}（到第{b.Round + x.BuffRounds}回合末）");
                         effective = true;
@@ -429,11 +443,13 @@ namespace Survival.Core.Engine
                     {
                         if (x.InspireAccuracy > 0)
                         {
+                            double ib0 = b.InspireBonus; var iu0 = b.InspireUntilRound;
                             b.InspireBonus = x.InspireAccuracy;
                             b.InspireUntilRound = b.Round + x.BuffRounds + (int)w.Trait("commandRounds");
                             if (!b.PendingCommandXp.Contains(key)) b.PendingCommandXp.Add(key);
                             parts.Add($"下一次攻击命中能力+{Fmt.T(b.InspireBonus)}（到第{b.InspireUntilRound}回合末）");
                             gains.Add(target);
+                            if (BuffGained(ib0, iu0, b.InspireBonus, b.InspireUntilRound, b.Round)) changes.Add((target, GainAccuracy));   // B52b（R03 Q729）
                             effective = true;
                         }
                         if (x.PanicReduce > 0)
@@ -448,11 +464,14 @@ namespace Survival.Core.Engine
                         }
                         if (x.AllOutFactor > 0)
                         {
+                            double af0 = b.AllOutFactor; var au0 = b.AllOutUntilRound;
                             b.AllOutFactor = x.AllOutFactor;
                             b.AllOutUntilRound = b.Round + x.BuffRounds + (int)w.Trait("commandRounds");
                             if (!b.PendingCommandXp.Contains(key)) b.PendingCommandXp.Add(key);
                             parts.Add($"下一次攻击伤害×{Fmt.T(b.AllOutFactor)}（到第{b.AllOutUntilRound}回合末）");
                             gains.Add(target);
+                            // B52b（R03 Q729）：伤害倍率按超出 ×1 的部分比较（未生效视为 ×1）
+                            if (BuffGained(af0 - 1, au0, b.AllOutFactor - 1, b.AllOutUntilRound, b.Round)) changes.Add((target, GainDamage));
                             effective = true;
                         }
                         var first = w.Trait("firstCommandAccuracy");
