@@ -54,7 +54,10 @@ namespace Survival.Core.Engine
             return SafehouseBuilt(s, loc) ? head + " · 屋外" : head;
         }
 
-        /// <summary>Q542／Q559：当前地点当前区已建的陶窑、固定净水台（原工坊设施顺序），行摘要取该座当前批实际进度，没有正在加工的批为「空闲」。</summary>
+        /// <summary>
+        /// Q542／Q559：当前地点当前区已建的陶窑、固定净水台（原工坊设施顺序）。B51b（Q727，逐字稿 B51 表）：行摘要为工坊汇总
+        /// 「{设施名} · 加工中{批数}批 · 最近{日期时刻}完成」，没有加工批「{设施名} · 空闲」。
+        /// </summary>
         public List<StationChoice> ProcessingStationChoices(GameState s)
         {
             var place = s.Ground;
@@ -64,13 +67,11 @@ namespace Survival.Core.Engine
             foreach (var st in Config.Workshops.Stations)
             {
                 if (!ChooserStationIds.Contains(st.Id) || !WorkshopBuilt(s, place, st.Id)) continue;
-                var b = fac.StationBatches.FirstOrDefault(x => x.StationId == st.Id && !x.Queued);
-                var name = StationName(st.Id);
                 list.Add(new StationChoice
                 {
                     StationId = st.Id,
-                    Name = name,
-                    Line = b != null ? $"{name} · {b.DoneMinutes}/{b.RequiredMinutes}分" : $"{name} · 空闲",
+                    Name = StationName(st.Id),
+                    Line = StationSummary(s, place, st.Id),
                 });
             }
             return list;

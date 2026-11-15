@@ -107,4 +107,27 @@ public class B51bTests : TestBase
         Assert.That(s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionCancelled)).Text,
             Is.EqualTo($"已取消{zone}固定净水台的批次1 · {Cfg.Recipes.Single(r => r.Id == Water).Name}（已进行0分钟）。没有可返还的剩余原料，没有产物和经验。已耗时间保留。"));
     }
+
+    /// <summary>Q727-A01：工坊汇总取全部在办批最早完成，无批空闲；工坊卡用同一汇总、不再按单批写「加工中：陶窑25/60分」。</summary>
+    [Test]
+    public void Q727_WorkshopSummary()
+    {
+        var s = Workshop();
+        Assert.That(E.StationSummary(s, s.Ground, "water_station"), Is.EqualTo($"{E.StationName("water_station")} · 空闲"));
+        WaterInputs(s, 3);
+        var t0 = s.GameMinute;
+        Ok(E.StartStationBatch(s, Water, "w1"));
+        AdvanceTo(s, t0 + 10);
+        Ok(E.StartStationBatch(s, Water, "w2", 2));
+        Assert.That(E.StationSummary(s, s.Ground, "water_station"),
+            Is.EqualTo($"{E.StationName("water_station")} · 加工中3批 · 最近{Clock.DayTime(t0 + 30)}完成"));
+        var q = Batches(s, "water_station");
+        Assert.That(E.StationBatchRow(s, q[1], 2), Is.EqualTo($"批次2 · {Cfg.Recipes.Single(r => r.Id == Water).Name} · 0/30分 · 预计{Clock.DayTime(t0 + 40)}完成"));
+        Assert.That(E.StationOutputGround(s, s.Ground), Is.EqualTo($"完成后放在{E.ZoneName(s, s.Ground)}地面。"));
+        var dir = TestContext.CurrentContext.TestDirectory;
+        while (dir != null && !File.Exists(Path.Combine(dir, "Survival.sln"))) dir = Path.GetDirectoryName(dir);
+        var card = File.ReadAllText(Path.Combine(dir!, "Survival.Web", "Components", "FacilityCard.razor"));
+        Assert.That(card, Does.Contain("e.StationSummary(s, s.Ground, x.Id)"));
+        Assert.That(card, Does.Not.Contain("\"加工中：\""));
+    }
 }

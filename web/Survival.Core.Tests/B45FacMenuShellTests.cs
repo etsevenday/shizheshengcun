@@ -27,7 +27,7 @@ public class B45FacMenuShellTests : TestBase
 
     // ───────────── Q542／Q559／Q560 选择设施 ─────────────
 
-    /// <summary>Q542／Q559：只列已建的陶窑、固定净水台（原工坊顺序），摘要取当前批实际进度，无批写「空闲」；工作台等不列。</summary>
+    /// <summary>Q542／Q559：只列已建的陶窑、固定净水台（原工坊顺序），摘要为工坊汇总（B51b Q727 起批数＋最近完成），无批写「空闲」；工作台等不列。</summary>
     [Test]
     public void Q559_StationChoices()
     {
@@ -42,7 +42,9 @@ public class B45FacMenuShellTests : TestBase
         Fac(s).StationBatches.Add(new StationBatch { BatchId = 1, StationId = "kiln", RecipeId = "x", DoneMinutes = 12, RequiredMinutes = 60 });
         var two = E.ProcessingStationChoices(s);
         Assert.That(two.Select(c => c.StationId), Is.EqualTo(new[] { "kiln", "water_station" }), "原工坊设施顺序");
-        Assert.That(two[0].Line, Is.EqualTo($"{E.StationName("kiln")} · 12/60分"));
+        // B51b（Q727）：摘要改为工坊汇总「{设施名} · 加工中{批数}批 · 最近{日期时刻}完成」，取最早完成
+        Fac(s).StationBatches.Add(new StationBatch { BatchId = 2, StationId = "kiln", RecipeId = "x", DoneMinutes = 50, RequiredMinutes = 60 });
+        Assert.That(E.ProcessingStationChoices(s)[0].Line, Is.EqualTo($"{E.StationName("kiln")} · 加工中2批 · 最近{Clock.DayTime(s.GameMinute + 10)}完成"));
         Assert.That(GameEngine.ChooserTitle, Is.EqualTo("选择设施"));
         Assert.That(GameEngine.ChooserEmpty, Is.EqualTo("当前区域没有可操作的加工设施。"));
     }
