@@ -41,6 +41,8 @@
     if (d === 0) return;
     var mouseVertical = !horizontal && !ev.shiftKey;         // 纯竖向滚轮：可映射到横向栏
     // 人物对话层（S14 §10.3）：滚轮只回看本次对话流，不推进对白、到边界也不透传给背后的卡片栏或中部
+    // B52b（R03 Q737）：战斗特写播放层与收束停留层全屏在上——滚轮不滚背后的战场、战斗信息或全记录（只在镜头间隙可读）
+    if (ev.target.closest && ev.target.closest('.bfx-layer[data-active], .bfx-hold[data-active]')) { ev.preventDefault(); return; }
     var dlg = ev.target.closest && ev.target.closest('.dlg-layer');
     if (dlg) {
       ev.preventDefault();

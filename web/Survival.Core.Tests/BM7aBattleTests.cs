@@ -149,7 +149,7 @@ public class BM7aBattleTests
         var hold = Slice(p, "private async Task RunClosingHold(int gen)", "private void EndClosingHold()");
         Assert.That(hold, Does.Contain("if (esc && State != null) { if (InBattleUi) ToggleBattleMenu(true); else if (!MenuOpen) SetMenu(true); }"));
         var keys = Web("Services", "GameSession.Keys.cs");
-        Assert.That(keys, Does.Contain("if (PlaybackActive && !FxUnderReading) return EscOwner.OpenMenu;"), "播放中 ESC 开当前情境菜单");
+        Assert.That(keys, Does.Contain("if (PlaybackActive) return EscOwner.OpenMenu;"), "播放中 ESC 开当前情境菜单");
         var js = Web("wwwroot", "js", "app.js");
         Assert.That(js, Does.Contain("if (k === 'Enter' || k === ' ') { ev.preventDefault(); if (!ev.repeat) dotnet.invokeMethodAsync('OnKey', 'Skip'); return; }"), "播放层接住 Enter／Space，不落到背后");
     }

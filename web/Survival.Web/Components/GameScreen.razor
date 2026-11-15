@@ -434,7 +434,7 @@
         if (key == "Escape") { Escape(); return; }
         // B34b（S14 Q572）：特写播放层独占画面点击、Enter、Space；BM7a（Q633）：敌我出手都不可跳过——这些输入被播放层接住、什么也不做
         if (key == "Skip") return;
-        if (G.PlaybackActive && !G.FxUnderReading) return;
+        if (G.PlaybackActive) return;   // B52b（R03 Q737）：只读子页开着也一样
         if (G.EndedLog != null && !G.InBattleUi) return;   // B34 试玩修复 B2：只读记录页屏蔽背后快捷键，只认 ESC
         // 死亡结算（B31d Q333）：只有 Esc（同结算页「菜单」键），其余快捷键无效
         if (G.S.Progress.Dead) return;
@@ -470,11 +470,10 @@
     private void Escape()
     {
         // B34b（S14 Q572）：播放中只有 ESC 打开当前情境菜单（战斗中为战斗菜单，已收束为游戏菜单）；菜单沿原阅读暂停停住当前帧。
-        // 只读子页开着时它是最上层，ESC 先按原层级收它。菜单已开时交给下面的原路由关闭。
+        // B52b（R03 Q737）：特写全屏、只读子页也在它之下，ESC 一律开菜单（冻结当前帧，关上原处续播）。菜单已开时交给下面的原路由关闭。
         if (G.PlaybackActive && !G.MenuOpen && !G.BattleMenuOpen)
         {
-            if (G.FxUnderReading) G.BattleEscape();
-            else if (G.InBattleUi && !G.S.Progress.Dead) G.ToggleBattleMenu(true);
+            if (G.InBattleUi && !G.S.Progress.Dead) G.ToggleBattleMenu(true);
             else G.SetMenu(true);
             return;
         }

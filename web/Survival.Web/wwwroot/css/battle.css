@@ -469,8 +469,8 @@
 .bfx-layer::before, .bfx-layer::after { content: ""; position: absolute; left: 0; right: 0; height: 7vh; background: #000; z-index: 0; pointer-events: none; }
 .bfx-layer::before { top: 0; }
 .bfx-layer::after { bottom: 0; }
-/* 只读子页（全记录、预测详情等）开着时：播放照常，但退到子页之下，点击归子页 */
-.bfx-layer.under { z-index: 30; pointer-events: none; }
+/* B52b（R03 Q737）：特写全屏盖住战斗信息与全记录（不再退到只读子页之下）；滚轮由 wheel.js 吞掉，触屏滑动不传到底层 */
+.bfx-layer, .bfx-hold { touch-action: none; overscroll-behavior: contain; }
 /* 菜单、系统说明打开：停在当前帧 */
 .bfx-layer.paused, .bfx-layer.paused * { animation-play-state: paused !important; }
 .bfx-stage { position: relative; z-index: 1; display: flex; justify-content: center; align-items: flex-end; gap: clamp(90px, 20vw, 380px);

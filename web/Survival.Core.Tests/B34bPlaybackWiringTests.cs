@@ -55,9 +55,9 @@ public class B34bPlaybackWiringTests
         Assert.That(p, Does.Contain("public bool FxPaused => MenuOpen || BattleMenuOpen || BattleDrawer == \"help\";"));
         Assert.That(p, Does.Contain("if (!FxPaused) elapsed += now - last;"), "菜单开着不计时，关上原处续播");
         var keys = Web("Services/GameSession.Keys.cs");
-        Assert.That(keys, Does.Contain("if (PlaybackActive && !FxUnderReading) return EscOwner.OpenMenu;"));
+        Assert.That(keys, Does.Contain("if (PlaybackActive) return EscOwner.OpenMenu;"));   // B52b（Q737）：只读子页开着也一样
         var gs = Web("Components/GameScreen.razor");
-        Assert.That(gs, Does.Contain("if (G.PlaybackActive && !G.FxUnderReading) return;"), "播放中其余快捷键不穿透");
+        Assert.That(gs, Does.Contain("if (G.PlaybackActive) return;"), "播放中其余快捷键不穿透");
     }
 
     [Test]
@@ -75,7 +75,7 @@ public class B34bPlaybackWiringTests
     public void Q572_BackgroundInertWhilePlaying()
     {
         var bs = Web("Components/BattleScreen.razor");
-        Assert.That(bs, Does.Contain("var fxLock = G.PlaybackActive && !G.FxUnderReading;"));
+        Assert.That(bs, Does.Contain("var fxLock = G.PlaybackActive;"));
         foreach (var part in new[] { "bfs-queue", "bfs-scene", "bfs-console", "bfs-infoarea" })
             Assert.That(bs, Does.Match(part + "\"[^>]*inert=\"@lockedUi\""), part + " 播放中不可操作");
         // BM8（S14 Q658）：对白期间顶栏「菜单 ESC」白名单可点，顶栏只在播放／遭遇提示时 inert

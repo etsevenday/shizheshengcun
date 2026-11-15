@@ -172,7 +172,10 @@ public class B47bWebTests
         Assert.That(run.IndexOf("if (rgen != _fxGen) return;"), Is.LessThan(run.IndexOf("await BattleLoop();")), "过期循环不接新局的战斗");
     }
 
-    /// <summary>B47b 试玩修复 2（R03 Q617-A03、Q633）：特写退到只读子页（全记录等）之下播放时，子页正文可滚动、点击被拦住——「返回战斗」「回到最新」不受理，点击不落到背后。</summary>
+    /// <summary>
+    /// B47b 试玩修复 2（R03 Q617-A03、Q633）：播放中只读子页（全记录等）的点击被拦住——「返回战斗」「回到最新」不受理，点击不落到背后。
+    /// B52b（Q737）起特写不再退到子页之下（见 B52bWebTests），正文只在镜头间隙滚动。
+    /// </summary>
     [Test]
     public void Playtest2_DrawerUnderPlayback_ScrollsButSwallowsClicks()
     {

@@ -297,3 +297,39 @@ public class B52bTests : BattleTestBase
         Assert.That(E.DrainBattleFx().Single().Name, Is.EqualTo(GameEngine.EnemyWatchShort), "追击分支真正执行观察");
     }
 }
+
+/// <summary>B52b 网页壳部分（源码断言）：R03 §Q737、R09 §Q734／§Q736／§Q738；验收 Q737-A01／A02、Q734-A01／A02、Q736-A01／A02、Q738-A01／A02。</summary>
+public class B52bWebTests
+{
+    private static string Root()
+    {
+        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "web", "Survival.sln"))) dir = dir.Parent;
+        Assert.That(dir, Is.Not.Null, "找到仓库根目录");
+        return dir!.FullName;
+    }
+
+    private static string Web(params string[] p) => File.ReadAllText(Path.Combine(new[] { Root(), "web", "Survival.Web" }.Concat(p).ToArray()));
+
+    /// <summary>Q737-A01／A02：特写全屏盖住战斗信息与普通全记录（不再退层）；播放中滚轮／触屏不传到底层；ESC 一律开菜单冻结当前帧。</summary>
+    [Test]
+    public void Q737_A01_CloseUpCoversFullRecord_NoScrollDuringPlayback()
+    {
+        var pb = Web("Services", "GameSession.Playback.cs");
+        Assert.That(pb, Does.Not.Contain("FxUnderReading =>"), "撤去退层");
+        Assert.That(pb, Does.Contain("public bool FxPaused => MenuOpen || BattleMenuOpen || BattleDrawer == \"help\";"), "菜单与系统子页仍冻结");
+        var layer = Web("Components", "BattleFxLayer.razor");
+        Assert.That(layer, Does.Not.Contain("\"under\""));
+        Assert.That(Web("Components", "BattleScreen.razor"), Does.Contain("var fxLock = G.PlaybackActive;"));
+        var css = Web("wwwroot", "css", "battle.css");
+        Assert.That(css, Does.Not.Contain(".bfx-layer.under"));
+        Assert.That(css, Does.Contain(".bfx-layer, .bfx-hold { touch-action: none; overscroll-behavior: contain; }"));
+        var wheel = Web("wwwroot", "js", "wheel.js");
+        Assert.That(wheel, Does.Contain("ev.target.closest('.bfx-layer[data-active], .bfx-hold[data-active]')) { ev.preventDefault(); return; }"));
+        var app = Web("wwwroot", "js", "app.js");
+        Assert.That(app, Does.Not.Contain("fxl.classList.contains('under')"), "按键也归播放层");
+        var gs = Web("Components", "GameScreen.razor");
+        Assert.That(gs, Does.Not.Contain("FxUnderReading"));
+        Assert.That(Web("Services", "GameSession.Keys.cs"), Does.Contain("if (PlaybackActive) return EscOwner.OpenMenu;"));
+    }
+}

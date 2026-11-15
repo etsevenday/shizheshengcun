@@ -67,8 +67,8 @@ public sealed partial class GameSession
     /// <summary>菜单、系统说明打开时沿原阅读暂停：特写停在当前帧（Q572）。</summary>
     public bool FxPaused => MenuOpen || BattleMenuOpen || BattleDrawer == "help";
 
-    /// <summary>只读子页（全记录、预测详情等）盖在上面时：特写照常播放但退到子页下面，点击归子页，不穿透成跳过（R03 §Q572）。</summary>
-    public bool FxUnderReading => InBattleUi && BattleDrawer != null && BattleDrawer != "help";
+    // B52b（R03 文首 B47b Q737 选A）：撤去“只读子页盖在上面时特写退到子页下面”——特写全屏盖住战斗信息与普通全记录，
+    // 正文只在镜头之间的真实间隙可读可滚动；只有菜单与原由菜单进入的系统子页冻结当前帧（FxPaused）。
 
     /// <summary>当前一段的总时长（毫秒）。</summary>
     public int FxDurationMs => MotionMs(FxBaseMs);

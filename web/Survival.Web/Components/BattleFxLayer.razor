@@ -2,7 +2,8 @@
 
 @* B34b（R03 文首「2026-11-13 B34主要Q570—Q572」§Q571／§Q572；a9b93f0 动效合同 battle 七类、《给开发的动效说明》1200ms 时序与近战特写分镜）：
    战斗特写播放层。只读 G.FxNow 这一段出手快照（行动者、承受者、按真实次序的各段结果、同次战报原文），不读当前战斗状态——
-   上一场的最后几段播放时下一场的演员、HP 不会混进来。BM7a（S14 Q633）：不可跳过——画面点击由这一层接住、什么也不做（不跳、不点穿、不排队）；只读子页盖在上面时退到下面、不收点击。
+   上一场的最后几段播放时下一场的演员、HP 不会混进来。BM7a（S14 Q633）：不可跳过——画面点击由这一层接住、什么也不做（不跳、不点穿、不排队）。
+   B52b（R03 Q737）：只读子页（全记录等）开着时也不再退到下面——特写全屏，正文只在镜头间隙可读。
    B34（S14 Q573）：标题为本次真实指令名；结果字用战报原词「未命中」「格挡」「暴击」「倒地」及这次真实新生效的状态名，恢复「+{数值}」、扣血「−{数值}」取真实变化值；
    不另加「行动名 · 伤害」结果条（同次战报原句只给读屏）。BM7a（Q633）：撤去「跳到结果」「跳过余下」按钮与键帽。人物图沿用战场现有立绘（主角立绘、敌人图标）。 *@
 @if (G.FxNow is BattleFxEvent ev)
@@ -10,8 +11,9 @@
     var look = ev.Look;
     var allies = Units(ev, true);
     var foes = Units(ev, false);
-    <div class="bfx-layer @(G.FxUnderReading ? "under" : "") @(G.FxPaused ? "paused" : "")" data-active
-         style="--fx-ms:@(G.FxDurationMs)ms" aria-hidden="@(G.FxUnderReading)">
+    @* B52b（R03 Q737）：特写全屏盖住战场、战斗信息与普通全记录，不因全记录打开退层；只有菜单／原系统子页冻结当前帧 *@
+    <div class="bfx-layer @(G.FxPaused ? "paused" : "")" data-active
+         style="--fx-ms:@(G.FxDurationMs)ms">
         <h2 class="bfx-title" aria-hidden="true">@ev.Name</h2>
         @* B47b（R09 Q692）：战斗外／远处只读生命镜头的标识行“{人物} · {地点}” *@
         @if (ev.Where != null) { <p class="bfx-where" aria-hidden="true">@ev.Where</p> }

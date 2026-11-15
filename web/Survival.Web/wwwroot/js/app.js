@@ -398,10 +398,10 @@ window.survival = {
       }
       // B34b（S14 Q572）：战斗特写播放层在最上层时，ESC 打开菜单，其余键不穿透到背后的战斗、对白或结算；
       // BM7a（S14 Q633）：敌我出手都不可跳过——Enter／Space 照样被这里接住（交给 C# 的 'Skip' 对特写与收束停留什么也不做），不跳、不点穿、不排队；
-      // 只读子页盖在播放层上面时（.under）按键归子页，照原规则处理
+      // B52b（R03 Q737）：只读子页开着时特写也在它之上，按键一样归播放层
       // BM5c（S14 Q605）：探索遭遇短提示同一套按键（Enter／Space 只跳过提示，ESC 打开菜单）
       var fxl = document.querySelector('.bfx-layer[data-active], .bfx-hold[data-active], .enc-prompt[data-active]');
-      if (fxl && !fxl.classList.contains('under')) {
+      if (fxl) {
         if (mod) return;
         if (k === 'Escape') { send('Escape'); return; }
         if (k === 'Enter' || k === ' ') { ev.preventDefault(); if (!ev.repeat) dotnet.invokeMethodAsync('OnKey', 'Skip'); return; }
