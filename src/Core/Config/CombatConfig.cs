@@ -488,8 +488,15 @@ namespace Survival.Core.Config
         public EnemyDropConfig? ExtraDrop { get; set; }
         /// <summary>护盔感染者：首次失衡免疫。</summary>
         public bool StaggerImmuneOnce { get; set; }
-        /// <summary>膨胀感染者：死亡时对我方 1、2 号位各 H−该值（护甲照算，非咬不感染）。</summary>
+        /// <summary>膨胀感染者：死亡时对我方 1、2 号位各 H−该值（护甲照算；B49 起合法喷溅正伤按 <see cref="DeathSplashExposure"/> 判暴露）。</summary>
         public double DeathSplash { get; set; }
+        /// <summary>
+        /// B49（R04 Q652／Q739，exposure-profiles-q652.json enemyProfiles）：追击、迫近弱近袭、后排降格弱攻击与普通攻击回退取的病毒暴露类型
+        /// （bite／scratch／tainted_weapon／mutant_fluid／impact_abrasion 或 none）。发布配置 42 种全有，缺或写错是配置错误（ConfigLoader 校验）。
+        /// </summary>
+        public string? DefaultPhysicalExposure { get; set; }
+        /// <summary>B49（R04 Q652／Q679）：合法死亡喷溅正伤的暴露类型；没有喷溅为 none。</summary>
+        public string? DeathSplashExposure { get; set; }
         /// <summary>流窜枪手：本场弹药计划总数与弹仓容量（打空后弱近战或前移）。</summary>
         public int AmmoTotal { get; set; }
         public int Magazine { get; set; }
@@ -562,6 +569,10 @@ namespace Survival.Core.Config
         public string? MarkRule { get; set; }
         /// <summary>B20：这一步优先打本敌人标记的我方（标记者存活且在目标位内）；标记失效则按普通 Q91 在目标位内随机（不暗换未预告大招）。</summary>
         public bool TargetMarked { get; set; }
+        /// <summary>B49（R04 Q652／Q739）：这一步真实正伤命中的病毒暴露类型；非伤害步骤为 none。缺失是配置错误，不按动作名猜。</summary>
+        public string? Exposure { get; set; }
+        /// <summary>B49（R04 Q652）：按 bitePct 改判咬击时的类型（当前都是 bite）；bitePct&gt;0 才有。</summary>
+        public string? BiteReplacementExposure { get; set; }
     }
 
     public sealed class EnemyDropConfig
@@ -960,6 +971,17 @@ namespace Survival.Core.Config
         public bool OfflineProgress { get; set; }
     }
 
+    /// <summary>B49（R04 Q652）：一类病毒暴露——p=clamp(p0×Factor,0,1)；未感染成功 V=FirstLoad，已感染成功 V+min(100−V,RepeatDelta)。</summary>
+    public sealed class ExposureProfileConfig
+    {
+        public string Id { get; set; } = "";
+        /// <summary>玩家可见中文类型名（R04 表；抓伤／刮伤内部斜杠保留）。</summary>
+        public string Name { get; set; } = "";
+        public double Factor { get; set; }
+        public double FirstLoad { get; set; }
+        public double RepeatDelta { get; set; }
+    }
+
     public sealed class VirusProgressBand
     {
         public double[] ImmunityRange { get; set; } = new double[0];
@@ -1046,6 +1068,8 @@ namespace Survival.Core.Config
         public bool HighImmunityTimerUsesBothTickEndpoints { get; set; }
         /// <summary>饱饱持续体内病毒输入（R04 §7.2，T09 已批准实装初值）。</summary>
         public BaobaoInputConfig BaobaoInput { get; set; } = new BaobaoInputConfig();
+        /// <summary>B49（R04 Q652 传播类型表，exposure-profiles-q652.json profiles）：五类外部暴露，按原 profile 表序（显示与去重同序）。</summary>
+        public List<ExposureProfileConfig> ExposureProfiles { get; set; } = new List<ExposureProfileConfig>();
 
         [JsonIgnore] public double ExposureBase => Formula.Num(ExposureProbability, 0);
         [JsonIgnore] public double ExposureScale => Formula.Num(ExposureProbability, 1);

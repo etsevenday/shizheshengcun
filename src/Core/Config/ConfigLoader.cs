@@ -412,6 +412,7 @@ namespace Survival.Core.Config
                 }
             }
             ValidateEquipment(c, e, items);
+            ValidateExposure(c, e);
             foreach (var a in c.CombatActions)
             {
                 foreach (var sk in a.Skills) if (!skills.Contains(sk)) e.Add($"战斗动作 {a.Id} 的技能 {sk} 不存在");
@@ -731,6 +732,44 @@ namespace Survival.Core.Config
                 if (!c.Locations.Any(l => l.Id == id)) e.Add($"遗迹勘整地点 {id} 不存在");
             foreach (var id in pr.Cooking.FoodProcesses.Append(pr.Cooking.WaterProcess).Where(x => x != ""))
                 if (!c.Processes.Any(p => p.Id == id)) e.Add($"烹饪经验进程 {id} 不存在");
+        }
+
+        /// <summary>
+        /// B49（R04 Q652 验收 A01、Q740）：五类病毒暴露表与 42 敌种逐步骤映射——每个 opening／cycle 步骤、咬击替换、普通物理回退与死亡喷溅都须写明类型
+        /// （五类之一或 none），缺失或写错报错，不在运行时按动作名猜；咬伤沿原首次／再次值与概率（倍率1）。
+        /// </summary>
+        private static void ValidateExposure(GameConfig c, List<string> e)
+        {
+            var inf = c.Infection;
+            if (inf.ExposureProfiles.Count == 0) { e.Add("infection.exposureProfiles 缺失（病毒暴露类型表）"); return; }
+            Dup(inf.ExposureProfiles, x => x.Id, "病毒暴露类型", e);
+            var ids = new HashSet<string>(inf.ExposureProfiles.Select(x => x.Id));
+            foreach (var p in inf.ExposureProfiles)
+            {
+                if (p.Id == "" || p.Id == "none") e.Add($"病毒暴露类型 ID 无效：{p.Id}");
+                if (p.Name == "") e.Add($"病毒暴露类型 {p.Id} 缺少名称");
+                if (p.Factor <= 0 || p.FirstLoad <= 0 || p.RepeatDelta <= 0) e.Add($"病毒暴露类型 {p.Id} 的倍率、首次与再次病毒量须为正");
+            }
+            var bite = inf.ExposureProfiles.FirstOrDefault(x => x.Id == "bite");
+            if (bite == null) e.Add("病毒暴露类型缺少 bite（咬伤）");
+            else if (Math.Abs(bite.Factor - 1) > 1e-9 || Math.Abs(bite.FirstLoad - inf.OnFirstSuccessfulExposure.Load) > 1e-9 || Math.Abs(bite.RepeatDelta - inf.OnRepeatedSuccessfulExposure.LoadDelta) > 1e-9)
+                e.Add("咬伤须沿原概率（倍率1）与首次／再次病毒量");
+            bool Known(string? x) => x == "none" || (x != null && ids.Contains(x));
+            foreach (var en in c.Enemies)
+            {
+                if (!Known(en.DefaultPhysicalExposure)) e.Add($"敌人 {en.Id} 的 defaultPhysicalExposure 缺失或无效（{en.DefaultPhysicalExposure ?? "缺"}）");
+                if (!Known(en.DeathSplashExposure)) e.Add($"敌人 {en.Id} 的 deathSplashExposure 缺失或无效（{en.DeathSplashExposure ?? "缺"}）");
+                else if (en.DeathSplash <= 0 && en.DeathSplashExposure != "none") e.Add($"敌人 {en.Id} 没有死亡喷溅，deathSplashExposure 须为 none");
+                foreach (var (part, list) in new[] { ("opening", en.Intents.Opening), ("cycle", en.Intents.Cycle) })
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        var st = list[i];
+                        if (!Known(st.Exposure)) e.Add($"敌人 {en.Id} 的 {part}[{i}]（{st.Kind}）exposure 缺失或无效（{st.Exposure ?? "缺"}）");
+                        if (st.BitePct > 0 && (!Known(st.BiteReplacementExposure) || st.BiteReplacementExposure == "none"))
+                            e.Add($"敌人 {en.Id} 的 {part}[{i}] 可改判咬击，须写 biteReplacementExposure");
+                        if (st.BitePct <= 0 && st.BiteReplacementExposure != null) e.Add($"敌人 {en.Id} 的 {part}[{i}] 不会改判咬击，不能写 biteReplacementExposure");
+                    }
+            }
         }
 
         private static void Dup<T>(IEnumerable<T> list, Func<T, string> key, string what, List<string> e)
