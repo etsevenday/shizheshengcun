@@ -88,9 +88,10 @@ public class B17StationTests : TestBase
         var next = E.AdjacentUnlocked(s).First().Other("camp");
         Start(s, ActionRequest.Travel(next));
         Run(s);
-        Assert.That(E.CancelStationBatch(s, "kiln").Ok, Is.False, "不能远程取消/出货");
+        var bid = s.Locations["camp"].Facility.StationBatches.Single().BatchId;
+        Assert.That(E.CancelStationBatch(s, "kiln", bid).Ok, Is.False, "不能远程取消/出货");
         E.DebugTeleport(s, "camp");
-        Ok(E.CancelStationBatch(s, "kiln"));
+        Ok(E.CancelStationBatch(s, "kiln", bid));
         Assert.That((Sum(s, "clay", "camp"), Sum(s, "charcoal", "camp"), Sum(s, "ceramic_shell")), Is.EqualTo((2, 1, 0)));
         Assert.That(s.Items.Any(i => i.ReservedBy != null), Is.False);
     }
@@ -117,7 +118,7 @@ public class B17StationTests : TestBase
         Ok(E.StartStationBatch(s, "ex_station_water"));
         // 屋外看不到/不能用屋内净水台
         Ok(E.ExitSafehouse(s));
-        Assert.That(E.StationBatchHere(s, "water_station"), Is.Null);
+        Assert.That(E.StationBatchesHere(s, "water_station"), Is.Empty);
         AdvanceTo(s, t0 + 30);
         Assert.That(Sum(s, "clean_water", "safehouseFloor:sh_camp"), Is.EqualTo(4));
         Assert.That(Sum(s, "dirty_water") + Sum(s, "filter_media"), Is.EqualTo(0));

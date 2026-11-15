@@ -84,7 +84,7 @@ public class B22dTests : TestBase
         Assert.That(E.StationBatchXpPreview(s, Cfg.Recipes.Single(r => r.Id == "ex_ceramic_shell")), Does.Contain("制造经验+6"));
         Kiln(s);
         Assert.That(CraftXp(s), Is.EqualTo(xp0), "投料不给");
-        Assert.That(E.StationBatchHere(s, "kiln")!.XpSnapshot, Is.EqualTo(6), "投料时存经验快照");
+        Assert.That(E.StationBatchesHere(s, "kiln").Single().XpSnapshot, Is.EqualTo(6), "投料时存经验快照");
         AdvanceTo(s, s.GameMinute + 60);
         Assert.That(Sum(s, "ceramic_shell"), Is.EqualTo(2));
         Assert.That(CraftXp(s) - xp0, Is.EqualTo(6), "陶窑整批 6（两个陶壳共 6，不按份）");
@@ -95,12 +95,12 @@ public class B22dTests : TestBase
         Assert.That(Sum(s, "clean_water"), Is.EqualTo(4));
         Assert.That(CraftXp(s) - xp0, Is.EqualTo(9), "净水台整批 3（2L 共 3）");
         Water(s);
-        Assert.That(E.StationBatchXpNote(s, E.StationBatchHere(s, "water_station")!), Does.Contain("+3"));
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "water_station").Single()), Does.Contain("+3"));
         AdvanceTo(s, s.GameMinute + 30);
         Assert.That((CraftXp(s) - xp0, StationXpToday(s, day)), Is.EqualTo((12, 12)), "两类共享每日 12");
 
         Water(s);
-        Assert.That(E.StationBatchXpNote(s, E.StationBatchHere(s, "water_station")!), Does.Contain("已满12"));
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "water_station").Single()), Does.Contain("已满12"));
         AdvanceTo(s, s.GameMinute + 30);
         Assert.That(Sum(s, "clean_water"), Is.EqualTo(12), "日额满了产物照出");
         Assert.That(CraftXp(s) - xp0, Is.EqualTo(12), "日额满后再完成给 0");
@@ -120,7 +120,7 @@ public class B22dTests : TestBase
         Water(s);
         AdvanceTo(s, s.GameMinute + 30);
         Kiln(s);   // 已得 9，只剩 3
-        Assert.That(E.StationBatchXpNote(s, E.StationBatchHere(s, "kiln")!), Does.Contain("只剩3"));
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "kiln").Single()), Does.Contain("只剩3"));
         AdvanceTo(s, s.GameMinute + 60);
         Assert.That(CraftXp(s) - xp0, Is.EqualTo(12), "剩余不足给剩余（6 只给 3）");
         // 次日
@@ -163,7 +163,7 @@ public class B22dTests : TestBase
         var cx = CraftXp(c);
         Water(c);
         AdvanceTo(c, c.GameMinute + 15);
-        Ok(E.CancelStationBatch(c, "water_station"));
+        Ok(E.CancelStationBatch(c, "water_station", E.StationBatchesHere(c, "water_station").Single().BatchId));
         AdvanceTo(c, c.GameMinute + 60);
         Assert.That(CraftXp(c), Is.EqualTo(cx), "取消没有经验");
     }
@@ -388,11 +388,11 @@ public class B22dTests : TestBase
         AdvanceTo(s, s.GameMinute + 5);
         Water(s);  // 在途 3（30 分钟后，先完成）
         // 已得 0，在途陶窑 6、净水台 3
-        Assert.That(E.StationBatchXpNote(s, E.StationBatchHere(s, "water_station")!), Does.Contain("+3").And.Not.Contain("只剩"), "净水台先完成，不被陶窑占");
-        Assert.That(E.StationBatchXpNote(s, E.StationBatchHere(s, "kiln")!), Does.Contain("+6").And.Not.Contain("只剩"), "陶窑在净水台之后完成：12−3 仍够 6");
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "water_station").Single()), Does.Contain("+3").And.Not.Contain("只剩"), "净水台先完成，不被陶窑占");
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "kiln").Single()), Does.Contain("+6").And.Not.Contain("只剩"), "陶窑在净水台之后完成：12−3 仍够 6");
         // 模拟当天已得 6：净水台先完成占 3，陶窑预计只剩 3
         s.Player.DailyCounts[$"{Clock.Day(s.GameMinute)}|stationXp|crafting"] = 6;
-        Assert.That(E.StationBatchXpNote(s, E.StationBatchHere(s, "kiln")!), Does.Contain("只剩3").And.Contain("在途批次预计占3"));
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "kiln").Single()), Does.Contain("只剩3").And.Contain("在途批次预计占3"));
         // 结算不变：净水台 +3、陶窑只剩 3
         AdvanceTo(s, s.GameMinute + 60);
         Assert.That(CraftXp(s) - xp0, Is.EqualTo(6));

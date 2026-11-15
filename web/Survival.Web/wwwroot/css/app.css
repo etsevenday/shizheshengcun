@@ -1266,6 +1266,10 @@ button.cp-name-note { background: none; border: 0; padding: 0; margin: 0; width:
   font-size: var(--fs-aux); color: var(--muted); max-height: 2.8em; overflow-y: auto; }
 .sq-list li { counter-increment: sq; white-space: nowrap; }
 .sq-list li::before { content: counter(sq) ". "; }
+/* B51b（Q701.2／Q727）：并行批次——表头「加工中{批数}批（最多10批）」＋有批时一次的并行说明；每批一行主行可换行，经验与落点小字各一行省略、悬停看全文 */
+.sq-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.sq-head b { font-size: var(--fs-body); font-weight: 600; }
+.sq-row .cg-facts b { overflow-wrap: anywhere; }
 /* 矮屏（≤800 高）投料条的经验与预计完成各压一行（悬停看全文），给原料与队列滚动区留高 */
 @media (max-height: 800px) { .craft-side .craft-go[data-station-go] .cg-facts small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
 /* 兜底：陶窑/净水台配方卡内容仍超高时整张卡可滚（原料滚动区先压到最小），不再被 overflow:hidden 裁掉 */

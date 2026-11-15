@@ -44,10 +44,9 @@ public class BM5aR222Tests : TestBase
         Assert.That(GameEngine.StationBattleBlocked, Is.EqualTo("战斗时不能操作"));
         var s = New();
         s.Battle = new BattleState();
-        Assert.That(E.CancelStationBatch(s, "kiln").Reason, Is.EqualTo("战斗时不能操作"));
-        Assert.That(E.CancelStationQueue(s, "kiln").Reason, Is.EqualTo("战斗时不能操作"));
+        Assert.That(E.CancelStationBatch(s, "kiln", 1).Reason, Is.EqualTo("战斗时不能操作"));
         s.Battle = null;
-        Assert.That(E.CancelStationBatch(s, "kiln").Reason, Is.Not.EqualTo("战斗时不能操作"), "不在战斗中不出这句");
+        Assert.That(E.CancelStationBatch(s, "kiln", 1).Reason, Is.Not.EqualTo("战斗时不能操作"), "不在战斗中不出这句");
         var src = File.ReadAllText(Path.Combine(Root(), "src", "Core", "Engine", "GameEngine.Stations.cs"));
         Assert.That(src, Does.Not.Contain("战斗或敌踪待处理时不能操作"));
     }
