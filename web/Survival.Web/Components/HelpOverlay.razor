@@ -25,7 +25,7 @@
                 }
             }
             <h2>系统说明</h2>
-            @if (topic != null) { <span class="sub">@topic.Title@(entry != null ? $" · {entry.Title}" : "")</span> }
+            @if (topic != null) { <span class="sub">@HelpCatalog.Crumb(topic, entry)</span> }
             else { <span class="sub">通用规则 · 只读浏览，不消耗时间</span> }
         </div>
         <button class="secondary" @onclick="G.CloseHelp">@G.PanelCloseLabel<EscCap On="@G.EscOnHelpClose" /></button>

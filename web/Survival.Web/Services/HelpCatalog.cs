@@ -95,6 +95,12 @@ public static class HelpCatalog
     /// <summary>B47b：系统说明主题「濒死与意志」及其条目的 ID。</summary>
     public const string DyingTopic = "dying", DyingEntry = "dying-will";
 
+    /// <summary>
+    /// 系统说明标题旁的位置行：主题页只写主题名；条目页写“{主题} · {条目}”。B47b 试玩修复：条目与所在主题同名（「濒死与意志」只有一条同名条目）时只写一次，不重复成“濒死与意志 · 濒死与意志”。
+    /// </summary>
+    public static string Crumb(HelpTopic topic, HelpEntry? entry) =>
+        entry == null || entry.Title == topic.Title ? topic.Title : $"{topic.Title} · {entry.Title}";
+
     public static readonly IReadOnlyList<HelpTopic> Topics = new List<HelpTopic>
     {
         // ───────────── 入门与操作 ─────────────

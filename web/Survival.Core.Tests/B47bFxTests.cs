@@ -1,5 +1,6 @@
 using System.Reflection;
 using Survival.Core.Engine;
+using Survival.Core.Save;
 using Survival.Core.State;
 
 namespace Survival.Core.Tests;
@@ -407,5 +408,34 @@ public class B47bFxTests : BattleTestBase
         var lines = h.Battle.Log.Skip(log0).ToList();
         Assert.That(string.Join("|", lines), Does.Contain("0.30"), "真实伤害 0.30，不按健康差写 0");
         Assert.That(lines, Has.Some.Contains("抵抗了致死"));
+    }
+
+    /// <summary>
+    /// B47b 试玩修复 1（R03 Q617-A02、Q572）：敌方逐条推进时每一步先结算、提交再播；在某一步的特写播放中存档读档，读回的是这一步已结算的真实状态——
+    /// 读档后不重算这一步、不重播它，下一次推进是游标上的下一名敌人（新结算，战报只多一条）。
+    /// </summary>
+    [Test]
+    public void Playtest1_SaveDuringEnemyStep_LoadContinuesFromCursor_NoReplay()
+    {
+        var s = Fight(4901, "worker", "worker");
+        for (var i = 0; i < 6 && !E.AwaitingPlayer(s); i++) E.BattleStep(s);
+        Assert.That(E.AwaitingPlayer(s), Is.True);
+        E.DrainBattleFx();
+        Assert.That(E.ExecuteCommand(s, BattleCommand.Of("end_turn")).Ok, Is.True);
+        E.DrainBattleFx();
+        Assert.That(E.BattleStep(s).Kind, Is.EqualTo(BattleStepKind.EnemyActed));
+        var first = E.DrainBattleFx();
+        Assert.That(first.Where(x => !x.Short), Is.Not.Empty, "这一步有特写（正播放时存档）");
+        var logBefore = s.Battle!.Log.Count;
+        var cursorBefore = s.Battle.Cursor;
+        var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(loaded.Battle!.Log.Count, Is.EqualTo(logBefore), "读回的就是这一步已结算的状态");
+        Assert.That(loaded.Battle.Cursor, Is.EqualTo(cursorBefore));
+        E.DrainBattleFx();
+        Assert.That(E.DrainBattleFx(), Is.Empty, "读档不带回任何待播快照");
+        Assert.That(E.BattleStep(loaded).Kind, Is.EqualTo(BattleStepKind.EnemyActed));
+        var next = E.DrainBattleFx().Where(x => !x.Short).ToList();
+        Assert.That(loaded.Battle.Log.Count, Is.EqualTo(logBefore + 1), "下一名敌人新结算一次，不重算上一步");
+        Assert.That(next.Select(x => x.Actor.Id), Is.Not.EqualTo(first.Where(x => !x.Short).Select(x => x.Actor.Id)), "是游标上的下一名敌人");
     }
 }

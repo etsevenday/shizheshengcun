@@ -83,10 +83,11 @@ public sealed partial class GameSession
     /// 播一批刚取走的出手快照（调用方已先 Drain／Commit／Notify 真实状态）。短反馈只在锚点上亮一下；特写逐段排队播放。
     /// 返回是否真的播了特写（播了就不再叠旧的 480 毫秒敌方逐条停顿，R03 §Q571）。上下文切换（读档、新局）时立即返回。
     /// </summary>
-    private async Task<bool> PlayFx(List<BattleFxEvent> evs)
+    private async Task<bool> PlayFx(List<BattleFxEvent> evs, int gen)
     {
+        // B47b 试玩修复（R03 Q617-A02、Q572）：调用方的代号已过期（其间读档、新局、回标题）——旧循环取到的出手不在新局上播，也不碰新局的显示快照
+        if (gen != _fxGen) return false;
         if (evs.Count == 0) { FxView = null; return false; }
-        var gen = _fxGen;
         PrimeFxView(evs);
         try { return await PlayFxCore(evs, gen); }
         finally { if (gen == _fxGen) { FxView = null; _fxAfter.Clear(); } }

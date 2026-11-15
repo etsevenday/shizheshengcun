@@ -541,7 +541,11 @@ window.survival = {
       if (k === 'Escape') {
         ev.preventDefault();
         // Esc 收起预览/选中后，焦点仍留在刚点过的按钮上会被画成键盘焦点框，看起来像“仍选中”（试玩修复 L6）
-        if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
+        // B47b 试玩修复（R03 Q619-A01）：焦点停在灰卡上、它的锁级说明正显示时不先 blur——否则失焦先把说明收掉，这一下 ESC 就落到阅读区上；
+        // 这一下只收锁级说明，焦点留在灰卡上，再按一次才按原层级收阅读区
+        var ae = document.activeElement;
+        var noteOn = ae && ae.classList && ae.classList.contains('locked-card') && document.querySelector('.bfs .bc-locknote:not(.ghost)');
+        if (ae && ae.tagName === 'BUTTON' && !noteOn) ae.blur();
         dotnet.invokeMethodAsync('OnKey', 'Escape');
       }
     };

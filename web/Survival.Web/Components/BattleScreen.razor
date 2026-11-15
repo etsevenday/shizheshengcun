@@ -395,13 +395,14 @@
         }
         @if (G.BattleDrawer != null && !dlg)
         {
-            <div class="bfs-drawer" role="dialog" aria-label="@DrawerTitle(G.BattleDrawer)">
+            @* B47b 试玩修复（R03 Q617-A03、Q633）：特写退到只读子页之下播放时，子页正文仍可滚轮／触控滚动，点击一律被拦住（不关子页、不回到最新），见 battle.css .bfs-drawer.fx-play *@
+            <div class="bfs-drawer @(DrawerFxPlay ? "fx-play" : "")" role="dialog" aria-label="@DrawerTitle(G.BattleDrawer)">
                 @if (G.BattleDrawer == "help") { <HelpOverlay /> }
                 else
                 {
                     <div class="bfs-drawer-head">
                         <h2>@DrawerTitle(G.BattleDrawer)@if (G.BattleDrawer == "log") {<small class="bfs-drawer-sub">@BattleInfoCopy.LogSubtitle(liveB.Log.Count, liveB.LogMayBeIncomplete)</small>}</h2>
-                        <button type="button" class="secondary" @onclick="() => G.OpenBattleDrawer(null)">@BattleInfoCopy.BackToBattle<EscCap On="@(G.EscOwner == EscOwner.BattleDrawer)" /></button>
+                        <button type="button" class="secondary" @onclick="DrawerBack">@BattleInfoCopy.BackToBattle<EscCap On="@(G.EscOwner == EscOwner.BattleDrawer)" /></button>
                     </div>
                     <div class="bfs-drawer-body" id="bfs-drawer-body" data-wheel="y">
                         @if (G.BattleDrawer == "supplies") { <BattleSupplies /> }
@@ -1144,8 +1145,21 @@
     private int _logSeenCount = -1;
     private string? _logOpenKey;
 
+    /// <summary>B47b 试玩修复（Q617-A03、Q633）：特写在只读子页下面播放中——子页可滚动，点击不受理。</summary>
+    private bool DrawerFxPlay => G.BattleDrawer is not (null or "help") && G.PlaybackActive;
+    /// <summary>播放中及刚结束的同一次点击（BM7a Q633 结束帧不点穿）不受理。</summary>
+    private bool DrawerClickBlocked => DrawerFxPlay || (G.BattleDrawer is not (null or "help") && G.FxJustEnded);
+
+    /// <summary>子页「返回战斗」：播放中点击被拦住（ESC 仍按原层级处理）。</summary>
+    private void DrawerBack()
+    {
+        if (DrawerClickBlocked) return;
+        G.OpenBattleDrawer(null);
+    }
+
     private async Task LogToLatest()
     {
+        if (DrawerClickBlocked) return;
         _logNew = 0;
         try { await JS.InvokeVoidAsync("survivalBattleUi.logBottom", "bfs-drawer-body"); } catch (JSException) { } catch (InvalidOperationException) { }
     }

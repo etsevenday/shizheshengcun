@@ -2315,12 +2315,13 @@ public sealed partial class GameSession
         Running = true;
         _skip = false;
         var segs = 0;
+        var rgen = _fxGen;   // B47b 试玩修复：本次推进开始时的代号（读档、新局、回标题后旧循环取到的镜头不在新局上播）
         try
         {
             // B46（S01／S14 Q535）：单段 5 分钟行动——开工即时提交已在 BeginAction 里完成；先让中央条（行动名、原进度、不可退出说明、
             // 「跳过动画 空格」）真实可见一段表现时间，再进下面的循环提交唯一的原 5 分钟段。
             if (State != null && E.SingleSegmentShowPending(S)) await ShowSingleSegment();
-            while (State != null && !S.Progress.Dead)
+            while (State != null && !S.Progress.Dead && rgen == _fxGen)
             {
                 var a = S.Sub ?? S.Main;
                 if (a == null) break;
@@ -2345,9 +2346,8 @@ public sealed partial class GameSession
                 }
                 if (!_skip && lifeFx.Count > 0 && State != null && !S.Progress.Dead)
                 {
-                    var lgen = _fxGen;
-                    await PlayFx(lifeFx);
-                    if (lgen != _fxGen) break;   // 读档／新局：旧循环不再推进
+                    await PlayFx(lifeFx, rgen);
+                    if (rgen != _fxGen) break;   // 读档／新局：旧循环不再推进
                 }
                 if (r.Status is SegmentStatus.Paused or SegmentStatus.Dead or SegmentStatus.Idle or SegmentStatus.Dialogue) break;
                 if (S.Main == null && S.Sub == null) break;
@@ -2357,13 +2357,17 @@ public sealed partial class GameSession
         }
         finally
         {
-            Running = false;
-            _skip = false;
-            // 到达新地点后旧右栏选中（含随身卡）与只依附它的临时状态由 Notify 里的 ResetOnLocationChange 统一清（Q281）
-            if (State != null) ReconcileSelection();
-            Commit();
-            Notify();
+            if (rgen == _fxGen)   // 旧循环（其间读档、新局、回标题）不动新局的推进标记
+            {
+                Running = false;
+                _skip = false;
+                // 到达新地点后旧右栏选中（含随身卡）与只依附它的临时状态由 Notify 里的 ResetOnLocationChange 统一清（Q281）
+                if (State != null) ReconcileSelection();
+                Commit();
+                Notify();
+            }
         }
+        if (rgen != _fxGen) return;
         // 移动完成后由剧情首战直接进入战斗（S15 §5）：清掉地块上的选择与旧提示，接上战斗流程
         if (State != null && S.Battle != null && !S.Progress.Dead && !BattleBusy)
         {
@@ -3194,7 +3198,7 @@ public sealed partial class GameSession
             E.DrainBattleFx();   // B34b：只播这一次提交产生的出手
             var res = E.ExecuteCommand(S, cmd);
             var fx = E.DrainBattleFx();
-            if (res.Ok && !res.Duplicate) PrimeFxView(fx);   // B47b（Q617）：首次重绘前把常驻显示定在第一段特写之前
+            if (res.Ok && !res.Duplicate && gen == _fxGen) PrimeFxView(fx);   // B47b（Q617）：首次重绘前把常驻显示定在第一段特写之前
             // B34 试玩修复 E2（Q572-A01）：这一条指令让战斗收束（撤退成功等）且行动者有短反馈——先冻结战斗画面亮完短反馈，再露出收束画面
             var closing = res.Ok && !res.Duplicate && State != null && S.Battle == null && !S.Progress.Dead
                 ? fx.LastOrDefault(x => x.Short && x.Actor.IsAlly) : null;
@@ -3219,7 +3223,7 @@ public sealed partial class GameSession
             Notify();
             // B34b（R03 §Q572）：真实结果已提交、已存档；再播这次出手的特写（期间仍锁指令，自然播完后才承接对白、收束或下一场画面；BM7a Q633 不可跳过）
             if (closing != null) { await RunClosingHold(gen); if (gen == _fxGen) Notify(); }
-            if (res.Ok && !res.Duplicate && gen == _fxGen) await PlayFx(closing != null ? fx.Where(x => x != closing).ToList() : fx);
+            if (res.Ok && !res.Duplicate && gen == _fxGen) await PlayFx(closing != null ? fx.Where(x => x != closing).ToList() : fx, gen);
         }
         finally
         {
@@ -3468,6 +3472,7 @@ public sealed partial class GameSession
                 // B9（A10 §6.3）：战斗菜单、系统说明是阅读暂停——逐条展示的下一步敌方行动等它们关上再走，不额外推进
                 // BM5c（Q605）：探索遭遇短提示期间也不放敌方走一步
                 while (State != null && S.Battle != null && (BattleReadingPause || EncounterPrompt != null) && gen == _fxGen) await Task.Delay(120);
+                if (gen != _fxGen) return;   // B47b 试玩修复（Q617-A02）：等待期间已读档／新局／回标题——旧循环不在新读入的局上推进或播放
                 if (State == null || S.Battle == null) break;
                 var at = S.Battle.Cursor < S.Battle.Queue.Count ? S.Battle.Queue[S.Battle.Cursor] : (int?)null;
                 var stepBattle = S.Battle.BattleId;
@@ -3483,7 +3488,7 @@ public sealed partial class GameSession
                 Commit();
                 Notify();
                 // B34b（R03 §Q571／§Q572）：这一步的结果已提交；有特写就先自然播完（不再叠旧的逐条停顿；BM7a Q633 不可跳过），之后才承接对白、收束或下一场
-                var played = await PlayFx(fx);
+                var played = await PlayFx(fx, gen);
                 if (gen != _fxGen) return;   // 读档／新局：旧循环直接退出，不碰新局的锁
                 if (chained) { if (!played) await StepPause(); continue; }   // B41e3：上一场结束、下一场已开——接着走下一场（敌方先手等），不停在“已结束”
                 if (r.Kind is BattleStepKind.None or BattleStepKind.Ended or BattleStepKind.Dialogue) break;

@@ -32,7 +32,7 @@ public class B34bPlaybackWiringTests
     {
         var g = Web("Services/GameSession.cs");
         var exec = g[g.IndexOf("var fx = E.DrainBattleFx();")..];
-        Assert.That(exec.IndexOf("Commit();"), Is.LessThan(exec.IndexOf("await PlayFx(fx)")), "真实结果先提交、存档，再播放");
+        Assert.That(exec.IndexOf("Commit();"), Is.LessThan(exec.IndexOf("await PlayFx(fx, gen)")), "真实结果先提交、存档，再播放");
         Assert.That(g, Does.Contain("if (gen != _fxGen) return;   // 读档／新局：旧循环直接退出，不碰新局的锁"));
     }
 

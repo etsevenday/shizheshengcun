@@ -26,7 +26,7 @@ public class B47bWebTests
         var reset = pb[pb.IndexOf("private void ResetPlayback()")..];
         Assert.That(reset[..reset.IndexOf("}")], Does.Contain("FxView = null"), "读档／新局清显示快照");
         var gs = Web("Services", "GameSession.cs");
-        Assert.That(gs, Does.Contain("if (res.Ok && !res.Duplicate) PrimeFxView(fx);"), "首次重绘前先定显示快照");
+        Assert.That(gs, Does.Contain("if (res.Ok && !res.Duplicate && gen == _fxGen) PrimeFxView(fx);"), "首次重绘前先定显示快照");
         Assert.That(gs, Does.Contain("PrimeFxView(fx);   // B47b（Q617）"));
         var bs = Web("Components", "BattleScreen.razor");
         Assert.That(bs, Does.Contain("var s = G.VS;"));
@@ -65,7 +65,7 @@ public class B47bWebTests
         loop = loop[..loop.IndexOf("public void AckDialogue")];
         var drain = loop.IndexOf("var lifeFx = E.DrainLifeFx();");
         Assert.That(drain, Is.GreaterThan(loop.IndexOf("var r = E.Advance(S);")), "段提交后取走");
-        var play = loop.IndexOf("await PlayFx(lifeFx);");
+        var play = loop.IndexOf("await PlayFx(lifeFx, rgen);");
         Assert.That(play, Is.GreaterThan(loop.IndexOf("CommitSegment();")), "段提交之后");
         Assert.That(loop, Does.Contain("if (!_skip && lifeFx.Count > 0 && State != null && !S.Progress.Dead)"), "快进时不插入镜头，主角确死不播");
         var pb = Web("Services", "GameSession.Playback.cs");
@@ -130,5 +130,102 @@ public class B47bWebTests
         Assert.That(h, Does.Contain("GameEngine.HelpThreeStates, GameEngine.HelpEnemies, GameEngine.HelpWillXp"));
         Assert.That(Web("Components", "HelpOverlay.razor"), Does.Contain("entry.PersonLine?.Invoke(e, s, G.GearActorId)"), "取成长页当前所选人物");
         Assert.That(Web("Services", "Ui.cs"), Does.Not.Contain("归0即死亡"));
+    }
+
+    /// <summary>
+    /// B47b 试玩修复 1（R03 Q617-A02、Q572）：读档、新局、回标题清播放队列与显示快照；之前起的播放与推进循环（战斗逐条推进、世界推进）随代号失效，
+    /// 不在新读入的局上推进、不播旧镜头：播放入口带调用方代号，过期即返回；战斗循环阅读暂停等待后先验代号；世界推进循环每段验代号、过期不动新局的推进标记。
+    /// </summary>
+    [Test]
+    public void Playtest1_LoadClearsQueue_StaleLoopsNeverPlayOnLoadedGame()
+    {
+        var pb = Web("Services", "GameSession.Playback.cs");
+        Assert.That(pb, Does.Contain("private async Task<bool> PlayFx(List<BattleFxEvent> evs, int gen)"));
+        var play = pb[pb.IndexOf("private async Task<bool> PlayFx(")..];
+        play = play[..play.IndexOf("private async Task<bool> PlayFxCore")];
+        Assert.That(play.IndexOf("if (gen != _fxGen) return false;"), Is.GreaterThan(0).And.LessThan(play.IndexOf("PrimeFxView(evs);")), "过期代号不碰新局的显示快照");
+        Assert.That(play, Does.Not.Contain("var gen = _fxGen;"), "不在播放入口重新取当前代号");
+        var reset = pb[pb.IndexOf("private void ResetPlayback()")..];
+        reset = reset[..reset.IndexOf("private void Pulse")];
+        foreach (var w in new[] { "_fxGen++;", "_fxQueue.Clear();", "FxNow = null;", "FxView = null;", "_fxAfter.Clear();", "E.DrainBattleFx();", "E.DrainLifeFx();" })
+            Assert.That(reset, Does.Contain(w), w);
+        var gs = Web("Services", "GameSession.cs");
+        var ui = gs[gs.IndexOf("private void ResetUi()")..];
+        Assert.That(ui[..ui.IndexOf("// ───────────── 选择")], Does.Contain("ResetPlayback();"));
+        foreach (var m in new[] { "public string? LoadSlot(string key)", "public void BackToTitle()" })
+        {
+            var body = gs[gs.IndexOf(m)..];
+            Assert.That(body[..body.IndexOf("\n    }")], Does.Contain("ResetUi();"), m);
+        }
+        Assert.That(gs, Does.Contain("await PlayFx(fx, gen);"));
+        Assert.That(gs, Does.Contain(": fx, gen);"), "玩家指令的播放带本次代号");
+        var loop = gs[gs.IndexOf("public async Task BattleLoop()")..];
+        loop = loop[..loop.IndexOf("private Task StepPause()")];
+        var wait = loop.IndexOf("await Task.Delay(120);");
+        var chk = loop.IndexOf("if (gen != _fxGen) return;", wait);
+        Assert.That(chk, Is.GreaterThan(wait).And.LessThan(loop.IndexOf("E.BattleStep(S)")), "阅读暂停等待之后、推进下一步之前先验代号");
+        var run = gs[gs.IndexOf("private async Task RunLoop()")..];
+        run = run[..run.IndexOf("public void AckDialogue")];
+        Assert.That(run, Does.Contain("var rgen = _fxGen;"));
+        Assert.That(run, Does.Contain("while (State != null && !S.Progress.Dead && rgen == _fxGen)"));
+        Assert.That(run, Does.Contain("if (rgen == _fxGen)   // 旧循环"), "过期循环不动新局的推进标记");
+        Assert.That(run.IndexOf("if (rgen != _fxGen) return;"), Is.LessThan(run.IndexOf("await BattleLoop();")), "过期循环不接新局的战斗");
+    }
+
+    /// <summary>B47b 试玩修复 2（R03 Q617-A03、Q633）：特写退到只读子页（全记录等）之下播放时，子页正文可滚动、点击被拦住——「返回战斗」「回到最新」不受理，点击不落到背后。</summary>
+    [Test]
+    public void Playtest2_DrawerUnderPlayback_ScrollsButSwallowsClicks()
+    {
+        var bs = Web("Components", "BattleScreen.razor");
+        Assert.That(bs, Does.Contain("<div class=\"bfs-drawer @(DrawerFxPlay ? \"fx-play\" : \"\")\""));
+        Assert.That(bs, Does.Contain("private bool DrawerFxPlay => G.BattleDrawer is not (null or \"help\") && G.PlaybackActive;"));
+        Assert.That(bs, Does.Contain("@onclick=\"DrawerBack\">@BattleInfoCopy.BackToBattle"));
+        Assert.That(bs, Does.Not.Contain("@onclick=\"() => G.OpenBattleDrawer(null)\""));
+        var back = bs[bs.IndexOf("private void DrawerBack()")..];
+        Assert.That(back[..back.IndexOf("}")], Does.Contain("if (DrawerClickBlocked) return;"));
+        var latest = bs[bs.IndexOf("private async Task LogToLatest()")..];
+        Assert.That(latest.IndexOf("if (DrawerClickBlocked) return;"), Is.GreaterThan(0).And.LessThan(latest.IndexOf("_logNew = 0;")));
+        var css = Web("wwwroot", "css", "battle.css");
+        Assert.That(css, Does.Contain(".bfs-drawer.fx-play button, .bfs-drawer.fx-play .bfs-drawer-body * { pointer-events: none; }"));
+        Assert.That(css, Does.Not.Contain(".bfs-drawer.fx-play { pointer-events: none"), "子页本身仍接住点击，不落到背后的战场／操作台");
+        Assert.That(css, Does.Contain(".bfs-drawer-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }"), "正文滚动容器照常滚动");
+    }
+
+    /// <summary>B47b 试玩修复 3（R03 Q619-A01）：焦点停在灰卡上、锁级说明正显示时，ESC 不先让按钮失焦（失焦会先收掉说明、这一下落到阅读区）；一下只收锁级说明。</summary>
+    [Test]
+    public void Playtest3_EscOnLockedCard_ClosesOnlyLockNote()
+    {
+        var js = Web("wwwroot", "js", "app.js");
+        Assert.That(js, Does.Contain("var noteOn = ae && ae.classList && ae.classList.contains('locked-card') && document.querySelector('.bfs .bc-locknote:not(.ghost)');"));
+        Assert.That(js, Does.Contain("if (ae && ae.tagName === 'BUTTON' && !noteOn) ae.blur();"));
+        var bs = Web("Components", "BattleScreen.razor");
+        Assert.That(bs, Does.Contain("class=\"cmdt skill locked-card\""));
+        Assert.That(bs, Does.Contain("<div class=\"bc-locknote @(lockShown == null ? \"ghost\" : \"\")\""));
+        Assert.That(bs, Does.Contain("@onblur=\"() => SetLockFocus(null)\""), "失焦即收说明——所以 ESC 不能先失焦");
+        var gs = Web("Services", "GameSession.cs");
+        var esc = gs[gs.IndexOf("public void BattleEscape()")..];
+        Assert.That(esc.IndexOf("if (BattleLockNoteOpen)"), Is.LessThan(esc.IndexOf("if (BattleInfoPage != null) { CollapseBattleInfo(); return; }")));
+    }
+
+    /// <summary>B47b 试玩修复 4（S14 B34 Q615／Q616）：当前行动者濒死时，待机微动态让位给濒死黯淡 0.72 与跪姿（动画会盖掉 filter／transform）；非当前行动者沿原规则。</summary>
+    [Test]
+    public void Playtest4_DyingActingAlly_DimAndKneelOverrideIdle()
+    {
+        var css = Web("wwwroot", "css", "battle.css");
+        Assert.That(css, Does.Contain(".anc.ally.dying .anc-art img { filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86);"));
+        Assert.That(css, Does.Contain(".anc.ally.await-cmd.dying .anc-art > img { animation: none; filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86);"));
+        Assert.That(css, Does.Contain("@media (prefers-reduced-motion: reduce) { .anc.ally.await-cmd.dying .anc-art > img { animation: none !important; filter: brightness(var(--dying-dim, .72))"));
+        Assert.That(css.IndexOf(".anc.ally.await-cmd.dying .anc-art > img"), Is.GreaterThan(css.IndexOf("@keyframes anc-idle")), "写在待机规则之后");
+    }
+
+    /// <summary>B47b 试玩修复 5：系统说明位置行沿“{主题} · {条目}”，条目与主题同名（「濒死与意志」）只写一次。</summary>
+    [Test]
+    public void Playtest5_HelpCrumb_NoDuplicateWhenEntryNamedLikeTopic()
+    {
+        var hc = Web("Services", "HelpCatalog.cs");
+        Assert.That(hc, Does.Contain("entry == null || entry.Title == topic.Title ? topic.Title : $\"{topic.Title} · {entry.Title}\";"));
+        var ho = Web("Components", "HelpOverlay.razor");
+        Assert.That(ho, Does.Contain("<span class=\"sub\">@HelpCatalog.Crumb(topic, entry)</span>"));
+        Assert.That(ho, Does.Not.Contain("$\" · {entry.Title}\""));
     }
 }

@@ -655,3 +655,12 @@
    只改立绘层，姓名、数值与可操作性不变（不复用死者／不可选的压暗与输入禁用） ───── */
 .anc.ally.dying .anc-art img { filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86); transform-origin: bottom center; }
 .anc .st.dying-res { color: #f0a35e; border-color: currentColor; }
+
+/* ───── B47b 试玩修复（R03 Q617-A03、Q633）：特写退到只读子页之下播放时，子页正文仍可滚轮／触控滚动，点击一律被拦住——
+   子页本身照常接住指针（点击不落到背后），其中的按钮与正文内各行不接点击；正文滚动容器本身接滚轮与触控，标题行「返回战斗」与页脚「回到最新」不受理 ───── */
+.bfs-drawer.fx-play button, .bfs-drawer.fx-play .bfs-drawer-body * { pointer-events: none; }
+
+/* ───── B47b 试玩修复（S14 B34 Q615／Q616）：当前行动者濒死时，待机微动态（anc-idle 动画会盖掉 filter／transform）让位给濒死黯淡与跪姿；
+   等待下令的高亮框（立绘容器上）照常 ───── */
+.anc.ally.await-cmd.dying .anc-art > img { animation: none; filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86); transform-origin: bottom center; }
+@media (prefers-reduced-motion: reduce) { .anc.ally.await-cmd.dying .anc-art > img { animation: none !important; filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86); } }
