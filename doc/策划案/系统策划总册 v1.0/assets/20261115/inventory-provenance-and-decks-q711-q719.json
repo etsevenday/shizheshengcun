@@ -1,5 +1,5 @@
 {
-  "contractVersion": 1,
+  "contractVersion": 2,
   "date": "2026-11-15",
   "purpose": "策划辅助，不是运行配置；完整B50 Q711—Q719及地面/容器牌组用户新裁定",
   "canonicalRules": "../../01 基础系统/S06 物品、背包、负重与保质系统.md",
@@ -150,5 +150,153 @@
     "Q718-A01",
     "Q719-A01"
   ],
-  "runtimeTestsPerformed": false
+  "runtimeTestsPerformed": false,
+  "q757ToQ762": {
+    "date": "2026-11-15",
+    "status": "策划交付，非运行配置；待开发实现复验",
+    "originalBatch": "2026-11-15 c5a50e4 B50b Q757-Q762",
+    "decisions": {
+      "Q757": "user_new_rule_plus_supplement_A_all_items_bulk_quantity_and_specific_single",
+      "Q758": "user_custom_all_ground_and_container_lists",
+      "Q759": "A",
+      "Q760": "A",
+      "Q761": "A",
+      "Q762": "A"
+    },
+    "overrides": [
+      "cabinet.nonFungibleSharedBatchQuantityAdded_false_for_operation_only_states_remain_individual",
+      "deck.original_root_count_for_display_only",
+      "old_exclusions_of_claim_recovery_sealed_lists"
+    ],
+    "copy": {
+      "carried": "随身",
+      "ground": "屋内地面",
+      "cabinet": "柜内（{组数}组）",
+      "deck": "牌组 · {张数}张",
+      "total": "×{总数}",
+      "groupRow": "×{总数} · 可移{可移动数} · {总重量}公斤",
+      "quantity": "数量",
+      "store": "放进柜子",
+      "takeCarried": "取到随身",
+      "takeGround": "取到屋内地面",
+      "plan": "本次：{物名}×{数量}",
+      "planDetails": "存取明细",
+      "changed": "物品已变，请重选。",
+      "current": "当前：{物名} · {原实例摘要}",
+      "batchPhysical": "×{总数} · {单重}公斤/份",
+      "batchAvailable": "可用×{可用数}",
+      "batchReserved": "预留×{预留数}",
+      "batchOccupied": "占用×{占用数}",
+      "source": "来源：{来源清单}",
+      "expand": "展开",
+      "collapse": "堆叠",
+      "expandAria": "展开{物名}（{张数}张）",
+      "collapseAria": "堆叠同组{物名}（{张数}张）",
+      "noQuantity": "当前没有可转移的数量。",
+      "someRoomPortions": "最多还能放{最大值}份{物名}（柜子容量{容量}公斤）。",
+      "someRoomPieces": "最多还能放{最大值}件{物名}（柜子容量{容量}公斤）。",
+      "batchPhysicalPiece": "×{总数} · {单件重量}公斤/件"
+    },
+    "cabinet": {
+      "allItemTypesQuantity": true,
+      "independentUnitsCountAsPieces": true,
+      "ordinaryStackablesCountAsPortions": true,
+      "containersMoveWholeWithOwnContents": true,
+      "independentStateIdsPreserved": true,
+      "selectFirstNLegalByOriginalDeckOrder": true,
+      "specificExpandedSingleStillExactId": true,
+      "selectedPlanIdsAndSummariesVisible": true,
+      "changedSelectedIndependentItemRejectsWholeRequest": true,
+      "silentReplacementByNewFront": false,
+      "capacityCheckedForWholeSet": true,
+      "partialTransferOrAutoShrink": false,
+      "skipHeavyPrefixForLighterLater": false,
+      "contentsWeightCountedOnce": true,
+      "sameRequestIdempotent": true,
+      "storageCapacityGrams": 200000,
+      "carriedMaxRootCards": 5,
+      "carriedSoftGrams": 30000,
+      "worldMinutes": 0,
+      "oldPermissionAndHigherLocks": true,
+      "remoteAccessAdded": false,
+      "bulkExtendedToOtherContainerOperations": false
+    },
+    "scope": {
+      "toggleLists": [
+        "ground",
+        "cabinet_contents",
+        "pot_ingredient_contents",
+        "remains_and_claim_box",
+        "expedition_recovery_box",
+        "sealed_store"
+      ],
+      "actualOwnerItemIdOriginalCardSideGrouping": true,
+      "noCrossBoxPersonPotOrGeneration": true,
+      "retiredDepositAndCharacterRemainsUseSameActualContainerRule": true,
+      "carriedToggle": false,
+      "carriedSourceToggleInOtherWindows": false,
+      "workOrFacilitySlotToggle": false,
+      "originalClaimAndSealOperationsPreserved": true,
+      "remoteSummaryCreatesFreshItems": false
+    },
+    "count": {
+      "ordinaryPortionsOneMemberPerActualBatch": true,
+      "reservationSplitCreatesDisplayMember": true,
+      "sameBatchAcrossFullStackInstancesOneDisplayMember": true,
+      "independentStateEachInstanceOneMember": true,
+      "frontShowsGroupTotal": true,
+      "totalIncludesReservedOccupied": true,
+      "availableCountSeparate": true,
+      "displayCountChangesPhysicalOrCarriedRootCount": false,
+      "singleDisplayMemberHidesToggle": true
+    },
+    "cabinetLabels": {
+      "sourceHeadings": [
+        "carried",
+        "ground"
+      ],
+      "cabinetHeader": "cabinet",
+      "sourceOwnersStillSeparate": true
+    },
+    "batchDetails": {
+      "physicalKey": "batchPhysical",
+      "availableReservedOccupiedRealAndSeparate": true,
+      "ordinarySourceLine": false,
+      "spoiledKnownSourceSeparateLine": true,
+      "unknownSourceOrHeadingDisplayed": false,
+      "originalDeadlineRLocksAndStackCapsPreserved": true
+    },
+    "summary": {
+      "onlyActualInstance": true,
+      "nonWhiteQualityPlusExistingOneLine": true,
+      "whiteQualityOmitted": true,
+      "potUsesExistingFeedingWaterAndIngredientSlotText": true,
+      "missingFieldsOmittedWithoutLooseSeparator": true,
+      "bulkSelectedEachSummaryReachable": true
+    },
+    "compatibility": {
+      "oldInstanceStateContentsAndRightsPreserved": true,
+      "oldLogsUnchanged": true,
+      "oldSpecificDraftNotConvertedToBulk": true,
+      "viewOnlyNoWorldRandomXp": true,
+      "originalViewSessionIdentity": true,
+      "originalUnrelatedPendingBatchesUntouched": true
+    },
+    "acceptance": [
+      "Q757-A01",
+      "Q757-A02",
+      "Q757-A03",
+      "Q757-A04",
+      "Q758-A01",
+      "Q758-A02",
+      "Q758-A03",
+      "Q759-A01",
+      "Q759-A02",
+      "Q760-A01",
+      "Q761-A01",
+      "Q761-A02",
+      "Q762-A01",
+      "Q762-A02"
+    ]
+  }
 }
