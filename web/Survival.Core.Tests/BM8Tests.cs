@@ -67,6 +67,7 @@ public class BM8Tests : B41cTestBase
         Assert.That(ev.Count(l => l.Kind == "ActionPaused"), Is.EqualTo(1));
         Assert.That(s.Player.AlertLatched[StatId.Health], Is.True, "锁存照记，不在濒死期间反复判定");
         // 再推进：濒死期间健康仍 0，不补出提醒
+        E.TestDeathRolls = new Queue<double>(Enumerable.Repeat(0.0, 10));   // 抵抗成功
         E.Resume(s);
         var mark2 = s.Log.Count;
         E.Advance(s);
@@ -118,6 +119,31 @@ public class BM8Tests : B41cTestBase
         Assert.That(s.LifeLogMinute, Is.Null, "段结束后复原，不进存档");
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
         Assert.That(t.LifeLogMinute, Is.Null);
+    }
+
+    /// <summary>Q699-A01：同一世界段里的抵抗成功句、致死抵抗失败与所接死亡主结果（同一条）都记段末 E；真实时钟只推进一段。</summary>
+    [Test]
+    public void Q699_A01_ResistAndDeathAtSegmentEnd()
+    {
+        var s = NearDying(69902);
+        Start(s, ActionRequest.Wait(60));
+        Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Paused));
+        E.TestDeathRolls = new Queue<double>(new[] { 0.0 });   // 下一段抵抗成功
+        Assert.That(E.Resume(s).Ok, Is.True);
+        var t1 = s.GameMinute;
+        var mark = s.Log.Count;
+        E.Advance(s);
+        Assert.That(s.GameMinute, Is.EqualTo(t1 + 5));
+        Assert.That(s.Log.Skip(mark).Single(l => l.Text == GameEngine.ResistedDeathText("你")).Minute, Is.EqualTo(t1 + 5), "抵抗成功记段末");
+        E.TestDeathRolls = new Queue<double>(new[] { 0.9999 });   // 再一段抵抗失败
+        var t2 = s.GameMinute;
+        mark = s.Log.Count;
+        E.Advance(s);
+        Assert.That(s.Progress.Dead, Is.True);
+        var death = s.Log.Skip(mark).Single(l => l.Kind == "Death");
+        Assert.That(death.Text, Does.StartWith(GameEngine.FailedResistText("你")), "失败前缀与死亡主结果同一条");
+        Assert.That(death.Minute, Is.EqualTo(t2 + 5), "整条记段末");
+        Assert.That(s.GameMinute, Is.EqualTo(t2 + 5), "不多推进");
     }
 
     // ───────────── Q663 本场战斗不入场 ─────────────

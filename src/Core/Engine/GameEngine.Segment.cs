@@ -436,8 +436,9 @@ namespace Survival.Core.Engine
             var whereName = houseOf != null ? $"{SafehouseName(s, houseOf)}屋内" : LocName(where);
             // B47a2（Q689）：世界中的队友死亡主结果前接“{人物}未能抵抗致死。”（战斗中的战死由 AllyDownInBattle 在战报主结果前接，原即时提醒不再弹前缀）
             var failed = TakeFailedResistPrefix(actor, ActorLabel(actor));
+            // BM8（R09 Q699）：世界段内（含前接的致死抵抗失败前缀，同一条）记该段末分钟 E；段外（战斗 0 时间出手等）仍当前分钟
             Emit(s, GameEventKind.Alert, inBattle && wasActive ? $"{ActorLabel(actor)}已战死（{cause}）"
-                : failed + $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{whereName}。" : "。"));
+                : failed + $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{whereName}。" : "。"), at: s.LifeLogMinute);
             AfterSquadLeave(s, actor.Id);   // B41c：队长回退、练习潜行收束（先写原死亡结果再追加）
             return moved;
         }
@@ -759,7 +760,8 @@ namespace Survival.Core.Engine
                 LocationId = loc,
             };
             ExpeditionOnDeath(s);   // B21：主角终局，远征停止（不再推进返程、不到父地点）
-            Emit(s, GameEventKind.Death, $"{failed}你在{LocName(loc)}倒下了。直接原因：{s.Progress.Death.Cause}。");
+            // BM8（R09 Q699）：世界段内的死亡主结果（含致死抵抗失败前缀）记段末分钟 E；终局时刻 DeathInfo.Minute 不动
+            Emit(s, GameEventKind.Death, $"{failed}你在{LocName(loc)}倒下了。直接原因：{s.Progress.Death.Cause}。", at: s.LifeLogMinute);
         }
 
         private static readonly StatId[] ZeroStats = { StatId.Satiety, StatId.Hydration, StatId.Wakefulness, StatId.Energy };
