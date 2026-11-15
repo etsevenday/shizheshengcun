@@ -116,6 +116,9 @@
                 else
                 {
                     <div class="panel craft-mats@(stationRecipe ? " station-mats" : "")">
+                        @* B51b 试玩修复 M972：配方说明到产物包一层 .cm-body——一般配方 display:contents 照旧；
+                           陶窑／净水台这一层自成滚动区，逐批列表移到它下面单独滚动，投料批数移进卡底投料栏 *@
+                        <div class="cm-body" data-wheel="y">
                         <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? (GameEngine.IsWildFireRecipe(rc) ? "野外建造" : "营地建造") : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
                         @* B10（A10 §9.1）：来源、工坊与门槛一次写全；不满足的标出原因（不是缺料） *@
                         <div class="craft-source" data-craft-source>
@@ -204,19 +207,8 @@
                                 @if (pots.Count == 0) { <div class="risk none">随身和当前地面没有锅。</div> }
                             </div>
                         }
-                        @if (stationRecipe)
-                        {
-                            @* B32e（Q380，S08「2026-11-10 Q380」）：陶窑/固定净水台的数量字段是「投料批数」，默认1；上限 = min(10−未完成批数, 材料与燃料够的完整批数)。
-                               上限变小使所选批数无效时不自动缩批，原因写在下方投料按钮旁，由玩家重选 *@
-                            var stMax = e.StationBatchMaxNew(s, rc);
-                            <div class="batch-row" data-station-batches>
-                                <span class="tiny muted">投料批数</span>
-                                <button type="button" class="tbar-step" aria-label="减少批数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
-                                <b>@batch</b>
-                                <button type="button" class="tbar-step" aria-label="增加批数" disabled="@(batch >= stMax)" @onclick="() => SetBatch(batch + 1)">+</button>
-                            </div>
-                        }
-                        else if (batchable)
+                        @* B32e（Q380）陶窑／净水台的「投料批数」步进器：B51b 试玩修复 M972 移到卡底投料栏「投料」按钮上方（见下） *@
+                        @if (batchable && !stationRecipe)
                         {
                             var enough = rc.AllInputs.Count == 0 ? 1 : rc.AllInputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value));
                             var maxBatch = Math.Max(1, enough);
@@ -268,28 +260,7 @@
                             </div>
                         }
                         <div class="mat-scroll @(rc.AllInputs.Count == 0 && rc.Outputs.Count == 0 && rc.Catalysts.Count == 0 ? "mat-empty" : "")" data-wheel="y">
-                        @* B32e 试玩修复 M680：队列区放进原料滚动区顶部（原在滚动区外，1280×720 下把投料条挤出卡底被裁），投料条固定在卡底始终可见 *@
-                            @if (sbList.Count > 0)
-                            {
-                                @* B51b（S08 文首 Q701.2／Q701.4、B51 Q721／Q727，逐字稿 B51 表）：标题「加工中{批数}批（最多10批）」与并行说明（有批时一次，Q779 待定两句都显示）；
-                                   每批一行「批次{序号} · {配方名} · {已进行}/{所需}分 · 预计{日期时刻}完成」，明细分行写原经验说明与「完成后放在{区域}地面。」；
-                                   「取消本批」绑定该行渲染时的真实 batchId 与所见序号（序号只作显示、按当前位置从1重排） *@
-                                var zonePlace = s.Ground;
-                                <div class="station-queue" data-station-queue>
-                                    <div class="sq-head"><b data-station-title>@GameEngine.StationTitle(sbList.Count)</b><small class="tiny muted" data-station-help>@GameEngine.StationParallelHelp</small></div>
-                                    @for (var k = 0; k < sbList.Count; k++)
-                                    {
-                                        var sbItem = sbList[k];
-                                        var bid = sbItem.BatchId;
-                                        var seq = k + 1;
-                                        var rowText = e.StationBatchRow(s, sbItem, seq);
-                                        <div class="sq-row" data-station-batch="@bid">
-                                            <span class="cg-facts"><b title="@rowText">@rowText</b><small class="cg-xp" title="@e.StationBatchXpNote(s, sbItem)">@e.StationBatchXpNote(s, sbItem)</small><small class="cg-sum">@e.StationOutputGround(s, zonePlace)</small></span>
-                                            <button type="button" class="secondary cg-start" data-station-cancel title="只取消实际加工中的一批，释放该批全部未核销材料和燃料到本区地面，不退时间，没有产物和经验" disabled="@StationHeld" @onclick="(MouseEventArgs ev) => CancelStation(rc.Station, bid, seq, ev)">@GameEngine.StationCancelLabel</button>
-                                        </div>
-                                    }
-                                </div>
-                            }
+                        @* B32e 试玩修复 M680 曾把队列区放进原料滚动区顶部；B51b 试玩修复 M972 移出到 .cm-body 下方自成一区（见下） *@
                         <div class="tiny muted">原料@(rc.Fuel.Count > 0 ? "与燃料" : "")</div>
                         <div class="mat-grid">
                         @foreach (var kv in rc.Fuel)
@@ -346,6 +317,31 @@
                             <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value * batch}")" Status="@(rc.IsDrying ? "完成后留在晾制位占位，回到晾制架所在地取出" : $"完成后放在{e.ZoneName(s, s.Ground)}地面")" />
                         }
                         </div>
+                        </div>
+                        @if (sbList.Count > 0)
+                        {
+                            @* B51b（S08 文首 Q701.2／Q701.4、B51 Q721／Q727，逐字稿 B51 表）：标题「加工中{批数}批（最多10批）」与并行说明（有批时一次，Q779 待定两句都显示）；
+                               每批一行「批次{序号} · {配方名} · {已进行}/{所需}分 · 预计{日期时刻}完成」，明细分行写原经验说明与「完成后放在{区域}地面。」；
+                               「取消本批」绑定该行渲染时的真实 batchId 与所见序号（序号只作显示、按当前位置从1重排）。
+                               B51b 试玩修复 M972：队列区在 .cm-body 与投料栏之间自成一区，标题与并行说明固定、逐批列表单独滚动，优先分高度 *@
+                            var zonePlace = s.Ground;
+                            <div class="station-queue" data-station-queue>
+                                <div class="sq-head"><b data-station-title>@GameEngine.StationTitle(sbList.Count)</b><small class="tiny muted" data-station-help>@GameEngine.StationParallelHelp</small></div>
+                                <div class="sq-rows" data-wheel="y">
+                                @for (var k = 0; k < sbList.Count; k++)
+                                {
+                                    var sbItem = sbList[k];
+                                    var bid = sbItem.BatchId;
+                                    var seq = k + 1;
+                                    var rowText = e.StationBatchRow(s, sbItem, seq);
+                                    <div class="sq-row" data-station-batch="@bid">
+                                        <span class="cg-facts"><b title="@rowText">@rowText</b><small class="cg-xp" title="@e.StationBatchXpNote(s, sbItem)">@e.StationBatchXpNote(s, sbItem)</small><small class="cg-sum">@e.StationOutputGround(s, zonePlace)</small></span>
+                                        <button type="button" class="secondary cg-start" data-station-cancel title="只取消实际加工中的一批，释放该批全部未核销材料和燃料到本区地面，不退时间，没有产物和经验" disabled="@StationHeld" @onclick="(MouseEventArgs ev) => CancelStation(rc.Station, bid, seq, ev)">@GameEngine.StationCancelLabel</button>
+                                    </div>
+                                }
+                                </div>
+                            </div>
+                        }
                         @* 唯一“开始制作/开始建造”入口在所选配方卡内（S08 §5、S14 §14.1）：选配方、改份数、指定批次/锅只预览，不扣物不预留；
                            点开始才交内核按真实材料/工具/锅/占用重验并预留开工（E.Start），执行中锁住按钮，重复点击不重复制作。右栏只作可选详细预测。 *@
                         @if (rc.IsDrying)
@@ -369,6 +365,7 @@
                                投料按钮「投料（{批数}批）」可在加工中继续投新批（新批从投料时刻开始） *@
                             var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc, batch);
                             var loadKey = $"station-load:{s.Ground}:{rc.Station}:{s.NextActionId}:{batch}";
+                            var stMax = e.StationBatchMaxNew(s, rc);
                             <div class="craft-go" data-station-go>
                                 <span class="cg-facts">
                                     @if (sbWhy == null)
@@ -380,8 +377,19 @@
                                     }
                                     else { <small class="warn-text">@sbWhy</small> }
                                 </span>
-                                <button type="button" class="primary cg-start" disabled="@(sbWhy != null || StationHeld)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
-                                        data-enter @onclick="(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)">投料（@(batch)批）<EnterCap On="@(sbWhy == null && !StationHeld)" /></button>
+                                @* B32e（Q380，S08「2026-11-10 Q380」）：陶窑/固定净水台的数量字段是「投料批数」，默认1；上限 = min(10−未完成批数, 材料与燃料够的完整批数)。
+                                   上限变小使所选批数无效时不自动缩批，原因写在投料按钮旁，由玩家重选。
+                                   B51b 试玩修复 M972：步进器从卡顶移到「投料」按钮上方，与按钮同一列，不再单占一行 *@
+                                <div class="cg-act">
+                                    <div class="batch-row" data-station-batches>
+                                        <span class="tiny muted">投料批数</span>
+                                        <button type="button" class="tbar-step" aria-label="减少批数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
+                                        <b>@batch</b>
+                                        <button type="button" class="tbar-step" aria-label="增加批数" disabled="@(batch >= stMax)" @onclick="() => SetBatch(batch + 1)">+</button>
+                                    </div>
+                                    <button type="button" class="primary cg-start" disabled="@(sbWhy != null || StationHeld)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
+                                            data-enter @onclick="(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)">投料（@(batch)批）<EnterCap On="@(sbWhy == null && !StationHeld)" /></button>
+                                </div>
                             </div>
                         }
                         else

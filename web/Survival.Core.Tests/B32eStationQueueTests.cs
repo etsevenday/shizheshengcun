@@ -387,7 +387,7 @@ public class B32eStationQueueTests : TestBase
 
     /// <summary>
     /// 试玩修复 M680：连点取消不再连取消两批——连击第二下起（Detail&gt;1）不提交，提交成功后按钮停用一段再随重渲恢复；请求号与所绑批次来自渲染时。
-    /// 批次区放进原料滚动区顶部、投料条留在卡底，矮屏整卡兜底可滚。
+    /// 批次区放进原料滚动区顶部、投料条留在卡底，矮屏整卡兜底可滚（B51b 试玩修复 M972 起批次区移出原料滚动区自成一区，见下）。
     /// </summary>
     [Test]
     public void Q380_M680_ClickGuard_And_QueueInsideScroll()
@@ -399,12 +399,22 @@ public class B32eStationQueueTests : TestBase
         Assert.That(razor, Does.Contain("(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)"));
         Assert.That(razor.Split("disabled=\"@StationHeld\"").Length - 1, Is.EqualTo(1), "取消键提交后停用");
         Assert.That(razor, Does.Contain("disabled=\"@(sbWhy != null || StationHeld)\""));
+        // B51b 试玩修复 M972：批次区移出原料滚动区，在配方说明区（.cm-body，陶窑／净水台自成滚动区）与投料栏之间自成一区，逐批列表单独滚动；
+        // 「投料批数」步进器移进投料栏、在「投料」按钮上方
+        var body = razor.IndexOf("<div class=\"cm-body\"", StringComparison.Ordinal);
         var scroll = razor.IndexOf("<div class=\"mat-scroll", StringComparison.Ordinal);
-        var queue = razor.IndexOf("data-station-queue", StringComparison.Ordinal);
         var mats = razor.IndexOf("原料@(rc.Fuel.Count > 0 ? \"与燃料\" : \"\")", StringComparison.Ordinal);
-        Assert.That(scroll < queue && queue < mats, Is.True, "批次区在原料滚动区顶部");
-        Assert.That(razor.IndexOf("data-station-go", StringComparison.Ordinal), Is.GreaterThan(mats), "投料条在滚动区外、卡底");
+        var queue = razor.IndexOf("data-station-queue", StringComparison.Ordinal);
+        var rows = razor.IndexOf("<div class=\"sq-rows\"", StringComparison.Ordinal);
+        var go = razor.IndexOf("data-station-go", StringComparison.Ordinal);
+        var stepper = razor.IndexOf("data-station-batches", StringComparison.Ordinal);
+        var load = razor.IndexOf("(MouseEventArgs ev) => LoadStation(", StringComparison.Ordinal);
+        Assert.That(body >= 0 && body < scroll && scroll < mats && mats < queue, Is.True, "批次区在原料滚动区之后、配方说明区外");
+        Assert.That(queue < rows && rows < go, Is.True, "逐批列表单独滚动，投料条在批次区下、卡底");
+        Assert.That(go < stepper && stepper < load, Is.True, "投料批数在投料栏内、投料按钮上方");
         Assert.That(css, Does.Contain(".craft-side > .craft-mats.station-mats { overflow-y: auto; }"));
+        Assert.That(css, Does.Contain(".craft-side > .craft-mats > .cm-body { display: contents; }"), "一般配方布局不变");
+        Assert.That(css, Does.Contain(".sq-rows { flex: 0 1 auto; min-height: 0; overflow-y: auto;"));
         Assert.That(css, Does.Contain(".sq-row { display: flex; align-items: flex-start;"));
     }
 }
