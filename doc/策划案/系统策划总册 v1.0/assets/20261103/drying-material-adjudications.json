@@ -1,5 +1,5 @@
 {
-  "version": "q214_q215_q666_20261115",
+  "version": "q214_q215_q666_q711_q719_20261115",
   "date": "2026-11-15",
   "rules": {
     "Q214": "选A。系统从主角随身与当前区地面自动配料，同种优先原截止可撑到完成的批，预览逐条明示来源/实例/保质，确认0分钟投料；不取队友包/屋柜/异地。快到期果干原料仅警告不拒绝；肉干因Q215已受保护，展示暂停计时说明，不再虚报制作中腐败。",
@@ -84,6 +84,36 @@
       "Q666-A03",
       "Q666-A04",
       "Q666-A05"
+    ]
+  },
+  "q711ToQ719": {
+    "priority": "Q713 failure wording and Q714 silent preservation migration; prior fields preserved",
+    "missingFailure": {
+      "status": "原料不全，待清理",
+      "summary": "缺料{工位数}",
+      "xp": "原料不全，无成品和经验。",
+      "cancel": "原料不全：请清理剩余物品。",
+      "line": "{配方名}已因缺料停止，无成品；清理可取回剩余物品。",
+      "cleanupHint": "取出剩余物品，清空该位。",
+      "cleanupResult": "清理{地点}晾制架工位{序号}：{物品清单}取到{目的地}，该位已空。",
+      "emptyCleanupResult": "清理{地点}晾制架工位{序号}：该位已空。"
+    },
+    "unknownFailure": {
+      "status": "加工已停止，待清理",
+      "summary": "停止{工位数}",
+      "xp": "本批已停止，无成品和经验。",
+      "cancel": "本批已停止：请清理剩余物品。",
+      "line": "{配方名}已停止，无成品；清理可取回剩余物品。"
+    },
+    "spoiledMaterialNoteOnlyForActualSpoiledMatter": true,
+    "missingInputCreated": false,
+    "failedOutputOrXpGranted": false,
+    "actualReturnRPolicyUnchanged": true,
+    "migrationAddsPreservationUpgradeMessage": false,
+    "originalQ610DueConversionMessageUnchanged": true,
+    "acceptance": [
+      "Q713-A01",
+      "Q714-A01"
     ]
   }
 }
