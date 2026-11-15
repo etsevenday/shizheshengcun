@@ -74,12 +74,13 @@ namespace Survival.Core.Engine
         private EnemyIntentStepConfig PlainStep(EnemyConfig cfg)
         {
             var first = AllSteps(cfg).FirstOrDefault(x => x.Kind == "attack");
-            if (first != null) return new EnemyIntentStepConfig { Kind = "attack", Verb = first.Verb, BitePct = first.BitePct, Control = first.Control, BleedPct = first.BleedPct, OwnSlots = first.OwnSlots, TargetSlots = first.TargetSlots };
+            // B49（R04 Q652「普通物理攻击回退」）：合成的普通攻击取该敌种 defaultPhysicalExposure；可改判咬击的照抄咬击替换
+            if (first != null) return new EnemyIntentStepConfig { Kind = "attack", Verb = first.Verb, BitePct = first.BitePct, Control = first.Control, BleedPct = first.BleedPct, OwnSlots = first.OwnSlots, TargetSlots = first.TargetSlots, Exposure = cfg.DefaultPhysicalExposure, BiteReplacementExposure = first.BiteReplacementExposure };
             var rear = Digits(cfg.OwnSlots).All(p => p >= 3);
             return new EnemyIntentStepConfig
             {
                 Kind = "attack", Verb = rear ? "弱近战" : AttackVerb(cfg), Factor = rear ? WeakAttackFactor : 1,
-                OwnSlots = rear ? "12" : null, TargetSlots = rear ? "12" : null,
+                OwnSlots = rear ? "12" : null, TargetSlots = rear ? "12" : null, Exposure = cfg.DefaultPhysicalExposure,
             };
         }
 
@@ -195,8 +196,8 @@ namespace Survival.Core.Engine
                 .OrderBy(x => Math.Abs(x.Pos - e.Pos)).ThenBy(x => x.Pos).Take(2).ToList();
 
         /// <summary>
-        /// B20 试玩修复（A09 E2、EC05）：这个敌人有没有可能咬人——丧尸且意图表里有咬击步骤或抓击改判咬击的权重；没有的（新守卫、低吟/试制区、
-        /// 喷吐/尖啸/膨胀等）攻击都不传播病毒，界面不写“咬伤可能感染”。
+        /// B20 试玩修复（A09 E2、EC05）：这个敌人有没有可能咬人——丧尸且意图表里有咬击步骤或抓击改判咬击的权重。
+        /// B49（R04 Q652）起“不咬”不代表不传播：传播途径看 EnemyExposureTypes，这里只剩咬击本身的判断。
         /// </summary>
         public bool CanBite(EnemyConfig cfg) => cfg.IsZombie && AllSteps(cfg).Any(x => x.Kind == "bite" || (x.Kind == "attack" && x.BitePct > 0));
 
@@ -258,7 +259,8 @@ namespace Survival.Core.Engine
                 case "signal": return $"{verb}（呼叫附近同类增援1次）";
                 case "buff": return $"{verb}（自身下一击×{Fmt.T(st.NextHitFactor)}）";
                 case "sweep": return $"{verb}1、2号位 各{Range(cfg, st.Factor, e, b)}";
-                case "spit": return $"{verb} {Range(cfg, st.Factor, e, b)}{tail}（不感染）";
+                // B49（Q744 A）：喷吐等删旧“（不感染）”，其他有传播类型的动作不新加后缀
+                case "spit": return $"{verb} {Range(cfg, st.Factor, e, b)}{tail}";
                 case "pull": return st.Factor > 0
                     ? $"{verb} {Range(cfg, st.Factor, e, b)}（命中后把{(st.TargetMarked ? "被标记的目标" : "目标")}往前拉{Math.Max(1, st.Pull)}位）"
                     : $"{verb}（命中后把目标往前拉{Math.Max(1, st.Pull)}位）";
@@ -755,13 +757,15 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 敌人的一次攻击（命中→伤害→附加）：命中 P=敌人面板命中/(…+主角闪避36)；伤害=抽值×意图倍率×自身下一击增益×虚弱−主角护甲（被破甲时减）再乘格挡；
-        /// 只有丧尸咬击命中且正伤才判感染；扯腿/扑击/敲击失衡是需命中的控制；野犬/狼 25% 出血；喷吐破甲；扫击对我方 1、2 号位逐个判；
+        /// B49（R04 Q652／Q739）：真实正伤且仍活的命中按本次类型（咬击／锁定步骤／追击等默认类型）判一次病毒暴露；扯腿/扑击/敲击失衡是需命中的控制；野犬/狼 25% 出血；喷吐破甲；扫击对我方 1、2 号位逐个判；
         /// 拉扯/击退在我方只剩一人时没有位置可移动。plain=true 为普通攻击（倍率 1、无附加、追击不改判咬击）。
         /// </summary>
         private void DoAttackStep(GameState s, BattleState b, BattleEnemy e, EnemyIntentStepConfig st, bool plain, double factorOverride, bool pursuit, bool approach = false)
         {
             var cfg = _enemies[e.EnemyId];
             var bite = !pursuit && !approach && e.Intent == "bite";   // 迫近弱近袭不咬（Q80）
+            // B49（Q739 A）：追击、迫近弱近袭、后排降格弱攻击取默认物理类型；正常执行与前移／协同前压后够到的攻击取锁定步骤类型
+            var exposure = AttackExposure(cfg, st, bite, pursuit || approach || factorOverride < 1);
             var kind = st.Kind;
             var shoot = kind == "shoot" && factorOverride >= 1;   // 弱近战（后排型被压到前排、打空后）不耗子弹
             if (shoot && e.Mag <= 0) { BattleLog(s, $"{EnemyName(e)}没有子弹了。"); return; }
@@ -804,7 +808,7 @@ namespace Survival.Core.Engine
                     GrantSupportXp(s, b, "shield_03", guard, id, "shield");   // A06 §3：发生有效拦截才得保护经验（每场每目标一次）
                     hit = guard;
                 }
-                using (FocusOn(s, hit)) AttackOneAlly(s, b, e, cfg, st, plain, factor, verb, a, bite, kind);
+                using (FocusOn(s, hit)) AttackOneAlly(s, b, e, cfg, st, plain, factor, verb, a, bite, kind, exposure);
             }
         }
 
@@ -821,7 +825,7 @@ namespace Survival.Core.Engine
         /// 命中按本人闪避档、伤害−本人护甲（被破甲时减）再乘格挡；防具磨损；丧尸咬击正伤判本人感染；减速/失衡按本人控制抗性；出血、破甲、拉扯/击退按本人；
         /// 恐慌按本人；健康归零：主角终局，队友战死（遗物、其余恐慌+8）；命中后本人架着反击就反击。
         /// </summary>
-        private void AttackOneAlly(GameState s, BattleState b, BattleEnemy e, EnemyConfig cfg, EnemyIntentStepConfig st, bool plain, double factor, string verb, double a, bool bite, string kind)
+        private void AttackOneAlly(GameState s, BattleState b, BattleEnemy e, EnemyConfig cfg, EnemyIntentStepConfig st, bool plain, double factor, string verb, double a, bool bite, string kind, string exposure)
         {
             var me = MeId(s) == GameState.PlayerId;
             var tn = me ? "" : Who(s);
@@ -907,20 +911,11 @@ namespace Survival.Core.Engine
                 BattleDeath(s, cause);
                 return;
             }
-            if (bite)
-            {
-                // 只有丧尸咬击命中且造成正直接伤害才判一次病毒暴露，结果随事务保存（v0.6 §09、A09 §4）；队友按本人免疫判，不复制饱饱（R03 §5）
-                if (cfg.IsZombie)
-                {
-                    var infectedBefore = s.Body.Infected;
-                    var loadBefore = s.Body.VirusLoad;
-                    var hit = ExposeToVirus(s, out var chance);
-                    // B38b（N02 附录 §4）：首次、再次（实际增量）与未感染三句
-                    extra.Add(hit ? (infectedBefore ? $"{Who(s)}再次受到感染暴露，病毒+{Fmt.T(s.Body.VirusLoad - loadBefore)}（判定概率{Fmt.Pct(chance)}）" : $"{Who(s)}因这次咬伤感染（判定概率{Fmt.Pct(chance)}）")
-                        : $"这次咬伤未增加感染（判定概率{Fmt.Pct(chance)}）");
-                }
-            }
-            else if (!plain)
+            // B49（R04 Q652／Q739）：命中、减伤后 D>0、生命判定后仍活（含濒死）才按本次唯一类型判一次暴露，结果随原攻击事务保存；
+            // 放在原咬伤判定的位置（原控制／出血之前），按承伤者本人免疫／病毒判，不复制饱饱。逐字稿 B49 三态句接原伤害主句一次
+            if (ExposureProfile(exposure) is ExposureProfileConfig xp) extra.Add(ExposureResultText(s, ExposeToVirus(s, xp)));
+            // 原非咬控制／出血分支保持：咬击仍不附控制出血，普通攻击（plain）不新增
+            if (!bite && !plain)
             {
                 if (st.Control is "slow" or "stagger")
                 {
@@ -972,7 +967,10 @@ namespace Survival.Core.Engine
             extra.Add($"{Who(s)}被{verb}到{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}（控制{Fmt.Pct(cc)}）");
         }
 
-        /// <summary>膨胀感染者死亡时喷溅我方 1、2 号位：各 H−值，护甲照算，不判感染（A09 §1）。</summary>
+        /// <summary>
+        /// 膨胀感染者死亡时喷溅我方 1、2 号位：各 H−值，护甲照算（A09 §1）。B49（R04 Q652／Q747）：正伤且生命判定后仍活（含濒死）按 deathSplashExposure 判暴露，
+        /// 伤害句用逗号接本次真实三态结果；已确死或敌种无喷溅类型只写伤害句。
+        /// </summary>
         private void DeathSplash(GameState s, BattleState b, BattleEnemy e, EnemyConfig cfg)
         {
             if (cfg.DeathSplash <= 0 || s.Progress.Dead) return;
@@ -989,7 +987,10 @@ namespace Survival.Core.Engine
                     FxHit(FxAlly(s, id), "hit", dmg);   // B47b（R09 §7）：喷溅伤害与生命变化并入引发它的这次我方攻击特写
                     NoteWillpowerHit(s, id, e.WorldId);   // B47a2（Q676）：合法喷溅正伤按死敌原 ID，在引发它的我方指令末结账
                     if (id == GameState.PlayerId) s.Progress.LastDamageCause = $"{cfg.Name}死亡喷溅";
-                    BattleLog(s, $"{cfg.Name}死亡喷溅：{Who(s)}健康−{Fmt.N(dmg)}（不感染）。");
+                    var xp = outcome == DamageOutcome.Died ? null : ExposureProfile(cfg.DeathSplashExposure);
+                    BattleLog(s, xp != null
+                        ? $"{cfg.Name}死亡喷溅：{Who(s)}健康−{Fmt.N(dmg)}，{ExposureResultText(s, ExposeToVirus(s, xp))}。"
+                        : $"{cfg.Name}死亡喷溅：{Who(s)}健康−{Fmt.N(dmg)}。");
                     WriteLifeNotes(s, s.Player, life);
                     if (outcome == DamageOutcome.Died && id != GameState.PlayerId) BattleDeath(s, $"{cfg.Name}死亡喷溅");   // 主角确死由调用方在本次结算写完后终局
                 }

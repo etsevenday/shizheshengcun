@@ -336,7 +336,8 @@ public class B7CombatTests : BattleTestBase
         foreach (var e in s.Battle.Alive) { e.Intent = "attack"; }
         // 第一只命中：还剩 1 次；第二只命中：用完
         var h0 = s.Stats.Health;
-        Force(s, Draw(), Below(0.01), AtLeast(0.99), Draw(), Below(0.01), AtLeast(0.99));
+        // B49：抓击正伤后多一次暴露判定（抓伤／刮伤）
+        Force(s, Draw(), Below(0.01), AtLeast(0.99), Any(), Draw(), Below(0.01), AtLeast(0.99));
         while (s.Battle != null && !E.AwaitingPlayer(s) && s.Battle.Alive.Any(e => !e.Acted)) E.BattleStep(s);
         Assert.That(s.Battle!.PlayerGuard, Is.False, "两次格挡都用完");
 
@@ -579,12 +580,14 @@ public class B7CombatTests : BattleTestBase
         var sp = Enemy(s, 3);
         Assert.That(sp.Intent, Is.EqualTo("spit"), "第1次正常激活：喷吐");
         Assert.That(E.IntentOutOfReach(b, sp), Is.False, "3号位可喷吐（34→1234）");
-        Assert.That(sp.IntentLabel, Does.Contain("破甲0.15（2回合）").And.Contain("不感染"));
-        var v0 = s.Body.VirusLoad;
-        for (var i = 0; i < 30 && !sp.Acted && s.Battle != null; i++) { if (E.AwaitingPlayer(s)) Cmd(s, "end_turn"); else { if (b.Queue[b.Cursor] == sp.Index) Force(s, Draw(), Below(0.01), Any()); E.BattleStep(s); } }
+        // B49（Q744 A）：喷吐标签删旧“（不感染）”，不新加后缀
+        Assert.That(sp.IntentLabel, Does.Contain("破甲0.15（2回合）").And.Not.Contain("感染"));
+        // 正伤后多一次变异体液暴露判定：这里让它失败（u≥p），病毒不变
+        for (var i = 0; i < 30 && !sp.Acted && s.Battle != null; i++) { if (E.AwaitingPlayer(s)) Cmd(s, "end_turn"); else { if (b.Queue[b.Cursor] == sp.Index) Force(s, Draw(), Below(0.01), Any(), AtLeast(0.99)); E.BattleStep(s); } }
         Assert.That(b.PlayerArmorBreak, Is.EqualTo(0.15).Within(1e-9));
         Assert.That(b.PlayerArmorBreakUntilRound, Is.EqualTo(b.Round + 2));
-        Assert.That(s.Body.VirusLoad, Is.EqualTo(v0));
+        Assert.That(s.Body.Infected, Is.False);
+        Assert.That(b.Log.Any(l => l.Contains("你本次变异体液未增加感染（判定概率")), Is.True, "喷吐按变异体液判定");
         // 被压到 1 号位：喷吐改通用弱攻击×0.7
         var f = Fight(743, "z_spitter");
         Assert.That(E.IntentShown(f.Battle!, Enemy(f, 1)), Does.StartWith("弱攻击").And.Contain("3、4号位"));
@@ -795,17 +798,17 @@ public class B7CombatTests : BattleTestBase
         Assert.That(we.Hp, Is.EqualTo(3).Within(1e-9), "存活敌人 HP 保留");
     }
 
-    /// <summary>EN03、A09 §4：只有丧尸咬击正伤才判感染；人类、动物、喷吐、尖啸都不加病毒。</summary>
+    /// <summary>EN03、A09 §4；B49（R04 Q652）起：人类、普通动物没有任何传播类型，即使意图被改成咬击、暴露随机全成功也不加病毒（喷吐等丧尸途径见 B49Tests）。</summary>
     [Test]
-    public void R27_OnlyZombieBiteInfects()
+    public void R27_HumanAnimal_NeverInfect()
     {
-        foreach (var id in new[] { "raider_melee", "wild_dog_leader", "z_spitter" })
+        foreach (var id in new[] { "raider_melee", "wild_dog_leader" })
         {
             var s = Fight(764, id);
             var e = Enemy(s, 1);
             e.Intent = "bite";
             var v0 = s.Body.VirusLoad;
-            Force(s, Below(0.01), Any(), Any(), Any());
+            Force(s, Draw(), Below(0.01), Any(), Below(0.01), Below(0.01));
             typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
                 .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == id), false });
             Assert.That(s.Body.Infected, Is.False, id);
@@ -855,7 +858,8 @@ public class B7CombatTests : BattleTestBase
         Force(p, Below(0.01), AtLeast(0.99), Any(), Any());
         Assert.That(Cmd(p, "basic_attack", 1).Ok, Is.True);
         Assert.That(p.Battle, Is.Null);
-        Assert.That(p.Log.Any(l => l.Text.Contains("膨胀感染者死亡喷溅：你健康−0.30（不感染）")), Is.True);
+        // B49（Q747）：喷溅伤害句后逗号接本次真实变异体液结果
+        Assert.That(p.Log.Any(l => l.Text.Contains("膨胀感染者死亡喷溅：你健康−0.30，你") && l.Text.Contains("变异体液")), Is.True);
         Assert.That(p.Log.Last().Text, Does.StartWith("战斗胜利"), "结算仍在最后");
     }
 

@@ -172,34 +172,7 @@ namespace Survival.Core.Engine
         }
 
         // ───────────── 暴露 ─────────────
-
-        /// <summary>一次有效咬击的感染暴露概率 0.05+0.55×(1−I/100)。</summary>
-        public double ExposureChance(double immunity) =>
-            Inf.ExposureBase + Inf.ExposureScale * (1 - immunity / Inf.ExposureImmunityDivisor);
-
-        /// <summary>
-        /// 丧尸咬击命中且造成正直接伤害时调用一次：在提交时抽签（读档不重抽）。成功：首次感染 V=20、计时清零；再次 V+10、计时清零。
-        /// </summary>
-        public bool ExposeToVirus(GameState s, out double chance)
-        {
-            var b = s.Body;
-            chance = ExposureChance(b.Immunity);
-            var hit = s.Rng.NextDouble() < chance;
-            if (!hit) return false;
-            if (!b.Infected)
-            {
-                b.Infected = true;
-                b.VirusLoad = Inf.OnFirstSuccessfulExposure.Load;
-                b.HighImmunityMinutes = Inf.OnFirstSuccessfulExposure.HighImmunityMinutes;
-            }
-            else
-            {
-                b.VirusLoad = Math.Min(Inf.LoadRange[1], b.VirusLoad + Inf.OnRepeatedSuccessfulExposure.LoadDelta);
-                if (Inf.OnRepeatedSuccessfulExposure.ResetHighImmunityMinutes) b.HighImmunityMinutes = 0;
-            }
-            VirusWarnings(s);
-            return true;
-        }
+        // B49：五类病毒暴露、概率与判定见 GameEngine.Exposure.cs
 
         // ───────────── 药物 ─────────────
 

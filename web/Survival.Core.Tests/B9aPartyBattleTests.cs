@@ -147,7 +147,7 @@ public class B9aPartyBattleTests : BattleTestBase
         Assert.That(s.Actors[Lin].Body.Infected, Is.True, "咬击感染按本人");
         Assert.That(s.Actors[GameState.PlayerId].Body.Infected, Is.False);
         Assert.That(b.Log.Last(), Does.Contain("林昭"));
-        Assert.That(b.Log.Last(), Does.Match("林昭因这次咬伤感染（判定概率[0-9.]+%）"), "B38b N02 附录 §4 首次咬伤感染句");
+        Assert.That(b.Log.Last(), Does.Contain("林昭因咬伤感染，病毒量20（判定概率60%）"), "B49 逐字稿 firstResult：本人、途径、实际量与概率");
     }
 
     /// <summary>敌人拉扯/击退队友：按队友本人判控制并移格（与相邻同伴原子交换），主角号位随之改变（Q80）。</summary>

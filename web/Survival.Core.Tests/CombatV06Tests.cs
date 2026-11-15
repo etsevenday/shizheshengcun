@@ -829,16 +829,16 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(s.Battle!.Noise, Is.EqualTo(0), "弓与近战噪声0");
     }
 
-    /// <summary>R607 同次丧尸咬击：只有命中且正伤害才判一次暴露；抓击命中不判。</summary>
+    /// <summary>R607 同次丧尸咬击：只有命中且正伤害才判一次暴露；B49（R04 Q652）起抓击命中正伤按抓伤／刮伤判（首次病毒10）。</summary>
     [Test]
     public void R607_BiteOnlyOnHitWithDamage()
     {
-        // 抓击命中：不暴露（即使暴露判定值很小）
+        // 抓击命中：按抓伤／刮伤暴露（判定值很小 → 感染，首次量10）
         var s = Fight(35, "shambler");
         Force(s, Draw(), Below(0.01), Any(), Below(0.0001));
         EnemyActsNow(s, 1, "attack");
         Assert.That(s.Stats.Health, Is.LessThan(20), "抓击命中");
-        Assert.That(s.Body.Infected, Is.False, "抓击不判病毒");
+        Assert.That((s.Body.Infected, s.Body.VirusLoad), Is.EqualTo((true, 10.0)), "B49：抓伤／刮伤首次病毒10");
         // 咬击未命中：不判
         var t = Fight(36, "shambler");
         Force(t, Draw(), AtLeast(0.999), Below(0.0001));

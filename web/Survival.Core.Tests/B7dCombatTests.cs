@@ -264,7 +264,7 @@ public class B7dCombatTests : BattleTestBase
         h.Intent = "charge";
         h.IntentStep = 1;
         var h0 = s.Stats.Health;
-        Force(s, Draw(), Below(0.01), Any(), Below(0.01));   // 命中、抽值、控制成功
+        Force(s, Draw(), Below(0.01), Any(), Any(), Below(0.01));   // 命中、抽值、（B49）冲撞擦伤暴露判定、控制成功
         EnemyAct(s, h);
         Assert.That(s.Stats.Health, Is.LessThan(h0), "推撞伤害照算");
         Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(2), "被击退到 2 号位（空位直接移入）");
@@ -288,7 +288,8 @@ public class B7dCombatTests : BattleTestBase
         probe.NextDouble();
         probe.NextDouble();
         probe.NextDouble();
-        Assert.That(s.Rng.State, Is.EqualTo(probe.State), "只抽了目标（Q91）、命中与抽值");
+        probe.NextDouble();
+        Assert.That(s.Rng.State, Is.EqualTo(probe.State), "只抽了目标（Q91）、命中、抽值与（B49）冲撞擦伤暴露判定");
     }
 
     /// <summary>RES-Q80b：我方逼退把敌人往后推一格：后格空则移入、有同伴则交换（不另判控制）。</summary>
@@ -633,7 +634,8 @@ public class B7dCombatTests : BattleTestBase
         b.AllOutUntilRound = b.Round + 1;
         var e0 = s.Stats.Energy;
         var d0 = knife.Durability;
-        Force(s, Draw(), Below(0.01), Any(), Below(0.01), AtLeast(0.99), Any());
+        // B49：抓击正伤后多一次抓伤／刮伤暴露判定，再到反击的命中、暴击、抽值
+        Force(s, Draw(), Below(0.01), Any(), Any(), Below(0.01), AtLeast(0.99), Any());
         typeof(GameEngine).GetMethod("DoAttackStep", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, b, z, E.StepOf(z), true, 1.0, false, false });
         Assert.That(b.Log.Last(), Does.StartWith($"第{b.Round}回合 · 你反击（石刀）"));

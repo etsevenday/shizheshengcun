@@ -348,7 +348,8 @@ public class Comp20EndToEndTests : TestBase
     [Test]
     public void COMP20_NewGame_LiveEnemyApproach_NoStuck()
     {
-        var s = NewStory(1);
+        // B49：敌人正伤后多一次病毒暴露判定，随机流改变；种子 1 这条路线途中再无到期开战，改用种子 4（同样新局、敌方接近照常）
+        var s = NewStory(4);
         var d = new Comp20Driver(E, s, liveApproach: true);
         Assert.That(s.SuppressEnemyApproach, Is.False);
         Exception? end = null;
@@ -362,7 +363,7 @@ public class Comp20EndToEndTests : TestBase
             AcademyLine(d);
         }
         catch (Exception ex) { end = ex; }
-        Dump(d, "COMP20 新局（敌方接近照常，教会线先，种子1）");
+        Dump(d, "COMP20 新局（敌方接近照常，教会线先，种子4）");
         TestContext.WriteLine($"敌方到期开战打断行动 {d.ApproachBattles} 次；结局：{(end == null ? "走完两条线" : s.Progress.Dead ? "途中战死" : end.Message)}");
         if (end != null && !s.Progress.Dead)
         {
