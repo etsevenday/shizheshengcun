@@ -99,7 +99,7 @@ namespace Survival.Core.Engine
                     if (inst == null || inst.ReservedBy != a.ActionId || inst.ShelfPausedMinutes is not int r) continue;
                     list.Add(new ShelfRestore(p.Dest, CardSideOf(inst), inst.ItemId, s.GameMinute + r, p.Count));
                 }
-                return RestoreClauses(list, true);
+                return RestoreText(s, list, true);   // B54（Q789）：多去向预告逐组标去向、带“预计”
             }
             foreach (var id in a.ReservedItemIds)
             {

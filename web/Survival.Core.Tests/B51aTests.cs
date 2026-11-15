@@ -458,13 +458,14 @@ public class B51aKeptTests : B41bTestBase
         var rc = herbs.Where(i => a.ReserveSources![i.InstanceId] == ItemInstance.Carried).Select(i => i.ShelfPausedMinutes!.Value).Distinct().Single();
         var rg = herbs.Single(i => a.ReserveSources![i.InstanceId] == "field").ShelfPausedMinutes!.Value;
         var name = E.ItemName("herb");
-        var preview = $"{name}×2退回后恢复剩余保质，预计保质到{Clock.DayTime(s.GameMinute + rc)}。{name}×1退回后恢复剩余保质，预计保质到{Clock.DayTime(s.GameMinute + rg)}。";
+        // B54（Q789）：随身与地面两个真实恢复目的地，逐组前缀真实去向，预告带“预计”
+        var preview = $"随身：{name}×2，预计保质至{Clock.DayTime(s.GameMinute + rc)}。{field}地面：{name}×1，预计保质至{Clock.DayTime(s.GameMinute + rg)}。";
         Assert.That(E.ActionProgress(s)!.ExitNote, Does.Contain(preview), "预告只读按现在立即退出的 C＋R");
         var before = s.Items.Where(i => i.ItemId == "herb").Select(i => (i.ExpiresAt, i.ShelfPausedMinutes)).ToList();
         Assert.That(s.Items.Where(i => i.ItemId == "herb").Select(i => (i.ExpiresAt, i.ShelfPausedMinutes)).ToList(), Is.EqualTo(before));
         Assert.That(E.Cancel(s).Ok, Is.True);
         var text = s.Log.Last().Text;
         Assert.That(text, Does.StartWith("已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还" + field + "地面。"));
-        Assert.That(text, Does.Contain($"{name}×2恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + rc)}。{name}×1恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + rg)}。未生成半成品。已耗时间保留。"));
+        Assert.That(text, Does.Contain($"随身：{name}×2，保质至{Clock.DayTime(s.GameMinute + rc)}。{field}地面：{name}×1，保质至{Clock.DayTime(s.GameMinute + rg)}。未生成半成品。已耗时间保留。"));
     }
 }

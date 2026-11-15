@@ -359,7 +359,7 @@ namespace Survival.Core.Engine
             {
                 if (kept) text += KeptReturnSegment(s, a, src, true, keptParts);   // B54（Q787）：有溢出时按实际去向
                 else text += a.Type == ActionType.Butcher ? $"尸体已返还{groundName}地面。" : $"预留材料已返还{groundName}地面。";
-                text += RestoreClauses(restored, false);   // B51a（Q722）：真实返还后接实际恢复保质，再原后果与已耗时间
+                text += RestoreText(s, restored, false);   // B54（Q789）多去向标真实去向；B51a（Q722）：真实返还后接实际恢复保质，再原后果与已耗时间
             }
             text += a.Type switch
             {

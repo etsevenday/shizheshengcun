@@ -147,4 +147,55 @@ public class B54KeptTests : B41bTestBase
         Assert.That(s.Log.Last().Text, Does.Contain($"随身已满，{Herb}×2留在{FieldName}地面。"));
         Assert.That(E.RootCardCount(s), Is.EqualTo(5));
     }
+    // ───────────── Q789 多去向恢复分句标真实去向 ─────────────
+
+    /// <summary>Q789-A01：随身与原工作地面同名同截止草药各一句，前缀真实去向；不跨目的地合计。预告带“预计”，结果按提交时 C。</summary>
+    [Test]
+    public void Q789_A01_SameNameSameExpiry_TwoDestinations_Labeled()
+    {
+        var s = Field(3);
+        var id = KeptAtField(s, g =>
+        {
+            g.Items.RemoveAll(i => i.ItemId is "cloth" or "herb" or "bandage");
+            E.DebugGive(g, "cloth", 2);
+            var e1 = g.GameMinute + 600;
+            foreach (var i in E.CreateItems(g, "herb", 1, ItemInstance.Carried)) i.ExpiresAt = e1;
+            foreach (var i in E.CreateItems(g, "herb", 1, "field")) i.ExpiresAt = e1;
+            return ActionRequest.Craft("bandage", batchCount: 2);
+        });
+        var r = s.Items.Where(i => i.ItemId == "herb" && i.ReservedBy == id).Select(i => i.ShelfPausedMinutes!.Value).Distinct().Single();
+        var at = Clock.DayTime(s.GameMinute + r);
+        Assert.That(E.ActionProgress(s)!.ExitNote, Does.Contain($"随身：{Herb}×1，预计保质至{at}。{FieldName}地面：{Herb}×1，预计保质至{at}。不会生成半成品。"));
+
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        var text = s.Log.Last().Text;
+        Assert.That(text, Does.Contain($"随身：{Herb}×1，保质至{at}。{FieldName}地面：{Herb}×1，保质至{at}。未生成半成品。已耗时间保留。"));
+        Assert.That(text, Does.Not.Contain("恢复剩余保质"), "多去向不再用原单去向句");
+    }
+
+    /// <summary>Q789-A01：Q787 溢出份标原工作地面，不按开工来源误标随身；同目的地同截止合计。</summary>
+    [Test]
+    public void Q789_A01_OverflowPortionLabeledWorkGround()
+    {
+        var (s, at) = PartialFit();
+        var t = Clock.DayTime(at);
+        Assert.That(E.ActionProgress(s)!.ExitNote, Does.Contain($"随身：{Herb}×2，预计保质至{t}。{FieldName}地面：{Herb}×1，预计保质至{t}。"));
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        Assert.That(s.Log.Last().Text, Is.EqualTo(
+            $"已取消制作。{Cloth}×3已退回{FieldName}地面。{Herb}×2已退回随身。随身已满，{Herb}×1留在{FieldName}地面。随身：{Herb}×2，保质至{t}。{FieldName}地面：{Herb}×1，保质至{t}。未生成半成品。已耗时间保留。"));
+    }
+
+    /// <summary>Q789-A02：只有一个实际恢复目的地时沿原 Q723 单去向句（溢出全部落地也是单目的地）。</summary>
+    [Test]
+    public void Q789_A02_SingleDestinationKeepsOriginalSentence()
+    {
+        var s = Field(3);
+        var id = KeptAtField(s, Setup(3, 2, "stone", "wood", "fiber", "scrap"));
+        var r = Reserved(s, "herb", id).ShelfPausedMinutes!.Value;
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        var text = s.Log.Last().Text;
+        Assert.That(text, Does.Contain($"{Herb}×2恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r)}。"));
+        Assert.That(text, Does.Not.Contain("地面：").And.Not.Contain("随身："));
+    }
 }
+

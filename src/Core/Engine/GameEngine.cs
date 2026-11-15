@@ -1068,7 +1068,7 @@ namespace Survival.Core.Engine
             var keptParts = _keptReturnSink = new List<KeptReturnPart>();   // B54（Q787）：本次按来源返还的实际去向
             try { Release(s, a, s.Ground); }
             finally { _stagedCancelNote = null; _restoreSink = null; _keptReturnSink = null; }
-            var restoreText = RestoreClauses(restored, false);
+            var restoreText = RestoreText(s, restored, false);   // B54（Q789）：多个真实恢复目的地时逐组标去向
             if (a.IsSub) s.Sub = null; else s.Main = null;
             // B41b（R05 Q472 第 5 条）：退出暂存期间的当前移动只取消移动；原工作随后放回主行动位、仍暂停，预留不被移动取消释放
             var keptWork = a.IsSub ? null : RestoreStashedWork(s);
