@@ -851,7 +851,9 @@ namespace Survival.Core.Engine
                         var why = DressingBlocked(s, target!);
                         if (why != null) { fail = why; break; }
                         var parts = new List<string>();
-                        using (FocusOutOfBattleOn(s, target!.Id)) ApplyMedicine(s, BandageUse!, parts, svc.ActorSkillLevel ?? 1, grantXp: false, gearBonus: false, life: life);
+                        using (FocusOutOfBattleOn(s, target!.Id))
+                        using (LifeHeal(svc.Title))   // B52b（R09 Q733）：换药服务脱离濒死的镜头标题为本次实际服务名
+                            ApplyMedicine(s, BandageUse!, parts, svc.ActorSkillLevel ?? 1, grantXp: false, gearBonus: false, life: life);
                         lifeOf = target;
                         foreach (var kv in svc.Inputs)
                         {

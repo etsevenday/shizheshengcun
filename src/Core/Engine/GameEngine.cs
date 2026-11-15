@@ -987,7 +987,9 @@ namespace Survival.Core.Engine
                     ApplyUseEffect(s, s.Player, u, parts, false);
                     // 绷带、抗生素、特效药：效果在确认时应用，各自冷却只在对应效果实际生效时启动（v0.6 §11）
                     var life = new List<string>();   // B47a1：脱离濒死句接在本条用药结果之后
-                    if (u.IsMedicine) ApplyMedicine(s, u, parts, life: life);
+                    if (u.IsMedicine)
+                        using (LifeHeal(ItemName(inst.ItemId)))   // B52b（R09 Q733）：战外用药脱离濒死的镜头标题为本次实际物品名
+                            ApplyMedicine(s, u, parts, life: life);
                     if (u.IsCare) ApplyCare(s, u, parts);
                     // 效果在开始时一次结清、不可取消，所以按“行动完成”发事件，界面的结果提示条才会跟着更新
                     Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", parts)}。{(cookNote != null ? cookNote + "。" : "")}");

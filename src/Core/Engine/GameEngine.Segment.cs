@@ -22,8 +22,11 @@ namespace Survival.Core.Engine
             public bool IsWork;
             public bool Sheltered;
             public string DamageCause = "";
-            /// <summary>B47b（Q691、Q732）：本段健康负项的原因个数（只有一个原因时独立生命特写标题用它；多个原因合成的本批不做独立特写）。</summary>
-            public int DamageCauseCount;
+            /// <summary>
+            /// B52b（R09 Q732）：本段本人真实贡献正伤的原因（小时率确为负才列，按饥饿、缺水、缺乏睡眠、体力透支原序）；
+            /// 只用于生命特写标题（一个原名、多个“多原因伤害：{原因清单}”），不改伤害、死因与意志判定次数。
+            /// </summary>
+            public List<string> DamageCauses = new List<string>();
             public List<string> FactorReasons = new List<string>();
             /// <summary>本段角色在做什么（免疫的睡眠/休息加成按它判断）；战斗与无行动为 null。</summary>
             public ActionType? ActionType;
@@ -105,7 +108,7 @@ namespace Survival.Core.Engine
             if (st.Wakefulness <= 0) { health += hr.ZeroWakefulnessPerHour; causes.Add("缺乏睡眠"); }
             if (st.Energy <= 0 && ctx.IsWork) { health += hr.ZeroEnergyWhileWorkingPerHour; causes.Add("体力透支"); }
             if (causes.Count > 0) ctx.DamageCause = causes[0];
-            ctx.DamageCauseCount = causes.Count;
+            ctx.DamageCauses = RealDamageCauses(causes, hr.ZeroSatietyPerHour, hr.ZeroHydrationPerHour, hr.ZeroWakefulnessPerHour, hr.ZeroEnergyWhileWorkingPerHour);
             ctx.HealthLossPerHour = health;
 
             // 自然恢复：休息或睡眠、遮蔽、段首饱食与水分≥40、精神≥20（求生案 04）；B47a1（R09 §5、S13 Q616）：段首濒死者自然恢复为 0，不累存
@@ -353,6 +356,7 @@ namespace Survival.Core.Engine
                     // B47a3（R09 Q682、Q684）：预估副本不在副本里尸变／离队提前截止计划，只记本人病毒已到上限的风险
                     if (s.SimCopy) { s.SimProbe?.Virus.Add(actor.Id); continue; }
                     if (actor.IsPlayer) { Zombify(s); return false; }
+                    NoteZombieLife(s, actor);   // B52b（R09 Q732）：尸变生命镜头（离队前记地点）
                     CompanionDown(s, actor, ZombifiedCause);
                 }
             }
@@ -363,7 +367,7 @@ namespace Survival.Core.Engine
             {
                 var actor = reserves[k];
                 if (IsDead(s, actor)) { CompanionDown(s, actor, string.IsNullOrEmpty(rctxs[k].DamageCause) ? "伤势过重" : rctxs[k].DamageCause); continue; }
-                if (Zombified(actor)) { if (!s.SimCopy) CompanionDown(s, actor, ZombifiedCause); continue; }
+                if (Zombified(actor)) { if (!s.SimCopy) { NoteZombieLife(s, actor); CompanionDown(s, actor, ZombifiedCause); } continue; }   // B52b（Q732）
                 TickNaturalCure(s, actor, rstarts[k]);
                 ReserveRedLines(s, actor);
             }
@@ -400,9 +404,9 @@ namespace Survival.Core.Engine
             st.Add(StatId.Morale, ctx.Rates.Morale * h);
             if (actor.IsPlayer && !string.IsNullOrEmpty(ctx.DamageCause)) s.Progress.LastDamageCause = ctx.DamageCause;
             var loss = -ctx.HealthLossPerHour * h;
-            // B47b（R09 Q691、Q732 待答复）：只有一个原因时生命特写标题用该原因；多个原因合成一次身体损伤的独立特写本批不做
+            // B47b（R09 Q691）：只有一个原因时生命特写标题用该原因；B52b（Q732）：多个真实原因合成的一次身体损伤标题“多原因伤害：{原因清单}”
             if (loss > 0)
-                using (ctx.DamageCauseCount > 1 ? NoLifeCloseUp() : LifeCause(ctx.DamageCause))
+                using (LifeCause(DamageLifeTitle(ctx.DamageCauses)))
                     DamageActor(s, actor, loss);
             if (ctx.HealthRecoveryPerHour > 0 && LifeOf(s, actor) == LifeState.Normal) st.Add(StatId.Health, ctx.HealthRecoveryPerHour * h);
         }
@@ -734,7 +738,7 @@ namespace Survival.Core.Engine
                 // B47a1（R09 §3.2）：搜集划伤是一次真实健康伤害事件，走统一受伤入口；归 0 先濒死，濒死后再受伤才判致死
                 var notes = new List<string>();
                 DamageOutcome life;
-                using (NoLifeCloseUp()) life = DamageActor(s, s.Player, loss, notes);   // B47b（Q732 待答复）：划伤的独立生命特写本批不做
+                using (LifeCause(SearchLifeTitle(res.Hazard.Label))) life = DamageActor(s, s.Player, loss, notes);   // B52b（R09 Q732）：搜集划伤的生命特写标题“搜索：{伤因短名}”
                 s.Progress.LastDamageCause = $"搜集时{res.Hazard.Label}";
                 Emit(s, GameEventKind.Hazard, $"{res.Hazard.Label}，健康−{Fmt.T(loss)}。");
                 WriteLifeNotes(s, s.Player, notes);

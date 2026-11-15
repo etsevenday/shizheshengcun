@@ -277,7 +277,7 @@ namespace Survival.Core.Engine
             {
                 actor.DyingNotified = false;
                 LifeNote(s, actor, LeaveDyingText(ActorDisplayName(s, actor.Id)), notes);
-                NoteLife(s, actor, BattleFxLife.Revived, false, 0, null);   // B47b（Q691）：并入医疗结果帧“脱离濒死”
+                NoteLife(s, actor, BattleFxLife.Revived, false, st.Health - before, null);   // B47b（Q691）：并入医疗结果帧“脱离濒死”；B52b（Q733）：战外镜头写真实正健康差
             }
             return st.Health - before;
         }

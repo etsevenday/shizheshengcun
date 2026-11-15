@@ -162,6 +162,8 @@ namespace Survival.Core.Engine
         public const string Resisted = "resisted";
         /// <summary>合法用药／医疗实际回血使濒死→正常，结果字“脱离濒死”。</summary>
         public const string Revived = "revived";
+        /// <summary>B52b（R09 Q732）：同伴真实尸变（战斗外世界段），结果字“尸变”。</summary>
+        public const string Zombie = "zombie";
     }
 
     /// <summary>出手事件里的一名角色（行动者或承受者）的只读快照：阵营、稳定编号（我方 actorId、敌方 "e{本场序号}"）、名字、敌人配置 ID。</summary>

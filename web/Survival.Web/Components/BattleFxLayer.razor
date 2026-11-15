@@ -62,7 +62,7 @@
     {
         var isActor = u.Side == ev.Actor.Side && u.Id == ev.Actor.Id;
         var rs = ev.Results.Where(r => r.Target.Side == u.Side && r.Target.Id == u.Id).ToList();
-        var down = rs.Any(r => r.Down);
+        var down = rs.Any(r => r.Down || r.Life == BattleFxLife.Zombie);   // B52b（R09 Q732）：尸变沿确死倒下姿态，结果字仍“尸变”
         // B47b（R09 §7、S14 Q615／Q616）：濒死转黯淡跪姿；医疗回血脱离濒死做起身；支援受益者微光；换位只做动作
         var dying = !down && rs.Any(r => r.Life is BattleFxLife.Dying or BattleFxLife.Resisted);
         var revived = rs.Any(r => r.Life == BattleFxLife.Revived);

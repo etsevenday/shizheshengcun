@@ -314,9 +314,9 @@ public class B47bFxTests : BattleTestBase
         Assert.That(E.DrainLifeFx(), Is.Empty, "取走后不重复");
     }
 
-    /// <summary>Q732（待答复）：多个原因合成的一次身体损伤本批不做独立镜头，只写日志。</summary>
+    /// <summary>Q732：多个原因合成的一次身体损伤——B47b 时不做独立镜头；B52b 起有一段镜头，标题“多原因伤害：{原因清单}”（见 B52bTests），日志仍只一条。</summary>
     [Test]
-    public void Q732_MultiCause_NoWorldCloseUp()
+    public void Q732_MultiCause_OneWorldCloseUp()
     {
         var s = New(4814);
         SetStats(s, 0.01, 0, 0, 18, 80, 60);
@@ -324,7 +324,7 @@ public class B47bFxTests : BattleTestBase
         Start(s, ActionRequest.Wait(30));
         E.Advance(s);
         Assume.That(s.Player.Stats.Health, Is.EqualTo(0));
-        Assert.That(E.DrainLifeFx(), Is.Empty);
+        Assert.That(E.DrainLifeFx(), Has.Count.EqualTo(1));
         Assert.That(s.Log.Select(l => l.Text), Has.One.EqualTo(GameEngine.EnterDyingText("你")));
     }
 

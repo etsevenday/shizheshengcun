@@ -296,6 +296,173 @@ public class B52bTests : BattleTestBase
         EnemyAct(t, w, pursuit: true);
         Assert.That(E.DrainBattleFx().Single().Name, Is.EqualTo(GameEngine.EnemyWatchShort), "追击分支真正执行观察");
     }
+
+    // ───────────── M996：Q732 生命特写标题、Q733 战外治疗脱离濒死 ─────────────
+
+    /// <summary>Q732-A01：本人两个真实原因合成的一次身体损伤标题“多原因伤害：饥饿、缺水”；原伤害事件与进入濒死句只一次。</summary>
+    [Test]
+    public void Q732_A01_MultiCause_Title()
+    {
+        var s = New(5221);
+        SetStats(s, 0.01, 0, 0, 18, 80, 60);
+        E.DrainLifeFx();
+        Start(s, ActionRequest.Wait(30));
+        E.Advance(s);
+        Assume.That(s.Player.Stats.Health, Is.EqualTo(0));
+        var ev = E.DrainLifeFx().Single();
+        Assert.That(ev.Name, Is.EqualTo("多原因伤害：饥饿、缺水"));
+        Assert.That(ev.Name, Is.EqualTo(GameEngine.MultiCauseTitle(new[] { "饥饿", "缺水" })));
+        Assert.That(ev.Results.Single().Life, Is.EqualTo(BattleFxLife.Dying));
+        Assert.That(s.Log.Select(l => l.Text), Has.One.EqualTo(GameEngine.EnterDyingText("你")), "一次身体损伤");
+        Assert.That(s.Progress.LastDamageCause, Is.EqualTo("饥饿"), "原死因字段不改");
+    }
+
+    /// <summary>Q732-A01：单因不造多因；同伴各取本人真实原因（不只取主角或首因）。</summary>
+    [Test]
+    public void Q732_A01_SingleCause_And_CompanionOwnCauses()
+    {
+        var s = New(5222);
+        E.DebugQuickParty(s, 2);
+        var mate = s.Party.Single(id => id != GameState.PlayerId);
+        SetStats(s, 50, 0, 80, 18, 80, 60);
+        var a = s.Actor(mate);
+        a.Stats.Health = 0.01; a.Stats.Satiety = 80; a.Stats.Hydration = 0; a.Stats.Wakefulness = 0;
+        E.DrainLifeFx();
+        Start(s, ActionRequest.Wait(30));
+        E.Advance(s);
+        var ev = E.DrainLifeFx().Single(x => x.Actor.Id == mate);
+        Assert.That(ev.Name, Is.EqualTo("多原因伤害：缺水、缺乏睡眠"), "同伴取本人原因");
+
+        var t = New(5223);
+        SetStats(t, 0.01, 0, 80, 18, 80, 60);
+        E.DrainLifeFx();
+        Start(t, ActionRequest.Wait(30));
+        E.Advance(t);
+        Assert.That(E.DrainLifeFx().Single().Name, Is.EqualTo("饥饿"), "单因用原名");
+    }
+
+    /// <summary>Q732-A02：伤因短名取公开 Label、去重复前缀；搜集划伤“搜索：划伤”、勘整“勘整：划伤”（真实进入濒死才有镜头，普通轻伤不新增）。</summary>
+    [Test]
+    public void Q732_A02_SearchAndSurvey_Titles()
+    {
+        Assert.That(GameEngine.SearchLifeTitle("划伤"), Is.EqualTo("搜索：划伤"));
+        Assert.That(GameEngine.SearchLifeTitle("搜集时划伤"), Is.EqualTo("搜索：划伤"));
+        Assert.That(GameEngine.SurveyLifeTitle("勘整时划伤"), Is.EqualTo("勘整：划伤"));
+
+        var s = New(5224);
+        E.DebugTeleport(s, "woods");
+        E.DebugSetProgress(s, "woods", 25);
+        SetStats(s, 0.01, 80, 80, 18, 90, 60);
+        E.DrainLifeFx();
+        Start(s, ActionRequest.Gather("wood"));
+        s.Main!.HazardHit = true;
+        Run(s);
+        Assume.That(s.Player.Stats.Health, Is.EqualTo(0));
+        var g = E.DrainLifeFx().Single();
+        Assert.That((g.Name, g.Results.Single().Life), Is.EqualTo(("搜索：划伤", BattleFxLife.Dying)));
+        Assert.That(s.Progress.LastDamageCause, Is.EqualTo("搜集时划伤"), "不改伤因本身");
+
+        var v = New(5225);
+        E.DebugTeleport(v, "village");
+        E.DebugSetProgress(v, "village", 100);
+        SetStats(v, 0.01, 80, 80, 18, 90, 60);
+        E.DrainLifeFx();
+        Start(v, ActionRequest.Survey());
+        v.Main!.HazardHit = true;
+        Run(v);
+        Assume.That(v.Player.Stats.Health, Is.EqualTo(0));
+        Assert.That(E.DrainLifeFx().Single().Name, Is.EqualTo("勘整：划伤"));
+
+        var h = New(5226);
+        E.DebugTeleport(h, "woods");
+        E.DebugSetProgress(h, "woods", 25);
+        SetStats(h, 50, 80, 80, 18, 90, 60);
+        E.DrainLifeFx();
+        Start(h, ActionRequest.Gather("wood"));
+        h.Main!.HazardHit = true;
+        Run(h);
+        Assert.That(E.DrainLifeFx(), Is.Empty, "普通轻伤不新增镜头");
+    }
+
+    /// <summary>Q732-A02：同伴尸变——标题“尸变：病毒”、结果“尸变”，标识行带人物与地点；主角尸变终局不播。</summary>
+    [Test]
+    public void Q732_A02_CompanionZombie_CloseUp()
+    {
+        var s = New(5227);
+        E.DebugQuickParty(s, 2);
+        var mate = s.Party.Single(id => id != GameState.PlayerId);
+        var a = s.Actor(mate);
+        a.Body.Infected = true;
+        a.Body.VirusLoad = Cfg.Infection.ZombificationAtLoad;
+        var where = E.LocName(s.CurrentLocation);
+        E.DrainLifeFx();
+        Start(s, ActionRequest.Wait(30));
+        E.Advance(s);
+        Assume.That(a.Dead, Is.True);
+        var ev = E.DrainLifeFx().Single(x => x.Actor.Id == mate);
+        Assert.That((ev.World, ev.Name, ev.Results.Single().Life), Is.EqualTo((true, GameEngine.ZombieLifeTitle, BattleFxLife.Zombie)));
+        Assert.That(GameEngine.LifeWord(BattleFxLife.Zombie), Is.EqualTo("尸变"));
+        Assert.That(ev.Where, Is.EqualTo(GameEngine.LifeWhereText(E.ActorDisplayName(s, mate), where)));
+
+        var p = New(5228);
+        p.Body.Infected = true;
+        p.Body.VirusLoad = Cfg.Infection.ZombificationAtLoad;
+        E.DrainLifeFx();
+        Start(p, ActionRequest.Wait(30));
+        E.Advance(p);
+        Assume.That(p.Progress.Dead, Is.True);
+        Assert.That(E.DrainLifeFx(), Is.Empty, "主角尸变终局优先");
+    }
+
+    /// <summary>Q733-A01：战外用药使濒死者脱离——标题为本次实际物品名，结果“脱离濒死”，真实正健康差写“+{数值}”；非濒死用药不造镜头。</summary>
+    [Test]
+    public void Q733_A01_OutsideBandage_Revive_CloseUp()
+    {
+        var s = New(5229);
+        var inst = E.CreateItems(s, "bandage", 2, ItemInstance.Carried).First();
+        s.Player.Stats.Health = 0;
+        s.Player.DyingNotified = true;
+        s.BandageReadyAt = 0;
+        E.DrainLifeFx();
+        Start(s, ActionRequest.UseInstance(inst.InstanceId));
+        Assume.That(s.Player.Stats.Health, Is.GreaterThan(0));
+        var ev = E.DrainLifeFx().Single();
+        var r = ev.Results.Single();
+        Assert.That(ev.Name, Is.EqualTo(E.ItemName("bandage")));
+        Assert.That((ev.World, r.Life, r.Outcome), Is.EqualTo((true, BattleFxLife.Revived, "heal")));
+        Assert.That(r.Amount, Is.EqualTo(s.Player.Stats.Health).Within(1e-9), "真实正健康差");
+        Assert.That(GameEngine.LifeWord(r.Life), Is.EqualTo("脱离濒死"));
+
+        var t = New(5230);
+        var i2 = E.CreateItems(t, "bandage", 1, ItemInstance.Carried).First();
+        t.Player.Stats.Health = t.Player.Stats.HealthMax / 2;
+        t.BandageReadyAt = 0;
+        E.DrainLifeFx();
+        Start(t, ActionRequest.UseInstance(i2.InstanceId));
+        Assert.That(E.DrainLifeFx(), Is.Empty, "非濒死不造脱离濒死");
+    }
+
+    /// <summary>Q733：战斗中用药脱离濒死仍并入同次医疗特写（不另造战外镜头，回血数仍由医疗段写）。</summary>
+    [Test]
+    public void Q733_InBattleRevive_StillMergedIntoHealCloseUp()
+    {
+        var s = Fight(5231, "worker");
+        Ready(s);
+        E.CreateItems(s, "bandage", 1, ItemInstance.Carried);
+        s.Stats.Health = 0;
+        s.Player.DyingNotified = true;
+        s.BandageReadyAt = 0;
+        s.Battle!.PlayerAp = 6;
+        E.DrainBattleFx();
+        E.DrainLifeFx();
+        var o = E.BattleOptions(s).FirstOrDefault(x => x.Action.Contains("bandage") && x.Available);
+        Assume.That(o, Is.Not.Null);
+        Assert.That(Cmd(s, o!.Action).Ok, Is.True);
+        var ev = One(E.DrainBattleFx());
+        var r = ev.Results.Single();
+        Assert.That((r.Outcome, r.Life), Is.EqualTo(("heal", BattleFxLife.Revived)));
+        Assert.That(E.DrainLifeFx(), Is.Empty);
+    }
 }
 
 /// <summary>B52b 网页壳部分（源码断言）：R03 §Q737、R09 §Q734／§Q736／§Q738；验收 Q737-A01／A02、Q734-A01／A02、Q736-A01／A02、Q738-A01／A02。</summary>

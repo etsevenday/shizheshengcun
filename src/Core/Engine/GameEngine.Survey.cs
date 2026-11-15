@@ -85,7 +85,7 @@ namespace Survival.Core.Engine
                 // B47a1（R09 §3.2）：遗迹勘整风险扣血走统一受伤入口
                 var notes = new List<string>();
                 DamageOutcome life;
-                using (NoLifeCloseUp()) life = DamageActor(s, s.Player, loss, notes);   // B47b（Q732 待答复）：勘整风险的独立生命特写本批不做
+                using (LifeCause(SurveyLifeTitle(h.Label))) life = DamageActor(s, s.Player, loss, notes);   // B52b（R09 Q732）：勘整风险的生命特写标题“勘整：{伤因短名}”
                 s.Progress.LastDamageCause = $"勘整时{h.Label}";
                 Emit(s, GameEventKind.Hazard, $"{h.Label}，健康−{Fmt.T(loss)}。");
                 WriteLifeNotes(s, s.Player, notes);

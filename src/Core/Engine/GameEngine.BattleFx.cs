@@ -249,6 +249,7 @@ namespace Survival.Core.Engine
             BattleFxLife.Dying => "濒死",
             BattleFxLife.Resisted => "抵抗致死",
             BattleFxLife.Revived => "脱离濒死",
+            BattleFxLife.Zombie => ZombieWord,   // B52b（R09 Q732）
             _ => DeathWord,
         };
 
@@ -347,15 +348,15 @@ namespace Survival.Core.Engine
         /// <summary>B47b：独立生命特写的来源名作用域（null 为没有公开来源，用兜底标题）。</summary>
         private string? _lifeCause;
         private bool _lifeCauseSet;
-        /// <summary>B47b（Q732 待答复）：本批不做独立生命特写的来源（多原因合成身体损伤、搜集／勘整划伤）。</summary>
-        private bool _lifeCauseSkip;
+        /// <summary>B52b（R09 Q733）：战斗外这次实际治疗的公开名（物品、服务或技能名）；null 为不在战外治疗事务里。</summary>
+        private string? _lifeHeal;
 
         private sealed class LifeCauseScope : IDisposable
         {
             private readonly GameEngine _e;
-            private readonly string? _cause; private readonly bool _set, _skip;
-            public LifeCauseScope(GameEngine e) { _e = e; _cause = e._lifeCause; _set = e._lifeCauseSet; _skip = e._lifeCauseSkip; }
-            public void Dispose() { _e._lifeCause = _cause; _e._lifeCauseSet = _set; _e._lifeCauseSkip = _skip; }
+            private readonly string? _cause, _heal; private readonly bool _set;
+            public LifeCauseScope(GameEngine e) { _e = e; _cause = e._lifeCause; _set = e._lifeCauseSet; _heal = e._lifeHeal; }
+            public void Dispose() { _e._lifeCause = _cause; _e._lifeCauseSet = _set; _e._lifeHeal = _heal; }
         }
 
         /// <summary>接下来的受伤若造成生命姿态转变而又没有出手镜头，独立特写标题用这个真实公开来源名（“出血”或原伤因）。</summary>
@@ -364,16 +365,54 @@ namespace Survival.Core.Engine
             var scope = new LifeCauseScope(this);
             _lifeCause = string.IsNullOrEmpty(cause) ? null : cause;
             _lifeCauseSet = true;
-            _lifeCauseSkip = false;
             return scope;
         }
 
-        /// <summary>B47b（Q732 待答复）：接下来的受伤不做独立生命特写（只写战报／日志）。</summary>
-        private IDisposable NoLifeCloseUp()
+        /// <summary>
+        /// B52b（R09 Q733）：接下来的战斗外医疗回血若使濒死者脱离濒死，独立生命镜头标题用这次实际物品／服务／技能的公开名
+        /// （与同次完成日志同源）。战斗中不用（战斗医疗已有同次医疗特写合入）。
+        /// </summary>
+        private IDisposable LifeHeal(string name)
         {
             var scope = new LifeCauseScope(this);
-            _lifeCauseSkip = true;
+            _lifeHeal = name;
             return scope;
+        }
+
+        // ── B52b（R09 文首 B47b Q729—Q738 §Q732；逐字稿同批 multiCause／search／survey／zombieTitle／zombieResult） ──
+
+        /// <summary>Q732：多个真实原因合成的一次身体损伤“多原因伤害：{原因清单}”（顿号连接）。</summary>
+        public static string MultiCauseTitle(IEnumerable<string> causes) => $"多原因伤害：{string.Join("、", causes)}";
+
+        /// <summary>Q732：搜集划伤“搜索：{伤因短名}”。</summary>
+        public static string SearchLifeTitle(string label) => $"搜索：{HazardShortName(label)}";
+
+        /// <summary>Q732：勘整风险“勘整：{伤因短名}”。</summary>
+        public static string SurveyLifeTitle(string label) => $"勘整：{HazardShortName(label)}";
+
+        /// <summary>Q732：尸变的生命镜头标题。</summary>
+        public const string ZombieLifeTitle = "尸变：病毒";
+
+        /// <summary>Q732：尸变的结果字。</summary>
+        public const string ZombieWord = "尸变";
+
+        /// <summary>Q732：伤因短名取本次公开 hazard.Label，去掉重复的“搜集时／搜索时／勘整时”前缀。</summary>
+        public static string HazardShortName(string label)
+        {
+            foreach (var p in new[] { "搜集时", "搜索时", "勘整时" })
+                if (label.StartsWith(p, StringComparison.Ordinal)) return label.Substring(p.Length);
+            return label;
+        }
+
+        /// <summary>Q732：世界段身体损伤的生命特写标题——一个原因用原名，多个用“多原因伤害：…”；没有为 null（兜底标题）。</summary>
+        private static string? DamageLifeTitle(List<string> causes) =>
+            causes.Count == 0 ? null : causes.Count == 1 ? causes[0] : MultiCauseTitle(causes);
+
+        /// <summary>Q732：本段原因里小时率确为负（真实贡献正伤）的那些，保持原顺序、去重；0 伤害原因不列。</summary>
+        private static List<string> RealDamageCauses(List<string> causes, double satiety, double hydration, double wakefulness, double energy)
+        {
+            var rate = new Dictionary<string, double> { ["饥饿"] = satiety, ["缺水"] = hydration, ["缺乏睡眠"] = wakefulness, ["体力透支"] = energy };
+            return causes.Where(c => rate.TryGetValue(c, out var r) && r < 0).Distinct().ToList();
         }
 
         private readonly List<BattleFxEvent> _lifeWorld = new List<BattleFxEvent>();
@@ -395,7 +434,8 @@ namespace Survival.Core.Engine
         /// <item>战斗中、此人在场且正在记一次出手（攻击、医疗、喷溅）：并入该出手的结果帧，不另播。</item>
         /// <item>战斗中在场、没有出手镜头（出血、回合结算）：单独一段生命特写，标题取真实来源名（缺失为“生命状态变化”）；抵抗成功没有新姿态，不播。</item>
         /// <item>战斗中不在场（远处候补、驻屋者、没入场的同行者）：只写战报与日志（Q735 待答复）。</item>
-        /// <item>战斗外：记一段只读生命镜头（“{人物} · {地点}”），由网页壳在段边界播放；医疗脱离濒死（Q733）、多原因合成伤害与划伤（Q732）本批不做。</item>
+        /// <item>战斗外：记一段只读生命镜头（“{人物} · {地点}”），由网页壳在段边界播放；B52b：多原因、搜集／勘整划伤按 Q732 标题，
+        /// 战外用药／换药服务脱离濒死（Q733）标题为实际治疗名、结果“脱离濒死”。</item>
         /// </list>
         /// 只读预估副本不记。
         /// </summary>
@@ -408,10 +448,11 @@ namespace Survival.Core.Engine
                 if (!AllyInBattle(s.Battle, actor.Id) && !(dead && s.Battle.Allies.Contains(actor.Id))) return;
                 if (_fxOpen.Count > 0)
                 {
-                    FxRootOf(_fxOpen[_fxOpen.Count - 1]).LifeMarks.Add((unit, life, dead, amount));
+                    // 脱离濒死的回血量已由同次医疗结果段写出（“+{数值}”），这里只并姿态
+                    FxRootOf(_fxOpen[_fxOpen.Count - 1]).LifeMarks.Add((unit, life, dead, life == BattleFxLife.Revived ? 0 : amount));
                     return;
                 }
-                if (life == BattleFxLife.Resisted || life == BattleFxLife.Revived || _lifeCauseSkip) return;
+                if (life == BattleFxLife.Resisted || life == BattleFxLife.Revived) return;
                 using (FxBegin(s, _lifeCause ?? LifeFallbackTitle, BattleFxMotion.Life, unit, view: before))
                 {
                     FxHit(unit, amount > 0 ? "hit" : "effect", amount, down: dead);
@@ -420,22 +461,49 @@ namespace Survival.Core.Engine
                 }
                 return;
             }
-            if (life == BattleFxLife.Resisted || life == BattleFxLife.Revived || _lifeCauseSkip) return;
+            if (life == BattleFxLife.Resisted) return;
+            if (life == BattleFxLife.Revived)
+            {
+                // B52b（R09 Q733）：战斗外合法用药／换药服务真正使濒死者成为正常活人——标题为这次实际治疗名，结果“脱离濒死”，
+                // 真实正健康差才写“+{实际恢复量}”；不在战外治疗事务里（没有公开名）的不造镜头
+                if (_lifeHeal == null) return;
+                AddWorldLife(s, actor, unit, _lifeHeal, new BattleFxResult { Target = unit, Outcome = amount > 0 ? "heal" : "effect", Amount = amount, Life = life }, LeaveDyingText(unit.Name));
+                return;
+            }
+            AddWorldLife(s, actor, unit, _lifeCause ?? LifeFallbackTitle,
+                new BattleFxResult { Target = unit, Outcome = amount > 0 ? "hit" : "effect", Amount = amount, Down = dead, Life = dead ? null : life },
+                dead ? FailedResistText(unit.Name) : EnterDyingText(unit.Name));
+        }
+
+        /// <summary>B47b（R09 Q692）：记一段战斗外只读生命镜头（标识行“{人物} · {地点}”取事件提交时的位置），由网页壳在段边界播放。</summary>
+        private void AddWorldLife(GameState s, ActorState actor, BattleFxUnit unit, string name, BattleFxResult result, string? line)
+        {
             var where = s.Party.Contains(actor.Id) || actor.IsPlayer ? LocName(s.CurrentLocation)
                 : RosterOf(s, actor.Id) is RosterEntry re ? ReserveWhereName(s, re) : null;
             var ev = new BattleFxEvent
             {
                 Seq = ++_fxSeq,
-                Name = _lifeCause ?? LifeFallbackTitle,
+                Name = name,
                 Motion = BattleFxMotion.Life,
                 Actor = unit,
                 World = true,
                 Where = LifeWhereText(unit.Name, where),
             };
-            ev.Results.Add(new BattleFxResult { Target = unit, Outcome = amount > 0 ? "hit" : "effect", Amount = amount, Down = dead, Life = dead ? null : life });
-            ev.Lines.Add(dead ? FailedResistText(unit.Name) : EnterDyingText(unit.Name));
+            ev.Results.Add(result);
+            if (line != null) ev.Lines.Add(line);
             if (_lifeWorld.Count >= 200) _lifeWorld.RemoveRange(0, _lifeWorld.Count - 100);   // 没人取走（测试、离线推进）时不无限增长
             _lifeWorld.Add(ev);
+        }
+
+        /// <summary>
+        /// B52b（R09 Q732）：同伴（同行或候补）在世界段达到原尸变条件、真实尸变时记一段只读生命镜头：标题“尸变：病毒”、结果“尸变”。
+        /// 主角尸变直接终局（终局优先，不播）；只读预估副本与战斗中不记。必须在离队（CompanionDown）之前调用，地点取尸变时的位置。
+        /// </summary>
+        private void NoteZombieLife(GameState s, ActorState actor)
+        {
+            if (s.SimCopy || s.Battle != null || actor.IsPlayer) return;
+            var unit = new BattleFxUnit { Side = BattleFxUnit.AllySide, Id = actor.Id, Name = ActorDisplayName(s, actor.Id) };
+            AddWorldLife(s, actor, unit, ZombieLifeTitle, new BattleFxResult { Target = unit, Outcome = "effect", Life = BattleFxLife.Zombie }, null);
         }
 
         /// <summary>同一段内的倒地补记（结算途中目标倒下时，把它最后一段标成倒地）。</summary>
