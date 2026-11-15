@@ -69,8 +69,10 @@ namespace Survival.Core.State
         /// "52" 起濒死与意志（R09，开发记录 B47a1）：确实死亡标记 ActorState.Dead、濒死提醒锁 ActorState.DyingNotified、意志经验同敌账／日账
         /// ActorState.WillpowerEnemyAwards／WillpowerXpDay／WillpowerXpToday、第 17 门熟练度 willpower；51→52 按名册与终局补确死标记，
         /// 未确死的 H=0 归濒死（提醒锁置已提醒，不补历史进入事件、不补抽致死），存活者缺意志补 1 级 0 经验。
+        /// "53" 起腐败物多来源份数账 ItemInstance.SpoiledOrigins、全部晾制原料暂停保质、晾制位停止原因 DryingSlot.StopReason
+        /// （S06／S11 文首 Q666、Q711—Q714，开发记录 B50a）；52→53 旧单一来源字段不转成账（当未知、不显示），在办晾制的合格原料从升级时剩余保护（静默）。
         /// </summary>
-        public const string CurrentSchema = "52";
+        public const string CurrentSchema = "53";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -585,6 +587,14 @@ namespace Survival.Core.State
         /// </summary>
         public bool ShelfPaused { get; set; }
 
+        /// <summary>停止原因（S11 文首 Q713，B50a，存档 53）：缺料 missing ／原料腐败 spoiled ／未知 unknown；旧档在 53 前已停止的位为 legacy（显示沿原「原料已腐败」口径，Q764 待定）；未停止为 null。</summary>
+        public string? StopReason { get; set; }
+
+        public const string StopMissing = "missing";
+        public const string StopSpoiled = "spoiled";
+        public const string StopUnknown = "unknown";
+        public const string StopLegacy = "legacy";
+
         public DryingSlot Clone() => (DryingSlot)MemberwiseClone();
     }
 
@@ -958,6 +968,12 @@ namespace Survival.Core.State
         public int? SpoiledUnitGrams { get; set; }
         /// <summary>腐败物堆叠上限（Q610：沿用原物品堆叠上限，原物不可堆叠的仍为 1）；普通物品为 null。</summary>
         public int? SpoiledStackMax { get; set; }
+        /// <summary>
+        /// 腐败物多来源份数账（S06 文首 Q711，B50a，存档 53）：原物品 ID → 本堆里可证明来自它的份数；合计不超过 Count，未知量为 Count 减合计（内部，不显示）。
+        /// 只作只读追溯，不参与合堆、重量、用途判断（业务仍读 SpoiledFrom）。拆堆、转移按原物 ID 升序先分已知再分未知，留堆减同量，全局守恒；
+        /// 旧档（53 前）的腐败物没有账。普通物品与无可信来源的为 null。
+        /// </summary>
+        public Dictionary<string, int>? SpoiledOrigins { get; set; }
 
         public bool IsCarried => Owner == Carried;
         /// <summary>
@@ -1077,6 +1093,7 @@ namespace Survival.Core.State
             c.Source = Source?.Clone();
             c.Affixes = Affixes == null ? null : new List<string>(Affixes);
             c.Appraisal = Appraisal?.Clone();
+            c.SpoiledOrigins = SpoiledOrigins == null ? null : new Dictionary<string, int>(SpoiledOrigins);
             return c;
         }
     }

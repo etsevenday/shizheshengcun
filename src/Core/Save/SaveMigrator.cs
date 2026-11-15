@@ -88,6 +88,7 @@ namespace Survival.Core.Save
         public const string Schema49 = "49";
         public const string Schema50 = "50";
         public const string Schema51 = "51";
+        public const string Schema52 = "52";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -154,6 +155,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema49) From49To50(s);
             if (s.SchemaVersion == Schema50) From50To51(s, config, notes);
             if (s.SchemaVersion == Schema51) From51To52(s);
+            if (s.SchemaVersion == Schema52) From52To53(s, config);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
@@ -1486,12 +1488,35 @@ namespace Survival.Core.Save
         /// </summary>
         private static void From51To52(GameState s)
         {
-            s.SchemaVersion = GameState.CurrentSchema;
+            s.SchemaVersion = Schema52;
             foreach (var a in s.Actors.Values)
             {
                 var dead = a.IsPlayer ? s.Progress.Dead : s.Roster.Any(r => r.ActorId == a.Id && r.Dead);
                 if (dead) { a.Dead = true; continue; }
                 if (a.Stats.Health <= 0) a.DyingNotified = true;
+            }
+        }
+
+        /// <summary>
+        /// 52 → 53（B50a，S06 文首 Q711、S11 文首 Q666／Q713／Q714）：旧档腐败物只有单一来源字段 SpoiledFrom，无法证明整堆来源，
+        /// 一律不建多来源份数账（当未知、不显示；SpoiledFrom 原样保留供业务判定，Q763 待定）。已停止的旧晾制位停止原因记 legacy
+        /// （显示沿原「原料已腐败」，Q764 待定）。在办晾制的合格原料从升级时剩余保护见 MigrateDryingProtection。静默，不写说明（Q714）。
+        /// </summary>
+        private static void From52To53(GameState s, GameConfig config)
+        {
+            s.SchemaVersion = GameState.CurrentSchema;
+            foreach (var (_, fac) in DryingFacilities(s))
+                foreach (var b in fac.DryingSlots ?? new List<DryingSlot>())
+                    if (b.Status == DryingSlot.Spoiled && b.StopReason == null) b.StopReason = DryingSlot.StopLegacy;
+        }
+
+        /// <summary>全部地点的外部区与已建安全屋屋内区设施（晾制位所在）。</summary>
+        private static IEnumerable<(string Place, FacilityState Fac)> DryingFacilities(GameState s)
+        {
+            foreach (var kv in s.Locations)
+            {
+                yield return (kv.Key, kv.Value.Facility);
+                if (kv.Value.Safehouse != null) yield return (Engine.GameEngine.ZonePlace(kv.Key, GameState.SafehouseZone), kv.Value.Safehouse.Interior);
             }
         }
 

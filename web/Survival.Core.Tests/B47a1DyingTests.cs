@@ -90,7 +90,7 @@ public class B47a1DyingTests : BattleTestBase
         var o = JObject.Parse(json);
         ((JObject)o["Actors"]![alive]!["Skills"]!)["willpower"] = JObject.FromObject(new { Level = 4, Xp = 30 });
         var t = SaveSerializer.Deserialize(o.ToString(), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("52"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("53"));
         Assert.That((t.Actors[dead].Dead, t.Actors[dead].Skills.ContainsKey(GameEngine.Willpower)), Is.EqualTo((true, false)), "旧死者不复活、不补意志");
         Assert.That((E.LifeOf(t, t.Actors[alive]), t.Actors[alive].DyingNotified, t.Actors[alive].Skills[GameEngine.Willpower].Level, t.Actors[alive].Skills[GameEngine.Willpower].Xp),
             Is.EqualTo((LifeState.Dying, true, 4, 30L)), "旧 H0 活人归濒死（提醒锁置已提醒），已有意志不覆盖");
