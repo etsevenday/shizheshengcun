@@ -145,7 +145,7 @@ else if (b != null)
                 <div><span>恐慌</span><b>@Ui.N(b.Panic)@(e.Config.Panic.PenaltyFor(b.Panic) is PanicPenaltyConfig pp ? $"（≥{Ui.T(pp.Minimum)}：命中能力×{Ui.T(pp.AccuracyRatingFactor)}、撤退×{Ui.T(pp.RetreatFactor)}）" : "")</b></div>
                 <div><span>@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))的闪避能力</span><b>@Ui.T(e.MyBaseDodge(s))</b></div>
                 <div title="控制成功率=clamp(75%+控制能力−抗性, 10%, 95%)；稳态期间抗性再+30；装备“位移抵抗”只防拉扯/击退，不防失衡/减速"><span>@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))的控制抗性</span><b>基础@(Ui.T(e.MyBaseControlResist(s))) · 拉扯/击退@(Ui.T(e.PlayerControlResist(s, b, "pull")))@(b.PlayerSteadyUntilRound >= b.Round ? "（稳态另+30）" : "")</b></div>
-                <div><span>本场世界时间</span><b>@Clock.Duration(b.Ticks * e.Config.Time.TickMinutes)（每回合5分钟）</b></div>
+                <div><span>@GameEngine.BattleTimeLabel</span><b>@e.BattleWorldTimeText(b)</b></div>@* B52a（R03 Q735）：新战斗“冻结”，旧在战可信已耗只读 *@
             </div>
             @* B9：最近战斗记录移到右下“战报”（完整记录点“查看记录”），这里只放对象信息 *@
         </div>

@@ -298,8 +298,8 @@ public class B6CombatTests : BattleTestBase
         Assert.That(s.GameMinute, Is.EqualTo(minute), "追击不推进世界时间");
         Cmd(s, "end_turn");
         while (s.Battle != null && b.Round == 1) Step(s);
-        Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "整轮（含追击）只推进一次5分钟");
-        Assert.That(b.Ticks, Is.EqualTo(1));
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "B52a 按 R03 Q735 改写：整轮（含追击）不推进世界时间");
+        Assert.That(b.Ticks, Is.EqualTo(0));
     }
 
     // ───────────── M130：AP 阶位与通用动作（R22；验收 CB04、RG02） ─────────────
@@ -526,8 +526,8 @@ public class B6CombatTests : BattleTestBase
             Step(s);
         }
         Assert.That(s.Battle, Is.Null, "第2轮开始流血倒下即胜利");
-        Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "只有第1轮那一次5分钟，不为没有行动的第2轮再推进");
-        Assert.That(b.Ticks, Is.EqualTo(1));
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "B52a 按 R03 Q735 改写：轮末与提前胜利都不推进世界时间");
+        Assert.That(b.Ticks, Is.EqualTo(0));
     }
 
     [Test]
@@ -582,16 +582,17 @@ public class B6CombatTests : BattleTestBase
             Cmd(s, "guard");
             while (s.Battle != null && fight.Round == round + 1) Step(s);
         }
-        Assert.That(s.GameMinute, Is.EqualTo(minute + 15), "三个大回合各一次5分钟");
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "B52a 按 R03 Q735 改写：三个大回合都不推进世界时间");
         Assert.That((s.Stats.Satiety, s.Stats.Hydration), Is.EqualTo((50.0, 50.0)), "战内 N/W 负变化（含腹泻扣水）都为0");
-        Assert.That(s.Stats.Wakefulness, Is.EqualTo(heat - 5 * 15 / 60.0).Within(1e-9), "S 仍按战斗率−5/h");
+        Assert.That(s.Stats.Wakefulness, Is.EqualTo(heat).Within(1e-9), "Q735：S 自然率战中也不结算");
         // 撤退脱战后不补扣：之后的普通时间才按正常速率扣
         s.Battle!.PlayerActing = true;
         s.Battle.PlayerAp = 3;
         Force(s, Below(0.0001));
         Assert.That(Cmd(s, "retreat").Ok, Is.True);
         Assert.That(s.Battle, Is.Null);
-        Assert.That((s.Stats.Satiety, s.Stats.Hydration), Is.EqualTo((50.0, 50.0)), "脱战那一段也是战斗段，战后不补扣");
+        Assert.That((s.Stats.Satiety, s.Stats.Hydration), Is.EqualTo((50.0, 50.0)), "脱战不推进世界时间，战后不补扣");
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "撤退 0 额外分钟");
     }
 
     [Test]
@@ -604,10 +605,11 @@ public class B6CombatTests : BattleTestBase
         var e = Enemy(s, 1);
         e.Hp = 0.01;
         Force(s, Below(0.001), AtLeast(0.999), Any(), Any());
+        var t0 = s.GameMinute;
         Cmd(s, "basic_attack", 1);
-        Assert.That(s.Progress.Dead, Is.True, "水分0的健康伤害照旧，轮末 tick 致死");
+        Assert.That(s.Progress.Dead, Is.False, "B52a 按 R03 Q735 改写：战中水分0的零值小时伤害不结算，胜利收束没有世界 tick");
         Assert.That(s.Battle, Is.Null);
-        Assert.That(s.Items.Any(i => i.Owner == "field" && i.ItemId is "cloth" or "scrap"), Is.False, "同指令杀最后一敌也不救回、不发掉落");
+        Assert.That(s.GameMinute, Is.EqualTo(t0));
     }
 
     [Test]
@@ -625,9 +627,9 @@ public class B6CombatTests : BattleTestBase
         Ready(s);
         Cmd(s, "guard");
         while (s.Battle != null && s.Battle.Round == 1) Step(s);
-        Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "两名角色共用同一个5分钟，不按人数倍乘");
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "B52a 按 R03 Q735 改写：轮末不推进世界时间");
         Assert.That((mate.Stats.Satiety, mate.Stats.Hydration), Is.EqualTo((60.0, 60.0)), "同行者同样冻结 N/W");
-        Assert.That(mate.Stats.Wakefulness, Is.EqualTo(90 - 5 * 5 / 60.0).Within(1e-9), "各自结算一次身体");
+        Assert.That(mate.Stats.Wakefulness, Is.EqualTo(90).Within(1e-9), "同行者自然率战中不结算");
     }
 
     [Test]

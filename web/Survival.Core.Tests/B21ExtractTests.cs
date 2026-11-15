@@ -174,7 +174,7 @@ public class B21ExtractTests : BattleTestBase
         Assert.That(t.CurrentLocation, Is.EqualTo("c03_crypt"));
     }
 
-    /// <summary>SCB02：撤退那场的唯一 tick 与撤出第一段不重复——撤退 1 段 + 撤出 T/5 段，世界只推进这么多。</summary>
+    /// <summary>SCB02：撤退与撤出第一段不重复——B52a（R03 Q735）起撤退 0 段（战斗冻结、无收尾 tick）+ 撤出 T/5 段，世界只推进这么多。</summary>
     [Test]
     public void SCB02_RetreatTickThenExtract_NoDoubleSegment()
     {
@@ -191,8 +191,8 @@ public class B21ExtractTests : BattleTestBase
         Assert.That(E.AbortExpedition(s).Ok, Is.True);
         Assert.That(s.Expedition!.TotalMinutes, Is.EqualTo(30));
         Assert.That(Run(s, false), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(s.SegmentCount - seg0, Is.EqualTo(1 + 6));
-        Assert.That(s.GameMinute - t0, Is.EqualTo(5 + 30));
+        Assert.That(s.SegmentCount - seg0, Is.EqualTo(6), "B52a 按 R03 Q735 改写：战斗不计段，只有撤出 6 段");
+        Assert.That(s.GameMinute - t0, Is.EqualTo(30), "撤出付其原时间，不拿来代替战斗 5 分钟");
     }
 
     /// <summary>队友途中死亡：遗物落当前返程边起点，撤出继续，主角照常到达。</summary>

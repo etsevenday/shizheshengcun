@@ -950,7 +950,7 @@ public class CombatV06Tests : BattleTestBase
         Cmd(s, "guard");
         Cmd(s, "end_turn");
         while (s.Battle!.Round == 1) Step(s);
-        Assert.That(s.GameMinute, Is.EqualTo(m0 + 5));
+        Assert.That(s.GameMinute, Is.EqualTo(m0), "B52a 按 R03 Q735 改写：轮末不推进世界时间");
         Assert.That(s.Stats.Energy, Is.EqualTo(e0), "防御体力0，tick 体力自然率0");
         Assert.That(n0 - s.Stats.Satiety, Is.EqualTo(0).Within(1e-9), "B6 按新规则改写（R03 §6）：战斗中 N 负变化冻结");
     }

@@ -304,7 +304,7 @@ public class B22hTests : BattleTestBase
         Assert.That(s.Battle, Is.Null);
         Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
         Assert.That(s.CurrentZone, Is.EqualTo(GameState.ExteriorZone));
-        Assert.That(s.GameMinute - t0, Is.EqualTo(5), "只有本场这一轮的 5 分钟，没有另加路程");
+        Assert.That(s.GameMinute - t0, Is.EqualTo(0), "B52a 按 R03 Q735 改写：战斗冻结、撤退 0 额外分钟，没有另加路程");
         Assert.That((s.LastMove.From, s.LastMove.To, s.LastMove.Minute), Is.EqualTo(lastMove), "撤退不是常规移动，不新增记录");
         var w = E.FindWorldEnemy(s, enemyId)!;
         Assert.That((w.LocationId, w.Hp, w.Engaged), Is.EqualTo(("field", 1.5, false)), "敌人原 HP 与位置保留");

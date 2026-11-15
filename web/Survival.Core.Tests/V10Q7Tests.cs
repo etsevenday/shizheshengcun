@@ -49,17 +49,17 @@ public class V10Q7Tests : BattleTestBase
         Run(z);
         Assert.That(z.Stats.Health, Is.EqualTo(18).Within(1e-6));
 
-        // 战斗：轮末 tick 用 battleTime 原率 N−1.875/W−4.5/S−5 每小时（不继承新非战斗率），体力自然率0
+        // 战斗：B52a（R03 Q735）起轮末不再结算世界 tick，全部自然率战中不结算（原 battleTime 战斗率不再使用）
         var b = Fight(14, "stag");
         Ready(b);
         SetStats(b, 20, 80, 80, 18, 90, 60);
         var m0 = b.GameMinute;
         Assert.That(Cmd(b, "end_turn").Ok, Is.True);
-        while (b.Battle != null && b.GameMinute == m0 && !b.Progress.Dead) Step(b);
-        Assert.That(b.GameMinute, Is.EqualTo(m0 + 5));
+        while (b.Battle != null && b.Battle.Round == 1 && !b.Progress.Dead) Step(b);
+        Assert.That(b.GameMinute, Is.EqualTo(m0));
         Assert.That(b.Stats.Satiety, Is.EqualTo(80).Within(1e-9), "B6 按新规则改写（R03 §6）：战斗中饱食负变化冻结");
         Assert.That(b.Stats.Hydration, Is.EqualTo(80).Within(1e-9), "B6 按新规则改写（R03 §6）：战斗中水分负变化冻结");
-        Assert.That(b.Stats.Wakefulness, Is.EqualTo(90 - 5 * 5 / 60.0).Within(1e-9), "战斗清醒率保持");
+        Assert.That(b.Stats.Wakefulness, Is.EqualTo(90).Within(1e-9), "Q735：战斗中清醒自然率也不结算");
         Assert.That(b.Stats.Energy, Is.EqualTo(18).Within(1e-9), "战斗自然体力率0");
     }
 

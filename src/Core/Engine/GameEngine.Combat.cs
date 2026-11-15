@@ -663,7 +663,7 @@ namespace Survival.Core.Engine
                 }
                 if (PlayerDownAfterSplash(s) || s.Battle == null) return false;
             }
-            if (!b.Alive.Any()) { FinishBattle(s, "victory", false); return false; }
+            if (!b.Alive.Any()) { FinishBattle(s, "victory"); return false; }
             return true;
         }
 
@@ -772,7 +772,9 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 轮末：后排压到最左空前排（已行动标记不变）；减速与失衡到期；推进本轮唯一一次 5 分钟世界 tick；未结束则开下一轮。
+        /// 轮末：后排压到最左空前排（已行动标记不变）；减速与失衡到期；未结束则开下一轮。
+        /// B52a（R03 Q735）：实际战斗中世界时间冻结，轮末不再推进 5 分钟世界 tick（世界分钟、段计数、身体自然率、保质燃料设施、
+        /// 候补照护、敌卡计时等都不动），战后也不按轮数补算；回合内出血、状态回合到期、AP 等本地战斗规则照常。
         /// </summary>
         private void EndRound(GameState s)
         {
@@ -790,7 +792,6 @@ namespace Survival.Core.Engine
                 // 钢制钉锤“震荡”：失衡持续到目标下次攻击后，不在轮末清除
                 if (e.Stagger && !e.StaggerSticky && e.StaggerRound < b.Round) e.Stagger = false;
             }
-            if (!BattleTick(s)) return;
             b.Round++;
             BeginRound(s);
         }
@@ -823,52 +824,22 @@ namespace Survival.Core.Engine
                    + (know.Count > 0 ? $"；获得默认知识：{string.Join("、", know)}" : "") + "。";
         }
 
-        /// <summary>本轮唯一一次世界 tick（战斗速率，体力只付招式成本，计入工作类归零损血）。返回 false 表示 tick 内死亡或尸变。</summary>
-        private bool BattleTick(GameState s)
-        {
-            var b = s.Battle!;
-            b.Ticks++;
-            // 每个同行角色按自己的段首状态计战斗段速率，世界只推进一次（B3 H10、COMP04）；世界 tick 按主角视角（B9a）
-            bool alive;
-            using (FocusOn(s, GameState.PlayerId)) alive = WorldTick(s, actor => BattleSegment(s, actor), null, true);
-            if (!alive)
-            {
-                // tick 本身致死：该 tick 已发生，不回滚、不补第二段；不提交胜利掉落
-                FinishBattleOnDeath(s);
-                return false;
-            }
-            return true;
-        }
+        /// <summary>B52a（R03 Q735、逐字稿 battleTime／oldBattleTime）：顶部“本场世界时间”的值——新战斗“冻结”；
+        /// 上线前开始、已真实结算过世界 tick 的旧在战存档只读显示旧已耗（旧 Ticks×5 分钟合同），不再增长。</summary>
+        public string BattleWorldTimeText(BattleState b) => b.Ticks > 0 ? $"已耗{Clock.Duration(b.Ticks * Tick)}，后续冻结" : BattleTimeFrozen;
 
-        /// <summary>
-        /// 战斗段（R03 §6、R01 §3）：N/W 负变化全部为 0（含腹泻扣水，战后不补扣），S−5/M−0.5 每小时，E 自然率 0（只付动作）；
-        /// 进入时已为 0 的饱食/水分/清醒与体力归零（按工作计）的健康伤害照旧；I/V、燃料、保质、加工按同一个世界 tick 继续。
-        /// </summary>
-        private SegmentContext BattleSegment(GameState s, ActorState actor)
-        {
-            var c = Config;
-            var ctx = new SegmentContext { Rates = c.BattleTime.HourlyRates.Copy(), IsWork = c.BattleTime.CountsAsWorkingForZeroEnergyDamage, ActionType = null };
-            ctx.Sheltered = IsSheltered(s, s.Ground);
-            if (actor.DiarrheaUntil.HasValue && actor.DiarrheaUntil.Value > s.GameMinute) ctx.Rates.Hydration += c.ItemActions.DiarrheaExtraHydrationPerHour;
-            if (c.BattleTime.FreezeNegativeSatietyHydration)
-            {
-                ctx.Rates.Satiety = Math.Max(0, ctx.Rates.Satiety);
-                ctx.Rates.Hydration = Math.Max(0, ctx.Rates.Hydration);
-            }
-            var hr = c.HealthRules;
-            var st = actor.Stats;
-            var causes = new List<string>();
-            double health = 0;
-            if (st.Satiety <= 0) { health += hr.ZeroSatietyPerHour; causes.Add("饥饿"); }
-            if (st.Hydration <= 0) { health += hr.ZeroHydrationPerHour; causes.Add("缺水"); }
-            if (st.Wakefulness <= 0) { health += hr.ZeroWakefulnessPerHour; causes.Add("缺乏睡眠"); }
-            if (st.Energy <= 0 && ctx.IsWork) { health += c.BattleTime.ZeroEnergyWorkingHealthPerHour; causes.Add("体力透支"); }
-            if (causes.Count > 0) ctx.DamageCause = causes[0];
-            ctx.DamageCauseCount = causes.Count;
-            ctx.HealthPerHour = health;
-            ctx.HealthLossPerHour = health;   // B47a1：只有负项（不给自然回血）
-            return ctx;
-        }
+        /// <summary>B52a（逐字稿 battleEndTime／oldBattleEndTime）：结算句里替换原回合耗时片段。</summary>
+        public string BattleEndTimeText(BattleState b) => b.Ticks > 0
+            ? $"共{b.Round}回合（世界时间已耗{Clock.Duration(b.Ticks * Tick)}，后续冻结）"
+            : $"共{b.Round}回合（世界时间冻结）";
+
+        /// <summary>逐字稿 battleTimeLabel／battleTime。</summary>
+        public const string BattleTimeLabel = "本场世界时间";
+        public const string BattleTimeFrozen = "冻结";
+        /// <summary>逐字稿 medicalNote：战斗医疗预估替换旧“本回合结束时统一推进一次世界时间”附注。</summary>
+        public const string BattleMedicalNote = "确认时生效，不推进世界时间。";
+        /// <summary>逐字稿 battleHelp：系统说明战斗时间段整段。</summary>
+        public const string BattleTimeHelp = "战斗中世界时间冻结；回合规则照常，战后不补算。";
 
         // ───────────── 指令 ─────────────
 
@@ -1156,7 +1127,7 @@ namespace Survival.Core.Engine
                     case "use_antiviral_cure":
                         // 效果数值放在第一条（与执行同一份计算 MedicineEffectText），战斗区执行条直接显示它
                         if (CarriedItem(s, a.ItemId!, c.ItemInstanceId) is ItemInstance med && _items[med.ItemId].Use is ItemUseConfig mu && MedicineEffectText(s, mu) is string mt) { p.EffectText = mt; p.Notes.Add(mt); }
-                        p.Notes.Add("效果在确认时应用，不另跳5分钟；本回合结束时统一推进一次世界时间");
+                        p.Notes.Add(BattleMedicalNote);   // B52a（逐字稿 medicalNote）：替换旧统一推进世界时间附注；药效成本条件（上一条）保留
                         break;
                     case "swap":
                     {
@@ -1480,16 +1451,15 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 结束（胜利或撤退成功）：本轮唯一一次世界 tick（中途退出也只推进一次；tick 致死则不提交掉落）；存活敌带 HP 回世界池、清临时状态；
+        /// 结束（胜利或撤退成功）：B52a（R03 Q735）不再推进收尾 5 分钟世界 tick，收束在入战时的世界分钟；存活敌带 HP 回世界池、清临时状态；
         /// 逃离的狼/鹿迁到合法相邻地或原地隐藏60分钟；胜利一次落地掉落；战后精神−min(5,P/20)，恐慌清除（B41e3 起不再给旧版 60 分钟随机接敌保护）。
         /// </summary>
-        private void FinishBattle(GameState s, string outcome, bool tick = true)
+        private void FinishBattle(GameState s, string outcome)
         {
             var b = s.Battle!;
             SettleWillpower(s);   // B47a2：出手中途就收场（反击打死最后一只等）时，先在战报里结完本次出手的意志经验
             b.FocusOverride = null;
             b.ActiveAlly = "";
-            if (tick && !BattleTick(s)) return;
             EmitLastRoundLog(s, b);
             var loc = b.LocationId;
             foreach (var e in b.Enemies)
@@ -1516,7 +1486,7 @@ namespace Survival.Core.Engine
             var fixedLines = outcome == "victory" ? FixedVictory(s, b) : new List<string>();
             // B41b（R05 Q416、Q443）：成功撤退给这次交战的同一张敌踪卡（无卡旧战斗：各参战幸存敌人所属的卡）60 世界分钟主动接近保护，从撤退结算时刻起算
             if (outcome == "retreat" && !s.Progress.Dead) GrantRetreatGuard(s, b);
-            // B21（R03 D4）：地牢远征里撤退成功，全队沿来路退到第一个没有敌人的房间（首个危险房间退回 01，不出地牢），含在本场唯一 tick 里
+            // B21（R03 D4）：地牢远征里撤退成功，全队沿来路退到第一个没有敌人的房间（首个危险房间退回 01，不出地牢），0 额外分钟（B52a 起也没有收尾 tick）
             if (outcome == "retreat" && DungeonRetreatLanding(s, b) is string landed) fixedLines.Add(landed);
             // B22h（Q196 选 C）：普通主世界撤退成功退回开战快照锁定的来处（0 额外分钟，不是常规移动）；没有可返回的来路就留在原地并写明
             else if (outcome == "retreat" && WorldRetreatLanding(s, b) is string worldLanded) fixedLines.Add(worldLanded);
@@ -1542,7 +1512,7 @@ namespace Survival.Core.Engine
             // 撤退：只有场上确有倒下敌人的掉落/尸体时才写“放弃”（试玩修复 L3）
             var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品")
                 : b.Loot.Any(l => l.ItemId != null && l.Count > 0) ? "放弃了场上的尸体与掉落" : null;
-            var text = $"{head}：共{b.Round}回合（世界时间{Clock.Duration(b.Ticks * Tick)}）{(loss > 1e-9 ? $"，精神−{Fmt.N(loss)}" : "")}{(mateLoss.Count > 0 ? "，" + string.Join("、", mateLoss) : "")}{(loot != null ? "；" + loot : "")}{(fixedLines.Count > 0 ? "；" + string.Join("；", fixedLines) : "")}。";   // 试玩修复 B7c-1：精神没变时不写“精神−0.00”
+            var text = $"{head}：{BattleEndTimeText(b)}{(loss > 1e-9 ? $"，精神−{Fmt.N(loss)}" : "")}{(mateLoss.Count > 0 ? "，" + string.Join("、", mateLoss) : "")}{(loot != null ? "；" + loot : "")}{(fixedLines.Count > 0 ? "；" + string.Join("；", fixedLines) : "")}。";   // 试玩修复 B7c-1：精神没变时不写“精神−0.00”
             BattleLog(s, text);
             s.Battle = null;
             Emit(s, GameEventKind.BattleEnd, text, null, outcome == "victory" ? b.Loot.Where(l => l.ItemId != null).Select(l => l.ItemId!) : null);

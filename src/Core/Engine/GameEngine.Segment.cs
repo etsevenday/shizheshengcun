@@ -205,7 +205,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 推进一个 5 分钟段（求生案 06 每个5分钟段）：先做一次世界 tick（WorldTick），再累积主行动进度与提交结果。
-        /// 战斗中与敌踪待选时不经这里推进，战斗每轮结束自己调用一次 WorldTick（v0.6 §07、§16）。
+        /// 战斗中与敌踪待选时不经这里推进；B52a（R03 Q735）起战斗轮末与收束也不再调用 WorldTick，实际战斗中世界时间冻结。
         /// </summary>
         public SegmentResult Advance(GameState s)
         {
@@ -295,7 +295,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 单段世界 tick（v0.6 §16 建议顺序）：段首快照 → 身体/燃料/药物时间/免疫/病毒 → 终局判定 → 自然治愈 →
-        /// 清理及资源恢复 → 设施加工提交（死亡先于本段未提交产物）→ 敌人刷新/巡游。主行动推进与战斗轮末都调用它，每段只结算一次。
+        /// 清理及资源恢复 → 设施加工提交（死亡先于本段未提交产物）→ 敌人刷新/巡游。只由战外 5 分钟段调用（B52a 起战斗不再调用），每段只结算一次。
         /// 多角色（R08 §2、COMP04，开发计划 v0.9 B3 H10）：世界部分（时间、燃料、设施、清理、刷新）每段只推进一次；
         /// 身体部分对 Party 每人各结算一次（ApplyRates/TickBody/终局/自然治愈），速率由 ctxOf 按各自段首状态给出。只有主角时与单人版逐段一致。
         /// 返回 false 表示本段主角死亡或尸变（已锁局）。
@@ -313,7 +313,7 @@ namespace Survival.Core.Engine
         {
             var party = s.PartyActors.ToList();
             var ctxs = party.Select(ctxOf).ToList();
-            // 候补（B8，R08 §3、A11 §5.3；Q90/B8c）：同一世界 tick 里按自主 rest/sleep 与营区实际设施各结算一次（战斗轮末也一样，不吃战斗 N/W 冻结）
+            // 候补（B8，R08 §3、A11 §5.3；Q90/B8c）：同一世界 tick 里按自主 rest/sleep 与营区实际设施各结算一次（B52a 起战斗中世界冻结，不结算）
             var reserves = ReserveActors(s);
             var rctxs = reserves.Select(a => ReserveSegment(s, a)).ToList();
             // 段首：火堆加工资格与身体快照（免疫、病毒按段首状态计算）

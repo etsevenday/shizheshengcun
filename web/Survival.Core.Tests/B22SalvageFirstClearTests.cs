@@ -76,13 +76,13 @@ public class B22SalvageFirstClearTests : BattleTestBase
     {
         var s = At("d01_07", 3);
         Assert.That(E.EngageFixed(s).Ok, Is.True);
-        typeof(GameEngine).GetMethod("FinishBattle", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, "retreat", true });
+        typeof(GameEngine).GetMethod("FinishBattle", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, "retreat" });
         Assert.That(s.Items.Any(i => i.ItemId == "cloth" && i.RewardOrigin != null), Is.False);
         E.DebugInstanceFact(s, "d01", "guardianDefeated");
         Assert.That(E.SalvageClaimed(s, "d01"), Is.False, "开发事实不发掉落");
     }
 
-    /// <summary>EC14：主角在守卫战最后一个 tick 死亡——终局优先，不发守卫回收材料（不先发未来奖）。</summary>
+    /// <summary>EC14：原“主角在守卫战最后一个 tick 死亡”——B52a（R03 Q735）起胜利收束没有世界 tick，饥渴等自然小时伤害战中不结算，濒死主角不会因收尾死亡。</summary>
     [Test]
     public void EC14_DeathInFinalTick_NoSalvage()
     {
@@ -93,10 +93,10 @@ public class B22SalvageFirstClearTests : BattleTestBase
         s.Player.Stats.Set(StatId.Wakefulness, 0);
         s.Player.Stats.Set(StatId.Health, 0);   // B47a1：已濒死 + 饥渴正伤 → 致死判定失败
         FailDeathRolls();
+        var t0 = s.GameMinute;
         WinBattle(s);
-        Assert.That(s.Progress.Dead, Is.True);
-        Assert.That(E.SalvageClaimed(s, "d01"), Is.False);
-        Assert.That(s.Items.Any(i => i.ItemId == "cloth" && i.RewardOrigin != null), Is.False);
+        Assert.That(s.Progress.Dead, Is.False, "B52a 按 R03 Q735 改写：收尾不推进世界时间，不结算零值小时伤害");
+        Assert.That(s.GameMinute, Is.EqualTo(t0));
     }
 
     /// <summary>

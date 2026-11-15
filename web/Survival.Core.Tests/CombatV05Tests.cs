@@ -326,7 +326,7 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(s.GameMinute, Is.EqualTo(m0), "确认时不推进时间");
         Assert.That(s.Stats.Health, Is.GreaterThan(15));
         while (s.Battle!.Round == 1) Step(s);
-        Assert.That(s.GameMinute, Is.EqualTo(m0 + 5), "轮末一次5分钟");
+        Assert.That(s.GameMinute, Is.EqualTo(m0), "B52a 按 R03 Q735 改写：轮末也不推进世界时间");
         Assert.That(E.Start(s, ActionRequest.UseItem("bandage")).Ok, Is.False, "战斗中不走旧5分钟自用");
     }
 
@@ -362,8 +362,8 @@ public class CombatV05Tests : BattleTestBase
             if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; }
             Step(s);
         }
-        Assert.That(E.ProcessOf(s, pot)!.HeatDoneMinutes - heat0, Is.EqualTo(5), "料理只推进5分钟");
-        Assert.That(fac.FuelMinutes, Is.EqualTo(55));
+        Assert.That(E.ProcessOf(s, pot)!.HeatDoneMinutes - heat0, Is.EqualTo(0), "B52a 按 R03 Q735 改写：火堆加工战中不推进");
+        Assert.That(fac.FuelMinutes, Is.EqualTo(60), "燃料战中不燃烧");
         Assert.That(e0 - s.Stats.Energy, Is.EqualTo(cost).Within(1e-9), "轮末 tick 体力自然率0");
     }
 
@@ -379,7 +379,7 @@ public class CombatV05Tests : BattleTestBase
         Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
         Cmd(s, "basic_attack", 1);
         Assert.That(s.Battle, Is.Null);
-        Assert.That(s.GameMinute, Is.EqualTo(m0 + 5));
+        Assert.That(s.GameMinute, Is.EqualTo(m0), "B52a 按 R03 Q735 改写：提前胜利没有收尾 5 分钟");
     }
 
     /// <summary>B518 世界 tick 伤害导致死亡：优先死亡，无胜利掉落或复活。</summary>
@@ -394,8 +394,7 @@ public class CombatV05Tests : BattleTestBase
         FailDeathRolls();
         Force(s, Below(0.01), AtLeast(0.99), Any(), Below(0.5));
         Cmd(s, "basic_attack", 1);
-        Assert.That(s.Progress.Dead, Is.True, "退出时的 tick 致死");
-        Assert.That(s.Items.Count(i => i.Owner == "field" && i.ItemId is "cloth" or "scrap"), Is.EqualTo(0), "不提交掉落");
+        Assert.That(s.Progress.Dead, Is.False, "B52a 按 R03 Q735 改写：退出时没有世界 tick，零值小时伤害战中不结算");
         Assert.That(s.Battle, Is.Null);
     }
 

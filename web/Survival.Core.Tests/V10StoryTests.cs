@@ -198,16 +198,14 @@ public class V10StoryTests : BattleTestBase
         var s = NewStory(8);
         ToField(s);
         for (var i = 0; i < 20 && s.Battle != null && !E.AwaitingPlayer(s); i++) E.BattleStep(s);
-        // 饱食为0、健康极低：胜利那一刻的轮末 tick 致死
+        // 饱食为0、健康极低：B52a（R03 Q735）起胜利收束没有世界 tick，不会因此死亡
         s.Stats.Satiety = 0;
         s.Stats.Health = 0;   // B47a1：已濒死 + 饥饿正伤 → 段末致死判定失败
         FailDeathRolls();
         s.Battle!.Enemies[0].Hp = 0.01;
         Force(s, Below(0.2), AtLeast(0.6), Any());
         Cmd(s, "basic_attack", s.Battle.Enemies[0].Index);
-        Assert.That(s.Progress.Dead, Is.True);
-        Assert.That(s.Items.Any(i => i.ItemId == Sub), Is.False, "胜利轮 tick 致死不发");
-        Assert.That(s.Story.TutorialWon, Is.False);
+        Assert.That(s.Progress.Dead, Is.False, "B52a 按 R03 Q735 改写：饥饿零值小时伤害战中不结算");
     }
 
     [Test]

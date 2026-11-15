@@ -1500,7 +1500,7 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q243_02_RetreatAway_Cancelled()
     {
         var s = BlockedEnd(WalkedIntoOffice());
-        typeof(GameEngine).GetMethod("FinishBattle", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, "retreat", true });
+        typeof(GameEngine).GetMethod("FinishBattle", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, "retreat" });
         Assert.That(s.CurrentLocation, Is.EqualTo("h02_square"));
         Assert.That((E.DialogueLocked(s), Deferred(s)), Is.EqualTo((false, 0)));
         Walk(s, Office);

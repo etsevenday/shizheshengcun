@@ -140,7 +140,6 @@ public class B3ActorTests : TestBase
         s.PatrolNextCheck = int.MaxValue;
         var p1 = InjectCompanion(s);
         var minute = s.GameMinute;
-        var ctxSat = Cfg.BattleTime.HourlyRates.Satiety * 5 / 60.0;
         var sat0 = p1.Stats.Satiety;
         E.DebugTeleport(s, "field");
         s.WorldEnemies.Clear();
@@ -148,13 +147,13 @@ public class B3ActorTests : TestBase
         s.GameMinute = At(2, 9, 0);
         minute = s.GameMinute;
         Assert.That(E.Approach(s, w.Id).Ok, Is.True);
-        for (var i = 0; i < 50 && s.Battle != null && s.Battle.Ticks == 0; i++)
+        for (var i = 0; i < 50 && s.Battle != null && s.Battle.Round == 1; i++)
         {
             if (E.AwaitingPlayer(s)) E.ExecuteCommand(s, BattleCommand.Of("end_turn"));
             else E.BattleStep(s);
         }
-        Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "一轮只推进一次 5 分钟");
-        Assert.That(p1.Stats.Satiety, Is.EqualTo(sat0 + ctxSat).Within(1e-9), "队友按战斗段速率结算一次");
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "B52a 按 R03 Q735 改写：轮末不推进世界时间");
+        Assert.That(p1.Stats.Satiety, Is.EqualTo(sat0).Within(1e-9), "队友自然率战中不结算");
     }
 
     [Test]

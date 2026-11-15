@@ -46,7 +46,7 @@ public class B21RetreatTests : BattleTestBase
         FightAndRetreat(s, true);
         Assert.That(s.Battle, Is.Null);
         Assert.That(s.CurrentLocation, Is.EqualTo("d01_01"), "回 01，不直接穿出外部边界");
-        Assert.That(s.GameMinute - t0, Is.EqualTo(5), "唯一 tick，不另加 5 分钟路程");
+        Assert.That(s.GameMinute - t0, Is.EqualTo(0), "B52a 按 R03 Q735 改写：0 额外分钟，撤下旧收尾 tick，不另加路程");
         Assert.That(s.Expedition!.Id, Is.EqualTo(id), "不结束远征");
         Assert.That(s.Expedition.Trail, Is.EqualTo(new[] { "d01_01" }));
         Assert.That(s.Stats.Satiety, Is.GreaterThan(n0 - 1), "不扣终止包");

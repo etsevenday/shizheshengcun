@@ -448,7 +448,8 @@ namespace Survival.Core.State
         /// <summary>旧档进行中的战斗较早记录可能已被旧版 80 条截存删掉（只有 LogComplete == false）。</summary>
         [Newtonsoft.Json.JsonIgnore]
         public bool LogMayBeIncomplete => LogComplete == false;
-        /// <summary>本场已结算的世界 tick 次数（每有效轮一次）。</summary>
+        /// <summary>本场已结算的世界 tick 次数（旧规则每有效轮一次）。B52a（R03 Q735）起战斗冻结世界时间，新战斗恒为 0、旧在战存档的值只读保留不再增长，
+        /// 只用于显示可信旧已耗（×5 分钟）。</summary>
         public int Ticks { get; set; }
         /// <summary>本场累计：攻击次数、消耗弹药、获得经验等，结束时写进结果。</summary>
         public int ShotsFired { get; set; }

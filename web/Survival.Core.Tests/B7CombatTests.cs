@@ -735,8 +735,8 @@ public class B7CombatTests : BattleTestBase
             Step(s);
         }
         Assert.That(b.Round, Is.EqualTo(r0 + 1));
-        Assert.That(b.Ticks - t0, Is.EqualTo(1));
-        Assert.That(s.GameMinute - m0, Is.EqualTo(5));
+        Assert.That(b.Ticks - t0, Is.EqualTo(0), "B52a 按 R03 Q735 改写：轮末不再结算世界 tick");
+        Assert.That(s.GameMinute - m0, Is.EqualTo(0));
     }
 
     /// <summary>R03 §5 撤退公式（B6-17 保留）对新敌人照算：sigmoid((己速−敌方最高速)/3+0.7)×恐慌×低体力。</summary>
