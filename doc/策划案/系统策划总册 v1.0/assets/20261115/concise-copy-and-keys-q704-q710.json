@@ -1,0 +1,130 @@
+{
+  "contractVersion": 1,
+  "date": "2026-11-15",
+  "purpose": "策划辅助合同，不是运行配置；Q704—Q710完整两原批与用户全局精简裁定",
+  "canonicalUi": "../../01 基础系统/S14 主界面与全局UI交互系统.md",
+  "canonicalCopy": "../../../重墨像素风界面与卡片 v0.9/重墨 V2 开工裁定与界面逐字稿.md",
+  "decisions": {
+    "Q704": "A_with_new_global_concise_policy",
+    "Q705": "user_custom_global_rule_not_original_A_B_C",
+    "Q706": "A_with_concision",
+    "Q707": "A",
+    "Q708": "A",
+    "Q709": "A",
+    "Q710": "A"
+  },
+  "copy": {
+    "confirmBadge": "[空格]",
+    "confirmHint": "执行当前操作一次。",
+    "aimGuide": "选好目标，点击或按空格执行；右键/ESC取消。",
+    "aimDefault": "悬停亮起的敌人看预估，右栏看属性；点击或空格执行，ESC取消。",
+    "consoleGuide": "点击“{实际确认按钮业务文字}”或按空格确认；ESC取消。",
+    "firstBattle": "选攻击技能，悬停亮起的敌人看预估，点击或空格执行。防御、结束行动需再确认。",
+    "tutorialNote": "轮到我方时使用当前人物的AP。选技能后，悬停亮起的敌人看预估，右栏看属性；←/→切目标，点击或空格执行。自用或无目标指令需确认；对我方施放时点亮起的成员。AP用尽或确认“结束行动”后，战斗继续。",
+    "helpParallel": "并列选项不自动代选；Tab选择后再激活。",
+    "helpConfirm": "空格执行当前唯一确认。编辑、勾选、分支和菜单按当前控件操作。中央行动可用空格跳过动画，战斗出手不可跳过。",
+    "helpCompatibility": "Enter兼容确认，也可在支持提交的数量框内使用；空格在编辑框内用于输入。",
+    "helpCurrentRow": "当前确认 空格",
+    "helpDialogueRow": "继续／结束对话 空格",
+    "helpBattleRow": "执行（当前指令） 空格",
+    "cardQuantityHelp": "选中物品后，按数字键进入数量框；点确认执行，ESC退出。",
+    "battleAttackHelp": "选攻击技能，亮起的敌人可作为目标。悬停或←/→切目标，查看预计生命与敌人旁的战斗信息浮框；右栏看详细属性，预测详情看逐项来源。点击目标、点“执行{指令名}”或按空格执行。未选技能时点敌人只查看；只剩一名敌人也不自动攻击。右键/ESC取消瞄准，不耗AP。",
+    "battleNoTargetHelp": "防御、调息、装填、撤退需选中后再确认；按钮为“确认 · {指令名} · {AP}AP”，结束行动为“确认结束行动 · 剩余{AP}AP清零”。“医疗与物品”内药品仅当前行动者自用，战术物品每人每完整回合限1次，均需确认。对我方施放的技能，选中后点亮起的成员。",
+    "battleReadingHelp": "“战斗信息”查看对象和预测详情；“战报”看最近5条，点记录或“全记录”看本场完整记录，均只读。“系统说明”从右上“菜单”打开，阅读时敌方暂停。1—5选技能，Q/E切武器页，←/→切目标，空格执行或确认，ESC逐层返回；不能借此脱战。"
+  },
+  "visibleKeys": {
+    "primary": "Space",
+    "badge": "[空格]",
+    "placementOwner": "总控",
+    "askUserForRoutinePlacement": false,
+    "showEnterInGameplay": false,
+    "showEnterInGameplayTooltip": false,
+    "showEnterWhileEditing": false,
+    "showSpaceWhileEditing": false,
+    "compatibilityHelpOnlyTopic": "系统说明/键盘快捷键",
+    "compatibilityHelpOccurrences": 1,
+    "enterOperationRemoved": false,
+    "otherDedicatedHotkeysUnchanged": true,
+    "maxPrimaryBadgePerActiveConfirmScope": 1,
+    "requiresEnabledValidExistingDefaultConfirm": true,
+    "multipleUnchosenOptionsGetDefault": false,
+    "existingPotLayerNoUnfocusedDefaultUnchanged": true
+  },
+  "accessibility": {
+    "preserveActualKeyMetadata": true,
+    "nonEditingIfActual": "Space Enter",
+    "editingIfOnlyEnterAccepted": "Enter",
+    "visibleTooltipException": false,
+    "multipleButtonsBecomeGlobalDefaults": false
+  },
+  "focus": {
+    "Q708": {
+      "trigger": "mouse_open_bottom_battle_info_during_valid_pending_command",
+      "target": "safe_current_battle_background",
+      "preserve": [
+        "information_expansion",
+        "actor",
+        "command",
+        "weapon_page",
+        "explicit_target"
+      ],
+      "openExecutes": false,
+      "nextIndependentKeyUsesOriginalValidation": true,
+      "tabChosenTabSemanticsUnchanged": true,
+      "Q618NoCommandViewingUnchanged": true,
+      "higherLayersTakePriority": true
+    },
+    "Q709": {
+      "trigger": "close_battle_menu_home_during_same_valid_dialogue_by_ESC_or_return",
+      "target": "same_dialogue_body",
+      "preserve": [
+        "line",
+        "reading_position",
+        "progress"
+      ],
+      "restoreAdvances": false,
+      "submenuEscStillOneLayer": true,
+      "invalidOldDialogueFallsBackToCurrentLegalLayer": true,
+      "staleFocusAfterLoadRetained": false
+    }
+  },
+  "healthRedLine": {
+    "dyingReserveAndResidentCoveredByQ698": true,
+    "latchStillRecorded": true,
+    "clearOnlyAtOriginalRecoveryCondition": true,
+    "otherAlertsUnchanged": true,
+    "newDyingPauseEligibilityUnchanged": true
+  },
+  "oldSave": {
+    "schemaChange": false,
+    "rewriteHistory": false,
+    "replayOldGuidance": false,
+    "regenerateCurrentUi": true,
+    "focusIsTransient": true
+  },
+  "invariants": {
+    "timeAndCostsUnchanged": true,
+    "randomOrderUnchanged": true,
+    "oneRequestPerIndependentInput": true,
+    "actualFailureReasonsPreserved": true,
+    "combatPlaybackUnskippable": true,
+    "otherUnansweredQuestionsLeftPending": true
+  },
+  "acceptance": [
+    "Q704-A01",
+    "Q705-A01",
+    "Q705-A02",
+    "Q705-A03",
+    "Q705-A04",
+    "Q706-A01",
+    "Q707-A01",
+    "Q707-A02",
+    "Q708-A01",
+    "Q708-A02",
+    "Q709-A01",
+    "Q709-A02",
+    "Q710-A01",
+    "Q710-A02"
+  ],
+  "runtimeTestsPerformed": false
+}
