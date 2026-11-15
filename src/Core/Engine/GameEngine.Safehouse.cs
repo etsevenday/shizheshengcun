@@ -345,6 +345,28 @@ namespace Survival.Core.Engine
             return $"开发：陶窑11批（黏土22、木炭11）与净水台11批（脏水44、过滤材料11）原料放在{ZoneName(s, s.Ground)}地面";
         }
 
+        /// <summary>
+        /// 开发（B51b 试存档 54→55 迁移）：把当前区陶窑／净水台的在办批改成旧档串行队列——每座第一批保持加工中与原进度，其余标为排队（进度 0），
+        /// 去掉这些批输入的暂停保质，存档版本记为 54。只供试读档迁移：之后请立刻保存并重新读档（读档时按 54→55 迁移转为并行）。
+        /// </summary>
+        public string DebugLegacyStationQueue(GameState s)
+        {
+            var fac = FacOf(s, s.Ground);
+            if (fac == null || fac.StationBatches.Count == 0) return "开发：当前区的陶窑／净水台没有在办批次，先投料（至少一座两批）";
+            var queued = 0;
+            foreach (var g in fac.StationBatches.GroupBy(b => b.StationId))
+                foreach (var b in g.Skip(1))
+                {
+                    b.Queued = true;
+                    b.DoneMinutes = 0;
+                    queued++;
+                }
+            var ids = fac.StationBatches.Select(b => b.BatchId).ToHashSet();
+            foreach (var it in s.Items.Where(i => i.ReservedBy is int rb && ids.Contains(rb) && i.ShelfPausedMinutes != null)) it.ShelfPausedMinutes = null;   // 54 前设施批输入没有暂停保质（原截止 E 保留）
+            s.SchemaVersion = Survival.Core.Save.SaveMigrator.Schema54;
+            return $"开发：已改成旧档（存档54）排队状态：{queued}批排队，各座第一批保持加工中；请立刻保存并重新读档，读档时按 54→55 迁移为并行";
+        }
+
         /// <summary>开发：野营遮雨布、折叠柴炉各一（当前地面）与木材2。</summary>
         public string DebugCampingKit(GameState s)
         {

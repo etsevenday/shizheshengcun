@@ -178,4 +178,21 @@ public class B51bTests : TestBase
         Assert.That(Sum(again, "clean_water"), Is.EqualTo(8), "旧等候批从升级起各自 30 分钟完成；含升级前已到期输入的那批按原路径失败");
         Assert.That(again.Log.Any(l => l.Text.Contains("原料不全")), Is.True);
     }
+    /// <summary>开发入口（?dev=1）：在办批改成旧档排队、版本记 54；保存后重新读档按 54→55 迁移为并行。</summary>
+    [Test]
+    public void Dev_LegacyStationQueue_RoundTripMigrates()
+    {
+        var s = Workshop();
+        Assert.That(E.DebugLegacyStationQueue(s), Does.Contain("没有在办批次"));
+        WaterInputs(s, 2);
+        Ok(E.StartStationBatch(s, Water, "m", 2));
+        AdvanceTo(s, s.GameMinute + 10);
+        Assert.That(E.DebugLegacyStationQueue(s), Does.Contain("1批排队"));
+        Assert.That(s.SchemaVersion, Is.EqualTo("54"));
+        Assert.That(Batches(s, "water_station").Select(b => (b.Queued, b.DoneMinutes)), Is.EqualTo(new[] { (false, 10), (true, 0) }));
+        var back = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(back.SchemaVersion, Is.EqualTo("55"));
+        Assert.That(Batches(back, "water_station").Select(b => (b.Queued, b.DoneMinutes, b.StartMinute)),
+            Is.EqualTo(new[] { (false, 10, Batches(s, "water_station")[0].StartMinute), (false, 0, back.GameMinute) }));
+    }
 }
