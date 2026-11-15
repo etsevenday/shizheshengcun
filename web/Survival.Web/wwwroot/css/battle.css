@@ -432,6 +432,8 @@
 .bi-body { max-height: min(56vh, 520px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
 .bi-body .detail-body { display: flex; flex-direction: column; }
 .bi-body .detail-scroll { overflow: visible; }
+/* B49 试玩修复（战中敌人详情加传播段后底部说明压在「恐慌」等行上）：阅读区由 .bi-body 整体滚动，内层不再被压到可视高度 */
+.bi-body :is(.detail-body, .detail-scroll) { flex: 0 0 auto; }
 .bi-rows { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-body); line-height: 1.45; }
 .bi-row { display: grid; grid-template-columns: 9em minmax(0, 1fr); gap: 8px; padding: 2px 0; border-bottom: 1px solid #ffffff10; }
 .bi-row > span { color: var(--muted); }

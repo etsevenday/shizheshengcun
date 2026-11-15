@@ -264,4 +264,14 @@ public class B49UiTests : B41cTestBase
     {
         Assert.That(E.EnemyPublicTraits(E.Enemy("z_bloater")), Has.Some.EqualTo("死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害0.30，护甲照常计算；造成正伤害时可能传播病毒。因流血等伤害型负面状态、反击或迎击死亡时不触发。"));
     }
+
+    /// <summary>B49 试玩修复：1280×720 敌踪处理盘按内容长高、放不下才滚动；战中阅读区内层不再被压到可视高度（底部说明不压行）。</summary>
+    [Test]
+    public void PlaytestFix_PopHeightAndBattleInfoFoot()
+    {
+        var shell = Web("wwwroot", "css", "shell.css");
+        Assert.That(shell, Does.Contain(".wasteland .apop.apop-c.enemycard { height: fit-content; min-height: min(var(--pop-h), calc(100vh - 16px)); max-height: calc(100vh - 16px); }"));
+        Assert.That(shell, Does.Contain("no-repeat local,"), "底部阴影只在还能往下滚时出现");
+        Assert.That(Web("wwwroot", "css", "battle.css"), Does.Contain(".bi-body :is(.detail-body, .detail-scroll) { flex: 0 0 auto; }"));
+    }
 }
