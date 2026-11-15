@@ -205,12 +205,12 @@ public class B47a3Tests : BattleTestBase
         var p = E.Preview(s, ActionRequest.Explore());
         Assert.That(p.BodyCutoffMinutes, Is.EqualTo(5), "取同行者中最早的危险段");
         Assert.That(p.BodyRisks, Is.EqualTo(new[] { Enter(name, 83) }));
-        Assert.That(p.LaterRisks, Is.EqualTo(new[] { Enter("你", 65) }));
+        Assert.That(p.LaterRisks, Is.EqualTo(new[] { "约15分钟后：" + Enter("你", 65) }), "B51b（Q702）：前缀从现在到本人首风险段末");
         Assert.That(p.StatsAfter.Health, Is.EqualTo(0.45 - 2.0 * 5 / 60).Within(1e-9), "主角身体只到共同截止");
         var flat = p.Warnings;
         var note = flat.IndexOf("以下为各人截至计划结束的首个风险检查，不表示已预估危险处以后的身体数值。");
         Assert.That(note, Is.GreaterThan(flat.IndexOf(Enter(name, 83))));
-        Assert.That(flat[note + 1], Is.EqualTo(Enter("你", 65)));
+        Assert.That(flat[note + 1], Is.EqualTo("约15分钟后：" + Enter("你", 65)), "紧凑摊平同源带前缀");
         Assert.That(flat.Count(x => x == GameEngine.ResistanceMeaning), Is.EqualTo(1), "抵抗含义只附一次");
     }
 

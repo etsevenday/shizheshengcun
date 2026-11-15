@@ -833,6 +833,7 @@ namespace Survival.Core.Engine
 
             // 归零优先于普通提醒
             triggers = triggers.OrderBy(t => t.zero ? 0 : 1).ToList();
+            if (s.SimCopy) s.SimProbe?.Alerts.AddRange(triggers.Select(t => (t.actor.Id, t.stat, t.zero)));   // B51b（Q728）：预估副本记下本边界全部触发
             foreach (var t in triggers)
                 Emit(s, GameEventKind.Alert, ActorPrefix(t.actor) + AlertText(t.stat, t.zero), t.stat);
 

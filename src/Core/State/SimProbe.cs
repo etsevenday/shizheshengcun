@@ -27,5 +27,11 @@ namespace Survival.Core.State
 
         /// <summary>Q684：副本里病毒量已到尸变上限的人物（不在副本里尸变／离队，只记风险）。</summary>
         public HashSet<string> Virus { get; } = new HashSet<string>();
+
+        /// <summary>
+        /// B51b（R09 Q728、Q703）：每个边界按原规则收集到的全部提醒触发（人物稳定 ID、属性、是否归零类），按原排序（归零类先、类内原触发顺序）；
+        /// 不只最终暂停的那一条。
+        /// </summary>
+        public List<(string ActorId, StatId Stat, bool Zero)> Alerts { get; } = new List<(string, StatId, bool)>();
     }
 }

@@ -45,6 +45,9 @@ namespace Survival.Core.Engine
         /// <summary>Q675：撤出原复合风险句拆出的身体／感染机制说明。</summary>
         public const string ExtractBodyMechanism = "已经归零的饱食、水分、清醒继续扣健康，出血、感染与病毒照常发展。";
 
+        /// <summary>R09 Q702：“各人风险”逐条前缀“约{时长}后：”（时长＝本人首风险段末−本次预估起点，原游戏时长格式）。</summary>
+        public static string LaterRiskPrefix(int minutes) => $"约{Clock.Duration(minutes)}后：";
+
         /// <summary>普通行动共同身体截止：“身体预估截至从现在起{时长}；此后身体变化未预估。”</summary>
         public static string BodyCutAtText(int minutes) => $"身体预估截至从现在起{Clock.Duration(minutes)}；此后身体变化未预估。";
 
@@ -92,7 +95,11 @@ namespace Survival.Core.Engine
             /// <summary>Q687：仅概率伤可能归零的人物与首次段号。</summary>
             public readonly Dictionary<string, int> ProbabilityZero = new Dictionary<string, int>();
             /// <summary>行动暂停在提醒阈值上的（段号, 属性）。</summary>
-            public readonly List<(int Seg, StatId Stat)> Alerts = new List<(int, StatId)>();
+            /// <summary>
+            /// B51b（Q728、Q703）：主行动因该边界暂停（提醒、归零或濒死）时，该边界按原规则收集、且从预估起点看是真实未来跨线的全部触发（段、人物、属性），
+            /// 按段与原触发顺序（归零类先）。
+            /// </summary>
+            public readonly List<(int Seg, string ActorId, StatId Stat)> Alerts = new List<(int, string, StatId)>();
             public HashSet<string> Virus = new HashSet<string>();
             /// <summary>完成计划求得可信完成（行动正常完成）。</summary>
             public bool Done;
@@ -113,6 +120,22 @@ namespace Survival.Core.Engine
             var seg = 0;
             var last = SegmentStatus.Running;
             string? resumeWhy = null;
+            // Q703：从预估起点按原阈值谓词（含等号）判断各人各属性是否“还在未越线一侧”；起点已在低值区的不算将来跨线，恢复到原解除条件后重获资格（同原锁存解除）
+            var armed = new Dictionary<(string, StatId, bool), bool>();
+            void Rearm(bool init)
+            {
+                foreach (var x in who)
+                {
+                    if (!c.Actors.TryGetValue(x, out var ac)) continue;
+                    foreach (var st in Stats.All)
+                        if (!Config.Thresholds[StatKey(st)].IsBelow(ac.Stats.Get(st))) armed[(x, st, false)] = true;
+                        else if (init) armed[(x, st, false)] = false;
+                    foreach (var st in ZeroStats)
+                        if (ac.Stats.Get(st) > 0) armed[(x, st, true)] = true;
+                        else if (init) armed[(x, st, true)] = false;
+                }
+            }
+            Rearm(true);
             for (var k = 0; k < SimLimit; k++)
             {
                 SimReadDialogues(c);
@@ -126,6 +149,7 @@ namespace Survival.Core.Engine
                 beforeSegment?.Invoke(c);
                 var d0 = probe.Dangers.Count;
                 var z0 = probe.ProbabilityZero.Count;
+                var a0 = probe.Alerts.Count;
                 last = Advance(c).Status;
                 seg++;
                 var fresh = false;
@@ -143,7 +167,17 @@ namespace Survival.Core.Engine
                 for (var i = z0; i < probe.ProbabilityZero.Count; i++)
                     if (who.Contains(probe.ProbabilityZero[i]) && !run.ProbabilityZero.ContainsKey(probe.ProbabilityZero[i])) run.ProbabilityZero[probe.ProbabilityZero[i]] = seg;
                 var now = sub ? c.Sub : c.Main;
-                if (!sub && now != null && now.ActionId == id && now.Status == ActionStatus.Paused && now.PauseStat is StatId ps) run.Alerts.Add((seg, ps));
+                // Q728：原机制在这一边界确实暂停本行动时，列出该边界全部有效触发（真实只停一次）；撤出、子行动、已完成的段原本不因此暂停，不列
+                var paused = !sub && now != null && now.ActionId == id && now.Status == ActionStatus.Paused
+                    && now.PauseReason is PauseReason.StatAlert or PauseReason.StatZero or PauseReason.Dying;
+                for (var i = a0; i < probe.Alerts.Count; i++)
+                {
+                    var (actorId, st, zero) = probe.Alerts[i];
+                    if (!who.Contains(actorId) || !armed.TryGetValue((actorId, st, zero), out var on) || !on) continue;
+                    armed[(actorId, st, zero)] = false;
+                    if (paused) run.Alerts.Add((seg, actorId, st));
+                }
+                Rearm(false);
             }
             run.Virus = new HashSet<string>(probe.Virus.Where(who.Contains));
             var end = sub ? c.Sub : c.Main;
@@ -162,9 +196,12 @@ namespace Survival.Core.Engine
         private void ApplyBodyForecast(GameState s, GameState c, ActionPreview p, ForecastRun run, IReadOnlyList<string> who)
         {
             var cut = run.CutSeg;
-            var alerts = run.Alerts.Where(x => cut == null || x.Seg <= cut.Value).Select(x => x.Stat).Distinct().ToList();
-            p.AlertsExpected = alerts;
-            foreach (var st in alerts) p.BodyAlerts.Add($"途中{StatName(st)}将越过提醒阈值，行动会暂停");
+            // Q703／Q728：只列身体共同截止以内的真实未来跨线，按人物＋属性各留首次（同属性两人不合并）；多于一名相关人物时带“{人物}：”
+            var alerts = run.Alerts.Where(x => cut == null || x.Seg <= cut.Value)
+                .GroupBy(x => (x.ActorId, x.Stat)).Select(g => g.First()).ToList();
+            p.AlertsExpected = alerts.Select(x => x.Stat).Distinct().ToList();
+            foreach (var x in alerts)
+                p.BodyAlerts.Add((who.Count > 1 ? $"{ActorDisplayName(s, x.ActorId)}：" : "") + $"途中{StatName(x.Stat)}将越过提醒阈值，行动会暂停");
             if (cut is int seg)
             {
                 var snap = run.Snapshots[seg];
@@ -177,7 +214,8 @@ namespace Survival.Core.Engine
             {
                 if (!run.First.TryGetValue(id, out var f)) continue;
                 var text = DyingRiskText(f.Kind, ActorDisplayName(s, id), ResistancePercent(s.Actors[id]), false);
-                if (cut == f.Seg) p.BodyRisks.Add(text); else p.LaterRisks.Add(text);
+                if (cut == f.Seg) p.BodyRisks.Add(text);
+                else p.LaterRisks.Add(LaterRiskPrefix(f.Minute - s.GameMinute) + text);   // Q702：从本次预估起点到本人首风险段末
             }
             if (p.BodyRisks.Count > 0 || p.LaterRisks.Count > 0) p.ResistanceNote = ResistanceMeaning;
             foreach (var id in who) if (run.Virus.Contains(id)) p.VirusRisks.Add(VirusRiskText(ActorDisplayName(s, id), false));

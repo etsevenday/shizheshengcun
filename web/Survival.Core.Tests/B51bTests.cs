@@ -14,6 +14,8 @@ public class B51bTests : TestBase
     private const string Water = "ex_station_water";
     private const string Kiln = "ex_ceramic_shell";
 
+    protected override bool NoEnemyApproach => true;
+
     private void Ok(ActionResult r) => Assert.That(r.Ok, Is.True, r.Reason);
 
     private static ActionRequest Craft(string id, int n = 1) => ActionRequest.Craft(id, null, null, n);
@@ -246,5 +248,99 @@ public class B51bTests : TestBase
         Assert.That(pops, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute) + \"到达\""));
         Assert.That(pops, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute) + \"完成\""));
         Assert.That(pops, Does.Contain("p.Ok && !p.PlanFailed && !e.IsDaylight(p.EstimatedEndMinute)"));
+    }
+    // ───────────── Q702／Q703／Q728：各人风险时间、阈值提醒本人身份与真实未来跨线 ─────────────
+
+    private static void Six(ActorState a, double n, double w, double e, double sl, double m, double h)
+    {
+        a.Stats.Set(StatId.Satiety, n);
+        a.Stats.Set(StatId.Hydration, w);
+        a.Stats.Set(StatId.Energy, e);
+        a.Stats.Set(StatId.Wakefulness, sl);
+        a.Stats.Set(StatId.Morale, m);
+        a.Stats.Set(StatId.Health, h);
+    }
+
+    /// <summary>荒地探索（白天）两人队：主角与同伴六项可设。</summary>
+    private (GameState s, ActorState me, ActorState mate) FieldPair()
+    {
+        var s = New();
+        E.DebugTeleport(s, "field");
+        s.GameMinute = 480;
+        E.DebugQuickParty(s, 2);
+        var me = s.Actors[GameState.PlayerId];
+        var mate = s.Actors[s.Party.Single(id => id != GameState.PlayerId)];
+        foreach (var a in new[] { me, mate }) { a.AlertLatched.Clear(); a.ZeroLatched.Clear(); }
+        return (s, me, mate);
+    }
+
+    /// <summary>Q702-A01：“各人风险”前缀“约{时长}后：”，时长用原游戏时长格式。</summary>
+    [Test]
+    public void Q702_LaterRiskPrefix_Format()
+    {
+        Assert.That(GameEngine.LaterRiskPrefix(30), Is.EqualTo("约30分钟后："));
+        Assert.That(GameEngine.LaterRiskPrefix(65), Is.EqualTo("约1小时5分后："));
+    }
+
+    /// <summary>
+    /// Q703-A01／Q728-A01：同一边界两人同属性、一人另一属性真实跨线，三条各带本人称呼、同属性两人不合并、按原触发顺序；
+    /// 预估只读；真实推进只暂停一次。
+    /// </summary>
+    [Test]
+    public void Q728_SameBoundary_AllTriggers_WithNames_PauseOnce()
+    {
+        var (s, me, mate) = FieldPair();
+        Six(me, 20.01, 90, 90, 90, 60, 100);
+        Six(mate, 20.01, 20.01, 90, 90, 60, 100);
+        var name = E.ActorDisplayName(s, mate.Id);
+        var before = SaveSerializer.Serialize(s);
+        var p = E.Preview(s, ActionRequest.Explore());
+        Assert.That(p.Ok, Is.True, p.Reason);
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "预估只读");
+        Assert.That(p.BodyAlerts, Is.EqualTo(new[]
+        {
+            "你：途中饱食将越过提醒阈值，行动会暂停",
+            $"{name}：途中饱食将越过提醒阈值，行动会暂停",
+            $"{name}：途中水分将越过提醒阈值，行动会暂停",
+        }));
+        Assert.That(p.AlertsExpected, Is.EqualTo(new[] { StatId.Satiety, StatId.Hydration }));
+        Assert.That(p.Warnings, Does.Contain($"{name}：途中水分将越过提醒阈值，行动会暂停"), "紧凑摊平同源");
+
+        Start(s, ActionRequest.Explore());
+        Run(s, autoResume: false);
+        Assert.That(s.Main, Is.Not.Null);
+        Assert.That(s.Main!.Status, Is.EqualTo(ActionStatus.Paused));
+        Assert.That(s.Log.Count(l => l.Text.Contains("已暂停")), Is.EqualTo(1), "真实只暂停一次");
+    }
+
+    /// <summary>Q703（单人）：只有一名相关人物时仍原句，不带人物前缀。</summary>
+    [Test]
+    public void Q703_SinglePerson_KeepsOriginalSentence()
+    {
+        var s = New();
+        E.DebugTeleport(s, "field");
+        s.GameMinute = 480;
+        SetStats(s, 100, 20.01, 90, 90, 90, 60);
+        s.Actors[GameState.PlayerId].AlertLatched.Clear();
+        var p = E.Preview(s, ActionRequest.Explore());
+        Assert.That(p.BodyAlerts, Is.EqualTo(new[] { "途中饱食将越过提醒阈值，行动会暂停" }));
+    }
+
+    /// <summary>
+    /// Q703-A02／Q728-A02：起点已低于等于原提醒条件（即便副本最初收集到旧低值提醒）不写“将越过”；另一人真实跨线照列。真实提醒与暂停不因筛选改变。
+    /// </summary>
+    [Test]
+    public void Q703_StartAlreadyLow_NotListed()
+    {
+        var (s, me, mate) = FieldPair();
+        Six(me, 20, 90, 90, 90, 60, 100);       // 饱食 20 已满足“≤20”提醒条件，锁存未置
+        Six(mate, 90, 20.01, 90, 90, 60, 100);
+        var name = E.ActorDisplayName(s, mate.Id);
+        var p = E.Preview(s, ActionRequest.Explore());
+        Assert.That(p.BodyAlerts, Is.EqualTo(new[] { $"{name}：途中水分将越过提醒阈值，行动会暂停" }));
+
+        Start(s, ActionRequest.Explore());
+        Run(s, autoResume: false);
+        Assert.That(s.Log.Any(l => l.Text.Contains("饱食")), Is.True, "真实世界照原锁存提醒（起点低值的提醒不被预估筛选去掉）");
     }
 }
