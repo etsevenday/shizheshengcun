@@ -168,7 +168,10 @@ public class B47a3Tests : BattleTestBase
         Assert.That(t.Main!.NoExit, Is.False, "预计长于 5 分钟：身体 10 分钟就截止也不锁");
     }
 
-    /// <summary>Q682：求不出可信完成（原料在途中腐败中止）——计划失败写原因，不列中途设施快照，开工估时同源不猜完成时刻。</summary>
+    /// <summary>
+    /// Q682 原例（原料在途中腐败中止）由 B51a（S08 Q701.4、Q701-A08）消除：开工原料暂停保质，预估副本同源建立 R，不再假失败；
+    /// 预估只读，不改真实原料。
+    /// </summary>
     [Test]
     public void Q682_PlanFailed_WhenActionAbortsMidway()
     {
@@ -176,12 +179,12 @@ public class B47a3Tests : BattleTestBase
         E.DebugGive(s, "cloth", 1);
         E.DebugGive(s, "herb", 1);
         foreach (var it in s.Items.Where(i => i.ItemId == "herb")) it.ExpiresAt = s.GameMinute + 5;
+        var before = Survival.Core.Save.SaveSerializer.Serialize(s);
         var p = E.Preview(s, ActionRequest.Craft("bandage"));
         Assert.That(p.Ok, Is.True, p.Reason);
-        Assert.That(p.PlanFailed, Is.True);
-        Assert.That(p.PlanFailReason, Does.Contain("原料已腐败"));
-        Assert.That(p.Warnings, Has.Some.StartsWith("按当前条件无法预估完成。"));
-        Assert.That(p.FacilityChanges, Is.Empty);
+        Assert.That(p.PlanFailed, Is.False, "B51a：原料暂停保质后不再因原截止假失败");
+        Assert.That(p.Warnings, Has.None.StartsWith("按当前条件无法预估完成。"));
+        Assert.That(Survival.Core.Save.SaveSerializer.Serialize(s), Is.EqualTo(before), "预估不写回真实 R");
     }
 
     // ───────────── Q686 同行者 ─────────────

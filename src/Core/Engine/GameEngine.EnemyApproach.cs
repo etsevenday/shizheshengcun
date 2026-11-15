@@ -402,6 +402,7 @@ namespace Survival.Core.Engine
                     ground ??= src;
                 }
                 else carried = true;
+                ResumeReleased(s, inst);   // B51a（Q701.1）：按原来源释放时恢复 C＋R
                 owners.Add(inst.Owner);
             }
             a.ReservedItemIds.Clear();

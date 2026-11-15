@@ -213,20 +213,25 @@ public class B41bResumeReturnTests : B41bTestBase
             carcass = E.CreateItems(g, "carcass_feral_dog", 1, "field").Single();
             return ActionRequest.Butcher(carcass.InstanceId);
         });
-        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将放弃本次处理。尸体会返还{Field}地面。保质期不刷新，不会获得产物。已耗时间不退。"));
+        // B51a（Q722／Q723）：返还分句后接只读恢复预告（现在立即退出的 C＋R），后果改「不会获得产物。」
+        var r0 = carcass!.ShelfPausedMinutes!.Value;
+        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将放弃本次处理。尸体会返还{Field}地面。野犬尸体×1退回后恢复剩余保质，预计保质到{Clock.DayTime(s.GameMinute + r0)}。不会获得产物。已耗时间不退。"));
         BackToField(s, id);
         s.Items.Remove(knife!);
         AssertBlocked(s, GameEngine.ResumeToolGone);
         s.Items.Add(knife!);
         var exp = carcass!.ExpiresAt;
+        // 旧档无保护的尸体到期（B51a 起新开工受 R 保护，不会按原截止腐败）
+        carcass.ShelfPausedMinutes = null;
         carcass.ExpiresAt = s.GameMinute;
         AssertBlocked(s, "尸体已腐败，不能处理");
         carcass.ExpiresAt = exp;
+        carcass.ShelfPausedMinutes = r0;
         Assert.That(E.ResumeBlockReason(s), Is.Null);
         Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消处理尸体。尸体已返还{Field}地面。保质期未刷新，没有产物。已耗时间保留。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消处理尸体。尸体已返还{Field}地面。野犬尸体×1恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r0)}。没有产物。已耗时间保留。"));
         Assert.That(carcass.Owner, Is.EqualTo("field"));
-        Assert.That(carcass.ExpiresAt, Is.EqualTo(exp));
+        Assert.That((carcass.ExpiresAt, carcass.ShelfPausedMinutes), Is.EqualTo(((int?)(s.GameMinute + r0), (int?)null)), "C＋R");
 
         // 随身尸体：解除预留留在随身
         var t = Field(3);
@@ -236,7 +241,7 @@ public class B41bResumeReturnTests : B41bTestBase
             return ActionRequest.Butcher(E.CreateItems(g, "carcass_feral_dog", 1, ItemInstance.Carried).Single().InstanceId);
         });
         Assert.That(E.Cancel(t).Ok, Is.True);
-        Assert.That(t.Log.Last().Text, Is.EqualTo("已取消处理尸体。尸体已解除预留，仍在随身。保质期未刷新，没有产物。已耗时间保留。"));
+        Assert.That(t.Log.Last().Text, Does.StartWith("已取消处理尸体。尸体已解除预留，仍在随身。野犬尸体×1恢复剩余保质，保质到").And.EndWith("。没有产物。已耗时间保留。"));
         Assert.That(t.Items.Single(i => i.ItemId == "carcass_feral_dog").Owner, Is.EqualTo(ItemInstance.Carried));
     }
 

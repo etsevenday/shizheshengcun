@@ -655,7 +655,7 @@ public class CombatV05Tests : BattleTestBase
         Steps(s, 2);
         E.Cancel(s);
         Assert.That(Count(s, "carcass_feral_dog", "camp"), Is.EqualTo(1), "取消返还原尸体");
-        Assert.That(First(s, "carcass_feral_dog").ExpiresAt, Is.EqualTo(exp), "保质期不刷新");
+        Assert.That(First(s, "carcass_feral_dog").ExpiresAt, Is.EqualTo(exp + 10), "B51a（Q701.1）：取消在释放分钟恢复 C＋R（开工后 10 分钟取消，截止顺延 10 分钟），不刷新完整保质");
         Assert.That(Count(s, "raw_meat"), Is.EqualTo(0));
         Start(s, ActionRequest.Butcher(carcass.InstanceId));
         Run(s);
@@ -669,6 +669,7 @@ public class CombatV05Tests : BattleTestBase
         E.CreateItems(t, "hatchet", 1, ItemInstance.Carried);
         Start(t, ActionRequest.Butcher(c2.InstanceId));
         c2.ExpiresAt = t.GameMinute + 10;
+        c2.ShelfPausedMinutes = null;   // B51a：模拟 54 前开工、没有保护的旧在办（新开工受 R 保护不会中途腐败）
         Run(t);
         Assert.That(Count(t, "raw_meat"), Is.EqualTo(0));
         // BM5b2（Q610）：腐败的尸体转为腐败物留地面，保留原每份克重

@@ -345,8 +345,9 @@ namespace Survival.Core.Engine
             // BM5b2（Q610）：预留里到期的输入先静默转为腐败物，再按原规则释放；结果句在原因后接停工分句
             var turned = hadMaterials && SpoilWorkInputs(s, a.ReservedItemIds.ToList());
             var staged = _stagedCancelNote = new List<string>();
+            var restored = _restoreSink = new List<ShelfRestore>();   // B51a（Q722／Q723）：本次实际恢复的保质
             try { Release(s, a, s.Ground); }
-            finally { _stagedCancelNote = null; }
+            finally { _stagedCancelNote = null; _restoreSink = null; }
             if (a.IsSub) s.Sub = null; else s.Main = null;
             var keptWork = a.IsSub ? null : RestoreStashedWork(s);
 
@@ -357,6 +358,7 @@ namespace Survival.Core.Engine
             {
                 if (kept) text += KeptReturnClause(s, a, src, true);
                 else text += a.Type == ActionType.Butcher ? $"尸体已返还{groundName}地面。" : $"预留材料已返还{groundName}地面。";
+                text += RestoreClauses(restored, false);   // B51a（Q722）：真实返还后接实际恢复保质，再原后果与已耗时间
             }
             text += a.Type switch
             {
@@ -364,7 +366,7 @@ namespace Survival.Core.Engine
                 ActionType.Build => "本次建造进度已清除，没有建成。",
                 ActionType.Repair => "未完成本次维护。",
                 ActionType.Salvage => "未获得拆解产物。",
-                ActionType.Butcher => "保质期未刷新，没有产物。",
+                ActionType.Butcher => ButcherResultAfter,   // B51a（逐字稿 B51 表）：撤旧「保质期未刷新」
                 ActionType.Explore => "探索度不变，未获得物资。",
                 ActionType.Clear => "未获得物资；已扣除的1次清理机会不返还。",
                 ActionType.Gather => "未获得产物。" + (hadStock ? "预留库存已释放。" : ""),

@@ -250,18 +250,28 @@ namespace Survival.Core.Engine
             return "";
         }
 
-        /// <summary>Q471 完整句：引句＋真实返还分句＋后果＋「已耗时间不退。」（预告）／「已耗时间保留。」（结果）。</summary>
-        private string KeptExitText(GameState s, ActionState a, (bool carried, string? ground) src, bool result)
+        // 逐字稿 B51 表：处理尸体引句与后果（取代 Q471／Q518 原「保质期不刷新／未刷新」后果）
+        public const string ButcherCancelLead = "已取消处理尸体。";
+        public const string ButcherExitLead = "退出将放弃本次处理。";
+        public const string ButcherPreviewAfter = "不会获得产物。";
+        public const string ButcherResultAfter = "没有产物。";
+
+        /// <summary>
+        /// Q471 完整句（B51a 按 Q722／Q723 拼接合同）：引句＋真实返还分句＋实际恢复保质分句＋后果＋「已耗时间不退。」（预告）／「已耗时间保留。」（结果）。
+        /// 结果的 restore 为本次真实恢复分句；预告不传，按现在立即退出的 C＋R 只读算（restorePreview）。
+        /// </summary>
+        private string KeptExitText(GameState s, ActionState a, (bool carried, string? ground) src, bool result, string? restore = null)
         {
             var (lead, after) = a.Type switch
             {
                 ActionType.Build => result ? ("已取消建造。", "本次建造进度已清除，没有建成。") : ("退出将放弃本次建造。", "本次建造进度会清除，不会建成。"),
                 ActionType.Repair => result ? ("已取消维护。", "未完成本次维护。") : ("退出将放弃本次维护。", "不会完成本次维护。"),
                 ActionType.Salvage => result ? ("已取消拆解。", "未获得拆解产物。") : ("退出将放弃本次拆解。", "不会获得拆解产物。"),
-                ActionType.Butcher => result ? ("已取消处理尸体。", "保质期未刷新，没有产物。") : ("退出将放弃本次处理。", "保质期不刷新，不会获得产物。"),
+                ActionType.Butcher => result ? (ButcherCancelLead, ButcherResultAfter) : (ButcherExitLead, ButcherPreviewAfter),
                 _ => result ? ("已取消制作。", "未生成半成品。") : ("退出将放弃本次制作。", "不会生成半成品。"),
             };
-            return lead + KeptReturnClause(s, a, src, result) + after + (result ? "已耗时间保留。" : "已耗时间不退。");
+            restore ??= result ? "" : RestorePreview(s, a, true);
+            return lead + KeptReturnClause(s, a, src, result) + restore + after + (result ? "已耗时间保留。" : "已耗时间不退。");
         }
 
         /// <summary>撤退离地保留、按 Q471 改写退出句的行动。</summary>

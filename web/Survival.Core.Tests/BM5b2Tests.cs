@@ -222,6 +222,8 @@ public class BM5b2Tests : TestBase
         var herb = First(s, "herb", ItemInstance.Carried);
         herb.ExpiresAt = s.GameMinute + 5;
         Start(s, ActionRequest.Craft("bandage"));
+        // B51a（S08 Q701.1）：新开工输入受 R 保护不会腐败；这里模拟 54 前开工、没有保护的旧在办预留（AbortSpoiled 只留给这种情况）
+        foreach (var it in s.Items.Where(i => i.ReservedBy == s.Main!.ActionId)) it.ShelfPausedMinutes = null;
         var xp = s.Skills.ToDictionary(k => k.Key, k => k.Value.Xp);
         var n0 = s.Log.Count;
         Run(s);

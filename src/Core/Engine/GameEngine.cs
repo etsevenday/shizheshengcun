@@ -1032,6 +1032,8 @@ namespace Survival.Core.Engine
             // B16 fixed_wait：固定等待不吃装备/节点倍率，也不用工作量余额（需求就是配方原分钟）
             if (p.CampingItem != null) a.LockedItemIds.Add(p.CampingItem.InstanceId);
             if (a.IsWorkType && !a.FixedWait) ReserveCarry(s, a, p.BaseWork);
+            // B51a（S08 文首 Q701.1）：成功开工的同一事务里暂停本单实际绑定输入的保质（R＝E−S；工具、维修目标、未投入余料不动）
+            if (ShelfPauseWork(a.Type)) PauseWorkInputs(s, a);
             if (!p.IsSub) RecordWorkOrigin(s, a);   // B41b（R05 Q440、Q466）：开工所在区、地牢世代与预留来源
             if (p.IsSub) s.Sub = a; else s.Main = a;
             a.NoExit = StartLocks(s, a);   // B41c2（S01 Q506、Q516）：成功开工同一事务认定，之后不重认
@@ -1061,13 +1063,16 @@ namespace Survival.Core.Engine
             // B41b（R05 Q466、Q471）：撤退离地保留的制作／建造／维护／拆解／处理尸体退出时按开工来源返还，结果用单套完整句
             var keptExit = KeptExitApplies(s, a);
             var keptSrc = keptExit ? KeptSources(s, a) : default;
+            var hadReserved = a.ReservedItemIds.Any(id => FindItem(s, id) is ItemInstance ri && ri.ReservedBy == a.ActionId);
+            var restored = _restoreSink = new List<ShelfRestore>();   // B51a（Q722／Q723）：本次实际恢复的保质
             try { Release(s, a, s.Ground); }
-            finally { _stagedCancelNote = null; }
+            finally { _stagedCancelNote = null; _restoreSink = null; }
+            var restoreText = RestoreClauses(restored, false);
             if (a.IsSub) s.Sub = null; else s.Main = null;
             // B41b（R05 Q472 第 5 条）：退出暂存期间的当前移动只取消移动；原工作随后放回主行动位、仍暂停，预留不被移动取消释放
             var keptWork = a.IsSub ? null : RestoreStashedWork(s);
 
-            string text = keptExit ? KeptExitText(s, a, keptSrc, true) : a.Type switch
+            string text = keptExit ? KeptExitText(s, a, keptSrc, true, restoreText) : a.Type switch
             {
                 ActionType.Travel => $"已取消移动，留在{LocName(a.SourceLocation)}；已经流逝的时间与身体消耗保留。",
                 ActionType.Explore => "已取消探索，探索度不变，未获得物资；已消耗的时间保留。",
@@ -1076,7 +1081,8 @@ namespace Survival.Core.Engine
                 ActionType.Craft => "已取消制作，预留材料已返还当前地面，未生成半成品。",
                 ActionType.Build => "已取消建造，预留材料已返还当前地面，进度归零，没有建成。",
                 ActionType.Sleep => "已提前醒来。",
-                ActionType.Butcher => "已取消处理尸体，尸体返还当前地面，保质期不变，没有产物。",
+                // B51a（逐字稿 B51 表、Q722 拼接合同）：引句＋原普通取消地面返还＋实际恢复保质＋后果＋已耗时间；没有可返尸体时省返还与恢复
+                ActionType.Butcher => ButcherCancelLead + (hadReserved ? $"尸体已返还{ZoneName(s, s.Ground)}地面。" : "") + restoreText + ButcherResultAfter + ElapsedKept,
                 ActionType.Survey => "已取消遗迹勘整，未获得经验，不占今日勘整次数；已消耗的时间保留。",
                 ActionType.WaitCook => $"已退出等待加工（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
                 // B15 试玩修复 M333：城市事项/委托工作写实际进行的时长，不写计划工时
@@ -1193,6 +1199,7 @@ namespace Survival.Core.Engine
                     if (inst == null) continue;
                     inst.ReservedBy = null;
                     inst.Owner = groundLocation;
+                    ResumeReleased(s, inst);   // B51a（Q701.1）：真实释放 C＋R
                 }
                 a.ReservedItemIds.Clear();
                 foreach (var o in owners) Normalize(s, o);
