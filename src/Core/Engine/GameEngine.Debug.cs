@@ -276,6 +276,41 @@ namespace Survival.Core.Engine
             }
         }
 
+        /// <summary>
+        /// B52b 开发入口（R09 文首 B47b Q732—Q734）：multi 主角健康0.01并饥饿缺水（下一段多原因镜头）；
+        /// zombie 一名同行者病毒到尸变线（下一段尸变镜头）；revive 主角健康0并给绷带（战外用药脱离濒死镜头）。
+        /// </summary>
+        public string DebugB52b(GameState s, string what)
+        {
+            var p = s.Actor(GameState.PlayerId);
+            if (IsDead(s, p)) return "本局已结束";
+            if (s.Battle != null) return "战斗中不能用";
+            switch (what)
+            {
+                case "multi":
+                    p.Stats.Health = 0.01; p.Stats.Satiety = 0; p.Stats.Hydration = 0; p.DyingNotified = false;
+                    return "主角健康→0.01、饱食与水分→0（开始任一行动，下一段多原因伤害镜头，开发用）";
+                case "zombie":
+                {
+                    if (!s.Party.Any(id => id != GameState.PlayerId)) DebugQuickParty(s, 2);
+                    var mate = s.Party.FirstOrDefault(id => id != GameState.PlayerId);
+                    if (mate == null) return "没有同行者";
+                    var a = s.Actor(mate);
+                    a.Body.Infected = true;
+                    a.Body.VirusLoad = Config.Infection.ZombificationAtLoad;
+                    return $"{ActorDisplayName(s, mate)}感染、病毒→{Fmt.T(Config.Infection.ZombificationAtLoad)}（开始任一行动，下一段尸变镜头，开发用）";
+                }
+                case "revive":
+                {
+                    p.Stats.Health = 0; p.DyingNotified = true; s.BandageReadyAt = s.GameMinute;
+                    var id = BandageItem?.Id ?? "bandage";
+                    CreateItems(s, id, 1, ItemInstance.Carried);
+                    return $"主角健康→0（濒死）、随身{ItemName(id)}+1、回血冷却清零（使用它试战外脱离濒死镜头，开发用）";
+                }
+                default: return "未知开发项";
+            }
+        }
+
         public string DebugSetSkillLevel(GameState s, string skillId, int level)
         {
             var lv = Math.Max(1, Math.Min(SkillCap(skillId), level));

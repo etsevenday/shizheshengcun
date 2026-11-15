@@ -71,6 +71,13 @@ namespace Survival.Core.Engine
         /// <summary>Q690：参考格正式文字“{L}级 · 致死抵抗{P}%”。</summary>
         public string WillpowerRefText(int level) => $"{level}级 · 致死抵抗{ResistancePercent(level)}%";
 
+        /// <summary>
+        /// B52b（R09 文首 B47b Q736 新增 C、A06 文首；逐字稿 willBottom）：意志页底部整行说明（替换通用的武器门类与公式尾句，其他技能页不动）。
+        /// 次数与日上限取本人原配置（当前 3 次、60 点）。
+        /// </summary>
+        public string WillpowerBottomText =>
+            $"受到敌人造成的正伤害，且该次出手结束时仍活着，才获得意志经验；同一敌人最多{DyingCfg.WillpowerMaxAwardsPerActorPerEnemy}次，每天最多{DyingCfg.WillpowerMaxXpPerActorPerDay}点。";
+
         /// <summary>R09／S14：意志当前主效果“致死抵抗{抵抗率}；濒死后每次受到正伤害时判定。”（本人实际等级派生）。</summary>
         public string WillpowerEffectText(ActorState actor) => $"{ResistanceShort(actor)}；濒死后每次受到正伤害时判定。";
 

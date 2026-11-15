@@ -36,7 +36,9 @@
                 <VitalIcon Stat="@key" />
                 <div class="vital-label">
                     <span>@ShellText.LeftStatName(id)</span>
-                    <b>@Ui.N(v) <small class="muted">/@Ui.T(s.Stats.Max(id))</small></b>
+                    @* B52b（R09 Q738）：常驻健康分数真濒死（H=0 且未确死）写“0/{上限} · 濒死”，恢复后撤下；正小数显示 0 不误标 *@
+                    @if (id == StatId.Health && e.IsDying(s, s.Player)) { <b>@GameEngine.DyingHealthText(s.Stats.Max(id))</b> }
+                    else { <b>@Ui.N(v) <small class="muted">/@Ui.T(s.Stats.Max(id))</small></b> }
                 </div>
                 @* 「偏低」「归零」移到条前，不和名称、数值抢一行（窄栏不折行） *@
                 @* B47b（R09 Q695）：主要状态仅濒死时直接露出「濒死」与本人「致死抵抗{抵抗率}」；正常存活不常驻抵抗率 *@

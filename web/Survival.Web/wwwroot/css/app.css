@@ -1590,6 +1590,9 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .growth-node p { margin: 0; font-size: var(--fs-aux); }
 .growth-node small { font-size: var(--fs-aux); }
 .growth-node em.ok { color: var(--accent); font-style: normal; }
+/* B52b（R09 Q736）：意志五个参考格——达到的点亮，未达到的暗淡；没有解锁字样 */
+.growth-will-ref { opacity: .55; border-style: dashed; }
+.growth-will-ref.attained { opacity: 1; border-style: solid; border-color: var(--accent); color: var(--accent); }
 .gear-slot { grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; padding: 2px 6px; }
 .gear-slot .gs-btns { grid-column: auto; }
 .gear-slot .gs-item small { flex-basis: 100%; }

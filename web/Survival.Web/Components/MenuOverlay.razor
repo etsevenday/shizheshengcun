@@ -234,6 +234,13 @@
                     <button class="secondary" title="留一名队友作候补、健康0.01且饥饿：开始任一行动，下一段在远处进入濒死（标识行“人物 · 地点”）" @onclick='() => DevDone(G.E.DebugB47b(G.S, "reserve"))'>候补健康→0.01并饥饿（试远处濒死镜头）</button>
                     <button class="secondary" title="组2人队、全部熟练度10级、技能器具一组放地面：装上后遇敌试14个支援技能" @onclick='() => DevDone(G.E.DebugB47b(G.S, "support"))'>支援技能全开（2人队＋10级＋器具）</button>
                 </div>
+                @* B52b：战斗真实生命反馈文字——多原因伤害、同伴尸变、战外用药脱离濒死的生命镜头（快进开着也照播） *@
+                <div class="eyebrow">战斗真实生命反馈（B52b）</div>
+                <div class="btn-row">
+                    <button class="secondary" title="开始任一行动：下一段标题「多原因伤害：饥饿、缺水」·「濒死」" @onclick='() => DevDone(G.E.DebugB52b(G.S, "multi"))'>主角健康→0.01并饥饿缺水（试多原因镜头）</button>
+                    <button class="secondary" title="开始任一行动：下一段标题「尸变：病毒」·「尸变」，标识行“人物 · 地点”" @onclick='() => DevDone(G.E.DebugB52b(G.S, "zombie"))'>同行者病毒→尸变线（试尸变镜头）</button>
+                    <button class="secondary" title="使用随身绷带：标题为绷带名，「+{回血}」「脱离濒死」" @onclick='() => DevDone(G.E.DebugB52b(G.S, "revive"))'>主角健康→0并给绷带（试战外脱离濒死）</button>
+                </div>
                 @* B47a2（R09 Q679）：死亡喷溅来源门槛——战斗中把在场敌人健康压到 0.1、挂出血，造主动击杀／出血致死／反击迎击致死的膨胀感染者 *@
                 <div class="eyebrow">喷溅来源、意志经验与濒死暂停（B47a2）</div>
                 <div class="btn-row">

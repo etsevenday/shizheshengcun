@@ -102,17 +102,15 @@
             @if (sk.Id == GameEngine.Willpower)
             {
                 @* B47b（R09 Q690、A06 文首）：意志——当前主效果、本人当日余额（满级／确死隐藏）与五个被动参考格（1／3／5／7／10级）。
-                   参考格只是同一被动轨的等级说明，没有施放／学习入口；样式沿原成长格（Q736 待答复，本批沿用节点卡的达到／未达到显示） *@
+                   参考格只是同一被动轨的等级说明，没有施放／学习入口。B52b（R09 Q736 新增 C）：五格只写“{L}级 · 致死抵抗{P}%”，
+                   本人达到该级就点亮，不写已解锁／未解锁与“需要意志{L}级（当前{n}级）” *@
                 <p class="growth-will-effect">@e.WillpowerEffectText(actor)</p>
                 @if (e.WillpowerDayLeft(s, actor) is int left) { <p class="growth-will-day">@e.WillpowerDayLeftText(left)</p> }
                 <div class="growth-nodes growth-will-refs">
                     @foreach (var rl in GameEngine.WillpowerRefLevels)
                     {
                         var on = sk.Level >= rl;
-                        <div class="growth-node @(on ? "unlocked" : "locked")" data-will-ref="@rl">
-                            <header><b>@e.WillpowerRefText(rl)</b><em class="@(on ? "ok" : "muted")">@(on ? "已解锁" : "未解锁")</em></header>
-                            @if (!on) { <small class="warn-text">@($"需要{sk.Name}{rl}级（当前{sk.Level}级）")</small> }
-                        </div>
+                        <div class="growth-node growth-will-ref @(on ? "attained" : "")" data-will-ref="@rl"><b>@e.WillpowerRefText(rl)</b></div>
                     }
                 </div>
             }
@@ -128,7 +126,8 @@
                     </div>
                 }
             </div>
-            <div class="tiny muted">经验只给实际出手/工作的本人；两件同门类武器不叠经验、不多解锁技能。命中、伤害等公式见系统说明。</div>
+            @* B52b（R09 Q736）：意志页底部整行换意志经验句，其他技能页原句不动 *@
+            <div class="tiny muted">@(sk.Id == GameEngine.Willpower ? e.WillpowerBottomText : "经验只给实际出手/工作的本人；两件同门类武器不叠经验、不多解锁技能。命中、伤害等公式见系统说明。")</div>
         </div>
     };
 

@@ -463,6 +463,44 @@ public class B52bTests : BattleTestBase
         Assert.That((r.Outcome, r.Life), Is.EqualTo(("heal", BattleFxLife.Revived)));
         Assert.That(E.DrainLifeFx(), Is.Empty);
     }
+
+    // ───────────── M998：Q736 意志页、Q738 常驻健康分数、开发入口 ─────────────
+
+    /// <summary>Q736-A02：意志页底部整行只有意志经验句（次数与日上限取配置），没有武器门类／公式尾句。</summary>
+    [Test]
+    public void Q736_A02_WillpowerBottomText()
+    {
+        Assert.That(E.WillpowerBottomText, Is.EqualTo("受到敌人造成的正伤害，且该次出手结束时仍活着，才获得意志经验；同一敌人最多3次，每天最多60点。"));
+        Assert.That(E.WillpowerBottomText, Does.Not.Contain("同门类武器").And.Not.Contain("公式"));
+        Assert.That(E.WillpowerRefText(1), Is.EqualTo("1级 · 致死抵抗65%"));
+        Assert.That(E.ResistancePercent(2), Is.EqualTo(67), "中间级仍按原公式");
+    }
+
+    /// <summary>B52b 开发入口：多原因、尸变、战外用药脱离濒死三项各能触发对应镜头。</summary>
+    [Test]
+    public void Dev_B52b_Entries()
+    {
+        var s = New(5241);
+        Assert.That(E.DebugB52b(s, "multi"), Does.Contain("多原因"));
+        E.DrainLifeFx();
+        Start(s, ActionRequest.Wait(30));
+        E.Advance(s);
+        Assert.That(E.DrainLifeFx().Single().Name, Is.EqualTo("多原因伤害：饥饿、缺水"));
+
+        var z = New(5242);
+        Assert.That(E.DebugB52b(z, "zombie"), Does.Contain("尸变"));
+        E.DrainLifeFx();
+        Start(z, ActionRequest.Wait(30));
+        E.Advance(z);
+        Assert.That(E.DrainLifeFx().Single().Name, Is.EqualTo(GameEngine.ZombieLifeTitle));
+
+        var r = New(5243);
+        Assert.That(E.DebugB52b(r, "revive"), Does.Contain("濒死"));
+        var b = r.Items.First(i => i.IsCarried && i.ItemId == "bandage");
+        E.DrainLifeFx();
+        Start(r, ActionRequest.UseInstance(b.InstanceId));
+        Assert.That(E.DrainLifeFx().Single().Results.Single().Life, Is.EqualTo(BattleFxLife.Revived));
+    }
 }
 
 /// <summary>B52b 网页壳部分（源码断言）：R03 §Q737、R09 §Q734／§Q736／§Q738；验收 Q737-A01／A02、Q734-A01／A02、Q736-A01／A02、Q738-A01／A02。</summary>
@@ -520,5 +558,30 @@ public class B52bWebTests
         var pb = Web("Services", "GameSession.Playback.cs");
         Assert.That(pb, Does.Contain("public bool FxPaused => MenuOpen || BattleMenuOpen"), "菜单冻结同帧");
         Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("@if (G.PlaybackActive && !G.InBattleUi) { <BattleFxLayer /> }"));
+    }
+
+    /// <summary>Q736-A01／A02：意志五格只写级别与抵抗率、达到点亮，无已解锁／未解锁与“需要等级”；底部整行换意志句，他页原句不动。</summary>
+    [Test]
+    public void Q736_A01_WillpowerTiles_AttainedHighlightOnly()
+    {
+        var g = Web("Components", "GrowthOverlay.razor");
+        var will = g[g.IndexOf("@if (sk.Id == GameEngine.Willpower)")..];
+        will = will[..will.IndexOf("<div class=\"growth-nodes\">")];
+        Assert.That(will, Does.Contain("<div class=\"growth-node growth-will-ref @(on ? \"attained\" : \"\")\" data-will-ref=\"@rl\"><b>@e.WillpowerRefText(rl)</b></div>"));
+        Assert.That(will, Does.Not.Contain("\"已解锁\"").And.Not.Contain("$\"需要{sk.Name}"));
+        Assert.That(g, Does.Contain("@(sk.Id == GameEngine.Willpower ? e.WillpowerBottomText : \"经验只给实际出手/工作的本人；两件同门类武器不叠经验、不多解锁技能。命中、伤害等公式见系统说明。\")"));
+        var css = Web("wwwroot", "css", "app.css");
+        Assert.That(css, Does.Contain(".growth-will-ref.attained {"));
+    }
+
+    /// <summary>Q738-A01：主界面常驻健康分数真濒死写“0/{上限} · 濒死”（与战斗同一句），恢复撤下；战外头像不加黯淡。</summary>
+    [Test]
+    public void Q738_A01_HudHealthFraction_Dying()
+    {
+        var hud = Web("Components", "Hud.razor");
+        Assert.That(hud, Does.Contain("@if (id == StatId.Health && e.IsDying(s, s.Player)) { <b>@GameEngine.DyingHealthText(s.Stats.Max(id))</b> }"));
+        var css = Web("wwwroot", "css", "app.css");
+        Assert.That(css, Does.Not.Contain("dying .portrait").And.Not.Contain(".party-row.dying"), "战外头像不暗");
+        Assert.That(Web("Components", "MenuOverlay.razor"), Does.Contain("G.E.DebugB52b(G.S, \"multi\")"));
     }
 }
