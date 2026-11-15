@@ -17,7 +17,8 @@
     <div class="tbar cact" data-enter-scope tabindex="-1" role="group" aria-label="@($"{m.Name}的操作")" @onclick:stopPropagation="true">
         <div class="ca-head">
             <span class="ir-icon">@Icons.Markup(m.Icon)</span>
-            <span class="ca-title"><b>@m.Name</b><small>@m.From · ×@m.Available</small></span>
+            @* B54（Q790）：副行写本组实际总数（含预留），有真实预留时括注预留数；数量上限、按钮与请求仍按 m.Available *@
+            <span class="ca-title"><b>@m.Name</b><small>@CardStates.CardActionTitleText(m.From, m.Total, m.Reserved)</small></span>
         </div>
 
         @if (m.Batches != null)
@@ -409,6 +410,9 @@
     private sealed record Model(string Key, string ItemId, string Icon, string Name, string From, int Available, Mode Mode)
     {
         public int Max { get; init; }
+        /// <summary>B54（Q790）：标题副行的本卡／组实际总数（含预留）与真实行动预留数。</summary>
+        public int Total { get; init; }
+        public int Reserved { get; init; }
         public bool ToCarried { get; init; }
         public int UnitGrams { get; init; }
         public int? ExpiresAt { get; init; }
@@ -473,7 +477,7 @@
                 if (pot == null || water == null || !Here(pot)) return null;
                 return new Model($"liq:{pot.InstanceId}:{water.ItemId}", water.ItemId, water.ItemId, e.ItemName(water.ItemId),
                     $"{e.WherePath(s, pot)}／{e.ItemName(pot.ItemId)}", water.Count, Mode.Decant)
-                { Instance = water, PotInstance = pot, UseId = UseOf(water), Owner = water.Owner };
+                { Instance = water, PotInstance = pot, UseId = UseOf(water), Owner = water.Owner, Total = water.Count, Reserved = water.ReservedBy != null ? water.Count : 0 };
             }
             case SelectionKind.Tool when sel.InstanceId is int id:
             {
@@ -483,7 +487,7 @@
                 // 设施里的一批（Q111 煅烧的木材×4 / 成品木炭×3）整批取出：份数照实显示
                 if (it.InFacility || (it.InContainer && !e.IsLiquid(it)))
                     return new Model($"take:{id}", it.ItemId, it.ItemId, it.Count > 1 ? $"{e.ItemName(it.ItemId)}×{it.Count}" : name, e.WherePath(s, it), it.Count, Mode.TakeOut)
-                    { Instance = it, UseId = UseOf(it), Owner = it.Owner };
+                    { Instance = it, UseId = UseOf(it), Owner = it.Owner, Total = it.Count, Reserved = it.ReservedBy != null ? it.Count : 0 };
                 if (it.Owner != ItemInstance.Carried && it.Owner != here) return null;
                 var toCarried = it.Owner != ItemInstance.Carried;
                 // B17 试玩修复 E3：已部署的野营布/柴炉不能拾取（先收起）
@@ -494,6 +498,7 @@
                 return new Model($"one:{id}", it.ItemId, it.ItemId, name, deployedIt ? "已部署 · 先收起才能拾取" : e.WherePath(s, it), free, Mode.Single)
                 {
                     LockedPick = lockedPick, Instance = it, Owner = it.Owner, ToCarried = toCarried, UnitGrams = e.ItemGrams(s, it),
+                    Total = it.Count, Reserved = it.ReservedBy != null ? it.Count : 0,   // B54（Q790）：部署、锁定不算预留
                     Max = toCarried ? G.MaxPickup(it.ItemId, free, it) : free, PotInstance = e.IsPot(it) ? it : null, UseId = UseOf(it),
                 };
             }
@@ -513,12 +518,14 @@
                 var group = e.GroupStacks(s, sel.Owner, sel.Id, side);
                 var useInst = group.FirstOrDefault(i => !e.IsSpoiled(s, i)) ?? anchor.Stacks[0];
                 var available = group.Sum(i => i.Count);
+                // B54（Q790）：标题总数只取所点这一卡侧的同一真实归属实物（含预留），不跨卡侧、不跨物主
+                var (total, reserved) = CardStates.TotalAndReserved(all.Where(i => e.CardSideOf(i) == side));
                 var head = group.FirstOrDefault();
                 return new Model($"grp:{sel.Owner}:{sel.Id}:{side}", sel.Id, sel.Id, e.CardTitle(sel.Id, side), from, available, available == 1 ? Mode.Single : Mode.Stack)
                 {
                     ToCarried = toCarried, Owner = sel.Owner, ExpiresAt = head?.ExpiresAt, UnitGrams = head != null ? e.UnitGrams(head) : e.Item(sel.Id).WeightGrams,
                     Max = toCarried ? e.MaxGroupPickup(s, sel.Owner, sel.Id, side) : available, UseId = UseOf(useInst), Head = head,
-                    Batches = batches.Count > 1 ? batches : null, Side = side, Group = group,
+                    Batches = batches.Count > 1 ? batches : null, Side = side, Group = group, Total = total, Reserved = reserved,
                 };
             }
         }

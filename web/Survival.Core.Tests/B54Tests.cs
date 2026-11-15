@@ -312,3 +312,61 @@ public class B54Tests : TestBase
         Assert.That(s.Items.Where(i => i.ItemId == "dirty_water").All(i => i.ExpiresAt == null), Is.True, "不为现有原料新增期限");
     }
 }
+
+/// <summary>B54 Q790：物品操作窗标题副行显示实际总数，真实预留单独标出；操作资格仍按实际可用。</summary>
+public class B54CardActionTests : TestBase
+{
+    protected override bool NoEnemyApproach => true;
+
+    private static string Web(params string[] parts) =>
+        File.ReadAllText(Path.Combine(new[] { TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "Survival.Web" }.Concat(parts).ToArray()));
+
+    /// <summary>Q790-A01：全预留 ×2（预留2），部分预留 ×5（预留2），无预留只 ×5、不写（预留0）。</summary>
+    [Test]
+    public void Q790_A01_TitleTexts()
+    {
+        Assert.That(CardStates.CardActionTitleText("临时营地地面", 2, 2), Is.EqualTo("临时营地地面 · ×2（预留2）"));
+        Assert.That(CardStates.CardActionTitleText("随身", 5, 2), Is.EqualTo("随身 · ×5（预留2）"));
+        Assert.That(CardStates.CardActionTitleText("随身", 5, 0), Is.EqualTo("随身 · ×5"));
+    }
+
+    /// <summary>
+    /// Q790-A01／A02：真实制作预留后草药组总数含预留、预留数只数本行动预留；实际可用（GroupStacks）仍不含预留，全部预留时可用 0。
+    /// 部署占用不冒充预留；只读统计不改状态。
+    /// </summary>
+    [Test]
+    public void Q790_A02_TotalIncludesReserved_AvailableUnchanged_DeployNotReserved()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId is "cloth" or "herb" or "bandage");
+        E.DebugGive(s, "cloth", 2);
+        E.DebugGive(s, "herb", 2);
+        Start(s, ActionRequest.Craft("bandage", batchCount: 2));
+        var herbs = s.Items.Where(i => i.Owner == ItemInstance.Carried && i.ItemId == "herb" && E.CardSideOf(i) == null).ToList();
+        var before = SaveSerializer.Serialize(s);
+        Assert.That(CardStates.TotalAndReserved(herbs), Is.EqualTo((2, 2)), "全部预留：×2（预留2）");
+        Assert.That(E.GroupStacks(s, ItemInstance.Carried, "herb", null).Sum(i => i.Count), Is.EqualTo(0), "可用仍为 0，不可操作");
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "只读");
+        E.Cancel(s);
+        s.Items.RemoveAll(i => i.ItemId == "herb");   // 普通取消把草药退回当前地面；重新给随身草药×5
+        E.DebugGive(s, "herb", 5);
+        Start(s, ActionRequest.Craft("bandage", batchCount: 2));
+        herbs = s.Items.Where(i => i.Owner == ItemInstance.Carried && i.ItemId == "herb").ToList();
+        Assert.That(CardStates.TotalAndReserved(herbs), Is.EqualTo((5, 2)), "部分预留：×5（预留2）");
+        Assert.That(E.GroupStacks(s, ItemInstance.Carried, "herb", null).Sum(i => i.Count), Is.EqualTo(3), "数量上限仍为实际可用 3");
+        // 部署等锁不算预留：部署中的物品 ReservedBy 为空
+        var deployed = new ItemInstance { InstanceId = 999999, ItemId = "tarp", Count = 1, Owner = s.Ground };
+        Assert.That(CardStates.TotalAndReserved(new[] { deployed }), Is.EqualTo((1, 0)));
+    }
+
+    /// <summary>网页：操作窗副行改用 CardActionTitleText（总数、预留数），数量框校验与按钮仍按 m.Available；组总数只取所点卡侧。</summary>
+    [Test]
+    public void Q790_WebTitleUsesTotal_LimitsUseAvailable()
+    {
+        var src = Web("Components", "CardActions.razor");
+        Assert.That(src, Does.Contain("CardStates.CardActionTitleText(m.From, m.Total, m.Reserved)"));
+        Assert.That(src, Does.Not.Contain("@m.From · ×@m.Available"));
+        Assert.That(src, Does.Contain("var invalid = n < 1 || n > m.Available;"), "数量校验仍按实际可用");
+        Assert.That(src, Does.Contain("CardStates.TotalAndReserved(all.Where(i => e.CardSideOf(i) == side))"), "不跨卡侧");
+    }
+}

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Survival.Core.Config;
@@ -39,6 +40,25 @@ namespace Survival.Core.Engine
 
         /// <summary>Q356：常规物品卡与独立工具卡副标固定为本卡实际数量；Q361：本卡实际预留数大于 0（部分或全部预留）写「×{总数}（预留{数量}）」。</summary>
         public static string ItemQtyText(int total, int reserved) => reserved > 0 ? $"×{total}（预留{reserved}）" : $"×{total}";
+
+        /// <summary>
+        /// B54（S08／S06／S14 Q790，逐字稿 cardActionTotal／cardActionReservedTotal）：物品操作窗标题副行。总数为该窗当前选中卡片／组同一真实归属与卡侧的全部实物（含预留），
+        /// 真实行动预留数大于 0 时「{来源} · ×{总数}（预留{预留数}）」，否则「{来源} · ×{总数}」。只是显示，数量上限与按钮仍按实际可用数。
+        /// </summary>
+        public static string CardActionTitleText(string from, int total, int reserved) => $"{from} · {ItemQtyText(total, reserved)}";
+
+        /// <summary>Q790：这一组实物的（总数, 真实行动预留数）——预留只数 ReservedBy 标记的份额，部署、锁定等其他占用不算预留。</summary>
+        public static (int total, int reserved) TotalAndReserved(IEnumerable<ItemInstance> items)
+        {
+            var total = 0;
+            var reserved = 0;
+            foreach (var i in items)
+            {
+                total += i.Count;
+                if (i.ReservedBy != null) reserved += i.Count;
+            }
+            return (total, reserved);
+        }
 
         /// <summary>Q356：物品卡第二行取哪一项——明确状态优先（已腐败、已损坏），其次实际保质/到期，再耐久；都没有不出第二行。</summary>
         public static ItemLine2 ItemLine2Of(GameEngine e, GameState s, ItemInstance i) =>
