@@ -603,4 +603,113 @@ public class B50aTests : TestBase
         Assert.That(log.Count(l => l.Contains(GameEngine.SpoiledWorkClause)), Is.EqualTo(1), "只一次");
         Assert.That(log, Has.None.Contains("变为腐败物×"), "没有同事件普通腐败重复句");
     }
+
+    // ───────────── M951 文字收敛（Q712-A01、Q715-A01、Q671-A01、Q667-A01） ─────────────
+
+    /// <summary>Q712-A01：同名过期保护食材合计、多种按首次出现顺序一次列明，保护风险一次；未过期不误列；无过期项不生成；失败不解保护、不转换。</summary>
+    private (GameState s, ItemInstance pot) PotWith(params string[] foods)
+    {
+        var s = New();
+        var pot = s.Items.First(i => i.ItemId == "pot");
+        Make(s, "clean_water", 2, "camp");
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "clean_water" && i.Owner == "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true;
+        fac.FuelMinutes = 180;
+        foreach (var id in foods)
+        {
+            var f = Make(s, id, 1, "camp").Single();
+            var r = E.DoInstant(s, InstantRequest.PutFoodInPot(f.InstanceId, pot.InstanceId, 1));
+            Assert.That(r.Ok, Is.True, r.Reason);
+        }
+        return (s, pot);
+    }
+
+    [Test]
+    public void Q712_A01_PastExpiryListAggregated_RiskOnce_UnexpiredNotListed()
+    {
+        var (s, pot) = PotWith("raw_root", "raw_root");
+        var c0 = E.TakeOutConsequenceOf(s, pot);
+        Assert.That(c0.Spoils, Is.Empty);
+        Assert.That(c0.Text, Does.Not.Contain("已过原保质期").And.Not.Contain(GameEngine.TakeOutSpoilRiskText), "无过期项不生成");
+        var foods = E.PotFood(s, pot.InstanceId);
+        foreach (var f in foods.Where(f => f.ItemId == "raw_root")) f.ExpiresAt = s.GameMinute + 5;
+        WaitUntil(s, s.GameMinute + 5);
+        var c = E.TakeOutConsequenceOf(s, pot);
+        Assert.That(c.Spoils, Is.EqualTo(new[] { $"{E.ItemName("raw_root")}×2" }), "同名两份合计一项");
+        Assert.That(c.Text, Does.EndWith($"已过原保质期：{E.ItemName("raw_root")}×2。取出后失去烹饪保护，过期食材将变为腐败物。"));
+        Assert.That(c.Text.Split(GameEngine.TakeOutSpoilRiskText).Length - 1, Is.EqualTo(1), "风险句一次");
+
+        // 多种：生块根过期、生肉未过期 → 只列生块根；都过期 → 按首次出现顺序顿号连接
+        var (m, mp) = PotWith("raw_root", "raw_meat");
+        foreach (var f in E.PotFood(m, mp.InstanceId).Where(f => f.ItemId == "raw_root")) f.ExpiresAt = m.GameMinute + 5;
+        WaitUntil(m, m.GameMinute + 5);
+        Assert.That(E.TakeOutConsequenceOf(m, mp).Spoils, Is.EqualTo(new[] { $"{E.ItemName("raw_root")}×1" }), "未过期生肉不误列");
+        foreach (var f in E.PotFood(m, mp.InstanceId).Where(f => f.ItemId == "raw_meat")) f.ExpiresAt = m.GameMinute + 5;
+        WaitUntil(m, m.GameMinute + 5);
+        var c2 = E.TakeOutConsequenceOf(m, mp);
+        Assert.That(c2.Text, Does.Contain($"已过原保质期：{E.ItemName("raw_root")}×1、{E.ItemName("raw_meat")}×1。"), "多种一次列明");
+        Assert.That(GameEngine.TakeOutPastExpiryText(new[] { "甲×1", "乙×2" }), Is.EqualTo("已过原保质期：甲×1、乙×2。"));
+
+        // 失败取出：随身超重 → 不解除保护、不转换
+        var root = E.PotFood(s, pot.InstanceId).First(f => f.ItemId == "raw_root");
+        var stone = Make(s, "stone", 1, ItemInstance.Carried).Single();
+        stone.Count = Cfg.Carry.HardGrams / E.Item("stone").WeightGrams;
+        Assert.That(E.DoInstant(s, InstantRequest.TakeOut(root.InstanceId, ItemInstance.Carried)).Ok, Is.False);
+        Assert.That((root.ItemId, E.ProcessOf(s, root)!.HeatProtected), Is.EqualTo(("raw_root", true)), "失败不解保护、不转换");
+    }
+
+    /// <summary>Q715-A01：重置窗腐败物堆与其他未转换过期原物堆分开计（堆数，不是份数）、为 0 不出；清单里腐败物不接已腐败，过期原物仍标出。</summary>
+    [Test]
+    public void Q715_A01_ResetSpoiledLinesSplit_StacksNotUnits()
+    {
+        Assert.That(GameEngine.ResetSpoiledLines(2, 1), Is.EqualTo(new[] { "腐败物2堆（照常迁出，不可食用）。", "另有1堆物品已腐败（照常迁出，不可食用）。" }));
+        Assert.That(GameEngine.ResetSpoiledLines(0, 1), Is.EqualTo(new[] { "另有1堆物品已腐败（照常迁出，不可食用）。" }));
+        Assert.That(GameEngine.ResetSpoiledLines(3, 0), Is.EqualTo(new[] { "腐败物3堆（照常迁出，不可食用）。" }));
+        Assert.That(GameEngine.ResetSpoiledLines(0, 0), Is.Empty);
+        var s = New();
+        var rot = Rotten(s, "camp", 5, 300, 20, null);
+        var berry = Make(s, "berry", 2, "camp", s.GameMinute).Single();   // 已过期、尚未转换
+        var fresh = Make(s, "berry", 1, "camp", s.GameMinute + 600).Single();
+        Assert.That(E.SpoiledListSuffix(s, rot, "，已腐败"), Is.EqualTo(""), "腐败物名称已说明状态");
+        Assert.That(E.SpoiledListSuffix(s, berry, "，已腐败"), Is.EqualTo("，已腐败"), "未转换的过期原物仍标出");
+        Assert.That(E.SpoiledListSuffix(s, fresh, "，已腐败"), Is.EqualTo(""));
+    }
+
+    /// <summary>Q671-A01：远行清单腐败物去掉 · 已腐败，来源／数量／地点仍在；源码与重置窗接线。</summary>
+    [Test]
+    public void Q671_A01_ListsDropSuffix_KeepWhereAndCount_ShellWired()
+    {
+        var reset = Web("Components", "DungeonReset.razor");
+        Assert.That(reset, Does.Contain("p.SpoiledLines").And.Not.Contain("堆已腐败（照样迁出，不能吃）"), "重置窗用 Q715 两句");
+        var src = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "..", "src", "Core", "Engine", "GameEngine.ExpeditionUi.cs"));
+        Assert.That(src, Does.Not.Contain("(spoiled ? \" · 已腐败\" : \"\")").And.Not.Contain("(IsSpoiled(s, it) ? \" · 已腐败\" : \"\")"), "远行／封存清单走统一后缀规则");
+        var sealedSrc = File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "..", "src", "Core", "Engine", "GameEngine.Sealed.cs"));
+        Assert.That(sealedSrc, Does.Contain("SpoiledListSuffix(s, x.Item, \"，已腐败\")"));
+    }
+
+    /// <summary>Q667-A01：当前区同伴遗物与地牢封存物到期真实转换，但不写普通腐败日志；之后查看不补刷；数量／重量／归属不改。</summary>
+    [Test]
+    public void Q667_A01_RemainsAndSealedSpoilSilently_NoBackfill()
+    {
+        var s = New();
+        var due = s.GameMinute + 5;
+        s.Remains["c9"] = new RemainsState { Name = "某人", LocationId = s.CurrentLocation, Minute = s.GameMinute, Cause = "测试" };
+        var relic = Make(s, "raw_meat", 2, ItemInstance.RemainsOwner("c9"), due).Single();
+        var sealedItem = Make(s, "berry", 3, GameEngine.SealedOwner("x1"), due).Single();
+        var g0 = (E.ItemGrams(s, relic), E.ItemGrams(s, sealedItem));
+        var n0 = s.Log.Count;
+        WaitUntil(s, due + 5);
+        Assert.That(s.Log.Skip(n0).Select(l => l.Text), Has.None.Contains("已腐败"), "遗物／封存静默");
+        var r = s.Items.Single(i => i.InstanceId == relic.InstanceId);
+        var q = s.Items.Single(i => i.InstanceId == sealedItem.InstanceId);
+        Assert.That((r.ItemId, r.Count, r.Owner, r.SpoiledFrom), Is.EqualTo((Rot, 2, ItemInstance.RemainsOwner("c9"), "raw_meat")), "真实转换，归属不改");
+        Assert.That((q.ItemId, q.Count, q.Owner), Is.EqualTo((Rot, 3, GameEngine.SealedOwner("x1"))));
+        Assert.That((E.ItemGrams(s, r), E.ItemGrams(s, q)), Is.EqualTo(g0), "重量不改");
+        var n1 = s.Log.Count;
+        E.RemainsHere(s);
+        WaitUntil(s, s.GameMinute + 10);
+        Assert.That(s.Log.Skip(n1).Select(l => l.Text), Has.None.Contains("已腐败"), "查看后不补刷");
+    }
 }

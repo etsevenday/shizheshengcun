@@ -89,7 +89,7 @@ namespace Survival.Core.Engine
                 return new ExpeditionStoreRow
                 {
                     InstanceId = it.InstanceId, Reward = reward, Spoiled = spoiled, CanSeal = reward && SealBlocked(s, it.InstanceId) == null,
-                    Text = $"{ItemName(it.ItemId)}×{it.Count}" + (where.Length > 0 ? $"（{where}）" : "") + (reward ? " · 战利品" : "") + (spoiled ? " · 已腐败" : ""),
+                    Text = $"{ItemName(it.ItemId)}×{it.Count}" + (where.Length > 0 ? $"（{where}）" : "") + (reward ? " · 战利品" : "") + SpoiledListSuffix(s, it, " · 已腐败"),
                 };
             }
             foreach (var a in s.PartyActors)
@@ -103,11 +103,11 @@ namespace Survival.Core.Engine
                 v.Sealed.Add(new ExpeditionStoreRow
                 {
                     InstanceId = it.InstanceId, Reward = true, Spoiled = IsSpoiled(s, it),
-                    Text = $"{ItemName(it.ItemId)}×{it.Count} · 封存中·本次不可直接使用" + (IsSpoiled(s, it) ? " · 已腐败" : ""),
+                    Text = $"{ItemName(it.ItemId)}×{it.Count} · 封存中·本次不可直接使用" + SpoiledListSuffix(s, it, " · 已腐败"),
                 });
             v.Elsewhere = DungeonLeftovers(s, e.DungeonId)
                 .Where(x => x.Item.Owner != s.Ground && !x.Item.Owner.StartsWith(SealedPrefix))
-                .Select(x => $"{ItemName(x.Item.ItemId)}×{x.Item.Count}（{x.From}{(IsSpoiled(s, x.Item) ? "，已腐败" : "")}）").ToList();
+                .Select(x => $"{ItemName(x.Item.ItemId)}×{x.Item.Count}（{x.From}{SpoiledListSuffix(s, x.Item, "，已腐败")}）").ToList();
             return v;
         }
     }

@@ -681,11 +681,18 @@ namespace Survival.Core.Engine
                 var name = t == null ? "" : $"{ItemName(t.ItemId)}";
                 c.Resets.Add($"{name}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}分钟");
             }
+            // B50a（S11 文首 Q712）：真实过期保护食材按物名合计（首次出现顺序），清单项「物名×数量」
+            var past = new List<(string Name, int Count)>();
             foreach (var p in touched.Where(p => p.HeatProtected).OrderBy(p => p.TargetInstanceId))
             {
                 var t = FindItem(s, p.TargetInstanceId);
-                if (t != null && PastExpiryButProtected(s, t)) c.Spoils.Add($"{ItemName(t.ItemId)}×{t.Count}");
+                if (t == null || !PastExpiryButProtected(s, t)) continue;
+                var name = ItemName(t.ItemId);
+                var k = past.FindIndex(x => x.Name == name);
+                if (k < 0) past.Add((name, t.Count));
+                else past[k] = (name, past[k].Count + t.Count);
             }
+            c.Spoils.AddRange(past.Select(x => $"{x.Name}×{x.Count}"));
             c.CarriedGramsAfter = CarriedGrams(s) + (PlaceOf(s, inst) == ItemInstance.Carried ? 0 : c.Grams);
             c.RootCardsAfter = RootCardsAfter(s, inst, inst.Count, null, 0);
             c.Text = c.Resets.Count > 0 ? $"取出后{string.Join("、", c.Resets)}清零" : "当前没有已受热的加工进度，取出不损失进度";
@@ -702,7 +709,7 @@ namespace Survival.Core.Engine
                     .Select(p => FindItem(s, p.TargetInstanceId) is ItemInstance t ? $"{ItemName(t.ItemId)}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}分钟" : "").Where(x => x != "").ToList();
                 c.Text = $"取出后{ab}" + (IsPot(inst) ? "" : "，锅里其余食材留在锅里") + (others.Count > 0 ? $"；{string.Join("、", others)}清零" : "");
             }
-            if (c.Spoils.Count > 0) c.Text += $"；{string.Join("、", c.Spoils)}已过原保质期。{TakeOutSpoilRiskText}";
+            if (c.Spoils.Count > 0) c.Text += $"；{TakeOutPastExpiryText(c.Spoils)}{TakeOutSpoilRiskText}";
             return c;
         }
 

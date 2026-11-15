@@ -289,7 +289,7 @@ public class BM5b2Tests : TestBase
         WaitUntil(s, s.GameMinute + 5);
         Assert.That(E.PotFood(s, pot.InstanceId).All(f => f.ItemId == "raw_root" && E.PastExpiryButProtected(s, f)), Is.True);
         var c = E.TakeOutConsequenceOf(s, pot);
-        Assert.That(c.Text, Does.Contain("取出后解除烹饪保护，已过期的食材将变为腐败物。"));
+        Assert.That(c.Text, Does.Contain("；已过原保质期：生块根×2。取出后失去烹饪保护，过期食材将变为腐败物。"), "B50a（Q712）：同名合计、清单一次");
         var n0 = s.Log.Count;
         Assert.That(E.DoInstant(s, InstantRequest.TakeOut(pot.InstanceId, "camp")).Ok, Is.True, "取下整锅");
         var line = LogSince(s, n0).Single(l => l.StartsWith("把"));

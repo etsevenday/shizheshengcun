@@ -112,11 +112,12 @@ public class B22ResetTests : BattleTestBase
         s.GameMinute = Eligible(s);
         var pv = E.ResetPreview(s, "d01");
         Assert.That(pv.Reason, Is.Null);
-        Assert.That(pv.Leftovers, Has.Some.Contains("腐败物×2").And.Some.Contains("已腐败"), "BM5b2：过期肉干已转为腐败物");
+        Assert.That(pv.Leftovers, Has.Some.EqualTo("腐败物×2（藏书密室地面）").And.None.Contains("已腐败"), "BM5b2：过期肉干已转为腐败物；B50a（Q671）：去重复已腐败后缀，地点保留");
         Assert.That(pv.Leftovers, Has.Some.Contains("布料×3（捐献仓地面）"));
         Assert.That(pv.Leftovers, Has.Some.Contains("的遗物"));
         Assert.That(pv.Leftovers, Has.Some.Contains("布料×3（旧路线档案地面）").Or.Some.Contains("缝线×2"), "首通补给留在核心房地面也算");
         Assert.That(pv.SpoiledCount, Is.EqualTo(1));
+        Assert.That(pv.SpoiledLines, Is.EqualTo(new[] { "腐败物1堆（照常迁出，不可食用）。" }), "B50a（Q715）：无其他过期原物不出另列句");
         Assert.That(pv.Destination, Is.EqualTo("教堂墓园的旧实例遗物认领箱"));
         Assert.That(pv.NotReissued, Has.Some.Contains("首次通关补给"));
         var before = E.DungeonLeftovers(s, "d01").Select(x => (x.Item.InstanceId, x.Item.Count, x.Item.ExpiresAt)).ToList();

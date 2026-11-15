@@ -173,9 +173,9 @@ namespace Survival.Core.Engine
             return list;
         }
 
-        /// <summary>遗留物清单短句（终止确认窗与重置确认窗）：“布料×2（捐献仓地面）”，已腐败的标出。</summary>
+        /// <summary>遗留物清单短句（终止确认窗与重置确认窗）：“布料×2（捐献仓地面）”，已腐败的原物标出（腐败物名称已说明状态，不再接后缀，Q671／Q715）。</summary>
         public List<string> LeftoverLines(GameState s, string dungeonId) =>
-            DungeonLeftovers(s, dungeonId).Select(x => $"{ItemName(x.Item.ItemId)}×{x.Item.Count}（{x.From}{(IsSpoiled(s, x.Item) ? "，已腐败" : "")}）").ToList();
+            DungeonLeftovers(s, dungeonId).Select(x => $"{ItemName(x.Item.ItemId)}×{x.Item.Count}（{x.From}{SpoiledListSuffix(s, x.Item, "，已腐败")}）").ToList();
 
         /// <summary>
         /// 旧实例遗留物一次迁到父地点“旧实例遗物认领箱”（D8：重置前原子迁存；保质照原 expiresAt、不延寿；队友遗物容器随之清空移除；本实例来源标记清掉）。返回迁移件数。

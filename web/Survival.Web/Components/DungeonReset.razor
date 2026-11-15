@@ -39,9 +39,10 @@
                 {
                     <div class="exp-row"><span>· @x</span></div>
                 }
-                @if (p.SpoiledCount > 0)
+                @* B50a（Q715）：真实腐败物堆与其他已过期原物堆分两句，为 0 的不出 *@
+                @foreach (var line in p.SpoiledLines)
                 {
-                    <div class="exp-row warn-text"><span>其中@(p.SpoiledCount)堆已腐败（照样迁出，不能吃）</span></div>
+                    <div class="exp-row warn-text"><span>@line</span></div>
                 }
                 <div class="exp-row muted"><span>旧一代关闭后不能再回到旧图；遗物认领箱只能在@(p.ParentName)实地取。</span></div>
             </div>

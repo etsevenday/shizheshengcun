@@ -25,10 +25,28 @@ namespace Survival.Core.Engine
         /// <summary>旧档一次迁移提示（逐字稿「旧档一次迁移提示」）。</summary>
         public const string SpoiledMigrationNote = "已将存档中过期的物品转换为腐败物。";
 
-        /// <summary>取出保护风险（逐字稿「取出后果」）。</summary>
-        public const string TakeOutSpoilRiskText = "取出后解除烹饪保护，已过期的食材将变为腐败物。";
+        /// <summary>取出保护风险（逐字稿 2026-11-15 Q712「上述清单后一次保护后果」，取代 Q641 原句）。</summary>
+        public const string TakeOutSpoilRiskText = "取出后失去烹饪保护，过期食材将变为腐败物。";
+
+        /// <summary>烹饪取出过期清单（逐字稿 2026-11-15 Q711—Q719 表，Q712）：「已过原保质期：{食材清单}。」，清单顿号连接；其后接一次 <see cref="TakeOutSpoilRiskText"/>。</summary>
+        public static string TakeOutPastExpiryText(IEnumerable<string> list) => $"已过原保质期：{string.Join("、", list)}。";
 
         public static bool IsSpoiledMatter(ItemInstance i) => i.ItemId == SpoiledMatterId;
+
+        /// <summary>
+        /// 清单里已腐败的同义后缀（B50a，S06 文首 Q671／Q715）：腐败物名称已说明状态，不再接「，已腐败」「 · 已腐败」；
+        /// 尚未转换的其他过期原物仍按原句标出，不全局删词。
+        /// </summary>
+        public string SpoiledListSuffix(GameState s, ItemInstance i, string suffix) => !IsSpoiledMatter(i) && IsSpoiled(s, i) ? suffix : "";
+
+        /// <summary>重置窗腐败统计（逐字稿 2026-11-15 Q711—Q719 表，Q715）：腐败物堆数一句、其他已过期原物堆数另一句；为 0 不出。</summary>
+        public static List<string> ResetSpoiledLines(int spoiledMatterStacks, int otherStacks)
+        {
+            var l = new List<string>();
+            if (spoiledMatterStacks > 0) l.Add($"腐败物{spoiledMatterStacks}堆（照常迁出，不可食用）。");
+            if (otherStacks > 0) l.Add($"另有{otherStacks}堆物品已腐败（照常迁出，不可食用）。");
+            return l;
+        }
 
         /// <summary>原物品 ID：腐败物取转换前的原物（日志原名、锅食谱完整性、尸体判定），其余为本身。</summary>
         public static string OriginItemId(ItemInstance i) => i.SpoiledFrom ?? i.ItemId;

@@ -103,7 +103,7 @@ public class V11CookProtectTests : TestBase
         stone.Count = Cfg.Carry.HardGrams / E.Item("stone").WeightGrams;
         var cons = E.TakeOutConsequenceOf(s, root);
         Assert.That(cons.Spoils, Has.Count.EqualTo(1), "提前写明取出即腐败");
-        Assert.That(cons.Text, Does.Contain("生块根×1已过原保质期。取出后解除烹饪保护，已过期的食材将变为腐败物。"), "BM5b2（Q641）：取出风险原句");
+        Assert.That(cons.Text, Does.Contain("已过原保质期：生块根×1。取出后失去烹饪保护，过期食材将变为腐败物。"), "B50a（Q712）：取出风险原句");
         var fail = E.DoInstant(s, InstantRequest.TakeOut(root.InstanceId, ItemInstance.Carried));
         Assert.That(fail.Ok, Is.False, "超重取出失败");
         Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.True, "失败取出不先解除保护");

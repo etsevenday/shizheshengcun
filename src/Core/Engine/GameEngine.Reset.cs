@@ -90,8 +90,11 @@ namespace Survival.Core.Engine
                 p.NotReissued.Add($"{r.Name}：{(CampaignClaimed(s, r.NodeId) ? "已领取，不会复活" : "还没领，新一代仍可领一次（本局唯一）")}");
             p.NotReissued.Add("已经带出的物资、技能与训练、借用装备额度都不变");
             var left = DungeonLeftovers(s, dungeonId);
-            p.Leftovers = left.Select(x => $"{ItemName(x.Item.ItemId)}×{x.Item.Count}（{x.From}{(IsSpoiled(s, x.Item) ? "，已腐败" : "")}）").ToList();
-            p.SpoiledCount = left.Count(x => IsSpoiled(s, x.Item));
+            p.Leftovers = left.Select(x => $"{ItemName(x.Item.ItemId)}×{x.Item.Count}（{x.From}{SpoiledListSuffix(s, x.Item, "，已腐败")}）").ToList();
+            // B50a（S06 文首 Q715）：真实腐败物堆与其他尚未转换的过期原物堆分开计（都是堆数，不是份数）
+            p.SpoiledCount = left.Count(x => IsSpoiledMatter(x.Item));
+            p.OtherSpoiledCount = left.Count(x => !IsSpoiledMatter(x.Item) && IsSpoiled(s, x.Item));
+            p.SpoiledLines = ResetSpoiledLines(p.SpoiledCount, p.OtherSpoiledCount);
             return p;
         }
 
@@ -207,7 +210,12 @@ namespace Survival.Core.Engine
         public List<string> Refresh { get; set; } = new List<string>();
         public List<string> NotReissued { get; set; } = new List<string>();
         public List<string> Leftovers { get; set; } = new List<string>();
+        /// <summary>遗留物中真实腐败物（spoiled_matter）的堆数（Q715）。</summary>
         public int SpoiledCount { get; set; }
+        /// <summary>遗留物中尚未转换、但已过期的其他原物堆数（Q715 另列）。</summary>
+        public int OtherSpoiledCount { get; set; }
+        /// <summary>重置窗腐败统计正式句（Q715）；为 0 的那句不出。</summary>
+        public List<string> SpoiledLines { get; set; } = new List<string>();
         public string Destination { get; set; } = "";
     }
 }
