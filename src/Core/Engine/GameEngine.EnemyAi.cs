@@ -167,6 +167,8 @@ namespace Survival.Core.Engine
                 BattleLog(s, $"{EnemyName(e)}想护住同伴：{NoProtectTargetText}，这次保护落空（{EnemyMainIntentAp}AP照常用掉）。");
                 return;
             }
+            // B47b（R03 §Q615 表）：敌方真实执行的保护属同类支援特写
+            using var fxProt = FxSupport(s, FxEnemyActName(e, b), FxFoe(e), new[] { FxFoe(t) });
             e.IntentTarget = t.Index;
             e.ProtectingIndex = t.Index;
             e.ProtectUses++;
@@ -529,10 +531,13 @@ namespace Survival.Core.Engine
                     return;
                 }
                 case "charge_prepare":
+                {
+                    // B47b（R03 §Q615 表）：敌方真实执行的蓄力属同类支援特写（行动者即受益者），出手之后才显示，不预告计划
+                    using var fxSup = FxSupport(s, FxEnemyActName(e, b), FxFoe(e), new[] { FxFoe(e) });
                     e.Charged = true;
-                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}蓄力，下回合{(AllSteps(cfg).FirstOrDefault(x => x.Kind == "charge")?.Verb is string v && v != "" ? v : "冲撞")}。");
                     return;
+                }
                 case "protect":
                 {
                     // B20 试玩修复：A09 E3“保护相邻同伴1次”——执行时重验相邻（号位差 1）。锁定后被同伴换位挤开的，改护当时相邻的同伴
@@ -549,9 +554,10 @@ namespace Survival.Core.Engine
                     if (t == null || !t.Alive) { BattleLog(s, $"{EnemyName(e)}要保护的同伴已不在。"); return; }
                     var links = b.Alive.Where(x => x.ProtectingIndex > 0 && x.Index != e.Index).ToDictionary(x => $"e{x.Index}", x => $"e{x.ProtectingIndex}");
                     if (ProtectBlocked(links, $"e{e.Index}", $"e{t.Index}") is string why) { BattleLog(s, $"{EnemyName(e)}没能保护{EnemyName(t)}（{why}）。"); return; }
+                    // B47b（R03 §Q615 表）：敌方真实执行的保护属同类支援特写，受益者为被护住的同伴
+                    using var fxProt = FxSupport(s, FxEnemyActName(e, b), FxFoe(e), new[] { FxFoe(t) });
                     e.ProtectingIndex = t.Index;
                     e.ProtectUses++;
-                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}护住{EnemyName(t)}（替它挡下一次单体攻击，到{EnemyName(e)}下次行动前）。");
                     return;
                 }
@@ -565,18 +571,22 @@ namespace Survival.Core.Engine
                     else BattleLog(s, $"{EnemyName(e)}{st.Verb}，没有回应（本场已请求过增援）。");
                     return;
                 case "buff":
+                {
+                    // B47b（R03 §Q615 表）：敌方真实执行的增益属同类支援特写（行动者即受益者）
+                    using var fxSup = FxSupport(s, FxEnemyActName(e, b), FxFoe(e), new[] { FxFoe(e) });
                     // A09 E2“同名buff取强”：已有同名的下一击增益时取较大值，不叠乘
                     e.NextHitFactor = Math.Max(e.NextHitFactor, st.NextHitFactor > 0 ? st.NextHitFactor : 1);
-                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b（R03 §Q571）：敌方非攻击意图短反馈
                     BattleLog(s, $"{EnemyName(e)}{st.Verb}：下一击伤害×{Fmt.T(e.NextHitFactor)}。");
                     return;
+                }
                 case "rally":
                 {
                     // B20 低吟感染者（A09 E3）：至多两名同伴下一击×1.10，不叠层；同名 buff 取强（再被鼓动取较大值）
                     var ts = RallyTargets(b, e);
                     if (ts.Count == 0) { BattleLog(s, $"{EnemyName(e)}{st.Verb}，身边没有同伴回应。"); return; }
+                    // B47b（R03 §Q615 表）：敌方真实执行的鼓动属同类支援特写，受益者为实际被鼓动的同伴（同一段）
+                    using var fxSup = FxSupport(s, FxEnemyActName(e, b), FxFoe(e), ts.Select(FxFoe));
                     foreach (var t in ts) t.RallyFactor = Math.Max(t.RallyFactor, st.NextHitFactor);
-                    FxShort(s, FxEnemyActName(e, b), FxFoe(e));   // B34b：增益类意图短反馈
                     BattleLog(s, $"{EnemyName(e)}低声{st.Verb}：{string.Join("、", ts.Select(t => $"{EnemyName(t)}（{PosName(t.Pos)}）"))}下一击伤害×{Fmt.T(st.NextHitFactor)}（不叠层）。");
                     return;
                 }
@@ -973,9 +983,10 @@ namespace Survival.Core.Engine
                 using (FocusOn(s, id))
                 {
                     var dmg = Math.Max(0, cfg.DeathSplash - Math.Max(0, PlayerArmor(s) - (PlayerArmorBroken(b) ? b.PlayerArmorBreak : 0)));
-                    if (dmg <= 0) { BattleLog(s, $"{cfg.Name}死亡喷溅被{(id == GameState.PlayerId ? "" : Who(s) + "的")}护甲挡住。"); continue; }
+                    if (dmg <= 0) { FxHit(FxAlly(s, id), "blocked"); BattleLog(s, $"{cfg.Name}死亡喷溅被{(id == GameState.PlayerId ? "" : Who(s) + "的")}护甲挡住。"); continue; }
                     var life = new List<string>();
                     var outcome = DamageActor(s, s.Player, dmg, life);   // B47a1：统一受伤入口（濒死者喷溅也判致死）
+                    FxHit(FxAlly(s, id), "hit", dmg);   // B47b（R09 §7）：喷溅伤害与生命变化并入引发它的这次我方攻击特写
                     NoteWillpowerHit(s, id, e.WorldId);   // B47a2（Q676）：合法喷溅正伤按死敌原 ID，在引发它的我方指令末结账
                     if (id == GameState.PlayerId) s.Progress.LastDamageCause = $"{cfg.Name}死亡喷溅";
                     BattleLog(s, $"{cfg.Name}死亡喷溅：{Who(s)}健康−{Fmt.N(dmg)}（不感染）。");

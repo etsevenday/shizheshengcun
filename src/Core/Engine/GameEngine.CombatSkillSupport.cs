@@ -295,10 +295,16 @@ namespace Survival.Core.Engine
             var life = new List<string>();   // B47a1：医疗技能的脱离濒死句，接在本条战报之后
             ActorState? lifeOf = null;
             IDisposable? fxMed = null;   // B34b：医疗技能的出手快照，到写完本条战报再结束（没有健康变化的不留）
+            // B47b（R03 文首 B34 §Q615 表）：自身／指定同伴／全队技能增益都是支援特写——行动者与实际受益者动效，同一人只一条、全队同一段，
+            // 到写完本条战报再结束；结果字只写新生效状态名与 Q694 三种真实变化（Q729 无状态名的增益本批不写结果字）
+            IDisposable? fxSup = null;
+            var me = FxAlly(s, b.FocusId);
             switch (x.Type)
             {
                 case "guard":
                 {
+                    fxSup = FxBegin(s, n.Name, BattleFxMotion.Support, me);
+                    FxHit(me, "effect");
                     var wear = GrantGuard(s, b, x.GuardCharges);
                     parts.Add($"格挡{b.PlayerGuardCharges}次（直接伤害×{Fmt.T(b.PlayerGuardFactor)}）");
                     if (wear != "") parts.Add(wear);
@@ -319,12 +325,15 @@ namespace Survival.Core.Engine
                     {
                         // 坚守（shield_10，B9a）：其他在场队员下一次直接伤害×0.8，持续 buffRounds 轮
                         var others = AlliesOnField(b).Where(a => a != b.FocusId).ToList();
+                        foreach (var o in others) FxHit(FxAlly(s, o), "effect");   // B47b：坚守的实际受益者（其他在场队员）同一段
                         foreach (var o in others) { var of = b.Fighter(o); of.CoverFactor = Math.Min(of.CoverUntilRound >= b.Round ? of.CoverFactor : 1, x.TeamGuardFactor); of.CoverUntilRound = Math.Max(of.CoverUntilRound, b.Round + x.BuffRounds); }
                         parts.Add($"{string.Join("、", others.Select(o => ActorDisplayName(s, o)))}下一次直接伤害×{Fmt.T(x.TeamGuardFactor)}（到第{b.Round + x.BuffRounds}回合末）");
                     }
                     break;
                 }
                 case "buff":
+                    fxSup = FxBegin(s, n.Name, BattleFxMotion.Support, me);
+                    FxHit(me, "effect");
                     if (x.ChargeFactor > 0)
                     {
                         b.ChargeFactor = x.ChargeFactor;
@@ -343,13 +352,14 @@ namespace Survival.Core.Engine
                     {
                         // 挣脱（Q80）：清减速/束缚/标记（现在主角身上只有减速会出现）并后移一格；4 号位原地清
                         var (had, to) = StruggleOutcome(b, x);
-                        if (had) { b.PlayerSlowPending = false; b.PlayerSlowActive = false; }
+                        if (had) { b.PlayerSlowPending = false; b.PlayerSlowActive = false; FxChange(me, RemovedText("减速")); }   // B47b（Q694）：实际解除才写
                         parts.Add(had ? "挣脱了束缚（减速解除）" : "没有束缚");
                         if (to > 0)
                         {
                             var from = PlayerPos(b);
                             var mate = AllyAt(b, to);
                             MoveAlly(b, from, to);
+                            FxChange(me, "", moved: true);   // B47b：挣脱的真实位移
                             parts.Add($"后移到{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}");
                         }
                         else parts.Add("已在4号位，原地挣脱");
@@ -362,8 +372,11 @@ namespace Survival.Core.Engine
                     var ra = c.AllyTarget!;
                     var rb = c.AllyTarget2!;
                     int pa = AllyPos(b, ra), pb = AllyPos(b, rb);
+                    // B47b（R03 §Q615 表）：技能整队有实际受益者——支援特写，只做两人真实换位动作，不另加结果字（Q694）
+                    fxSup = FxSupport(s, n.Name, me, new[] { FxAlly(s, ra), FxAlly(s, rb) });
                     MoveAlly(b, pa, pb);
-                    FxShort(s, n.Name, FxAlly(s, b.FocusId));   // B34b（R03 §Q571）：整队只给行动者短反馈
+                    FxChange(FxAlly(s, ra), "", moved: true);
+                    FxChange(FxAlly(s, rb), "", moved: true);
                     parts.Add($"{ActorDisplayName(s, ra)}{PosName(pa)}→{PosName(pb)}，{ActorDisplayName(s, rb)}{PosName(pb)}→{PosName(pa)}");
                     if (wi?.Durability != null) parts.Add(Wear(wi, 1));
                     parts.Add("换位无经验");
@@ -375,11 +388,17 @@ namespace Survival.Core.Engine
                     var caster = b.FocusId;
                     var target = AllyTargetOf(b, c, x) ?? caster;
                     var key = CommandKey(n.Id, caster, target);
+                    // B47b（Q615）：先开支援记录再结算（显示快照取结算前），受益者等效果真实生效后才补进来
+                    fxSup = FxBegin(s, n.Name, BattleFxMotion.Support, me);
+                    var gains = new List<string>();   // 实际受益者（按出现先后）
+                    var changes = new List<(string Who, string Text)>();
                     if (target != caster) parts.Add($"目标{ActorDisplayName(s, target)}");
                     if (x.Protect)
                     {
                         // 保护/掩护（B9a）：接下目标下一次单体直接攻击，到施术者下次正常激活开始；掩护另给双方下一次直接伤害×0.8（buffRounds 轮）
                         b.Protections[caster] = target;
+                        gains.Add(target);
+                        if (x.TeamGuardFactor > 0) gains.Add(caster);
                         parts.Add($"护住{ActorDisplayName(s, target)}（接下它下一次单体直接攻击，到{Who(s)}下次正常行动前）");
                         if (x.TeamGuardFactor > 0)
                             foreach (var o in new[] { caster, target })
@@ -394,7 +413,12 @@ namespace Survival.Core.Engine
                     if (x.ApBonus > 0)
                     {
                         var tf = b.Fighter(target);
+                        var bonus0 = tf.ApBonusNext;
                         tf.ApBonusNext = Math.Max(tf.ApBonusNext, x.ApBonus);
+                        // B47b（Q694）：协同写本次实际新增的未来奖励（下一次正常激活按总 AP 上限兑现后的差），0 不写；不改当前 AP
+                        var apGain = NormalActivationAp(s.Actor(target), tf.ApBonusNext) - NormalActivationAp(s.Actor(target), bonus0);
+                        gains.Add(target);
+                        if (apGain > 0) changes.Add((target, NextApText(apGain)));
                         if (!b.PendingCommandXp.Contains(key)) b.PendingCommandXp.Add(key);
                         parts.Add($"{ActorDisplayName(s, target)}下一次正常行动AP+{x.ApBonus}");
                         effective = true;
@@ -408,6 +432,7 @@ namespace Survival.Core.Engine
                             b.InspireUntilRound = b.Round + x.BuffRounds + (int)w.Trait("commandRounds");
                             if (!b.PendingCommandXp.Contains(key)) b.PendingCommandXp.Add(key);
                             parts.Add($"下一次攻击命中能力+{Fmt.T(b.InspireBonus)}（到第{b.InspireUntilRound}回合末）");
+                            gains.Add(target);
                             effective = true;
                         }
                         if (x.PanicReduce > 0)
@@ -418,6 +443,7 @@ namespace Survival.Core.Engine
                             parts.Add($"恐慌{Fmt.N(before)}→{Fmt.N(b.Panic)}");
                             effective = b.Panic < before - 1e-9;
                             calmed = effective;
+                            if (calmed) { gains.Add(target); changes.Add((target, PanicCutText(before - b.Panic))); }   // B47b（Q694）：真实前后差
                         }
                         if (x.AllOutFactor > 0)
                         {
@@ -425,6 +451,7 @@ namespace Survival.Core.Engine
                             b.AllOutUntilRound = b.Round + x.BuffRounds + (int)w.Trait("commandRounds");
                             if (!b.PendingCommandXp.Contains(key)) b.PendingCommandXp.Add(key);
                             parts.Add($"下一次攻击伤害×{Fmt.T(b.AllOutFactor)}（到第{b.AllOutUntilRound}回合末）");
+                            gains.Add(target);
                             effective = true;
                         }
                         var first = w.Trait("firstCommandAccuracy");
@@ -442,6 +469,9 @@ namespace Survival.Core.Engine
                         else GrantSupportXp(s, b, n.Id, caster, target, "command");
                     }
                     if (effective && wi?.Durability != null) parts.Add(Wear(wi, 1));
+                    foreach (var g in gains.Distinct()) FxHit(FxAlly(s, g), "effect");
+                    if (gains.Count == 0) FxShort(s, n.Name, me);   // 合法执行但没有实际受益（如恐慌已到下限）：只给行动者原地反馈，不画不存在的受益者
+                    foreach (var (who, text) in changes) FxChange(FxAlly(s, who), text);
                     break;
                 }
                 case "medical":
@@ -454,6 +484,7 @@ namespace Survival.Core.Engine
                     if (target != b.FocusId) parts.Add($"目标{ActorDisplayName(s, target)}");
                     // B34b（R03 §Q571）：医疗技能——治疗式特写，真实施术者、受益者与健康变化值（应急护理等无健康变化的属 Q615，不记）
                     double medH0, medH1;
+                    string? removed = null;   // B47b（Q615、Q694）：应急护理等无回血时显示真实解除的状态
                     fxMed = FxBegin(s, n.Name, BattleFxMotion.Heal, FxAlly(s, b.FocusId));
                     using (FocusOn(s, target))
                     {
@@ -472,14 +503,16 @@ namespace Survival.Core.Engine
                             }
                             if (status)
                             {
-                                if (PlayerWeakActive(b)) { b.PlayerWeakFactor = 1; b.PlayerWeakUntilRound = 0; parts.Add("解除虚弱"); }
-                                else { b.PlayerStagger = false; parts.Add("解除失衡"); }
+                                if (PlayerWeakActive(b)) { b.PlayerWeakFactor = 1; b.PlayerWeakUntilRound = 0; parts.Add("解除虚弱"); removed = "虚弱"; }
+                                else { b.PlayerStagger = false; parts.Add("解除失衡"); removed = "失衡"; }
                             }
                             effective = bleed || heal > 0 || status;
                         }
                         medH1 = s.Stats.Health;
                     }
                     if (medH1 - medH0 > 1e-9) FxHit(FxAlly(s, target), "heal", medH1 - medH0);
+                    else if (removed != null) FxHit(FxAlly(s, target), "effect");
+                    if (removed != null) FxChange(FxAlly(s, target), RemovedText(removed));
                     if (effective)
                     {
                         parts.Add(XpText(s, Medicine, Config.Xp.Medical));
@@ -496,6 +529,7 @@ namespace Survival.Core.Engine
                 }
                 case "reload":
                 {
+                    FxShort(s, n.Name, me);   // B47b（R03 §Q615 表）：快速装填按原装填类原地动作反馈，不播支援特写
                     var need = w.MagazineCapacity - wi!.LoadedAmmo;
                     var took = TakeCarried(s, w.AmmoId!, need);
                     wi.LoadedAmmo += took;
@@ -508,6 +542,7 @@ namespace Survival.Core.Engine
             BattleLog(s, $"{Who(s)}{n.Name}（{w.Name}）：{string.Join("，", parts)}。");
             if (lifeOf != null) WriteLifeNotes(s, lifeOf, life);
             fxMed?.Dispose();
+            fxSup?.Dispose();
         }
 
         /// <summary>

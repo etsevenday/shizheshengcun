@@ -640,7 +640,8 @@ namespace Survival.Core.Engine
                     if (body.BleedTriggers <= 0) continue;
                     // B47a1（R09 §3.1）：每次出血触发是一个受伤事件，走统一入口；状态句接在流血战报之后
                     var life = new List<string>();
-                    var outcome = DamageActor(s, s.Player, body.BleedDamage, life);
+                    DamageOutcome outcome;
+                    using (LifeCause("出血")) outcome = DamageActor(s, s.Player, body.BleedDamage, life);   // B47b（Q691）：出血致濒死／死亡的独立特写标题“出血”
                     body.BleedTriggers--;
                     BattleLog(s, $"{Who(s)}流血，健康−{Fmt.N(body.BleedDamage)}（还剩{body.BleedTriggers}次）。");
                     WriteLifeNotes(s, s.Player, life);
@@ -649,11 +650,17 @@ namespace Survival.Core.Engine
                 }
             foreach (var e in b.Alive.Where(e => e.BleedTriggers > 0).OrderBy(e => e.Pos).ToList())
             {
-                e.Hp -= e.BleedDamage;
-                e.BleedTriggers--;
-                BattleLog(s, $"{EnemyName(e)}流血，−{Fmt.N(e.BleedDamage)}。");
-                if (e.Hp <= 1e-9) KillEnemyBy(s, e, EnemyDeathCause.Bleed);   // B47a2（Q679）：出血致死不喷溅
-                else CheckFlee(s, e);
+                var bleedDie = e.Hp - e.BleedDamage <= 1e-9;
+                // B47b（R09 §7、Q691、Q693）：出血让敌人死亡——独立生命特写，标题“出血”、结果“死亡”，死亡结果帧后才从站位移出
+                using (bleedDie ? FxBegin(s, "出血", BattleFxMotion.Life, FxFoe(e)) : null)
+                {
+                    e.Hp -= e.BleedDamage;
+                    e.BleedTriggers--;
+                    BattleLog(s, $"{EnemyName(e)}流血，−{Fmt.N(e.BleedDamage)}。");
+                    if (bleedDie) FxHit(FxFoe(e), "hit", e.BleedDamage, down: true);
+                    if (e.Hp <= 1e-9) KillEnemyBy(s, e, EnemyDeathCause.Bleed);   // B47a2（Q679）：出血致死不喷溅
+                    else CheckFlee(s, e);
+                }
                 if (PlayerDownAfterSplash(s) || s.Battle == null) return false;
             }
             if (!b.Alive.Any()) { FinishBattle(s, "victory", false); return false; }
@@ -857,6 +864,7 @@ namespace Survival.Core.Engine
             if (st.Wakefulness <= 0) { health += hr.ZeroWakefulnessPerHour; causes.Add("缺乏睡眠"); }
             if (st.Energy <= 0 && ctx.IsWork) { health += c.BattleTime.ZeroEnergyWorkingHealthPerHour; causes.Add("体力透支"); }
             if (causes.Count > 0) ctx.DamageCause = causes[0];
+            ctx.DamageCauseCount = causes.Count;
             ctx.HealthPerHour = health;
             ctx.HealthLossPerHour = health;   // B47a1：只有负项（不给自然回血）
             return ctx;

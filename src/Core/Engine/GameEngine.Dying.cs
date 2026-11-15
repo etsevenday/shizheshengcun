@@ -98,6 +98,8 @@ namespace Survival.Core.Engine
         {
             if (!(d > 0) || IsDead(s, actor)) return DamageOutcome.None;
             var st = actor.Stats;
+            // B47b（R03 §Q617）：战斗中没有出手镜头的生命转变要单独一段特写——先抄下受伤前的显示（只在可能转变时抄）
+            var before = s.Battle != null && !s.SimCopy && _fxOpen.Count == 0 && (st.Health <= 0 || st.Health - d <= 0) ? s.DisplayClone() : null;
             if (st.Health > 0)
             {
                 st.Add(StatId.Health, -d);
@@ -107,6 +109,7 @@ namespace Survival.Core.Engine
                 actor.DyingNotified = true;
                 s.SimProbe?.Dangers.Add((actor.Id, DangerKind.Enter));   // B47a3（Q674）：预估副本记首次进入濒死
                 LifeNote(s, actor, EnterDyingText(ActorDisplayName(s, actor.Id)), notes);
+                NoteLife(s, actor, BattleFxLife.Dying, false, d, before);   // B47b（R09 §7）：生命姿态转变表现
                 return DamageOutcome.EnteredDying;
             }
             if (s.SimCopy)
@@ -120,10 +123,12 @@ namespace Survival.Core.Engine
             if (ResistsDeath(level, TestDeathRolls is { Count: > 0 } q ? q.Dequeue() : s.Rng.NextDouble()))
             {
                 LifeNote(s, actor, ResistedDeathText(ActorDisplayName(s, actor.Id)), notes);
+                NoteLife(s, actor, BattleFxLife.Resisted, false, d, null);   // B47b（Q691）：抵抗成功附在本次已有正伤表现上
                 return DamageOutcome.Resisted;
             }
             actor.Dead = true;
             actor.ResistFailed = true;   // B47a2（Q689）：原死亡主结果前接“未能抵抗致死。”
+            NoteLife(s, actor, null, true, d, before);   // B47b（Q693）：确死结果“死亡”
             return DamageOutcome.Died;
         }
 
@@ -219,6 +224,7 @@ namespace Survival.Core.Engine
             {
                 actor.DyingNotified = false;
                 LifeNote(s, actor, LeaveDyingText(ActorDisplayName(s, actor.Id)), notes);
+                NoteLife(s, actor, BattleFxLife.Revived, false, 0, null);   // B47b（Q691）：并入医疗结果帧“脱离濒死”
             }
             return st.Health - before;
         }

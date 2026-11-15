@@ -530,6 +530,18 @@
 @media (prefers-reduced-motion: reduce) {
   .bfx-layer * { animation-delay: 0s !important; }
 }
+/* ───── B47b（R03 §Q615、R09 §7、S14 Q615／Q616）：支援受益者微光、濒死黯淡跪姿、脱离濒死起身、换位动作、远处镜头标识行 ───── */
+.bfx-glow.aid { background: radial-gradient(closest-side, #e8c46a66, transparent); }
+.bfx-fig.dying .bfx-art { animation: bfx-kneel var(--fx-ms) ease-in both; filter: brightness(var(--dying-dim, .72)) saturate(.7); scale: 1 .86; translate: 0 7%; transform-origin: bottom center; }
+.bfx-fig.revived .bfx-art { animation: bfx-rise var(--fx-ms) ease-out both; transform-origin: bottom center; }
+.bfx-fig.moved .bfx-art { animation: bfx-shift var(--fx-ms) ease-in-out both; }
+.bfx-chip.o-life { font-size: clamp(14px, 1.3vw, 20px); padding: 1px 8px; border: 2px solid currentColor; border-radius: 3px; align-self: center; background: #0009; color: #f0a35e; }
+.bfx-chip.o-life.o-revived { color: #9be38b; }
+.bfx-chip.o-life.o-resisted { color: #e8c46a; }
+.bfx-where { position: absolute; z-index: 2; top: calc(7vh + 14px + clamp(34px, 3.4vw, 52px)); left: 50%; translate: -50% 0; margin: 0; font-size: var(--fs-body); color: #d6ccb4; white-space: nowrap; }
+@keyframes bfx-kneel { 0%, 32% { filter: none; scale: 1 1; translate: 0 0; } 40% { filter: brightness(1.6); } 70%, 100% { filter: brightness(var(--dying-dim, .72)) saturate(.7); scale: 1 .86; translate: 0 7%; } }
+@keyframes bfx-rise { 0%, 30% { filter: brightness(var(--dying-dim, .72)) saturate(.7); scale: 1 .86; translate: 0 7%; } 60%, 100% { filter: none; scale: 1 1; translate: 0 0; } }
+@keyframes bfx-shift { 0%, 25% { translate: 0 0; } 50% { translate: -40px 0; } 100% { translate: 0 0; } }
 /* 短反馈（防御、调息、调整站位、撤退、装填、整队、支撑护带包；敌方非攻击意图）：行动者锚点亮一下，不挡输入、不进队列 */
 .anc.fx-pulse.a .anc-art { animation: fx-pulse-a calc(600ms * var(--motion-k)) ease-out 1; }
 .anc.fx-pulse.b .anc-art { animation: fx-pulse-b calc(600ms * var(--motion-k)) ease-out 1; }

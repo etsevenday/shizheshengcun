@@ -13,20 +13,23 @@
     <div class="bfx-layer @(G.FxUnderReading ? "under" : "") @(G.FxPaused ? "paused" : "")" data-active
          style="--fx-ms:@(G.FxDurationMs)ms" aria-hidden="@(G.FxUnderReading)">
         <h2 class="bfx-title" aria-hidden="true">@ev.Name</h2>
+        @* B47b（R09 Q692）：战斗外／远处只读生命镜头的标识行“{人物} · {地点}” *@
+        @if (ev.Where != null) { <p class="bfx-where" aria-hidden="true">@ev.Where</p> }
         <div class="bfx-stage bfx-@look bfx-m-@ev.Motion @(ev.Actor.IsAlly ? "from-ally" : "from-foe") @(ev.ContinuesSeq != null ? "cont" : "")" @key="G.FxSegment" aria-hidden="true">
             <div class="bfx-group left">@foreach (var u in allies) { @Figure(ev, u) }</div>
             <div class="bfx-group right">@foreach (var u in foes) { @Figure(ev, u) }</div>
             @if (ev.Motion == BattleFxMotion.Ranged) { <i class="bfx-trail @(ev.Actor.IsAlly ? "ltr" : "rtl")"></i> }
         </div>
         <div class="bfx-caption sr-only" aria-live="polite">
+            @if (ev.Where != null) { <p>@ev.Where</p> }
             @foreach (var line in ev.Lines) { <p>@line</p> }
         </div>
     </div>
 }
 
 @code {
-    /// <summary>S14 Q573 列出的战报原词。</summary>
-    private const string MissWord = "未命中", GuardWord = "格挡", CritWord = "暴击", DownWord = "倒地";
+    /// <summary>S14 Q573 列出的战报原词；B47b（R09 Q693）：敌我确死的结果字统一“死亡”（不再用“倒地”兼指仍活着的濒死）。</summary>
+    private const string MissWord = "未命中", GuardWord = "格挡", CritWord = "暴击", DownWord = GameEngine.DeathWord;
 
     /// <summary>
     /// 一段结果的结果字（S14 Q573）：未中「未命中」；格挡「格挡」；暴击「暴击」；扣血「−{数值}」、恢复「+{数值}」取真实变化值（鼓舞提示贴等不显示数值）；
@@ -58,25 +61,32 @@
         var isActor = u.Side == ev.Actor.Side && u.Id == ev.Actor.Id;
         var rs = ev.Results.Where(r => r.Target.Side == u.Side && r.Target.Id == u.Id).ToList();
         var down = rs.Any(r => r.Down);
+        // B47b（R09 §7、S14 Q615／Q616）：濒死转黯淡跪姿；医疗回血脱离濒死做起身；支援受益者微光；换位只做动作
+        var dying = !down && rs.Any(r => r.Life is BattleFxLife.Dying or BattleFxLife.Resisted);
+        var revived = rs.Any(r => r.Life == BattleFxLife.Revived);
+        var moved = rs.Any(r => r.Moved);
+        var aided = ev.Motion == BattleFxMotion.Support && rs.Count > 0;
         var allMiss = rs.Count > 0 && rs.All(r => r.Outcome == "miss");
         var guarded = rs.Any(r => r.Guarded || r.Outcome == "blocked");
         var hurt = rs.Any(r => r.Outcome is "hit" or "crit");
         var healed = rs.Any(r => r.Outcome == "heal") || (ev.Motion == BattleFxMotion.Heal && rs.Count > 0);
-        <div class="bfx-fig @(isActor ? "actor" : "") @(rs.Count > 0 ? "target" : "") @(down ? "down" : "") @(allMiss ? "dodge" : "") @(guarded ? "guard" : "") @(hurt ? "hurt" : "") @(healed ? "healed" : "")">
+        <div class="bfx-fig @(isActor ? "actor" : "") @(rs.Count > 0 ? "target" : "") @(down ? "down" : "") @(dying ? "dying" : "") @(revived ? "revived" : "") @(moved ? "moved" : "") @(aided ? "aided" : "") @(allMiss ? "dodge" : "") @(guarded ? "guard" : "") @(hurt ? "hurt" : "") @(healed ? "healed" : "")">
             <div class="bfx-chips">
                 @for (var i = 0; i < rs.Count; i++)
                 {
                     var r = rs[i];
                     <span class="bfx-chip o-@r.Outcome @(r.Guarded ? "g" : "")" style="--i:@i">@foreach (var w in Words(ev, r)) {<span class="bfx-w @(w.StartsWith("−") || w.StartsWith("+") ? "num" : "")">@w</span>}</span>
                     @foreach (var st in r.States) { <span class="bfx-chip o-state" style="--i:@i">@st</span> }
+                    @foreach (var ch in r.Changes) { <span class="bfx-chip o-state o-change" style="--i:@i">@ch</span> }
                     @if (r.Down) { <span class="bfx-chip o-down" style="--i:@i">@DownWord</span> }
+                    else if (r.Life != null) { <span class="bfx-chip o-life o-@r.Life" style="--i:@i">@GameEngine.LifeWord(r.Life)</span> }
                 }
             </div>
             <div class="bfx-art">
                 @if (u.IsAlly) { <img src="img/portraits/protagonist.svg" alt="" draggable="false" /> }
                 else { @Icons.Markup("enemy_" + u.EnemyId) }
                 @if (guarded) { <i class="bfx-shield"></i> }
-                @if (healed) { <i class="bfx-glow"></i> }
+                @if (healed || aided) { <i class="bfx-glow @(aided ? "aid" : "")"></i> }
             </div>
             <b class="bfx-name">@u.Name</b>
         </div>

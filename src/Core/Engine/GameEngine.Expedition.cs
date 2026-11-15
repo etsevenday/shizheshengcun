@@ -637,6 +637,7 @@ namespace Survival.Core.Engine
             if (st.Hydration <= 0) { health += hr.ZeroHydrationPerHour; causes.Add("缺水"); }
             if (st.Wakefulness <= 0) { health += hr.ZeroWakefulnessPerHour; causes.Add("缺乏睡眠"); }
             if (causes.Count > 0) ctx.DamageCause = causes[0];
+            ctx.DamageCauseCount = causes.Count;
             ctx.HealthPerHour = health;
             ctx.HealthLossPerHour = health;   // B47a1：只有负项（不给自然回血）
             return ctx;

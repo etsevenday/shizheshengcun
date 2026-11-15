@@ -109,7 +109,7 @@ namespace Survival.Core.Engine
                 b.BleedTriggers--;
                 if (actor.IsPlayer) s.Progress.LastDamageCause = "出血";
                 if (b.BleedTriggers == 0) b.BleedDamage = 0;
-                DamageActor(s, actor, d);
+                using (LifeCause("出血")) DamageActor(s, actor, d);   // B47b（Q691）：出血致濒死／死亡的特写标题“出血”
             }
         }
 

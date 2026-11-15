@@ -328,6 +328,28 @@ namespace Survival.Core.State
         /// </summary>
         [JsonIgnore] public int? LifeLogMinute { get; set; }
 
+        /// <summary>
+        /// B47b（R03 §Q617）：战斗播放用的显示快照——只深拷人物（身体、熟练度）、名册、同行、终局标记与战斗（站位、AP、状态、队列、战报），
+        /// 其余（物品、地点、世界敌人等）引用原状态。只供界面只读渲染，不能拿它结算或存档。
+        /// </summary>
+        public GameState DisplayClone()
+        {
+            var c = (GameState)MemberwiseClone();
+            c.Rng = new Rng { State = Rng.State };
+            c.Actors = Actors.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
+            c.Party = new List<string>(Party);
+            c.Roster = Roster.Select(r => r.Clone()).ToList();
+            c.Progress = Progress.Clone();
+            c.Battle = Battle?.Clone();
+            c.WillpowerPending = null;
+            c.WillpowerDepth = 0;
+            c.DyingEntries = null;
+            c.SimProbe = null;
+            c.LifeLogMinute = null;
+            c.PendingEvents = new List<GameEvent>();
+            return c;
+        }
+
         public GameState Clone()
         {
             var c = (GameState)MemberwiseClone();

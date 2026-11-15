@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Survival.Core.State;
 
 namespace Survival.Core.Engine
 {
@@ -146,6 +147,21 @@ namespace Survival.Core.Engine
         public const string Heal = "heal";
         /// <summary>短反馈：只在行动者身上，不切特写、不进播放队列。</summary>
         public const string Short = "short";
+        /// <summary>B47b（R03 文首 B34 §Q615 表）：支援／增益特写——行动者与实际受益者动效，不冒充攻击或真实回血。</summary>
+        public const string Support = "support";
+        /// <summary>B47b（R09 §7、Q691）：没有出手镜头的来源（出血、回合结算、战外伤害）造成生命姿态转变时的独立生命特写。</summary>
+        public const string Life = "life";
+    }
+
+    /// <summary>B47b（R09 §7、Q691、Q693）：一段结果上的生命姿态变化（并入攻击／医疗结果帧，或独立生命特写的结果）。</summary>
+    public static class BattleFxLife
+    {
+        /// <summary>正常→濒死，结果字“濒死”。</summary>
+        public const string Dying = "dying";
+        /// <summary>濒死者再受正伤并抵抗成功（没有新姿态），结果字“抵抗致死”。</summary>
+        public const string Resisted = "resisted";
+        /// <summary>合法用药／医疗实际回血使濒死→正常，结果字“脱离濒死”。</summary>
+        public const string Revived = "revived";
     }
 
     /// <summary>出手事件里的一名角色（行动者或承受者）的只读快照：阵营、稳定编号（我方 actorId、敌方 "e{本场序号}"）、名字、敌人配置 ID。</summary>
@@ -169,8 +185,17 @@ namespace Survival.Core.Engine
         public double Amount { get; set; }
         /// <summary>被格挡／防御减伤。</summary>
         public bool Guarded { get; set; }
-        /// <summary>这一段后倒地。</summary>
+        /// <summary>这一段后确实死亡（B47b Q693：结果字“死亡”；敌人健康归零、我方致死抵抗失败）。</summary>
         public bool Down { get; set; }
+        /// <summary>B47b：这一段的生命姿态变化（<see cref="BattleFxLife"/>；没有为 null）。确死仍用 <see cref="Down"/>。</summary>
+        public string? Life { get; set; }
+        /// <summary>
+        /// B47b（R09 Q694、R03 §Q615）：不是新生效状态的真实变化结果字（“解除{状态}”“恐慌−{实际减少量}”“下次行动点+{实际增加量}”）；
+        /// 只写实际发生的变化，没有就空。
+        /// </summary>
+        public List<string> Changes { get; } = new List<string>();
+        /// <summary>B47b：这一段里承受者真实换了号位（挣脱后移、整队换位）：特写只做换位动作，不另加结果字。</summary>
+        public bool Moved { get; set; }
         /// <summary>B34（S14 Q573）：这次出手让承受者新生效的状态名（与站位角标同名，如“失衡”“标记”）；只挂在该承受者本次最后一段上。</summary>
         public List<string> States { get; } = new List<string>();
     }
@@ -196,6 +221,19 @@ namespace Survival.Core.Engine
         public int? ContinuesSeq { get; set; }
         /// <summary>同一出手（含续段）的根序号。</summary>
         public int RootSeq => ContinuesSeq ?? Seq;
+        /// <summary>
+        /// B47b（R09 Q692）：战斗外的只读生命镜头（没有战场）；<see cref="Where"/> 为标识行“{人物} · {地点}”（缺可信地点时只写人物名）。
+        /// </summary>
+        public bool World { get; set; }
+        /// <summary>B47b（Q692）：远处／战外生命镜头的标识行；战斗内为 null。</summary>
+        public string? Where { get; set; }
+        /// <summary>
+        /// B47b（R03 §Q617）：这一段开始前的显示快照（只读副本：人物、名册、战斗与终局标记；物品等其余引用原状态）。界面播到上一段结果帧时切到它，
+        /// 最后一段结果帧后回到真实状态。不进存档；内核没有在战斗中记录时为 null。
+        /// </summary>
+        [Newtonsoft.Json.JsonIgnore] public GameState? View { get; set; }
+        /// <summary>B47b：结算途中发生、等本出手结束时并到承受者最后一段上的生命姿态变化（阵营:编号 → 变化）。</summary>
+        internal List<(BattleFxUnit Unit, string? Life, bool Dead, double Amount)> LifeMarks { get; } = new List<(BattleFxUnit, string?, bool, double)>();
 
         /// <summary>
         /// 七类表现（a9b93f0 动效合同 melee/ranged/miss/heal/area/guard/defeat）：多目标为 area；有倒地为 defeat；全部未中为 miss；
@@ -206,6 +244,8 @@ namespace Survival.Core.Engine
             get
             {
                 if (Motion == BattleFxMotion.Heal) return BattleFxMotion.Heal;
+                if (Motion == BattleFxMotion.Support) return BattleFxMotion.Support;   // B47b：支援特写不按多目标改成 area
+                if (Motion == BattleFxMotion.Life) return BattleFxMotion.Life;
                 var targets = new HashSet<string>();
                 foreach (var r in Results) targets.Add(r.Target.Side + ":" + r.Target.Id);
                 if (targets.Count > 1 || Motion == BattleFxMotion.Area) return BattleFxMotion.Area;

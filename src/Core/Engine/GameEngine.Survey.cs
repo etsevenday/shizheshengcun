@@ -84,7 +84,8 @@ namespace Survival.Core.Engine
                 var loss = SurveyHazardLoss(s, loc);
                 // B47a1（R09 §3.2）：遗迹勘整风险扣血走统一受伤入口
                 var notes = new List<string>();
-                var life = DamageActor(s, s.Player, loss, notes);
+                DamageOutcome life;
+                using (NoLifeCloseUp()) life = DamageActor(s, s.Player, loss, notes);   // B47b（Q732 待答复）：勘整风险的独立生命特写本批不做
                 s.Progress.LastDamageCause = $"勘整时{h.Label}";
                 Emit(s, GameEventKind.Hazard, $"{h.Label}，健康−{Fmt.T(loss)}。");
                 WriteLifeNotes(s, s.Player, notes);

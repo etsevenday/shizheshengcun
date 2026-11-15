@@ -22,6 +22,8 @@ namespace Survival.Core.Engine
             public bool IsWork;
             public bool Sheltered;
             public string DamageCause = "";
+            /// <summary>B47b（Q691、Q732）：本段健康负项的原因个数（只有一个原因时独立生命特写标题用它；多个原因合成的本批不做独立特写）。</summary>
+            public int DamageCauseCount;
             public List<string> FactorReasons = new List<string>();
             /// <summary>本段角色在做什么（免疫的睡眠/休息加成按它判断）；战斗与无行动为 null。</summary>
             public ActionType? ActionType;
@@ -103,6 +105,7 @@ namespace Survival.Core.Engine
             if (st.Wakefulness <= 0) { health += hr.ZeroWakefulnessPerHour; causes.Add("缺乏睡眠"); }
             if (st.Energy <= 0 && ctx.IsWork) { health += hr.ZeroEnergyWhileWorkingPerHour; causes.Add("体力透支"); }
             if (causes.Count > 0) ctx.DamageCause = causes[0];
+            ctx.DamageCauseCount = causes.Count;
             ctx.HealthLossPerHour = health;
 
             // 自然恢复：休息或睡眠、遮蔽、段首饱食与水分≥40、精神≥20（求生案 04）；B47a1（R09 §5、S13 Q616）：段首濒死者自然恢复为 0，不累存
@@ -397,7 +400,10 @@ namespace Survival.Core.Engine
             st.Add(StatId.Morale, ctx.Rates.Morale * h);
             if (actor.IsPlayer && !string.IsNullOrEmpty(ctx.DamageCause)) s.Progress.LastDamageCause = ctx.DamageCause;
             var loss = -ctx.HealthLossPerHour * h;
-            if (loss > 0) DamageActor(s, actor, loss);
+            // B47b（R09 Q691、Q732 待答复）：只有一个原因时生命特写标题用该原因；多个原因合成一次身体损伤的独立特写本批不做
+            if (loss > 0)
+                using (ctx.DamageCauseCount > 1 ? NoLifeCloseUp() : LifeCause(ctx.DamageCause))
+                    DamageActor(s, actor, loss);
             if (ctx.HealthRecoveryPerHour > 0 && LifeOf(s, actor) == LifeState.Normal) st.Add(StatId.Health, ctx.HealthRecoveryPerHour * h);
         }
 
@@ -724,7 +730,8 @@ namespace Survival.Core.Engine
                 var loss = HazardLoss(s, res);
                 // B47a1（R09 §3.2）：搜集划伤是一次真实健康伤害事件，走统一受伤入口；归 0 先濒死，濒死后再受伤才判致死
                 var notes = new List<string>();
-                var life = DamageActor(s, s.Player, loss, notes);
+                DamageOutcome life;
+                using (NoLifeCloseUp()) life = DamageActor(s, s.Player, loss, notes);   // B47b（Q732 待答复）：划伤的独立生命特写本批不做
                 s.Progress.LastDamageCause = $"搜集时{res.Hazard.Label}";
                 Emit(s, GameEventKind.Hazard, $"{res.Hazard.Label}，健康−{Fmt.T(loss)}。");
                 WriteLifeNotes(s, s.Player, notes);
