@@ -1,0 +1,217 @@
+{
+  "contractVersion": 1,
+  "date": "2026-11-15",
+  "purpose": "完整原批逐题用户答复的策划辅助合同，非运行配置，R03及R09正文优先",
+  "originalBatch": "2026-11-15 ef963cc B47b Q729-Q738",
+  "decisions": {
+    "Q729": "C",
+    "Q730": "A",
+    "Q731": "B",
+    "Q732": "B_with_user_concise_titles",
+    "Q733": "A",
+    "Q734": "A",
+    "Q735": "user_new_rule_world_time_frozen_in_combat",
+    "Q736": "C_tiles_level_resistance_highlight_and_full_bottom_replace",
+    "Q737": "A",
+    "Q738": "A"
+  },
+  "copy": {
+    "accuracy": "命中强化",
+    "damage": "伤害强化",
+    "cover": "减伤",
+    "protected": "受保护",
+    "displace": "位移抵抗提升",
+    "charged": "蓄力完成",
+    "panic": "恐慌−{实际减少量}",
+    "mark": "标记",
+    "watch": "警戒观察",
+    "multiCause": "多原因伤害：{原因清单}",
+    "search": "搜索：{伤因短名}",
+    "survey": "勘整：{伤因短名}",
+    "zombieTitle": "尸变：病毒",
+    "fallback": "生命状态变化",
+    "healTitle": "{本次实际物品、服务或技能名}",
+    "healAmount": "+{实际恢复量}",
+    "recovered": "脱离濒死",
+    "dying": "濒死",
+    "dead": "死亡",
+    "zombieResult": "尸变",
+    "actorPlace": "{人物} · {地点}",
+    "willTile": "{L}级 · 致死抵抗{P}%",
+    "willBottom": "受到敌人造成的正伤害，且该次出手结束时仍活着，才获得意志经验；同一敌人最多3次，每天最多60点。",
+    "health": "0/{上限} · 濒死",
+    "battleTimeLabel": "本场世界时间",
+    "battleTime": "冻结",
+    "oldBattleTime": "已耗{时长}，后续冻结",
+    "battleEndTime": "共{回合数}回合（世界时间冻结）",
+    "oldBattleEndTime": "共{回合数}回合（世界时间已耗{时长}，后续冻结）",
+    "battleHelp": "战斗中世界时间冻结；回合规则照常，战后不补算。",
+    "medicalNote": "确认时生效，不推进世界时间。",
+    "lifeHelp": "生命特写不可跳过；播完恢复快进。",
+    "readingHelp": "特写全屏播放，镜头间隙可查看战斗信息。"
+  },
+  "support": {
+    "perActorActualSnapshot": true,
+    "newOrImprovedOrOriginalValidRefreshOnly": true,
+    "dedupeExistingStates": true,
+    "oneTransactionOnePresentation": true,
+    "originalNumbersTimingAndXp": true,
+    "panicUsesHealingVisual": false
+  },
+  "enemyShort": {
+    "executedOnly": true,
+    "onActingEnemy": true,
+    "actualPursuitWatchIncluded": true,
+    "originalLog": true,
+    "newFullscreen": false,
+    "revealFutureIntent": false
+  },
+  "worldFreeze": {
+    "start": "actual_battle_created_after_original_prebattle_commit",
+    "end": "all_battle_resolution_paths_completed",
+    "roundWorldMinutes": 0,
+    "earlyEndWorldMinutes": 0,
+    "exitCatchupWorldMinutes": 0,
+    "worldSegmentCountIncrement": 0,
+    "convertRoundsOrRealTimeToMinutes": false,
+    "pausedSystems": [
+      "all_actor_natural_hourly_rates_and_zero_stat_hourly_damage",
+      "world_bleed_and_natural_health",
+      "immunity_virus_disease_and_natural_cure",
+      "reserve_rest_care_alerts",
+      "world_minute_cooldowns_effect_expiry",
+      "food_corpse_expiry_fuel_all_passive_production",
+      "active_work_and_wait_progress",
+      "world_enemy_timers_patrol_spawn_despawn",
+      "recruitment_visitors_refill_daily_reset"
+    ],
+    "worldDeadlinesShifted": false,
+    "boundRawRReinitialized": false,
+    "localCombatRulesPreserved": [
+      "round_activation_AP",
+      "real_action_energy_items_ammo_durability",
+      "round_bleed_status_reinforcement",
+      "reaction_damage_heal_direct_infection_and_zombification",
+      "willpower_rolls_XP_original_caps",
+      "postbattle_direct_panic_morale_settlement_rewards"
+    ],
+    "remoteNaturalLifeQueueAdded": false,
+    "remoteLifeDeferredToExit": false,
+    "prebattleCommittedEventsPreserved": true,
+    "worldAndDungeonRetreatOriginalLandingZeroExtraMinutes": true,
+    "laterIndependentMovementAndExpeditionExitOriginalCosts": true,
+    "oldActiveBattle": "preserve_actual_world_time_and_all_commits_then_freeze_only_unsubmitted_future",
+    "oldElapsed": "trustworthy_saved_counter_only_no_future_round_increment",
+    "missingOldElapsed": "show_frozen_without_guessing",
+    "rollbackOldWorldTime": false,
+    "advanceWorldInPreview": false
+  },
+  "lifeTitles": {
+    "realCausesOnly": true,
+    "aggregateDamageAndRollCountUnchanged": true,
+    "order": [
+      "饥饿",
+      "缺水",
+      "缺乏睡眠",
+      "体力透支"
+    ],
+    "separator": "、",
+    "singleCauseOriginalName": true,
+    "searchContextOnly": true,
+    "noNewOrdinaryInjuryOrStandaloneResistanceCloseup": true,
+    "actorPlaceFromEvent": true
+  },
+  "outsideHealing": {
+    "actualDyingToNormalOnly": true,
+    "titleActualItemServiceSkill": true,
+    "amountActualPositiveHealthDelta": true,
+    "mergeSameEvent": true,
+    "newPermissionOrCost": false,
+    "replayHistory": false
+  },
+  "outsideLife": {
+    "allOriginalEligibleLocalAndRemote": true,
+    "skippable": false,
+    "playsDuringFastForward": true,
+    "noNextWorldSegmentDuringPlayback": true,
+    "resumeOriginalFastForwardSetting": true,
+    "overrideDomainPause": false,
+    "menuFreezesFrame": true,
+    "originalSpeedReducedMotion": true,
+    "ordinaryWorldActionSkipUnchanged": true,
+    "originalTerminalPriorityAndEligibility": true
+  },
+  "willpower": {
+    "tiles": [
+      {
+        "level": 1,
+        "percent": 65
+      },
+      {
+        "level": 3,
+        "percent": 69
+      },
+      {
+        "level": 5,
+        "percent": 73
+      },
+      {
+        "level": 7,
+        "percent": 77
+      },
+      {
+        "level": 10,
+        "percent": 83
+      }
+    ],
+    "attainedHighlightOnly": true,
+    "unlockOrRequiredLevelText": false,
+    "learnOrCastControls": false,
+    "replaceEntireBottomLine": true,
+    "otherPagesUnchanged": true,
+    "intermediateLevelsOriginalFormula": true
+  },
+  "reading": {
+    "fullscreenOverInfoAndOrdinaryFullRecord": true,
+    "scrollDuringPlaybackOrHold": false,
+    "scrollInOriginalGaps": true,
+    "retainOpenSelectionScroll": true,
+    "addedExtendedGaps": false,
+    "clickPassThroughOrQueue": false,
+    "fullRecordLowersCloseup": false,
+    "menuOriginalSystemSubviewFreezes": true,
+    "originalResultFrameAndRecords": true
+  },
+  "health": {
+    "allExistingPersistentFractions": true,
+    "realDyingOnly": true,
+    "roundedPositiveHealthNotDying": true,
+    "deadZombieOriginalLabels": true,
+    "outsidePortraitDimmed": false,
+    "dimOriginalBattlePositionsAndCloseups": true,
+    "historyForecastSemanticsUnchanged": true
+  },
+  "acceptance": [
+    "Q729-A01",
+    "Q729-A02",
+    "Q730-A01",
+    "Q731-A01",
+    "Q735-A01",
+    "Q735-A02",
+    "Q735-A03",
+    "Q735-A04",
+    "Q735-A05",
+    "Q735-A06",
+    "Q737-A01",
+    "Q737-A02",
+    "Q732-A01",
+    "Q732-A02",
+    "Q733-A01",
+    "Q734-A01",
+    "Q734-A02",
+    "Q736-A01",
+    "Q736-A02",
+    "Q738-A01",
+    "Q738-A02"
+  ]
+}

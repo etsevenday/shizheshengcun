@@ -267,5 +267,12 @@
       "B51-A17",
       "B51-A18"
     ]
+  },
+  "q735CurrentPriority": {
+    "source": "battle-time-and-feedback-q729-q738.json",
+    "battleWorldMinutes": 0,
+    "passiveProgressDuringCombat": false,
+    "battleExitCatchup": false,
+    "originalWorldWorkRawProtectionAndCommitsPreserved": true
   }
 }
