@@ -50,6 +50,7 @@
                 var list = items.Where(i => i.ItemId == id && e.CardSideOf(i) == side).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
                 if (list.Count == 0) continue;
                 var allKb = e.BatchesOf(s, Owner, id);
+                var rotGroup = id == GameEngine.SpoiledMatterId;
                 var sideKb = allKb.Where(b => e.CardSideOf(b.Stacks[0]) == side).ToList();
                 var split = sideKb.Count < allKb.Count;   // 同物品另有一张普通卡/战利品卡
                 var total = list.Sum(i => i.Count);
@@ -76,6 +77,18 @@
                     {
                         var b = kb[k];
                         var bk = b.Key;
+                        if (rotGroup)
+                        {
+                            @* B50a（S06 文首 Q715）：腐败物后层角标／悬停「第{序号}批×{数量}」，不再重复已腐败；悬停保留真实重量／上限／预留／来源 *@
+                            var layer = GameEngine.SpoiledLayerText(k + 1, b.Count);
+                            var layerTitle = layer + " · " + e.SpoiledUnitText(b.Stacks, e.NeedsStackCapNote(allKb, b)) + (b.Reserved ? " · 预留" : "") + (e.OriginListText(b.Stacks) is string org ? " · " + org : "");
+                            <button type="button" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, bk)" class="stack-layer spoiled @(b.Reserved ? "reserved" : "")" style="--i:@k"
+                                    title="@layerTitle" aria-label="@layerTitle" @onclick="() => SelectSide(id, allKb, kb)">
+                                <span class="sl-art">@Icons.Markup(id)</span>
+                                <span class="sl-tag"><b>@layer</b></span>
+                            </button>
+                            continue;
+                        }
                         var fresh = b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute);
                         <button type="button" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, bk)" class="stack-layer @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" style="--i:@k"
                                 title="@($"第{k + 1}批×{b.Count}：{fresh}{e.PatchDurabilitySuffix(b.Stacks[0])}{(b.Reserved ? " · 预留" : "")}")" aria-label="@($"第{k + 1}批，{b.Count}份，{fresh}")"

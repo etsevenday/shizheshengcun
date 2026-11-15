@@ -34,7 +34,9 @@ else
     var chosen = (group ? batches.FirstOrDefault(b => b.Key == groupKey) : batches.FirstOrDefault(b => b.Key == batchKey && batchPicked))
                  ?? batches.FirstOrDefault(b => !b.Reserved && !Spoiled(b)) ?? batches[0];
     var inst = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null) ?? chosen.Stacks[0];
-    var spoiled = Spoiled(chosen);
+    // B50a（S06 文首 Q715）：腐败物本身就是腐败状态（无截止），详情给正式拒绝句
+    var rot = sel.Id == GameEngine.SpoiledMatterId;
+    var spoiled = Spoiled(chosen) || rot;
     // B22d 试玩修复 M418（Q178）：已鉴定/未鉴定白色活性物质是两张卡，详情、批次列表与重量只算所点这一侧，另一侧只写一句在另一张卡
     var aprSide = e.CardSideOf(chosen.Stacks[0]);
     var aprSplit = group && batches.Any(b => GameEngine.IsSampleSide(e.CardSideOf(b.Stacks[0])));   // B22f Q179：教学样本卡同样分开
@@ -150,6 +152,11 @@ else
             }
             <div><span>合计重量</span><b>@Ui.Kg(list.Sum(i => e.ItemGrams(s, i)))公斤@(e.IsPot(inst) ? "（含锅内）" : "")</b></div>
             @if (total > 1) { <div><span>单件重量</span><b>@Ui.UnitKg(e, list)公斤</b></div> }
+            @if (rot && e.OriginEntries(list) is { Count: > 0 } origins)
+            {
+                @* B50a（S06 文首 Q711）：腐败物已知来源，标题「来源」，各项「{原物名}×{已知份数}」；无已知项整段隐藏，不写未知 *@
+                <div class="wide"><span>@GameEngine.OriginTitle</span><b>@string.Join("、", origins)</b></div>
+            }
             @if (inst.MaxDurability.HasValue && inst.Durability.HasValue)
             {
                 <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(inst))</b></div>
@@ -198,7 +205,7 @@ else
         }
         else if (spoiled)
         {
-            <div class="blocked">已腐败，不能食用或用于配方。仍有重量，可以放下丢弃。</div>
+            <div class="blocked">@(rot ? GameEngine.SpoiledMatterDetailText : "已腐败，不能食用或用于配方。仍有重量，可以放下丢弃。")</div>
         }
         else if (cfg.RequiresCooking)
         {
@@ -279,7 +286,10 @@ else
                 @foreach (var b in batches)
                 {
                     var key = b.Key;
-                    RenderFragment batchText = @<text>
+                    RenderFragment batchText = rot ? @<text>
+                        @* B50a（S06 文首 Q669）：腐败物批次写物理明细，不再写不会腐败／假倒计时 *@
+                        <span>@e.SpoiledPhysicalText(b.Stacks, RotNeedsCap(b))@(b.Reserved ? " · 预留" : "")</span>
+                    </text> : @<text>
                         <span>×@b.Count@(b.Reserved ? " · 预留" : "")@(b.Stacks[0].RewardOrigin != null ? " · 本实例战利品（可封存）" : "")@(e.IsIdentifiedWhite(b.Stacks[0]) || e.IsIdentifiedTutorial(b.Stacks[0]) ? " · 已鉴定" : "")@(e.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")@(e.PatchDurabilitySuffix(b.Stacks[0]))</span>
                         @* 试玩修复 M77-B9：受本次烹饪保护的食材不显示普通倒计时，写“受热保护中（原期限N小时）” *@
                         <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(!b.ExpiresAt.HasValue ? "不会腐败" : b.Stacks.Count == 1 && e.IsHeatProtected(s, b.Stacks[0]) ? Ui.FreshOf(e, s, b.Stacks[0]) : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute))</span>
@@ -325,6 +335,13 @@ else
     }
 
     private bool Spoiled(Batch b) => b.ExpiresAt.HasValue && b.Stacks.All(i => G.E.IsSpoiled(G.S, i));
+
+    /// <summary>B50a（Q669）：这一腐败物批是否附「每堆最多{上限}份」（同列另有同克重不同上限的批）。</summary>
+    private bool RotNeedsCap(Batch b)
+    {
+        var all = G.E.BatchesOf(G.S, b.Stacks[0].Owner, GameEngine.SpoiledMatterId);
+        return all.FirstOrDefault(x => x.Key == b.Key) is ItemBatch ib && G.E.NeedsStackCapNote(all, ib);
+    }
 
     private void PickBatch(string key, bool group)
     {

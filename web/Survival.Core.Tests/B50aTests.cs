@@ -712,4 +712,29 @@ public class B50aTests : TestBase
         WaitUntil(s, s.GameMinute + 10);
         Assert.That(s.Log.Skip(n1).Select(l => l.Text), Has.None.Contains("已腐败"), "查看后不补刷");
     }
+
+    // ───────────── M952 网页壳接线（Q715-A01、Q669-A01、Q711、Q713 清理悬停） ─────────────
+
+    /// <summary>Q715-A01／Q669-A01：腐败物后层「第{序号}批×{数量}」、两处明细写物理明细与来源、详情拒绝句；不再写已腐败／不会腐败。</summary>
+    [Test]
+    public void Q715_Q669_Shell_LayerTag_PhysicalDetail_Origin_RejectText()
+    {
+        Assert.That(GameEngine.SpoiledLayerText(2, 3), Is.EqualTo("第2批×3"));
+        Assert.That(GameEngine.SpoiledMatterDetailText, Is.EqualTo("不可食用或用于配方，可放下丢弃。"));
+        var s = New();
+        var r = Rotten(s, "camp", 3, 250, 10, new Dictionary<string, int> { ["raw_meat"] = 1 });
+        Assert.That(E.SpoiledUnitText(new[] { r }, true), Is.EqualTo("每份0.25公斤 · 每堆最多10份"));
+        Assert.That(E.SpoiledPhysicalText(new[] { r }, false), Is.EqualTo("×3 · 每份0.25公斤"));
+
+        var shelf = Web("Components", "ItemShelf.razor");
+        Assert.That(shelf, Does.Contain("GameEngine.SpoiledLayerText(k + 1, b.Count)").And.Contain("e.SpoiledUnitText(b.Stacks, e.NeedsStackCapNote(allKb, b))").And.Contain("e.OriginListText(b.Stacks)"),
+            "后层角标／悬停按 Q715，悬停保留重量／上限／预留／来源");
+        var actions = Web("Components", "CardActions.razor");
+        Assert.That(actions, Does.Contain("G.E.SpoiledPhysicalText(b.Stacks, G.E.NeedsStackCapNote(m.Batches, b))").And.Contain("RotBatchTitle"), "操作窗批次写物理明细");
+        var detail = Web("Components", "ItemDetail.razor");
+        Assert.That(detail, Does.Contain("GameEngine.SpoiledMatterDetailText").And.Contain("GameEngine.OriginTitle").And.Contain("e.SpoiledPhysicalText(b.Stacks, RotNeedsCap(b))"),
+            "详情拒绝句、来源段、批次物理明细");
+        var dry = Web("Components", "DryingOverlay.razor");
+        Assert.That(dry, Does.Contain("v.CleanupHint").And.Not.Contain("会在完成前腐败"), "缺料／未知清理悬停；撤去果干临期红字判断");
+    }
 }

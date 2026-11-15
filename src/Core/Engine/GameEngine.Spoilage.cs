@@ -234,11 +234,21 @@ namespace Survival.Core.Engine
         /// 腐败物物理明细「×{总份数} · 每份{重量}公斤」（逐字稿 Q711，无来源也保留）；needCap 时接「 · 每堆最多{上限}份」（Q669／Q711 必要时附真实继承上限）。
         /// 重量按这批实物的每份精确克重转两位小数公斤（配置占位 1 克／2 份不参与）。
         /// </summary>
-        public string SpoiledPhysicalText(IReadOnlyCollection<ItemInstance> stacks, bool needCap)
+        public string SpoiledPhysicalText(IReadOnlyCollection<ItemInstance> stacks, bool needCap) =>
+            $"×{stacks.Sum(i => i.Count)} · " + SpoiledUnitText(stacks, needCap);
+
+        /// <summary>物理明细去掉份数的部分「每份{重量}公斤」（needCap 时接「 · 每堆最多{上限}份」），供已写份数的后层悬停接在后面。</summary>
+        public string SpoiledUnitText(IReadOnlyCollection<ItemInstance> stacks, bool needCap)
         {
             var head = stacks.First();
-            return $"×{stacks.Sum(i => i.Count)} · 每份{Fmt.KgValue(UnitGrams(head))}公斤" + (needCap ? $" · 每堆最多{StackMaxOf(head)}份" : "");
+            return $"每份{Fmt.KgValue(UnitGrams(head))}公斤" + (needCap ? $" · 每堆最多{StackMaxOf(head)}份" : "");
         }
+
+        /// <summary>腐败物叠卡后层角标／悬停「第{序号}批×{数量}」（逐字稿 Q715，不再重复已腐败）。</summary>
+        public static string SpoiledLayerText(int ordinal, int count) => $"第{ordinal}批×{count}";
+
+        /// <summary>当前物品详情里腐败物的拒绝句（逐字稿 Q715）。</summary>
+        public const string SpoiledMatterDetailText = "不可食用或用于配方，可放下丢弃。";
 
         /// <summary>这一批在同一列明细里是否要附上限：另有每份克重相同而继承上限不同的腐败物批（否则两行无法区分）。</summary>
         public bool NeedsStackCapNote(IEnumerable<ItemBatch> all, ItemBatch b)

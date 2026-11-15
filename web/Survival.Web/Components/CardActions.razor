@@ -27,6 +27,14 @@
                 <span class="ca-batches-title">@BatchHead(m.Batches.Count)</span>
                 @foreach (var b in m.Batches)
                 {
+                    @if (GameEngine.IsSpoiledMatter(b.Stacks[0]))
+                    {
+                        @* B50a（S06 文首 Q669／Q711／Q715）：腐败物批写物理明细「×{总份数} · 每份{重量}公斤」（必要时附上限），不写已腐败／不会腐败；悬停接来源 *@
+                        <span role="listitem" class="ca-batch spoiled @(b.Reserved ? "reserved" : "")" title="@RotBatchTitle(m.Batches, b)">
+                            <small>@G.E.SpoiledPhysicalText(b.Stacks, G.E.NeedsStackCapNote(m.Batches, b))@(b.Reserved ? " · 预留" : "")</small>
+                        </span>
+                        continue;
+                    }
                     <span role="listitem" class="ca-batch @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" title="@BatchTitle(b)">
                         <b>×@b.Count</b><small>@BatchFresh(b)@(b.Reserved ? " · 预留" : "")@(G.E.IsIdentifiedWhite(b.Stacks[0]) || G.E.IsIdentifiedTutorial(b.Stacks[0]) ? " · 已鉴定" : "")@(G.E.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")</small>
                     </span>
@@ -426,6 +434,9 @@
 
     /// <summary>BM5b2（Q606）：批次组标题「批次」／「批次（{批数}）」。</summary>
     public static string BatchHead(int count) => count > 1 ? $"批次（{count}）" : "批次";
+
+    private string RotBatchTitle(List<ItemBatch> all, ItemBatch b) =>
+        G.E.SpoiledPhysicalText(b.Stacks, G.E.NeedsStackCapNote(all, b)) + (b.Reserved ? " · 正被当前行动预留" : "") + (G.E.OriginListText(b.Stacks) is string org ? " · " + org : "");
 
     private string BatchTitle(ItemBatch b) =>
         $"这一批×{b.Count}：{BatchFresh(b)}{(string.IsNullOrEmpty(b.GrantEventId) ? "" : " · 来源单独成批")}{(b.Reserved ? " · 正被当前行动预留" : "")}";
