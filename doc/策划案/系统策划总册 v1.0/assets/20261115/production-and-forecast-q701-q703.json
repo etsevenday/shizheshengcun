@@ -1,0 +1,129 @@
+{
+  "version": "Q701-user-production-rules-20261115",
+  "date": "2026-11-15",
+  "purpose": "S08文首Q701唯一正文的策划合同，不是运行配置或实装声明",
+  "decisions": {
+    "Q701": "user_new_rules_not_original_ui_A_or_B",
+    "followup1": "A",
+    "followup2": "all_facility_batches_process_simultaneously",
+    "followup3": "positive_durability_tool_finishes_original_whole_production_order"
+  },
+  "scope": [
+    "hand_and_workshop_craft",
+    "construction",
+    "maintenance_and_patch_consumable_inputs",
+    "salvage_consumable_auxiliary_inputs",
+    "animal_carcass_processing_input",
+    "kiln_and_fixed_water_station_inputs",
+    "existing_q666_drying"
+  ],
+  "inputProtection": {
+    "starts": "atomic_successful_start_or_passive_batch_feed",
+    "remaining": "R = original_expiry - successful_start_minute; require R > 0",
+    "protected": "exact_real_bound_input_portions_only",
+    "pausedDuringOriginalLegalWorkPause": true,
+    "releaseExpiry": "actual_release_minute_C + saved_R",
+    "returnSource": "original_Q466_Q471_Q488_Q596",
+    "restoreFullInitialShelfLife": false,
+    "protectUnboundStockOrOutputsOrTools": false,
+    "existingPotHeatProtection": "existing_independent_contract_no_stacked_R",
+    "alreadySpoiledRevived": false
+  },
+  "parallel": {
+    "stations": [
+      "kiln",
+      "water_station"
+    ],
+    "maxUnfinishedPerStation": 10,
+    "waitingBatches": false,
+    "allSuccessfulFedBatchesStartImmediately": true,
+    "worldTickMinutes": 5,
+    "progressPerActiveBatchPerTick": 5,
+    "worldTicksPerWorldSegment": 1,
+    "kilnBatchMinutes": 60,
+    "waterStationBatchMinutes": 30,
+    "kilnCharcoalFuelPerBatch": 1,
+    "waterStationExtraFuelAdded": false,
+    "xpPerKilnBatch": 6,
+    "xpPerWaterBatch": 3,
+    "sharedDailyActualXpCapPerActor": 12,
+    "xpTieOrder": "original_stable_facility_traversal_then_original_batch_creation_id",
+    "newBatchBackfillsOldProgress": false,
+    "perBatchCancelUsesStableId": true,
+    "oldCancelWaitingBecomesCancelAll": false
+  },
+  "tools": {
+    "scope": "required_tools_for_listed_production_orders_only",
+    "startDurabilityStrictlyGreaterThan": 0,
+    "compareUnrounded": true,
+    "wholeOrder": "successfully_started_locked_recipe_count_and_work_amount_no_later_extension",
+    "wearAmountAndTimingUnchanged": true,
+    "ownProductionWearToZero": "same_order_eligibility_and_original_production_bonus_continue_until_that_order_ends",
+    "durabilityFloor": 0,
+    "otherUseAtZeroAllowed": false,
+    "newOrderAtZeroAllowed": false,
+    "externalRemovalOrDestructionCreatesTool": false,
+    "completedOrderRemainingPositiveForciblyBreaksTool": false,
+    "cancelRefundsSpentWear": false,
+    "originalSuccessOnlyWearOnCancelStillNotCharged": true,
+    "scopeExcludes": [
+      "combat_and_reaction",
+      "gathering",
+      "ordinary_movement",
+      "ignition_lighter",
+      "repair_resource_amounts"
+    ]
+  },
+  "migration": {
+    "trustedInputR": "preserve",
+    "newCoveredOldValidUnexpiredInput": "R = original_E - upgrade_U_no_retroactive_compensation",
+    "oldAlreadySpoiledFailedCompleted": "do_not_revive_or_reaward",
+    "oldValidWaitingBatches": "parallel_from_upgrade_future_segments_no_backfilled_progress",
+    "oldActiveBatchProgress": "preserve",
+    "oldToolPositive": "qualify_remaining_same_order_at_upgrade_no_restore",
+    "oldZeroToolNoTrustedAllowance": "original_validation_no_fabricated_positive_durability"
+  },
+  "planFailure": {
+    "basis": "already_approved_Q682_Q683_unknown_values_policy",
+    "unreliableExistingCompletionXp": "未预估",
+    "staticOutputLabel": "配方产物",
+    "pretendRewardsOrForcedCompletion": false
+  },
+  "copy": {
+    "preservation": "开工后，本次原料暂停保质计时；取消或中止时，未消耗原料恢复开工时的剩余保质。",
+    "remaining": "保质暂停，剩余{时长}",
+    "resume": "{原料名}恢复开工时剩余的保质（保质到{日期时刻}）。",
+    "toolNote": "耐久不足不会中断本次生产；工具将在本次生产结束后损坏。",
+    "toolState": "本次生产结束后损坏",
+    "toolBroken": "这件工具已损坏，请更换或维修。",
+    "parallelTitle": "加工中{批数}批（最多10批）",
+    "parallelHelp": "本设施已投料的各批同时加工，分别按本批耗时完成；每座最多同时加工10批。",
+    "batch": "批次{序号} · {配方名} · {已进行}/{所需}分 · 预计{日期时刻}完成",
+    "cancel": "取消本批",
+    "full": "加工批次已满（10批）。",
+    "room": "还可同时加工{剩余批数}批，请减少投料批数。",
+    "changed": "加工批次已变化，请重新选择。",
+    "none": "当前区的{设施名}没有进行中的加工批次。",
+    "staticOutput": "配方产物",
+    "unknown": "未预估",
+    "planFailed": "按当前条件无法预估完成。",
+    "later": "约{时长}后：",
+    "laterUnknown": "时间未预估：",
+    "multiAlert": "{人物}：途中{属性}将越过提醒阈值，行动会暂停",
+    "singleAlert": "途中{属性}将越过提醒阈值，行动会暂停",
+    "cancelResult": "已取消{区域}{设施名}的批次{序号}（已进行{时长}，不退时间）：未消耗原料退回{区域}地面，没有产物、不给经验。",
+    "cancelNoReturn": "已取消{区域}{设施名}的批次{序号}（已进行{时长}，不退时间）：没有可返还的剩余原料，没有产物、不给经验。"
+  },
+  "acceptance": [
+    "Q701-A01",
+    "Q701-A02",
+    "Q701-A03",
+    "Q701-A04",
+    "Q701-A05",
+    "Q701-A06",
+    "Q701-A07",
+    "Q701-A08",
+    "Q701-A09",
+    "Q701-A10"
+  ]
+}

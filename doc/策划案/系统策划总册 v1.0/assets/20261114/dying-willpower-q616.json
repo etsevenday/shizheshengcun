@@ -1,7 +1,7 @@
 {
-  "contractVersion": 6,
+  "contractVersion": 7,
   "date": "2026-11-15",
-  "purpose": "Q616及已答濒死补充合同，含Q698—Q699健康提醒与世界段日志；唯一正文R09，不是运行配置或已实装声明",
+  "purpose": "Q616及已答濒死补充合同，含Q701新生产语义及Q702—Q703预估可读性；唯一生命正文R09、生产正文S08，非运行配置",
   "scope": {
     "friendlyActors": [
       "protagonist",
@@ -530,6 +530,51 @@
       "Q698-A02",
       "Q699-A01",
       "Q699-A02"
+    ]
+  },
+  "q701ToQ703": {
+    "decisions": {
+      "Q701": "user_new_production_rules_see_production_contract_not_original_ui_A_or_B",
+      "Q702": "A",
+      "Q703": "A"
+    },
+    "productionContract": "../20261115/production-and-forecast-q701-q703.json",
+    "planFailure": "Q682_Q683_unreliable_completion_fields_including_existing_xp_value_unestimated_static_recipe_output_only",
+    "laterRisk": {
+      "prefix": "约{时长}后：",
+      "unknownPrefix": "时间未预估：",
+      "relativeMinutes": "own_first_risk_segment_end_T_minus_current_preview_start_S",
+      "usesOriginalClockDuration": true,
+      "doesNotUseSharedBodyCutoffOrRepeatAlreadyElapsed": true,
+      "keepOriginalCompleteRiskSentenceAndOrder": true,
+      "compactAndAccessibleOutletsSameSource": true
+    },
+    "thresholdAlert": {
+      "multiActor": "{人物}：途中{属性}将越过提醒阈值，行动会暂停",
+      "singleActor": "途中{属性}将越过提醒阈值，行动会暂停",
+      "identity": [
+        "actual_actor_id",
+        "stat_id",
+        "segment"
+      ],
+      "onlyRealProjectedFutureCrossing": true,
+      "initialAlreadyBelowAloneDoesNotEmitFutureCrossing": true,
+      "recoveryToOriginalClearConditionThenRealRecrossAllowed": true,
+      "scope": "original_relevant_living_actors_and_reliable_body_horizon",
+      "realReminderPauseAndLatchesUnchanged": true
+    },
+    "readOnly": {
+      "mutateState": false,
+      "consumeRandom": false,
+      "appendLogs": false,
+      "changeLatches": false,
+      "awardXp": false
+    },
+    "acceptance": [
+      "Q702-A01",
+      "Q702-A02",
+      "Q703-A01",
+      "Q703-A02"
     ]
   }
 }
