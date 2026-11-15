@@ -309,6 +309,32 @@ public class BM8Tests : B41cTestBase
             Assert.That(Web("Components", f), Does.Contain("Edit=\""), f);
     }
 
+    /// <summary>
+    /// BM8 试玩修复（S14 Q660 情境表“转移”行）：转移条、倒出、加工放入、放下数量框、交接数量的唯一确认，只在焦点在数量框里（编辑中）时标「Enter」；
+    /// 没有数量框或焦点不在框里时标「空格」并带兼容键悬停句（EnterCap 非 Edit 分支）与 aria-keyshortcuts="Space Enter"。
+    /// </summary>
+    [Test]
+    public void Q660_Playtest_EnterCapOnlyWhileEditingQuantity()
+    {
+        const string foc = "@onfocus=\"() => _qtyEditing = true\" @onblur=\"() => _qtyEditing = false\"";
+        var ca = Web("Components", "CardActions.razor");
+        Assert.That(ca, Does.Not.Contain("Edit=\"true\""), "不再无条件标 Enter");
+        Assert.That(System.Text.RegularExpressions.Regex.Matches(ca, System.Text.RegularExpressions.Regex.Escape(foc)).Count, Is.EqualTo(2), "转移与倒出两个数量框跟踪编辑焦点");
+        Assert.That(ca, Does.Contain("var goEdit = m.Mode == Mode.Stack && _qtyEditing;"), "单件（无数量框）永不标 Enter");
+        Assert.That(ca, Does.Contain("aria-keyshortcuts=\"@(goEdit ? \"Enter\" : \"Space Enter\")\""));
+        Assert.That(ca, Does.Contain("Edit=\"@goEdit\""));
+        Assert.That(ca, Does.Contain("Edit=\"@(max > 1 && _qtyEditing)\""));
+        foreach (var file in new[] { "FireMenu.razor", "DropQuantity.razor", "GearGive.razor" })
+        {
+            var src = Web("Components", file);
+            Assert.That(src, Does.Not.Contain("Edit=\"true\""), file);
+            Assert.That(src, Does.Contain(foc), file);
+            Assert.That(src, Does.Contain("\"Space Enter\""), file);
+        }
+        var cap = Web("Components", "EnterCap.razor");
+        Assert.That(cap, Does.Contain("else {<kbd class=\"kc\" title=\"@ShellKeys.ConfirmKeysTitle\">@ShellKeys.SpaceCap</kbd>}"), "非编辑：空格键帽＋兼容键悬停句");
+    }
+
     private static string BattleAimHint()
     {
         var bs = Web("Components", "BattleScreen.razor");

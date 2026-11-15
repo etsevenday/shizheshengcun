@@ -138,11 +138,11 @@ public class B43KeyHintTests : TestBase
             Assert.That(Regex.Matches(src, "data-enter[ >]").Count, Is.EqualTo(count), file + " 确认按钮数");
             Assert.That(src, Does.Contain(button), file);
         }
-        Has("DropQuantity", "<EnterCap On=\"@(!invalid)\" Edit=\"true\" />");   // BM8（Q660）：数量框提交位仍标 Enter
+        Has("DropQuantity", "<EnterCap On=\"@(!invalid)\" Edit=\"@_qtyEditing\" />");   // BM8（Q660）／试玩修复：数量框编辑中才标 Enter
         // B45b（Q584）：加工菜单锅层多个可能动作时由 HideEnterCap 收起键帽，其余同 disabled 条件
         Has("CardActions", "<EnterCap On=\"@(!HideEnterCap && why == null)\" />", 3);
         Has("GearCompare", "@GearPanelCopy.ConfirmEquip<EnterCap On=\"@(p.Blocked == null)\" />");
-        Has("GearGive", "@GearPanelCopy.ConfirmGive<EnterCap On=\"@(p.Blocked == null)\" Edit=\"@p.ShowQuantity\" />");   // BM8（Q660）：有数量框时标 Enter
+        Has("GearGive", "@GearPanelCopy.ConfirmGive<EnterCap On=\"@(p.Blocked == null)\" Edit=\"@(p.ShowQuantity && _qtyEditing)\" />");   // BM8（Q660）／试玩修复：数量框编辑中才标 Enter
         Has("OverflowOverlay", "<EnterCap On=\"@(!(over || _busy))\" />");
         Has("DuplicateWeaponOverlay", "@GearPanelCopy.DupConfirm<EnterCap");
         Has("ExpeditionAbort", "确认终止并撤出<EnterCap");

@@ -37,7 +37,7 @@
         {
             <div class="g3-row"><span>@GearPanelCopy.Quantity</span>
                 <span class="g3-qty">
-                    <input type="number" min="1" max="@p.Max" value="@g.Count" aria-label="@GearPanelCopy.Quantity" @onchange="SetCount" />
+                    <input type="number" min="1" max="@p.Max" value="@g.Count" aria-label="@GearPanelCopy.Quantity" @onchange="SetCount" @onfocus="() => _qtyEditing = true" @onblur="() => _qtyEditing = false" />
                     <button type="button" class="eq-btn" disabled="@(g.Count == p.Max)" @onclick="() => G.GearGiveCount(p.Max)">@GearPanelCopy.Max</button>
                 </span>
             </div>
@@ -55,13 +55,15 @@
         @if (p.ContainerNote) { <div class="tiny muted">@GearPanelCopy.ContainerNote</div> }
         @if (p.Blocked != null) { <div class="warn-text g3-why">@p.Blocked</div> }
         <div class="g3-actions">
-            <button type="button" class="primary" data-enter disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmGive<EnterCap On="@(p.Blocked == null)" Edit="@p.ShowQuantity" /></button>
+            <button type="button" class="primary" data-enter aria-keyshortcuts="@(p.ShowQuantity && _qtyEditing ? "Enter" : "Space Enter")" disabled="@(p.Blocked != null)" title="@p.Blocked" @onclick="Confirm">@GearPanelCopy.ConfirmGive<EnterCap On="@(p.Blocked == null)" Edit="@(p.ShowQuantity && _qtyEditing)" /></button>
         </div>
         </div>
     </div>
 }
 
 @code {
+    /// <summary>BM8 试玩修复（S14 Q660 情境表）：焦点在数量框里（正在编辑数量）时空格归输入、只有 Enter 提交，键帽标「Enter」；否则唯一确认标「空格」（Enter 兼容）。</summary>
+    private bool _qtyEditing;
     private void SetCount(ChangeEventArgs ev)
     {
         if (int.TryParse(ev.Value?.ToString(), out var n)) G.GearGiveCount(n);

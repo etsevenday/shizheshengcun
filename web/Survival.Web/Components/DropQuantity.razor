@@ -14,13 +14,13 @@
             <div class="tbar-row">
                 <button type="button" class="tbar-step" aria-label="减少" @onclick="() => Step(-1)">−</button>
                 <span class="tbar-qlabel">@ShellKeys.Qty <kbd class="kc">@ShellKeys.Digits</kbd></span>
-                <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" aria-label="数量" />
+                <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" @onfocus="() => _qtyEditing = true" @onblur="() => _qtyEditing = false" aria-label="数量" />
                 <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1)">+</button>
                 <button type="button" class="tbar-max" @onclick="() => text = d.MaxQuantity.ToString()">最多@(d.MaxQuantity)</button>
             </div>
             @if (invalid) { <div class="tbar-note bad">请输入 1 到 @d.MaxQuantity 之间的数字</div> }
             <div class="btn-row">
-                <button class="primary" data-enter disabled="@invalid" @onclick="Confirm">确认@(invalid ? "" : $" {n}")<EnterCap On="@(!invalid)" Edit="true" /></button>
+                <button class="primary" data-enter aria-keyshortcuts="@(_qtyEditing ? "Enter" : "Space Enter")" disabled="@invalid" @onclick="Confirm">确认@(invalid ? "" : $" {n}")<EnterCap On="@(!invalid)" Edit="@_qtyEditing" /></button>
                 <button class="secondary" @onclick="Cancel">取消<EscCap On="@(G.EscOwner == EscOwner.DropQty)" /></button>
             </div>
         </div>
@@ -28,6 +28,8 @@
 }
 
 @code {
+    /// <summary>BM8 试玩修复（S14 Q660 情境表）：焦点在数量框里（正在编辑数量）时空格归输入、只有 Enter 提交，键帽标「Enter」；否则唯一确认标「空格」（Enter 兼容）。</summary>
+    private bool _qtyEditing;
     private ElementReference input;
     private string text = "1";
     private DropIntent? shown;

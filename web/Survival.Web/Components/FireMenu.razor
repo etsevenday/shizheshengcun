@@ -171,6 +171,8 @@
 }
 
 @code {
+    /// <summary>BM8 试玩修复（S14 Q660 情境表）：焦点在数量框里（正在编辑数量）时空格归输入、只有 Enter 提交，键帽标「Enter」；否则唯一确认标「空格」（Enter 兼容）。</summary>
+    private bool _qtyEditing;
     private void Close() => G.OpenPanel(null);
 
     private void ToggleCharcoal()
@@ -399,7 +401,7 @@
                 <span class="tbar-qlabel">@ShellKeys.Qty <kbd class="kc">@ShellKeys.Digits</kbd></span>
                 <button type="button" class="tbar-step" aria-label="减少数量" disabled="@(!st.Ready || st.Parsed <= 1)" @onclick="() => Step(-1, st.Max)">−</button>
                 <input type="text" inputmode="numeric" id="@GameSession.FireMenuQtyId" data-qty-jump aria-label="@ShellKeys.Qty" value="@(editable ? st.Text : "1")" disabled="@(!editable)"
-                       @oninput="ev => G.FireMenuSetQty(ev.Value?.ToString() ?? string.Empty)" />
+                       @oninput="ev => G.FireMenuSetQty(ev.Value?.ToString() ?? string.Empty)" @onfocus="() => _qtyEditing = true" @onblur="() => _qtyEditing = false" />
                 <button type="button" class="tbar-step" aria-label="增加数量" disabled="@(!st.Ready || st.Parsed >= st.Max)" @onclick="() => Step(1, st.Max)">＋</button>
                 @if (st.Ready) { <span class="fm-max">最多@(st.Max)份@(st.Water && pot != null ? $" · 每份{e.PotConfig(pot).UnitMl}毫升" : "")</span> }
             </div>
@@ -413,12 +415,12 @@
                     }
                     else
                     {
-                        <button type="button" class="tbar-go" data-enter disabled="@(!go)" @onclick="ev => Put(ev, slot, pot, st.It)">@(st.Water ? "装水" : "放入食材")<EnterCap On="@(go && cap)" Edit="true" /></button>
+                        <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(_qtyEditing ? "Enter" : "Space Enter")" disabled="@(!go)" @onclick="ev => Put(ev, slot, pot, st.It)">@(st.Water ? "装水" : "放入食材")<EnterCap On="@(go && cap)" Edit="@_qtyEditing" /></button>
                     }
                 }
                 else if (slot is int sk)
                 {
-                    <button type="button" class="tbar-go" data-enter disabled="@(!go)" @onclick="ev => Put(ev, slot, null, st.It)">放入@(CardStates.FireSlotName(sk))<EnterCap On="@(go && cap)" Edit="true" /></button>
+                    <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(_qtyEditing ? "Enter" : "Space Enter")" disabled="@(!go)" @onclick="ev => Put(ev, slot, null, st.It)">放入@(CardStates.FireSlotName(sk))<EnterCap On="@(go && cap)" Edit="@_qtyEditing" /></button>
                 }
             </div>
             @* Q588：「原因」控件悬停／聚焦／点按时，这一位显示那一行的完整真实原因；离开后恢复当前有效选择的说明 *@
