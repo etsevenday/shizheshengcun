@@ -445,12 +445,8 @@ namespace Survival.Core.Engine
                 }
                 else
                 {
-                    b.Count -= take;
-                    var n = b.Clone();
-                    n.InstanceId = s.NextInstanceId++;
-                    n.Count = take;
+                    var n = SplitOff(s, b, take);
                     n.ReservedBy = actionId;
-                    s.Items.Add(n);
                     ids.Add(n.InstanceId);
                 }
                 left -= take;
@@ -459,8 +455,25 @@ namespace Survival.Core.Engine
             return ids;
         }
 
+        /// <summary>
+        /// 从一堆拆出 take 份成为新实例（全部拆堆点共用，B50a Q711-A02）：新实例沿原实例全部字段、换新实例号、份数 take，留堆减同量；
+        /// 腐败物来源账按原物 ID 升序先分已知再分未知，子堆只拿到本次份额，不复制整张账。返回新实例（已加入物品表，未改归属、未合堆）。
+        /// </summary>
+        public ItemInstance SplitOff(GameState s, ItemInstance donor, int take)
+        {
+            var part = TakeOrigins(donor, take);
+            donor.Count -= take;
+            var n = donor.Clone();
+            n.InstanceId = s.NextInstanceId++;
+            n.Count = take;
+            n.SpoiledOrigins = part;
+            s.Items.Add(n);
+            return n;
+        }
+
         private void ConsumeOne(GameState s, ItemInstance inst)
         {
+            TakeOrigins(inst, 1);   // B50a（Q711）：消耗的那份先按已知扣账，余下账不超过余下份数
             inst.Count -= 1;
             if (inst.Count <= 0) s.Items.Remove(inst);
         }
@@ -476,13 +489,9 @@ namespace Survival.Core.Engine
             }
             else
             {
-                inst.Count -= count;
-                var n = inst.Clone();
-                n.InstanceId = s.NextInstanceId++;
-                n.Count = count;
+                var n = SplitOff(s, inst, count);
                 n.Owner = newOwner;
                 if (!intoHolder) n.PlacedOrder = null;
-                s.Items.Add(n);
             }
             Normalize(s, newOwner);
         }
@@ -498,12 +507,8 @@ namespace Survival.Core.Engine
             }
             else
             {
-                inst.Count -= 1;
-                moved = inst.Clone();
-                moved.InstanceId = s.NextInstanceId++;
-                moved.Count = 1;
+                moved = SplitOff(s, inst, 1);
                 moved.Owner = newOwner;
-                s.Items.Add(moved);
             }
             moved.PlacedOrder = s.NextProcessSeq++;
             return moved;
@@ -601,6 +606,13 @@ namespace Survival.Core.Engine
                 var total = list.Sum(i => i.Count);
                 var needed = (total + max - 1) / max;
                 if (list.Count == needed && list.Take(needed - 1).All(i => i.Count == max)) continue;
+                // B50a（Q711-A02）：同组来源账先汇总（每堆只计不超过本堆份数的已知量），重排后按堆序逐堆先分已知再分未知
+                Dictionary<string, int>? pool = null;
+                foreach (var inst in list)
+                {
+                    pool = MergeOrigins(pool, TakeOriginsFrom(inst.SpoiledOrigins, inst.Count));
+                    inst.SpoiledOrigins = null;
+                }
                 foreach (var inst in list)
                 {
                     var take = Math.Min(max, total);
@@ -608,12 +620,14 @@ namespace Survival.Core.Engine
                     total -= take;
                 }
                 foreach (var inst in list.Where(i => i.Count <= 0)) s.Items.Remove(inst);
+                foreach (var inst in list.Where(i => i.Count > 0)) inst.SpoiledOrigins = TakeOriginsFrom(pool, inst.Count);
                 while (total > 0)
                 {
                     var take = Math.Min(max, total);
                     var tmpl = list[0];
                     s.Items.Add(new ItemInstance
                     {
+                        SpoiledOrigins = TakeOriginsFrom(pool, take),
                         InstanceId = s.NextInstanceId++,
                         ItemId = tmpl.ItemId,
                         Count = take,

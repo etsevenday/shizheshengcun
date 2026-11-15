@@ -261,14 +261,7 @@ namespace Survival.Core.Engine
                         if (need <= 0) break;
                         var take = Math.Min(need, b.Count);
                         ItemInstance moved;
-                        if (take < b.Count)
-                        {
-                            b.Count -= take;
-                            moved = b.Clone();
-                            moved.InstanceId = s.NextInstanceId++;
-                            moved.Count = take;
-                            s.Items.Add(moved);
-                        }
+                        if (take < b.Count) moved = SplitOff(s, b, take);
                         else moved = b;
                         moved.Owner = place;
                         moved.PlacedOrder = null;

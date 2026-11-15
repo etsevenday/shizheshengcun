@@ -51,6 +51,7 @@ namespace Survival.Core.Engine
         {
             var cfg = _items[i.ItemId];
             i.SpoiledFrom = i.ItemId;
+            i.SpoiledOrigins = new Dictionary<string, int> { [i.ItemId] = i.Count };   // B50a（Q711）：合堆前记下本次真实转换的原物与份数
             i.SpoiledUnitGrams = cfg.WeightGrams;
             i.SpoiledStackMax = cfg.IsStackable ? cfg.StackMax : 1;
             i.ItemId = SpoiledMatterId;
@@ -130,6 +131,59 @@ namespace Survival.Core.Engine
             foreach (var x in drops) lines.Add($"{ActorDisplayName(s, x.actor)}的{x.name}×{x.n}已腐败，变为腐败物并放在{GroundPlaceText(s, x.place)}地面。");
             if (emit) foreach (var l in lines) Emit(s, GameEventKind.Info, l);
             return lines;
+        }
+
+        // ───────────── B50a（S06 文首 Q711）：腐败物多来源份数账 ─────────────
+
+        /// <summary>
+        /// 从来源账里取出 take 份（拆堆、部分转移、消耗共用）：按原物 ID 序数升序先分已知，已知不够的部分即未知；账内减同量、减到 0 的项删除。
+        /// 返回取出的已知部分（没有为 null）。不会把整张账复制给子堆，全局已知份数守恒。
+        /// </summary>
+        internal static Dictionary<string, int>? TakeOriginsFrom(Dictionary<string, int>? pool, int take)
+        {
+            if (pool == null || pool.Count == 0 || take <= 0) return null;
+            Dictionary<string, int>? got = null;
+            foreach (var k in pool.Keys.OrderBy(k => k, StringComparer.Ordinal).ToList())
+            {
+                if (take <= 0) break;
+                var n = Math.Min(take, pool[k]);
+                if (n <= 0) { pool.Remove(k); continue; }
+                (got ??= new Dictionary<string, int>())[k] = n;
+                if ((pool[k] -= n) <= 0) pool.Remove(k);
+                take -= n;
+            }
+            return got;
+        }
+
+        /// <summary>从一堆的来源账取出 take 份（见 TakeOriginsFrom）；这堆账取空后置 null。</summary>
+        internal static Dictionary<string, int>? TakeOrigins(ItemInstance donor, int take)
+        {
+            var got = TakeOriginsFrom(donor.SpoiledOrigins, take);
+            if (donor.SpoiledOrigins is { Count: 0 }) donor.SpoiledOrigins = null;
+            return got;
+        }
+
+        /// <summary>两份来源账合并（同原物相加）；都没有为 null。</summary>
+        internal static Dictionary<string, int>? MergeOrigins(Dictionary<string, int>? a, Dictionary<string, int>? b)
+        {
+            if (b == null || b.Count == 0) return a;
+            var r = a ?? new Dictionary<string, int>();
+            foreach (var kv in b.Where(kv => kv.Value > 0))
+                r[kv.Key] = (r.TryGetValue(kv.Key, out var n) ? n : 0) + kv.Value;
+            return r.Count == 0 ? null : r;
+        }
+
+        /// <summary>这堆可证明的已知份数（内部未知量 = Count − 它；不显示）。</summary>
+        public static int KnownOriginCount(ItemInstance i) => i.SpoiledOrigins?.Values.Where(v => v > 0).Sum() ?? 0;
+
+        /// <summary>
+        /// 一组腐败物实物的已知来源（同原物合计，按原物 ID 序数升序）：只计这组自身的账，不跨卡拼接；没有已知项为空表。
+        /// </summary>
+        public List<(string OriginId, int Count)> KnownOrigins(IEnumerable<ItemInstance> items)
+        {
+            Dictionary<string, int>? sum = null;
+            foreach (var i in items.Where(IsSpoiledMatter)) sum = MergeOrigins(sum, i.SpoiledOrigins);
+            return sum == null ? new List<(string, int)>() : sum.OrderBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => (kv.Key, kv.Value)).ToList();
         }
 
         /// <summary>旧档迁移（存档 50→51）：一次转换全部到期物、不写逐物句；有转换时写一次迁移提示。返回是否有转换。</summary>

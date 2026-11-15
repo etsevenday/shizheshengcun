@@ -215,9 +215,11 @@ namespace Survival.Core.Engine
                 batch.Count = cp.InputCount;
                 batch.Owner = owner;
                 batch.ReservedBy = null;
+                batch.SpoiledOrigins = null;   // B50a：来源账只并入各源实际取出的份额（同 SplitOff 的分配）
                 s.Items.Add(batch);
                 foreach (var (w, take) in sources)
                 {
+                    batch.SpoiledOrigins = MergeOrigins(batch.SpoiledOrigins, TakeOrigins(w, take));
                     w.Count -= take;
                     if (w.Count <= 0) s.Items.Remove(w);
                 }

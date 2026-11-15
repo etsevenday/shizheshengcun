@@ -287,14 +287,7 @@ namespace Survival.Core.Engine
                 taken.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}×{take}");
                 if (!pause && inst.ExpiresAt is int x && x <= finish) warns.Add(DryingSpoilWarning(inst, x, finish));
                 ItemInstance moved;
-                if (take < inst.Count)
-                {
-                    inst.Count -= take;
-                    moved = inst.Clone();
-                    moved.InstanceId = s.NextInstanceId++;
-                    moved.Count = take;
-                    s.Items.Add(moved);
-                }
+                if (take < inst.Count) moved = SplitOff(s, inst, take);
                 else moved = inst;
                 moved.Owner = owner;
                 moved.PlacedOrder = null;

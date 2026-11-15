@@ -271,12 +271,8 @@ namespace Survival.Core.Engine
             var one = pack;
             if (pack.Count > 1)
             {
-                pack.Count -= 1;
-                one = pack.Clone();
-                one.InstanceId = s.NextInstanceId++;
-                one.Count = 1;
+                one = SplitOff(s, pack, 1);
                 one.ReservedBy = null;
-                s.Items.Add(one);
             }
             var before = t.Durability.Value;
             t.Durability = Math.Min(t.MaxDurability.Value, before + q.restoreTenths / 10.0);

@@ -305,12 +305,7 @@ namespace Survival.Core.Engine
                 var owner = i.Owner;
                 if (i.Count > 1)   // B22f2（Q209）：同堆只标被选的 1 份
                 {
-                    i.Count -= 1;
-                    var n = i.Clone();
-                    n.InstanceId = s.NextInstanceId++;
-                    n.Count = 1;
-                    s.Items.Add(n);
-                    i = n;
+                    i = SplitOff(s, i, 1);
                 }
                 i.Appraisal = new AppraisalRecord { InstanceId = i.InstanceId, ScopeVersion = Ap.ScopeVersion, Result = AppraisalRecord.FixedTutorialAttack, Minute = s.GameMinute };
                 Normalize(s, owner);
@@ -366,12 +361,8 @@ namespace Survival.Core.Engine
                 i.ReservedBy = actionId;
                 return i;
             }
-            i.Count -= 1;
-            var n = i.Clone();
-            n.InstanceId = s.NextInstanceId++;
-            n.Count = 1;
+            var n = SplitOff(s, i, 1);
             n.ReservedBy = actionId;
-            s.Items.Add(n);
             return n;
         }
 
