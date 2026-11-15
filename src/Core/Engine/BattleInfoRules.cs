@@ -29,6 +29,9 @@ namespace Survival.Core.Engine
 
         // Q528.2 战报与全记录
         public const string LogEmpty = "还没有战斗记录。";
+
+        /// <summary>B47b（R03 §Q618、逐字稿 B34 表）：点击查看的对象已确死／离场且原无详情时，阅读区显示这句，不悄悄改看另一对象。</summary>
+        public const string Departed = "该对象已离场。";
         public const string BackToLatest = "回到最新";
         public static string NewRecords(int count) => $"有{count}条新记录";
         public const string LegacyMissing = "旧存档中的较早战斗记录可能未保存，以下为已保存内容。";

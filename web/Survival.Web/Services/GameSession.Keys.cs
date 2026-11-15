@@ -46,6 +46,10 @@ public enum EscOwner
     MedTray,
     BattleHelp,
     BattleDrawer,
+    /// <summary>B47b（R03 §Q619）：技能卡的锁级说明浮层（键盘停留或悬停显示中）。</summary>
+    LockNote,
+    /// <summary>B47b（R03 §Q619）：「调整站位」选号位草稿。</summary>
+    SwapDraft,
     /// <summary>B34a：全屏战斗操作台下方展开的「战斗信息／战报」阅读区（Q570）。</summary>
     BattleInfo,
     BattleAction,
@@ -86,6 +90,8 @@ public sealed partial class GameSession
         if (StatusPinned != null) return EscOwner.Status;
         if (BattleDrawer == "help") return EscOwner.BattleHelp;
         if (BattleDrawer != null) return EscOwner.BattleDrawer;
+        if (BattleLockNoteOpen) return EscOwner.LockNote;   // B47b（Q619）：锁级说明、选号位草稿都在阅读区之上
+        if (BattleSwapAiming) return EscOwner.SwapDraft;
         if (BattleInfoPage != null) return EscOwner.BattleInfo;
         if (BattleAction != null) return EscOwner.BattleAction;
         return EscOwner.OpenMenu;

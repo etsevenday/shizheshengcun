@@ -82,6 +82,11 @@ else if (b != null)
             else if (G.BattleConsoleConfirmText() is string confirmText) { <div class="under">@ShellAim.ConsoleGuide(confirmText)</div> }
         </div>
     }
+    else if (Mode == "info" && peekAlly == null && peekFoe == null && G.BattleHover == null && G.BattleInfoGone(s))
+    {
+        @* B47b（R03 §Q618）：所查对象确死／离场、原无详情——只写这句，不悄悄改看另一敌人或队友 *@
+        <div class="detail-scroll"><p class="bi-empty">@BattleInfoCopy.Departed</p></div>
+    }
     else if ((peekAlly ?? G.BattleAllyView) != null && G.BattleHover == null && peekFoe == null)
     {
         @* B9（A10 §4.1）：点我方锚点/队列头像只查看状态，不夺回合、不替换当前行动者 *@

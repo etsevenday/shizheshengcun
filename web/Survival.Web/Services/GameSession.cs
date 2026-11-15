@@ -2638,7 +2638,9 @@ public sealed partial class GameSession
     public void ViewBattleAlly(string? actorId)
     {
         if (State == null || S.Battle == null) return;
-        BattleAllyView = BattleAllyView == actorId ? null : actorId;
+        // B47b（Q618）：没有选指令时点击是“展开并显示该人”，再点同一人不收回查看
+        BattleAllyView = BattleAllyView == actorId && BattleAction != null ? null : actorId;
+        if (actorId != null) RevealBattleInfo("ally:" + actorId);
         Notice = null;   // 试玩修复 B9-3；B9 遗留 3：瞄准中点队列/锚点换查看对象也清掉旧“射程不足”
         if (BattleAllyView != null) BattleTarget = null;
         PeekClear();   // B42：明确点选查看对象，结束战斗右侧的悬停覆盖
@@ -2773,18 +2775,27 @@ public sealed partial class GameSession
         State != null && S.Battle != null
         // B31b 试玩修复（M614）：右栏查看敌人（含执行指令后留下的目标、没选技能直接点敌卡）与查看队友
         // 只是右栏对象详情，不是带关闭入口的子层，不吃 Esc；开关菜单后原样保留
-        && (PendingDrop != null || MedTrayOpen || Pop != null || StatusPinned != null || BattleDrawer != null || BattleInfoPage != null || BattleAction != null);
+        && (PendingDrop != null || MedTrayOpen || Pop != null || StatusPinned != null || BattleDrawer != null || BattleLockNoteOpen || BattleInfoPage != null || BattleAction != null);
+
+    /// <summary>B47b（R03 §Q619）：技能卡锁级说明此刻是否显示（BattleScreen 每次渲染登记；只存界面）。</summary>
+    public bool BattleLockNoteOpen { get; set; }
+
+    /// <summary>B47b（Q619）：BattleScreen 登记的“收起锁级说明”（说明状态在组件里）。</summary>
+    public Action? BattleLockNoteCloser { get; set; }
 
     public void BattleEscape()
     {
         if (State == null || S.Battle == null) return;
         if (BattleMenuOpen) { ToggleBattleMenu(false); return; }
         if (PendingDrop != null) { CancelDropQuantity(); return; }
-        if (MedTrayOpen) { ToggleMedTray(false); return; }
+        if (MedTrayOpen) { BattleFocusId = "cmd-med"; ToggleMedTray(false); return; }   // B47b（Q619）：关小盘回原发起控件
         if (Pop != null) { ClosePop(); return; }
         if (StatusPinned != null) { PinStatus(null); return; }
         if (BattleDrawer == "help") { HelpBack(); return; }
         if (BattleDrawer != null) { OpenBattleDrawer(null); return; }
+        // B47b（R03 §Q619）：锁级说明、调整站位选号位草稿在阅读区之上——一次只退一层，取消选位回「调整站位」卡，不换位、不扣费
+        if (BattleLockNoteOpen) { BattleLockNoteOpen = false; BattleLockNoteCloser?.Invoke(); Notify(); return; }
+        if (BattleSwapAiming) { BattleFocusId = "cmd-swap"; ClearBattleAction(); return; }
         if (BattleInfoPage != null) { CollapseBattleInfo(); return; }   // B34a（Q570）：展开的阅读区一次 Esc 只收起它
         if (BattleAction != null) { ClearBattleAction(); return; }
         if (BattleTarget != null || BattleAllyView != null)
@@ -3140,6 +3151,7 @@ public sealed partial class GameSession
     /// <summary>点敌卡（未瞄准）：只选中查看，不攻击。</summary>
     public void PickBattleTarget(int index)
     {
+        RevealBattleInfo("foe:" + index);   // B47b（Q618）
         BattleTarget = index;
         BattleAllyView = null;
         Notice = null;   // 试玩修复 B9-3：换查看对象时不留旧原因（B9 遗留 3：瞄准中点队列里别的对象也清）

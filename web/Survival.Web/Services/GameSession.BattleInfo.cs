@@ -1,3 +1,6 @@
+using Survival.Core.Engine;
+using Survival.Core.State;
+
 namespace Survival.Web.Services;
 
 /// <summary>
@@ -41,6 +44,7 @@ public sealed partial class GameSession
         var was = BattleInfoPage;
         if (was == null) return;
         _infoPage = null;
+        _infoObject = null;
         BattleFocusId = "bi-entry-" + was;
         BattleScrollTo = "top";
         Notify();
@@ -76,8 +80,31 @@ public sealed partial class GameSession
     /// <summary>Q529：新选中可确认的无目标指令后，渲染完成把焦点移到实际确认按钮一次（按钮不存在或禁用时不移）。</summary>
     public bool BattleConfirmFocusPending { get; set; }
 
+    // ── B47b（R03 文首 B34 §Q618）：没有选指令时明确点击站位人物／队列头像——展开阅读区并切到「战斗信息」显示该真实对象 ──
+    // 只是查看：不程序性移焦点、不滚动战场、不选技／攻击／移动；悬停沿原只读更新内容但不展开／切页；已选指令、播放、对白时不由这里展开。
+
+    /// <summary>最近一次点击查看的对象（"foe:{本场序号}" 或 "ally:{人物ID}"）；它确死／离场后阅读区显示「该对象已离场。」。</summary>
+    private string? _infoObject;
+
+    private void RevealBattleInfo(string objectKey)
+    {
+        if (State == null || S.Battle == null || BattleAction != null || PlaybackActive || DialogueLocked) return;
+        _infoPage = "info";
+        _infoBattle = S.Battle.BattleId;
+        _infoObject = objectKey;
+    }
+
+    /// <summary>Q618：点击查看的对象在当前显示（Q617 快照）里已确死／离场——阅读区写「该对象已离场。」，不悄悄换看别人。</summary>
+    public bool BattleInfoGone(GameState v)
+    {
+        if (_infoObject == null || v.Battle == null || v.Battle.BattleId != _infoBattle) return false;
+        if (_infoObject.StartsWith("foe:")) return !(int.TryParse(_infoObject[4..], out var i) && E.BattleEnemyAt(v.Battle, i) is { Alive: true });
+        return !GameEngine.AllyInBattle(v.Battle, _infoObject[5..]);
+    }
+
     private void ResetBattleInfoUi()
     {
+        _infoObject = null;
         _infoPage = null;
         _infoBattle = -1;
         BattleLogLocate = null;

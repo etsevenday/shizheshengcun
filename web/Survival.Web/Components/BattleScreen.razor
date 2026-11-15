@@ -41,6 +41,9 @@
     if (_lockFocus != null && !cards.Any(c => c.LockedText != null && c.Node.Id == _lockFocus)) _lockFocus = null;
     var lockShown = _lockHover ?? (sel == null ? _lockFocus : null);
     var lockNote = lockShown ?? _lockGhost;
+    // B47b（R03 §Q619）：锁级说明显示中——ESC 先收它（在阅读区之上），说明状态仍在本组件
+    G.BattleLockNoteOpen = lockShown != null && cards.Any(c => c.LockedText != null && c.Node.Id == lockShown);
+    G.BattleLockNoteCloser = CloseLockNote;
     var general = opts.Where(o => o.Group == "general").ToList();
     var items = opts.Where(o => o.Group == "item" && CarriedFor(o) > 0).ToList();
     // B9（A10 §4.5）：瞄准中悬停合法目标时，目标生命条上画“预计”条纹——与右栏同一次 PreviewCommand（只读、不抽随机）
