@@ -1,5 +1,5 @@
 {
-  "version": "Q701-user-production-rules-20261115",
+  "version": "Q701-Q720-Q728-production-rules-20261115",
   "date": "2026-11-15",
   "purpose": "S08文首Q701唯一正文的策划合同，不是运行配置或实装声明",
   "decisions": {
@@ -125,5 +125,147 @@
     "Q701-A08",
     "Q701-A09",
     "Q701-A10"
-  ]
+  ],
+  "q720ToQ728": {
+    "decisions": {
+      "Q720": "C",
+      "Q721": "A",
+      "Q722": "A_direction_with_complete_concise_copy",
+      "Q723": "A",
+      "Q724": "A",
+      "Q725": "B_all_completion_dependent_values",
+      "Q726": "A",
+      "Q727": "A",
+      "Q728": "A"
+    },
+    "finishedShelfLife": {
+      "recipes": {
+        "ex_expedition_bar": {
+          "output": "expedition_bar",
+          "hours": 168,
+          "minutes": 10080
+        },
+        "ex_emergency_tonic": {
+          "output": "emergency_tonic",
+          "hours": 72,
+          "minutes": 4320
+        }
+      },
+      "rule": "actual_successful_finish_F_plus_own_duration_only",
+      "oldAbsoluteInputCap": false,
+      "minRemainingInputCap": false,
+      "alreadyFinishedSaveExpiryChanged": false,
+      "validInProgressFinishesWithNewRule": true,
+      "otherRecipeRulesUnchanged": true
+    },
+    "cancel": {
+      "identity": "original_actual_facility_identity_plus_batchId",
+      "requiresWholeListVersionMatch": false,
+      "otherBatchCompletionOrProgressChangeInvalidates": false,
+      "displaySequenceIsIdentity": false,
+      "onlySameBatchStillActive": true,
+      "originalPermissionAndAtomicReturnChecks": true,
+      "originalSameRequestIdempotency": true,
+      "composition": [
+        "original_lead_or_abort_reason",
+        "actual_original_source_return",
+        "actual_R_restore_grouped_by_destination_actor_side_name_exact_expiry",
+        "original_unfinished_consequence",
+        "elapsed_time_once"
+      ],
+      "dryingGetsSecondGenericRestore": false
+    },
+    "protectionDisplay": {
+      "previewOnlyWhenFiniteInputsWillBind": true,
+      "actualOnlyTrustedBoundR": true,
+      "expiryNullMeansForever": false,
+      "partialPortionsDistinguished": true
+    },
+    "unreliablePreview": {
+      "allCompletionDependentFinalValuesUnestimated": true,
+      "currentAndReliableImmediateValuesPreserved": true,
+      "reliableBodyHorizonPreserved": true,
+      "craftCardStaticTitle": "配方产物",
+      "unreliableRandomOutcomeDrawn": false
+    },
+    "toolForecast": {
+      "warnBeforeRealZero": true,
+      "successWearAmountAndTimingUnchanged": true,
+      "allActualZeroVsAbsentDistinguished": true,
+      "otherUsesExtended": false
+    },
+    "parallelDisplay": {
+      "retainPerBatchXpAndGroundDestination": true,
+      "oneSameFinishSentence": true,
+      "sequenceMayRenumber": true,
+      "batchIdentityAndXpOrderUnchanged": true,
+      "helpOnlyWhenActiveOnce": true
+    },
+    "copy": {
+      "barShelf": "成品从完成起保质168小时。",
+      "tonicShelf": "成品从完成起保质72小时。",
+      "protection": "开工后，所选原料暂停保质；退料恢复剩余保质。",
+      "remaining": "保质暂停，剩余{时长}",
+      "pausedMulti": "保质暂停 · {批数}批",
+      "pausedPartial": "含保质暂停×{数量}",
+      "restore": "{原料名}×{数量}恢复剩余保质，保质到{日期时刻}。",
+      "restorePreview": "{原料名}×{数量}退回后恢复剩余保质，预计保质到{日期时刻}。",
+      "butcherNote": "按制造消耗，制造熟练不加速；取消退回原尸体，无产物。",
+      "corpseBefore": "尸体剩余保质：{时长}",
+      "corpseDuring": "保质暂停，剩余{时长}",
+      "corpsePreviewLead": "退出将放弃本次处理。",
+      "corpsePreviewAfter": "不会获得产物。",
+      "corpseResultLead": "已取消处理尸体。",
+      "corpseResultAfter": "没有产物。",
+      "normalCorpseReturn": "尸体已返还{地点}地面。",
+      "elapsedPreview": "已耗时间不退。",
+      "elapsedResult": "已耗时间保留。",
+      "cancelBatch": "取消本批",
+      "changedBatch": "加工批次已变化，请重新选择。",
+      "batchCancelResult": "已取消{区域}{设施名}的批次{序号} · {配方名}（已进行{时长}）。未消耗原料已退回{区域}地面。{恢复保质分句}没有产物和经验。已耗时间保留。",
+      "batchCancelNoReturn": "已取消{区域}{设施名}的批次{序号} · {配方名}（已进行{时长}）。没有可返还的剩余原料，没有产物和经验。已耗时间保留。",
+      "unknown": "未预估",
+      "planFailed": "按当前条件无法预估完成。",
+      "recipeOutput": "配方产物",
+      "recipeDestination": "配方产物 · 留在{地点}",
+      "possibleOutput": "可能产物",
+      "durabilityUnknown": "耐久{当前耐久}/{耐久上限} → 未预估",
+      "loadUnknown": "当前负重{当前负重}公斤 · 完成后未预估",
+      "clearUnknown": "完成后清理次数：未预估",
+      "toolForecast": "预计本次生产结束后损坏",
+      "toolGuarantee": "本次生产结束后损坏",
+      "toolNote": "耐久不足不会中断本次生产；工具将在本次生产结束后损坏。",
+      "brokenTool": "这件工具已损坏，请更换或维修。",
+      "needTool": "需要随身有效的{工具清单}",
+      "batchRow": "批次{序号} · {配方名} · {已进行}/{所需}分 · 预计{日期时刻}完成",
+      "outputGround": "完成后放在{区域}地面。",
+      "parallelHelp": "各批同时加工，每座最多10批。",
+      "workshopSummary": "{设施名} · 加工中{批数}批 · 最近{日期时刻}完成",
+      "workshopIdle": "{设施名} · 空闲",
+      "sameFinish": "预计{日期时刻}完成",
+      "differentFinish": "预计分别于{完成时刻清单}完成",
+      "multiAlert": "{人物}：途中{属性}将越过提醒阈值，行动会暂停",
+      "singleAlert": "途中{属性}将越过提醒阈值，行动会暂停"
+    },
+    "acceptance": [
+      "Q720-A01",
+      "Q720-A02",
+      "Q721-A01",
+      "Q721-A02",
+      "Q722-A01",
+      "Q723-A01",
+      "Q724-A01",
+      "Q724-A02",
+      "Q725-A01",
+      "Q725-A02",
+      "Q726-A01",
+      "Q726-A02",
+      "Q727-A01",
+      "Q727-A02",
+      "Q728-A01",
+      "Q728-A02",
+      "B51-A17",
+      "B51-A18"
+    ]
+  }
 }

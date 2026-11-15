@@ -1,5 +1,5 @@
 {
-  "contractVersion": 7,
+  "contractVersion": 8,
   "date": "2026-11-15",
   "purpose": "Q616及已答濒死补充合同，含Q701新生产语义及Q702—Q703预估可读性；唯一生命正文R09、生产正文S08，非运行配置",
   "scope": {
@@ -575,6 +575,39 @@
       "Q702-A02",
       "Q703-A01",
       "Q703-A02"
+    ]
+  },
+  "q725Q728": {
+    "decisions": {
+      "Q725": "B_all_completion_dependent_values",
+      "Q728": "A_all_valid_same_boundary_alerts"
+    },
+    "unreliableFinalValues": "all completion dependent final values unestimated, reliable current/immediate/body horizon unchanged",
+    "sameBoundaryAlerts": {
+      "collectAllValidOriginalTriggers": true,
+      "onlyFinalPauseStat": false,
+      "identity": [
+        "actorId",
+        "statId",
+        "segment"
+      ],
+      "zeroBeforeOrdinaryThreshold": true,
+      "withinTypeOriginalStableOrder": true,
+      "dedupeDifferentActorsByStat": false,
+      "initialAlreadyLowCreatesFutureCrossing": false,
+      "originalClearThenRealRecrossPreserved": true,
+      "reliableBodyHorizonOnly": true,
+      "q698DyingHealthFilterPreserved": true,
+      "actualPauseCountOrCauseChanged": false,
+      "actualLatchesChanged": false,
+      "actualExtraLogsAdded": false,
+      "extraWorldTickOrRandomDraw": false
+    },
+    "acceptance": [
+      "Q725-A01",
+      "Q725-A02",
+      "Q728-A01",
+      "Q728-A02"
     ]
   }
 }

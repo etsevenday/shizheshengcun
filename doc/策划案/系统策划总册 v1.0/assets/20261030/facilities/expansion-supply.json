@@ -3241,5 +3241,33 @@
     "allProposedInitialValues": "approved_adjustable_implement_now",
     "dungeonResetHours": 72,
     "cardImageTargetPercent": 70
+  },
+  "q720CurrentPriority": {
+    "date": "2026-11-15",
+    "decision": "C",
+    "supersedes": "only recipes ex_expedition_bar and ex_emergency_tonic old shelfRule min_inputs; original fields kept as history",
+    "recipes": {
+      "ex_expedition_bar": {
+        "shelfRule": "actual_finish_plus_own_output_shelf_life",
+        "output": "expedition_bar",
+        "shelfMinutes": 10080,
+        "inputDeadlineCap": false,
+        "inputRemainingCap": false
+      },
+      "ex_emergency_tonic": {
+        "shelfRule": "actual_finish_plus_own_output_shelf_life",
+        "output": "emergency_tonic",
+        "shelfMinutes": 4320,
+        "inputDeadlineCap": false,
+        "inputRemainingCap": false
+      }
+    },
+    "alreadyFinishedOldSaveExpiryPreserved": true,
+    "validInProgressNewFinishUsesNewRule": true,
+    "inputsOutputsAmountsTimeAndEligibilityUnchanged": true,
+    "acceptance": [
+      "Q720-A01",
+      "Q720-A02"
+    ]
   }
 }
