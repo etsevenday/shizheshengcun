@@ -195,4 +195,56 @@ public class B51bTests : TestBase
         Assert.That(Batches(back, "water_station").Select(b => (b.Queued, b.DoneMinutes, b.StartMinute)),
             Is.EqualTo(new[] { (false, 10, Batches(s, "water_station")[0].StartMinute), (false, 0, back.GameMinute) }));
     }
+    // ───────────── Q725：依赖完成的终值“未预估”、配方产物 ─────────────
+
+    private static string Root()
+    {
+        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "doc", "策划案"))) dir = dir.Parent;
+        return dir!.FullName;
+    }
+
+    private static string Web(string relative) => File.ReadAllText(Path.Combine(Root(), "web", "Survival.Web", relative));
+
+    /// <summary>Q725-A01：求不出可信完成时工具完成后耐久、完成后经验写“未预估”；固定配方输出行“配方产物 · 留在{地点}”，采集不在这里换（Q776）。</summary>
+    [Test]
+    public void Q725_A01_UnreliableFinalValues()
+    {
+        var p = new ActionPreview { Ok = true, PlanFailed = true, OutputPlace = "安全屋地面", ToolDurabilityBefore = 5, ToolDurabilityAfter = 4 };
+        p.XpGains.Add("制造经验+6");
+        Assert.That(GameEngine.ToolAfterText(p), Is.EqualTo("未预估"));
+        Assert.That(GameEngine.XpAfterText(p), Is.EqualTo("未预估"));
+        foreach (var t in new[] { ActionType.Craft, ActionType.Build, ActionType.Butcher, ActionType.Salvage })
+            Assert.That(GameEngine.OutputStatusText(p, t), Is.EqualTo("配方产物 · 留在安全屋地面"), t.ToString());
+        Assert.That(GameEngine.OutputStatusText(p, ActionType.Gather), Is.EqualTo("产出 · 留在安全屋地面"));
+        p.PlanFailed = false;
+        Assert.That((GameEngine.ToolAfterText(p), GameEngine.XpAfterText(p), GameEngine.OutputStatusText(p, ActionType.Craft)),
+            Is.EqualTo((Fmt.N(4), "制造经验+6", "产出 · 留在安全屋地面")), "可靠完整完成时原终值照旧");
+    }
+
+    /// <summary>Q725-A02：可靠预估不受影响（真实预估仍给经验与产出）；界面接线：制作卡静态标题“配方产物”，耗时／完成／工具／经验走未预估。</summary>
+    [Test]
+    public void Q725_A02_ReliableUnchanged_WebWiring()
+    {
+        var s = New();
+        E.DebugGive(s, "cloth", 1);
+        E.DebugGive(s, "herb", 1);
+        var p = E.Preview(s, ActionRequest.Craft("bandage"));
+        Assert.That((p.Ok, p.PlanFailed), Is.EqualTo((true, false)), p.Reason);
+        Assert.That(GameEngine.XpAfterText(p), Is.EqualTo(string.Join("、", p.XpGains)).And.Not.EqualTo("未预估"));
+        Assert.That(GameEngine.OutputStatusText(p, ActionType.Craft), Does.StartWith("产出 · 留在"));
+
+        var craft = Web("Components/CraftOverlay.razor");
+        Assert.That(craft, Does.Contain("style=\"margin-top:8px\">@GameEngine.RecipeOutputLabel</div>"));
+        Assert.That(craft, Does.Not.Contain("style=\"margin-top:8px\">产物</div>"));
+        var pv = Web("Components/PreviewView.razor");
+        Assert.That(pv, Does.Contain("Status=\"@GameEngine.OutputStatusText(p, Request.Type)\""));
+        Assert.That(pv, Does.Contain("@GameEngine.XpAfterText(p)"));
+        Assert.That(pv, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : $\"{Ui.N(p.ToolDurabilityAfter ?? 0)}"));
+        var pops = Web("Components/ActionPops.razor");
+        Assert.That(pops, Does.Contain("@GameEngine.ToolAfterText(p)"));
+        Assert.That(pops, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute) + \"到达\""));
+        Assert.That(pops, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute) + \"完成\""));
+        Assert.That(pops, Does.Contain("p.Ok && !p.PlanFailed && !e.IsDaylight(p.EstimatedEndMinute)"));
+    }
 }

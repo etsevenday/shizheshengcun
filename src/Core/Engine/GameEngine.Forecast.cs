@@ -19,6 +19,25 @@ namespace Survival.Core.Engine
         public const string PlanTitle = "完成计划（假设能够存活并完成）";
         public const string PlanNote = "本区按能够存活并完成本次行动估算，已考虑途中已知的速度与环境变化；不保证实际能够完成。";
         public const string PlanFailedText = "按当前条件无法预估完成。";
+        /// <summary>S08 Q725：制作卡静态产物标题与完成不可靠时固定配方的输出行标签。</summary>
+        public const string RecipeOutputLabel = "配方产物";
+
+        /// <summary>
+        /// S08 Q725：预估输出行状态。完成可靠照旧“产出 · 留在{地点}”；求不出可信完成时，有固定配方的制作／建造／处理尸体／拆解写“配方产物 · 留在{地点}”
+        /// （数量仍是配方×份数，成果落在开工所在区地面、地点可靠）；采集等没有固定配方的输出不在这里换（Q776 待定）。
+        /// </summary>
+        public static string OutputStatusText(ActionPreview p, ActionType type) =>
+            p.PlanFailed && type is ActionType.Craft or ActionType.Build or ActionType.Butcher or ActionType.Salvage
+                ? $"{RecipeOutputLabel} · 留在{p.OutputPlace}"
+                : $"产出 · 留在{p.OutputPlace}";
+
+        /// <summary>S08 Q725：工具完成后耐久依赖完成，求不出可信完成时写“未预估”（当前耐久照旧）。</summary>
+        public static string ToolAfterText(ActionPreview p) =>
+            p.PlanFailed ? NotEstimated : Fmt.N(p.ToolDurabilityAfter ?? 0);
+
+        /// <summary>S08 Q725：完成后经验依赖完成，求不出可信完成时整行值写“未预估”。</summary>
+        public static string XpAfterText(ActionPreview p) =>
+            p.PlanFailed ? NotEstimated : string.Join("、", p.XpGains);
         public const string LaterRiskTitle = "各人风险";
         public const string LaterRiskNote = "以下为各人截至计划结束的首个风险检查，不表示已预估危险处以后的身体数值。";
         public const string ProbabilityOnlyNote = "身体变化按未触发本次概率受伤估算；概率受伤风险另列，不代表保证安全。";

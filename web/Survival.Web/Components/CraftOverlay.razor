@@ -336,7 +336,7 @@
                             <ItemRow Icon="@cfg.Id" Name="@(tool == null ? cfg.Name : $"{cfg.Name}")" Qty="催化工具" Missing="@(tool == null)"
                                      Status="@(tool == null ? "缺少：需随身或在当前地面" : $"{(tool.IsCarried ? "随身" : "地面")} · 不消耗")" />
                         }
-                        <div class="tiny muted" style="margin-top:8px">产物</div>
+                        <div class="tiny muted" style="margin-top:8px">@GameEngine.RecipeOutputLabel</div>
                         @if (rc.FacilityResult != null)
                         {
                             <ItemRow Icon="@RecipeIcon(rc)" Name="@rc.Name.Replace("建", "").Replace("铺", "")" Qty="×1" Status="@($"建在{e.ZoneName(s, s.Ground)}，不可搬动{(rc.Group == "workshop" ? "，每区每类一座" : GameEngine.IsWildFireRecipe(rc) ? "、不能拾取或拆除，每区只能有一处火源" : "")}")" />

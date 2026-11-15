@@ -61,7 +61,7 @@
         @if (!p.Ok && p.BaseMinutes > 0) { <div><span>基础耗时</span><b>@(p.BaseMinutes)分钟</b></div> }
         @if (p.ToolName != null && p.ToolDurabilityBefore.HasValue && p.ToolMaxDurability.HasValue)
         {
-            <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @Ui.N(p.ToolDurabilityAfter ?? 0)/@Ui.N(p.ToolMaxDurability.Value)</b></div>
+            <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @(p.PlanFailed ? GameEngine.NotEstimated : $"{Ui.N(p.ToolDurabilityAfter ?? 0)}/{Ui.N(p.ToolMaxDurability.Value)}")</b></div>
         }
     </div>
 
@@ -71,7 +71,7 @@
         <div class="outputs">
             @foreach (var o in p.Outputs)
             {
-                <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="@($"产出 · 留在{p.OutputPlace}")" />
+                <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="@GameEngine.OutputStatusText(p, Request.Type)" />
             }
         </div>
     }
@@ -131,7 +131,7 @@
             }
             @if (p.XpGains.Count > 0)
             {
-                <div><span>完成后经验</span><b>@string.Join("、", p.XpGains)</b></div>
+                <div><span>完成后经验</span><b>@GameEngine.XpAfterText(p)</b></div>
             }
         </div>
     }
