@@ -140,8 +140,7 @@ namespace Survival.Core.Engine
         public const string DryingShelfHelpText = "晾制中的所有原料暂停保质计时，取消后恢复投料时的剩余保质；晾好的成品从完成时起正常计时，留在架上也会到期。";
 
         /// <summary>暂停保质的原料退出晾制位时的新截止：退料世界分钟＋快照剩余（Q215）；没有暂停的原样。</summary>
-        private static int? ResumedExpiry(GameState s, ItemInstance i) =>
-            i.ShelfPausedMinutes is int r ? s.GameMinute + r : i.ExpiresAt;
+        private static int? ResumedExpiry(GameState s, ItemInstance i) => EffectiveExpiry(s, i);   // B51a：与生产输入同一通用 C＋R
 
         /// <summary>当地安全空闲（晾制架卡全部操作的共同前提）；可以为 null。</summary>
         private string? DryingIdleBlocked(GameState s)
@@ -404,11 +403,7 @@ namespace Survival.Core.Engine
             foreach (var it in items)
             {
                 // Q215：暂停保质的原料退出晾制位，新截止＝退料世界分钟 C＋快照剩余 R（不补回投料前已耗时间）
-                if (it.ShelfPausedMinutes != null)
-                {
-                    it.ExpiresAt = ResumedExpiry(s, it);
-                    it.ShelfPausedMinutes = null;
-                }
+                ResumeShelf(s, it);   // B51a：通用恢复（与生产输入同一口径）
                 it.Owner = dest;
                 it.PlacedOrder = null;
                 it.ReservedBy = null;

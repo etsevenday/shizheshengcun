@@ -278,10 +278,10 @@ public class BM5cExploreEncounterTests : B41bTestBase
     {
         var s = Field(3, "shambler");
         Explore(s, 0.5, null);
-        var json = SaveSerializer.Serialize(s).Replace("\"SchemaVersion\": \"53\"", "\"SchemaVersion\": \"49\"").Replace("\"SchemaVersion\":\"53\"", "\"SchemaVersion\":\"49\"");
+        var json = SaveSerializer.Serialize(s).Replace("\"SchemaVersion\": \"54\"", "\"SchemaVersion\": \"49\"").Replace("\"SchemaVersion\":\"54\"", "\"SchemaVersion\":\"49\"");
         Assert.That(json, Does.Contain("\"49\""));
         var t = SaveSerializer.Deserialize(json, CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("53"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("54"));
         Assert.That(t.Main!.EncounterSegment, Is.Null);
         Assert.That(GameEngine.LegacyExploreCheck(t.Main), Is.True, "旧在办探索按原完成边界检查");
         Assert.That(t.ExploreCheckPending, Is.Null);

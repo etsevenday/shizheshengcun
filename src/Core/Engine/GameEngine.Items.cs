@@ -16,7 +16,7 @@ namespace Survival.Core.Engine
         /// 取出（进程移除）即按原 expiresAt 立即判断。保护不改写 ExpiresAt。
         /// </summary>
         public bool IsSpoiled(GameState s, ItemInstance i) =>
-            IsSpoiledMatter(i) || i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute && !IsHeatProtected(s, i);
+            IsSpoiledMatter(i) || i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute && i.ShelfPausedMinutes == null && !IsHeatProtected(s, i);   // B51a：暂停保质的按 R，不按原截止
 
         /// <summary>该物品正受本次烹饪加工保护（只可能在火堆加工位或火堆里的锅中）。</summary>
         public bool IsHeatProtected(GameState s, ItemInstance i) =>
@@ -117,7 +117,8 @@ namespace Survival.Core.Engine
             + (i.Appraisal != null ? "|apr:" + i.Appraisal.Result : "")   // B18：鉴定状态进真实批次键（S06 X4、R07 X3.4）
             + (i.RewardOrigin != null ? "|dr:" + i.RewardOrigin : "")   // B22：地牢奖励来源（R03 D7.1）
             + (i.SpoiledUnitGrams.HasValue ? $"|sp:{i.SpoiledUnitGrams.Value}:{i.SpoiledStackMax ?? 1}" : "")   // BM5b2（Q610）：腐败物按每份克重与原单堆上限分批
-            + (i.IsUsedFieldPatch ? "|pu:" + i.InstanceId : "");   // B22b（Q168）：用过的修补包各自一批
+            + (i.IsUsedFieldPatch ? "|pu:" + i.InstanceId : "")   // B22b（Q168）：用过的修补包各自一批
+            + (i.ShelfPausedMinutes is int r ? "|p:" + r : "");   // B51a（S08 B51 Q724）：保护份额按各自 R 分批（只读明细边界，不改合堆与卡位）
 
         /// <summary>
         /// 某处同一物品的真实批次（Q24）：最早到期在前、无保质在后，同期限按批内最小实例号稳定排序。每批列出全部堆、合计份数、
@@ -310,7 +311,7 @@ namespace Survival.Core.Engine
                 .Where(i => i.ItemId == itemId && i.ReservedBy == null && !IsSpoiled(s, i))
                 .Where(i => i.LoanSlot == null)   // 借用矛不能作配方材料或燃料（A11 §7）
                 .Where(i => !i.InContainer || PotFreeWaterUnits(s, i) > 0)
-                .OrderBy(i => i.ExpiresAt ?? int.MaxValue)
+                .OrderBy(i => EffectiveExpiry(s, i) ?? int.MaxValue)   // B51a：暂停保质的按 C＋R（实际可用批次本就不含预留中的保护份）
                 .ThenBy(i => PlaceOf(s, i) == ItemInstance.Carried ? 0 : 1)
                 .ThenBy(i => i.InstanceId)
                 .ToList();
@@ -597,7 +598,7 @@ namespace Survival.Core.Engine
             var inPot = owner.StartsWith(ItemInstance.ContainerPrefix);
             var groups = s.Items
                 .Where(i => i.Owner == owner && i.ReservedBy == null && !IsLocked(s, i) && IsStackableInst(i) && (!inPot || IsLiquid(i)))   // B22b：行动锁住的堆（修补包）不参与合堆
-                .GroupBy(i => (i.ItemId, i.ExpiresAt, MergeTag(i)))
+                .GroupBy(i => (i.ItemId, i.ExpiresAt, MergeTag(i), i.ShelfPausedMinutes))   // B51a：剩余 R 不同的保护份不合堆（不丢 R）
                 .ToList();
             foreach (var g in groups)
             {
@@ -641,6 +642,7 @@ namespace Survival.Core.Engine
                         SpoiledFrom = tmpl.SpoiledFrom,   // BM5b2：腐败物元数据随堆复制
                         SpoiledUnitGrams = tmpl.SpoiledUnitGrams,
                         SpoiledStackMax = tmpl.SpoiledStackMax,
+                        ShelfPausedMinutes = tmpl.ShelfPausedMinutes,   // B51a：同组同 R
                     });
                     total -= take;
                 }

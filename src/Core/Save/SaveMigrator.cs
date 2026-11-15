@@ -89,6 +89,7 @@ namespace Survival.Core.Save
         public const string Schema50 = "50";
         public const string Schema51 = "51";
         public const string Schema52 = "52";
+        public const string Schema53 = "53";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -156,11 +157,13 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema50) From50To51(s, config, notes);
             if (s.SchemaVersion == Schema51) From51To52(s);
             if (s.SchemaVersion == Schema52) From52To53(s, config);
+            if (s.SchemaVersion == Schema53) From53To54(s, config);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
             NormalizeBattleLog(s);
             CheckSpoiledOrigins(s);
+            Engine.GameEngine.SweepOrphanShelf(s);   // B51a（S08 Q701.1）：没有工作归属的孤立保质保护恢复 C＋R
             return notes;
         }
 
@@ -1505,11 +1508,19 @@ namespace Survival.Core.Save
         /// </summary>
         private static void From52To53(GameState s, GameConfig config)
         {
-            s.SchemaVersion = GameState.CurrentSchema;
+            s.SchemaVersion = Schema53;
             MigrateDryingProtection(s, config);
             foreach (var (_, fac) in DryingFacilities(s))
                 foreach (var b in fac.DryingSlots ?? new List<DryingSlot>())
                     if (b.Status == DryingSlot.Spoiled && b.StopReason == null) b.StopReason = DryingSlot.StopLegacy;
+        }
+
+        /// <summary>
+        /// 53 → 54（B51a，S08 文首 Q701「本批生产兼容、时间与验收」）：生产开工原料暂停保质与生产工具本单保障。静默。
+        /// </summary>
+        private static void From53To54(GameState s, GameConfig config)
+        {
+            s.SchemaVersion = GameState.CurrentSchema;
         }
 
         /// <summary>
@@ -1599,6 +1610,7 @@ namespace Survival.Core.Save
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：当前版本读档同样清一次（无残留不做事，幂等）
             NormalizeBattleLog(s);
             CheckSpoiledOrigins(s);
+            Engine.GameEngine.SweepOrphanShelf(s);   // B51a（S08 Q701.1）：没有工作归属的孤立保质保护恢复 C＋R（幂等）
         }
 
         /// <summary>

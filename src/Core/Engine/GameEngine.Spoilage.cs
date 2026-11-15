@@ -60,9 +60,9 @@ namespace Survival.Core.Engine
         /// <summary>这一实例是否可堆叠：腐败物按继承的原单堆上限（原不可堆叠的尸体仍为 1），其余按配置。</summary>
         public bool IsStackableInst(ItemInstance i) => IsSpoiledMatter(i) ? StackMaxOf(i) > 1 : _items[i.ItemId].IsStackable;
 
-        /// <summary>本实例此刻应转为腐败物：有截止、截止不晚于当前分钟、不在本次有效烹饪保护中（肉干暂停保质时截止为空）。</summary>
+        /// <summary>本实例此刻应转为腐败物：有截止、截止不晚于当前分钟、不在本次有效烹饪保护中、没有暂停保质（晾制与 B51a 生产输入按 R，不按原截止）。</summary>
         private bool DueToSpoil(GameState s, ItemInstance i) =>
-            !IsSpoiledMatter(i) && i.ExpiresAt is int e && e <= s.GameMinute && _items.ContainsKey(i.ItemId) && !IsHeatProtected(s, i);
+            !IsSpoiledMatter(i) && i.ExpiresAt is int e && e <= s.GameMinute && i.ShelfPausedMinutes == null && _items.ContainsKey(i.ItemId) && !IsHeatProtected(s, i);
 
         /// <summary>原位改为腐败物：记原物、每份克重与单堆上限；不再有保质期限。其余字段（份数、归属、预留、来源、奖励身份、放入序号）不动。</summary>
         private void ToSpoiledMatter(ItemInstance i)

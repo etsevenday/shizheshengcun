@@ -71,8 +71,11 @@ namespace Survival.Core.State
         /// 未确死的 H=0 归濒死（提醒锁置已提醒，不补历史进入事件、不补抽致死），存活者缺意志补 1 级 0 经验。
         /// "53" 起腐败物多来源份数账 ItemInstance.SpoiledOrigins、全部晾制原料暂停保质、晾制位停止原因 DryingSlot.StopReason
         /// （S06／S11 文首 Q666、Q711—Q714，开发记录 B50a）；52→53 旧单一来源字段不转成账（当未知、不显示），在办晾制的合格原料从升级时剩余保护（静默）。
+        /// "54" 起生产开工原料暂停保质（制作、建造、维护、拆解、处理尸体实际绑定的有期限输入带 ItemInstance.ShelfPausedMinutes＝R，原截止 ExpiresAt 保留作合堆／批次键）
+        /// 与生产工具本单保障 ActionState.ToolGuardId／ToolGuardSpent（S08 文首 Q701、B51 Q720—Q726，开发记录 B51a）；53→54 在办生产的未到期输入从升级时剩余保护、
+        /// 在办处理尸体的正耐久刀斧登记本单保障（静默）。
         /// </summary>
-        public const string CurrentSchema = "53";
+        public const string CurrentSchema = "54";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -955,8 +958,10 @@ namespace Survival.Core.State
         /// </summary>
         public string? RewardOrigin { get; set; }
         /// <summary>
-        /// 肉干在制暂停保质（策划答复 Q215，B22k，存档 39）：投料成功时快照的剩余保质 R＝原截止 E − 开始分钟 S（正整数世界分钟）；非空时 ExpiresAt 暂为空、不腐败。
-        /// 只在晾制位内出现：取消/退料时新截止＝退料世界分钟 C＋R 并清空；完成时原料核销。原无截止的（盐）不记。普通物品为 null。
+        /// 暂停保质的剩余 R（正整数世界分钟）：非空时不腐败、不倒计时，释放时新截止＝释放世界分钟 C＋R 并清空。原无截止的不记。普通物品为 null。
+        /// 晾制位内原料（Q215 肉干，存档 39；B50a Q666 全部晾制，存档 53）：R＝原截止 E − 投料分钟 S，ExpiresAt 暂为空。
+        /// 生产开工输入（B51a，S08 文首 Q701.1，存档 54）：R＝E − 成功开工分钟 S，ExpiresAt 保留原截止 E（只作合堆／根卡／批次键，不再判到期），
+        /// 预留解除（取消、中止、失效、终局）时恢复 C＋R；完成时原料核销。
         /// </summary>
         public int? ShelfPausedMinutes { get; set; }
 
@@ -1456,6 +1461,15 @@ namespace Survival.Core.State
         /// 取与正式预览同源的实际预计）等于 5 认定，之后变慢、暂停、暂存与读档都不重认。存档 48 及以前的在办行动只在迁移时按原固定计划初始化一次。
         /// </summary>
         public bool NoExit { get; set; }
+
+        /// <summary>
+        /// B51a（S08 文首 Q701.3、B51 Q726，存档 54）：本单生产工具（处理尸体的刀斧）开工时真实耐久 D＞0 的本单保障所绑定的工具实例 ID；
+        /// 只对本单有效（取消、中止、完成即随本单结束），不跨单、不给别的用途。其他行动与旧档无保障为 null。
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public int? ToolGuardId { get; set; }
+        /// <summary>B51a（Q701.3）：本单自己的正常生产磨损已把保障工具减到 0（状态「本次生产结束后损坏」），本单仍按原资格走到结束；外部损毁不记。</summary>
+        public bool ToolGuardSpent { get; set; }
 
         public bool IsWorkType => IsWork(Type);
 
