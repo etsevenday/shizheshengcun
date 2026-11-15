@@ -8,10 +8,12 @@
    B34a（S14 2026-11-13 Q570 选 B；新稿 a9b93f0 P05a）：右栏撤掉，战场八站位与操作台三区用全宽；1600×900 站位足底 y=466、同队间距 169、敌我最近 360、人形高 244。
    对象信息、关键预测与战报改到操作台下方默认收起的「战斗信息／战报」阅读区（底部两个入口展开），执行与目标切换留在底部反馈位。 *@
 @{
-    var s = G.S;
+    var s = G.VS;
     var e = G.E;
     var cfg = e.Config;
     var b = s.Battle!;
+    // B47b（R03 §Q617）：播放中常驻显示读显示快照（到结果帧才追齐）；「全记录」仍读真实已提交的本场记录（提交即追加，不重复）
+    var liveB = G.S.Battle is { } lb && lb.BattleId == b.BattleId ? lb : b;
     var dlg = G.DialogueLocked;
     var w = e.CurrentWeapon(s, out var wi);
     // B9a：正在激活的我方成员（主角 0、队友 −k）；没有人在激活时取队列游标上的那一项（没有为 int.MinValue）
@@ -395,7 +397,7 @@
                 else
                 {
                     <div class="bfs-drawer-head">
-                        <h2>@DrawerTitle(G.BattleDrawer)@if (G.BattleDrawer == "log") {<small class="bfs-drawer-sub">@BattleInfoCopy.LogSubtitle(b.Log.Count, b.LogMayBeIncomplete)</small>}</h2>
+                        <h2>@DrawerTitle(G.BattleDrawer)@if (G.BattleDrawer == "log") {<small class="bfs-drawer-sub">@BattleInfoCopy.LogSubtitle(liveB.Log.Count, liveB.LogMayBeIncomplete)</small>}</h2>
                         <button type="button" class="secondary" @onclick="() => G.OpenBattleDrawer(null)">@BattleInfoCopy.BackToBattle<EscCap On="@(G.EscOwner == EscOwner.BattleDrawer)" /></button>
                     </div>
                     <div class="bfs-drawer-body" id="bfs-drawer-body" data-wheel="y">
@@ -403,9 +405,9 @@
                         else if (G.BattleDrawer == "equip") { <BattleEquip /> }
                         else if (G.BattleDrawer == "detail") { <div class="detail bi-detail-wrap"><BattlePanel Mode="detail" /></div> }
                         else if (G.BattleDrawer == "hint") { @HintPage() }
-                        else if (G.BattleDrawer == "log") { @FullLog(b) }
+                        else if (G.BattleDrawer == "log") { @FullLog(liveB) }
                     </div>
-                    @if (G.BattleDrawer == "log" && b.Log.Count > 0)
+                    @if (G.BattleDrawer == "log" && liveB.Log.Count > 0)
                     {
                         <div class="blog-foot">
                             @if (_logNew > 0) { <button type="button" class="secondary blog-new" @onclick="LogToLatest">@BattleInfoCopy.NewRecords(_logNew)</button> }
@@ -450,11 +452,11 @@
     /// </summary>
     private string WaitText(BattleEnemy? turnFoe, string turnName)
     {
-        var b = G.S.Battle!;
+        var b = G.VS.Battle!;
         if (turnFoe != null) return $"敌方行动中：{turnName}";
         if (b.Cursor >= b.Queue.Count) return "回合末结算（本回合推进5分钟）";
         var q = b.Queue[b.Cursor];
-        if (q <= 0 && GameEngine.QueueActor(b, q) is string next) return $"轮到{(next == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.S, next))}";
+        if (q <= 0 && GameEngine.QueueActor(b, q) is string next) return $"轮到{(next == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.VS, next))}";
         return "回合末结算（本回合推进5分钟）";
     }
 
@@ -475,7 +477,7 @@
     /// <summary>整队（Q105）底部步骤提示：第一步点 A，第二步点 A 的相邻友方 B，选齐后确认；再点已选的人取消该步，Esc/右键取消整条。</summary>
     private string PairHint()
     {
-        var s = G.S;
+        var s = G.VS;
         var b = s.Battle!;
         string N(string id) => id == GameState.PlayerId ? "你" : G.E.ActorDisplayName(s, id);
         if (G.BattleAllyTarget == null) return "整队第1步：点要交换站位的第一名友方（可以是自己）· ESC 取消";
@@ -517,7 +519,7 @@
     /// </summary>
     private RenderFragment AllyAnchor(int pos, int activeIdx, bool allyAim, IReadOnlyCollection<string> allyAimSet, string token, bool locked) => __builder =>
     {
-        var s = G.S;
+        var s = G.VS;
         var e = G.E;
         var b = s.Battle!;
         var id = GameEngine.AllyAt(b, pos);
@@ -628,7 +630,7 @@
     {
         var ok = swaps.FirstOrDefault(x => x.Available);
         var any = ok ?? swaps.FirstOrDefault();
-        var why = ok == null ? (any?.Reason ?? G.E.CommandBlocked(G.S, BattleCommand.Of("swap"))) : null;
+        var why = ok == null ? (any?.Reason ?? G.E.CommandBlocked(G.VS, BattleCommand.Of("swap"))) : null;
         var on = G.BattleSwapAiming;
         var ap = any?.Ap ?? 0;
         var energy = any?.Energy ?? 0;
@@ -649,7 +651,7 @@
     /// <summary>主角脚下的状态角标（短徽标，完整说明在右侧对象信息）：防御/格挡、架矛、蓄力、失衡、减速、出血、感染等。</summary>
     private RenderFragment AllyChips(string id) => __builder =>
     {
-        var s = G.S;
+        var s = G.VS;
         var b = s.Battle!;
         using var _focus = G.E.FocusOn(s, id);   // B9a：按这名成员本人的状态画角标
         if (b.PlayerGuard) { <span class="st good bdg" title="@($"{(b.PlayerGuardSourceId != null ? "盾格挡" : "防御")}：下一次直接伤害×{Ui.T(b.PlayerGuardFactor)}")">@(b.PlayerGuardSourceId != null ? "盾" : "防")×@Ui.T(b.PlayerGuardFactor)</span> }
@@ -670,7 +672,7 @@
     /// </summary>
     private RenderFragment FoeAnchor(int pos, bool aiming, IReadOnlyCollection<int> aimSet, int activeIdx, string token, bool locked) => __builder =>
     {
-        var s = G.S;
+        var s = G.VS;
         var e = G.E;
         var b = s.Battle!;
         var en = b.Alive.FirstOrDefault(x => x.Pos == pos);
@@ -769,7 +771,7 @@
     private string PursuitCondition(BattleState b)
     {
         var e = G.E;
-        var parts = GameEngine.AlliesOnField(b).Select(id => $"{(id == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.S, id))}{Ui.T(b.Fighter(id).Pursuit)}/100").ToList();
+        var parts = GameEngine.AlliesOnField(b).Select(id => $"{(id == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.VS, id))}{Ui.T(b.Fighter(id).Pursuit)}/100").ToList();
         parts.AddRange(b.Alive.OrderBy(x => x.Pos).Select(x => $"{x.Pos}号{e.EnemyName(x)}{Ui.T(x.PursuitProgress)}/100"));
         return "追击条件：每回合初按“自己的回合初速度÷对方最快者−1”×50 攒进度，满100在本回合正常激活之后多一次2AP（每回合至多一次）；速度变化从下回合起算。现在进度：" + string.Join("，", parts);
     }
@@ -795,7 +797,7 @@
     private int CarriedFor(BattleCommandOption o)
     {
         var itemId = G.E.Config.CombatActions.FirstOrDefault(a => a.Id == o.Action)?.ItemId ?? G.E.TacticalItemOf(o.Action);   // B22 战术品
-        return itemId == null ? 0 : G.S.Items.Where(i => GameEngine.CarriedByMe(G.S, i) && i.ItemId == itemId).Sum(i => i.Count);
+        return itemId == null ? 0 : G.VS.Items.Where(i => GameEngine.CarriedByMe(G.VS, i) && i.ItemId == itemId).Sum(i => i.Count);
     }
 
     private void CancelAim()
@@ -913,7 +915,7 @@
     /// </summary>
     private RenderFragment RangeMap(BattleCommandOption? o, IReadOnlyCollection<int> aimSet) => __builder =>
     {
-        var s = G.S;
+        var s = G.VS;
         var e = G.E;
         var b = s.Battle!;
         var w = e.CurrentWeapon(s, out _);
@@ -982,7 +984,7 @@
         string? Qty(string id)
         {
             var itemId = e.Config.CombatActions.FirstOrDefault(a => a.Id == id)?.ItemId;
-            return itemId == null ? null : $"×{G.S.Items.Where(i => GameEngine.CarriedByMe(G.S, i) && i.ItemId == itemId).Sum(i => i.Count)}";
+            return itemId == null ? null : $"×{G.VS.Items.Where(i => GameEngine.CarriedByMe(G.VS, i) && i.ItemId == itemId).Sum(i => i.Count)}";
         }
         string ItemArt(string id) => e.Config.CombatActions.FirstOrDefault(a => a.Id == id)?.ItemId ?? "placeholder";
         return o.Action switch
@@ -992,7 +994,7 @@
             // B7：五节点技能用当前武器图 + 技能名首字角标
             _ when o.NodeId != null => (weaponArt, o.Label.Length > 0 ? o.Label[..1] : null, null),
             "guard" => ("cmd_guard", null, null),
-            "swap" => ("cmd_switch", o.ItemInstanceId is int to && to < GameEngine.PlayerPos(G.S.Battle!) ? "前" : "后", null),
+            "swap" => ("cmd_switch", o.ItemInstanceId is int to && to < GameEngine.PlayerPos(G.VS.Battle!) ? "前" : "后", null),
             "breathe" => ("cmd_breathe", null, null),
             "reload" => (w.AmmoId ?? "cmd_reload", null, null),
             "retreat" => ("cmd_retreat", null, null),
@@ -1091,7 +1093,7 @@
     /// <summary>操作提示子页（Q528.3）：原提示全文与原「关闭这条」「暂停后续提示」；只有明确点这两个才改变原回执。没有提示时写空态。</summary>
     private RenderFragment HintPage() => __builder =>
     {
-        if (G.E.BattleHint(G.S) is not { } bh) { <p class="bi-empty">@BattleInfoCopy.HintEmpty</p> return; }
+        if (G.E.BattleHint(G.VS) is not { } bh) { <p class="bi-empty">@BattleInfoCopy.HintEmpty</p> return; }
         <div class="tc-hint bfs-hint" role="note">
             <span class="tc-sys">@BattleInfoCopy.HintLabel</span><span class="tc-hint-text">@bh.Text</span>
             <span class="tc-hint-btns">

@@ -21,7 +21,7 @@ public class BM7aBattleTests
         Assert.That(bs, Does.Contain("<BattlePanel Mode=\"info\" />").And.Contain("<BattlePanel Mode=\"detail\" />"), "下方「战斗信息」与「预测详情」保留");
         var panel = Web("Components", "BattlePanel.razor");
         var pop = Slice(panel, "private RenderFragment PopView()", "private RenderFragment FoeView()");
-        Assert.That(pop, Does.Contain("G.E.PreviewCommand(G.S, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : Index, G.BattleItem))"), "与下方同一次只读预演（同行动者、技能、明确目标）");
+        Assert.That(pop, Does.Contain("G.E.PreviewCommand(G.VS, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : Index, G.BattleItem))"), "与下方同一次只读预演（同行动者、技能、明确目标）");
         Assert.That(pop, Does.Contain("@BattleInfoCopy.InfoTab").And.Contain("@KeyRows(p, allMembers: true)").And.Contain("@p.Reason"), "标题「战斗信息」；空值写真实原因");
         var keyRows = Slice(panel, "private RenderFragment KeyRows(", "private RenderFragment MemberRows(");
         Assert.That(keyRows, Does.Contain("@foreach (var mt in p.Targets) { @MemberRows(mt) }"), "范围技能逐真实受影响成员分列");

@@ -3173,6 +3173,7 @@ public sealed partial class GameSession
             E.DrainBattleFx();   // B34b：只播这一次提交产生的出手
             var res = E.ExecuteCommand(S, cmd);
             var fx = E.DrainBattleFx();
+            if (res.Ok && !res.Duplicate) PrimeFxView(fx);   // B47b（Q617）：首次重绘前把常驻显示定在第一段特写之前
             // B34 试玩修复 E2（Q572-A01）：这一条指令让战斗收束（撤退成功等）且行动者有短反馈——先冻结战斗画面亮完短反馈，再露出收束画面
             var closing = res.Ok && !res.Duplicate && State != null && S.Battle == null && !S.Progress.Dead
                 ? fx.LastOrDefault(x => x.Short && x.Actor.IsAlly) : null;
@@ -3452,6 +3453,7 @@ public sealed partial class GameSession
                 E.DrainBattleFx();
                 var r = E.BattleStep(S);
                 var fx = E.DrainBattleFx();
+                PrimeFxView(fx);   // B47b（Q617）
                 var chained = State != null && S.Battle != null && S.Battle.BattleId != stepBattle;
                 if (chained) { OnChainedBattle(); at = null; }
                 // B9 遗留 1：敌人这一步结算完游标已经往后走，展示停顿期间按“刚出手的那一只”点名

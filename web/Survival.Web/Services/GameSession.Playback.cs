@@ -23,6 +23,32 @@ public sealed partial class GameSession
     private const int FxPulseBaseMs = 600;
 
     private readonly Queue<BattleFxEvent> _fxQueue = new();
+
+    // ── B47b（R03 §Q617 播放视图与真实状态分离）：领域先唯一提交，表现层只读同次出手的前后快照 ──
+    // 每段特写带结算前快照（内核 FxBegin 抄下）；第 k 段开始显示 View(k)，到结果帧（结果字出现的时刻）换成下一段的 View，最后一段到结果帧回到真实状态。
+    // 快照只供战斗画面常驻显示（HP／AP／体力／生命态、位置与队列、底部结果、最近战报与计数）；全记录、指令、存档一律读真实状态。
+
+    /// <summary>结果帧在一段中的位置（与 battle.css 里结果字出现的 33% 同一时刻）。</summary>
+    private const double FxResultFrame = 0.33;
+
+    /// <summary>播放中常驻显示的快照（null 为直接显示真实状态）。</summary>
+    public GameState? FxView { get; private set; }
+
+    /// <summary>每段特写到结果帧后应显示的快照（没有登记＝回真实状态）。</summary>
+    private readonly Dictionary<BattleFxEvent, GameState?> _fxAfter = new();
+
+    /// <summary>战斗画面常驻显示读的状态：播放中有同场快照就读快照，否则读真实状态。</summary>
+    public GameState VS => FxView is { Battle: not null } v && State?.Battle != null ? v : S;
+
+    /// <summary>取走本次出手后、首次重绘前：先把常驻显示定在第一段特写之前的快照，不让已算好的后续结果先亮（Q617）。</summary>
+    private void PrimeFxView(List<BattleFxEvent> evs)
+    {
+        _fxAfter.Clear();
+        var full = evs.Where(x => !x.Short && x.Results.Count > 0).OrderBy(x => x.Seq).ToList();
+        if (full.Count == 0) { FxView = null; return; }
+        FxView = full[0].View;
+        for (var k = 0; k < full.Count; k++) _fxAfter[full[k]] = k + 1 < full.Count ? full[k + 1].View ?? FxView : null;
+    }
     private int _fxGen;
     private long _fxEndedMs;
 
@@ -59,8 +85,15 @@ public sealed partial class GameSession
     /// </summary>
     private async Task<bool> PlayFx(List<BattleFxEvent> evs)
     {
-        if (evs.Count == 0) return false;
+        if (evs.Count == 0) { FxView = null; return false; }
         var gen = _fxGen;
+        PrimeFxView(evs);
+        try { return await PlayFxCore(evs, gen); }
+        finally { if (gen == _fxGen) { FxView = null; _fxAfter.Clear(); } }
+    }
+
+    private async Task<bool> PlayFxCore(List<BattleFxEvent> evs, int gen)
+    {
         // B34 试玩修复 E1（R03 §Q572 按真实顺序）：短反馈与特写按发生先后排——短反馈先亮，特写要等锚点上的短反馈播完再盖上来
         var played = false;
         var run = new List<BattleFxEvent>();
@@ -97,8 +130,13 @@ public sealed partial class GameSession
                 Notify();
                 long elapsed = 0, last = sw.ElapsedMilliseconds;
                 long total = FxDurationMs;
+                if (FxNow.View != null) FxView = FxNow.View;
+                var after = _fxAfter.TryGetValue(FxNow, out var av) ? av : null;
+                var shownAfter = false;
                 while (elapsed < total)
                 {
+                    // Q617：到该段结果帧才把常驻显示追到这一段的结果（下一段之前的快照；最后一段回真实状态）
+                    if (!shownAfter && elapsed >= total * FxResultFrame) { shownAfter = true; FxView = after; Notify(); }
                     await Task.Delay(30);
                     if (gen != _fxGen) break;
                     var now = sw.ElapsedMilliseconds;
@@ -130,6 +168,8 @@ public sealed partial class GameSession
         _fxGen++;
         _fxQueue.Clear();
         FxNow = null;
+        FxView = null;   // B47b（Q617）：读档、新局、回标题清掉显示快照，直接显示真实状态
+        _fxAfter.Clear();
         FxPulses.Clear();
         _fxPulseNames.Clear();
         _fxPulseUntilMs = 0;

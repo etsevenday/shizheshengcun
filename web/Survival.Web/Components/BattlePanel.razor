@@ -7,7 +7,7 @@
    瞄准中本次明确查看的合法目标（BattleAimTarget：悬停或 ←/→ 指定，移出锚点保留）→ 对该目标的实际预测（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）；
    未瞄准时显示悬停或选中的敌人详情，移开恢复已选对象；另列最近战斗记录。 *@
 @{
-    var s = G.S;
+    var s = G.VS;
     var e = G.E;
     var b = s.Battle;
     // B42（S14 2026-11-12 悬停卡片／条目立即显示右栏详情）：全屏战斗沿用这里的对象信息区。悬停或聚焦敌方锚点、我方锚点或队列头像，
@@ -155,8 +155,8 @@ else if (b != null)
 
     private string Who()
     {
-        var b = G.S.Battle!;
-        return b.FocusId == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.S, b.FocusId);
+        var b = G.VS.Battle!;
+        return b.FocusId == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.VS, b.FocusId);
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ else if (b != null)
     /// </summary>
     private RenderFragment FoeFacts(BattleEnemy t) => __builder =>
     {
-        var s = G.S;
+        var s = G.VS;
         var e = G.E;
         var b = s.Battle!;
         var ec = e.Enemy(t.EnemyId);
@@ -194,7 +194,7 @@ else if (b != null)
     private RenderFragment PopView() => __builder =>
     {
         if (G.BattleAction == null) return;
-        var p = G.E.PreviewCommand(G.S, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : Index, G.BattleItem));
+        var p = G.E.PreviewCommand(G.VS, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : Index, G.BattleItem));
         <div class="bi-pop-title">@BattleInfoCopy.InfoTab</div>
         @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
         else { @KeyRows(p, allMembers: true) }
@@ -204,7 +204,7 @@ else if (b != null)
     private RenderFragment FoeView() => __builder =>
     {
         var e = G.E;
-        if (Index is not int i || e.BattleEnemyAt(G.S.Battle!, i) is not BattleEnemy t || !t.Alive) return;
+        if (Index is not int i || e.BattleEnemyAt(G.VS.Battle!, i) is not BattleEnemy t || !t.Alive) return;
         <div class="bfs-aimrail-tab">@ShellText.ObjectTab</div>
         <RailHead>
             <Thumb>@Icons.Markup("enemy_" + t.EnemyId)</Thumb>
@@ -220,7 +220,7 @@ else if (b != null)
     /// </summary>
     private RenderFragment KeyRows(BattlePreview p, bool allMembers = false) => __builder =>
     {
-        var s = G.S;
+        var s = G.VS;
         var e = G.E;
         var b = s.Battle!;
         var ap = p.Ap < 0 ? "剩余AP" : $"{p.Ap}AP";
@@ -261,7 +261,7 @@ else if (b != null)
     private RenderFragment MemberRows(BattleTargetPreview t) => __builder =>
     {
         var e = G.E;
-        var aimed = t.AimedIndex is int ai ? e.BattleEnemyAt(G.S.Battle!, ai) : null;
+        var aimed = t.AimedIndex is int ai ? e.BattleEnemyAt(G.VS.Battle!, ai) : null;
         <div class="bi-mem">
             <b class="bi-mem-name">@(aimed != null ? $"{aimed.Slot}号 {e.EnemyName(aimed)}" : $"{t.Slot}号 {t.Name}")@if (aimed != null) {<em>；@BattleInfoCopy.TakenBy：@($"{t.Slot}号 {t.Name}")</em>}</b>
             <div class="bi-row"><span>@BattleInfoCopy.RowHit</span><b>实际命中率@(Ui.Pct(t.HitChance)) · 暴击（命中后）@Ui.Pct(t.CritChance)</b></div>
@@ -276,7 +276,7 @@ else if (b != null)
     /// </summary>
     private RenderFragment DetailView() => __builder =>
     {
-        var s = G.S;
+        var s = G.VS;
         var e = G.E;
         var b = s.Battle!;
         var aiming = G.BattleAiming;
@@ -335,7 +335,7 @@ else if (b != null)
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (Mode != "info") return;
-        var k = G.State != null && G.S.Battle != null && PeekKey.KindOf(G.PeekKeyNow) is PeekKey.Foe or PeekKey.Ally ? G.PeekKeyNow : null;
+        var k = G.State != null && G.VS.Battle != null && PeekKey.KindOf(G.PeekKeyNow) is PeekKey.Foe or PeekKey.Ally ? G.PeekKeyNow : null;
         if (k == _shownPeek) return;
         _shownPeek = k;
         if (k == null) return;
