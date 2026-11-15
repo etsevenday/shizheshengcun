@@ -1,5 +1,5 @@
 {
-  "version": "Q652+Q679-20261115",
+  "version": "Q652+Q679+Q739-Q748-20261115",
   "status": "策划合同，非运行配置；待开发接入",
   "authority": "用户允许主控补齐多途径病毒传播，并明确同伴病毒不随时间自然增长。",
   "baseProbability": {
@@ -1090,5 +1090,350 @@
     "newHitRollForSplash": false,
     "committedOldResultsPreserved": true,
     "allEnemyStepProfilesAndProbabilityDoseValuesUnchanged": true
+  },
+  "q739ToQ748": {
+    "date": "2026-11-15",
+    "status": "策划交付，非运行配置；待B49实现与复验",
+    "originalBatch": "2026-11-15 153b858 B49 Q739-Q748",
+    "decisions": {
+      "Q739": "A",
+      "Q740": "A",
+      "Q741": "A",
+      "Q742": "A",
+      "Q743": "A",
+      "Q744": "A",
+      "Q745": "user_new_copy_and_global_conciseness_rule",
+      "Q746": "C",
+      "Q747": "A",
+      "Q748": "A"
+    },
+    "copy": {
+      "none": "无感染源。",
+      "group": "本组有感染源，详见成员。",
+      "member": "{敌人名}：可通过{途径列表}传播病毒。",
+      "reference": "{人物} · 命中且正伤害后：",
+      "firstEstimate": "{途径}：概率{概率}，感染后病毒{首次V}。",
+      "repeatEstimate": "{途径}：概率{概率}，病毒+{实际增量}。",
+      "bitePossible": "（可能感染）",
+      "help": "咬伤、抓伤／刮伤、污染器械伤、变异体液、冲撞擦伤：感染源造成正伤害后可能传播病毒。人类、普通动物：无感染源。",
+      "risk": "传播途径见敌人详情；免疫越低，同一途径越易感染。",
+      "immunityTail": "免疫越低越易感染；同伴病毒不自然增长。离线不恢复。",
+      "virusIntro": "外部暴露分五类，概率和病毒量各异；仅主角有饱饱输入。同伴病毒不自然增长，新暴露仍可加量。",
+      "baobao": "主角有饱饱时：免疫低于{压制门槛}，每小时输入最多{最大小时输入}病毒；免疫越高越少，净输入为正即感染（病毒至少{首次输入下限}）。",
+      "natural": "自然变化：主角感染后每小时{主角速率清单}；同伴仅保留其中下降，正增长为0。未治愈时病毒最低{自然下限}。",
+      "zombie": "病毒达{尸变上限}即尸变；主角尸变结束本局。",
+      "suppress": "绷带、抗生素可降病毒，最低{抑制下限}；不能清除感染。",
+      "cure": "治愈：免疫≥{治愈免疫}持续{治愈时长}且病毒≤{治愈上限}，或使用病毒特效药。",
+      "biteProbability": "咬伤感染概率",
+      "companion": "同伴病毒不自然增长；新暴露可增加，高免疫和药物可降低。",
+      "firstResult": "{人物}因{途径}感染，病毒量{实际V}（判定概率{概率}）",
+      "repeatResult": "{人物}因{途径}再次受到感染暴露，病毒+{实际增量}（判定概率{概率}）",
+      "failedResult": "{人物}本次{途径}未增加感染（判定概率{概率}）",
+      "splash": "{敌人名}死亡喷溅：{人物}健康−{伤害}，{本次真实感染结果}。",
+      "splashNoExposure": "{敌人名}死亡喷溅：{人物}健康−{伤害}。"
+    },
+    "priority": "current_over_old_ambiguous_advance_selection_and_long_none_bite_only_copy",
+    "selection": {
+      "actualBite": "bite",
+      "actualQualifiedSplash": "mutant_fluid",
+      "normalAdvanceThenAttack": "locked_actual_step_exposure",
+      "includesCooperativeAdvance": true,
+      "pursuitApproachAndDowngradedWeak": "defaultPhysicalExposure",
+      "plainFlagDoesNotOverrideStepForNormalAdvance": true,
+      "noNewDamageControlBleedOrAttack": true,
+      "oneProfilePerEligibleHit": true,
+      "originalGateAndLifeOrder": true
+    },
+    "staticTypes": {
+      "union": [
+        "opening.exposure",
+        "cycle.exposure",
+        "biteReplacementExposure",
+        "defaultPhysicalExposure",
+        "deathSplashExposure"
+      ],
+      "order": [
+        "bite",
+        "scratch",
+        "tainted_weapon",
+        "mutant_fluid",
+        "impact_abrasion"
+      ],
+      "separator": "、",
+      "internalNameSlashPreserved": true,
+      "excludeNoneAndNull": true,
+      "dedupe": true,
+      "noLockedIntentOrTemporaryReachFilter": true,
+      "possibleProfilesByEnemy": {
+        "shambler": [
+          "bite",
+          "scratch"
+        ],
+        "crawler": [
+          "bite",
+          "scratch"
+        ],
+        "runner": [
+          "bite",
+          "scratch"
+        ],
+        "worker": [
+          "bite",
+          "scratch"
+        ],
+        "riot": [
+          "bite",
+          "impact_abrasion"
+        ],
+        "howler": [
+          "bite",
+          "scratch"
+        ],
+        "feral_dog": [],
+        "wolf": [],
+        "boar": [],
+        "stag": [],
+        "z_slow": [
+          "bite",
+          "scratch"
+        ],
+        "z_helmet": [
+          "bite",
+          "scratch"
+        ],
+        "z_spitter": [
+          "scratch",
+          "mutant_fluid"
+        ],
+        "z_hauler": [
+          "bite",
+          "scratch",
+          "impact_abrasion"
+        ],
+        "z_darter": [
+          "bite",
+          "scratch"
+        ],
+        "z_screamer": [
+          "scratch"
+        ],
+        "z_guard": [
+          "tainted_weapon"
+        ],
+        "z_clinger": [
+          "bite",
+          "scratch"
+        ],
+        "z_bloater": [
+          "scratch",
+          "mutant_fluid"
+        ],
+        "z_nurse": [
+          "bite",
+          "scratch"
+        ],
+        "z_engineer": [
+          "bite",
+          "tainted_weapon"
+        ],
+        "z_signal": [
+          "scratch"
+        ],
+        "z_pump_foreman": [
+          "scratch",
+          "tainted_weapon"
+        ],
+        "z_isolation_guard": [
+          "bite",
+          "scratch"
+        ],
+        "z_power_guard": [
+          "scratch",
+          "impact_abrasion"
+        ],
+        "z_relay_guard": [
+          "tainted_weapon"
+        ],
+        "raider_melee": [],
+        "raider_gunner": [],
+        "wild_dog_leader": [],
+        "feral_boar": [],
+        "ec_cantor": [
+          "scratch"
+        ],
+        "ec_labwalker": [
+          "scratch"
+        ],
+        "ec_cablecrawler": [
+          "bite",
+          "scratch",
+          "tainted_weapon"
+        ],
+        "ec_stockbracer": [
+          "bite",
+          "scratch"
+        ],
+        "ec_boss_crypt": [
+          "scratch",
+          "tainted_weapon"
+        ],
+        "ec_boss_lab": [
+          "scratch"
+        ],
+        "ec_boss_armory": [
+          "tainted_weapon"
+        ],
+        "ec_boss_relay": [
+          "tainted_weapon"
+        ],
+        "ec_boss_water": [
+          "scratch",
+          "impact_abrasion"
+        ],
+        "ec_boss_mine": [
+          "scratch",
+          "tainted_weapon"
+        ],
+        "ec_boss_mall": [
+          "scratch",
+          "tainted_weapon"
+        ],
+        "ec_boss_cold": [
+          "scratch",
+          "tainted_weapon"
+        ]
+      }
+    },
+    "reference": {
+      "prebattle": "protagonist_if_in_trustworthy_entry_roster",
+      "protagonistNotInRoster": "static_types_only_no_probability_or_dose_group",
+      "protagonistCannotAttackButStillInRoster": "infection_reference_still_allowed",
+      "inBattle": "current_real_friendly_view_actor_FocusId",
+      "noAllParticipantGroups": true,
+      "nameAndPositiveHitConditionOnce": true,
+      "probability": "original_p0_of_reference_I_times_profile_factor_unrounded_for_roll",
+      "repeatAmount": "min(100-current_real_V,profile.repeatDelta)",
+      "specificLegalProtectedHitUsesActualBearer": true,
+      "noFutureDraw": true
+    },
+    "group": {
+      "minMembers": 2,
+      "requiresAnyMemberSource": true,
+      "positions": [
+        "right_battle_detail_fold_top",
+        "central_before_member_list"
+      ],
+      "eachOnce": true,
+      "memberDetailsRetained": true,
+      "noSourceEachOwnMemberAt": [
+        "right_detail",
+        "central_member_detail",
+        "battle_enemy_detail"
+      ]
+    },
+    "labels": {
+      "removeOldNoInfectionSuffix": true,
+      "keepExistingBitePossibleSuffix": true,
+      "addOtherPossibleSuffix": false,
+      "revealFutureIntent": false,
+      "oldLogsRewritten": false
+    },
+    "none": {
+      "textKey": "none",
+      "requiresStaticTypeUnionEmpty": true,
+      "notUninfectedStateOrFailedHitOrRoll": true,
+      "currentHumanAnimalDamageAndBleedPreserved": true
+    },
+    "help": {
+      "fiveLocations": [
+        "hit_help_infection_paragraph",
+        "old_bite_risk_tip",
+        "immunity_explain_tail_only",
+        "virus_explain_full_six_paragraphs",
+        "immunity_bite_probability_row_retained"
+      ],
+      "virusParagraphOrder": [
+        "virusIntro",
+        "baobao",
+        "natural",
+        "zombie",
+        "suppress",
+        "cure"
+      ],
+      "sourceConfigVariables": {
+        "压制门槛": "infection.baobaoInput.fullSuppressImmunityAtLeast",
+        "最大小时输入": "infection.baobaoInput.maxPerHour",
+        "首次输入下限": "infection.baobaoInput.firstInfectionMinLoad",
+        "主角速率清单": "infection.progressPerHour_original_intervals_and_signed_rates",
+        "自然下限": "infection.naturalLoadMinimumWhileInfected",
+        "尸变上限": "infection.zombificationAtLoad",
+        "抑制下限": "infection.allSuppressantsMinLoad",
+        "治愈免疫": "infection.naturalCure.consecutiveImmunityAtLeast",
+        "治愈时长": "infection.naturalCure.minutes",
+        "治愈上限": "infection.naturalCure.loadAtMost"
+      },
+      "numbersAndTreatmentUnchanged": true,
+      "baobaoOnlyActualProtagonistCarrier": true,
+      "companionZombieDoesNotEndProtagonistGame": true,
+      "immunityExistingRatesTextPreserved": true,
+      "biteRowOnlyBiteP0": true
+    },
+    "splash": {
+      "prefixKey": "splash",
+      "separator": "，",
+      "resultKeys": [
+        "firstResult",
+        "repeatResult",
+        "failedResult"
+      ],
+      "stripResultTerminalPunctuation": true,
+      "oneTerminalFullStop": true,
+      "noExposureUses": "splashNoExposure",
+      "noEligibleExposureNoRandomOrFakeFailure": true,
+      "originalQ679NoSplashGate": true,
+      "positiveDamageDyingAliveStillEligible": true,
+      "actualActorAndDoseProbability": true,
+      "originalLifeAndWarningsOrder": true,
+      "noDuplicateLogOrTransaction": true
+    },
+    "companion": {
+      "where": "companion_detail_below_virus_row",
+      "visible": "non_protagonist_controlled_companion_and_actual_infected_true",
+      "usesInfectedFlagNotRoundedV": true,
+      "clearedInfectionHides": true,
+      "genericVirusHelpCoversOnce": true,
+      "duplicateGenericCompanionSentence": false,
+      "originalRatesNewExposureAndTreatments": true
+    },
+    "compatibility": {
+      "preserveAllCommittedOldStateAndLogs": true,
+      "noHistoricalExposureCatchup": true,
+      "lockedFutureStepIdentityPreservedWithoutAIOrBiteReroll": true,
+      "readonlyDoesNotChangeRandomVirusOrXP": true,
+      "atomicB49MechanicsAndDisplay": true,
+      "q735RemainsExistingTargetAndB52EngineeringStatus": true
+    },
+    "acceptance": [
+      "Q739-A01",
+      "Q739-A02",
+      "Q740-A01",
+      "Q740-A02",
+      "Q741-A01",
+      "Q742-A01",
+      "Q742-A02",
+      "Q743-A01",
+      "Q743-A02",
+      "Q744-A01",
+      "Q745-A01",
+      "Q745-A02",
+      "Q746-A01",
+      "Q746-A02",
+      "Q747-A01",
+      "Q747-A02",
+      "Q747-A03",
+      "Q748-A01",
+      "Q748-A02",
+      "Q739-Q748-C01"
+    ]
   }
 }

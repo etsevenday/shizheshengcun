@@ -1,5 +1,5 @@
 {
-  "contractVersion": 9,
+  "contractVersion": 10,
   "date": "2026-11-15",
   "purpose": "Q616及已答濒死补充合同，含Q701新生产语义及Q702—Q703预估可读性；唯一生命正文R09、生产正文S08，非运行配置",
   "scope": {
@@ -807,6 +807,47 @@
       "Q736-A02",
       "Q738-A01",
       "Q738-A02"
+    ]
+  },
+  "q739ToQ748": {
+    "source": "exposure-profiles-q652.json#q739ToQ748",
+    "decisions": {
+      "Q739": "A",
+      "Q740": "A",
+      "Q741": "A",
+      "Q742": "A",
+      "Q743": "A",
+      "Q744": "A",
+      "Q745": "user_new_copy_and_global_conciseness_rule",
+      "Q746": "C",
+      "Q747": "A",
+      "Q748": "A"
+    },
+    "splash": {
+      "prefixKey": "splash",
+      "separator": "，",
+      "resultKeys": [
+        "firstResult",
+        "repeatResult",
+        "failedResult"
+      ],
+      "stripResultTerminalPunctuation": true,
+      "oneTerminalFullStop": true,
+      "noExposureUses": "splashNoExposure",
+      "noEligibleExposureNoRandomOrFakeFailure": true,
+      "originalQ679NoSplashGate": true,
+      "positiveDamageDyingAliveStillEligible": true,
+      "actualActorAndDoseProbability": true,
+      "originalLifeAndWarningsOrder": true,
+      "noDuplicateLogOrTransaction": true
+    },
+    "originalLifeStatesRollsXpAndDeathSplashTriggerPreserved": true,
+    "worldFreezeRuleAndEngineeringStatusUnchanged": true,
+    "acceptance": [
+      "Q747-A01",
+      "Q747-A02",
+      "Q747-A03",
+      "Q739-Q748-C01"
     ]
   }
 }
