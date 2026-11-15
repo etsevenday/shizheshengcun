@@ -483,4 +483,124 @@ public class B50aTests : TestBase
         Assert.That(DrySlots(r2).Single(b => b.Slot == 0).Status, Is.EqualTo(DryingSlot.Done), "越过旧截止照常晾好（40＋80＝120）");
         Assert.That(r2.Items.Count(i => i.ItemId == "dried_berries"), Is.EqualTo(1), "只出一份");
     }
+
+    // ───────────── M950 晾制停止原因（Q713-A01、Q666-A05） ─────────────
+
+    /// <summary>
+    /// Q713-A01：缺料停止的状态／摘要／经验／取消拒绝／说明／清理悬停与成功句都按缺料，不假写腐败；剩料后来腐败原因仍是缺料；
+    /// 真腐败与未知旧失败分开计；剩余辅料只返一次，缺失不补；无剩余物的失败位清理只写该位已空。
+    /// </summary>
+    [Test]
+    public void Q713_A01_MissingStop_OwnTexts_SeparateFromSpoiledAndUnknown_ReturnOnce()
+    {
+        var s = Rack();
+        var t0 = s.GameMinute;
+        var place = s.Ground;
+        var x0 = Xp(s);
+        Make(s, "raw_meat", 1, ItemInstance.Carried, t0 + 600);
+        Make(s, "salt", 1, s.Ground);
+        Assert.That(E.StartDrying(s, "dry_meat").Ok, Is.True);                       // 工位1：之后生肉丢失，剩盐
+        Make(s, "berry", 2, ItemInstance.Carried, t0 + 600);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);                    // 工位2：之后原料全丢
+        Make(s, "berry", 2, ItemInstance.Carried, t0 + 600);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);                    // 工位3：之后标未知旧失败
+        s.Items.RemoveAll(i => i.Owner == ItemInstance.DryingOwner(place, 0) && i.ItemId == "raw_meat");
+        s.Items.RemoveAll(i => i.Owner == ItemInstance.DryingOwner(place, 1));
+        var n0 = s.Log.Count;
+        AdvanceTo(s, t0 + 5);
+        var b0 = DrySlots(s).Single(b => b.Slot == 0);
+        var b1 = DrySlots(s).Single(b => b.Slot == 1);
+        Assert.That((b0.Status, b0.StopReason, b1.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopMissing, DryingSlot.StopMissing)));
+        Assert.That(s.Log.Skip(n0).Select(l => l.Text), Has.None.Contains(GameEngine.SpoiledWorkClause).And.None.Contains("已腐败"), "缺料不写腐败");
+        var b2 = DrySlots(s).Single(b => b.Slot == 2);
+        b2.Status = DryingSlot.Spoiled;
+        b2.StopReason = DryingSlot.StopUnknown;
+
+        var v0 = E.DryingSlotViews(s)[0];
+        Assert.That(v0.StopKind, Is.EqualTo(DryingSlot.StopMissing));
+        Assert.That(v0.Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；清理可取回剩余物品。"));
+        Assert.That(v0.XpText, Is.EqualTo("原料不全，无成品和经验。"));
+        Assert.That(v0.CleanupHint, Is.EqualTo("取出剩余物品，清空该位。"));
+        Assert.That(E.CancelDrying(s, 0, false).Reason, Is.EqualTo("原料不全：请清理剩余物品。"));
+        Assert.That(E.StartDrying(s, "dry_berries", 0).Reason, Does.Contain("原料不全，待清理"), "状态按缺料");
+        var v2 = E.DryingSlotViews(s)[2];
+        Assert.That((v2.Line, v2.XpText, v2.CleanupHint), Is.EqualTo(($"{E.Recipe("dry_berries").Name}已停止，无成品；清理可取回剩余物品。", "本批已停止，无成品和经验。", "取出剩余物品，清空该位。")));
+        Assert.That(E.CancelDrying(s, 2, false).Reason, Is.EqualTo("本批已停止：请清理剩余物品。"));
+        Assert.That(E.StartDrying(s, "dry_berries", 2).Reason, Does.Contain("加工已停止，待清理"));
+
+        // 真腐败另计：工位4 放一批旧档未受保护的到期果干
+        Make(s, "berry", 2, ItemInstance.Carried, t0 + 600);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        var b3 = DrySlots(s).Single(b => b.Slot == 3);
+        b3.ShelfPaused = false;
+        foreach (var i in s.Items.Where(i => i.Owner == ItemInstance.DryingOwner(place, 3))) { i.ShelfPausedMinutes = null; i.ExpiresAt = s.GameMinute + 5; }
+        AdvanceTo(s, s.GameMinute + 10);
+        Assert.That((b3.Status, b3.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopSpoiled)));
+        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "缺料2", "停止1", "腐败1", "空4" }), "按原因分开计工位数");
+        Assert.That(E.DryingSlotViews(s)[3].CleanupHint, Is.Null, "真腐败位沿现行清理悬停");
+
+        // 缺料后剩料再腐败：原因仍是缺料
+        var salt = s.Items.Single(i => i.Owner == ItemInstance.DryingOwner(place, 0));
+        Assert.That(salt.ItemId, Is.EqualTo("salt"));
+        Assert.That(b0.StopReason, Is.EqualTo(DryingSlot.StopMissing));
+
+        // 清理：剩盐只返一次、不补生肉；空位只写该位已空
+        Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
+        Assert.That(s.Log.Last().Text, Does.Match(@"^清理.+晾制架工位1：盐×1取到.+，该位已空。$"));
+        Assert.That(E.TakeDrying(s, 0, false).Reason, Does.Contain("是空的"), "只返一次");
+        Assert.That(s.Items.Count(i => i.ItemId == "raw_meat"), Is.EqualTo(0), "缺失不补");
+        Assert.That(E.TakeDrying(s, 1, false).Ok, Is.True);
+        Assert.That(s.Log.Last().Text, Does.Match(@"^清理.+晾制架工位2：该位已空。$"), "不造虚拟物品");
+        Assert.That(E.TakeDrying(s, 2, false).Ok, Is.True);
+        Assert.That(s.Log.Last().Text, Does.Match(@"^清理.+晾制架工位3：野果×2取到.+，该位已空。$"));
+        Assert.That(s.Items.Where(i => i.ItemId == "berry" && i.Owner == s.Ground).Select(i => i.ExpiresAt), Is.All.Not.Null, "受保护的剩料释放时按 C＋R 恢复截止");
+        Assert.That(Xp(s), Is.EqualTo(x0), "停止不给经验");
+    }
+
+    /// <summary>缺料停止后剩料（旧档未受保护）真的过期：各物品按自身真实转换显示，停止原因仍是缺料，不改成腐败。</summary>
+    [Test]
+    public void Q713_MissingThenLeftoverExpires_ReasonStaysMissing()
+    {
+        var s = Rack();
+        var t0 = s.GameMinute;
+        var place = s.Ground;
+        Make(s, "raw_meat", 1, ItemInstance.Carried, t0 + 600);
+        Make(s, "salt", 1, s.Ground);
+        Assert.That(E.StartDrying(s, "dry_meat").Ok, Is.True);
+        s.Items.RemoveAll(i => i.Owner == ItemInstance.DryingOwner(place, 0) && i.ItemId == "salt");
+        AdvanceTo(s, t0 + 5);
+        var meat = s.Items.Single(i => i.Owner == ItemInstance.DryingOwner(place, 0));
+        meat.ShelfPausedMinutes = null;
+        meat.ExpiresAt = s.GameMinute + 10;
+        AdvanceTo(s, s.GameMinute + 30);
+        var b = DrySlots(s).Single();
+        Assert.That(b.StopReason, Is.EqualTo(DryingSlot.StopMissing), "原停止原因仍缺料");
+        Assert.That(E.DryingSlotViews(s)[0].XpText, Is.EqualTo("原料不全，无成品和经验。"));
+        Assert.That(E.DryingSummaryParts(s)[0], Is.EqualTo("缺料1"));
+    }
+
+    /// <summary>Q666-A05：受保护晾制越过原截止不生成假腐败结果；无保护的旧在制位真腐败时结果句接停工分句一次（另见 BM5b2 Q610_A05）。</summary>
+    [Test]
+    public void Q666_A05_ProtectedDryingNoFakeSpoil_LegacySpoilClauseOnce()
+    {
+        var s = Rack();
+        var t0 = s.GameMinute;
+        var place = s.Ground;
+        Make(s, "berry", 2, ItemInstance.Carried, t0 + 10);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        Make(s, "berry", 2, ItemInstance.Carried, t0 + 10);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        var legacy = DrySlots(s).Single(b => b.Slot == 1);
+        legacy.ShelfPaused = false;
+        foreach (var i in s.Items.Where(i => i.Owner == ItemInstance.DryingOwner(place, 1))) { i.ExpiresAt = t0 + i.ShelfPausedMinutes; i.ShelfPausedMinutes = null; }
+        var n0 = s.Log.Count;
+        AdvanceTo(s, t0 + 120);
+        var log = s.Log.Skip(n0).Select(l => l.Text).ToList();
+        Assert.That(DrySlots(s).Single(b => b.Slot == 0).Status, Is.EqualTo(DryingSlot.Done), "受保护位照常完成");
+        Assert.That(log.Count(l => l.Contains("晾制架工位1") && l.Contains("腐败")), Is.EqualTo(0), "受保护位不生成假腐败结果");
+        var stop = log.Single(l => l.Contains("晾制架工位2"));
+        Assert.That(stop, Does.EndWith(GameEngine.SpoiledWorkClause), "无保护真腐败接停工分句");
+        Assert.That(log.Count(l => l.Contains(GameEngine.SpoiledWorkClause)), Is.EqualTo(1), "只一次");
+        Assert.That(log, Has.None.Contains("变为腐败物×"), "没有同事件普通腐败重复句");
+    }
 }

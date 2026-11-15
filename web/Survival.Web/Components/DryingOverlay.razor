@@ -50,7 +50,7 @@
                             <div class="tiny dry-line"><span class="muted">加工进度</span> @(v.DoneMinutes)/@(v.RequiredMinutes)分钟</div>
                             <div class="fuel-track"><i style="width:@(v.DoneMinutes * 100 / Math.Max(1, v.RequiredMinutes))%"></i></div>
                         }
-                        <div class="tiny @(v.Status == "spoiled" || v.Line.Contains("会在完成前腐败") ? "warn-text" : "muted")">@v.Line</div>
+                        <div class="tiny @(v.Status == "spoiled" ? "warn-text" : "muted")">@v.Line</div>
                         @if (v.XpText != null && v.Status != "empty")
                         {
                             <div class="tiny cg-xp">@v.XpText</div>
@@ -71,8 +71,8 @@
                                     <button type="button" id="@($"dry-take-{k}")" class="primary" disabled="@busy" title="选择去向：取到随身或当前地面（0分钟），这一位空出" @onclick="() => Harvest(k)">收取</button>
                                     break;
                                 default:
-                                    <button type="button" class="secondary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? "把原料原样取到随身（腐败的不能吃），这一位空出")" @onclick="() => Take(k, true)">清理·到随身</button>
-                                    <button type="button" class="secondary" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? "把原料原样取到当前地面（腐败的不能吃），这一位空出")" @onclick="() => Take(k, false)">清理·到地面</button>
+                                    <button type="button" class="secondary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? v.CleanupHint ?? "把原料原样取到随身（腐败的不能吃），这一位空出")" @onclick="() => Take(k, true)">清理·到随身</button>
+                                    <button type="button" class="secondary" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? v.CleanupHint ?? "把原料原样取到当前地面（腐败的不能吃），这一位空出")" @onclick="() => Take(k, false)">清理·到地面</button>
                                     break;
                             }
                         </div>

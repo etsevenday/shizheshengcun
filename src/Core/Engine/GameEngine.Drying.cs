@@ -59,6 +59,10 @@ namespace Survival.Core.Engine
         public string CancelHint { get; set; } = "";
         /// <summary>肉干位原料保质暂停中（Q215）。</summary>
         public bool ShelfPaused { get; set; }
+        /// <summary>停止位的展示原因（B50a，S11 文首 Q713）：missing 缺料、unknown 未知、spoiled 腐败（旧档 legacy 按 Q764 待定前沿现行腐败文字）；非停止位为 null。</summary>
+        public string? StopKind { get; set; }
+        /// <summary>缺料／未知停止位的清理悬停「取出剩余物品，清空该位。」；腐败位为 null（沿现行清理悬停）。</summary>
+        public string? CleanupHint { get; set; }
     }
 
     /// <summary>
@@ -212,9 +216,34 @@ namespace Survival.Core.Engine
         private string DryingStatusWord(DryingSlot b) => b.Status switch
         {
             DryingSlot.Done => $"{ItemName(_recipes[b.RecipeId].Outputs.Keys.First())}已晾好，待取出",
-            DryingSlot.Spoiled => "原料已腐败，待清理",
+            DryingSlot.Spoiled => DryingStopKind(b) switch
+            {
+                DryingSlot.StopMissing => DryingMissingStatusText,
+                DryingSlot.StopUnknown => DryingUnknownStatusText,
+                _ => "原料已腐败，待清理",
+            },
             _ => $"{_recipes[b.RecipeId].Name} {b.DoneMinutes}/{b.RequiredMinutes}分钟",
         };
+
+        /// <summary>
+        /// 停止位按真实停止原因展示（B50a，S11 文首 Q713）：缺料 missing、未知 unknown 各用自己的文字；腐败 spoiled 与旧档 legacy（Q764 待定）沿现行腐败文字。
+        /// 原因在停止那一刻记下，之后剩料再腐败也不改（「原停止原因仍缺料」）。
+        /// </summary>
+        public static string DryingStopKind(DryingSlot b) => b.StopReason switch
+        {
+            DryingSlot.StopMissing => DryingSlot.StopMissing,
+            DryingSlot.StopUnknown => DryingSlot.StopUnknown,
+            _ => DryingSlot.StopSpoiled,
+        };
+
+        // 逐字稿 2026-11-15 Q711—Q719 表：晾制缺料／未知停止正式句
+        public const string DryingMissingStatusText = "原料不全，待清理";
+        public const string DryingMissingXpText = "原料不全，无成品和经验。";
+        public const string DryingMissingCancelText = "原料不全：请清理剩余物品。";
+        public const string DryingUnknownStatusText = "加工已停止，待清理";
+        public const string DryingUnknownXpText = "本批已停止，无成品和经验。";
+        public const string DryingUnknownCancelText = "本批已停止：请清理剩余物品。";
+        public const string DryingCleanupHintText = "取出剩余物品，清空该位。";
 
         // B50a（S11 文首 Q666）：原果干临期红字「会在完成前腐败，届时停止且没有成品」（Q214／M470）随全部晾制暂停保质撤去。
 
@@ -349,7 +378,12 @@ namespace Survival.Core.Engine
             var b = DryingSlotAt(s, s.Ground, slot);
             if (b == null) return $"工位{slot + 1}是空的";
             if (b.Status == DryingSlot.Done) return "已经晾好了：请取出成品";
-            if (b.Status == DryingSlot.Spoiled) return "原料已腐败：只能清理（取出腐败原料），不能退回原料";
+            if (b.Status == DryingSlot.Spoiled) return DryingStopKind(b) switch
+            {
+                DryingSlot.StopMissing => DryingMissingCancelText,
+                DryingSlot.StopUnknown => DryingUnknownCancelText,
+                _ => "原料已腐败：只能清理（取出腐败原料），不能退回原料",
+            };
             var items = DryingContents(s, s.Ground, slot);
             if (items.Any(i => IsSpoiled(s, i))) return "原料已腐败：只能清理（取出腐败原料），不能退回原料";
             return DryingMoveBlocked(s, items, toCarried);
@@ -423,13 +457,18 @@ namespace Survival.Core.Engine
             var b = DryingSlotAt(s, place, slot)!;
             var items = DryingContents(s, place, slot);
             var spoiled = b.Status == DryingSlot.Spoiled;
+            var plainStop = spoiled && DryingStopKind(b) != DryingSlot.StopSpoiled;
             var what = spoiled
                 ? string.Join("、", items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}{(IsSpoiled(s, i) && !IsSpoiledMatter(i) ? "（已腐败）" : "")}"))
                 : string.Join("、", items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}（{ExpiryNote(s, i)}）"));
             fac.DryingSlots.Remove(b);
             MoveDryingOut(s, items, toCarried ? ItemInstance.Carried : place);
             RememberRequest(s, requestId);
-            Emit(s, GameEventKind.Info, spoiled
+            // B50a（Q713）：缺料／未知停止位用正式清理句；位内已无物时只写该位已空，不造虚拟物品
+            Emit(s, GameEventKind.Info, plainStop
+                ? (items.Count == 0 ? $"清理{ZoneName(s, place)}晾制架工位{slot + 1}：该位已空。"
+                                    : $"清理{ZoneName(s, place)}晾制架工位{slot + 1}：{what}取到{DestName(s, toCarried)}，该位已空。")
+                : spoiled
                 ? $"清理{ZoneName(s, place)}晾制架工位{slot + 1}：{what}取到{DestName(s, toCarried)}（腐败的不能吃，按腐败物处理），这一位空出。"
                 : $"从{ZoneName(s, place)}晾制架工位{slot + 1}取出{what}到{DestName(s, toCarried)}，这一位空出。");
             UpdateFlags(s);
@@ -453,6 +492,8 @@ namespace Survival.Core.Engine
                     if (bad != null || !whole)
                     {
                         b.Status = DryingSlot.Spoiled;
+                        // B50a（Q713）：停止那一刻记真实原因（有腐败原料记腐败，否则缺料），之后不再改
+                        b.StopReason = bad != null ? DryingSlot.StopSpoiled : DryingSlot.StopMissing;
                         b.EndMinute = s.GameMinute;
                         // BM5b2（Q610）：腐败的原料就地转为腐败物（静默，原料仍留这一位待清理），结果句接停工分句
                         var badName = bad != null ? ItemName(OriginItemId(bad)) : null;
@@ -540,7 +581,12 @@ namespace Survival.Core.Engine
         public string DryingXpNote(GameState s, DryingSlot b) => b.Status switch
         {
             DryingSlot.Done => b.XpNote ?? "",
-            DryingSlot.Spoiled => "原料腐败，不给经验",
+            DryingSlot.Spoiled => DryingStopKind(b) switch
+            {
+                DryingSlot.StopMissing => DryingMissingXpText,
+                DryingSlot.StopUnknown => DryingUnknownXpText,
+                _ => "原料腐败，不给经验",
+            },
             _ => DryingXpText(s, b.XpSnapshot, s.GameMinute + Math.Max(0, b.RequiredMinutes - b.DoneMinutes), b),
         };
 
@@ -591,7 +637,14 @@ namespace Survival.Core.Engine
                         break;
                     default:
                         v.Title = CardStates.DryingSlotName(k);
-                        v.Line = $"{rc.Name}{(b.EndMinute is int m ? $"在{Clock.DayTime(m)}" : "")}停止，没有成品；清理即把原料原样取出（腐败的不能吃）";
+                        v.StopKind = DryingStopKind(b);
+                        v.Line = v.StopKind switch
+                        {
+                            DryingSlot.StopMissing => $"{rc.Name}已因缺料停止，无成品；清理可取回剩余物品。",
+                            DryingSlot.StopUnknown => $"{rc.Name}已停止，无成品；清理可取回剩余物品。",
+                            _ => $"{rc.Name}{(b.EndMinute is int m ? $"在{Clock.DayTime(m)}" : "")}停止，没有成品；清理即把原料原样取出（腐败的不能吃）",
+                        };
+                        v.CleanupHint = v.StopKind == DryingSlot.StopSpoiled ? null : DryingCleanupHintText;
                         v.ToCarriedBlocked = DryingTakeBlocked(s, k, true);
                         v.ToGroundBlocked = DryingTakeBlocked(s, k, false);
                         break;
@@ -610,11 +663,17 @@ namespace Survival.Core.Engine
             var slots = FacOf(s, s.Ground)?.DryingSlots ?? new List<DryingSlot>();
             var drying = slots.Count(b => b.Status == DryingSlot.Drying);
             var done = slots.Count(b => b.Status == DryingSlot.Done);
-            var bad = slots.Count(b => b.Status == DryingSlot.Spoiled);
+            var stopped = slots.Where(b => b.Status == DryingSlot.Spoiled).Select(DryingStopKind).ToList();
+            var missing = stopped.Count(k => k == DryingSlot.StopMissing);
+            var unknown = stopped.Count(k => k == DryingSlot.StopUnknown);
+            var bad = stopped.Count(k => k == DryingSlot.StopSpoiled);
             var free = Math.Max(0, DryingSlotCount - slots.Count);
             var parts = new List<string>();
             if (drying > 0) parts.Add($"晾制中{drying}");
             if (done > 0) parts.Add($"待取{done}");
+            // B50a（Q713）：按停止原因分开计工位数（不是原料份数）
+            if (missing > 0) parts.Add($"缺料{missing}");
+            if (unknown > 0) parts.Add($"停止{unknown}");
             if (bad > 0) parts.Add($"腐败{bad}");
             parts.Add($"空{free}");
             return parts;
