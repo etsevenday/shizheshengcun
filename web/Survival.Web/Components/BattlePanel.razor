@@ -114,6 +114,8 @@ else if (b != null)
                 <div><span>追击进度</span><b>@Ui.T(vf.Pursuit)/100</b></div>
                 <div><span>恐慌</span><b>@Ui.N(vf.Panic)@(vf.Frightened ? "（受惊）" : "")</b></div>
                 @if (va.Body.Infected) { <div><span>感染</span><b>病毒@(Ui.N(va.Body.VirusLoad))</b></div> }
+                @* B49（Q748 A）：已感染同伴病毒行下一次短说明（主角不套用） *@
+                @if (e.CompanionVirusNoteFor(va) is string vnote) { <div class="wide muted" data-companion-virus><b>@vnote</b></div> }
                 @if (va.Body.BleedTriggers > 0) { <div><span>出血</span><b>@Ui.T(va.Body.BleedDamage)×@va.Body.BleedTriggers</b></div> }
                 @if (GameEngine.AllyProtector(b, vid) is string pg) { <div><span>保护</span><b>@(pg == GameState.PlayerId ? "你" : e.ActorDisplayName(s, pg))护着（接下一次单体攻击）</b></div> }
             </div>
@@ -184,10 +186,8 @@ else if (b != null)
             <div><span>攻击能力 / 对@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))</b></div>
             @* B34（S14 Q574）：不显示敌人尚未执行的计划（锁定的动作、计划伤害、预定目标、前移／迫近分支），只留公开属性与已生效状态 *@
         </div>
-        @if (ec.IsZombie && !e.CanBite(ec)) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
-        else if (ec.IsZombie) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。抓击、喷吐、尖啸不会感染。</div> }
-        else if (ec.IsHuman) { <div class="risk none">敌对人类的攻击不会传染僵尸病毒。</div> }
-        else { <div class="risk none">动物撕咬不会传染僵尸病毒，@(ec.Intents.Cycle.Any(x => x.BleedPct > 0) ? "但命中有概率出血" : "但仍会造成伤害")。</div> }
+        @* B49（Q740—Q745）：静态途径或「无感染源。」（取代人类／动物／非咬旧长句）；条件预估参考当前查看／控制的我方角色（真实 FocusId），切人即按本人 I／V 更新 *@
+        <ExposureLines Info="@e.EnemyExposureInfoFor(s, ec, e.EnemyName(t), e.InBattleExposureReference(s))" />
         @if (B7Status(b, t) is string est) { <div class="risk none">@est</div> }
         @* B41e2（R05 Q537）：敌方先手时，真实未消耗伤害资格的敌人显示「先手伤害加成可用。」 *@
         @if (e.FirstStrikeReady(b, GameEngine.FirstStrikeKeyOf(t))) { <div class="risk none fs-ready">@GameEngine.FirstStrikeReadyText</div> }

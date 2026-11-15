@@ -119,6 +119,9 @@
                         <div><span>@labels[4]</span><b>@e.StealthCheckMinutesText</b></div>
                     </div>
                     @* BM7b（S14／R05 Q647、Q654）：命中与右栏「你的命中率」同一入场投影（含确定入场恐慌）；普通攻击不合法时写「当前无可用攻击」 *@
+                    @* B49（Q742 A）：战前参考主角；Q743 A：组摘要在成员列表前一次 *@
+                    @{ var xref = e.PreBattleExposureReference(s, c); }
+                    @if (e.ShowGroupInfectionSummary(members.Select(m => m.EnemyId).ToList())) { <div class="apop-risk" data-exposure="group">@GameEngine.GroupInfectionSourceText</div> }
                     @for (var k = 0; k < members.Count; k++)
                     {
                         var m = members[k];
@@ -131,8 +134,8 @@
                             @if (hit.NotEntering) { <span data-not-entering>@GameEngine.NotEnteringHitText</span> }
                             else { <span title="开战默认页（第一个有武器的页）的命中率（战斗中可切换武器页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(e.DefaultWeaponPage(s) == 1 ? "Ⅰ" : "Ⅱ") @(wi == null ? "拳" : weapon.Name) · @(hit.Legal ? "命中" + Ui.Pct(hit.HitChance) : GameEngine.NoAttackHitText)</span> }
                         </div>
-                        @if (e.CanBite(ec)) { <div class="apop-risk">咬伤可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）</div> }
-                        else if (ec.IsZombie) { <div class="apop-note">@GameEngine.NonBiteNote</div> }
+                        @* B49（Q740—Q745）：该成员的传播段（静态途径／无感染源。＋主角条件预估），取代旧咬伤唯一与非咬说明 *@
+                        <ExposureLines Info="@e.EnemyExposureInfoFor(s, ec, ec.Name, xref)" Pop="true" />
                     }
                     @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
                     {

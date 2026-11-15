@@ -20,7 +20,9 @@
     var pageName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page)!);
     var otherName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page == 1 ? 2 : 1)!);
     var range = card.Kind is "single" or "elite" ? "只与这一只交战" : card.Kind == "fixed" ? "全名单一起入场（从1号位起）" : null;
-    var anyBite = members.Any(m => e.CanBite(e.Enemy(m.EnemyId)));
+    // B49（R04 Q742 A）：战前单途径预估参考主角（在可信入场投影里才有），否则只列静态途径；Q743 A：有效成员≥2 且至少一人有源才有组摘要
+    var xref = e.PreBattleExposureReference(s, card);
+    var groupInfection = e.ShowGroupInfectionSummary(members.Select(m => m.EnemyId).ToList());
     // BM5b1（R05 Q613）：整卡对当前实际队伍的即时交战风险（派生值，按事实版本缓存）
     var risk = G.EngageRisk(card);
     var status = e.CardApproachStatus(s, card);
@@ -50,6 +52,8 @@
         @if (members.Count > 0)
         {
             <RailFold Type="@RailTypes.Enemy" Group="@RailGroups.BattleDetail" Name="@RailText.BattleDetail">
+                @* B49（Q743 A）：组摘要在「战斗详情」折叠顶部一次 *@
+                @if (groupInfection) { <div class="risk" data-exposure="group">@GameEngine.GroupInfectionSourceText</div> }
                 <div class="lines rail-main">
                     <div class="wide"><span>开战武器</span><b>@(wi == null ? $"{pageName}空（拳）" : $"{pageName} {weapon.Name}")（战前可在右栏人物“装备”区调整，战斗中可切到@(otherName)页）</b></div>
                 </div>
@@ -57,14 +61,14 @@
                 {
                     <div class="risk">@($"{weapon.Name}")弹仓为0：开战后需先装填（1AP），或在右栏人物“装备”区换一把再接近。</div>
                 }
-                @if (anyBite) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div> }
-                @if (!e.CanBite(e.Enemy(members[0].EnemyId)) && e.Enemy(members[0].EnemyId).IsZombie) { <div class="risk none">@GameEngine.NonBiteNote</div> }
+                @* B49（Q740—Q745）：每名成员各自的传播段（静态途径／无感染源。＋主角条件预估），跟在该成员详情行后，取代旧咬伤唯一与非咬说明 *@
                 @MemberLines(members[0], hits[0], false)
+                <ExposureLines Info="@e.EnemyExposureInfoFor(s, e.Enemy(members[0].EnemyId), e.Enemy(members[0].EnemyId).Name, xref)" />
                 @for (var k = 1; k < members.Count; k++)
                 {
                     var m = members[k];
                     @MemberLines(m, hits[k])
-                    @if (!e.CanBite(e.Enemy(m.EnemyId)) && e.Enemy(m.EnemyId).IsZombie) { <div class="risk none">@GameEngine.NonBiteNote</div> }
+                    <ExposureLines Info="@e.EnemyExposureInfoFor(s, e.Enemy(m.EnemyId), e.Enemy(m.EnemyId).Name, xref)" />
                 }
             </RailFold>
         }

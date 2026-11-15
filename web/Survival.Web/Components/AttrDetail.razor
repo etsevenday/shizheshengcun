@@ -55,7 +55,8 @@
         <div class="lines">
             <div><span>按当前状态每小时</span><b class="@(ir < 0 ? "warn-text" : "")">@Ui.SignedT(ir)</b></div>
             <div><span>构成</span><b>@(why.Count == 0 ? "无增减" : string.Join("，", why))</b></div>
-            <div><span>咬伤感染概率</span><b>@Ui.Pct(e.ExposureChance(s.Body.Immunity))</b></div>
+            @* B49（Q746 ⑤）：只表示咬伤（倍率 1）的原 p0，不冒充五类同概率 *@
+            <div><span>@GameEngine.BiteProbabilityLabel</span><b>@Ui.Pct(e.ExposureChance(s.Body.Immunity))</b></div>
             <div><span>高免疫门槛</span><b>≥@Ui.T(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast)</b></div>
         </div>
         <p class="attr-explain">@Ui.ImmunityExplain(e)</p>
@@ -79,7 +80,8 @@
                 <div><span>自然治愈还需</span><b>病毒≤@Ui.T(cfg.Infection.NaturalCure.LoadAtMost)</b></div>
             }
         </div>
-        <p class="attr-explain">@Ui.VirusExplain(e)</p>
+        @* B49（Q746 ④）：病毒说明六段，各一段 *@
+        @foreach (var para in Ui.VirusExplain(e)) { <p class="attr-explain">@para</p> }
     }
     else if (page == "skills")
     {

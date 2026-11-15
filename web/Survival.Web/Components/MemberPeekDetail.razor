@@ -41,6 +41,8 @@
             <div><span>@label</span><b>@(Fmt.T(v))</b></div>
         }
         @if (a.Body.Infected) { <div><span>病毒</span><b>@(Fmt.N(a.Body.VirusLoad))</b></div> }
+        @* B49（Q748 A）：已感染同伴病毒行下一次短说明；主角、未感染不显示 *@
+        @if (e.CompanionVirusNoteFor(a) is string vnote) { <div class="wide muted" data-companion-virus><b>@vnote</b></div> }
         @if (!active)
         {
             <div class="wide"><b>@e.ReserveCareLabel(s, a) · 在@(roster != null ? e.ReserveWhereName(s, roster) : e.LocName(e.HubLocation(s)))</b></div>

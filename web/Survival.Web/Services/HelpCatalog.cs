@@ -455,7 +455,7 @@ public static class HelpCatalog
                     },
                 },
                 new HelpEntry { Id = "immunity", Title = "免疫力", Icon = "status_antibiotic", Paragraphs = (e, s) => new[] { Ui.ImmunityExplain(e) } },
-                new HelpEntry { Id = "virus", Title = "感染与病毒", Icon = "status_infected", Paragraphs = (e, s) => new[] { Ui.VirusExplain(e) } },
+                new HelpEntry { Id = "virus", Title = "感染与病毒", Icon = "status_infected", Paragraphs = (e, s) => Ui.VirusExplain(e) },   // B49 Q746 ④：六段
                 new HelpEntry
                 {
                     Id = "medical", Title = "医疗", Icon = "bandage",
@@ -702,7 +702,7 @@ public static class HelpCatalog
                             $"伤害先乘熟练度、招式、处决、暴击和伤害增益，再减去对方护甲（教学词条的攻击力+0.1在乘完之后、扣甲之前加，同一目标每条指令只加一次）。伤害增益（装备与武器特性、总攻令、斧蓄力）同名取最强、不同来源相乘，合计超过×{T(m.DamageBuffKnee)}的部分逐渐打折，最多接近×{T(m.DamageBuffKnee + m.DamageBuffTail)}；护甲（忽略护甲的词条和武器特性先抵掉一部分）；对方“防御”时再×{T(m.GuardFactor)}。你防御时下一次受伤×{T(m.GuardFactor)}；防御时当前武器页是耐久至少1的盾才是盾类格挡×{T(m.ShieldGuardFactor)}（盾耐久−1），另一页的盾不算，格挡在防御那一刻锁定，之后切页不改。",
                             $"推挡、震击、盾击（失衡）、压制、致残射击（减速）、逼退、震退（击退）、打断、重锤（虚弱）、扯腿、扑击这类控制：先要打中，再判一次控制，成功率={Ui.Pct(m.ControlBase)}−对方控制抗性（最低{Ui.Pct(m.ControlMin)}、最高{Ui.Pct(m.ControlMax)}；敌人的控制抗性写在敌卡详情里）；成功后对方进入“稳态”到下一回合结束，期间再被控制的成功率低{T(m.SteadyResistBonus)}个百分点。你的基础控制抗性{T(e.Config.Scope.BasePlayerControlResist)}（敌人对你的失衡、减速成功率{Ui.Pct(m.ControlBase - e.Config.Scope.BasePlayerControlResist / 100)}）；装备的“位移抵抗”只防拉扯、击退，不同装备相加最多{T(e.Config.ActorBaseDefense.DisplacementGearAggregateCap)}，和“稳固”这类状态取较强的一个。破甲劈（护甲−0.25）、猎标（标记：我方对它命中能力+6）、火力压制（虚弱：伤害×0.8）打中就生效，持续2回合。出血在每回合开始时扣健康。",
                             "战斗开始时的恐慌由当时的精神决定，受到伤害会上升；恐慌60以上命中能力×0.9，90以上×0.8，战斗结束后清除，但会让精神下降。",
-                            "丧尸的咬击命中并造成伤害时可能感染病毒，免疫越低越容易；抓击、喷吐、尖啸和人类、动物的攻击不会传染，但部分动物会造成出血。",
+                            GameEngine.ExposureCombatHelpText,   // B49 Q746 ①：原咬击唯一传播段 → 逐字稿 help
                         };
                     },
                 },

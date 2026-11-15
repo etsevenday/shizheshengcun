@@ -153,20 +153,11 @@ public static class Ui
         return $"0—{T(i.Max)}，生存管理的结果，不随打怪升级。饱食、水分、清醒≥{T(hc.SatietyAtLeast)}、健康≥上限{Pct(hc.HealthRatioAtLeast)}、精神≥{T(hc.MoraleAtLeast)}同时满足时每小时{SignedT(i.HealthyBonusPerHour)}；" +
                $"遮蔽/露天睡眠{SignedT(i.ShelteredSleepPerHour)}/{SignedT(i.ExposedSleepPerHour)}，遮蔽/露天休息{SignedT(i.ShelteredRestPerHour)}/{SignedT(i.ExposedRestPerHour)}；" +
                $"饱食<20 {T(p.SatietyBelow20)}、水分<20 {T(p.HydrationBelow20)}、清醒<20 {T(p.WakefulnessBelow20)}、健康<5 {T(p.HealthBelow5)}、精神<20 {T(p.MoraleBelow20)}、腹泻{T(p.Diarrhea)}" + (p.VirusInfected != 0 ? $"、已感染{T(p.VirusInfected)}" : "；已感染本身不再扣免疫") + "。" +
-               "免疫越低，被丧尸咬伤越容易感染，病毒也涨得越快。离线不恢复。";
+               GameEngine.ImmunityTailText;   // B49 Q746 ③：只换末句（逐字稿 immunityTail），前面免疫费率条件保留
     }
 
-    /// <summary>病毒说明（v0.6 §09–§11），数值读配置。</summary>
-    public static string VirusExplain(GameEngine e)
-    {
-        var f = e.Config.Infection;
-        var bands = string.Join("、", f.ProgressPerHour.Select(b => $"免疫{T(b.ImmunityRange[0])}—{T(b.ImmunityRange[1])}：{SignedT(b.Rate)}"));
-        var bi = f.BaobaoInput;
-        // 试玩修复 B5：感染来源有两条——丧尸咬伤与体内饱饱的持续输入（R04 §7.2），数值读配置
-        return $"感染有两个来源：丧尸咬击命中并造成伤害时可能感染（初次病毒{T(f.OnFirstSuccessfulExposure.Load)}，再次+{T(f.OnRepeatedSuccessfulExposure.LoadDelta)}）；" +
-               $"体内的饱饱在免疫低于{T(bi.FullSuppressImmunityAtLeast)}时持续输入病毒（每小时最多{T(bi.MaxPerHour)}，免疫越高越慢），净输入一转为正就进入感染（病毒至少{T(bi.FirstInfectionMinLoad)}）。已感染时病毒每小时按免疫变化：{bands}；达到{T(f.ZombificationAtLoad)}尸变，本局结束。" +
-               $"绷带与抗生素只能压低病毒（最低{T(f.AllSuppressantsMinLoad)}，仍感染）；治愈只有两种：免疫≥{T(f.NaturalCure.ConsecutiveImmunityAtLeast)}连续{Clock.Duration(f.NaturalCure.Minutes)}且病毒≤{T(f.NaturalCure.LoadAtMost)}的自然治愈，或病毒特效药。";
-    }
+    /// <summary>病毒说明（B49 Q746 ④，逐字稿 B49 virusIntro／baobao／natural／zombie／suppress／cure 六段，变量读配置），每段一个段落。</summary>
+    public static IReadOnlyList<string> VirusExplain(GameEngine e) => e.VirusHelpParagraphs();
 
     public static string Pct(double p) => Fmt.Pct(p);
 

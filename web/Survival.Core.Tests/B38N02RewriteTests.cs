@@ -1,3 +1,4 @@
+using Survival.Core.Engine;
 using Newtonsoft.Json.Linq;
 using Survival.Core.Save;
 using Survival.Core.State;
@@ -72,6 +73,12 @@ public class B38N02RewriteTests : TestBase
             JToken t = Section(section, id);
             foreach (var part in field.Split('.'))
                 t = t is JArray a ? a[int.Parse(part)] : t[part]!;
+            // B49（R04 Q746 ②）：原咬伤生存提示的咬伤句换成逐字稿 risk，饱饱两句保留（取代 N02 本条 replacement）
+            if (section == "progress" && field == "tips.13")
+            {
+                Assert.That((string)t!, Is.EqualTo(GameEngine.ExposureRiskTipText + "饱饱也会让体内的病毒缓慢累积。免疫≥{baobaoSuppressImmunity}时，饱饱带来的病毒累积会停止。"));
+                continue;
+            }
             Assert.That((string)t!, Is.EqualTo((string)e["replacement"]!), $"{section}/{id}/{field}");
             Assert.That((string)t!, Is.Not.EqualTo((string)e["old"]!));
         }

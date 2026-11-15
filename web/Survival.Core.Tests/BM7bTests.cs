@@ -150,7 +150,7 @@ public class BM7bTests : B41cTestBase
     public void Q649_A01_PublicTraits()
     {
         Assert.That(E.EnemyPublicTraits(E.Enemy("z_helmet")), Is.EqualTo(new[] { "流血免疫：不会流血。", "护盔：抵挡本场首次失衡效果。" }));
-        Assert.That(E.EnemyPublicTraits(E.Enemy("z_bloater")), Is.EqualTo(new[] { "流血免疫：不会流血。", "死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害0.30，护甲照常计算。因流血等伤害型负面状态、反击或迎击死亡时不触发。" }), "B47a2（Q679）：过渡版条件句");
+        Assert.That(E.EnemyPublicTraits(E.Enemy("z_bloater")), Is.EqualTo(new[] { "流血免疫：不会流血。", "死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害0.30，护甲照常计算；造成正伤害时可能传播病毒。因流血等伤害型负面状态、反击或迎击死亡时不触发。" }), "B49：喷溅与 Q652 感染都已接入的完整版");
         Assert.That(E.EnemyPublicTraits(E.Enemy("wolf")), Is.EqualTo(new[] { "低血逃跑：健康不高于1.20时可能尝试逃离。" }), "fleeAtHp 是绝对健康阈值，沿健康精度");
         Assert.That(E.EnemyPublicTraits(E.Enemy("feral_dog")), Is.Empty, "无则不造空行");
         var protectors = E.Config.Enemies.Where(x => x.Intents.Opening.Concat(x.Intents.Cycle).Any(st => st.Kind == "protect")).ToList();

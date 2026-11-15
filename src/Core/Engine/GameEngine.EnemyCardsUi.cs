@@ -15,8 +15,6 @@ namespace Survival.Core.Engine
         /// <summary>首战门控时其他敌踪的处理拒绝原因（逐字稿「新操作的禁用与拒绝」）；BM5b1（R05 Q639）起也是这类卡的卡面受阻原因。</summary>
         public const string TutorialGateReason = "先战胜农野荒地的游荡尸，再处理其他敌踪。";
 
-        /// <summary>BM5b1（S14／R05 Q639 逐字稿「原确实无咬伤传播能力者」）：右栏战斗详情与中央盘统一句。</summary>
-        public const string NonBiteNote = "它不会咬伤，攻击不传播病毒。";
 
         /// <summary>
         /// BM5b1（R05 Q639）：右栏身份「{身份}·{原卡名}」——只在真实守卫标记（固定战 guardian）时写「守卫·{原卡名}」，原卡名已含同前缀不重复；
@@ -48,10 +46,10 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 死亡喷溅特性句。B47a2（S14／R05／逐字稿 Q679）：喷溅只在我方主动攻击直接击杀时触发，取代 Q649 旧“死亡时”句；
-        /// Q652 多途径感染尚未接入（B49），按逐字稿用不冒称感染的过渡版。B49 接入感染后换成含「造成正伤害时可能传播病毒。」的完整版。
+        /// B49 起喷溅与 Q652 感染都已实际接入，用逐字稿「喷溅与Q652感染都已实际接入时的静态特性」完整版（含「造成正伤害时可能传播病毒。」）。
         /// </summary>
         public static string TraitDeathSplashText(double damage) =>
-            $"死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害{Fmt.N(damage)}，护甲照常计算。因流血等伤害型负面状态、反击或迎击死亡时不触发。";
+            $"死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害{Fmt.N(damage)}，护甲照常计算；造成正伤害时可能传播病毒。因流血等伤害型负面状态、反击或迎击死亡时不触发。";
 
         /// <summary>S14 Q649：低血逃跑（fleeAtHp 是绝对健康阈值，沿健康数值精度）。</summary>
         public static string TraitFleeText(double hp) => $"低血逃跑：健康不高于{Fmt.N(hp)}时可能尝试逃离。";

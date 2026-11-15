@@ -161,14 +161,14 @@ public class B47a2Tests : BattleTestBase
         Assert.That(t.Actors[GameState.PlayerId].Stats.Health, Is.EqualTo(s.Player.Stats.Health));
     }
 
-    /// <summary>Q679（R05／S14／逐字稿）：喷溅静态特性句换成“主动攻击直接击杀”条件句（Q652 感染未接入，用过渡版）。</summary>
+    /// <summary>Q679（R05／S14／逐字稿）：喷溅静态特性句换成“主动攻击直接击杀”条件句；B49 起 Q652 感染已接入，用完整版（含「造成正伤害时可能传播病毒。」）。</summary>
     [Test, Category("DesignSync")]
     public void Q679_TraitText_TransitionalCopy()
     {
         Assert.That(E.EnemyPublicTraits(E.Enemy("z_bloater")).Last(), Is.EqualTo(
-            "死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害0.30，护甲照常计算。因流血等伤害型负面状态、反击或迎击死亡时不触发。"));
+            "死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害0.30，护甲照常计算；造成正伤害时可能传播病毒。因流血等伤害型负面状态、反击或迎击死亡时不触发。"));
         var v = File.ReadAllText(Path.Combine(Root(), "doc", "策划案", "重墨像素风界面与卡片 v0.9", "重墨 V2 开工裁定与界面逐字稿.md"));
-        Assert.That(v, Does.Contain("| 喷溅触发已对齐，Q652感染尚未实际接入的过渡特性 | 死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害{伤害值}，护甲照常计算。因流血等伤害型负面状态、反击或迎击死亡时不触发。 |"));
+        Assert.That(v, Does.Contain("| 喷溅与Q652感染都已实际接入时的静态特性 | 死亡喷溅：被我方主动攻击直接击杀时，伤及我方1、2号位，基础伤害{伤害值}，护甲照常计算；造成正伤害时可能传播病毒。因流血等伤害型负面状态、反击或迎击死亡时不触发。 |"));
     }
 
     // ───────────── M916 Q676／Q677 意志经验结账 ─────────────

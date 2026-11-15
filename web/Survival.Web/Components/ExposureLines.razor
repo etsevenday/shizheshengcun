@@ -1,0 +1,26 @@
+@* B49（R04／逐字稿 Q740—Q745）：一名敌人成员在某说明处的传播段——有源写 member 句（静态途径并集，原表序顿号），无源写「无感染源。」；
+   有参考者（战前主角／战中当前查看者）且有源时，再列 reference 标题一次与各类型条件预估（本人 I／infected／V，只读不抽签）。
+   右栏与战中用 risk 样式，中央盘（Pop）用 apop 样式。 *@
+@if (Info != null)
+{
+    @if (!Info.HasSource)
+    {
+        <div class="@(Pop ? "apop-note" : "risk none")" data-exposure="none">@Info.Line</div>
+    }
+    else
+    {
+        <div class="@(Pop ? "apop-risk" : "risk")" data-exposure="member">@Info.Line</div>
+        @if (Info.ReferenceTitle != null)
+        {
+            <div class="@(Pop ? "apop-note" : "risk none") exposure-est" data-exposure="estimate">
+                <div>@Info.ReferenceTitle</div>
+                @foreach (var line in Info.Estimates) { <div>@line</div> }
+            </div>
+        }
+    }
+}
+
+@code {
+    [Parameter] public GameEngine.EnemyExposureInfo? Info { get; set; }
+    [Parameter] public bool Pop { get; set; }
+}

@@ -47,7 +47,7 @@ public class BM5b1EnemyRailTests : B41cTestBase
             Assert.That(coreDef, Does.Not.Contain(no), $"主区不放我方预估、不读未来意图：{no}");
         // 战斗详情：开战武器、空弹仓、感染、首位成员类别与命中、其他成员完整属性（原成员组并入）
         var fold = d.Substring(battle, d.IndexOf("</RailFold>", battle, StringComparison.Ordinal) - battle);
-        foreach (var x in new[] { "<span>开战武器</span>", "弹仓为0", "单次咬伤感染概率", "@GameEngine.NonBiteNote", "@MemberLines(members[0], hits[0], false)", "@for (var k = 1; k < members.Count; k++)", "@MemberLines(m, hits[k])" })
+        foreach (var x in new[] { "<span>开战武器</span>", "弹仓为0", "<ExposureLines Info=", "@MemberLines(members[0], hits[0], false)", "@for (var k = 1; k < members.Count; k++)", "@MemberLines(m, hits[k])" })
             Assert.That(fold, Does.Contain(x), x);
         Assert.That(d, Does.Not.Contain("RailGroups.Members"));
         var lines = Slice(d, "private RenderFragment MemberLines(", "private RenderFragment MemberKind(");
@@ -59,12 +59,12 @@ public class BM5b1EnemyRailTests : B41cTestBase
             Assert.That(descFold, Does.Contain(x), x);
         // 中央盘：命中、伤害、感染、空弹仓、受惊仍在对应行动预估里
         var pops = Web("Components", "ActionPops.razor");
-        foreach (var x in new[] { "咬伤可能感染", "弹仓为0：开战后需先装填（1AP）", "\"命中\" + Ui.Pct(hit.HitChance)", "@e.EnemyCardFearNote(s, c, false)", "@GameEngine.NonBiteNote" })
+        foreach (var x in new[] { "<ExposureLines Info=", "弹仓为0：开战后需先装填（1AP）", "\"命中\" + Ui.Pct(hit.HitChance)", "@e.EnemyCardFearNote(s, c, false)" })
             Assert.That(pops, Does.Contain(x), x);
         Assert.That(pops, Does.Not.Contain("意图里没有咬击"));
         Assert.That(d, Does.Not.Contain("意图里没有咬击"));
-        Assert.That(GameEngine.NonBiteNote, Is.EqualTo("它不会咬伤，攻击不传播病毒。"));
-        Assert.That(Verbatim(), Does.Contain("| 原确实无咬伤传播能力者 | " + GameEngine.NonBiteNote + " |"));
+        // B49（Q745）：旧「它不会咬伤，攻击不传播病毒。」撤下，无源成员统一「无感染源。」（见 B49UiTests）
+        Assert.That(d + pops, Does.Not.Contain("NonBiteNote"));
         Assert.That(Verbatim(), Does.Contain("| 敌踪右栏主属性 | 健康／护甲／闪避／速度／攻击能力／伤害；"));
     }
 

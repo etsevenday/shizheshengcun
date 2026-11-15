@@ -156,6 +156,94 @@ namespace Survival.Core.Engine
                 : $"{who}因{r.ProfileName}感染，病毒量{Fmt.T(r.Load)}（判定概率{pct}）";
         }
 
+        // ───────────── 界面：敌人传播说明（Q740—Q745） ─────────────
+
+        /// <summary>
+        /// 一名敌人成员在某说明处的传播段：有源时 member 句（静态途径并集）；无源时「无感染源。」。
+        /// 有参考者（战前主角／战中当前查看者，仍活）且有源时，另附 reference 标题与各类型条件预估（本人 I／infected／V，只读不抽签）。
+        /// </summary>
+        public sealed class EnemyExposureInfo
+        {
+            public bool HasSource { get; set; }
+            /// <summary>member 句或「无感染源。」。</summary>
+            public string Line { get; set; } = "";
+            /// <summary>「{人物} · 命中且正伤害后：」；无参考者或无源为 null。</summary>
+            public string? ReferenceTitle { get; set; }
+            public List<string> Estimates { get; set; } = new();
+        }
+
+        /// <summary>按某敌种与参考角色（可 null）组一名成员的传播段。参考角色不存在或已死时只列静态途径，不借别人值、不造 0%。</summary>
+        public EnemyExposureInfo EnemyExposureInfoFor(GameState s, EnemyConfig cfg, string enemyName, string? referenceActorId)
+        {
+            var types = EnemyExposureTypes(cfg);
+            if (types.Count == 0) return new EnemyExposureInfo { HasSource = false, Line = NoInfectionSourceText };
+            var info = new EnemyExposureInfo { HasSource = true, Line = EnemyInfectionMemberText(enemyName, cfg) };
+            if (referenceActorId == null || !s.Actors.TryGetValue(referenceActorId, out var who) || IsDead(s, who)) return info;
+            return new EnemyExposureInfo
+            {
+                HasSource = true, Line = info.Line,
+                ReferenceTitle = ExposureReferenceTitle(ActorDisplayName(s, referenceActorId)),
+                Estimates = types.Select(p => ExposureEstimateLine(who.Body, p)).ToList(),
+            };
+        }
+
+        /// <summary>
+        /// Q742 A：战前（敌踪右栏、中央接近／潜行／躲避盘）的参考者＝主角，须在这张卡此刻的可信入场投影名单里且未死；否则 null（只列静态途径）。
+        /// 主角只是当前武器不能攻击仍可作参考。只读。
+        /// </summary>
+        public string? PreBattleExposureReference(GameState s, EnemyCardView card)
+        {
+            // 与入场投影（EntryProjection）同口径但不克隆状态：投影要求卡上有有效敌方活成员；入场名单由 EntryAllies 给出，主角必在其中，故只需主角未死
+            if (!EnemyCardPreviewMembers(s, card).Any(m => (m.Enemy?.Hp ?? _enemies[m.EnemyId].Hp) > 1e-9)) return null;
+            return !IsDead(s, s.Actors[GameState.PlayerId]) ? GameState.PlayerId : null;
+        }
+
+        /// <summary>Q742 A：战中敌人详情的参考者＝当前查看／控制的我方角色（真实 FocusId），无效或已死为 null。</summary>
+        public string? InBattleExposureReference(GameState s)
+        {
+            var id = s.Battle?.FocusId;
+            return id != null && s.Actors.TryGetValue(id, out var a) && !IsDead(s, a) ? id : null;
+        }
+
+        /// <summary>Q743 A：组摘要只在当前有效成员≥2且至少一人有源时出现（右栏战斗详情折叠顶、中央盘成员列表前各一次）。</summary>
+        public bool ShowGroupInfectionSummary(IReadOnlyCollection<string> enemyIds) =>
+            enemyIds.Count >= 2 && enemyIds.Any(id => HasInfectionSource(Enemy(id)));
+
+        // ───────────── 帮助五处（Q746，逐字稿 B49 表） ─────────────
+
+        /// <summary>逐字稿 B49 help：战斗帮助原咬击唯一传播段。</summary>
+        public const string ExposureCombatHelpText = "咬伤、抓伤／刮伤、污染器械伤、变异体液、冲撞擦伤：感染源造成正伤害后可能传播病毒。人类、普通动物：无感染源。";
+        /// <summary>逐字稿 B49 risk：原咬伤生存提示。</summary>
+        public const string ExposureRiskTipText = "传播途径见敌人详情；免疫越低，同一途径越易感染。";
+        /// <summary>逐字稿 B49 immunityTail：免疫说明末句。</summary>
+        public const string ImmunityTailText = "免疫越低越易感染；同伴病毒不自然增长。离线不恢复。";
+        /// <summary>逐字稿 B49 biteProbability：免疫页仅表示咬伤（倍率 1）的原 p0 行标签。</summary>
+        public const string BiteProbabilityLabel = "咬伤感染概率";
+
+        /// <summary>
+        /// 逐字稿 B49 virusIntro→baobao→natural→zombie→suppress→cure 六段（Q746 ④），变量全读配置：
+        /// 数字 Fmt.T、时长 Clock.Duration；主角速率清单按 progressPerHour 表序「{下界}≤免疫&lt;{上界}：{带符号速率}/小时」，含上界者用「≤」，顿号相连。
+        /// </summary>
+        public List<string> VirusHelpParagraphs()
+        {
+            var f = Inf;
+            var bi = f.BaobaoInput;
+            var bands = string.Join("、", f.ProgressPerHour.Select(b =>
+                $"{Fmt.T(b.ImmunityRange[0])}≤免疫{(b.IncludeUpper ? "≤" : "<")}{Fmt.T(b.ImmunityRange[1])}：{Fmt.SignedT(b.Rate)}/小时"));
+            return new List<string>
+            {
+                "外部暴露分五类，概率和病毒量各异；仅主角有饱饱输入。同伴病毒不自然增长，新暴露仍可加量。",
+                $"主角有饱饱时：免疫低于{Fmt.T(bi.FullSuppressImmunityAtLeast)}，每小时输入最多{Fmt.T(bi.MaxPerHour)}病毒；免疫越高越少，净输入为正即感染（病毒至少{Fmt.T(bi.FirstInfectionMinLoad)}）。",
+                $"自然变化：主角感染后每小时{bands}；同伴仅保留其中下降，正增长为0。未治愈时病毒最低{Fmt.T(f.NaturalLoadMinimumWhileInfected)}。",
+                $"病毒达{Fmt.T(f.ZombificationAtLoad)}即尸变；主角尸变结束本局。",
+                $"绷带、抗生素可降病毒，最低{Fmt.T(f.AllSuppressantsMinLoad)}；不能清除感染。",
+                $"治愈：免疫≥{Fmt.T(f.NaturalCure.ConsecutiveImmunityAtLeast)}持续{Clock.Duration(f.NaturalCure.Minutes)}且病毒≤{Fmt.T(f.NaturalCure.LoadAtMost)}，或使用病毒特效药。",
+            };
+        }
+
+        /// <summary>Q748 A：companion 短句只给稳定 actorId 为非主角的已感染同伴（详情病毒行下一次）；主角、未感染为 null。</summary>
+        public string? CompanionVirusNoteFor(ActorState actor) => !actor.IsPlayer && actor.Body.Infected ? CompanionVirusNote : null;
+
         /// <summary>
         /// Q739 A：这次真实攻击取哪一种类型——实际咬击取咬击替换（kind=bite 步骤取本步）；追击、迫近弱近袭、后排降格弱攻击取 defaultPhysicalExposure；
         /// 其余（正常执行、前移／协同前压后够到再攻击）取本次锁定步骤自身 exposure，不因 plain=true 回退；合成的普通攻击回退步骤已带默认类型。
