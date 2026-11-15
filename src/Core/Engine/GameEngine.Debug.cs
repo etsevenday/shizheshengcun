@@ -128,6 +128,14 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>调试：设置感染与病毒程度（0 为未感染）。</summary>
+        /// <summary>开发入口（B49）：把主角免疫设成给定值（试各类型暴露概率与预估；不改感染标志与病毒）。</summary>
+        public string DebugSetImmunity(GameState s, double immunity)
+        {
+            var b = s.Actors[GameState.PlayerId].Body;
+            b.Immunity = Math.Max(Config.Immunity.Min, Math.Min(Config.Immunity.Max, immunity));
+            return $"开发：主角免疫→{Fmt.T(b.Immunity)}";
+        }
+
         public void DebugSetVirus(GameState s, double load)
         {
             s.Body.Infected = load > 0;

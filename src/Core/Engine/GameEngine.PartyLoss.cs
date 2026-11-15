@@ -277,6 +277,10 @@ namespace Survival.Core.Engine
                 case "health1": a.Stats.Health = 1; return $"{r.Name}健康→1";
                 case "health0": a.Stats.Health = 0; a.DyingNotified = true; return $"{r.Name}健康→0（濒死，开发用）";   // B47a1
                 case "virus79": a.Body.Infected = true; a.Body.VirusLoad = 79; return $"{r.Name}病毒→79";
+                // B49（Q652、Q748）：试同伴病毒不自然增长（I20 仍不涨）、高免疫下降与病毒行下短句
+                case "virus30": a.Body.Infected = true; a.Body.VirusLoad = 30; return $"{r.Name}病毒→30（已感染）";
+                case "imm20": a.Body.Immunity = 20; return $"{r.Name}免疫→20";
+                case "imm85": a.Body.Immunity = 85; return $"{r.Name}免疫→85";
                 // B47a3（R09 Q684、Q686）：试同伴各人风险与尸变预警
                 case "virus99": a.Body.Infected = true; a.Body.VirusLoad = 99.9; return $"{r.Name}病毒→99.9（开发用）";
                 case "starve": a.Stats.Satiety = 0; a.Stats.Hydration = 0; return $"{r.Name}饱食、水分→0（开发用）";
