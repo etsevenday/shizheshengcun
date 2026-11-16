@@ -47,8 +47,9 @@
         @if (p.Ok)
         {
             @* B47a3（Q682）：按当前条件求不出可信完成时，耗时与完成时刻写“未预估”（原因见下方风险行） *@
-            <div><span>预计耗时</span><b>@(p.PlanFailed ? GameEngine.NotEstimated : Clock.Duration(p.EstimatedMinutes))</b></div>
-            <div><span>预计完成</span><b>@(p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute))</b></div>
+            @* B51c1（Q775、Q873 A 暂用）：未预估带同源实际原因「未预估（{原因}）」，没有原因只写「未预估」 *@
+            <div><span>预计耗时</span><b>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.Duration(p.EstimatedMinutes))</b></div>
+            <div><span>预计完成</span><b>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.HHmm(p.EstimatedEndMinute))</b></div>
             @if (p.ClearCharges.HasValue)
             {
                 <div><span>清理次数</span><b>@p.ClearCharges/@p.ClearCap → @(p.ClearCharges - 1)/@p.ClearCap</b></div>
@@ -62,7 +63,7 @@
         @if (p.ToolName != null && p.ToolDurabilityBefore.HasValue && p.ToolMaxDurability.HasValue)
         {
             @* B51c1（S08／R02 B51 Q772）：本单完成后确定归 0 时，耐久前后值后接「 · 预计本次生产结束后损坏」（完成不可信时不接，Q875 A） *@
-            <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @(p.PlanFailed ? GameEngine.NotEstimated : $"{Ui.N(p.ToolDurabilityAfter ?? 0)}/{Ui.N(p.ToolMaxDurability.Value)}")@(p.ToolBreaksAfterOrder ? GameEngine.ToolBreakForecastSuffix : "")</b></div>
+            <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @(p.PlanFailed ? GameEngine.UnknownText(p) : $"{Ui.N(p.ToolDurabilityAfter ?? 0)}/{Ui.N(p.ToolMaxDurability.Value)}")@(p.ToolBreaksAfterOrder ? GameEngine.ToolBreakForecastSuffix : "")</b></div>
         }
     </div>
 
@@ -72,9 +73,15 @@
         <div class="outputs">
             @foreach (var o in p.Outputs)
             {
-                <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="@GameEngine.OutputStatusText(p, Request.Type)" />
+                @* B51c1（S08 B51 Q776）：采集完成不可靠时状态「可能产物」、数量「未预估（{实际原因}）」；可靠照旧 *@
+                <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@GameEngine.OutputQtyText(p, Request.Type, o.Count)" Status="@GameEngine.OutputStatusText(p, Request.Type)" />
             }
         </div>
+    }
+    else if (!p.Ok && p.Outputs.Count > 0 && GameEngine.IsFixedRecipeOutput(Request.Type))
+    {
+        @* B51c1（S08 B51 Q776）：不能开工的制作只列已知静态「配方产物：{产物清单}」，不冒充本次已做成 *@
+        <div class="outputs outputs-static tiny">@GameEngine.StaticRecipeOutputLine(p.Outputs.Select(o => $"{o.Name}×{o.Count}"))</div>
     }
     else if (!p.Ok && p.Outputs.Count > 0)
     {
@@ -140,7 +147,9 @@
     @if (p.LootOdds.Count > 0)
     {
         <div class="loot-odds">
-            <div class="tiny muted">可能物资（完成时只抽1次，产物留在当前地面）</div>
+            @* B51c1（S08／S14 B51 Q776）：标题「可能产物」，原括注另起一行 *@
+            <div class="tiny muted">@GameEngine.PossibleOutputLabel</div>
+            <div class="tiny muted">@GameEngine.PossibleOutputDrawNote</div>
             @foreach (var o in p.LootOdds)
             {
                 <div class="@(o.ItemId == null ? "muted" : "")"><span>@o.Name</span><b>@(o.Percent)%</b></div>
@@ -213,7 +222,8 @@
                 @if (p.CarryBefore > 0 || p.CarryAfter is > 0)
                 {
                     @* Q61 工作量余量结转：同类工作不足5分钟的余量 *@
-                    <div title="同类工作不足5分钟的工作量余量，下次同类工作接着用（S01 Q61）"><span>同类余量</span><b>@Ui.N(p.CarryBefore)@(p.CarryAfter is double ca ? $" → {Ui.N(ca)}" : "")分钟</b></div>
+                    @* B51c1（S08 B51 Q775）：完成后值不可靠时「{当前}分钟 → 未预估（{实际原因}）」 *@
+                    <div title="同类工作不足5分钟的工作量余量，下次同类工作接着用（S01 Q61）"><span>同类余量</span><b>@GameEngine.CarryRowText(p)</b></div>
                 }
             </div>
             @if (Request.Type == ActionType.Gather && p.FactorReasons.Count > 0)
@@ -288,7 +298,7 @@
             var shown = healthUnknown ? GameEngine.NotEstimated : Ui.N(p.StatsAfter.Get(id));
             if (before == shown && id != StatId.Hydration && id != StatId.Energy) continue;   // 原展示行（B47a3 口径）
             var unknown = GameEngine.BodyStatAfterUnknown(p, id);
-            var after = unknown ? GameEngine.NotEstimated : shown;
+            var after = unknown ? GameEngine.BodyUnknownText(p) : shown;   // B51c1（Q775、Q873 A）：完成不可信带同源原因
             var th = e.Config.Thresholds[GameEngine.StatKey(id)];
             var cls = !unknown && th.IsBelow(p.StatsAfter.Get(id)) ? "warn-text" : "";
             <div><span>@GameEngine.StatName(id)</span><b class="@cls">@before → @after</b></div>

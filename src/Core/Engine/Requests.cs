@@ -379,6 +379,8 @@ namespace Survival.Core.Engine
         public bool PlanFailed { get; set; }
         /// <summary>求不出完成的已有真实原因；没有为 null。</summary>
         public string? PlanFailReason { get; set; }
+        /// <summary>B51c1（Q775、Q873 A 暂用）：由 PlanFailReason 派生的括号短原因（续做原因去句末标点；中止日志取「原因：」后正文）；没有为 null。</summary>
+        public string? PlanFailShort { get; set; }
         /// <summary>身体预估在危险段截断（右栏分“预估至危险段”与“完成计划”两区）。</summary>
         public bool BodyCut => BodyCutoffMinutes.HasValue;
 

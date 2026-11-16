@@ -46,8 +46,8 @@
                     @if (p.Ok)
                     {
                         <div class="apop-facts">
-                            <span title="预计耗时（含当前倍率）"><i class="pf-ico">⏱</i>@(p.PlanFailed ? GameEngine.NotEstimated : Clock.Duration(p.EstimatedMinutes))</span>
-                            <span title="预计到达时刻"><i class="pf-ico">◷</i>@(p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute) + "到达")</span>
+                            <span title="预计耗时（含当前倍率）"><i class="pf-ico">⏱</i>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.Duration(p.EstimatedMinutes))</span>
+                            <span title="预计到达时刻"><i class="pf-ico">◷</i>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.HHmm(p.EstimatedEndMinute) + "到达")</span>
                             <span class="@(over ? "warn" : "")" title="当前携带重量（超过@(Ui.T(e.Config.Carry.SoftGrams / 1000.0))公斤减速）"><i class="pf-ico">⚖</i>@Ui.KgText(grams) · @(over ? "超重" : "轻装")</span>
                             @if (Math.Abs(p.FactorAtStart - 1) > 1e-9)
                             {
@@ -285,9 +285,10 @@
                     {
                         <div class="apop-facts">
                             @* B51b（Q725）：求不出可信完成时耗时、完成、工具完成后耐久写“未预估” *@
-                            <span><i class="pf-ico">⏱</i>@(p.PlanFailed ? GameEngine.NotEstimated : Clock.Duration(p.EstimatedMinutes))</span>
-                            <span><i class="pf-ico">◷</i>@(p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute) + "完成")</span>
-                            @foreach (var o in p.Outputs) { <span><span class="pf-weapon" aria-hidden="true">@Icons.Markup(o.ItemId)</span>@o.Name×@o.Count</span> }
+                            <span><i class="pf-ico">⏱</i>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.Duration(p.EstimatedMinutes))</span>
+                            <span><i class="pf-ico">◷</i>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.HHmm(p.EstimatedEndMinute) + "完成")</span>
+                            @* B51c1（S08 B51 Q776）：不可靠采集数量「未预估（{实际原因}）」，可靠照旧「×{数量}」 *@
+                            @foreach (var o in p.Outputs) { <span><span class="pf-weapon" aria-hidden="true">@Icons.Markup(o.ItemId)</span>@o.Name@(p.PlanFailed ? " " : "")@GameEngine.OutputQtyText(p, ActionType.Gather, o.Count)</span> }
                             @if (p.ToolName != null && p.ToolDurabilityBefore.HasValue)
                             {
                                 <span title="使用拖入的这一把，不可用时不会自动换"><i class="pf-ico">⚒</i>@p.ToolName @Ui.N(p.ToolDurabilityBefore.Value)→@GameEngine.ToolAfterText(p)</span>

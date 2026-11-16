@@ -403,7 +403,7 @@
                                         @* B47a3（Q682）：求不出可信完成时耗时写“未预估”，第一条提示即“按当前条件无法预估完成。”与原因 *@
                                         @if (p.PlanFailed)
                                         {
-                                            <b>@GameEngine.NotEstimated</b><small>@(p.Warnings.Count > 0 ? p.Warnings[0] : "")</small>
+                                            <b>@GameEngine.UnknownText(p)</b><small>@(p.Warnings.Count > 0 ? p.Warnings[0] : "")</small>
                                         }
                                         else
                                         {

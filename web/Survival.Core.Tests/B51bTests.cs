@@ -218,7 +218,8 @@ public class B51bTests : TestBase
         Assert.That(GameEngine.XpAfterText(p), Is.EqualTo("未预估"));
         foreach (var t in new[] { ActionType.Craft, ActionType.Build, ActionType.Butcher, ActionType.Salvage })
             Assert.That(GameEngine.OutputStatusText(p, t), Is.EqualTo("配方产物 · 留在安全屋地面"), t.ToString());
-        Assert.That(GameEngine.OutputStatusText(p, ActionType.Gather), Is.EqualTo("产出 · 留在安全屋地面"));
+        // B51c1 改期望（出处 S08 B51 §Q776 选 A）：采集完成不可靠时状态「可能产物」
+        Assert.That(GameEngine.OutputStatusText(p, ActionType.Gather), Is.EqualTo("可能产物"));
         p.PlanFailed = false;
         Assert.That((GameEngine.ToolAfterText(p), GameEngine.XpAfterText(p), GameEngine.OutputStatusText(p, ActionType.Craft)),
             Is.EqualTo((Fmt.N(4), "制造经验+6", "产出 · 留在安全屋地面")), "可靠完整完成时原终值照旧");
@@ -242,11 +243,12 @@ public class B51bTests : TestBase
         var pv = Web("Components/PreviewView.razor");
         Assert.That(pv, Does.Contain("Status=\"@GameEngine.OutputStatusText(p, Request.Type)\""));
         Assert.That(pv, Does.Contain("@GameEngine.XpAfterText(p)"));
-        Assert.That(pv, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : $\"{Ui.N(p.ToolDurabilityAfter ?? 0)}"));
+        // B51c1 改期望（出处 S08 B51 §Q775、02 Q873 A 暂用）：各「未预估」改走 UnknownText（带同源实际原因）
+        Assert.That(pv, Does.Contain("p.PlanFailed ? GameEngine.UnknownText(p) : $\"{Ui.N(p.ToolDurabilityAfter ?? 0)}"));
         var pops = Web("Components/ActionPops.razor");
         Assert.That(pops, Does.Contain("@GameEngine.ToolAfterText(p)"));
-        Assert.That(pops, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute) + \"到达\""));
-        Assert.That(pops, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : Clock.HHmm(p.EstimatedEndMinute) + \"完成\""));
+        Assert.That(pops, Does.Contain("p.PlanFailed ? GameEngine.UnknownText(p) : Clock.HHmm(p.EstimatedEndMinute) + \"到达\""));
+        Assert.That(pops, Does.Contain("p.PlanFailed ? GameEngine.UnknownText(p) : Clock.HHmm(p.EstimatedEndMinute) + \"完成\""));
         Assert.That(pops, Does.Contain("p.Ok && !p.PlanFailed && !e.IsDaylight(p.EstimatedEndMinute)"));
     }
     // ───────────── Q702／Q703／Q728：各人风险时间、阈值提醒本人身份与真实未来跨线 ─────────────

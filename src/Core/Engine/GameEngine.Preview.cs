@@ -97,6 +97,7 @@ namespace Survival.Core.Engine
             p.WouldDie = c.Progress.Dead;
             p.PlanFailed = !run.Done;
             p.PlanFailReason = run.FailReason;
+            p.PlanFailShort = ShortFailReason(run.FailReason, run.FailFromResume);   // B51c1（Q775、Q873 A 暂用）：未预估括号里的同源短原因
             // B51c1（S08／R02 B51 Q772；Q875 A 暂用）：完成可信时工具行接损坏后缀、原保障说明在说明区只一次；不可信不凭中途值断言损坏
             if (p.ToolBreaksAfterOrder && p.PlanFailed) p.ToolBreaksAfterOrder = false;
             if (p.ToolBreaksAfterOrder && !p.Notes.Contains(ToolGuardNote)) p.Notes.Add(ToolGuardNote);

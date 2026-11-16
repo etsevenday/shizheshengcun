@@ -194,7 +194,8 @@ public class BM9Tests : B41cTestBase
         p.PlanFailed = true;
         foreach (var t in new[] { ActionType.Craft, ActionType.Build, ActionType.Butcher, ActionType.Salvage })
             Assert.That(GameEngine.OutputStatusText(p, t), Is.EqualTo("配方产物 · 留在农野荒地地面"), t.ToString());
-        Assert.That(GameEngine.OutputStatusText(p, ActionType.Gather), Is.EqualTo("产出 · 留在农野荒地地面"), "无固定配方的输出不换");
+        // B51c1 改期望（出处 S08 B51 §Q776 选 A）：采集完成不可靠时状态「可能产物」
+        Assert.That(GameEngine.OutputStatusText(p, ActionType.Gather), Is.EqualTo("可能产物"), "采集不可靠写可能产物");
         var view = Web("Components", "PreviewView.razor");
         Assert.That(view, Does.Contain("Status=\"@GameEngine.OutputStatusText(p, Request.Type)\""));
         Assert.That(view, Does.Contain("@foreach (var o in p.Outputs) { <ItemRow Icon=\"@o.ItemId\" Name=\"@o.Name\" Qty=\"@($\"×{o.Count}\")\" Status=\"产出\" /> }"), "不可开工分支沿原");

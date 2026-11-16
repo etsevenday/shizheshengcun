@@ -402,7 +402,8 @@ public class B54BodyUnknownTests : TestBase
     {
         var pv = Web("Components", "PreviewView.razor");
         Assert.That(pv, Does.Contain("var unknown = GameEngine.BodyStatAfterUnknown(p, id);"));
-        Assert.That(pv, Does.Contain("var after = unknown ? GameEngine.NotEstimated : shown;"));
+        // B51c1 改期望（出处 S08 B51 §Q775 身体未知后值同源带真实原因、02 Q873 A 暂用）
+        Assert.That(pv, Does.Contain("var after = unknown ? GameEngine.BodyUnknownText(p) : shown;"));
         Assert.That(pv, Does.Contain("var cls = !unknown && th.IsBelow(p.StatsAfter.Get(id)) ? \"warn-text\" : \"\";"), "未知后值不派生低值颜色");
         Assert.That(pv, Does.Contain("var before = Ui.N(p.StatsBefore.Get(id));"), "前值为当前实值");
         Assert.That(pv, Does.Contain("<b class=\"@cls\">@before → @after</b>"));

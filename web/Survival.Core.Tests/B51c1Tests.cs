@@ -311,4 +311,148 @@ public class B51c1Tests : TestBase
         Assert.That(E.StartDrying(s, "dry_meat").Ok, Is.True);
         Assert.That(s.Log.Last().Text, Does.Not.Contain("退料恢复剩余保质").And.Not.Contain("恢复剩余保质，保质到"), "投料日志不加通用恢复句");
     }
+
+    // ───────────── M3 Q775 未知后值写原因、Q776 可能产物／配方产物 ─────────────
+
+    /// <summary>
+    /// Q873 A（暂用）：括号短原因取同源真实原因——续做被拒原因去句末标点；中止日志只取「原因：」后正文（S01 Q518 原句「{行动名}已中止。原因：{原因正文}」）；
+    /// 日志没有「原因：」或没有原因为 null（只写「未预估」）。
+    /// </summary>
+    [Test]
+    public void Q873_A_ShortFailReason_FromResumeOrReasonMarkOnly()
+    {
+        Assert.That(GameEngine.ShortFailReason("需要燃烧的火堆", true), Is.EqualTo("需要燃烧的火堆"));
+        Assert.That(GameEngine.ShortFailReason("当前行动还没结束。", true), Is.EqualTo("当前行动还没结束"), "续做原因去句末标点");
+        Assert.That(GameEngine.ShortFailReason("制作绷带已中止。原因：所需工具已不在。预留材料已返还当前地面。已耗时间保留。", false), Is.EqualTo("所需工具已不在"), "只取「原因：」后正文到句末");
+        Assert.That(GameEngine.ShortFailReason("制作绷带中止：原料已腐败，预留物返还当前地面，未生成产物。", false), Is.Null, "日志没有「原因：」不编原因");
+        Assert.That(GameEngine.ShortFailReason(null, false), Is.Null);
+        Assert.That(GameEngine.ShortFailReason(null, true), Is.Null);
+    }
+
+    /// <summary>B51-Q775-01：依赖完成的未知值「未预估（{实际原因}）」；没有原因只写「未预估」不加括号（Q873 A 暂用）；耗时、完成、工具后值、经验同一写法。</summary>
+    [Test]
+    public void Q775_A01_UnknownText_ReasonInBracket_OrPlain()
+    {
+        var p = new ActionPreview { Ok = true, PlanFailed = true, PlanFailShort = "燃料不足", ToolDurabilityBefore = 5, ToolDurabilityAfter = 4 };
+        Assert.That(GameEngine.UnknownText(p), Is.EqualTo("未预估（燃料不足）"));
+        Assert.That(GameEngine.ToolAfterText(p), Is.EqualTo("未预估（燃料不足）"));
+        Assert.That(GameEngine.XpAfterText(p), Is.EqualTo("未预估（燃料不足）"));
+        p.PlanFailShort = null;
+        Assert.That(GameEngine.UnknownText(p), Is.EqualTo("未预估"));
+        Assert.That(GameEngine.ToolAfterText(p), Is.EqualTo("未预估"));
+        p.PlanFailed = false;
+        Assert.That(GameEngine.ToolAfterText(p), Is.EqualTo("4.00"), "可靠照旧（两位小数）");
+        var pv = Web("Components", "PreviewView.razor");
+        Assert.That(pv, Does.Contain("<div><span>预计耗时</span><b>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.Duration(p.EstimatedMinutes))</b></div>"));
+        Assert.That(pv, Does.Contain("<div><span>预计完成</span><b>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.HHmm(p.EstimatedEndMinute))</b></div>"));
+        Assert.That(pv, Does.Not.Contain("p.PlanFailed ? GameEngine.NotEstimated"), "依赖完成的值不再写不带原因的裸「未预估」（Q683 致死判定健康仍裸写，见 BodyUnknown 测试）");
+        Assert.That(Web("Components", "CraftOverlay.razor"), Does.Contain("<b>@GameEngine.UnknownText(p)</b>"));
+    }
+
+    /// <summary>
+    /// B51-Q775-01：同类余量保留当前可信值——可靠「{当前} → {完成后}分钟」；完成后值不可靠「{当前}分钟 → 未预估（{实际原因}）」（S08 B51 §Q775 例「2.5分钟 → 未预估（燃料不足）」）；
+    /// 没有完成后值且完成可靠时只写当前。
+    /// </summary>
+    [Test]
+    public void Q775_A01_CarryRow_KeepsCurrent_AfterUnknownWithReason()
+    {
+        var p = new ActionPreview { Ok = true, PlanFailed = true, PlanFailShort = "燃料不足", CarryBefore = 2.5 };
+        Assert.That(GameEngine.CarryRowText(p), Is.EqualTo("2.50分钟 → 未预估（燃料不足）"), "数值沿全局两位小数（Fmt.N，S14 数值格式），策划例 2.5 即 2.50");
+        p.PlanFailShort = null;
+        Assert.That(GameEngine.CarryRowText(p), Is.EqualTo("2.50分钟 → 未预估"));
+        var ok = new ActionPreview { Ok = true, PlanFailed = false, CarryBefore = 2.5, CarryAfter = 1 };
+        Assert.That(GameEngine.CarryRowText(ok), Is.EqualTo("2.50 → 1.00分钟"), "可靠照原写法");
+        ok.CarryAfter = null;
+        Assert.That(GameEngine.CarryRowText(ok), Is.EqualTo("2.50分钟"));
+        Assert.That(Web("Components", "PreviewView.razor"), Does.Contain("<span>同类余量</span><b>@GameEngine.CarryRowText(p)</b>"));
+    }
+
+    /// <summary>
+    /// B51-Q775-01（端到端，Q873 A）：处理尸体推到预估上限仍未完成、没有中止事件也没有续做原因——不编原因，所有依赖完成的值只写「未预估」；
+    /// 配对：可靠完成时 PlanFailShort 为空、数值照旧。
+    /// </summary>
+    [Test]
+    public void Q775_A01_EndToEnd_NoRealReason_PlainUnknown()
+    {
+        var cfg = LoadConfig();
+        cfg.AnimalCarcasses.Single(x => x.CarcassItemId == "carcass_feral_dog").ButcherBaseMinutes = 100000;
+        var e = new GameEngine(cfg);
+        var (s, _, carcass) = Carcass(5, e);
+        var p = e.Preview(s, ActionRequest.Butcher(carcass.InstanceId));
+        Assert.That((p.Ok, p.PlanFailed, p.PlanFailReason, p.PlanFailShort), Is.EqualTo((true, true, (string?)null, (string?)null)), p.Reason);
+        Assert.That(GameEngine.UnknownText(p), Is.EqualTo("未预估"));
+        Assert.That(GameEngine.ToolAfterText(p), Is.EqualTo("未预估"));
+        var (s2, _, carcass2) = Carcass(5);
+        var ok = E.Preview(s2, ActionRequest.Butcher(carcass2.InstanceId));
+        Assert.That((ok.Ok, ok.PlanFailed, ok.PlanFailShort), Is.EqualTo((true, false, (string?)null)), ok.Reason);
+        Assert.That(GameEngine.ToolAfterText(ok), Is.EqualTo("4.00"), "5−野犬成功磨损1");
+    }
+
+    /// <summary>B51-Q775-01：身体后值完成不可信（Q792）带同源原因；只取决于致死判定的健康未知（Q683）仍只写「未预估」。</summary>
+    [Test]
+    public void Q775_A01_BodyUnknown_SameSourceReason_Q683Plain()
+    {
+        var p = new ActionPreview { Ok = true, PlanFailed = true, PlanFailShort = "燃料不足" };
+        Assert.That(GameEngine.BodyAfterUnknown(p), Is.True);
+        Assert.That(GameEngine.BodyUnknownText(p), Is.EqualTo("未预估（燃料不足）"));
+        var q683 = new ActionPreview { Ok = true, PlanFailed = false, PlanFailShort = null };
+        Assert.That(GameEngine.BodyAfterUnknown(q683), Is.False);
+        Assert.That(GameEngine.BodyUnknownText(q683), Is.EqualTo("未预估"));
+        Assert.That(Web("Components", "PreviewView.razor"), Does.Contain("var after = unknown ? GameEngine.BodyUnknownText(p) : shown;"));
+    }
+
+    /// <summary>
+    /// B51-Q776-01：采集完成不可靠时状态「可能产物」、数量「未预估（{实际原因}）」（S08 B51 §Q776）；可靠照旧「产出 · 留在{地点}」「×{数量}」；
+    /// 固定配方不可靠仍「配方产物 · 留在{地点}」、数量配方×份数（Q725）。
+    /// </summary>
+    [Test]
+    public void Q776_A01_GatherUnreliable_PossibleOutput_QtyUnknown()
+    {
+        var p = new ActionPreview { Ok = true, PlanFailed = true, PlanFailShort = "燃料不足", OutputPlace = "林地地面" };
+        Assert.That(GameEngine.OutputStatusText(p, ActionType.Gather), Is.EqualTo("可能产物"));
+        Assert.That(GameEngine.OutputQtyText(p, ActionType.Gather, 3), Is.EqualTo("未预估（燃料不足）"));
+        Assert.That(GameEngine.OutputStatusText(p, ActionType.Craft), Is.EqualTo("配方产物 · 留在林地地面"));
+        Assert.That(GameEngine.OutputQtyText(p, ActionType.Craft, 3), Is.EqualTo("×3"));
+        p.PlanFailed = false;
+        Assert.That(GameEngine.OutputStatusText(p, ActionType.Gather), Is.EqualTo("产出 · 留在林地地面"));
+        Assert.That(GameEngine.OutputQtyText(p, ActionType.Gather, 3), Is.EqualTo("×3"));
+        Assert.That(Web("Components", "PreviewView.razor"), Does.Contain("Qty=\"@GameEngine.OutputQtyText(p, Request.Type, o.Count)\""));
+        Assert.That(Web("Components", "ActionPops.razor"), Does.Contain("@GameEngine.OutputQtyText(p, ActionType.Gather, o.Count)"));
+    }
+
+    /// <summary>
+    /// B51-Q776-01：搜索／清理候选清单标题「可能产物」，原括注另起一行「完成时只抽1次，物品留在当前地面。」（S08／S14 B51 §Q776）；旧「可能物资（…）」不再出现。
+    /// </summary>
+    [Test]
+    public void Q776_A01_LootOddsTitle_TwoLines()
+    {
+        Assert.That(GameEngine.PossibleOutputLabel, Is.EqualTo("可能产物"));
+        Assert.That(GameEngine.PossibleOutputDrawNote, Is.EqualTo("完成时只抽1次，物品留在当前地面。"));
+        var pv = Web("Components", "PreviewView.razor").Replace("\r\n", "\n");
+        Assert.That(pv, Does.Contain("<div class=\"tiny muted\">@GameEngine.PossibleOutputLabel</div>\n            <div class=\"tiny muted\">@GameEngine.PossibleOutputDrawNote</div>"));
+        Assert.That(pv, Does.Not.Contain("可能物资（"));
+    }
+
+    /// <summary>
+    /// B51-Q776-01：不能开工的制作只列已知静态「配方产物：{产物清单}」（S08 B51 §Q776 例「配方产物：绷带×1」），不写「产出」；
+    /// 配对：能开工照原「产出 · 留在{地点}」。
+    /// </summary>
+    [Test]
+    public void Q776_A01_CannotStartCraft_StaticRecipeLine()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId is "cloth" or "herb" or "bandage");
+        var no = E.Preview(s, ActionRequest.Craft("bandage"));
+        Assert.That(no.Ok, Is.False);
+        Assert.That(no.Outputs, Has.Count.EqualTo(1));
+        Assert.That(GameEngine.StaticRecipeOutputLine(no.Outputs.Select(o => $"{o.Name}×{o.Count}")), Is.EqualTo("配方产物：草药绷带×1"), "策划例「绷带×1」，配置 bandage 名「草药绷带」");
+        E.DebugGive(s, "cloth", 1);
+        E.DebugGive(s, "herb", 1);
+        var yes = E.Preview(s, ActionRequest.Craft("bandage"));
+        Assert.That((yes.Ok, yes.PlanFailed), Is.EqualTo((true, false)), yes.Reason);
+        Assert.That(GameEngine.OutputStatusText(yes, ActionType.Craft), Does.StartWith("产出 · 留在"));
+        var pv = Web("Components", "PreviewView.razor");
+        Assert.That(pv, Does.Contain("else if (!p.Ok && p.Outputs.Count > 0 && GameEngine.IsFixedRecipeOutput(Request.Type))"));
+        Assert.That(pv, Does.Contain("@GameEngine.StaticRecipeOutputLine(p.Outputs.Select(o => $\"{o.Name}×{o.Count}\"))"));
+    }
 }

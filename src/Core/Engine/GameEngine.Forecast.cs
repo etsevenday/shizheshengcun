@@ -27,13 +27,66 @@ namespace Survival.Core.Engine
         /// （数量仍是配方×份数，成果落在开工所在区地面、地点可靠）；采集等没有固定配方的输出不在这里换（Q776 待定）。
         /// </summary>
         public static string OutputStatusText(ActionPreview p, ActionType type) =>
-            p.PlanFailed && type is ActionType.Craft or ActionType.Build or ActionType.Butcher or ActionType.Salvage
-                ? $"{RecipeOutputLabel} · 留在{p.OutputPlace}"
-                : $"产出 · 留在{p.OutputPlace}";
+            p.PlanFailed && IsFixedRecipeOutput(type) ? $"{RecipeOutputLabel} · 留在{p.OutputPlace}"
+            : p.PlanFailed && type == ActionType.Gather ? PossibleOutputLabel   // B51c1（S08 B51 Q776）：不可靠采集状态「可能产物」
+            : $"产出 · 留在{p.OutputPlace}";
 
-        /// <summary>S08 Q725：工具完成后耐久依赖完成，求不出可信完成时写“未预估”（当前耐久照旧）。</summary>
+        /// <summary>S08 Q725：有固定配方的输出（制作、建造、处理尸体、拆解）。</summary>
+        public static bool IsFixedRecipeOutput(ActionType type) => type is ActionType.Craft or ActionType.Build or ActionType.Butcher or ActionType.Salvage;
+
+        /// <summary>B51c1（S08／S14 B51 Q776）：搜索／清理候选清单标题与不可靠采集的输出状态。</summary>
+        public const string PossibleOutputLabel = "可能产物";
+        /// <summary>B51c1（Q776）：搜索／清理「可能产物」下一行，原括注另起一行。</summary>
+        public const string PossibleOutputDrawNote = "完成时只抽1次，物品留在当前地面。";
+
+        /// <summary>B51c1（Q776）：不能开工的固定配方静态行「配方产物：{产物清单}」（清单「{名}×{数}」以「、」连接）。</summary>
+        public static string StaticRecipeOutputLine(IEnumerable<string> items) => $"{RecipeOutputLabel}：{string.Join("、", items)}";
+
+        /// <summary>B51c1（Q776）：输出数量。采集完成不可靠时写「未预估（{实际原因}）」，其余为「×{数量}」（固定配方仍配方×份数）。</summary>
+        public static string OutputQtyText(ActionPreview p, ActionType type, int count) =>
+            p.PlanFailed && type == ActionType.Gather ? UnknownText(p) : $"×{count}";
+
+        /// <summary>
+        /// B51c1（S08 B51 Q775、Q873 A 暂用）：依赖完成的未知值。有同源实际原因时「未预估（{原因}）」，没有原因只写「未预估」。
+        /// </summary>
+        public static string UnknownText(ActionPreview p) => p.PlanFailShort is string r ? $"{NotEstimated}（{r}）" : NotEstimated;
+
+        /// <summary>
+        /// B51c1（Q873 A 暂用）：从同一预估的真实失败原因派生括号里的短原因——续做被拒原因去句末标点；中止／取消日志只取「原因：」后的正文（到第一个句末标点）；
+        /// 两者都没有（推到上限仍未完成、或日志里没有「原因：」）为 null。
+        /// </summary>
+        public static string? ShortFailReason(string? text, bool fromResume)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            string body;
+            if (fromResume) body = text;
+            else
+            {
+                var at = text.IndexOf(ReasonMark, StringComparison.Ordinal);
+                if (at < 0) return null;
+                body = text.Substring(at + ReasonMark.Length);
+                var end = body.IndexOfAny(SentenceEnds);
+                if (end >= 0) body = body.Substring(0, end);
+            }
+            body = body.TrimEnd(SentenceEnds).TrimEnd('，', '；', ',', ';', ' ').Trim();
+            return body.Length == 0 ? null : body;
+        }
+
+        private const string ReasonMark = "原因：";
+        private static readonly char[] SentenceEnds = { '。', '！', '？', '.', '!', '?' };
+
+        /// <summary>
+        /// B51c1（S08 B51 Q775、Q873 A 暂用）：同类余量行。完成可信「{当前} → {完成后}分钟」；完成后值不可靠时保留可信当前值「{当前}分钟 → 未预估（{实际原因}）」；
+        /// 本来就没有完成后值时只写当前。
+        /// </summary>
+        public static string CarryRowText(ActionPreview p) =>
+            p.CarryAfter is double ca ? $"{Fmt.N(p.CarryBefore)} → {Fmt.N(ca)}分钟"
+            : p.PlanFailed ? $"{Fmt.N(p.CarryBefore)}分钟 → {UnknownText(p)}"
+            : $"{Fmt.N(p.CarryBefore)}分钟";
+
+        /// <summary>S08 Q725：工具完成后耐久依赖完成，求不出可信完成时写“未预估”（当前耐久照旧）；B51c1（Q873 A）带实际原因。</summary>
         public static string ToolAfterText(ActionPreview p) =>
-            p.PlanFailed ? NotEstimated : Fmt.N(p.ToolDurabilityAfter ?? 0);
+            p.PlanFailed ? UnknownText(p) : Fmt.N(p.ToolDurabilityAfter ?? 0);
 
         /// <summary>
         /// B54（S08／R09 Q792）：完整完成计划不可信、又没有身体危险共同截止时，身体各展示行后值一律“未预估”（前值仍为当前实值，不按副本停下处着色）；
@@ -45,9 +98,14 @@ namespace Survival.Core.Engine
         public static bool BodyStatAfterUnknown(ActionPreview p, StatId id) =>
             BodyAfterUnknown(p) || (id == StatId.Health && p.HealthUnknown.Contains(GameState.PlayerId));
 
+        /// <summary>
+        /// B51c1（Q775、Q873 A 暂用）：身体未知后值的写法——完成不可信（Q792）带同源实际原因；只取决于致死判定的健康（Q683，可信危险截止）仍只写「未预估」。
+        /// </summary>
+        public static string BodyUnknownText(ActionPreview p) => BodyAfterUnknown(p) ? UnknownText(p) : NotEstimated;
+
         /// <summary>S08 Q725：完成后经验依赖完成，求不出可信完成时整行值写“未预估”。</summary>
         public static string XpAfterText(ActionPreview p) =>
-            p.PlanFailed ? NotEstimated : string.Join("、", p.XpGains);
+            p.PlanFailed ? UnknownText(p) : string.Join("、", p.XpGains);
         public const string LaterRiskTitle = "各人风险";
         public const string LaterRiskNote = "以下为各人截至计划结束的首个风险检查，不表示已预估危险处以后的身体数值。";
         public const string ProbabilityOnlyNote = "身体变化按未触发本次概率受伤估算；概率受伤风险另列，不代表保证安全。";
@@ -115,6 +173,8 @@ namespace Survival.Core.Engine
             public bool Done;
             /// <summary>求不出完成时的已有真实原因（暂停无法继续的原因、中止日志）；没有为 null。</summary>
             public string? FailReason;
+            /// <summary>B51c1（Q873）：FailReason 来自续做被拒的原因（否则来自中止／取消日志）。</summary>
+            public bool FailFromResume;
             /// <summary>普通行动的共同截止段：相关人物中最早的危险段。</summary>
             public int? CutSeg => First.Count == 0 ? (int?)null : First.Values.Min(v => v.Seg);
         }
@@ -194,7 +254,10 @@ namespace Survival.Core.Engine
             var still = end != null && end.ActionId == id;
             run.Done = !still && !c.Progress.Dead && last != SegmentStatus.Aborted;
             if (!run.Done)
+            {
                 run.FailReason = still ? resumeWhy : c.PendingEvents.LastOrDefault(ev => ev.Kind == GameEventKind.ActionAborted || ev.Kind == GameEventKind.ActionCancelled)?.Text;
+                run.FailFromResume = still;
+            }
             c.SimProbe = null;
             return run;
         }

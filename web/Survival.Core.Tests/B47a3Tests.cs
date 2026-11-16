@@ -427,10 +427,12 @@ public class B47a3Tests : BattleTestBase
                      "@GameEngine.LaterRiskTitle", "@GameEngine.LaterRiskNote", "p.LaterRisks", "p.ResistanceNote", "p.ProbabilityNote" })
             Assert.That(pv.IndexOf(x, StringComparison.Ordinal), Is.GreaterThan(body).And.LessThan(plan), x);
         Assert.That(pv, Does.Contain("@GameEngine.PlanNote"));
-        Assert.That(pv, Does.Contain("p.PlanFailed ? GameEngine.NotEstimated : Clock.Duration(p.EstimatedMinutes)"));
+        // B51c1 改期望（出处 S08 B51 §Q775、02 Q873 A 暂用）：未预估带同源实际原因，经 UnknownText
+        Assert.That(pv, Does.Contain("p.PlanFailed ? GameEngine.UnknownText(p) : Clock.Duration(p.EstimatedMinutes)"));
         Assert.That(pv, Does.Contain("p.HealthUnknown.Contains(GameState.PlayerId)"));
         Assert.That(pv, Does.Contain("@if (p.Ok && p.BodyCut)"), "无危险不加两区标题");
-        Assert.That(Web("Components/ItemDetail.razor"), Does.Contain("GameEngine.BodyStatAfterUnknown(p, id) ? GameEngine.NotEstimated"), "B54（Q792）：并入同一未知判定，含 Q683 健康");
+        // B51c1 改期望（出处 S08 B51 §Q775、02 Q873 A 暂用）：未知后值写法改走 BodyUnknownText（完成不可信带原因，Q683 健康仍只写未预估）
+        Assert.That(Web("Components/ItemDetail.razor"), Does.Contain("GameEngine.BodyStatAfterUnknown(p, id) ? GameEngine.BodyUnknownText(p)"), "B54（Q792）：并入同一未知判定，含 Q683 健康");
         Assert.That(Web("Components/CraftOverlay.razor"), Does.Contain("@if (p.PlanFailed)"));
     }
 
