@@ -438,5 +438,97 @@
       "Q790-A01",
       "Q790-A02"
     ]
+  },
+  "q771ToQ779": {
+    "date": "2026-11-16",
+    "status": "user_approved_complete_original_B51_planning_target_not_runtime_verified",
+    "originalQuestions": [
+      771,
+      772,
+      773,
+      774,
+      775,
+      776,
+      777,
+      778,
+      779
+    ],
+    "precedence": "scoped_extension_overrides_cancel_batch_controls_old_aggregate_card_and_partial_shelf_subtitle_preserve_original_recipe_time_costs_and_output_destinations",
+    "cancelCopy": {
+      "result": "已取消制作。材料已退回{地点}地面。已耗时间不退。",
+      "preview": "退出将取消制作。材料将退回{地点}地面。已耗时间不退。",
+      "preserveOriginalActualReturnBranches": true,
+      "noHalfProductItemsOrOldWording": true
+    },
+    "tools": {
+      "forecastOnToolRow": "预计本次生产结束后损坏",
+      "inProgressOnSameToolCardAndDetail": "本次生产结束后损坏",
+      "originalPositiveDurabilityOrderGuarantee": true
+    },
+    "partialShelfSubtitle": "含保质暂停",
+    "expiryAndProtectedCountsInDetail": true,
+    "dryingExplanationOnce": true,
+    "unknownWorkCredit": "{当前}分钟 → 未预估（{实际原因}）",
+    "possibleOutputTitle": "可能产物",
+    "staticRecipeOutputTitle": "配方产物",
+    "aggregateWorkshopRemovedByLaterQ795": true,
+    "passiveFacilityTakeAll": {
+      "scope": [
+        "fire_cooking_original_heat_source",
+        "drying_rack",
+        "kiln",
+        "water_station"
+      ],
+      "activeManualStationsUnchanged": [
+        "workbench",
+        "forge",
+        "sewing",
+        "medical",
+        "armory"
+      ],
+      "button": "全部取出",
+      "destination": "current_real_facility_zone_ground",
+      "includesUnconsumedInProgressInputs": true,
+      "interruptCorrespondingActualWorkOnly": true,
+      "noMissingInputFailureForLegalTakeout": true,
+      "noUnfinishedOutputOrCompletionXp": true,
+      "originalRecipeMatchingAndInputValidation": true,
+      "noNewUnlimitedStagingWarehouse": true,
+      "originalOutputDestinationsUnchanged": true,
+      "containersMoveWithActualContents": true,
+      "restoreShelf": "actual_release_C_plus_snapshot_R_once_only",
+      "spentTimeAndConsumedFuelNotRefunded": true,
+      "fireMinutesNotRecreatedAsWoodCards": true,
+      "originalOwnershipAccessBattleDialogueBusyLocks": true,
+      "onlyCorrespondingProcessingLockMayBeReleased": true,
+      "atomicStableIdPlanAndIdempotence": true,
+      "worldMinutes": 0,
+      "noNewForcedSecondConfirm": true,
+      "removeCancelBatchAndHover": true,
+      "copy": {
+        "success": "已取出至{地点}地面：{物品清单}。",
+        "interrupted": "已中止{批数}批加工；已耗时间和燃料不退。",
+        "empty": "没有可取出的物品。"
+      }
+    },
+    "titleWhenCapExplanationVisible": "加工中{批数}批",
+    "originalParallelCapPerKilnOrWaterStation": 10,
+    "acceptanceIds": [
+      "B51-Q771-01",
+      "B51-Q771-02",
+      "B51-Q772-01",
+      "B51-Q773-01",
+      "B51-Q774-01",
+      "B51-Q775-01",
+      "B51-Q776-01",
+      "B51-Q777-01",
+      "B51-Q778-01",
+      "B51-Q778-02",
+      "B51-Q778-03",
+      "B51-Q778-04",
+      "B51-Q778-05",
+      "B51-Q778-06",
+      "B51-Q779-01"
+    ]
   }
 }
