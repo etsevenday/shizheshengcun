@@ -1,0 +1,9452 @@
+{
+ "source": "a9b93f0:doc/策划案/重墨V2离线评审 v1.0/素材/ink-v2/manifest.json",
+ "sourceSha256": "6dee53b3729286588b149b1066925cb8eb7974ef66eb227d7258cf21763ff906",
+ "files": {
+  "atlas-actor-survivor-sample.webp": {
+   "sha256": "b89c40e3117ce7117e52d1532eeb53fbae46cdc70086f062d835d680e5271fc5",
+   "bytes": 141000,
+   "sources": [
+    "atlas-actor-survivor-sample.webp"
+   ]
+  },
+  "atlas-duty-01.webp": {
+   "sha256": "62728c18a9e8272dc0e9a8f4431ddbc73a7818680990af9587c44576030d80b5",
+   "bytes": 209366,
+   "sources": [
+    "atlas-duty-01.webp"
+   ]
+  },
+  "atlas-duty-02.webp": {
+   "sha256": "3f592febe864686c329430ab039ef32aa253d7a3d3e0158daaf5c9869eaab75c",
+   "bytes": 225672,
+   "sources": [
+    "atlas-duty-02.webp"
+   ]
+  },
+  "atlas-duty-03.webp": {
+   "sha256": "663915ad866fdb355741e30b2903af86d92169e909c510aeaaa8c308ff588755",
+   "bytes": 154024,
+   "sources": [
+    "atlas-duty-03.webp"
+   ]
+  },
+  "atlas-foes-01.webp": {
+   "sha256": "a25e6a459e4302281136e08c5fd24e4fee6a9619480e85cd8ace8cd9f42e1dd7",
+   "bytes": 213350,
+   "sources": [
+    "atlas-foes-01.webp"
+   ]
+  },
+  "atlas-foes-02.webp": {
+   "sha256": "62031cd0e05b1e5e3f61c4d79a92871d0f3b8cc164bb636ce5501bdab2fbf19f",
+   "bytes": 293330,
+   "sources": [
+    "atlas-foes-02.webp"
+   ]
+  },
+  "atlas-foes-03.webp": {
+   "sha256": "02af98906c8cf7221fbda86609d9d101bbf6e0b17f059a6bc22c3311d67a82df",
+   "bytes": 311334,
+   "sources": [
+    "atlas-foes-03.webp"
+   ]
+  },
+  "atlas-foes-04.webp": {
+   "sha256": "c762114f35047f8b7556520850aae3d325fd2a67079e900f8b3efa97a5365fd0",
+   "bytes": 246956,
+   "sources": [
+    "atlas-foes-04.webp"
+   ]
+  },
+  "atlas-foes-05.webp": {
+   "sha256": "3b010d214b146790ac6fc3683960edbfc2c07e81fd6cf4d0f7db88d1eb310c7a",
+   "bytes": 338028,
+   "sources": [
+    "atlas-foes-05.webp"
+   ]
+  },
+  "atlas-foes-06.webp": {
+   "sha256": "f2dfdc6317b710be3fd50b540a73045a5b16e575579990cc317b9fd2cfb03768",
+   "bytes": 275984,
+   "sources": [
+    "atlas-foes-06.webp"
+   ]
+  },
+  "atlas-foes-07.webp": {
+   "sha256": "b62c3c2ef7990d4a6af1716e84d4c25d61481e46b160bf0deef597077b7f0f27",
+   "bytes": 251354,
+   "sources": [
+    "atlas-foes-07.webp"
+   ]
+  },
+  "atlas-icons-corrections-01.webp": {
+   "sha256": "3065d94ee309b80dc9ce22d6f00c7922c1a914d2a8d34666e7a09d807c6712da",
+   "bytes": 199954,
+   "sources": [
+    "atlas-icons-corrections-01.webp"
+   ]
+  },
+  "atlas-items-01.webp": {
+   "sha256": "51f0d3794694bd3e0dec4aa68f72c9e08f83a56563b5d3d8b53660112565c6ce",
+   "bytes": 422112,
+   "sources": [
+    "atlas-items-01.webp"
+   ]
+  },
+  "atlas-items-02.webp": {
+   "sha256": "346f25174c4a35594a130f11fbdcd732a657c501f0d850971403a8450eaecb3b",
+   "bytes": 427462,
+   "sources": [
+    "atlas-items-02.webp"
+   ]
+  },
+  "atlas-items-03.webp": {
+   "sha256": "3701f310205fed83fca8645b7a3f97ac8503061390c13fb27c8d860444815e60",
+   "bytes": 370512,
+   "sources": [
+    "atlas-items-03.webp"
+   ]
+  },
+  "atlas-items-04.webp": {
+   "sha256": "620c23e1a97577dd710b2fef3af5f576bc1e353e1bcbe09e236e459eb8dfb9c8",
+   "bytes": 299054,
+   "sources": [
+    "atlas-items-04.webp"
+   ]
+  },
+  "atlas-items-05.webp": {
+   "sha256": "a93660928722d88a95d1a0f73bb871fa4ca63302db5fccd4500320b0561ae544",
+   "bytes": 361176,
+   "sources": [
+    "atlas-items-05.webp"
+   ]
+  },
+  "atlas-items-06.webp": {
+   "sha256": "eb599c813d063cb8225b72010f87acc66707d1f9da13a64cabd587d342a5f5df",
+   "bytes": 404446,
+   "sources": [
+    "atlas-items-06.webp"
+   ]
+  },
+  "atlas-items-07.webp": {
+   "sha256": "d1394ada8d28f50affc2a50744ff81a37179ed9e6d9aa596a6eacb1e244b7451",
+   "bytes": 443468,
+   "sources": [
+    "atlas-items-07.webp"
+   ]
+  },
+  "atlas-items-08.webp": {
+   "sha256": "7480bfbbda142fac793b27ef51439ab876088399e2bc36bb2527fa39add9ae1f",
+   "bytes": 458802,
+   "sources": [
+    "atlas-items-08.webp"
+   ]
+  },
+  "atlas-items-09.webp": {
+   "sha256": "9d7a5bf94cf50820e94caa3be79e27379a2330d8b5e56cd400ef0901175ee80e",
+   "bytes": 473710,
+   "sources": [
+    "atlas-items-09.webp"
+   ]
+  },
+  "atlas-items-10.webp": {
+   "sha256": "fb7eb8dccad2c16a3bb533182976198890f2729eb1103f0dc1ed622400a6050b",
+   "bytes": 500416,
+   "sources": [
+    "atlas-items-10.webp"
+   ]
+  },
+  "atlas-items-11.webp": {
+   "sha256": "82f747d42b4361c43738bdd08a4f64745507ac464149bfbc76fcc396bcb6019d",
+   "bytes": 457336,
+   "sources": [
+    "atlas-items-11.webp"
+   ]
+  },
+  "atlas-items-12.webp": {
+   "sha256": "858d12b8878db16f80a872dc0b34058ff407e78043cf65ea66c2113b7a3bebcf",
+   "bytes": 101048,
+   "sources": [
+    "atlas-items-12.webp"
+   ]
+  },
+  "atlas-people-academy.webp": {
+   "sha256": "b38de457cf7e377e0a10195f0ef5603d02687f846c0b8ccee2b69e717f3d36da",
+   "bytes": 210170,
+   "sources": [
+    "atlas-people-academy.webp"
+   ]
+  },
+  "atlas-people-camp.webp": {
+   "sha256": "a6208cdfb89afe4e56f04be9176ef52a9e75b39d7015ce5fa478689a14f6b622",
+   "bytes": 212964,
+   "sources": [
+    "atlas-people-camp.webp"
+   ]
+  },
+  "atlas-people-church.webp": {
+   "sha256": "5de4457b7a1eead30df1ac0fbadbc478e692d9375beda4dbaf9b9f82222b2721",
+   "bytes": 221194,
+   "sources": [
+    "atlas-people-church.webp"
+   ]
+  },
+  "atlas-people-companions.webp": {
+   "sha256": "9642c98d925abf6cf942c42e4636cbd39b83912ac35ae35cbc0f5214aa21961e",
+   "bytes": 225452,
+   "sources": [
+    "atlas-people-companions.webp"
+   ]
+  },
+  "atlas-recruit-01.webp": {
+   "sha256": "f2ab7b689a1149e2da1a3caff1729e0b6c7a6c53a5072825c7e399645238e5ae",
+   "bytes": 234402,
+   "sources": [
+    "atlas-recruit-01.webp"
+   ]
+  },
+  "atlas-recruit-02.webp": {
+   "sha256": "130832558d818c552c5cb0bbad8756a1172642241f51028ded8c0adf7c81a91a",
+   "bytes": 139216,
+   "sources": [
+    "atlas-recruit-02.webp"
+   ]
+  },
+  "atlas-sites-01.webp": {
+   "sha256": "cfc2d186ce3e8d1e3b300440082aac9dc4056307d9b6eb30bf9b872013bd1d93",
+   "bytes": 619260,
+   "sources": [
+    "atlas-sites-01.webp"
+   ]
+  },
+  "atlas-sites-02.webp": {
+   "sha256": "7ad9cf7ac444275c95bfa15b0b90fad943dca262b3bfe7db6734220f445ecbbb",
+   "bytes": 631944,
+   "sources": [
+    "atlas-sites-02.webp"
+   ]
+  },
+  "atlas-sites-03.webp": {
+   "sha256": "7c42beac5a9d2dee0c6f212af61d0972cceac60a12ca9c6f7eda43ae32f9741b",
+   "bytes": 628246,
+   "sources": [
+    "atlas-sites-03.webp"
+   ]
+  },
+  "atlas-sites-04.webp": {
+   "sha256": "bf47f5a6ff9c4da51767ee3290b9a5731a4abac392a24f8a7a508f9358d9b757",
+   "bytes": 717628,
+   "sources": [
+    "atlas-sites-04.webp"
+   ]
+  },
+  "atlas-sites-05.webp": {
+   "sha256": "a3d6baa89dd910d980dfe18d742d37891763c1831e3f22f697a2f3cebdafe9cb",
+   "bytes": 588144,
+   "sources": [
+    "atlas-sites-05.webp"
+   ]
+  },
+  "atlas-sites-06.webp": {
+   "sha256": "81815773eae24a0d1b258975b42586d75f4abe8c22dc02d79a175597f7c20beb",
+   "bytes": 643486,
+   "sources": [
+    "atlas-sites-06.webp"
+   ]
+  },
+  "atlas-sites-07.webp": {
+   "sha256": "5e3df4a59492783156a238ebff914c7172b9ad6e97e156fc5b8adf03aeecc2d1",
+   "bytes": 590346,
+   "sources": [
+    "atlas-sites-07.webp"
+   ]
+  },
+  "atlas-sites-08.webp": {
+   "sha256": "900183abed686c014d01201b253cfe4e164288b756374adc552f47049de1ce64",
+   "bytes": 368698,
+   "sources": [
+    "atlas-sites-08.webp"
+   ]
+  },
+  "atlas-skills-01.webp": {
+   "sha256": "a93493575d524585006f751901d2e98b87aa946f20231092d2ba64d2d88d5de5",
+   "bytes": 607662,
+   "sources": [
+    "atlas-skills-01.webp"
+   ]
+  },
+  "atlas-skills-02.webp": {
+   "sha256": "1ab1c6b2728d8184be7139758df70a8f37e56311423450b4cbd3e9d9cbfb8cbe",
+   "bytes": 549506,
+   "sources": [
+    "atlas-skills-02.webp"
+   ]
+  },
+  "atlas-skills-03.webp": {
+   "sha256": "dfe851393004af64b0707c1925154e667765d0b9b5b9e544c6c47f7336a97c18",
+   "bytes": 418430,
+   "sources": [
+    "atlas-skills-03.webp"
+   ]
+  },
+  "atlas-skills-04.webp": {
+   "sha256": "bbdce59271e29e61c3f7a7fe9102987aae2dc8aace4eeb171a4adb22adc5d263",
+   "bytes": 492270,
+   "sources": [
+    "atlas-skills-04.webp"
+   ]
+  },
+  "atlas-skills-05.webp": {
+   "sha256": "dd7231a7810f3ffde0c08a8d9496589801905db72f3060e1c046d2e6844f11ff",
+   "bytes": 501364,
+   "sources": [
+    "atlas-skills-05.webp"
+   ]
+  },
+  "atlas-skills-06.webp": {
+   "sha256": "b952b0dae9944c260b2ddc38cae21a3d6d99be87d962e333fd41fa2c3e49ecea",
+   "bytes": 467278,
+   "sources": [
+    "atlas-skills-06.webp"
+   ]
+  },
+  "atlas-skills-07.webp": {
+   "sha256": "bdccb4633f88ef54021bcf360ac2cd9fc02550db453fad84c603ff61fda70b65",
+   "bytes": 159658,
+   "sources": [
+    "atlas-skills-07.webp"
+   ]
+  },
+  "atlas-skills-corrections-01.webp": {
+   "sha256": "5bf94409fd2d19933e56e598738f598418cbd46f476dda76a03c2d4c38c3c87a",
+   "bytes": 193812,
+   "sources": [
+    "atlas-skills-corrections-01.webp"
+   ]
+  },
+  "atlas-skills-corrections-02.webp": {
+   "sha256": "157107879ead8bc2e1b1b31886c8bd7ea9beb7cc1ac34c7501b5b0530ed3c67e",
+   "bytes": 144062,
+   "sources": [
+    "atlas-skills-corrections-02.webp"
+   ]
+  },
+  "atlas-ui-corrections-02.webp": {
+   "sha256": "6c08cccc32f3e9e7e4a5ebba69c5013484c22aa547103bdb291b9d8ec3b09b1d",
+   "bytes": 185742,
+   "sources": [
+    "atlas-ui-corrections-02.webp"
+   ]
+  },
+  "atlas-ui-icons-01.webp": {
+   "sha256": "6e347bbb6a02d804dd2380b4eb17db84d697a7bfcd4679e5d37f08bda71ee018",
+   "bytes": 345760,
+   "sources": [
+    "atlas-ui-icons-01.webp"
+   ]
+  },
+  "atlas-ui-icons-02.webp": {
+   "sha256": "5c572b087f49f9889534f8d9f6f2b0d855a48ff0b051537bfea71bdc9553541d",
+   "bytes": 338298,
+   "sources": [
+    "atlas-ui-icons-02.webp"
+   ]
+  },
+  "atlas-ui-icons-03.webp": {
+   "sha256": "4da15bf1f42231f2a566485e6efdae32e644fc8c3ac160f84af012615b4b1be0",
+   "bytes": 364538,
+   "sources": [
+    "atlas-ui-icons-03.webp"
+   ]
+  },
+  "atlas-ui-icons-04.webp": {
+   "sha256": "37c99c1a47aee12e8d6adc92edcd44d08f3c5d1e652ddd62d1e59c07450adeb5",
+   "bytes": 89262,
+   "sources": [
+    "atlas-ui-icons-04.webp"
+   ]
+  },
+  "portrait-actor-baobao.webp": {
+   "sha256": "bf11d4e86d806a7c00259606a274ee9e6c933d5a8ea03b5d7db89b757efdd248",
+   "bytes": 20432,
+   "sources": [
+    "portrait-actor-baobao.webp"
+   ]
+  },
+  "portrait-actor-npc_bai_ling.webp": {
+   "sha256": "d0f79ccaa9527a22437cb976d50a7a0418042e9724d9c3cbf5efc7c5d26b6580",
+   "bytes": 18588,
+   "sources": [
+    "portrait-actor-npc_bai_ling.webp"
+   ]
+  },
+  "portrait-actor-npc_chen_zhi.webp": {
+   "sha256": "5bcfa110a7403055a570522c457742ace267ecac821b6b136cc6f02e0ab4bc85",
+   "bytes": 20650,
+   "sources": [
+    "portrait-actor-npc_chen_zhi.webp"
+   ]
+  },
+  "portrait-actor-npc_cheng_wang.webp": {
+   "sha256": "248f6f2c5914df6f7bf46f0b77576253f316e5f3656f9b5f96cbade206cc2ada",
+   "bytes": 19802,
+   "sources": [
+    "portrait-actor-npc_cheng_wang.webp"
+   ]
+  },
+  "portrait-actor-npc_du_sui.webp": {
+   "sha256": "313f16ec817b2dd6223e582c91788e8db1c4ec0786273db125ae9a2b48efe83d",
+   "bytes": 20298,
+   "sources": [
+    "portrait-actor-npc_du_sui.webp"
+   ]
+  },
+  "portrait-actor-npc_fu_heng.webp": {
+   "sha256": "e4a12693e38fcff370a109eabf1d8ee7621fcc83b182c038ca006fa87b890dec",
+   "bytes": 19924,
+   "sources": [
+    "portrait-actor-npc_fu_heng.webp"
+   ]
+  },
+  "portrait-actor-npc_gu_cheng.webp": {
+   "sha256": "4a41151e9b3855dd5d83635737dcf05164a5b4e5f0e21fac053cdaa335e8eba8",
+   "bytes": 18068,
+   "sources": [
+    "portrait-actor-npc_gu_cheng.webp"
+   ]
+  },
+  "portrait-actor-npc_he_yuan.webp": {
+   "sha256": "ad47dab81af28dbef23253cbb78006c93f791605e66493e4950cc0269fd32324",
+   "bytes": 19850,
+   "sources": [
+    "portrait-actor-npc_he_yuan.webp"
+   ]
+  },
+  "portrait-actor-npc_ji_mu.webp": {
+   "sha256": "af7baa74d9cad922d31e25fe8cfbf8f0d1557b74cf2316bb3db0b96383f310bf",
+   "bytes": 18176,
+   "sources": [
+    "portrait-actor-npc_ji_mu.webp"
+   ]
+  },
+  "portrait-actor-npc_ji_wen.webp": {
+   "sha256": "54a7f3abca752a1c046986ca95425e0697ce8bc86cad0fae1ee40ac52843912e",
+   "bytes": 20710,
+   "sources": [
+    "portrait-actor-npc_ji_wen.webp"
+   ]
+  },
+  "portrait-actor-npc_lin_zhao.webp": {
+   "sha256": "378ac5c3b7473a4578c621955184687759e550a4c1356ce6cb24baeecd1e9290",
+   "bytes": 20082,
+   "sources": [
+    "portrait-actor-npc_lin_zhao.webp"
+   ]
+  },
+  "portrait-actor-npc_lu_heng.webp": {
+   "sha256": "5e527dbd9913f63620d2727b83668bc514c60d350fefc42fdc5d572f26535921",
+   "bytes": 18746,
+   "sources": [
+    "portrait-actor-npc_lu_heng.webp"
+   ]
+  },
+  "portrait-actor-npc_luo_zheng.webp": {
+   "sha256": "5fed05e00b273e7f5f92d7a1fbaef3c3324d68debfcc52745dc62228bae395a9",
+   "bytes": 19484,
+   "sources": [
+    "portrait-actor-npc_luo_zheng.webp"
+   ]
+  },
+  "portrait-actor-npc_qi_wen.webp": {
+   "sha256": "27483ef5c2576bcfc0cfb19ba11d5df5e83b50873de7c819b7e29097e7adfa06",
+   "bytes": 18930,
+   "sources": [
+    "portrait-actor-npc_qi_wen.webp"
+   ]
+  },
+  "portrait-actor-npc_shao_ning.webp": {
+   "sha256": "d175ba5c0e9d2311de6b33372cbb14be4322983458e3aa40393381f8bf3813d7",
+   "bytes": 18024,
+   "sources": [
+    "portrait-actor-npc_shao_ning.webp"
+   ]
+  },
+  "portrait-actor-npc_shen_he.webp": {
+   "sha256": "a132068a1e0269ab9e29701bf84635522ffc193bd28a6bcd1004fff750943e54",
+   "bytes": 19716,
+   "sources": [
+    "portrait-actor-npc_shen_he.webp"
+   ]
+  },
+  "portrait-actor-npc_song_zhu.webp": {
+   "sha256": "64a45eaf16d9bbc6b6668051d00e7c6ca5e8df39da24cf46f2511aa593e08891",
+   "bytes": 21144,
+   "sources": [
+    "portrait-actor-npc_song_zhu.webp"
+   ]
+  },
+  "portrait-actor-npc_tang_li.webp": {
+   "sha256": "0e9ee086b76f8ff0dd18ad12ab4c8f97755476fb3dbe6b4ad476d228d801fb67",
+   "bytes": 25274,
+   "sources": [
+    "portrait-actor-npc_tang_li.webp"
+   ]
+  },
+  "portrait-actor-npc_tao_cen.webp": {
+   "sha256": "7fef005ee1dc894cd1f0eee9a18163181811b58b260f5bc1cf087a70dd68a845",
+   "bytes": 19924,
+   "sources": [
+    "portrait-actor-npc_tao_cen.webp"
+   ]
+  },
+  "portrait-actor-npc_wen_cheng.webp": {
+   "sha256": "2081596035584a90b524c953d30d9a76ede6c89322fb74c8ccb93fab9618916f",
+   "bytes": 18796,
+   "sources": [
+    "portrait-actor-npc_wen_cheng.webp"
+   ]
+  },
+  "portrait-actor-npc_xu_an.webp": {
+   "sha256": "65bd69b5694d865bbd8e7c2248ef0d18a0f37a45f1d6ee93202bc8e4c3e9ba62",
+   "bytes": 18524,
+   "sources": [
+    "portrait-actor-npc_xu_an.webp"
+   ]
+  },
+  "portrait-actor-npc_ye_xun.webp": {
+   "sha256": "21f3c9f9709067a4b62689bed698ac4e0d7a2ef306607db2b5cf09660d9c49a7",
+   "bytes": 21234,
+   "sources": [
+    "portrait-actor-npc_ye_xun.webp"
+   ]
+  },
+  "portrait-actor-npc_yin_ke.webp": {
+   "sha256": "e4281f4bca1bd9f3cfd0c61cf28caf7517aafcd83af8c3909a4239ce200cff39",
+   "bytes": 20936,
+   "sources": [
+    "portrait-actor-npc_yin_ke.webp"
+   ]
+  },
+  "portrait-actor-npc_zhou_yan.webp": {
+   "sha256": "6ae3a2064e3dcc31a5662fd7c81ec78920d44b9e905a8df6a5c162e1cbc7c189",
+   "bytes": 18260,
+   "sources": [
+    "portrait-actor-npc_zhou_yan.webp"
+   ]
+  },
+  "portrait-actor-p0.webp": {
+   "sha256": "fe73a31aa1be969966fcc1c56533955a21657edb1eaaabc8e37b30b22678e32c",
+   "bytes": 15068,
+   "sources": [
+    "portrait-actor-p0.webp"
+   ]
+  },
+  "portrait-duty-npc_bai_ling.webp": {
+   "sha256": "b93b644a98342d7474a42ee696dcd4e8ecfebb34a6e94bb734d692510a0d77b4",
+   "bytes": 19098,
+   "sources": [
+    "portrait-duty-npc_bai_ling.webp"
+   ]
+  },
+  "portrait-duty-npc_chen_zhi.webp": {
+   "sha256": "11274a4500bcfa847708738d8b3e92ba2c52e4f9058f0c7c17bad56075df1851",
+   "bytes": 21518,
+   "sources": [
+    "portrait-duty-npc_chen_zhi.webp"
+   ]
+  },
+  "portrait-duty-npc_du_sui.webp": {
+   "sha256": "2f049e5d21229c77543f4ca30420f37e65589ec600335fb6afb4e2f8558512ce",
+   "bytes": 19308,
+   "sources": [
+    "portrait-duty-npc_du_sui.webp"
+   ]
+  },
+  "portrait-duty-npc_fu_heng.webp": {
+   "sha256": "6ed32b5d630a1ae61d6cbf5b3296e667adad03936ede25387619ab3b71648a21",
+   "bytes": 24624,
+   "sources": [
+    "portrait-duty-npc_fu_heng.webp"
+   ]
+  },
+  "portrait-duty-npc_he_yuan.webp": {
+   "sha256": "987d42c4fa84ea4807fafb3f5a7fbc24c360c744044487262ebe88ee0a640d15",
+   "bytes": 20874,
+   "sources": [
+    "portrait-duty-npc_he_yuan.webp"
+   ]
+  },
+  "portrait-duty-npc_ji_mu.webp": {
+   "sha256": "83a6d09e1612984b707c395f31c09a7b6c109c75e7bc53ed305ae6396da77f80",
+   "bytes": 17708,
+   "sources": [
+    "portrait-duty-npc_ji_mu.webp"
+   ]
+  },
+  "portrait-duty-npc_ji_wen.webp": {
+   "sha256": "b41925b675ab152a7b2ec4abde6f683ef2822c813bec69708da1cc7c01f43160",
+   "bytes": 21820,
+   "sources": [
+    "portrait-duty-npc_ji_wen.webp"
+   ]
+  },
+  "portrait-duty-npc_lu_heng.webp": {
+   "sha256": "00cceb14d2ec30f8f7b1f5d68d32173add8f775c4bf8fe906efad7abf43bd8a5",
+   "bytes": 19366,
+   "sources": [
+    "portrait-duty-npc_lu_heng.webp"
+   ]
+  },
+  "portrait-duty-npc_luo_zheng.webp": {
+   "sha256": "c4679a4a4574967e575228daf290bda47790ffd6f46e7a767cec713b196d8cca",
+   "bytes": 18698,
+   "sources": [
+    "portrait-duty-npc_luo_zheng.webp"
+   ]
+  },
+  "portrait-duty-npc_qi_wen.webp": {
+   "sha256": "b0ae4379a9137beeaaa3bc4637b423f9766b43556b5307ce5112d117b9f967ff",
+   "bytes": 20114,
+   "sources": [
+    "portrait-duty-npc_qi_wen.webp"
+   ]
+  },
+  "portrait-duty-npc_shao_ning.webp": {
+   "sha256": "103ef51ce054113f209b6618a6527a9ba7906524c3713d388f4128b456abec23",
+   "bytes": 19040,
+   "sources": [
+    "portrait-duty-npc_shao_ning.webp"
+   ]
+  },
+  "portrait-duty-npc_song_zhu.webp": {
+   "sha256": "d84d4b699eeae1baeca16f5d92c414a99621aeb6ce26852d5ce140105b099bdd",
+   "bytes": 19812,
+   "sources": [
+    "portrait-duty-npc_song_zhu.webp"
+   ]
+  },
+  "portrait-duty-npc_tao_cen.webp": {
+   "sha256": "545308416e3f28ecf8ccec1eced7703468a7f2cc98f6275e7fe2e350eae1ca1d",
+   "bytes": 21542,
+   "sources": [
+    "portrait-duty-npc_tao_cen.webp"
+   ]
+  },
+  "portrait-duty-npc_wen_cheng.webp": {
+   "sha256": "535495424cc6a472dafadc75524232648d1fda528eb54217a888c1bce9f4a001",
+   "bytes": 20844,
+   "sources": [
+    "portrait-duty-npc_wen_cheng.webp"
+   ]
+  },
+  "portrait-duty-npc_xu_an.webp": {
+   "sha256": "3d2b6f7e7b20a87a94c17a054f5db0baa0c6844eb57f00cb6663d4b17f18fa18",
+   "bytes": 21512,
+   "sources": [
+    "portrait-duty-npc_xu_an.webp"
+   ]
+  },
+  "portrait-duty-npc_yin_ke.webp": {
+   "sha256": "bad6b25e536f6d3805dc585c8c9e23b6bbc94ef04c1f509ea4c7e0b9d5d9b0f9",
+   "bytes": 21930,
+   "sources": [
+    "portrait-duty-npc_yin_ke.webp"
+   ]
+  },
+  "portrait-glyph-unknown.webp": {
+   "sha256": "69ac22837ff576d1ef8557ece3789ca3e83a4fd3db8d35601ad2c613c4c77f3d",
+   "bytes": 18912,
+   "sources": [
+    "portrait-glyph-unknown.webp"
+   ]
+  },
+  "portrait-recruitTemplate-blade_hand.webp": {
+   "sha256": "76aca37751ebaa6dcc2bbad746558a065adbd0b7c404a579753a656eebd47ac1",
+   "bytes": 21444,
+   "sources": [
+    "portrait-recruitTemplate-blade_hand.webp"
+   ]
+  },
+  "portrait-recruitTemplate-breaker.webp": {
+   "sha256": "fdda850f46def0835c38fc5f5deb96d586bbd1a3094469d00bb491b70380dad4",
+   "bytes": 21754,
+   "sources": [
+    "portrait-recruitTemplate-breaker.webp"
+   ]
+  },
+  "portrait-recruitTemplate-camp_nurse.webp": {
+   "sha256": "4e177ea46099ecac9df40990b9a477168c350618386609c9eda29e19efdbd3b4",
+   "bytes": 19604,
+   "sources": [
+    "portrait-recruitTemplate-camp_nurse.webp"
+   ]
+  },
+  "portrait-recruitTemplate-coordinator.webp": {
+   "sha256": "2369092d367668b6f73e0bbb1802ae6b5dc2e175a8f17de10113b2637dbc465b",
+   "bytes": 19680,
+   "sources": [
+    "portrait-recruitTemplate-coordinator.webp"
+   ]
+  },
+  "portrait-recruitTemplate-front_guard.webp": {
+   "sha256": "ed0791d374fefee066c7a0b4ed14bbae7159ca1c9640282d557d33268840a25f",
+   "bytes": 18392,
+   "sources": [
+    "portrait-recruitTemplate-front_guard.webp"
+   ]
+  },
+  "portrait-recruitTemplate-hunter.webp": {
+   "sha256": "c0f462f1214ba0e79c4b69726bc8df24ca76b8014314addad2423b4bde436526",
+   "bytes": 23142,
+   "sources": [
+    "portrait-recruitTemplate-hunter.webp"
+   ]
+  },
+  "portrait-recruitTemplate-legacy_neutral.webp": {
+   "sha256": "531dec866fe00b2b94ab874cec9b9d7b1bb5a5a0a7b01ed6ca003a1dfe1ff756",
+   "bytes": 18188,
+   "sources": [
+    "portrait-recruitTemplate-legacy_neutral.webp"
+   ]
+  },
+  "portrait-recruitTemplate-old_service.webp": {
+   "sha256": "46786fc38492c8fdf4d7edeb55eded1bfad7895c8995c4690d7ef006f2672f7b",
+   "bytes": 18014,
+   "sources": [
+    "portrait-recruitTemplate-old_service.webp"
+   ]
+  },
+  "portrait-recruitTemplate-salvager.webp": {
+   "sha256": "f10f831ae3926fbaa58ff17ca231c034c2e9458c4fa348628b2645c5ceb8779e",
+   "bytes": 19372,
+   "sources": [
+    "portrait-recruitTemplate-salvager.webp"
+   ]
+  },
+  "portrait-recruitTemplate-spear_walker.webp": {
+   "sha256": "b09002aaa4cbd83ee14fcf257acfc31b0cc54c439b3739a56bd3aac5e376484f",
+   "bytes": 20548,
+   "sources": [
+    "portrait-recruitTemplate-spear_walker.webp"
+   ]
+  },
+  "scene-01-幸存者营区.webp": {
+   "sha256": "52ee5cb81e82353e1bf8edd3048abd64e9494993b83289d3078074e043e7cab7",
+   "bytes": 374956,
+   "sources": [
+    "scene-01-幸存者营区.webp"
+   ]
+  },
+  "scene-02-教会圣所地区.webp": {
+   "sha256": "08dfd69cf64b9cc19afaec76da94d84e3f1873f9973c648dd5faf377899fa60f",
+   "bytes": 373850,
+   "sources": [
+    "scene-02-教会圣所地区.webp"
+   ]
+  },
+  "scene-03-科学院封存地区.webp": {
+   "sha256": "36efbc50306a20e8c8fbe95adb7a5443d0493cee72711418fb1b4eb8f242ef79",
+   "bytes": 393712,
+   "sources": [
+    "scene-03-科学院封存地区.webp"
+   ]
+  },
+  "scene-battle-checkpoint.webp": {
+   "sha256": "3d839fe9c83a9884e51ef69e45b587a363e455646b5389a229ffe809bc043490",
+   "bytes": 320796,
+   "sources": [
+    "scene-battle-checkpoint.webp"
+   ]
+  },
+  "scene-camp-outskirts.webp": {
+   "sha256": "6a026ad7cc28bfca81c03130e7400286398973e12a509cd521da3ce9027c4da9",
+   "bytes": 339434,
+   "sources": [
+    "scene-camp-outskirts.webp"
+   ]
+  },
+  "scene-d01_01.webp": {
+   "sha256": "c4f842771ff15fbaffa7cd7a49502eaeaca175da3370d29d964c9ac3781efa51",
+   "bytes": 151732,
+   "sources": [
+    "scene-d01_01.webp",
+    "scene-d01_02.webp",
+    "scene-d01_03.webp",
+    "scene-d01_04.webp",
+    "scene-d01_05.webp",
+    "scene-d01_06.webp",
+    "scene-d01_07.webp",
+    "scene-d01_08.webp"
+   ]
+  },
+  "scene-d02_01.webp": {
+   "sha256": "10715816044696d2074e47de4d10ee1dede39b4aa71426b03418b6ac6439e2be",
+   "bytes": 139276,
+   "sources": [
+    "scene-d02_01.webp",
+    "scene-d02_02.webp",
+    "scene-d02_03.webp",
+    "scene-d02_04.webp",
+    "scene-d02_05.webp",
+    "scene-d02_06.webp",
+    "scene-d02_07.webp",
+    "scene-d02_08.webp",
+    "scene-d02_09.webp"
+   ]
+  },
+  "scene-d03_01.webp": {
+   "sha256": "5ffa643cc3507bd3790ee3b19ab954c61833bc1eccdad7e642971ecf93ff0009",
+   "bytes": 149880,
+   "sources": [
+    "scene-d03_01.webp",
+    "scene-d03_02.webp",
+    "scene-d03_03.webp",
+    "scene-d03_04.webp",
+    "scene-d03_05.webp",
+    "scene-d03_06.webp",
+    "scene-d03_07.webp",
+    "scene-d03_08.webp"
+   ]
+  },
+  "scene-d04_01.webp": {
+   "sha256": "c0f272182fb9bda25f65c05136b249921ed6a142f1953fe8cf2887e72519603b",
+   "bytes": 143712,
+   "sources": [
+    "scene-d04_01.webp",
+    "scene-d04_02.webp",
+    "scene-d04_03.webp",
+    "scene-d04_04.webp",
+    "scene-d04_05.webp",
+    "scene-d04_06.webp",
+    "scene-d04_07.webp",
+    "scene-d04_08.webp"
+   ]
+  },
+  "scene-d05_01.webp": {
+   "sha256": "ddb7be004908c19d99848a73be61492e9627ac265ca900ccc7a06136e03c4255",
+   "bytes": 153478,
+   "sources": [
+    "scene-d05_01.webp",
+    "scene-d05_02.webp",
+    "scene-d05_03.webp",
+    "scene-d05_04.webp",
+    "scene-d05_05.webp",
+    "scene-d05_06.webp",
+    "scene-d05_07.webp",
+    "scene-d05_08.webp"
+   ]
+  },
+  "scene-d06_01.webp": {
+   "sha256": "6b0c3b0783a29a870bc630c810aaa4b4ec4a8d07030222b08d59ee74a06fc9e3",
+   "bytes": 175676,
+   "sources": [
+    "scene-d06_01.webp",
+    "scene-d06_02.webp",
+    "scene-d06_03.webp",
+    "scene-d06_04.webp",
+    "scene-d06_05.webp",
+    "scene-d06_06.webp",
+    "scene-d06_07.webp",
+    "scene-d06_08.webp",
+    "scene-d06_09.webp"
+   ]
+  },
+  "scene-d07_01.webp": {
+   "sha256": "d777e6dcbaa4c7f2488a55572f366c33834ed618294ecc452bd8569b4e2a748b",
+   "bytes": 153968,
+   "sources": [
+    "scene-d07_01.webp",
+    "scene-d07_02.webp",
+    "scene-d07_03.webp",
+    "scene-d07_04.webp",
+    "scene-d07_05.webp",
+    "scene-d07_06.webp",
+    "scene-d07_07.webp",
+    "scene-d07_08.webp"
+   ]
+  },
+  "scene-d08_01.webp": {
+   "sha256": "2216bfbde53dda364064639cfdcf19e670047bb245d57266c9f2ee6709f29bd6",
+   "bytes": 162784,
+   "sources": [
+    "scene-d08_01.webp",
+    "scene-d08_02.webp",
+    "scene-d08_03.webp",
+    "scene-d08_04.webp",
+    "scene-d08_05.webp",
+    "scene-d08_06.webp",
+    "scene-d08_07.webp",
+    "scene-d08_08.webp",
+    "scene-d08_09.webp"
+   ]
+  }
+ },
+ "sprites": {
+  "action:bandage": {
+   "crop": [
+    26,
+    47,
+    275,
+    267
+   ],
+   "file": "atlas-skills-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:basic_attack": {
+   "crop": [
+    635,
+    639,
+    297,
+    267
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:breathe": {
+   "crop": [
+    16,
+    940,
+    298,
+    266
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:desperate_punch": {
+   "crop": [
+    331,
+    49,
+    279,
+    261
+   ],
+   "file": "atlas-skills-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:end_turn": {
+   "crop": [
+    949,
+    50,
+    278,
+    264
+   ],
+   "file": "atlas-skills-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:guard": {
+   "crop": [
+    938,
+    637,
+    299,
+    269
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:reload": {
+   "crop": [
+    938,
+    940,
+    292,
+    265
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:retreat": {
+   "crop": [
+    645,
+    57,
+    272,
+    257
+   ],
+   "file": "atlas-skills-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:swap": {
+   "crop": [
+    620,
+    945,
+    307,
+    260
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:switch_weapon": {
+   "crop": [
+    320,
+    944,
+    294,
+    263
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:use_antibiotics": {
+   "crop": [
+    22,
+    357,
+    280,
+    256
+   ],
+   "file": "atlas-skills-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "action:use_antiviral_cure": {
+   "crop": [
+    335,
+    346,
+    276,
+    277
+   ],
+   "file": "atlas-skills-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "actor:baobao": {
+   "crop": [
+    1021,
+    557,
+    465,
+    409
+   ],
+   "file": "atlas-icons-corrections-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_bai_ling": {
+   "crop": [
+    632,
+    9,
+    316,
+    498
+   ],
+   "file": "atlas-people-church.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_chen_zhi": {
+   "crop": [
+    132,
+    516,
+    257,
+    507
+   ],
+   "file": "atlas-people-camp.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_cheng_wang": {
+   "crop": [
+    1167,
+    512,
+    236,
+    506
+   ],
+   "file": "atlas-people-church.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_du_sui": {
+   "crop": [
+    1145,
+    515,
+    271,
+    508
+   ],
+   "file": "atlas-people-camp.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_fu_heng": {
+   "crop": [
+    617,
+    518,
+    314,
+    500
+   ],
+   "file": "atlas-people-church.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_gu_cheng": {
+   "crop": [
+    602,
+    513,
+    321,
+    509
+   ],
+   "file": "atlas-people-companions.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_he_yuan": {
+   "crop": [
+    103,
+    513,
+    277,
+    507
+   ],
+   "file": "atlas-people-academy.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_ji_mu": {
+   "crop": [
+    1142,
+    0,
+    290,
+    508
+   ],
+   "file": "atlas-people-church.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_ji_wen": {
+   "crop": [
+    627,
+    5,
+    254,
+    501
+   ],
+   "file": "atlas-people-academy.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_lin_zhao": {
+   "crop": [
+    107,
+    3,
+    357,
+    506
+   ],
+   "file": "atlas-people-companions.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_lu_heng": {
+   "crop": [
+    143,
+    0,
+    289,
+    510
+   ],
+   "file": "atlas-people-camp.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_luo_zheng": {
+   "crop": [
+    1121,
+    0,
+    313,
+    508
+   ],
+   "file": "atlas-people-camp.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_qi_wen": {
+   "crop": [
+    132,
+    2,
+    269,
+    504
+   ],
+   "file": "atlas-people-church.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_shao_ning": {
+   "crop": [
+    1141,
+    9,
+    256,
+    498
+   ],
+   "file": "atlas-people-academy.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_shen_he": {
+   "crop": [
+    1138,
+    9,
+    236,
+    500
+   ],
+   "file": "atlas-people-companions.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_song_zhu": {
+   "crop": [
+    136,
+    517,
+    250,
+    501
+   ],
+   "file": "atlas-people-church.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_tang_li": {
+   "crop": [
+    136,
+    514,
+    272,
+    508
+   ],
+   "file": "atlas-people-companions.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_tao_cen": {
+   "crop": [
+    620,
+    514,
+    265,
+    507
+   ],
+   "file": "atlas-people-camp.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_wen_cheng": {
+   "crop": [
+    128,
+    4,
+    283,
+    502
+   ],
+   "file": "atlas-people-academy.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_xu_an": {
+   "crop": [
+    632,
+    6,
+    255,
+    501
+   ],
+   "file": "atlas-people-camp.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_ye_xun": {
+   "crop": [
+    1121,
+    514,
+    264,
+    508
+   ],
+   "file": "atlas-people-companions.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_yin_ke": {
+   "crop": [
+    627,
+    515,
+    282,
+    504
+   ],
+   "file": "atlas-people-academy.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:npc_zhou_yan": {
+   "crop": [
+    635,
+    3,
+    261,
+    507
+   ],
+   "file": "atlas-people-companions.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "actor:p0": {
+   "crop": [
+    0,
+    0,
+    1024,
+    1536
+   ],
+   "file": "atlas-actor-survivor-sample.webp",
+   "size": [
+    1024,
+    1536
+   ]
+  },
+  "duty:npc_bai_ling": {
+   "crop": [
+    619,
+    8,
+    294,
+    503
+   ],
+   "file": "atlas-duty-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_chen_zhi": {
+   "crop": [
+    130,
+    512,
+    264,
+    510
+   ],
+   "file": "atlas-duty-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_du_sui": {
+   "crop": [
+    1127,
+    513,
+    276,
+    509
+   ],
+   "file": "atlas-duty-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_fu_heng": {
+   "crop": [
+    546,
+    512,
+    429,
+    510
+   ],
+   "file": "atlas-duty-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_he_yuan": {
+   "crop": [
+    1120,
+    0,
+    331,
+    512
+   ],
+   "file": "atlas-duty-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_ji_mu": {
+   "crop": [
+    1111,
+    0,
+    342,
+    510
+   ],
+   "file": "atlas-duty-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_ji_wen": {
+   "crop": [
+    130,
+    0,
+    278,
+    512
+   ],
+   "file": "atlas-duty-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_lu_heng": {
+   "crop": [
+    144,
+    1,
+    265,
+    509
+   ],
+   "file": "atlas-duty-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_luo_zheng": {
+   "crop": [
+    1118,
+    0,
+    295,
+    510
+   ],
+   "file": "atlas-duty-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_qi_wen": {
+   "crop": [
+    77,
+    0,
+    342,
+    511
+   ],
+   "file": "atlas-duty-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_shao_ning": {
+   "crop": [
+    615,
+    2,
+    299,
+    509
+   ],
+   "file": "atlas-duty-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_song_zhu": {
+   "crop": [
+    127,
+    512,
+    274,
+    510
+   ],
+   "file": "atlas-duty-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_tao_cen": {
+   "crop": [
+    618,
+    512,
+    282,
+    510
+   ],
+   "file": "atlas-duty-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_wen_cheng": {
+   "crop": [
+    1122,
+    512,
+    313,
+    509
+   ],
+   "file": "atlas-duty-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_xu_an": {
+   "crop": [
+    634,
+    7,
+    262,
+    504
+   ],
+   "file": "atlas-duty-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "duty:npc_yin_ke": {
+   "crop": [
+    95,
+    512,
+    306,
+    511
+   ],
+   "file": "atlas-duty-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:boar": {
+   "crop": [
+    1038,
+    62,
+    477,
+    409
+   ],
+   "file": "atlas-foes-07.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:crawler": {
+   "crop": [
+    529,
+    177,
+    480,
+    316
+   ],
+   "file": "atlas-foes-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_boss_armory": {
+   "crop": [
+    546,
+    520,
+    432,
+    494
+   ],
+   "file": "atlas-foes-05.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_boss_cold": {
+   "crop": [
+    101,
+    517,
+    302,
+    500
+   ],
+   "file": "atlas-foes-06.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_boss_crypt": {
+   "crop": [
+    1071,
+    6,
+    424,
+    494
+   ],
+   "file": "atlas-foes-05.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_boss_lab": {
+   "crop": [
+    108,
+    519,
+    306,
+    497
+   ],
+   "file": "atlas-foes-05.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_boss_mall": {
+   "crop": [
+    1111,
+    0,
+    360,
+    509
+   ],
+   "file": "atlas-foes-06.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_boss_mine": {
+   "crop": [
+    559,
+    10,
+    380,
+    499
+   ],
+   "file": "atlas-foes-06.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_boss_relay": {
+   "crop": [
+    1126,
+    512,
+    367,
+    505
+   ],
+   "file": "atlas-foes-05.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_boss_water": {
+   "crop": [
+    79,
+    1,
+    353,
+    510
+   ],
+   "file": "atlas-foes-06.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_cablecrawler": {
+   "crop": [
+    20,
+    153,
+    476,
+    338
+   ],
+   "file": "atlas-foes-05.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_cantor": {
+   "crop": [
+    581,
+    528,
+    375,
+    487
+   ],
+   "file": "atlas-foes-04.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_labwalker": {
+   "crop": [
+    1162,
+    514,
+    273,
+    503
+   ],
+   "file": "atlas-foes-04.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:ec_stockbracer": {
+   "crop": [
+    579,
+    9,
+    390,
+    491
+   ],
+   "file": "atlas-foes-05.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:feral_boar": {
+   "crop": [
+    1024,
+    578,
+    497,
+    397
+   ],
+   "file": "atlas-foes-07.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:feral_dog": {
+   "crop": [
+    31,
+    166,
+    444,
+    304
+   ],
+   "file": "atlas-foes-07.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:howler": {
+   "crop": [
+    1097,
+    524,
+    379,
+    495
+   ],
+   "file": "atlas-foes-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:raider_gunner": {
+   "crop": [
+    1103,
+    514,
+    355,
+    506
+   ],
+   "file": "atlas-foes-06.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:raider_melee": {
+   "crop": [
+    573,
+    517,
+    312,
+    503
+   ],
+   "file": "atlas-foes-06.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:riot": {
+   "crop": [
+    592,
+    513,
+    369,
+    506
+   ],
+   "file": "atlas-foes-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:runner": {
+   "crop": [
+    1059,
+    26,
+    430,
+    461
+   ],
+   "file": "atlas-foes-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:shambler": {
+   "crop": [
+    147,
+    7,
+    266,
+    483
+   ],
+   "file": "atlas-foes-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:stag": {
+   "crop": [
+    47,
+    514,
+    411,
+    474
+   ],
+   "file": "atlas-foes-07.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:wild_dog_leader": {
+   "crop": [
+    514,
+    579,
+    484,
+    397
+   ],
+   "file": "atlas-foes-07.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:wolf": {
+   "crop": [
+    525,
+    73,
+    477,
+    398
+   ],
+   "file": "atlas-foes-07.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:worker": {
+   "crop": [
+    137,
+    513,
+    320,
+    506
+   ],
+   "file": "atlas-foes-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_bloater": {
+   "crop": [
+    1069,
+    10,
+    386,
+    491
+   ],
+   "file": "atlas-foes-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_clinger": {
+   "crop": [
+    536,
+    141,
+    445,
+    360
+   ],
+   "file": "atlas-foes-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_darter": {
+   "crop": [
+    558,
+    610,
+    432,
+    398
+   ],
+   "file": "atlas-foes-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_engineer": {
+   "crop": [
+    596,
+    518,
+    340,
+    497
+   ],
+   "file": "atlas-foes-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_guard": {
+   "crop": [
+    107,
+    8,
+    323,
+    496
+   ],
+   "file": "atlas-foes-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_hauler": {
+   "crop": [
+    82,
+    517,
+    403,
+    499
+   ],
+   "file": "atlas-foes-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_helmet": {
+   "crop": [
+    636,
+    9,
+    298,
+    493
+   ],
+   "file": "atlas-foes-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_isolation_guard": {
+   "crop": [
+    628,
+    9,
+    277,
+    495
+   ],
+   "file": "atlas-foes-04.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_nurse": {
+   "crop": [
+    93,
+    518,
+    315,
+    496
+   ],
+   "file": "atlas-foes-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_power_guard": {
+   "crop": [
+    1136,
+    2,
+    318,
+    502
+   ],
+   "file": "atlas-foes-04.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_pump_foreman": {
+   "crop": [
+    78,
+    10,
+    352,
+    493
+   ],
+   "file": "atlas-foes-04.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_relay_guard": {
+   "crop": [
+    127,
+    512,
+    318,
+    508
+   ],
+   "file": "atlas-foes-04.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_screamer": {
+   "crop": [
+    1127,
+    513,
+    317,
+    505
+   ],
+   "file": "atlas-foes-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_signal": {
+   "crop": [
+    1084,
+    512,
+    381,
+    506
+   ],
+   "file": "atlas-foes-03.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_slow": {
+   "crop": [
+    94,
+    18,
+    326,
+    484
+   ],
+   "file": "atlas-foes-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "enemy:z_spitter": {
+   "crop": [
+    1154,
+    9,
+    257,
+    493
+   ],
+   "file": "atlas-foes-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "facility:armory": {
+   "crop": [
+    510,
+    33,
+    237,
+    210
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:bed": {
+   "crop": [
+    1003,
+    291,
+    245,
+    183
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:camping": {
+   "crop": [
+    505,
+    524,
+    246,
+    215
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:catchment": {
+   "crop": [
+    759,
+    511,
+    232,
+    230
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:charcoal": {
+   "crop": [
+    8,
+    758,
+    243,
+    234
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:drying_rack": {
+   "crop": [
+    9,
+    270,
+    242,
+    213
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:fire_lit": {
+   "crop": [
+    272,
+    273,
+    222,
+    206
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:fire_out": {
+   "crop": [
+    514,
+    351,
+    229,
+    129
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:forge": {
+   "crop": [
+    1005,
+    1003,
+    241,
+    234
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:hand": {
+   "crop": [
+    506,
+    1021,
+    235,
+    214
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:kiln": {
+   "crop": [
+    761,
+    13,
+    227,
+    234
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:medical": {
+   "crop": [
+    268,
+    50,
+    229,
+    189
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:pot": {
+   "crop": [
+    761,
+    267,
+    224,
+    216
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:safehouse": {
+   "crop": [
+    263,
+    516,
+    238,
+    222
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:sewing": {
+   "crop": [
+    18,
+    37,
+    227,
+    208
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:shelter": {
+   "crop": [
+    5,
+    514,
+    246,
+    225
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:storage": {
+   "crop": [
+    1003,
+    534,
+    245,
+    204
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:water_station": {
+   "crop": [
+    1005,
+    27,
+    237,
+    220
+   ],
+   "file": "atlas-sites-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "facility:workbench": {
+   "crop": [
+    752,
+    1019,
+    238,
+    214
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "faction:faction_academy": {
+   "crop": [
+    1038,
+    31,
+    423,
+    487
+   ],
+   "file": "atlas-icons-corrections-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "faction:faction_church": {
+   "crop": [
+    538,
+    29,
+    461,
+    489
+   ],
+   "file": "atlas-icons-corrections-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "faction:hub_survivor": {
+   "crop": [
+    78,
+    36,
+    411,
+    482
+   ],
+   "file": "atlas-icons-corrections-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "glyph:add": {
+   "crop": [
+    764,
+    541,
+    201,
+    205
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:aim": {
+   "crop": [
+    520,
+    1006,
+    213,
+    209
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:all": {
+   "crop": [
+    527,
+    536,
+    481,
+    465
+   ],
+   "file": "atlas-ui-corrections-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "glyph:armor": {
+   "crop": [
+    274,
+    54,
+    222,
+    213
+   ],
+   "file": "atlas-ui-icons-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:battle": {
+   "crop": [
+    284,
+    1005,
+    213,
+    210
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:bleed": {
+   "crop": [
+    522,
+    1009,
+    203,
+    222
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:camp": {
+   "crop": [
+    5,
+    761,
+    252,
+    214
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:close": {
+   "crop": [
+    524,
+    542,
+    201,
+    200
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:collapse": {
+   "crop": [
+    280,
+    1017,
+    194,
+    187
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:continue": {
+   "crop": [
+    753,
+    65,
+    210,
+    171
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:craft": {
+   "crop": [
+    997,
+    1011,
+    228,
+    196
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:destination": {
+   "crop": [
+    1003,
+    512,
+    236,
+    220
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:dialogue": {
+   "crop": [
+    281,
+    791,
+    214,
+    175
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:disabled": {
+   "crop": [
+    86,
+    24,
+    365,
+    459
+   ],
+   "file": "atlas-ui-corrections-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "glyph:drag": {
+   "crop": [
+    32,
+    562,
+    221,
+    176
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:drop_allow": {
+   "crop": [
+    42,
+    307,
+    208,
+    195
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:drop_deny": {
+   "crop": [
+    285,
+    315,
+    205,
+    187
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:dungeon": {
+   "crop": [
+    261,
+    758,
+    233,
+    212
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:energy": {
+   "crop": [
+    547,
+    777,
+    160,
+    209
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:equipment": {
+   "crop": [
+    1050,
+    42,
+    456,
+    430
+   ],
+   "file": "atlas-ui-corrections-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "glyph:expand": {
+   "crop": [
+    36,
+    1018,
+    191,
+    187
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:fear": {
+   "crop": [
+    38,
+    45,
+    215,
+    211
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:focus": {
+   "crop": [
+    1005,
+    308,
+    204,
+    190
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:foot": {
+   "crop": [
+    1003,
+    1005,
+    233,
+    213
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:formation": {
+   "crop": [
+    14,
+    58,
+    238,
+    193
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:fresh": {
+   "crop": [
+    1003,
+    37,
+    237,
+    214
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:goal": {
+   "crop": [
+    757,
+    769,
+    222,
+    208
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:growth": {
+   "crop": [
+    276,
+    41,
+    201,
+    206
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:health": {
+   "crop": [
+    1018,
+    529,
+    210,
+    205
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:help": {
+   "crop": [
+    997,
+    789,
+    229,
+    180
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:history": {
+   "crop": [
+    505,
+    274,
+    234,
+    228
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:hydration": {
+   "crop": [
+    304,
+    770,
+    150,
+    213
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:immunity": {
+   "crop": [
+    19,
+    1013,
+    231,
+    218
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:knowledge": {
+   "crop": [
+    757,
+    1007,
+    227,
+    214
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:known": {
+   "crop": [
+    269,
+    518,
+    217,
+    216
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:loading": {
+   "crop": [
+    773,
+    310,
+    190,
+    183
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:lock": {
+   "crop": [
+    996,
+    67,
+    230,
+    186
+   ],
+   "file": "atlas-ui-icons-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:log": {
+   "crop": [
+    517,
+    771,
+    210,
+    216
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:map": {
+   "crop": [
+    28,
+    778,
+    225,
+    197
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:menu": {
+   "crop": [
+    42,
+    1028,
+    202,
+    174
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:morale": {
+   "crop": [
+    1003,
+    782,
+    234,
+    192
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:panic": {
+   "crop": [
+    274,
+    57,
+    225,
+    198
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:pause": {
+   "crop": [
+    546,
+    59,
+    159,
+    177
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:progress": {
+   "crop": [
+    513,
+    360,
+    230,
+    86
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:recipe": {
+   "crop": [
+    13,
+    564,
+    464,
+    433
+   ],
+   "file": "atlas-ui-corrections-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "glyph:recruit": {
+   "crop": [
+    503,
+    753,
+    245,
+    212
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:rest": {
+   "crop": [
+    528,
+    24,
+    478,
+    455
+   ],
+   "file": "atlas-ui-corrections-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "glyph:return": {
+   "crop": [
+    277,
+    289,
+    207,
+    198
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:route": {
+   "crop": [
+    761,
+    532,
+    215,
+    195
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:satiety": {
+   "crop": [
+    25,
+    786,
+    211,
+    186
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:save": {
+   "crop": [
+    33,
+    292,
+    199,
+    196
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:search": {
+   "crop": [
+    1020,
+    288,
+    221,
+    183
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:selected": {
+   "crop": [
+    1004,
+    59,
+    205,
+    195
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:service": {
+   "crop": [
+    772,
+    763,
+    208,
+    209
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:slow": {
+   "crop": [
+    1003,
+    1035,
+    234,
+    182
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:stagger": {
+   "crop": [
+    751,
+    1023,
+    225,
+    194
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:storage": {
+   "crop": [
+    757,
+    280,
+    233,
+    207
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:task": {
+   "crop": [
+    20,
+    511,
+    211,
+    229
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:transfer": {
+   "crop": [
+    284,
+    545,
+    208,
+    196
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:trap": {
+   "crop": [
+    32,
+    330,
+    219,
+    172
+   ],
+   "file": "atlas-ui-icons-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:unknown": {
+   "crop": [
+    515,
+    518,
+    217,
+    212
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:utility": {
+   "crop": [
+    527,
+    66,
+    202,
+    194
+   ],
+   "file": "atlas-ui-icons-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:virus": {
+   "crop": [
+    277,
+    1012,
+    213,
+    216
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:wakefulness": {
+   "crop": [
+    754,
+    779,
+    224,
+    188
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:warning": {
+   "crop": [
+    764,
+    61,
+    208,
+    192
+   ],
+   "file": "atlas-ui-icons-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:watch": {
+   "crop": [
+    1032,
+    752,
+    190,
+    233
+   ],
+   "file": "atlas-ui-icons-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "glyph:weapon": {
+   "crop": [
+    28,
+    51,
+    220,
+    212
+   ],
+   "file": "atlas-ui-icons-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:active_substance_white_unidentified": {
+   "crop": [
+    989,
+    33,
+    214,
+    263
+   ],
+   "file": "atlas-items-12.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:adhesive": {
+   "crop": [
+    18,
+    975,
+    283,
+    243
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:aid_badge": {
+   "crop": [
+    345,
+    34,
+    251,
+    270
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:ammo_9mm": {
+   "crop": [
+    388,
+    989,
+    213,
+    206
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:ammo_rifle": {
+   "crop": [
+    978,
+    956,
+    250,
+    248
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:antibiotics": {
+   "crop": [
+    958,
+    661,
+    285,
+    256
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:antidiarrheal_powder": {
+   "crop": [
+    333,
+    362,
+    276,
+    244
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:antiviral_cure": {
+   "crop": [
+    71,
+    950,
+    178,
+    286
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:antiviral_precursor": {
+   "crop": [
+    639,
+    949,
+    276,
+    273
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:arrow": {
+   "crop": [
+    963,
+    633,
+    269,
+    285
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:balanced_armor": {
+   "crop": [
+    943,
+    633,
+    272,
+    247
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:ballistic_fiber": {
+   "crop": [
+    331,
+    37,
+    280,
+    275
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:bandage": {
+   "crop": [
+    637,
+    671,
+    294,
+    243
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:barbed_spear": {
+   "crop": [
+    972,
+    958,
+    263,
+    275
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:battery": {
+   "crop": [
+    966,
+    651,
+    254,
+    259
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:berry": {
+   "crop": [
+    942,
+    55,
+    278,
+    245
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:berry_jam": {
+   "crop": [
+    352,
+    36,
+    245,
+    261
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:boiled_meat": {
+   "crop": [
+    337,
+    627,
+    276,
+    279
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:boiled_root": {
+   "crop": [
+    645,
+    330,
+    272,
+    273
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:bolt": {
+   "crop": [
+    23,
+    965,
+    287,
+    265
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:brace_pack": {
+   "crop": [
+    320,
+    956,
+    295,
+    257
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:breach_axe": {
+   "crop": [
+    43,
+    956,
+    257,
+    277
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:cable_bundle": {
+   "crop": [
+    945,
+    646,
+    294,
+    258
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:canned_beans": {
+   "crop": [
+    74,
+    934,
+    205,
+    281
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:canned_food": {
+   "crop": [
+    677,
+    45,
+    206,
+    256
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:canvas": {
+   "crop": [
+    620,
+    636,
+    319,
+    254
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:carcass_boar": {
+   "crop": [
+    331,
+    64,
+    294,
+    209
+   ],
+   "file": "atlas-items-12.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:carcass_feral_dog": {
+   "crop": [
+    931,
+    982,
+    310,
+    222
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:carcass_stag": {
+   "crop": [
+    636,
+    27,
+    303,
+    258
+   ],
+   "file": "atlas-items-12.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:carcass_wolf": {
+   "crop": [
+    34,
+    85,
+    286,
+    193
+   ],
+   "file": "atlas-items-12.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:ceramic_shell": {
+   "crop": [
+    646,
+    45,
+    270,
+    257
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:charcoal": {
+   "crop": [
+    645,
+    981,
+    278,
+    231
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:clay": {
+   "crop": [
+    334,
+    66,
+    271,
+    230
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:clean_water": {
+   "crop": [
+    395,
+    31,
+    160,
+    271
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:cleaning_wipe": {
+   "crop": [
+    945,
+    637,
+    310,
+    260
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:cloth": {
+   "crop": [
+    941,
+    650,
+    299,
+    248
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:command_terminal": {
+   "crop": [
+    952,
+    952,
+    283,
+    284
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:compression_bandage": {
+   "crop": [
+    640,
+    57,
+    280,
+    248
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:cooked_meat": {
+   "crop": [
+    40,
+    679,
+    274,
+    209
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:cooked_root": {
+   "crop": [
+    329,
+    329,
+    294,
+    272
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:cooking_oil": {
+   "crop": [
+    985,
+    628,
+    207,
+    277
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:craft_coat": {
+   "crop": [
+    34,
+    631,
+    267,
+    299
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:crossbow": {
+   "crop": [
+    330,
+    346,
+    279,
+    266
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:crowbar": {
+   "crop": [
+    337,
+    41,
+    281,
+    266
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:dirty_water": {
+   "crop": [
+    91,
+    32,
+    201,
+    273
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:disinfectant": {
+   "crop": [
+    686,
+    960,
+    190,
+    273
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:dried_berries": {
+   "crop": [
+    642,
+    30,
+    280,
+    267
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:dried_meat": {
+   "crop": [
+    329,
+    967,
+    274,
+    243
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:electronics": {
+   "crop": [
+    638,
+    667,
+    283,
+    233
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:emergency_tonic": {
+   "crop": [
+    649,
+    337,
+    264,
+    275
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:expedition_bar": {
+   "crop": [
+    946,
+    363,
+    299,
+    226
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:expedition_coat": {
+   "crop": [
+    638,
+    633,
+    292,
+    294
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:expedition_trousers": {
+   "crop": [
+    53,
+    31,
+    227,
+    282
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:fastener": {
+   "crop": [
+    24,
+    354,
+    272,
+    241
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:fiber": {
+   "crop": [
+    18,
+    650,
+    296,
+    261
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:field_bedroll": {
+   "crop": [
+    19,
+    52,
+    295,
+    260
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:field_medkit": {
+   "crop": [
+    39,
+    65,
+    277,
+    231
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:field_patch": {
+   "crop": [
+    14,
+    652,
+    288,
+    259
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:field_patch_blue": {
+   "crop": [
+    630,
+    647,
+    289,
+    261
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:field_patch_green": {
+   "crop": [
+    314,
+    655,
+    295,
+    244
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:field_radio": {
+   "crop": [
+    652,
+    941,
+    250,
+    294
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:field_tarp": {
+   "crop": [
+    630,
+    349,
+    301,
+    265
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:filter_cartridge": {
+   "crop": [
+    19,
+    338,
+    292,
+    269
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:filter_media": {
+   "crop": [
+    954,
+    318,
+    297,
+    289
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:filter_token": {
+   "crop": [
+    942,
+    37,
+    293,
+    268
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:fire_axe": {
+   "crop": [
+    961,
+    635,
+    277,
+    290
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:fire_starter": {
+   "crop": [
+    624,
+    920,
+    295,
+    310
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:first_aid_pack": {
+   "crop": [
+    951,
+    41,
+    280,
+    266
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:flash_marker": {
+   "crop": [
+    33,
+    956,
+    254,
+    271
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:focus_lens": {
+   "crop": [
+    27,
+    56,
+    268,
+    234
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:folding_stove": {
+   "crop": [
+    931,
+    340,
+    300,
+    272
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:forage_jacket": {
+   "crop": [
+    657,
+    322,
+    264,
+    300
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:fried_root": {
+   "crop": [
+    951,
+    58,
+    285,
+    233
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:gather_gloves": {
+   "crop": [
+    341,
+    47,
+    279,
+    258
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:grain": {
+   "crop": [
+    627,
+    653,
+    290,
+    253
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:grain_cake": {
+   "crop": [
+    11,
+    64,
+    293,
+    229
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:guard_armor": {
+   "crop": [
+    927,
+    339,
+    287,
+    257
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:guard_badge": {
+   "crop": [
+    648,
+    917,
+    257,
+    289
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:guard_sword": {
+   "crop": [
+    653,
+    639,
+    271,
+    287
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:gun_service_kit": {
+   "crop": [
+    945,
+    14,
+    297,
+    291
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:hand_lamp": {
+   "crop": [
+    331,
+    913,
+    269,
+    316
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:hardtack": {
+   "crop": [
+    643,
+    348,
+    268,
+    256
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:hatchet": {
+   "crop": [
+    20,
+    649,
+    284,
+    271
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:heavy_armor": {
+   "crop": [
+    339,
+    628,
+    273,
+    261
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:herb": {
+   "crop": [
+    337,
+    643,
+    267,
+    287
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:herb_extract": {
+   "crop": [
+    56,
+    49,
+    248,
+    257
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:herbal_drink": {
+   "crop": [
+    350,
+    326,
+    258,
+    287
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:hide": {
+   "crop": [
+    331,
+    954,
+    281,
+    271
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:hunter_bow": {
+   "crop": [
+    41,
+    330,
+    247,
+    293
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:hunter_token": {
+   "crop": [
+    973,
+    921,
+    225,
+    285
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:iron_ore": {
+   "crop": [
+    320,
+    345,
+    298,
+    247
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:iron_plate": {
+   "crop": [
+    639,
+    69,
+    285,
+    221
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:kitchen_knife": {
+   "crop": [
+    30,
+    40,
+    283,
+    268
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:knuckle_wraps": {
+   "crop": [
+    22,
+    356,
+    281,
+    255
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:lab_reagent": {
+   "crop": [
+    943,
+    951,
+    279,
+    262
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:leather": {
+   "crop": [
+    326,
+    354,
+    280,
+    239
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:leather_armor": {
+   "crop": [
+    350,
+    340,
+    247,
+    255
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:lighter": {
+   "crop": [
+    652,
+    648,
+    265,
+    272
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:machete": {
+   "crop": [
+    330,
+    644,
+    277,
+    281
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:marksman_rifle": {
+   "crop": [
+    942,
+    364,
+    307,
+    202
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:meat_stew": {
+   "crop": [
+    922,
+    934,
+    304,
+    281
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:medic_armor": {
+   "crop": [
+    637,
+    632,
+    268,
+    254
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:medical_gauze": {
+   "crop": [
+    321,
+    979,
+    296,
+    253
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:medical_notes": {
+   "crop": [
+    343,
+    336,
+    257,
+    283
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:metal_spear": {
+   "crop": [
+    959,
+    28,
+    276,
+    280
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:metal_tube": {
+   "crop": [
+    4,
+    635,
+    308,
+    253
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:oil": {
+   "crop": [
+    336,
+    972,
+    272,
+    249
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:oral_rehydration": {
+   "crop": [
+    64,
+    331,
+    215,
+    281
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:padded_vest": {
+   "crop": [
+    34,
+    353,
+    282,
+    241
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:parts": {
+   "crop": [
+    29,
+    957,
+    284,
+    254
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:pike": {
+   "crop": [
+    636,
+    956,
+    282,
+    278
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:pistol": {
+   "crop": [
+    648,
+    376,
+    273,
+    219
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:plank": {
+   "crop": [
+    11,
+    62,
+    290,
+    229
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:plastic": {
+   "crop": [
+    18,
+    651,
+    274,
+    255
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:pot": {
+   "crop": [
+    337,
+    656,
+    277,
+    254
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:precision_parts": {
+   "crop": [
+    953,
+    973,
+    279,
+    241
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:purification_tablet": {
+   "crop": [
+    959,
+    45,
+    272,
+    266
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:rally_patch": {
+   "crop": [
+    629,
+    965,
+    302,
+    250
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:ration_canteen": {
+   "crop": [
+    360,
+    332,
+    227,
+    280
+   ],
+   "file": "atlas-items-11.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:ration_pouch": {
+   "crop": [
+    634,
+    340,
+    279,
+    268
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:raw_meat": {
+   "crop": [
+    941,
+    369,
+    280,
+    229
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:raw_root": {
+   "crop": [
+    31,
+    362,
+    283,
+    240
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:recovery_trousers": {
+   "crop": [
+    978,
+    942,
+    226,
+    295
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:recurve_bow": {
+   "crop": [
+    985,
+    16,
+    250,
+    298
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:reinforced_trousers": {
+   "crop": [
+    674,
+    945,
+    211,
+    292
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:repair_kit": {
+   "crop": [
+    635,
+    17,
+    292,
+    288
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:repair_manual": {
+   "crop": [
+    27,
+    341,
+    281,
+    273
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:repair_patch": {
+   "crop": [
+    945,
+    933,
+    298,
+    288
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:repeater_crossbow": {
+   "crop": [
+    323,
+    361,
+    289,
+    220
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:rescue_axe": {
+   "crop": [
+    355,
+    965,
+    238,
+    267
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:rescue_medkit": {
+   "crop": [
+    630,
+    62,
+    266,
+    238
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:rescue_shield": {
+   "crop": [
+    982,
+    642,
+    236,
+    285
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:resolve_medal": {
+   "crop": [
+    689,
+    21,
+    187,
+    293
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:rest_coat": {
+   "crop": [
+    321,
+    635,
+    296,
+    294
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:rifle": {
+   "crop": [
+    20,
+    635,
+    294,
+    290
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:riot_shield": {
+   "crop": [
+    675,
+    641,
+    211,
+    286
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:root_porridge": {
+   "crop": [
+    635,
+    937,
+    271,
+    273
+   ],
+   "file": "atlas-items-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:rope": {
+   "crop": [
+    330,
+    64,
+    285,
+    222
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:route_compass": {
+   "crop": [
+    654,
+    24,
+    246,
+    290
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:rubber": {
+   "crop": [
+    953,
+    356,
+    287,
+    232
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:saline": {
+   "crop": [
+    969,
+    948,
+    250,
+    297
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:salt": {
+   "crop": [
+    13,
+    319,
+    286,
+    285
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:scavenge_vest": {
+   "crop": [
+    956,
+    340,
+    275,
+    269
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:scout_armor": {
+   "crop": [
+    36,
+    630,
+    277,
+    260
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:scrap": {
+   "crop": [
+    630,
+    642,
+    289,
+    254
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:scrap_armor": {
+   "crop": [
+    647,
+    340,
+    229,
+    259
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:scrap_shield": {
+   "crop": [
+    336,
+    648,
+    267,
+    274
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:service_pistol": {
+   "crop": [
+    648,
+    373,
+    267,
+    215
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:shell_12g": {
+   "crop": [
+    667,
+    974,
+    241,
+    239
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:shock_baton": {
+   "crop": [
+    664,
+    28,
+    255,
+    278
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:shotgun": {
+   "crop": [
+    947,
+    350,
+    292,
+    245
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:signal_flag": {
+   "crop": [
+    334,
+    952,
+    282,
+    281
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:signal_whistle": {
+   "crop": [
+    34,
+    989,
+    256,
+    235
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:soap": {
+   "crop": [
+    636,
+    358,
+    302,
+    224
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:spring": {
+   "crop": [
+    376,
+    628,
+    194,
+    263
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:steady_ring": {
+   "crop": [
+    63,
+    954,
+    237,
+    226
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:steel": {
+   "crop": [
+    953,
+    55,
+    290,
+    235
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:steel_mace": {
+   "crop": [
+    349,
+    20,
+    265,
+    286
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:sterile_bandage": {
+   "crop": [
+    331,
+    53,
+    279,
+    248
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:stew_portion": {
+   "crop": [
+    14,
+    675,
+    282,
+    243
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:stone": {
+   "crop": [
+    330,
+    661,
+    291,
+    233
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:stone_knife": {
+   "crop": [
+    955,
+    349,
+    276,
+    256
+   ],
+   "file": "atlas-items-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:swift_pendant": {
+   "crop": [
+    365,
+    919,
+    233,
+    288
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:tactics_watch": {
+   "crop": [
+    966,
+    31,
+    259,
+    270
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:thread": {
+   "crop": [
+    647,
+    358,
+    260,
+    236
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:trail_ration": {
+   "crop": [
+    11,
+    360,
+    298,
+    245
+   ],
+   "file": "atlas-items-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:trail_trousers": {
+   "crop": [
+    65,
+    947,
+    194,
+    290
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:trauma_bag": {
+   "crop": [
+    339,
+    66,
+    274,
+    240
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:triage_kit": {
+   "crop": [
+    924,
+    57,
+    298,
+    244
+   ],
+   "file": "atlas-items-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:utility_trousers": {
+   "crop": [
+    371,
+    941,
+    205,
+    298
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:water_filter": {
+   "crop": [
+    26,
+    915,
+    277,
+    315
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:weapon_parts": {
+   "crop": [
+    24,
+    37,
+    271,
+    247
+   ],
+   "file": "atlas-items-10.webp",
+   "size": [
+    1261,
+    1247
+   ]
+  },
+  "item:wire": {
+   "crop": [
+    326,
+    670,
+    289,
+    244
+   ],
+   "file": "atlas-items-09.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:wood": {
+   "crop": [
+    941,
+    350,
+    293,
+    253
+   ],
+   "file": "atlas-items-08.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:wooden_bow": {
+   "crop": [
+    78,
+    332,
+    199,
+    288
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:wooden_club": {
+   "crop": [
+    33,
+    29,
+    267,
+    278
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:wooden_shield": {
+   "crop": [
+    26,
+    651,
+    263,
+    271
+   ],
+   "file": "atlas-items-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:wooden_spear": {
+   "crop": [
+    646,
+    28,
+    279,
+    281
+   ],
+   "file": "atlas-items-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:work_shirt": {
+   "crop": [
+    322,
+    334,
+    296,
+    275
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "item:work_trousers": {
+   "crop": [
+    990,
+    628,
+    210,
+    299
+   ],
+   "file": "atlas-items-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "recruitTemplate:blade_hand": {
+   "crop": [
+    623,
+    0,
+    262,
+    508
+   ],
+   "file": "atlas-recruit-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "recruitTemplate:breaker": {
+   "crop": [
+    1099,
+    0,
+    350,
+    508
+   ],
+   "file": "atlas-recruit-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "recruitTemplate:camp_nurse": {
+   "crop": [
+    1132,
+    0,
+    266,
+    512
+   ],
+   "file": "atlas-recruit-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "recruitTemplate:coordinator": {
+   "crop": [
+    612,
+    0,
+    275,
+    512
+   ],
+   "file": "atlas-recruit-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "recruitTemplate:front_guard": {
+   "crop": [
+    112,
+    0,
+    338,
+    508
+   ],
+   "file": "atlas-recruit-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "recruitTemplate:hunter": {
+   "crop": [
+    1111,
+    512,
+    325,
+    500
+   ],
+   "file": "atlas-recruit-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "recruitTemplate:legacy_neutral": {
+   "crop": [
+    113,
+    512,
+    294,
+    512
+   ],
+   "file": "atlas-recruit-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "recruitTemplate:old_service": {
+   "crop": [
+    95,
+    0,
+    319,
+    512
+   ],
+   "file": "atlas-recruit-02.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "recruitTemplate:salvager": {
+   "crop": [
+    565,
+    515,
+    398,
+    496
+   ],
+   "file": "atlas-recruit-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "recruitTemplate:spear_walker": {
+   "crop": [
+    101,
+    512,
+    345,
+    500
+   ],
+   "file": "atlas-recruit-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "resource:a01_yard:a01_yard_fastener": {
+   "crop": [
+    999,
+    272,
+    235,
+    219
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:a01_yard:a01_yard_steel": {
+   "crop": [
+    751,
+    272,
+    237,
+    211
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:a01_yard:a01_yard_wire": {
+   "crop": [
+    995,
+    1006,
+    245,
+    218
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:a02_pump:a02_pump_adhesive": {
+   "crop": [
+    4,
+    13,
+    243,
+    236
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:a02_pump:a02_pump_charcoal": {
+   "crop": [
+    258,
+    34,
+    236,
+    203
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:a02_pump:a02_pump_fuel": {
+   "crop": [
+    262,
+    502,
+    235,
+    235
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:a02_pump:a02_pump_seal": {
+   "crop": [
+    22,
+    509,
+    225,
+    221
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:a03_foundry:a03_foundry_machine": {
+   "crop": [
+    751,
+    513,
+    238,
+    216
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:a03_foundry:a03_foundry_steel": {
+   "crop": [
+    505,
+    524,
+    241,
+    206
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:a03_foundry:a03_foundry_weapon_parts": {
+   "crop": [
+    9,
+    271,
+    237,
+    220
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b01_school:b01_school_fabric": {
+   "crop": [
+    995,
+    511,
+    244,
+    217
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b01_school:b01_school_leather": {
+   "crop": [
+    13,
+    758,
+    241,
+    214
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b01_school:b01_school_thread": {
+   "crop": [
+    510,
+    994,
+    228,
+    233
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b02_station:b02_station_battery": {
+   "crop": [
+    512,
+    21,
+    229,
+    218
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b02_station:b02_station_disinfectant": {
+   "crop": [
+    761,
+    21,
+    225,
+    215
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b02_station:b02_station_electronic": {
+   "crop": [
+    505,
+    758,
+    239,
+    212
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b02_station:b02_station_medical": {
+   "crop": [
+    264,
+    746,
+    226,
+    230
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b03_hospital:b03_hospital_ballistic_fiber": {
+   "crop": [
+    257,
+    269,
+    236,
+    227
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b03_hospital:b03_hospital_electronic": {
+   "crop": [
+    995,
+    751,
+    245,
+    217
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:b03_hospital:b03_hospital_medical": {
+   "crop": [
+    751,
+    753,
+    234,
+    221
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:clinic:clinic_medical_supply": {
+   "crop": [
+    262,
+    1008,
+    231,
+    196
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:clinic:cloth_bag": {
+   "crop": [
+    260,
+    761,
+    236,
+    197
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:clinic:med_cabinet": {
+   "crop": [
+    15,
+    742,
+    225,
+    217
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d01_04:d01_04_cache0": {
+   "crop": [
+    1008,
+    277,
+    235,
+    208
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d01_04:d01_04_cache2": {
+   "crop": [
+    266,
+    523,
+    227,
+    201
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d01_06:d01_06_cache1": {
+   "crop": [
+    11,
+    526,
+    236,
+    208
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d01_08:d01_08_unique": {
+   "crop": [
+    503,
+    528,
+    239,
+    201
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d02_04:d02_04_cache0": {
+   "crop": [
+    759,
+    526,
+    229,
+    206
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d02_04:d02_04_cache2": {
+   "crop": [
+    10,
+    764,
+    236,
+    192
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d02_06:d02_06_cache1": {
+   "crop": [
+    1006,
+    518,
+    236,
+    212
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d02_08:d02_08_unique": {
+   "crop": [
+    260,
+    758,
+    233,
+    202
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_03:shield_cache": {
+   "crop": [
+    257,
+    762,
+    236,
+    219
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_04:d03_04_cache0": {
+   "crop": [
+    505,
+    760,
+    241,
+    200
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_04:d03_04_cache2": {
+   "crop": [
+    1005,
+    759,
+    239,
+    200
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_06:d03_06_cache1": {
+   "crop": [
+    760,
+    760,
+    230,
+    198
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_07:officer_cache": {
+   "crop": [
+    502,
+    768,
+    243,
+    203
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_08:ammo_reserve_cache": {
+   "crop": [
+    262,
+    1028,
+    232,
+    198
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_08:armor_cache": {
+   "crop": [
+    5,
+    1019,
+    241,
+    212
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_08:d03_08_unique": {
+   "crop": [
+    9,
+    1004,
+    238,
+    202
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_08:rifle_cache": {
+   "crop": [
+    1003,
+    775,
+    250,
+    188
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d03_08:shotgun_cache": {
+   "crop": [
+    752,
+    775,
+    247,
+    194
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d04_03:d04_03_cache0": {
+   "crop": [
+    260,
+    1004,
+    231,
+    208
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d04_03:d04_03_cache2": {
+   "crop": [
+    757,
+    1007,
+    234,
+    204
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d04_05:d04_05_cache1": {
+   "crop": [
+    507,
+    1001,
+    237,
+    205
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d04_07:d04_07_unique": {
+   "crop": [
+    1003,
+    995,
+    241,
+    218
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d05_04:d05_04_cache0": {
+   "crop": [
+    11,
+    44,
+    240,
+    210
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d05_04:d05_04_cache2": {
+   "crop": [
+    510,
+    42,
+    229,
+    212
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d05_07:d05_07_cache1": {
+   "crop": [
+    265,
+    13,
+    232,
+    241
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d05_07:d05_07_unique": {
+   "crop": [
+    756,
+    45,
+    239,
+    206
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d06_03:d06_03_cache0": {
+   "crop": [
+    1001,
+    35,
+    243,
+    219
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d06_03:d06_03_cache2": {
+   "crop": [
+    259,
+    282,
+    240,
+    209
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d06_06:d06_06_cache1": {
+   "crop": [
+    10,
+    282,
+    241,
+    214
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d06_08:d06_08_unique": {
+   "crop": [
+    511,
+    280,
+    224,
+    213
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d07_04:d07_04_cache0": {
+   "crop": [
+    752,
+    279,
+    235,
+    212
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d07_04:d07_04_cache2": {
+   "crop": [
+    10,
+    514,
+    241,
+    215
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d07_07:d07_07_cache1": {
+   "crop": [
+    1001,
+    271,
+    244,
+    223
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d07_07:d07_07_unique": {
+   "crop": [
+    264,
+    520,
+    232,
+    209
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d08_03:d08_03_cache0": {
+   "crop": [
+    507,
+    523,
+    233,
+    201
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d08_03:d08_03_cache2": {
+   "crop": [
+    1002,
+    511,
+    246,
+    217
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d08_06:d08_06_cache1": {
+   "crop": [
+    752,
+    518,
+    243,
+    210
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:d08_08:d08_08_unique": {
+   "crop": [
+    9,
+    750,
+    235,
+    215
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:field:field_fiber": {
+   "crop": [
+    1003,
+    32,
+    238,
+    207
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:field:roots": {
+   "crop": [
+    759,
+    33,
+    229,
+    207
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:h01_gate:h01_gate_raw_water": {
+   "crop": [
+    258,
+    517,
+    234,
+    225
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:h02_square:h02_square_beans": {
+   "crop": [
+    757,
+    261,
+    236,
+    232
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:h02_square:h02_square_ration": {
+   "crop": [
+    1001,
+    987,
+    246,
+    240
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:h02_square:h02_square_water": {
+   "crop": [
+    753,
+    988,
+    231,
+    239
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:h03_workshop:h03_workshop_contract": {
+   "crop": [
+    754,
+    525,
+    240,
+    206
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:h03_workshop:h03_workshop_scrap": {
+   "crop": [
+    18,
+    23,
+    236,
+    222
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:h03_workshop:h03_workshop_supply_disinfectant": {
+   "crop": [
+    263,
+    750,
+    226,
+    215
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:h04_infirmary:h04_infirmary_dressing": {
+   "crop": [
+    267,
+    20,
+    227,
+    229
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:h04_infirmary:h04_infirmary_saline": {
+   "crop": [
+    1009,
+    21,
+    234,
+    216
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:hardware:hardware_weapon_cache": {
+   "crop": [
+    1017,
+    744,
+    210,
+    216
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:hardware:pot_box": {
+   "crop": [
+    756,
+    519,
+    237,
+    196
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:hardware:tool_box": {
+   "crop": [
+    1003,
+    516,
+    234,
+    199
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:m01_road:firetruck_cache": {
+   "crop": [
+    1005,
+    513,
+    242,
+    220
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:m01_road:m01_road_barrier": {
+   "crop": [
+    10,
+    1001,
+    241,
+    219
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:m01_road:m01_road_crate": {
+   "crop": [
+    1001,
+    755,
+    242,
+    208
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:m01_road:m01_road_plastic": {
+   "crop": [
+    751,
+    1010,
+    234,
+    210
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:m02_checkpoint:m02_checkpoint_bench": {
+   "crop": [
+    506,
+    1006,
+    237,
+    214
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:m02_checkpoint:m02_checkpoint_duty": {
+   "crop": [
+    261,
+    987,
+    235,
+    235
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:scrapyard:metal_heap": {
+   "crop": [
+    506,
+    747,
+    245,
+    206
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:scrapyard:parts_box": {
+   "crop": [
+    758,
+    745,
+    232,
+    211
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:stream:herbs": {
+   "crop": [
+    266,
+    266,
+    228,
+    215
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:stream:water": {
+   "crop": [
+    13,
+    273,
+    239,
+    209
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:village:misc_box": {
+   "crop": [
+    507,
+    512,
+    234,
+    203
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:village:supply_box": {
+   "crop": [
+    263,
+    531,
+    235,
+    181
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:village:village_cold_box": {
+   "crop": [
+    507,
+    991,
+    229,
+    216
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:village:village_weapon_locker": {
+   "crop": [
+    13,
+    991,
+    238,
+    219
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w01_farm:w01_farm_barn": {
+   "crop": [
+    751,
+    22,
+    239,
+    223
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w01_farm:w01_farm_cooking_oil": {
+   "crop": [
+    4,
+    527,
+    243,
+    208
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w01_farm:w01_farm_crop": {
+   "crop": [
+    508,
+    38,
+    236,
+    208
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w01_farm:w01_farm_grain": {
+   "crop": [
+    507,
+    273,
+    236,
+    215
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w01_farm:w01_farm_salt": {
+   "crop": [
+    1009,
+    273,
+    237,
+    219
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w02_forest:w02_forest_fiber": {
+   "crop": [
+    16,
+    261,
+    238,
+    225
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w02_forest:w02_forest_plank": {
+   "crop": [
+    14,
+    1007,
+    240,
+    214
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w02_forest:w02_forest_rope": {
+   "crop": [
+    266,
+    1007,
+    236,
+    221
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w02_forest:w02_forest_wood": {
+   "crop": [
+    995,
+    48,
+    241,
+    193
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w03_quarry:w03_quarry_blueprints": {
+   "crop": [
+    2,
+    775,
+    246,
+    208
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w03_quarry:w03_quarry_ore": {
+   "crop": [
+    505,
+    261,
+    240,
+    228
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w03_quarry:w03_quarry_plate": {
+   "crop": [
+    502,
+    521,
+    243,
+    206
+   ],
+   "file": "atlas-sites-07.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w03_quarry:w03_quarry_stone": {
+   "crop": [
+    266,
+    287,
+    236,
+    195
+   ],
+   "file": "atlas-sites-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w08_reservoir:w08_reservoir_water": {
+   "crop": [
+    12,
+    20,
+    236,
+    218
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w11_orchard:w11_orchard_a": {
+   "crop": [
+    754,
+    991,
+    235,
+    213
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w11_orchard:w11_orchard_b": {
+   "crop": [
+    1003,
+    993,
+    238,
+    217
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w12_canal:w12_canal_a": {
+   "crop": [
+    13,
+    22,
+    229,
+    216
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w12_canal:w12_canal_b": {
+   "crop": [
+    262,
+    24,
+    228,
+    208
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w12_canal:w12_canal_water": {
+   "crop": [
+    256,
+    1020,
+    232,
+    206
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w13_mill:w13_mill_a": {
+   "crop": [
+    503,
+    24,
+    238,
+    209
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w13_mill:w13_mill_b": {
+   "crop": [
+    750,
+    32,
+    237,
+    204
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w13_mill:w13_mill_bottles": {
+   "crop": [
+    263,
+    256,
+    235,
+    234
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w13_mill:w13_mill_supply_salt": {
+   "crop": [
+    502,
+    755,
+    239,
+    208
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w14_cemeteryroad:w14_cemeteryroad_a": {
+   "crop": [
+    1002,
+    39,
+    236,
+    197
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w14_cemeteryroad:w14_cemeteryroad_b": {
+   "crop": [
+    9,
+    286,
+    238,
+    192
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w15_shrinewoods:w15_shrinewoods_a": {
+   "crop": [
+    261,
+    262,
+    224,
+    221
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w15_shrinewoods:w15_shrinewoods_b": {
+   "crop": [
+    500,
+    274,
+    238,
+    207
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w15_shrinewoods:w15_shrinewoods_supply_berry": {
+   "crop": [
+    752,
+    750,
+    239,
+    215
+   ],
+   "file": "atlas-sites-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w16_service:w16_service_a": {
+   "crop": [
+    748,
+    272,
+    238,
+    207
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w16_service:w16_service_b": {
+   "crop": [
+    996,
+    275,
+    236,
+    204
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w16_service:w16_service_cistern": {
+   "crop": [
+    263,
+    27,
+    233,
+    206
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w17_switchback:w17_switchback_a": {
+   "crop": [
+    9,
+    514,
+    236,
+    211
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w17_switchback:w17_switchback_b": {
+   "crop": [
+    260,
+    526,
+    234,
+    195
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w18_tunnel:w18_tunnel_a": {
+   "crop": [
+    501,
+    515,
+    235,
+    208
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w18_tunnel:w18_tunnel_b": {
+   "crop": [
+    741,
+    522,
+    243,
+    193
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w19_survey:w19_survey_a": {
+   "crop": [
+    998,
+    514,
+    237,
+    214
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w19_survey:w19_survey_b": {
+   "crop": [
+    11,
+    770,
+    222,
+    189
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w19_survey:w19_survey_cistern": {
+   "crop": [
+    509,
+    28,
+    233,
+    202
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w20_powercut:w20_powercut_a": {
+   "crop": [
+    251,
+    755,
+    232,
+    223
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w20_powercut:w20_powercut_b": {
+   "crop": [
+    500,
+    754,
+    227,
+    215
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w21_pine:w21_pine_a": {
+   "crop": [
+    741,
+    758,
+    244,
+    213
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w21_pine:w21_pine_b": {
+   "crop": [
+    1001,
+    763,
+    240,
+    207
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w22_ravine:w22_ravine_a": {
+   "crop": [
+    10,
+    1010,
+    239,
+    209
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w22_ravine:w22_ravine_b": {
+   "crop": [
+    260,
+    1010,
+    229,
+    209
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w23_hunting:w23_hunting_a": {
+   "crop": [
+    501,
+    1010,
+    232,
+    207
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w23_hunting:w23_hunting_b": {
+   "crop": [
+    741,
+    1016,
+    237,
+    205
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w23_hunting:w23_hunting_cistern": {
+   "crop": [
+    757,
+    18,
+    232,
+    218
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w24_cave:w24_cave_a": {
+   "crop": [
+    994,
+    1009,
+    244,
+    211
+   ],
+   "file": "atlas-sites-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w24_cave:w24_cave_b": {
+   "crop": [
+    5,
+    20,
+    237,
+    219
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w25_wetland:w25_wetland_a": {
+   "crop": [
+    260,
+    21,
+    229,
+    218
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w25_wetland:w25_wetland_b": {
+   "crop": [
+    508,
+    15,
+    235,
+    226
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w25_wetland:w25_wetland_water": {
+   "crop": [
+    506,
+    1012,
+    237,
+    217
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w26_island:w26_island_a": {
+   "crop": [
+    761,
+    21,
+    230,
+    218
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w26_island:w26_island_b": {
+   "crop": [
+    1009,
+    22,
+    240,
+    210
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w27_relay:w27_relay_a": {
+   "crop": [
+    9,
+    264,
+    228,
+    222
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w27_relay:w27_relay_b": {
+   "crop": [
+    259,
+    271,
+    227,
+    210
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w27_relay:w27_relay_cistern": {
+   "crop": [
+    1004,
+    11,
+    239,
+    227
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w28_highland:w28_highland_a": {
+   "crop": [
+    506,
+    279,
+    238,
+    202
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w28_highland:w28_highland_b": {
+   "crop": [
+    758,
+    264,
+    233,
+    221
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w29_riverbend:w29_riverbend_a": {
+   "crop": [
+    1006,
+    265,
+    241,
+    222
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w29_riverbend:w29_riverbend_b": {
+   "crop": [
+    8,
+    512,
+    234,
+    222
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w29_riverbend:w29_riverbend_water": {
+   "crop": [
+    758,
+    1012,
+    234,
+    218
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w30_truckstop:w30_truckstop_a": {
+   "crop": [
+    253,
+    529,
+    234,
+    207
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w30_truckstop:w30_truckstop_b": {
+   "crop": [
+    502,
+    528,
+    239,
+    199
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w30_truckstop:w30_truckstop_cistern": {
+   "crop": [
+    10,
+    269,
+    237,
+    221
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w31_suburb:w31_suburb_a": {
+   "crop": [
+    757,
+    528,
+    238,
+    208
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w31_suburb:w31_suburb_b": {
+   "crop": [
+    1007,
+    524,
+    238,
+    215
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w31_suburb:w31_suburb_bottles": {
+   "crop": [
+    509,
+    299,
+    235,
+    185
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w32_railcut:w32_railcut_a": {
+   "crop": [
+    5,
+    770,
+    238,
+    201
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w32_railcut:w32_railcut_b": {
+   "crop": [
+    257,
+    777,
+    236,
+    188
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w33_waterworks:w33_waterworks_a": {
+   "crop": [
+    505,
+    764,
+    235,
+    206
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w33_waterworks:w33_waterworks_b": {
+   "crop": [
+    759,
+    767,
+    224,
+    202
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w33_waterworks:w33_waterworks_water": {
+   "crop": [
+    1005,
+    1003,
+    243,
+    228
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w34_depot:w34_depot_a": {
+   "crop": [
+    1006,
+    767,
+    237,
+    205
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w34_depot:w34_depot_b": {
+   "crop": [
+    5,
+    1009,
+    239,
+    220
+   ],
+   "file": "atlas-sites-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:w34_depot:w34_depot_bottles": {
+   "crop": [
+    758,
+    280,
+    233,
+    206
+   ],
+   "file": "atlas-sites-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:woods:berries": {
+   "crop": [
+    1003,
+    272,
+    238,
+    208
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:woods:stones": {
+   "crop": [
+    756,
+    286,
+    235,
+    188
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:woods:wood": {
+   "crop": [
+    504,
+    274,
+    242,
+    202
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "resource:woods:woods_fiber": {
+   "crop": [
+    13,
+    512,
+    239,
+    207
+   ],
+   "file": "atlas-sites-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:archery_01": {
+   "crop": [
+    887,
+    37,
+    444,
+    407
+   ],
+   "file": "atlas-skills-corrections-01.webp",
+   "size": [
+    1774,
+    887
+   ]
+  },
+  "skill:archery_03": {
+   "crop": [
+    1331,
+    102,
+    443,
+    342
+   ],
+   "file": "atlas-skills-corrections-01.webp",
+   "size": [
+    1774,
+    887
+   ]
+  },
+  "skill:archery_05": {
+   "crop": [
+    0,
+    499,
+    444,
+    379
+   ],
+   "file": "atlas-skills-corrections-01.webp",
+   "size": [
+    1774,
+    887
+   ]
+  },
+  "skill:archery_07": {
+   "crop": [
+    444,
+    577,
+    443,
+    301
+   ],
+   "file": "atlas-skills-corrections-01.webp",
+   "size": [
+    1774,
+    887
+   ]
+  },
+  "skill:archery_10": {
+   "crop": [
+    887,
+    510,
+    444,
+    368
+   ],
+   "file": "atlas-skills-corrections-01.webp",
+   "size": [
+    1774,
+    887
+   ]
+  },
+  "skill:athletics_01": {
+   "crop": [
+    322,
+    353,
+    293,
+    267
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:athletics_03": {
+   "crop": [
+    624,
+    367,
+    308,
+    249
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:athletics_05": {
+   "crop": [
+    941,
+    349,
+    282,
+    270
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:athletics_07": {
+   "crop": [
+    16,
+    648,
+    298,
+    260
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:athletics_10": {
+   "crop": [
+    319,
+    646,
+    293,
+    265
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:axe_01": {
+   "crop": [
+    314,
+    652,
+    305,
+    271
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:axe_03": {
+   "crop": [
+    627,
+    648,
+    306,
+    278
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:axe_05": {
+   "crop": [
+    944,
+    640,
+    301,
+    286
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:axe_07": {
+   "crop": [
+    5,
+    958,
+    308,
+    274
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:axe_10": {
+   "crop": [
+    314,
+    958,
+    307,
+    274
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blade_01": {
+   "crop": [
+    9,
+    341,
+    294,
+    274
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blade_03": {
+   "crop": [
+    330,
+    335,
+    290,
+    277
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blade_05": {
+   "crop": [
+    633,
+    336,
+    284,
+    279
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blade_07": {
+   "crop": [
+    937,
+    364,
+    311,
+    239
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blade_10": {
+   "crop": [
+    9,
+    640,
+    295,
+    282
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blunt_01": {
+   "crop": [
+    941,
+    70,
+    283,
+    228
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blunt_03": {
+   "crop": [
+    22,
+    381,
+    283,
+    227
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blunt_05": {
+   "crop": [
+    323,
+    396,
+    296,
+    195
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blunt_07": {
+   "crop": [
+    633,
+    384,
+    276,
+    214
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:blunt_10": {
+   "crop": [
+    941,
+    360,
+    294,
+    247
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:command_01": {
+   "crop": [
+    948,
+    338,
+    294,
+    275
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:command_03": {
+   "crop": [
+    5,
+    666,
+    301,
+    251
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:command_05": {
+   "crop": [
+    319,
+    654,
+    293,
+    267
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:command_07": {
+   "crop": [
+    632,
+    652,
+    298,
+    266
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:command_10": {
+   "crop": [
+    942,
+    640,
+    302,
+    280
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:cooking_01": {
+   "crop": [
+    21,
+    18,
+    292,
+    301
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:cooking_03": {
+   "crop": [
+    345,
+    45,
+    272,
+    274
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:cooking_05": {
+   "crop": [
+    627,
+    53,
+    306,
+    265
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:cooking_07": {
+   "crop": [
+    948,
+    28,
+    285,
+    291
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:cooking_10": {
+   "crop": [
+    24,
+    369,
+    288,
+    251
+   ],
+   "file": "atlas-skills-06.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:crafting_01": {
+   "crop": [
+    333,
+    47,
+    275,
+    261
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:crafting_03": {
+   "crop": [
+    634,
+    51,
+    275,
+    254
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:crafting_05": {
+   "crop": [
+    941,
+    41,
+    282,
+    269
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:crafting_07": {
+   "crop": [
+    22,
+    342,
+    287,
+    266
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:crafting_10": {
+   "crop": [
+    331,
+    343,
+    286,
+    267
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:firearms_01": {
+   "crop": [
+    332,
+    972,
+    279,
+    226
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:firearms_03": {
+   "crop": [
+    635,
+    980,
+    282,
+    219
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:firearms_05": {
+   "crop": [
+    941,
+    971,
+    288,
+    229
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:firearms_07": {
+   "crop": [
+    10,
+    52,
+    297,
+    255
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:firearms_10": {
+   "crop": [
+    345,
+    39,
+    264,
+    267
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:gathering_01": {
+   "crop": [
+    637,
+    342,
+    278,
+    268
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:gathering_03": {
+   "crop": [
+    941,
+    343,
+    291,
+    272
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:gathering_05": {
+   "crop": [
+    24,
+    651,
+    289,
+    267
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:gathering_07": {
+   "crop": [
+    332,
+    644,
+    276,
+    271
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:gathering_10": {
+   "crop": [
+    631,
+    645,
+    281,
+    273
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:medicine_01": {
+   "crop": [
+    9,
+    953,
+    296,
+    272
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:medicine_03": {
+   "crop": [
+    321,
+    955,
+    299,
+    273
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:medicine_05": {
+   "crop": [
+    637,
+    950,
+    284,
+    278
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:medicine_07": {
+   "crop": [
+    946,
+    73,
+    927,
+    719
+   ],
+   "file": "atlas-skills-corrections-02.webp",
+   "size": [
+    1875,
+    839
+   ]
+  },
+  "skill:medicine_10": {
+   "crop": [
+    29,
+    43,
+    281,
+    267
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:scavenging_01": {
+   "crop": [
+    941,
+    646,
+    287,
+    269
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:scavenging_03": {
+   "crop": [
+    22,
+    957,
+    286,
+    266
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:scavenging_05": {
+   "crop": [
+    331,
+    960,
+    281,
+    259
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:scavenging_07": {
+   "crop": [
+    633,
+    952,
+    279,
+    266
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:scavenging_10": {
+   "crop": [
+    941,
+    953,
+    286,
+    264
+   ],
+   "file": "atlas-skills-05.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:shield_01": {
+   "crop": [
+    636,
+    39,
+    293,
+    267
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:shield_03": {
+   "crop": [
+    948,
+    27,
+    293,
+    276
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:shield_05": {
+   "crop": [
+    8,
+    336,
+    300,
+    276
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:shield_07": {
+   "crop": [
+    3,
+    77,
+    897,
+    714
+   ],
+   "file": "atlas-skills-corrections-02.webp",
+   "size": [
+    1875,
+    839
+   ]
+  },
+  "skill:shield_10": {
+   "crop": [
+    631,
+    334,
+    301,
+    277
+   ],
+   "file": "atlas-skills-04.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:spear_01": {
+   "crop": [
+    627,
+    984,
+    307,
+    247
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:spear_03": {
+   "crop": [
+    444,
+    111,
+    443,
+    333
+   ],
+   "file": "atlas-skills-corrections-01.webp",
+   "size": [
+    1774,
+    887
+   ]
+  },
+  "skill:spear_05": {
+   "crop": [
+    29,
+    70,
+    283,
+    231
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:spear_07": {
+   "crop": [
+    333,
+    75,
+    284,
+    224
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:spear_10": {
+   "crop": [
+    639,
+    69,
+    284,
+    228
+   ],
+   "file": "atlas-skills-03.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:unarmed_01": {
+   "crop": [
+    941,
+    957,
+    308,
+    267
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:unarmed_03": {
+   "crop": [
+    6,
+    34,
+    307,
+    263
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:unarmed_05": {
+   "crop": [
+    9,
+    23,
+    435,
+    421
+   ],
+   "file": "atlas-skills-corrections-01.webp",
+   "size": [
+    1774,
+    887
+   ]
+  },
+  "skill:unarmed_07": {
+   "crop": [
+    630,
+    29,
+    302,
+    267
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skill:unarmed_10": {
+   "crop": [
+    941,
+    53,
+    304,
+    238
+   ],
+   "file": "atlas-skills-02.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:archery": {
+   "crop": [
+    319,
+    361,
+    298,
+    240
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:athletics": {
+   "crop": [
+    631,
+    953,
+    302,
+    278
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:axe": {
+   "crop": [
+    642,
+    25,
+    272,
+    276
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:blade": {
+   "crop": [
+    323,
+    31,
+    288,
+    282
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:blunt": {
+   "crop": [
+    21,
+    332,
+    275,
+    275
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:command": {
+   "crop": [
+    8,
+    640,
+    302,
+    276
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:cooking": {
+   "crop": [
+    325,
+    947,
+    286,
+    282
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:crafting": {
+   "crop": [
+    643,
+    645,
+    277,
+    270
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:firearms": {
+   "crop": [
+    634,
+    363,
+    300,
+    246
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:gathering": {
+   "crop": [
+    955,
+    648,
+    280,
+    269
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:medicine": {
+   "crop": [
+    320,
+    654,
+    291,
+    264
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:scavenging": {
+   "crop": [
+    18,
+    954,
+    278,
+    276
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:shield": {
+   "crop": [
+    967,
+    332,
+    267,
+    277
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:spear": {
+   "crop": [
+    953,
+    36,
+    293,
+    256
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "skillFamily:unarmed": {
+   "crop": [
+    18,
+    33,
+    287,
+    265
+   ],
+   "file": "atlas-skills-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_antibiotic": {
+   "crop": [
+    285,
+    273,
+    200,
+    211
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_antibiotic_cd": {
+   "crop": [
+    526,
+    290,
+    191,
+    197
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_bandage_cd": {
+   "crop": [
+    751,
+    57,
+    220,
+    192
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_bandage_virus_cd": {
+   "crop": [
+    751,
+    294,
+    225,
+    191
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_baobao": {
+   "crop": [
+    87,
+    571,
+    380,
+    385
+   ],
+   "file": "atlas-icons-corrections-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  },
+  "status:status_bleed": {
+   "crop": [
+    544,
+    40,
+    156,
+    207
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_diarrhea": {
+   "crop": [
+    282,
+    28,
+    220,
+    220
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_infected": {
+   "crop": [
+    23,
+    277,
+    222,
+    215
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_low_energy": {
+   "crop": [
+    29,
+    567,
+    221,
+    140
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_low_morale": {
+   "crop": [
+    271,
+    529,
+    213,
+    202
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_panic": {
+   "crop": [
+    504,
+    518,
+    241,
+    221
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_shaken": {
+   "crop": [
+    21,
+    30,
+    233,
+    218
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_unknown": {
+   "crop": [
+    761,
+    522,
+    209,
+    215
+   ],
+   "file": "atlas-ui-icons-01.webp",
+   "size": [
+    1254,
+    1254
+   ]
+  },
+  "status:status_zero": {
+   "crop": [
+    539,
+    556,
+    454,
+    404
+   ],
+   "file": "atlas-icons-corrections-01.webp",
+   "size": [
+    1536,
+    1024
+   ]
+  }
+ },
+ "portraits": {
+  "actor:baobao": "portrait-actor-baobao.webp",
+  "actor:npc_bai_ling": "portrait-actor-npc_bai_ling.webp",
+  "actor:npc_chen_zhi": "portrait-actor-npc_chen_zhi.webp",
+  "actor:npc_cheng_wang": "portrait-actor-npc_cheng_wang.webp",
+  "actor:npc_du_sui": "portrait-actor-npc_du_sui.webp",
+  "actor:npc_fu_heng": "portrait-actor-npc_fu_heng.webp",
+  "actor:npc_gu_cheng": "portrait-actor-npc_gu_cheng.webp",
+  "actor:npc_he_yuan": "portrait-actor-npc_he_yuan.webp",
+  "actor:npc_ji_mu": "portrait-actor-npc_ji_mu.webp",
+  "actor:npc_ji_wen": "portrait-actor-npc_ji_wen.webp",
+  "actor:npc_lin_zhao": "portrait-actor-npc_lin_zhao.webp",
+  "actor:npc_lu_heng": "portrait-actor-npc_lu_heng.webp",
+  "actor:npc_luo_zheng": "portrait-actor-npc_luo_zheng.webp",
+  "actor:npc_qi_wen": "portrait-actor-npc_qi_wen.webp",
+  "actor:npc_shao_ning": "portrait-actor-npc_shao_ning.webp",
+  "actor:npc_shen_he": "portrait-actor-npc_shen_he.webp",
+  "actor:npc_song_zhu": "portrait-actor-npc_song_zhu.webp",
+  "actor:npc_tang_li": "portrait-actor-npc_tang_li.webp",
+  "actor:npc_tao_cen": "portrait-actor-npc_tao_cen.webp",
+  "actor:npc_wen_cheng": "portrait-actor-npc_wen_cheng.webp",
+  "actor:npc_xu_an": "portrait-actor-npc_xu_an.webp",
+  "actor:npc_ye_xun": "portrait-actor-npc_ye_xun.webp",
+  "actor:npc_yin_ke": "portrait-actor-npc_yin_ke.webp",
+  "actor:npc_zhou_yan": "portrait-actor-npc_zhou_yan.webp",
+  "actor:p0": "portrait-actor-p0.webp",
+  "duty:npc_bai_ling": "portrait-duty-npc_bai_ling.webp",
+  "duty:npc_chen_zhi": "portrait-duty-npc_chen_zhi.webp",
+  "duty:npc_du_sui": "portrait-duty-npc_du_sui.webp",
+  "duty:npc_fu_heng": "portrait-duty-npc_fu_heng.webp",
+  "duty:npc_he_yuan": "portrait-duty-npc_he_yuan.webp",
+  "duty:npc_ji_mu": "portrait-duty-npc_ji_mu.webp",
+  "duty:npc_ji_wen": "portrait-duty-npc_ji_wen.webp",
+  "duty:npc_lu_heng": "portrait-duty-npc_lu_heng.webp",
+  "duty:npc_luo_zheng": "portrait-duty-npc_luo_zheng.webp",
+  "duty:npc_qi_wen": "portrait-duty-npc_qi_wen.webp",
+  "duty:npc_shao_ning": "portrait-duty-npc_shao_ning.webp",
+  "duty:npc_song_zhu": "portrait-duty-npc_song_zhu.webp",
+  "duty:npc_tao_cen": "portrait-duty-npc_tao_cen.webp",
+  "duty:npc_wen_cheng": "portrait-duty-npc_wen_cheng.webp",
+  "duty:npc_xu_an": "portrait-duty-npc_xu_an.webp",
+  "duty:npc_yin_ke": "portrait-duty-npc_yin_ke.webp",
+  "glyph:unknown": "portrait-glyph-unknown.webp",
+  "recruitTemplate:blade_hand": "portrait-recruitTemplate-blade_hand.webp",
+  "recruitTemplate:breaker": "portrait-recruitTemplate-breaker.webp",
+  "recruitTemplate:camp_nurse": "portrait-recruitTemplate-camp_nurse.webp",
+  "recruitTemplate:coordinator": "portrait-recruitTemplate-coordinator.webp",
+  "recruitTemplate:front_guard": "portrait-recruitTemplate-front_guard.webp",
+  "recruitTemplate:hunter": "portrait-recruitTemplate-hunter.webp",
+  "recruitTemplate:legacy_neutral": "portrait-recruitTemplate-legacy_neutral.webp",
+  "recruitTemplate:old_service": "portrait-recruitTemplate-old_service.webp",
+  "recruitTemplate:salvager": "portrait-recruitTemplate-salvager.webp",
+  "recruitTemplate:spear_walker": "portrait-recruitTemplate-spear_walker.webp"
+ },
+ "scenes": {
+  "b01_school": "scene-camp-outskirts.webp",
+  "c01_pilgrim": "scene-02-教会圣所地区.webp",
+  "c02_church": "scene-02-教会圣所地区.webp",
+  "c03_crypt": "scene-02-教会圣所地区.webp",
+  "c04_alms": "scene-02-教会圣所地区.webp",
+  "c05_admonition": "scene-02-教会圣所地区.webp",
+  "c06_archive": "scene-02-教会圣所地区.webp",
+  "c07_sanctuary": "scene-02-教会圣所地区.webp",
+  "camp": "scene-camp-outskirts.webp",
+  "d01_01": "scene-d01_01.webp",
+  "d01_02": "scene-d01_01.webp",
+  "d01_03": "scene-d01_01.webp",
+  "d01_04": "scene-d01_01.webp",
+  "d01_05": "scene-d01_01.webp",
+  "d01_06": "scene-d01_01.webp",
+  "d01_07": "scene-d01_01.webp",
+  "d01_08": "scene-d01_01.webp",
+  "d02_01": "scene-d02_01.webp",
+  "d02_02": "scene-d02_01.webp",
+  "d02_03": "scene-d02_01.webp",
+  "d02_04": "scene-d02_01.webp",
+  "d02_05": "scene-d02_01.webp",
+  "d02_06": "scene-d02_01.webp",
+  "d02_07": "scene-d02_01.webp",
+  "d02_08": "scene-d02_01.webp",
+  "d02_09": "scene-d02_01.webp",
+  "d03_01": "scene-d03_01.webp",
+  "d03_02": "scene-d03_01.webp",
+  "d03_03": "scene-d03_01.webp",
+  "d03_04": "scene-d03_01.webp",
+  "d03_05": "scene-d03_01.webp",
+  "d03_06": "scene-d03_01.webp",
+  "d03_07": "scene-d03_01.webp",
+  "d03_08": "scene-d03_01.webp",
+  "d04_01": "scene-d04_01.webp",
+  "d04_02": "scene-d04_01.webp",
+  "d04_03": "scene-d04_01.webp",
+  "d04_04": "scene-d04_01.webp",
+  "d04_05": "scene-d04_01.webp",
+  "d04_06": "scene-d04_01.webp",
+  "d04_07": "scene-d04_01.webp",
+  "d04_08": "scene-d04_01.webp",
+  "d05_01": "scene-d05_01.webp",
+  "d05_02": "scene-d05_01.webp",
+  "d05_03": "scene-d05_01.webp",
+  "d05_04": "scene-d05_01.webp",
+  "d05_05": "scene-d05_01.webp",
+  "d05_06": "scene-d05_01.webp",
+  "d05_07": "scene-d05_01.webp",
+  "d05_08": "scene-d05_01.webp",
+  "d06_01": "scene-d06_01.webp",
+  "d06_02": "scene-d06_01.webp",
+  "d06_03": "scene-d06_01.webp",
+  "d06_04": "scene-d06_01.webp",
+  "d06_05": "scene-d06_01.webp",
+  "d06_06": "scene-d06_01.webp",
+  "d06_07": "scene-d06_01.webp",
+  "d06_08": "scene-d06_01.webp",
+  "d06_09": "scene-d06_01.webp",
+  "d07_01": "scene-d07_01.webp",
+  "d07_02": "scene-d07_01.webp",
+  "d07_03": "scene-d07_01.webp",
+  "d07_04": "scene-d07_01.webp",
+  "d07_05": "scene-d07_01.webp",
+  "d07_06": "scene-d07_01.webp",
+  "d07_07": "scene-d07_01.webp",
+  "d07_08": "scene-d07_01.webp",
+  "d08_01": "scene-d08_01.webp",
+  "d08_02": "scene-d08_01.webp",
+  "d08_03": "scene-d08_01.webp",
+  "d08_04": "scene-d08_01.webp",
+  "d08_05": "scene-d08_01.webp",
+  "d08_06": "scene-d08_01.webp",
+  "d08_07": "scene-d08_01.webp",
+  "d08_08": "scene-d08_01.webp",
+  "d08_09": "scene-d08_01.webp",
+  "h01_gate": "scene-01-幸存者营区.webp",
+  "h02_square": "scene-01-幸存者营区.webp",
+  "h03_workshop": "scene-01-幸存者营区.webp",
+  "h04_infirmary": "scene-01-幸存者营区.webp",
+  "h05_appraisal": "scene-01-幸存者营区.webp",
+  "h05_homestead": "scene-01-幸存者营区.webp",
+  "h06_shelter": "scene-01-幸存者营区.webp",
+  "m01_road": "scene-battle-checkpoint.webp",
+  "m02_checkpoint": "scene-battle-checkpoint.webp",
+  "o01_oldgate": "scene-battle-checkpoint.webp",
+  "o02_market": "scene-battle-checkpoint.webp",
+  "o04_transit": "scene-battle-checkpoint.webp",
+  "r01_observatory": "scene-03-科学院封存地区.webp",
+  "r02_academy": "scene-03-科学院封存地区.webp",
+  "r03_lab": "scene-03-科学院封存地区.webp",
+  "r04_reception": "scene-03-科学院封存地区.webp",
+  "r05_testing": "scene-03-科学院封存地区.webp",
+  "r06_archive": "scene-03-科学院封存地区.webp",
+  "r07_workshop": "scene-03-科学院封存地区.webp",
+  "r08_observation": "scene-03-科学院封存地区.webp",
+  "w19_survey": "scene-camp-outskirts.webp",
+  "w23_hunting": "scene-camp-outskirts.webp",
+  "w27_relay": "scene-camp-outskirts.webp"
+ }
+}

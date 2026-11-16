@@ -2,3 +2,5 @@
 *.png binary
 *.jpg binary
 *.docx binary
+*.webp binary
+**/素材来源* -text

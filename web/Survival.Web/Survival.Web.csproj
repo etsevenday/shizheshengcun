@@ -26,6 +26,10 @@
   <ItemGroup>
     <!-- 配置唯一来源：data/config.v0.6.json -->
     <EmbeddedResource Include="../../data/config.v0.6.json" LogicalName="config.v0.6.json" />
+    <!-- B37a1：ink-v2 运行时清单（tools/import-b37a1-ink-v2.py 生成），只嵌进程序集，不随站点另发一个文件 -->
+    <Content Remove="Art/**" />
+    <None Remove="Art/**" />
+    <EmbeddedResource Include="Art/ink-v2.json" LogicalName="ink-v2.json" />
   </ItemGroup>
 
 </Project>
