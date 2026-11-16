@@ -481,5 +481,69 @@
         "PD-A07"
       ]
     }
+  },
+  "q848ToQ855": {
+    "date": "2026-11-16",
+    "priority": "takes precedence over historical q758 cooking-content deck eligibility only in the stated scope",
+    "decisions": {
+      "848": "选B：柜子随身来源中的独立工具／装备／锅／壶逐件平铺，每件原存入按钮绑定具体ID，不必先落地；仍无随身收叠键。原组级N入口、普通材料配批、真实容量及原子事务保持；单件与组级动作明确分开。见S06／S14本批Q848-A01—A02。",
+      "849": "选A；按最新Q850排除烹饪容器内食材。遗物／认领／回收／封存收叠时原按钮只动正面真实一堆，展开后批成员里的各实物堆各带原按钮，不新增整批一次取走。正面不可移不偷取后堆；原权限、实地、数量与费用保持。组总量不能当动作量，见S06本批Q849-A01—A02。",
+      "850": "用户新裁定，非原A/B：锅内物品不做折叠；烹饪容器内按真实槽位逐张显示食材，同名同批也不叠堆，每份原数量／身份／加工状态保留，不造收叠入口。不改锅容量、槽数和真实配方；容器外锅本体原牌组保持。见S10／S14及Q850-A01。",
+      "851": "用户明确改按已提交火堆→具体烹饪容器的新层级界面，不是原A/B，取代先跳过／理论B。火堆覆盖地图设施两行，容器子层再覆盖火堆并逐层返回；内容逐槽单卡显示各自真实状态。现成已确认物名、水况／实际水量、占槽与食材状态词直接同源绑定，不再以重复锅名／括号的旧长摘要作为新容器页主体；柜内原品质与状态信息仍保留，不自行新写摘要。用户两张交互参考随S14归档，不照搬素材、按钮或槽数。见S06／S14本批Q851-A01—A02与逐字稿。",
+      "852": "选A：柜内腐败物与普通批次统一“×{总数} · {单重}公斤/份”，重量取本批真实单重，不误用组总重；已知来源另行“来源：{来源清单}”，未知不显示。右栏和原物品操作窗Q711句保持。见S06／逐字稿本批Q852-A01。",
+      "853": "选A：独立件因随身五卡／30公斤限制的最大数提示逐字“最多可取{n}件”；普通按份物仍原“最多可取{n}份”。n按同一计划的真实可取前缀，锅和内容整件计重一次，不改容量、数量和原子移动。用户先问区别后明确选A，不将说明请求冒充选择。见S06／逐字稿Q853-A01。",
+      "854": "选A：“存取明细”是父批次明细区内小标题，随其一起展开／收起，无独立开关；原批次明细／收起明细按钮与真实N件计划明细可达保持。见S06／S14／逐字稿Q854-A01。",
+      "855": "选A：收叠正面写整组总数，真实预留>0时附“（预留{n}）”；展开各真成员只写自己的数量及真实状态，不重复组总量。实际可用、批次拆分、重量与根卡不变；锅内无收叠，单槽卡各报自身。见S06／S14／逐字稿Q855-A01。"
+    },
+    "carrySideSpecificItems": {
+      "flat": true,
+      "eachOriginalDepositAction": true,
+      "noDeckToggle": true,
+      "originalGroupQuantityNPreserved": true,
+      "stableInstanceBinding": true
+    },
+    "specialContainers": {
+      "frontAction": "original single physical stack only",
+      "expandedActions": "each physical stack",
+      "noNewWholeBatchTransaction": true
+    },
+    "cookingContainerContents": {
+      "deckEligible": false,
+      "oneRealSlotCardPerRealIngredient": true,
+      "preserveInstanceAndProgress": true,
+      "doNotChangeCapacityOrRecipes": true
+    },
+    "cookingPanels": {
+      "fireCoversRows": [
+        1,
+        2
+      ],
+      "containerReplacesFireWithinSameArea": true,
+      "returnOneLayer": true,
+      "originalActionGuardsAndClockUnchanged": true
+    },
+    "copy": {
+      "cabinetWeight": "×{总数} · {单重}公斤/份",
+      "knownProvenance": "来源：{来源清单}",
+      "independentItemCarryLimit": "最多可取{n}件",
+      "normalQuantityCarryLimit": "最多可取{n}份",
+      "transferDetailHeading": "存取明细",
+      "frontWithReservation": "×{总数}（预留{n}）",
+      "memberQuantity": "×{数量}"
+    },
+    "acceptanceIds": [
+      "Q848-A01",
+      "Q848-A02",
+      "Q849-A01",
+      "Q849-A02",
+      "Q850-A01",
+      "Q851-A01",
+      "Q851-A02",
+      "Q852-A01",
+      "Q853-A01",
+      "Q854-A01",
+      "Q855-A01"
+    ],
+    "runtimeTestsPerformed": false
   }
 }
