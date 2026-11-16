@@ -1,0 +1,100 @@
+{
+  "date": "2026-11-17",
+  "status": "three_whole_original_batches_user_approved_not_runtime_verified",
+  "originalBatches": [
+    {
+      "name": "B51c2",
+      "questions": [
+        870,
+        871,
+        872
+      ]
+    },
+    {
+      "name": "B47b开发中",
+      "questions": [
+        749,
+        750,
+        751,
+        752,
+        753,
+        754,
+        755,
+        756
+      ]
+    },
+    {
+      "name": "B52b开发中",
+      "questions": [
+        856
+      ]
+    }
+  ],
+  "answers": {
+    "749": "选A。摘要“濒死、致死判定与意志成长”。适配Q812已定左目录／右内容，用于对应主题未选条目时摘要，不恢复旧首页目录卡。正文和判定不变，见R09／S14及逐字稿本批。",
+    "750": "选A。原适用位置保留相邻两标签“濒死”“致死抵抗{抵抗率}”，本人真实值与显示条件不变；左栏同一行去重按同轮Q856优先，不导致该行再写两次濒死。见R09／S14本批。",
+    "751": "选A。战斗信息队员页健康／体力行不另加抵抗率，沿站位旁原角标；真濒死分数标记及其他明细不删，不改数值。见R03／R09／S14本批。",
+    "752": "选A。城内换药目标行，对真实濒死者在原治疗预估前加“濒死”“致死抵抗{抵抗率}”，排法随Q750；非濒死不加，治疗量／费用／资格不改。见R09／S14本批。",
+    "753": "选A。健康属性说明及系统说明健康条沿现句“归0先进入濒死（见‘濒死与意志’），濒死后再受伤可能死亡。”替换归0即死亡；只定文字，不改生命态／致死判定。见R09／S14及逐字稿本批。",
+    "754": "沿用户已答Q838 A及本轮完整清单明确沿用：濒死专用图未齐前原状态占位，不借归零图；正式专用图由开发按B37负责补、全部最近邻，不再重复问用户或把占位记正式完成。当前范围等同原A的过渡显示，供图责任以用户最新开发补图裁定为准。见R09／S14本批。",
+    "755": "选A。没选指令时再点同一队友继续保持该人查看，不收回；已选指令的原目标操作保持，查看不执行攻击／治疗。见R03／S14本批。",
+    "756": "选B。操作台医疗／战术品／弹药等原随身份数也随对应结果帧显示；绷带3用1，结果前仍3，到实际消耗结果帧才2。真实扣物仍原时机，播放快照不再次消费；全程操作台禁用，0量图标不提前消失，连续动作逐帧、结束回真实库存。见R03／S14本批。",
+    "856": "选A。左侧健康行已有“0/{上限} · 濒死”时，去掉同行另一枚重复濒死标签，保留真实致死抵抗标记；其他原位置按Q750两相邻标签，真实生命态及抵抗率不改。见R09／S14本批。",
+    "870": "选B并按用户追加卡牌快捷移动箭头。晾架每在制位／陶窑净水每批有“取出”，只中止本位／本批且原料退设施所在地面；全部取出仍在。卡片箭头沿现有单份／件直接取随身及长按同卡，容量不足拒绝、不自动落地，卡本体数量／目的地入口保持。部分原料取出同事务中止所属批，未移同批余料解锁留设施原位、恢复正常保质并保留原占位；他批不动。火堆原单件／整锅后果保持，真实清单／中止批数／期限复用已批短稿。完整原子计划、容量、保质与权限见S11／S14本批。",
+    "871": "选B。火堆／晾架／陶窑／固定净水台统一：角色主子行动进行或暂停时，全部取出、单批／位取出、卡箭头及同义拖出均不能用；设施本身被动加工不作角色忙。战斗／对白／权限等原阻断同时保持，不扩禁普通地面随身／添料原业务；忙句沿原“行动进行中，暂不能整理物品”。见S11／S14本批。",
+    "872": "选B。陶窑／净水原料成功投入后真实归属本设施该批／加工区，只在设施内显示，不留地面预留卡／地面来源可用副本；取出才回真实地面或明确快捷随身去向。保留数量品质R／批ID／进度、原Fuel分账和产物原落点／经验／容量，所有移动与中止原子幂等。保存结构由开发落实，旧档专属问题继续既定暂缓，不让用户决定版本。见S11／S14本批。"
+  },
+  "facility": {
+    "singleBatchButton": "取出",
+    "singleBatchDestination": "real_facility_zone_ground",
+    "takeAllUnchanged": true,
+    "cardArrow": {
+      "sameExistingTransferSemantics": true,
+      "perActivation": 1,
+      "defaultDestination": "carried",
+      "holdRepeatsSameRealCard": true,
+      "noSilentGroundFallback": true,
+      "atomicCapacityCheckAfterActualShelfRestore": true,
+      "partialInputTakeInterruptsActualBatch": true,
+      "unmovedSameBatchInputs": "unreserve_remain_in_original_facility_slot_restore_C_plus_R_keep_slot_occupied_no_unlimited_warehouse"
+    },
+    "busy": "all_four_facility_withdraw_paths_blocked_for_character_main_or_sub_in_progress_or_paused",
+    "passiveWorkIsNotCharacterBusy": true,
+    "originalBattleDialogueAccessLocks": true,
+    "stationInputOwnership": "real_corresponding_facility_and_batch_not_ground",
+    "noGroundDuplicate": true,
+    "originalOutputDestinationsFuelSplitAndGameplayUnchanged": true
+  },
+  "life": {
+    "topicSummary": "濒死、致死判定与意志成长",
+    "twoAdjacentTags": true,
+    "battleMemberInfoNoExtraResistance": true,
+    "cityMedicalTargetsShowTrueDyingAndResistance": true,
+    "healthHelp": "归0先进入濒死（见‘濒死与意志’），濒死后再受伤可能死亡。",
+    "dyingIcon": "Q838_original_placeholder_until_developer_formal_asset_nearest",
+    "reclickSameMemberNoCommand": "keep_view",
+    "workbenchSupplyCounts": "visual_result_frame_snapshot_not_live_final_inventory",
+    "realInventoryDeductOnceUnchanged": true,
+    "leftHealthRowDeduplicateDying": true
+  },
+  "acceptanceIds": [
+    "FAC-Q870-01",
+    "FAC-Q870-02",
+    "FAC-Q870-03",
+    "FAC-Q870-04",
+    "FAC-Q871-01",
+    "FAC-Q871-02",
+    "FAC-Q872-01",
+    "FAC-Q872-02",
+    "LIFE-Q749-01",
+    "LIFE-Q750-01",
+    "LIFE-Q751-01",
+    "LIFE-Q752-01",
+    "LIFE-Q753-01",
+    "LIFE-Q754-01",
+    "LIFE-Q755-01",
+    "LIFE-Q756-01",
+    "LIFE-Q756-02",
+    "LIFE-Q856-01"
+  ]
+}
