@@ -603,22 +603,7 @@ else
         G.Notify();
     }
 
-    private string RecipeIcon(RecipeConfig r) => r.FacilityResult switch
-    {
-        "shelterBuilt" => "shelter",
-        "bedBuilt" => "bed",
-        "workshop:workbench" => "parts",
-        "workshop:forge" => "fire_lit",
-        "workshop:sewing" => "cloth",
-        "workshop:medical" => "bandage",
-        "workshop:armory" => "crossbow",
-        "workshop:kiln" => "ceramic_shell",
-        "workshop:water_station" => "clean_water",
-        "workshop:drying_rack" => "dried_meat",
-        "safehouse" => "shelter",
-        "fireBuilt" => "fire_out",
-        _ => r.IsRepair ? "repair" : r.Outputs.Keys.FirstOrDefault() ?? "stone",
-    };
+    private static string RecipeIcon(RecipeConfig r) => ArtCatalog.RecipeKey(r.FacilityResult, r.IsRepair, r.Outputs.Keys.FirstOrDefault());
 
     /// <summary>配方短元信息：基础分钟 · 门槛等级（按配方的技能门槛，医疗台加工读医疗）。</summary>
     private string RecipeMeta(RecipeConfig r)

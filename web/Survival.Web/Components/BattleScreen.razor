@@ -650,7 +650,7 @@
                 title="@(why ?? $"{name}：{ApText(ap)}{(energy > 0 ? $"，体力{Ui.N(energy)}" : "")}；我方站位。")"
                 @onclick='() => { if (ok != null) G.PickBattleAction("swap"); else G.ExplainBlocked(name, why); }'>
             <span class="cmdt-ap bdg" aria-hidden="true">@ApText(ap)</span>
-            <span class="cmdt-art">@Icons.Markup("cmd_switch")</span>
+            <span class="cmdt-art">@Icons.Markup("action:swap")</span>
             <span class="cmdt-text">
                 <span class="cmdt-name">@name</span>
                 @if (ok == null) { <span class="cmdt-why">@ShortWhy(why)</span> }
@@ -832,7 +832,7 @@
             <div class="cmdt passive" data-level="@lv" tabindex="0" title="@($"{node.Name}（{e.SkillName(node.SkillId)}{lv}级被动）：{node.Text}")" aria-label="@($"{node.Name}，被动，自动生效")">
                 <span class="cmdt-lv bdg">@(lv)级</span>
                 @SlotCap(lv)
-                <span class="cmdt-art">@Icons.Markup(wi?.ItemId ?? "fists")</span>
+                <span class="cmdt-art">@Icons.Markup("skill:" + node.Id)</span>
                 <span class="cmdt-text"><span class="cmdt-name">@node.Name</span><small class="bdg">被动</small></span>
             </div>
             return;
@@ -846,7 +846,7 @@
             <span class="cmdt-lv bdg" aria-hidden="true">@(lv)级</span>
             <span class="cmdt-ap bdg cmdt-lock" aria-hidden="true">锁</span>
             @SlotCap(lv)
-            <span class="cmdt-art">@Icons.Markup(wi?.ItemId ?? "fists")</span>
+            <span class="cmdt-art">@Icons.Markup("skill:" + node.Id)</span>
             <span class="cmdt-text">
                 <span class="cmdt-name">@node.Name</span>
                 @* B34（S14 Q579）：卡面写完整门槛「需要{门类}{所需等级}级（当前{当前等级}级）」，与说明、拒绝原因同一函数、同一受检角色 *@
@@ -1004,9 +1004,10 @@
             "basic_attack" => (weaponArt, null, null),
             "desperate_punch" => ("fists", "勉", null),
             // B7：五节点技能用当前武器图 + 技能名首字角标
-            _ when o.NodeId != null => (weaponArt, o.Label.Length > 0 ? o.Label[..1] : null, null),
+            // B37a1（Q806）：节点技能改用清单技能图 skill:<节点ID>，招式字角标保留
+            _ when o.NodeId != null => ("skill:" + o.NodeId, o.Label.Length > 0 ? o.Label[..1] : null, null),
             "guard" => ("cmd_guard", null, null),
-            "swap" => ("cmd_switch", o.ItemInstanceId is int to && to < GameEngine.PlayerPos(G.VS.Battle!) ? "前" : "后", null),
+            "swap" => ("action:swap", o.ItemInstanceId is int to && to < GameEngine.PlayerPos(G.VS.Battle!) ? "前" : "后", null),
             "breathe" => ("cmd_breathe", null, null),
             "reload" => (w.AmmoId ?? "cmd_reload", null, null),
             "retreat" => ("cmd_retreat", null, null),

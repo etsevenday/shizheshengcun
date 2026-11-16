@@ -1387,7 +1387,6 @@ public sealed partial class GameSession
             // Q383：打开游戏页面时静默尝试导入旧单槽（失败保留旧键，选档页给「旧版存档」卡）
             try { LegacyImport = LegacySaveImport.Run(_slots, Config, Engine.SaveSummaryOf, Engine.SaveLocationName, () => Guid.NewGuid().ToString("N")); }
             catch (Exception) { LegacyImport = null; }
-            Icons.RegisterCategories(Config);   // B4 新物品/装备缺正式图时按分类占位（同一 ID 全局一张）
         }
         catch (Exception ex)
         {

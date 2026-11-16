@@ -14,7 +14,7 @@
 <ObjectCard Ink2="true" CssClass="k2-fac dry-card" Id="drying-rack" Title="晾制架" Badge="@($"{e.DryingSlotCount}位")" BadgeClass="built"
             Busy="@e.DryingBusy(s)" Fresh="@(G.Panel != "drying" && G.Highlights.Any(h => h.StartsWith($"slot:dry:{s.Ground}:", StringComparison.Ordinal)))"
             Tooltip="@tip" OnClick="Open" AriaLabel="@($"晾制架：{line}")" SubTitle="@line">
-    <Art>@Icons.Markup("dried_meat")</Art>
+    <Art>@Icons.Markup("facility:drying_rack")</Art>
     <SubContent>
         @* B22c 试玩修复 M470：每段不拆行 *@
         <div class="oc-line">@for (var i = 0; i < parts.Count; i++) {@(i > 0 ? " · " : "")<span class="nw">@parts[i]</span>}</div>

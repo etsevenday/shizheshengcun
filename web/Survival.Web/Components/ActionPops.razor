@@ -218,7 +218,7 @@
             var shortFuel = info.FuelWoodShort > 0;
             <AnchorPop AnchorId="@pop.AnchorId" Title="煅烧木炭" CssClass="@("charcoal" + G.MenuHideCss)" Place="above,below,right,left"
                        Sub="@($"{e.ItemName(info.InputId)}×{info.InputCount}→{e.ItemName(info.OutputId)}×{info.OutputCount} · 不耗时投料 · 不给经验")" OnClose="G.ClosePop">
-                <Art>@Icons.Markup("charcoal")</Art>
+                <Art>@Icons.Markup("facility:charcoal")</Art>
                 <ChildContent>
                     @* B32b（逐字稿 §1.5 Q365、P02f）：「投入木材」「剩余燃料」「工位」「耗时」逐行，按木炭操作预演取实际来源、数量、工位与燃料 *@
                     <div class="lines charcoal-lines">
@@ -279,7 +279,7 @@
             var p = G.Preview(req);
             var r = e.Resource(req.TargetId);
             <AnchorPop AnchorId="@pop.AnchorId" Title="@G.PendingActionTitle" CssClass="@("gather" + G.MenuHideCss)" Sub="@($"{r.Name} · 拖入的工具")" OnClose="G.ClosePop">
-                <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
+                <Art>@Icons.Markup(ArtCatalog.ResourceKey(r.LocationId, r.NodeId))</Art>
                 <ChildContent>
                     @if (p.Ok)
                     {

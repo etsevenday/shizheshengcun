@@ -28,7 +28,7 @@
 <div class="detail-scroll fire-detail rail-page" data-rail-type="@RailTypes.Facility">
     @if (crumbs.Count > 1) { <FireCrumbs Path="@crumbs" /> }
     <RailHead Source="@placeLine">
-        <Thumb>@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</Thumb>
+        <Thumb>@Icons.Markup(ArtCatalog.FireKey(fac.FireLit, fac.StoveInstanceId.HasValue))</Thumb>
         <Name>@CardStates.FireName(fac) <small class="muted">@state</small></Name>
     </RailHead>
     <div class="lines rail-main">

@@ -668,7 +668,6 @@ public static class HelpCatalog
                     },
                     Figures = (e, s) =>
                     {
-                        var weaponArt = e.WeaponOnPage(s, s.Battle?.ActiveWeaponSlot ?? e.DefaultWeaponPage(s), out _)?.ItemId ?? "fists";
                         // B34 试玩修复 B4（Q578／Q580）：清单与操作台一致——按目的号位拆出的「调整站位」只列一张（费用同源，有一个可去的号位即可用），
                         // 名称用卡面短名（调息等，GameSession.BattleShortName），技能仍用节点名
                         var all = e.CompatibleCommands(s).ToList();
@@ -685,7 +684,7 @@ public static class HelpCatalog
                                     $"{any.Ap}AP" + (swapOk != null ? "" : $" · {o.Reason}")));
                                 continue;
                             }
-                            list.Add(new HelpFigure(o.NodeId != null ? weaponArt : CmdIcon(o.Action), o.NodeId != null ? o.Label : GameSession.BattleShortName(o),
+                            list.Add(new HelpFigure(o.NodeId != null ? "skill:" + o.NodeId : CmdIcon(o.Action), o.NodeId != null ? o.Label : GameSession.BattleShortName(o),
                                 (o.Ap < 0 ? "用掉剩余AP" : $"{o.Ap}AP") + (o.CooldownRounds > 0 ? $" · 冷却{o.CooldownRounds}回合" : "") + (o.EffectText != null ? $" · {o.EffectText}" : "") + (o.Available ? "" : $" · {o.Reason}")));
                         }
                         return list;
@@ -782,8 +781,8 @@ public static class HelpCatalog
         "reload" => "cmd_reload",
         "retreat" => "cmd_retreat",
         "end_turn" => "cmd_end_turn",
-        "switch_weapon" => "cmd_switch",
-        "swap" => "cmd_switch",
+        "switch_weapon" => "action:switch_weapon",
+        "swap" => "action:swap",
         "bandage" => "bandage",
         "use_antibiotics" => "antibiotics",
         "use_antiviral_cure" => "antiviral_cure",

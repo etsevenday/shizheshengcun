@@ -32,7 +32,7 @@
             Selected="@(selected || childSelected)" Busy="@e.FireHeating(s, here)" Fresh="@fresh"
             Sub="@CardStates.FireFuelSub(e, fac)" Tooltip="@tip" AriaLabel="@($"{name}，{state}，燃料{fac.FuelMinutes}分钟")"
             DataDrop="@($"fire:{here}")" OnClick="G.OpenFireMenu">
-    <Art>@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</Art>
+    <Art>@Icons.Markup(ArtCatalog.FireKey(fac.FireLit, fac.StoveInstanceId.HasValue))</Art>
     <Line2><div class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, e.FuelCapOf(fac)))%"></i></div></Line2>
     <Footer>
         @* B45b（Q581）：卡面快捷入口与火堆加工菜单主层同一组件（FireQuickActions），按钮原句、条件、原因、工具选择、耗时与结算同源 *@

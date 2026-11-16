@@ -43,7 +43,7 @@
 <ObjectCard Ink2="true" PeekId="@Peek.Card("safehouse")" CssClass="k2-fac k2-sh sh-card" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
             Tooltip="@tip" OnClick="Open" AriaLabel="@($"{title}，{badge}：{line}")" SubTitle="@tip"
             PeekSubText="@(cab != null ? lead + cab : line + (!built && reasons.Count > 1 ? $"（另{reasons.Count - 1}条）" : ""))">
-    <Art>@Icons.Markup("shelter")</Art>
+    <Art>@Icons.Markup("facility:safehouse")</Art>
     <SubContent>
         @* N5：柜子重量段不拆行 *@
         <div class="oc-line">@if (cab != null) {@lead<span class="nw">@cab</span>} else {@line@(!built && reasons.Count > 1 ? $"（另{reasons.Count - 1}条）" : "")}</div>

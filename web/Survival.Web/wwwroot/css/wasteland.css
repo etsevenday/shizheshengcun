@@ -53,6 +53,7 @@ button:is(:disabled, .gate-off) { cursor: not-allowed; }
   position: absolute; left: 0; top: 5px; width: 24px; height: 28px;
   color: var(--ink2-gold); filter: drop-shadow(0 2px var(--ink2-black)); pointer-events: none;
 }
+.vital-icon > .ink-sprite { display: block; width: 100%; height: 100%; }
 .vital[data-stat="health"] .vital-icon { color: var(--ink2-danger); }
 .vital[data-stat="hydration"] .vital-icon { color: var(--ink2-sage); }
 .vital[data-stat="wakefulness"] .vital-icon { color: var(--ink2-sage); }
