@@ -144,7 +144,6 @@ namespace Survival.Core.Engine
             var it = CarriedItem(s, t.Id, c.ItemInstanceId)!;
             b.PlayerAp -= t.Ap;
             if (t.Energy > 0) s.Stats.Add(StatId.Energy, -t.Energy);
-            ConsumeOne(s, it);
             b.Me.TacticalRound = b.Round;
             var name = ItemName(t.Id);
             switch (t.Target)
@@ -155,6 +154,7 @@ namespace Survival.Core.Engine
                     // B34b（R03 §Q571）：闪光标记器——ranged 式，真实对象与实际效果，不造命中伤害。
                     // B34 试玩修复 B3：先开记录再挂标记，出手前后比对状态时才认得出新挂上的「标记」（Q573 结果带原状态名）
                     using var fxFlash = FxBegin(s, name, BattleFxMotion.Ranged, FxAlly(s, b.FocusId), noNumbers: true);
+                    ConsumeOne(s, it);   // BM10（Q756）：同一次提交照原样扣 1 份，放在出手快照之后（到结果帧才显示扣后份数）
                     var was = EnemyMarked(b, e);
                     e.MarkBonus = was ? Math.Max(e.MarkBonus, t.MarkBonus) : t.MarkBonus;
                     e.MarkUntilRound = Math.Max(was ? e.MarkUntilRound : 0, b.Round + t.Rounds);
@@ -168,6 +168,7 @@ namespace Survival.Core.Engine
                     // B47b（R03 §Q615 表）：支撑护带包有实际受益者（行动者本人）——支援特写，呈现真实支撑状态，不伪造回血；
                     // B52b（R03 Q729）：位移抵抗真实增量或有效续期写“位移抵抗提升”
                     using var fxSup = FxSupport(s, name, FxAlly(s, b.FocusId), new[] { FxAlly(s, b.FocusId) });
+                    ConsumeOne(s, it);   // BM10（Q756）
                     var f = b.Me;
                     var active = f.DisplaceUntilRound >= b.Round;
                     double dr0 = f.DisplaceResist; var du0 = f.DisplaceUntilRound;
@@ -183,6 +184,7 @@ namespace Survival.Core.Engine
                     // B34b（R03 §Q571）：鼓舞提示贴不显示虚构治疗数值（B47b：先开记录再改恐慌，显示快照取改动前）。
                     // B52b（R03 Q730）：改支援／安抚表现（不画回血加号、绿色治疗光或血条上升），结果字只写真实“恐慌−{实际减少量}”
                     using var fxRally = FxBegin(s, name, BattleFxMotion.Support, FxAlly(s, b.FocusId), noNumbers: true);
+                    ConsumeOne(s, it);   // BM10（Q756）
                     var f = b.Fighter(target);
                     var cut = Math.Max(0, Math.Min(Math.Min(t.PanicReduce, f.Panic), t.PerTargetRoundCap - RallyTakenThisRound(b, target)));
                     if (f.RallyRound != b.Round) { f.RallyRound = b.Round; f.RallyAmount = 0; }

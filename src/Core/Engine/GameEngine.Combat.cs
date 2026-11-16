@@ -1282,11 +1282,12 @@ namespace Survival.Core.Engine
                 {
                     var it = CarriedItem(s, a.ItemId!, c.ItemInstanceId)!;
                     var use = _items[it.ItemId].Use!;
-                    ConsumeOne(s, it);
                     var parts = new List<string>();
                     // B34b（R03 §Q571）：药品自用——治疗式，行动者与受益者同一人，数值取本人真实健康变化（没有健康变化时不显示数值）
                     var h0 = s.Stats.Health;
                     using var fxMed = FxBegin(s, ActionName(c.Action), BattleFxMotion.Heal, FxAlly(s, actor), noNumbers: false);
+                    // BM10（Q756 选 B）：同一次提交里照原样扣 1 份，只是放在出手快照之后——播放到这段结果帧才显示扣后份数
+                    ConsumeOne(s, it);
                     var life = new List<string>();
                     ApplyMedicine(s, use, parts, life: life);
                     var dh = s.Stats.Health - h0;

@@ -561,12 +561,15 @@ namespace Survival.Core.Engine
             s.Stats.Add(StatId.Energy, -energy);
             if (energy > 0) spent.Add($"体力−{Fmt.N(energy)}");
             var parts = new List<string>();
+            // BM10（R03／S14 文首 2026-11-17 节 Q756 选 B）：弹仓与随身散弹药仍在这次提交里照原量扣，只是放到出手快照（FxBegin）之后，
+            // 播放到这段结果帧才显示扣后数量；战报文字与扣量不变
+            int magSpend = 0, looseSpend = 0;
             if (!sp.Desperate)
             {
                 var x = sp.Exec!;
                 var need = AmmoNeed(x, w);
-                if (w.UsesMagazine && wi != null && need > 0) { wi.LoadedAmmo -= need; spent.Add($"弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}"); b.ShotsFired += need; }
-                else if (w.ConsumesLooseAmmo && need > 0) { TakeCarried(s, w.AmmoId!, need); spent.Add($"{ItemName(w.AmmoId!)}−{need}"); b.ShotsFired += need; }
+                if (w.UsesMagazine && wi != null && need > 0) { magSpend = need; spent.Add($"弹仓{wi.LoadedAmmo - need}/{w.MagazineCapacity}"); b.ShotsFired += need; }
+                else if (w.ConsumesLooseAmmo && need > 0) { looseSpend = need; spent.Add($"{ItemName(w.AmmoId!)}−{need}"); b.ShotsFired += need; }
                 if (wi?.Durability != null) spent.Add(Wear(wi, Config.Wear.PerExecutedAttackCommand));
                 AddNoise(s, b, AttackNoise(s, w));
                 b.SkillUsedRound[sp.Node!.Id] = b.Round;
@@ -590,6 +593,8 @@ namespace Survival.Core.Engine
             var energyAfter = s.Stats.Energy;
             // B34b（R03 §Q571）：我方技能攻击与应急拳击各记一次出手快照——多目标为 area，远程武器为 ranged，其余近战；各段按真实次序记
             using var fxScope = FxBegin(s, sp.Desperate ? ActionName(DesperatePunch) : sp.Node!.Name, targets.Count > 1 || IsAreaShotSpec(sp) ? BattleFxMotion.Area : RangedWeapon(weapon) ? BattleFxMotion.Ranged : BattleFxMotion.Melee, FxAlly(s, MeId(s)));
+            if (magSpend > 0) wi!.LoadedAmmo -= magSpend;   // BM10（Q756）
+            if (looseSpend > 0) TakeCarried(s, w.AmmoId!, looseSpend);
             // B9 遗留（B7 试玩第 2 轮）：击倒膨胀感染者时它的死亡喷溅日志先于这一击的总结写进战斗记录，看起来顺序颠倒；
             // 记下这一刻的记录条数，结算中途追加的行（喷溅等）挪到总结之后，结算本身与时机不变
             var logMark = b.Log.Count;

@@ -497,7 +497,6 @@ namespace Survival.Core.Engine
                 case "medical":
                 {
                     // Q75：扣施术者本人随身物资，按目标本人的健康/出血/状态与回血冷却结算（PT10：冷却记在目标身上，与绷带共享）；经验给施术者
-                    foreach (var kv in x.Items) TakeCarriedFresh(s, kv.Key, kv.Value);
                     var effective = false;
                     var target = AllyTargetOf(b, c, x) ?? b.FocusId;
                     var lv = SkillLevel(s, Medicine);
@@ -506,6 +505,8 @@ namespace Survival.Core.Engine
                     double medH0, medH1;
                     string? removed = null;   // B47b（Q615、Q694）：应急护理等无回血时显示真实解除的状态
                     fxMed = FxBegin(s, n.Name, BattleFxMotion.Heal, FxAlly(s, b.FocusId));
+                    // BM10（Q756）：同一次提交照原样扣施术者随身物资，放在出手快照之后（到结果帧才显示扣后份数）
+                    foreach (var kv in x.Items) TakeCarriedFresh(s, kv.Key, kv.Value);
                     using (FocusOn(s, target))
                     {
                         medH0 = s.Stats.Health;

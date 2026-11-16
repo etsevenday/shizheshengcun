@@ -339,10 +339,13 @@ namespace Survival.Core.State
         /// <summary>
         /// B47b（R03 §Q617）：战斗播放用的显示快照——只深拷人物（身体、熟练度）、名册、同行、终局标记与战斗（站位、AP、状态、队列、战报），
         /// 其余（物品、地点、世界敌人等）引用原状态。只供界面只读渲染，不能拿它结算或存档。
+        /// BM10（R03／S14 文首 2026-11-17 节 Q756 选 B）：人物随身与穿戴的物品实例也深拷（份数、弹仓装弹随该帧定住），
+        /// 操作台上医疗／战术品／弹药的随身份数跟结果帧；其余物品仍引用原状态。播放只读，不再次消费。
         /// </summary>
         public GameState DisplayClone()
         {
             var c = (GameState)MemberwiseClone();
+            c.Items = Items.Select(i => i.Owner == ItemInstance.Carried || i.Owner.StartsWith(ItemInstance.Carried + ":") || i.IsWorn ? i.Clone() : i).ToList();
             c.Rng = new Rng { State = Rng.State };
             c.Actors = Actors.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.Party = new List<string>(Party);
