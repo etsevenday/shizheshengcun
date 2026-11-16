@@ -1,6 +1,7 @@
 # B37a1：由运行时清单 web/Survival.Web/Art/ink-v2.json 与配置 data/config.v0.6.json 生成
 # 《doc/验收/重墨V2 UI重做 v1.0/素材清单.json》：每个游戏对象用哪个稳定 ID、取到哪张图、属于哪一类（正式／批准旧图／占位缺项／现有图待答）。
 # 规则与 web/Survival.Web/Services/ArtCatalog.cs 一致（同义、缺项、批准旧地景、Q837 占位、Q883 现有图）；只读，不改游戏文件。
+# B37a2 起加「人物 portrait」「顶栏键面 glyph」两组。
 # 用法：python tools/b37a1-inventory.py
 import json, re
 from pathlib import Path
@@ -64,6 +65,34 @@ G['Q883 待答图位'] = [
     {'object': 'repair', 'name': '修理配方', 'status': S_Q883, 'shownAs': '现有矢量图'},
 ]
 
+# B37a2：人物肖像（portraits 单张 webp）与全身图（sprites 同键裁窗）按身份接线，规则同 web/Survival.Web/Services/ActorArt.cs
+PORTRAITS = MAN['portraits']
+S_Q884 = '已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）'
+
+
+def person_row(obj, name, key, use):
+    if key in PORTRAITS and key in SPRITES:
+        return {'object': obj, 'name': name, 'key': key, 'status': S_FORMAL, 'use': use, 'portrait': 'art/ink-v2/' + PORTRAITS[key],
+                'file': 'art/ink-v2/' + SPRITES[key]['file'], 'crop': SPRITES[key]['crop']}
+    return {'object': obj, 'name': name, 'key': key, 'status': S_MISSING, 'use': use, 'shownAs': 'glyph:unknown'}
+
+
+people = [person_row('p0', '主角', 'actor:p0', '对白、对话记录、战斗、整备、人物详情（Q839 A）'),
+          person_row('baobao', '饱饱', 'actor:baobao', '对白、对话记录')]
+for n in CFG['city']['npcs']:
+    people.append(person_row(n['npcId'], n['name'], 'actor:' + n['npcId'], '在岗：人物卡、对白、对话记录'))
+    people.append(person_row(n['npcId'] + '#duty', n['name'] + '岗位代班', 'duty:' + n['npcId'], '代班：人物卡、对白、对话记录（Q811 A）'))
+v = CFG['prologue']['visitor']
+people.append(person_row(v['npcId'], v['name'], 'actor:' + v['npcId'], '序章来客：人物卡、对白'))
+for c in CFG['party']['namedCompanions']:
+    people.append(person_row(c['actorId'], c['name'], 'actor:' + c['actorId'], '固定同行者：邀约卡、对白、整备、战斗、人物详情'))
+people.append(person_row('escort', '无职业保底护送员', 'recruitTemplate:legacy_neutral', '整备、战斗、人物详情（Q835 补问 B）'))
+people.append(person_row('unknown', '查不到身份', 'glyph:unknown', '中性标记（Q811 A 不猜）'))
+for k in sorted(x for x in PORTRAITS if x.startswith('recruitTemplate:') and x != 'recruitTemplate:legacy_neutral'):
+    people.append({'object': k.split(':', 1)[1], 'name': '名册职业模板', 'key': k, 'status': S_Q884, 'portrait': 'art/ink-v2/' + PORTRAITS[k]})
+G['人物 portrait'] = people
+G['顶栏键面 glyph'] = [sprite_row(k, k, 'glyph:' + k) for k in ['map', 'craft', 'rest', 'log', 'formation', 'equipment', 'growth', 'goal', 'warning', 'dialogue', 'help', 'menu']]
+
 scenes = []
 for loc in CFG['locations']:
     lid, name = loc['id'], loc['name']
@@ -81,6 +110,5 @@ for g, rows in G.items():
     for r in rows: c[r['status']] = c.get(r['status'], 0) + 1
     summary[g] = c
 out['summary'] = summary
-out['notIncluded'] = '肖像 52 张（actor:/duty:/recruitTemplate: 等）已随发并在运行时清单中，接线属 B37a2；本清单只列 B37a1 接线的物件与场景。'
 OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
 print(json.dumps(summary, ensure_ascii=False, indent=1))

@@ -7047,6 +7047,874 @@
     "shownAs": "现有矢量图"
    }
   ],
+  "人物 portrait": [
+   {
+    "object": "p0",
+    "name": "主角",
+    "key": "actor:p0",
+    "status": "正式（ink-v2）",
+    "use": "对白、对话记录、战斗、整备、人物详情（Q839 A）",
+    "portrait": "art/ink-v2/portrait-actor-p0.webp",
+    "file": "art/ink-v2/atlas-actor-survivor-sample.webp",
+    "crop": [
+     0,
+     0,
+     1024,
+     1536
+    ]
+   },
+   {
+    "object": "baobao",
+    "name": "饱饱",
+    "key": "actor:baobao",
+    "status": "正式（ink-v2）",
+    "use": "对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-baobao.webp",
+    "file": "art/ink-v2/atlas-icons-corrections-01.webp",
+    "crop": [
+     1021,
+     557,
+     465,
+     409
+    ]
+   },
+   {
+    "object": "npc_lu_heng",
+    "name": "陆衡",
+    "key": "actor:npc_lu_heng",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_lu_heng.webp",
+    "file": "art/ink-v2/atlas-people-camp.webp",
+    "crop": [
+     143,
+     0,
+     289,
+     510
+    ]
+   },
+   {
+    "object": "npc_lu_heng#duty",
+    "name": "陆衡岗位代班",
+    "key": "duty:npc_lu_heng",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_lu_heng.webp",
+    "file": "art/ink-v2/atlas-duty-01.webp",
+    "crop": [
+     144,
+     1,
+     265,
+     509
+    ]
+   },
+   {
+    "object": "npc_xu_an",
+    "name": "许安",
+    "key": "actor:npc_xu_an",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_xu_an.webp",
+    "file": "art/ink-v2/atlas-people-camp.webp",
+    "crop": [
+     632,
+     6,
+     255,
+     501
+    ]
+   },
+   {
+    "object": "npc_xu_an#duty",
+    "name": "许安岗位代班",
+    "key": "duty:npc_xu_an",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_xu_an.webp",
+    "file": "art/ink-v2/atlas-duty-01.webp",
+    "crop": [
+     634,
+     7,
+     262,
+     504
+    ]
+   },
+   {
+    "object": "npc_luo_zheng",
+    "name": "罗铮",
+    "key": "actor:npc_luo_zheng",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_luo_zheng.webp",
+    "file": "art/ink-v2/atlas-people-camp.webp",
+    "crop": [
+     1121,
+     0,
+     313,
+     508
+    ]
+   },
+   {
+    "object": "npc_luo_zheng#duty",
+    "name": "罗铮岗位代班",
+    "key": "duty:npc_luo_zheng",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_luo_zheng.webp",
+    "file": "art/ink-v2/atlas-duty-01.webp",
+    "crop": [
+     1118,
+     0,
+     295,
+     510
+    ]
+   },
+   {
+    "object": "npc_chen_zhi",
+    "name": "陈芷",
+    "key": "actor:npc_chen_zhi",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_chen_zhi.webp",
+    "file": "art/ink-v2/atlas-people-camp.webp",
+    "crop": [
+     132,
+     516,
+     257,
+     507
+    ]
+   },
+   {
+    "object": "npc_chen_zhi#duty",
+    "name": "陈芷岗位代班",
+    "key": "duty:npc_chen_zhi",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_chen_zhi.webp",
+    "file": "art/ink-v2/atlas-duty-01.webp",
+    "crop": [
+     130,
+     512,
+     264,
+     510
+    ]
+   },
+   {
+    "object": "npc_tao_cen",
+    "name": "陶岑",
+    "key": "actor:npc_tao_cen",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_tao_cen.webp",
+    "file": "art/ink-v2/atlas-people-camp.webp",
+    "crop": [
+     620,
+     514,
+     265,
+     507
+    ]
+   },
+   {
+    "object": "npc_tao_cen#duty",
+    "name": "陶岑岗位代班",
+    "key": "duty:npc_tao_cen",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_tao_cen.webp",
+    "file": "art/ink-v2/atlas-duty-01.webp",
+    "crop": [
+     618,
+     512,
+     282,
+     510
+    ]
+   },
+   {
+    "object": "npc_du_sui",
+    "name": "杜穗",
+    "key": "actor:npc_du_sui",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_du_sui.webp",
+    "file": "art/ink-v2/atlas-people-camp.webp",
+    "crop": [
+     1145,
+     515,
+     271,
+     508
+    ]
+   },
+   {
+    "object": "npc_du_sui#duty",
+    "name": "杜穗岗位代班",
+    "key": "duty:npc_du_sui",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_du_sui.webp",
+    "file": "art/ink-v2/atlas-duty-01.webp",
+    "crop": [
+     1127,
+     513,
+     276,
+     509
+    ]
+   },
+   {
+    "object": "npc_qi_wen",
+    "name": "祁闻",
+    "key": "actor:npc_qi_wen",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_qi_wen.webp",
+    "file": "art/ink-v2/atlas-people-church.webp",
+    "crop": [
+     132,
+     2,
+     269,
+     504
+    ]
+   },
+   {
+    "object": "npc_qi_wen#duty",
+    "name": "祁闻岗位代班",
+    "key": "duty:npc_qi_wen",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_qi_wen.webp",
+    "file": "art/ink-v2/atlas-duty-02.webp",
+    "crop": [
+     77,
+     0,
+     342,
+     511
+    ]
+   },
+   {
+    "object": "npc_bai_ling",
+    "name": "白苓",
+    "key": "actor:npc_bai_ling",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_bai_ling.webp",
+    "file": "art/ink-v2/atlas-people-church.webp",
+    "crop": [
+     632,
+     9,
+     316,
+     498
+    ]
+   },
+   {
+    "object": "npc_bai_ling#duty",
+    "name": "白苓岗位代班",
+    "key": "duty:npc_bai_ling",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_bai_ling.webp",
+    "file": "art/ink-v2/atlas-duty-02.webp",
+    "crop": [
+     619,
+     8,
+     294,
+     503
+    ]
+   },
+   {
+    "object": "npc_ji_mu",
+    "name": "纪牧",
+    "key": "actor:npc_ji_mu",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_ji_mu.webp",
+    "file": "art/ink-v2/atlas-people-church.webp",
+    "crop": [
+     1142,
+     0,
+     290,
+     508
+    ]
+   },
+   {
+    "object": "npc_ji_mu#duty",
+    "name": "纪牧岗位代班",
+    "key": "duty:npc_ji_mu",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_ji_mu.webp",
+    "file": "art/ink-v2/atlas-duty-02.webp",
+    "crop": [
+     1111,
+     0,
+     342,
+     510
+    ]
+   },
+   {
+    "object": "npc_song_zhu",
+    "name": "宋烛",
+    "key": "actor:npc_song_zhu",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_song_zhu.webp",
+    "file": "art/ink-v2/atlas-people-church.webp",
+    "crop": [
+     136,
+     517,
+     250,
+     501
+    ]
+   },
+   {
+    "object": "npc_song_zhu#duty",
+    "name": "宋烛岗位代班",
+    "key": "duty:npc_song_zhu",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_song_zhu.webp",
+    "file": "art/ink-v2/atlas-duty-02.webp",
+    "crop": [
+     127,
+     512,
+     274,
+     510
+    ]
+   },
+   {
+    "object": "npc_fu_heng",
+    "name": "傅珩",
+    "key": "actor:npc_fu_heng",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_fu_heng.webp",
+    "file": "art/ink-v2/atlas-people-church.webp",
+    "crop": [
+     617,
+     518,
+     314,
+     500
+    ]
+   },
+   {
+    "object": "npc_fu_heng#duty",
+    "name": "傅珩岗位代班",
+    "key": "duty:npc_fu_heng",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_fu_heng.webp",
+    "file": "art/ink-v2/atlas-duty-02.webp",
+    "crop": [
+     546,
+     512,
+     429,
+     510
+    ]
+   },
+   {
+    "object": "npc_wen_cheng",
+    "name": "温澄",
+    "key": "actor:npc_wen_cheng",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_wen_cheng.webp",
+    "file": "art/ink-v2/atlas-people-academy.webp",
+    "crop": [
+     128,
+     4,
+     283,
+     502
+    ]
+   },
+   {
+    "object": "npc_wen_cheng#duty",
+    "name": "温澄岗位代班",
+    "key": "duty:npc_wen_cheng",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_wen_cheng.webp",
+    "file": "art/ink-v2/atlas-duty-02.webp",
+    "crop": [
+     1122,
+     512,
+     313,
+     509
+    ]
+   },
+   {
+    "object": "npc_ji_wen",
+    "name": "季闻",
+    "key": "actor:npc_ji_wen",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_ji_wen.webp",
+    "file": "art/ink-v2/atlas-people-academy.webp",
+    "crop": [
+     627,
+     5,
+     254,
+     501
+    ]
+   },
+   {
+    "object": "npc_ji_wen#duty",
+    "name": "季闻岗位代班",
+    "key": "duty:npc_ji_wen",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_ji_wen.webp",
+    "file": "art/ink-v2/atlas-duty-03.webp",
+    "crop": [
+     130,
+     0,
+     278,
+     512
+    ]
+   },
+   {
+    "object": "npc_shao_ning",
+    "name": "邵宁",
+    "key": "actor:npc_shao_ning",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_shao_ning.webp",
+    "file": "art/ink-v2/atlas-people-academy.webp",
+    "crop": [
+     1141,
+     9,
+     256,
+     498
+    ]
+   },
+   {
+    "object": "npc_shao_ning#duty",
+    "name": "邵宁岗位代班",
+    "key": "duty:npc_shao_ning",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_shao_ning.webp",
+    "file": "art/ink-v2/atlas-duty-03.webp",
+    "crop": [
+     615,
+     2,
+     299,
+     509
+    ]
+   },
+   {
+    "object": "npc_he_yuan",
+    "name": "何远",
+    "key": "actor:npc_he_yuan",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_he_yuan.webp",
+    "file": "art/ink-v2/atlas-people-academy.webp",
+    "crop": [
+     103,
+     513,
+     277,
+     507
+    ]
+   },
+   {
+    "object": "npc_he_yuan#duty",
+    "name": "何远岗位代班",
+    "key": "duty:npc_he_yuan",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_he_yuan.webp",
+    "file": "art/ink-v2/atlas-duty-03.webp",
+    "crop": [
+     1120,
+     0,
+     331,
+     512
+    ]
+   },
+   {
+    "object": "npc_yin_ke",
+    "name": "尹珂",
+    "key": "actor:npc_yin_ke",
+    "status": "正式（ink-v2）",
+    "use": "在岗：人物卡、对白、对话记录",
+    "portrait": "art/ink-v2/portrait-actor-npc_yin_ke.webp",
+    "file": "art/ink-v2/atlas-people-academy.webp",
+    "crop": [
+     627,
+     515,
+     282,
+     504
+    ]
+   },
+   {
+    "object": "npc_yin_ke#duty",
+    "name": "尹珂岗位代班",
+    "key": "duty:npc_yin_ke",
+    "status": "正式（ink-v2）",
+    "use": "代班：人物卡、对白、对话记录（Q811 A）",
+    "portrait": "art/ink-v2/portrait-duty-npc_yin_ke.webp",
+    "file": "art/ink-v2/atlas-duty-03.webp",
+    "crop": [
+     95,
+     512,
+     306,
+     511
+    ]
+   },
+   {
+    "object": "npc_cheng_wang",
+    "name": "程望",
+    "key": "actor:npc_cheng_wang",
+    "status": "正式（ink-v2）",
+    "use": "序章来客：人物卡、对白",
+    "portrait": "art/ink-v2/portrait-actor-npc_cheng_wang.webp",
+    "file": "art/ink-v2/atlas-people-church.webp",
+    "crop": [
+     1167,
+     512,
+     236,
+     506
+    ]
+   },
+   {
+    "object": "npc_lin_zhao",
+    "name": "林昭",
+    "key": "actor:npc_lin_zhao",
+    "status": "正式（ink-v2）",
+    "use": "固定同行者：邀约卡、对白、整备、战斗、人物详情",
+    "portrait": "art/ink-v2/portrait-actor-npc_lin_zhao.webp",
+    "file": "art/ink-v2/atlas-people-companions.webp",
+    "crop": [
+     107,
+     3,
+     357,
+     506
+    ]
+   },
+   {
+    "object": "npc_zhou_yan",
+    "name": "周砚",
+    "key": "actor:npc_zhou_yan",
+    "status": "正式（ink-v2）",
+    "use": "固定同行者：邀约卡、对白、整备、战斗、人物详情",
+    "portrait": "art/ink-v2/portrait-actor-npc_zhou_yan.webp",
+    "file": "art/ink-v2/atlas-people-companions.webp",
+    "crop": [
+     635,
+     3,
+     261,
+     507
+    ]
+   },
+   {
+    "object": "npc_shen_he",
+    "name": "沈禾",
+    "key": "actor:npc_shen_he",
+    "status": "正式（ink-v2）",
+    "use": "固定同行者：邀约卡、对白、整备、战斗、人物详情",
+    "portrait": "art/ink-v2/portrait-actor-npc_shen_he.webp",
+    "file": "art/ink-v2/atlas-people-companions.webp",
+    "crop": [
+     1138,
+     9,
+     236,
+     500
+    ]
+   },
+   {
+    "object": "npc_tang_li",
+    "name": "唐梨",
+    "key": "actor:npc_tang_li",
+    "status": "正式（ink-v2）",
+    "use": "固定同行者：邀约卡、对白、整备、战斗、人物详情",
+    "portrait": "art/ink-v2/portrait-actor-npc_tang_li.webp",
+    "file": "art/ink-v2/atlas-people-companions.webp",
+    "crop": [
+     136,
+     514,
+     272,
+     508
+    ]
+   },
+   {
+    "object": "npc_gu_cheng",
+    "name": "顾承",
+    "key": "actor:npc_gu_cheng",
+    "status": "正式（ink-v2）",
+    "use": "固定同行者：邀约卡、对白、整备、战斗、人物详情",
+    "portrait": "art/ink-v2/portrait-actor-npc_gu_cheng.webp",
+    "file": "art/ink-v2/atlas-people-companions.webp",
+    "crop": [
+     602,
+     513,
+     321,
+     509
+    ]
+   },
+   {
+    "object": "npc_ye_xun",
+    "name": "叶洵",
+    "key": "actor:npc_ye_xun",
+    "status": "正式（ink-v2）",
+    "use": "固定同行者：邀约卡、对白、整备、战斗、人物详情",
+    "portrait": "art/ink-v2/portrait-actor-npc_ye_xun.webp",
+    "file": "art/ink-v2/atlas-people-companions.webp",
+    "crop": [
+     1121,
+     514,
+     264,
+     508
+    ]
+   },
+   {
+    "object": "escort",
+    "name": "无职业保底护送员",
+    "key": "recruitTemplate:legacy_neutral",
+    "status": "正式（ink-v2）",
+    "use": "整备、战斗、人物详情（Q835 补问 B）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-legacy_neutral.webp",
+    "file": "art/ink-v2/atlas-recruit-02.webp",
+    "crop": [
+     113,
+     512,
+     294,
+     512
+    ]
+   },
+   {
+    "object": "unknown",
+    "name": "查不到身份",
+    "key": "glyph:unknown",
+    "status": "正式（ink-v2）",
+    "use": "中性标记（Q811 A 不猜）",
+    "portrait": "art/ink-v2/portrait-glyph-unknown.webp",
+    "file": "art/ink-v2/atlas-ui-icons-03.webp",
+    "crop": [
+     515,
+     518,
+     217,
+     212
+    ]
+   },
+   {
+    "object": "blade_hand",
+    "name": "名册职业模板",
+    "key": "recruitTemplate:blade_hand",
+    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-blade_hand.webp"
+   },
+   {
+    "object": "breaker",
+    "name": "名册职业模板",
+    "key": "recruitTemplate:breaker",
+    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-breaker.webp"
+   },
+   {
+    "object": "camp_nurse",
+    "name": "名册职业模板",
+    "key": "recruitTemplate:camp_nurse",
+    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-camp_nurse.webp"
+   },
+   {
+    "object": "coordinator",
+    "name": "名册职业模板",
+    "key": "recruitTemplate:coordinator",
+    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-coordinator.webp"
+   },
+   {
+    "object": "front_guard",
+    "name": "名册职业模板",
+    "key": "recruitTemplate:front_guard",
+    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-front_guard.webp"
+   },
+   {
+    "object": "hunter",
+    "name": "名册职业模板",
+    "key": "recruitTemplate:hunter",
+    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-hunter.webp"
+   },
+   {
+    "object": "old_service",
+    "name": "名册职业模板",
+    "key": "recruitTemplate:old_service",
+    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-old_service.webp"
+   },
+   {
+    "object": "salvager",
+    "name": "名册职业模板",
+    "key": "recruitTemplate:salvager",
+    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-salvager.webp"
+   },
+   {
+    "object": "spear_walker",
+    "name": "名册职业模板",
+    "key": "recruitTemplate:spear_walker",
+    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "portrait": "art/ink-v2/portrait-recruitTemplate-spear_walker.webp"
+   }
+  ],
+  "顶栏键面 glyph": [
+   {
+    "object": "map",
+    "name": "map",
+    "key": "glyph:map",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     28,
+     778,
+     225,
+     197
+    ]
+   },
+   {
+    "object": "craft",
+    "name": "craft",
+    "key": "glyph:craft",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     997,
+     1011,
+     228,
+     196
+    ]
+   },
+   {
+    "object": "rest",
+    "name": "rest",
+    "key": "glyph:rest",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-corrections-02.webp",
+    "crop": [
+     528,
+     24,
+     478,
+     455
+    ]
+   },
+   {
+    "object": "log",
+    "name": "log",
+    "key": "glyph:log",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     517,
+     771,
+     210,
+     216
+    ]
+   },
+   {
+    "object": "formation",
+    "name": "formation",
+    "key": "glyph:formation",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-03.webp",
+    "crop": [
+     14,
+     58,
+     238,
+     193
+    ]
+   },
+   {
+    "object": "equipment",
+    "name": "equipment",
+    "key": "glyph:equipment",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-corrections-02.webp",
+    "crop": [
+     1050,
+     42,
+     456,
+     430
+    ]
+   },
+   {
+    "object": "growth",
+    "name": "growth",
+    "key": "glyph:growth",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-03.webp",
+    "crop": [
+     276,
+     41,
+     201,
+     206
+    ]
+   },
+   {
+    "object": "goal",
+    "name": "goal",
+    "key": "glyph:goal",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     757,
+     769,
+     222,
+     208
+    ]
+   },
+   {
+    "object": "warning",
+    "name": "warning",
+    "key": "glyph:warning",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     764,
+     61,
+     208,
+     192
+    ]
+   },
+   {
+    "object": "dialogue",
+    "name": "dialogue",
+    "key": "glyph:dialogue",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     281,
+     791,
+     214,
+     175
+    ]
+   },
+   {
+    "object": "help",
+    "name": "help",
+    "key": "glyph:help",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     997,
+     789,
+     229,
+     180
+    ]
+   },
+   {
+    "object": "menu",
+    "name": "menu",
+    "key": "glyph:menu",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     42,
+     1028,
+     202,
+     174
+    ]
+   }
+  ],
   "地点场景 scene": [
    {
     "object": "camp",
@@ -7949,11 +8817,17 @@
   "Q883 待答图位": {
    "现有图（Q883 待答）": 5
   },
+  "人物 portrait": {
+   "正式（ink-v2）": 43,
+   "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）": 9
+  },
+  "顶栏键面 glyph": {
+   "正式（ink-v2）": 12
+  },
   "地点场景 scene": {
    "正式（ink-v2）": 99,
    "批准沿用旧地景（16号稿）": 7,
    "统一占位（Q837 缺项）": 37
   }
- },
- "notIncluded": "肖像 52 张（actor:/duty:/recruitTemplate: 等）已随发并在运行时清单中，接线属 B37a2；本清单只列 B37a1 接线的物件与场景。"
+ }
 }
