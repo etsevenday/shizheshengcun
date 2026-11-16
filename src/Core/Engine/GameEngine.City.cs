@@ -43,6 +43,8 @@ namespace Survival.Core.Engine
         /// <summary>此目标的现有状态说明（咨询内容、预计效果）。</summary>
         public string Detail { get; set; } = "";
         public string? Blocked { get; set; }
+        /// <summary>BM10（Q752）：换药服务里此目标真实濒死时为本人“致死抵抗{抵抗率}”（界面在原预估前与「濒死」并排两标签）；非濒死或其他服务为 null。</summary>
+        public string? DyingResist { get; set; }
         /// <summary>不单列姓名时的完整原因（按钮旁、开工失败）；B38b Q286 施济写“{人物}的……”，其余“{人物}：{原因}”。</summary>
         public string? BlockedLine { get; set; }
     }
@@ -469,6 +471,10 @@ namespace Survival.Core.Engine
                     if (v.Blocked == null && lack.Count > 0) v.Blocked = "材料不足（随身或当地地面）：" + string.Join("、", lack);
                     // 试玩修复 M306：不能换药的目标只写一句原因（原先预计/冷却与原因各写一遍，冷却重复嵌套）
                     v.Targets = PresentTargets(s, a => DressingBlocked(s, a), a => DressingBlocked(s, a) != null ? "" : DressingText(s, a, svc));
+                    // BM10（R09／S14 文首 2026-11-17 节 Q752 选 A）：真实濒死者的目标行在原治疗预估前加「濒死」「致死抵抗{抵抗率}」两标签（排法随 Q750）；
+                    // 非濒死不加；治疗量、费用、资格与原预估不变
+                    foreach (var t in v.Targets)
+                        if (s.Actors.TryGetValue(t.ActorId, out var ta) && IsDying(s, ta)) t.DyingResist = ResistanceShort(ta);
                     break;
                 }
                 case "clinic_observation_rest":

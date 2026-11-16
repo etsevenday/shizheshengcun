@@ -95,6 +95,9 @@ public static class HelpCatalog
     /// <summary>B47b：系统说明主题「濒死与意志」及其条目的 ID。</summary>
     public const string DyingTopic = "dying", DyingEntry = "dying-will";
 
+    /// <summary>BM10（Q749 选 A）：「濒死与意志」主题摘要原句。</summary>
+    public const string DyingSummary = "濒死、致死判定与意志成长";
+
     /// <summary>
     /// 系统说明标题旁的位置行：主题页只写主题名；条目页写“{主题} · {条目}”。B47b 试玩修复：条目与所在主题同名（「濒死与意志」只有一条同名条目）时只写一次，不重复成“濒死与意志 · 濒死与意志”。
     /// </summary>
@@ -411,9 +414,10 @@ public static class HelpCatalog
         },
 
         // ───────────── B47b（S14 B34 节「成长、状态详情与帮助逐字」、R09 §8、Q697）：濒死与意志 ─────────────
+        // BM10（Q749 选 A，S14／R09 文首 2026-11-17 节）：主题摘要（未选条目时显示的一句话范围）
         new()
         {
-            Id = DyingTopic, Title = "濒死与意志", Icon = "bandage", Summary = "",
+            Id = DyingTopic, Title = "濒死与意志", Icon = "bandage", Summary = DyingSummary,
             Entries =
             {
                 new HelpEntry

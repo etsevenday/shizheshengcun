@@ -41,8 +41,9 @@
                     else { <b>@Ui.N(v) <small class="muted">/@Ui.T(s.Stats.Max(id))</small></b> }
                 </div>
                 @* 「偏低」「归零」移到条前，不和名称、数值抢一行（窄栏不折行） *@
-                @* B47b（R09 Q695）：主要状态仅濒死时直接露出「濒死」与本人「致死抵抗{抵抗率}」；正常存活不常驻抵抗率 *@
-                <div class="vital-bar">@if (id == StatId.Health && e.IsDying(s, s.Player)) {<em class="flag danger-text" title="@GameEngine.DyingIconText">@GameEngine.DyingWord</em><em class="flag dying-res">@e.ResistanceShort(s.Player)</em>} else if (zero && id != StatId.Health) {<em class="flag danger-text">归零</em>} else if (below) {<em class="flag">偏低</em>}<div class="track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div></div>
+                @* B47b（R09 Q695）：主要状态仅濒死时露出本人「致死抵抗{抵抗率}」；正常存活不常驻抵抗率。
+                   BM10（Q856 选 A）：同一行数值处已写“0/{上限} · 濒死”，去掉同行重复的「濒死」标签，只留致死抵抗（悬停仍为「濒死」图标说明） *@
+                <div class="vital-bar">@if (id == StatId.Health && e.IsDying(s, s.Player)) {<em class="flag dying-res" title="@GameEngine.DyingIconText">@e.ResistanceShort(s.Player)</em>} else if (zero && id != StatId.Health) {<em class="flag danger-text">归零</em>} else if (below) {<em class="flag">偏低</em>}<div class="track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div></div>
             </button>
             <StatusIcons Chips="@chips.Where(c => c.Anchor == key).ToList()" Label="@GameEngine.StatName(id)" />
         }

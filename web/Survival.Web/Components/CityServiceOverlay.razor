@@ -105,7 +105,10 @@
                             var aid = x.ActorId;
                             <label class="@(x.Blocked != null ? "muted" : "")" title="@(x.Blocked ?? x.Detail)">
                                 <input type="radio" name="@($"tgt-{id}")" checked="@(aid == pickTarget)" @onchange="() => SetTarget(id, aid)" />
-                                <b>@x.Name</b> <span class="small">@x.Detail</span>
+                                <b>@x.Name</b>
+                                @* BM10（Q752）：换药目标真实濒死——原预估前两个相邻标签「濒死」「致死抵抗{抵抗率}」，与队伍栏（Q750）同一写法 *@
+                                @if (x.DyingResist != null) {<text> </text><b class="danger-text" title="@GameEngine.DyingIconText">@GameEngine.DyingWord</b><text> </text><span class="dying-res">@x.DyingResist</span>}
+                                <span class="small">@x.Detail</span>
                                 @if (x.Blocked != null) { <em class="warn-text small">（@x.Blocked）</em> }
                             </label>
                         }
