@@ -302,5 +302,95 @@
     "noExtraSystems": "无额外租金、耗材、经验、排队、日配额；正常制作本身消耗仍依原规则",
     "r07Consent": "不要求academy_observation_pass、身体检测/试验同意、宣誓或加入势力；使用菜单不写这些事实，告示原独立选择另办",
     "delivery": "站点接入后才提供对应配方；未接入服务沿Q146隐藏，已实装但站点未接入的旧菜单只能如实显示手工，不冒充公共站已可用"
+  },
+  "q793ToQ805": {
+    "version": "20261116_complete_original_B35",
+    "status": "user_approved_planning_target_not_runtime_verified",
+    "precedence": "this_scoped_extension_overrides_old_forgeBatchFuel_source_only_preserve_costs_reservation_and_success_timing",
+    "originalQuestions": [
+      793,
+      794,
+      795,
+      796,
+      797,
+      798,
+      799,
+      800,
+      801,
+      802,
+      803,
+      804,
+      805
+    ],
+    "primaryEntryName": "手工制作",
+    "buildCategoryName": "设施建造",
+    "individualRealFacilityCards": true,
+    "aggregateWorkshopAndChooserRemoved": true,
+    "groupMemory": "per_work_area_local_persistent_valid_category_fallback_original_all_recipes",
+    "fixedRecipeFuel": {
+      "source": "corresponding_real_facility_previously_manually_loaded_stock_only",
+      "addVia": [
+        "facility_fuel_button",
+        "drag_legal_fuel_card_to_corresponding_facility"
+      ],
+      "noAutomaticBagOrCompanionRefill": true,
+      "noCrossFacilitySharing": true,
+      "ingredients": "original_recipe_Inputs_from_original_legal_material_sources",
+      "start": "atomically_reserve_Inputs_and_own_stock_Fuel_once_per_action_or_batch",
+      "consume": "once_only_on_original_successful_completion",
+      "cancel": "release_only_unconsumed_reserved_items_to_original_work_zone_ground_once_not_also_credit_stock",
+      "fire": "original_minutes_capacity_and_burning_unchanged",
+      "noNewStockIdleBurn": true,
+      "steelExample": {
+        "inputs": {
+          "iron_ore": 3,
+          "charcoal": 1
+        },
+        "forgeStockFuel": {
+          "charcoal": 1
+        },
+        "outputs": {
+          "steel": 2
+        },
+        "baseMinutes": 60,
+        "craftingLevel": 3
+      },
+      "copy": {
+        "stock": "燃料：{燃料名}×{数量}",
+        "insufficient": "燃料不足，先添加{燃料名}。",
+        "success": "已向{设施名}添加{燃料名}×{数量}。"
+      }
+    },
+    "companionDrying": {
+      "checkboxAboveSources": true,
+      "allocationBelow": true,
+      "originalEligibilityAndOrder": true,
+      "return": "original_facility_zone_ground"
+    },
+    "readonlyCompanionBatchCopy": "{姓名}×{n} · {保质}",
+    "travel": {
+      "remoteSelection": "readonly_route_depart_disabled",
+      "explicitSelectNextSegment": true,
+      "manualAdjacentDepartureOnly": true,
+      "noReturnSystem": true,
+      "noAutoQueue": true
+    },
+    "acceptanceIds": [
+      "B35-Q793-01",
+      "B35-Q794-01",
+      "B35-Q795-01",
+      "B35-Q796-01",
+      "B35-Q797-01",
+      "B35-Q798-01",
+      "B35-Q799-01",
+      "B35-Q799-02",
+      "B35-Q799-03",
+      "B35-Q800-01",
+      "B35-Q801-01",
+      "B35-Q802-01",
+      "B35-Q803-01",
+      "B35-Q804-01",
+      "B35-Q805-01"
+    ]
   }
 }
