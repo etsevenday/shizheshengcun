@@ -34,7 +34,7 @@ public class BM7aBattleTests
         Assert.That(facts, Does.Contain("<span>健康</span>").And.Contain("护甲 / 闪避 / 速度").And.Contain("B7Status(b, t)"));
         Assert.That(facts, Does.Contain("不显示敌人尚未执行的计划").And.Not.Contain("NextIntent").And.Not.Contain("PlannedTarget"), "沿 Q574：只留公开属性与已生效状态");
         // 逐字稿：瞄准引导、悬停执行说明、预计条纹说明
-        Assert.That(bs, Does.Contain("public const string AimDefaultHint = \"把鼠标移到亮起的敌人上，看敌人旁的战斗信息浮框；右侧信息栏可看敌人详细属性。点击亮起的目标或按空格执行（Enter也可），ESC取消。\";"));
+        Assert.That(bs, Does.Contain("public const string AimDefaultHint = \"悬停亮起的敌人看预估，右栏看属性；点击或空格执行，ESC取消。\";"), "BM9（逐字稿 Q704—Q710 aimDefault）");
         Assert.That(bs, Does.Contain("public const string FoeAimTip = \"点击即对它执行所选技能；本次预估见敌人旁的战斗信息浮框，详细属性见右侧信息栏。\";"));
         Assert.That(bs, Does.Contain("public const string ForecastTip = \"预计剩余生命（未暴击；暴击预估见战斗信息浮框或预测详情）\";"));
         Assert.That(bs, Does.Contain("悬停看敌人旁的战斗信息浮框逐个预估 · 右键/ESC 取消").And.Contain("点1、2号位打12，点3号位打23；悬停看敌人旁的战斗信息浮框 · 右键/ESC 取消"));

@@ -126,10 +126,11 @@ public class B43KeyHintTests : TestBase
     [Test]
     public void A03_UniqueConfirmEnter()
     {
-        // BM8（S14 Q660）：默认确认主键帽改「空格」、悬停写兼容键说明；数量编辑中的提交位（Edit）仍标 Enter
+        // BM8（S14 Q660）：默认确认主键帽改「空格」；BM9（S14 Q705）：提示「[空格]」、悬停「执行当前操作一次。」，数量编辑中（Edit）整个提示隐藏、不再标 Enter
         var cap = Web("Components/EnterCap.razor");
-        Assert.That(cap, Does.Contain("if (Edit) {<kbd class=\"kc\">@ShellKeys.Enter</kbd>}"));
-        Assert.That(cap, Does.Contain("else {<kbd class=\"kc\" title=\"@ShellKeys.ConfirmKeysTitle\">@ShellKeys.SpaceCap</kbd>}"));
+        Assert.That(cap, Does.Contain("@if (On && !Edit)"));
+        Assert.That(cap, Does.Contain("<kbd class=\"kc kc-hint\" title=\"@ShellKeys.ConfirmKeysTitle\">@ShellKeys.ConfirmBadge</kbd>"));
+        Assert.That(cap, Does.Not.Contain("@ShellKeys.Enter"));
         Assert.That(ShellKeys.Enter, Is.EqualTo("Enter"));
         void Has(string file, string button, int count = 1)
         {

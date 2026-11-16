@@ -100,14 +100,22 @@ namespace Survival.Core.Engine
         public const string Esc = "ESC";
         public const string Enter = "Enter";
         /// <summary>
-        /// BM8（S14 Q660、逐字稿「合格默认确认按钮兼容键说明」）：默认确认主键帽为「空格」（<see cref="SpaceCap"/>），Enter 兼容只写悬停与帮助——
-        /// 这是主键帽上的悬停句。数量／文字编辑中只能 Enter 提交的位置键帽仍是 <see cref="Enter"/>。
+        /// BM9（S14／逐字稿 2026-11-15 Q704—Q710「合格关键确认按钮旁的提示」）：S14 白名单里关键唯一确认按钮旁的可见提示「[空格]」（方括号即提示样式，不并入业务名）。
+        /// 游玩中不再显示 Enter 键帽；数量／文字编辑期间整个提示暂时隐藏（不换成 Enter）。
         /// </summary>
-        public const string ConfirmKeysTitle = "空格或Enter均可确认，仅执行当前可用操作一次。";
-        /// <summary>BM8（S14 Q660 逐字稿「默认确认通用帮助全文」）：系统说明键表旁的通用说明。</summary>
-        public const string DefaultConfirmHelp = "空格用于当前界面的默认确认，Enter也可。编辑文字或数量、调整勾选和选择分支时，先按对应控件的规则操作；菜单只操作当前选中的按钮。中央行动的空格仍是跳过动画，战斗出手表现不可跳过。";
-        /// <summary>BM8（S14 Q660 逐字稿「键表战斗行」）：「执行（当前指令） 空格（Enter也可）」的键位部分。</summary>
-        public const string BattleConfirmKeys = "空格（Enter也可）";
+        public const string ConfirmBadge = "[空格]";
+        /// <summary>
+        /// BM9（逐字稿 Q704—Q710「确认键提示的悬停说明（不再提Enter）」confirmHint）：「[空格]」提示上的悬停句；取代 BM8 的「空格或Enter均可确认……」。
+        /// </summary>
+        public const string ConfirmKeysTitle = "执行当前操作一次。";
+        /// <summary>BM9（逐字稿 Q704—Q710「快捷键帮助原默认确认通用说明全文」helpConfirm）：系统说明键表旁的通用说明。</summary>
+        public const string DefaultConfirmHelp = "空格执行当前唯一确认。编辑、勾选、分支和菜单按当前控件操作。中央行动可用空格跳过动画，战斗出手不可跳过。";
+        /// <summary>
+        /// BM9（逐字稿 Q704—Q710「仅系统说明›键盘快捷键：兼容与数量编辑说明，出现一次」helpCompatibility）：Enter 兼容只在这一处说明，其他可见帮助／悬停不重复。
+        /// </summary>
+        public const string CompatibilityHelp = "Enter兼容确认，也可在支持提交的数量框内使用；空格在编辑框内用于输入。";
+        /// <summary>BM9（逐字稿 Q704—Q710「键表战斗执行行主键文字」helpBattleRow）：「执行（当前指令） 空格」的键位部分（撤 BM8 的「（Enter也可）」）。</summary>
+        public const string BattleConfirmKeys = SpaceCap;
         public const string Shift = "Shift";
         /// <summary>数量输入旁的键帽（S14「数量 0–9」）。</summary>
         public const string Digits = "0–9";
@@ -207,10 +215,13 @@ namespace Survival.Core.Engine
         public static readonly IReadOnlyList<string> Notes = new[]
         {
             "字母键不区分大小写。",
-            "多个并列选项不会由 Enter 自动代选；可用 Tab 选择控件后再激活。",
+            // BM9（逐字稿 Q704—Q710「Q705：快捷键表旁原第二句全文」helpParallel）
+            "并列选项不自动代选；Tab选择后再激活。",
             "仅显示“×”的关闭键和手动存档页的“返回”按钮不标 ESC，仍可按 ESC 按界面层级返回。",
-            // BM8（S14 Q660）：默认确认通用帮助全文
+            // BM8（S14 Q660）：默认确认通用帮助全文；BM9（Q705）换 helpConfirm
             ShellKeys.DefaultConfirmHelp,
+            // BM9（S14 Q705）：Enter 兼容与数量框说明——全游戏只在本主题出现这一次
+            ShellKeys.CompatibilityHelp,
         };
 
         /// <summary>四个区：顶栏 12 项（与 <see cref="ShellKeys.TopLabel"/> 同源）、局部操作、战斗、动画跳过（只剩中央「跳过动画 空格」；BM7a Q633 撤下战斗特写两级跳过）。</summary>
@@ -236,7 +247,7 @@ namespace Survival.Core.Engine
                     new KeyHelpRow($"{ShellKeys.WeaponPage1} {ShellKeys.WeaponPage1Cap}／{ShellKeys.WeaponPage2} {ShellKeys.WeaponPage2Cap}", "切换武器页，不提交攻击。"),
                     new KeyHelpRow($"技能卡位 1–{ShellKeys.SkillSlotLevels.Length}", "数字对应当前武器页的五个技能卡位，不是所需等级。"),
                     new KeyHelpRow($"{ShellKeys.PrevTarget} {ShellKeys.PrevTargetCap}／{ShellKeys.NextTarget} {ShellKeys.NextTargetCap}", "只切换合法目标的预测，不执行指令。"),
-                    // BM3（Q509）：帮助表固定泛称，不显示花括号；BM8（Q660 逐字稿「键表战斗行」）：「执行（当前指令） 空格（Enter也可）」
+                    // BM3（Q509）：帮助表固定泛称，不显示花括号；BM9（Q705 逐字稿「键表战斗执行行主键文字」）：「执行（当前指令） 空格」
                     new KeyHelpRow($"{ShellAim.ConfirmLabel(ShellAim.HelpCommand)} {ShellKeys.BattleConfirmKeys}", "提交当前指令与已指定的合法目标。"),
                 }),
                 new KeyHelpGroup("动画跳过", new[]
@@ -281,8 +292,11 @@ namespace Survival.Core.Engine
         /// <summary>指向从未合法的候选且内核没有更具体句时，沿该敌人锚点上原有的说明（战斗区不可选目标的原句）。</summary>
         public const string OutOfScope = "不在本指令范围内";
 
-        /// <summary>目标预测区的指引（取代「点击亮起的目标即执行；右键/Esc 取消」等旧句）。</summary>
-        public static string Guide(string command) => $"指定目标后，可点击亮起的目标或“执行{command}”按钮，也可按 Enter 执行；右键/ESC 取消。";
+        /// <summary>
+        /// 目标预测区的指引（取代「点击亮起的目标即执行；右键/Esc 取消」等旧句）。
+        /// BM9（S14／R03 Q704，逐字稿 Q704—Q710「Q704：战斗信息区瞄准指引，替换ShellAim.Guide全文」aimGuide）：精简为不带指令名、不提 Enter 的全文，覆盖全部调用位置。
+        /// </summary>
+        public const string Guide = "选好目标，点击或按空格执行；右键/ESC取消。";
 
         /// <summary>目标预测区下方只读提示。</summary>
         public const string ReadOnly = "查看预测不扣费、不抽随机。";
@@ -294,8 +308,8 @@ namespace Survival.Core.Engine
         public static string ConsoleConfirmText(bool endTurn, string command, int ap) => endTurn ? $"确认结束行动 · 剩余{ap}AP清零" : $"确认 · {command} · {ap}AP";
 
         /// <summary>BM3（Q512）：无目标类指令的指引模板「在操作台点“{确认按钮业务文字}”才提交；ESC 取消。」，变量取同一按钮的 <see cref="ConsoleConfirmText"/>。</summary>
-        /// <remarks>BM8（S14 Q661 逐字稿「无目标指令引导模板」「结束行动引导全文」）：改为「在操作台点“{实际确认按钮业务文字}”或按空格确认（Enter也可）；ESC取消。」。</remarks>
-        public static string ConsoleGuide(string confirmText) => $"在操作台点“{confirmText}”或按空格确认（Enter也可）；ESC取消。";
+        /// <remarks>BM8（S14 Q661）曾为「在操作台点“{…}”或按空格确认（Enter也可）；ESC取消。」；BM9（逐字稿 Q704—Q710「无目标指令／结束行动引导模板」consoleGuide）改为下句，变量仍是同一按钮的完整业务文字。</remarks>
+        public static string ConsoleGuide(string confirmText) => $"点击“{confirmText}”或按空格确认；ESC取消。";
 
         /// <summary>
         /// 「执行{指令名}」此刻为什么不可用（null 为可用）。顺序：战斗通用锁（未轮到、对白等，<paramref name="lockWhy"/>，空串表示锁定但无原句）→

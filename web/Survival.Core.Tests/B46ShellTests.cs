@@ -52,7 +52,7 @@ public class B46ShellTests
         Assert.That(body, Does.Contain("while (!_skip &&"), "跳过只结束表现等待，随后原段照常提交");
         var cp = Web("Components/CentralProgress.razor");
         Assert.That(cp, Does.Contain("else if (G.Running && !dlg)").And.Contain("data-skip-anim aria-keyshortcuts=\"Space\""));
-        Assert.That(cp, Does.Contain("@ShellKeys.SkipAnim <kbd class=\"kc\">@ShellKeys.SpaceCap</kbd>"));
+        Assert.That(cp, Does.Contain("@ShellKeys.SkipAnim <kbd class=\"kc kc-hint\">@ShellKeys.ConfirmBadge</kbd>"));   // BM9（Q705）：提示样式「[空格]」
         Assert.That(ShellKeys.SkipAnimTitle, Is.EqualTo("只跳过表现，不改变游戏时间与结果"));
         var js = Web("wwwroot/js/app.js");
         Assert.That(js, Does.Contain("var sk = document.querySelector('.cprog:not(.fading) [data-skip-anim]');"));

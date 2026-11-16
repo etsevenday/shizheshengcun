@@ -48,7 +48,7 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(groups[0].Rows.Select(r => r.Label), Is.EqualTo(Enumerable.Range(0, 12).Select(ShellKeys.TopLabel)), "顶栏 12 行与按钮原文同源");
         Assert.That(groups[0].Rows.All(r => r.Note == null));
         var all = groups.SelectMany(g => g.Rows).ToList();
-        Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("执行（当前指令） 空格（Enter也可）"), "BM3（Q509）：帮助表固定泛称；BM8（Q660）：键表战斗行");
+        Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("执行（当前指令） 空格"), "BM3（Q509）：帮助表固定泛称；BM8（Q660）／BM9（Q705 helpBattleRow）：键表战斗行");
         Assert.That(all.Select(r => r.Label), Has.None.Contain("{"), "BM3（Q509）：不显示花括号占位符");
         Assert.That(all.Select(r => r.Label), Has.Some.EqualTo("跳过动画 空格"));
         // B34（S14 Q573）曾列出战斗特写两级跳过；BM7a（S14 Q633）敌我出手都不可跳过，「动画跳过」区只剩中央「跳过动画 空格」
@@ -58,10 +58,11 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(ShellKeyHelp.Notes, Is.EqualTo(new[]
         {
             "字母键不区分大小写。",
-            "多个并列选项不会由 Enter 自动代选；可用 Tab 选择控件后再激活。",
+            "并列选项不自动代选；Tab选择后再激活。",
             "仅显示“×”的关闭键和手动存档页的“返回”按钮不标 ESC，仍可按 ESC 按界面层级返回。",
-            "空格用于当前界面的默认确认，Enter也可。编辑文字或数量、调整勾选和选择分支时，先按对应控件的规则操作；菜单只操作当前选中的按钮。中央行动的空格仍是跳过动画，战斗出手表现不可跳过。",
-        }), "BM8（Q660）：末尾加默认确认通用帮助全文");
+            "空格执行当前唯一确认。编辑、勾选、分支和菜单按当前控件操作。中央行动可用空格跳过动画，战斗出手不可跳过。",
+            "Enter兼容确认，也可在支持提交的数量框内使用；空格在编辑框内用于输入。",
+        }), "BM8（Q660）：末尾加默认确认通用帮助全文；BM9（Q705）：第二句与通用帮助换精简句，末尾加唯一一处 Enter 兼容说明");
     }
 
     /// <summary>Q495-A01：局部操作、战斗、动画跳过各行的标签与说明逐字出现在逐字稿 Q495 表里（标签由 ShellKeys 键帽拼出也须一致）。</summary>
@@ -75,7 +76,8 @@ public class BM2KeyAnswerTests : TestBase
         {
             ["当前确认 空格"] = ("当前确认 Enter", "| 默认确认业务名＋主键帽 | {原按钮业务文字} 空格 |"),
             ["继续／结束对话 空格"] = ("继续／结束对话 Enter", "| 唯一无分支对白控制主键帽 | 继续 空格／结束对话 空格 |"),
-            ["执行（当前指令） 空格（Enter也可）"] = ("执行（当前指令） Enter", "| 键表战斗行 | 执行（当前指令） 空格（Enter也可） |"),
+            // BM9（逐字稿 Q704—Q710「键表战斗执行行主键文字」）：撤「（Enter也可）」
+            ["执行（当前指令） 空格"] = ("执行（当前指令） Enter", "| 键表战斗执行行主键文字，原说明列保持 | 执行（当前指令） 空格 |"),
         };
         foreach (var g in ShellKeyHelp.Groups().Skip(1))
             foreach (var r in g.Rows)
@@ -88,8 +90,15 @@ public class BM2KeyAnswerTests : TestBase
                 else Assert.That(doc, Does.Contain($"| {g.Title} | {r.Label} | {r.Note} |"), r.Label);
             }   // BM3（Q509）：战斗区第四行逐字稿已改「执行（当前指令） Enter」
         Assert.That(doc, Does.Contain($"> {ShellKeyHelp.Lead}"));
+        // BM9（逐字稿 Q704—Q710 表）：第二句、通用帮助与兼容说明取本批新表行
+        var bm9 = new Dictionary<string, string>
+        {
+            [ShellKeys.DefaultConfirmHelp] = "| 快捷键帮助原默认确认通用说明全文 | ",
+            [ShellKeys.CompatibilityHelp] = "| 仅系统说明›键盘快捷键：兼容与数量编辑说明，出现一次 | ",
+            ["并列选项不自动代选；Tab选择后再激活。"] = "| Q705：快捷键表旁原第二句全文 | ",
+        };
         foreach (var n in ShellKeyHelp.Notes)
-            Assert.That(doc, n == ShellKeys.DefaultConfirmHelp ? Does.Contain($"| 默认确认通用帮助全文 | {n} |") : Does.Contain($"「{n}」"), n);
+            Assert.That(doc, bm9.TryGetValue(n, out var row) ? Does.Contain($"{row}{n} |") : Does.Contain($"「{n}」"), n);
     }
 
     /// <summary>Q495-A01：H 的「入门与操作」在「界面分区」之后新增「键盘快捷键」，后面原条目顺序不变；系统说明按分区渲染键表与补充句。</summary>
@@ -135,10 +144,10 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(ShellAim.NeedTarget, Is.EqualTo("请先指定目标。"));
         Assert.That(ShellAim.NoTargets, Is.EqualTo("没有可用目标。"));
         Assert.That(ShellAim.TargetChanged, Is.EqualTo("目标已变化，请重新选择。"));
-        Assert.That(ShellAim.Guide("拳击"), Is.EqualTo("指定目标后，可点击亮起的目标或“执行拳击”按钮，也可按 Enter 执行；右键/ESC 取消。"));
+        Assert.That(ShellAim.Guide, Is.EqualTo("选好目标，点击或按空格执行；右键/ESC取消。"), "BM9（Q704）：瞄准指引精简、不提 Enter");
         Assert.That(ShellAim.ReadOnly, Is.EqualTo("查看预测不扣费、不抽随机。"));
         // BM3（Q512）取代原「确认 · {指令名} · {AP}AP」另拼写法：指引引用真实按钮业务文字（见 BM3AimAnswerTests）
-        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(false, "防御", 1)), Is.EqualTo("在操作台点“确认 · 防御 · 1AP”或按空格确认（Enter也可）；ESC取消。"), "BM8（Q660）：无目标指令引导模板");
+        Assert.That(ShellAim.ConsoleGuide(ShellAim.ConsoleConfirmText(false, "防御", 1)), Is.EqualTo("点击“确认 · 防御 · 1AP”或按空格确认；ESC取消。"), "BM9（Q704—Q710 consoleGuide）：无目标指令引导模板");
     }
 
     /// <summary>Q497-A01：原因顺序——通用锁优先；无目标看候选数；失效目标具体句优先、否则「目标已变化」；从未合法的候选沿锚点原句；合法再看成本等预览；群体按真实集合。</summary>
@@ -180,7 +189,7 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(Regex.Matches(bs, "@AimConfirm\\(").Count, Is.EqualTo(1), "瞄准中在底部反馈位");
         Assert.That(panel, Does.Not.Contain("data-aim-confirm"), "阅读区里没有执行按钮");
         Assert.That(panel, Does.Contain("int? hoverTarget = aiming && G.BattleAimTarget is int hv && aimSet.Contains(hv) ? hv : null;"), "预测跟随本次明确目标");
-        Assert.That(panel, Does.Contain("@ShellAim.Guide(aimName)").And.Contain("@ShellAim.ReadOnly").And.Contain("ShellAim.ConsoleGuide(confirmText)"));
+        Assert.That(panel, Does.Contain("@ShellAim.Guide").And.Contain("@ShellAim.ReadOnly").And.Contain("ShellAim.ConsoleGuide(confirmText)"));
         Assert.That(panel, Does.Not.Contain("点击亮起的目标即执行；右键/Esc 取消"));
 
         var g = Web("Services/GameSession.cs");
@@ -328,7 +337,7 @@ public class BM2KeyAnswerTests : TestBase
         Assert.That(ShellKeys.SpaceCap, Is.EqualTo("空格"));
         Assert.That(ShellKeys.SkipAnimTitle, Is.EqualTo("只跳过表现，不改变游戏时间与结果"));
         var cp = Web("Components/CentralProgress.razor");
-        Assert.That(cp, Does.Contain("<button type=\"button\" class=\"secondary cp-skip\" data-skip-anim aria-keyshortcuts=\"Space\" @onclick=\"G.SkipAnimation\" title=\"@ShellKeys.SkipAnimTitle\">@ShellKeys.SkipAnim <kbd class=\"kc\">@ShellKeys.SpaceCap</kbd></button>"));
+        Assert.That(cp, Does.Contain("<button type=\"button\" class=\"secondary cp-skip\" data-skip-anim aria-keyshortcuts=\"Space\" @onclick=\"G.SkipAnimation\" title=\"@ShellKeys.SkipAnimTitle\">@ShellKeys.SkipAnim <kbd class=\"kc kc-hint\">@ShellKeys.ConfirmBadge</kbd></button>"));   // BM9（Q705 白名单「中央工作展示」）：提示样式「[空格]」
         Assert.That(cp, Does.Contain("else if (G.Running && !dlg)"), "只在行动推进、非等待对白时出现（暂停时是「继续行动」）");
         var skipLine = cp.Split('\n').Single(l => l.Contains("cp-skip"));
         Assert.That(skipLine, Does.Not.Contain("data-enter").And.Not.Contain("EnterCap"), "不新增中央 Enter");

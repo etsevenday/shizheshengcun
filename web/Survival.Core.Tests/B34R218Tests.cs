@@ -117,8 +117,8 @@ public class B34R218Tests
         var help = Web("Services/HelpCatalog.cs");
         var i = help.IndexOf("Id = \"actions\"");
         var actions = help[i..help.IndexOf("Figures =", i)];
-        foreach (var must in new[] { "战斗 · {地点}", "第{回合}回合", "占满全宽的战场", "{号位}号位 · {姓名}", "“战斗信息”", "“预测详情”", "“战报”", "“全记录”", "当前行动者：{姓名}",
-                     "需要{门类}{所需等级}级（当前{当前等级}级）", "“调整站位”只有一张卡", "“医疗与物品”", "执行{指令名}", "确认 · {指令名} · {AP}AP", "“系统说明”在右上“菜单”里" })
+        foreach (var must in new[] { "战斗 · {地点}", "第{回合}回合", "占满全宽的战场", "{号位}号位 · {姓名}", "“战斗信息”", "预测详情", "“战报”", "“全记录”", "当前行动者：{姓名}",
+                     "需要{门类}{所需等级}级（当前{当前等级}级）", "“调整站位”只有一张卡", "“医疗与物品”", "执行{指令名}", "确认 · {指令名} · {AP}AP", "“系统说明”从右上“菜单”打开" })   // BM9（逐字稿 Q704—Q710）：攻击／无目标／阅读三段换精简全文
             Assert.That(actions, Does.Contain(must), must);
         foreach (var gone in new[] { "右边是对象信息", "右下是战报", "物资查看", "在底部点“确认”才执行", "意图", "选择技能，再选择目标", "请选择指令" })
             Assert.That(actions, Does.Not.Contain(gone), gone);

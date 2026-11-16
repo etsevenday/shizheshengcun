@@ -291,20 +291,20 @@ public class BM8Tests : B41cTestBase
 
     // ───────────── Q660 空格主确认 ─────────────
 
-    /// <summary>Q660：正式句逐字；默认确认键帽主显空格，数量编辑提交位仍 Enter；键表战斗行与通用帮助。</summary>
+    /// <summary>Q660：正式句逐字；默认确认键帽主显空格，数量编辑提交位仍 Enter；键表战斗行与通用帮助。BM9（Q704—Q710）：悬停、通用帮助、引导与战斗行改精简句、不提 Enter（BM9Tests 另验）。</summary>
     [Test]
     public void Q660_TextsAndCaps()
     {
-        Assert.That(ShellKeys.ConfirmKeysTitle, Is.EqualTo("空格或Enter均可确认，仅执行当前可用操作一次。"));
-        Assert.That(ShellKeys.DefaultConfirmHelp, Is.EqualTo("空格用于当前界面的默认确认，Enter也可。编辑文字或数量、调整勾选和选择分支时，先按对应控件的规则操作；菜单只操作当前选中的按钮。中央行动的空格仍是跳过动画，战斗出手表现不可跳过。"));
-        Assert.That(ShellAim.ConsoleGuide("确认结束行动 · 剩余2AP清零"), Is.EqualTo("在操作台点“确认结束行动 · 剩余2AP清零”或按空格确认（Enter也可）；ESC取消。"));
+        Assert.That(ShellKeys.ConfirmKeysTitle, Is.EqualTo("执行当前操作一次。"));
+        Assert.That(ShellKeys.DefaultConfirmHelp, Is.EqualTo("空格执行当前唯一确认。编辑、勾选、分支和菜单按当前控件操作。中央行动可用空格跳过动画，战斗出手不可跳过。"));
+        Assert.That(ShellAim.ConsoleGuide("确认结束行动 · 剩余2AP清零"), Is.EqualTo("点击“确认结束行动 · 剩余2AP清零”或按空格确认；ESC取消。"));
         var battle = ShellKeyHelp.Groups().Single(g => g.Title == "战斗").Rows;
-        Assert.That(battle[3].Label, Is.EqualTo("执行（当前指令） 空格（Enter也可）"));
+        Assert.That(battle[3].Label, Is.EqualTo("执行（当前指令） 空格"));
         Assert.That(ShellKeyHelp.Groups().Single(g => g.Title == "动画跳过").Rows.Single().Label, Is.EqualTo("跳过动画 空格"), "中央跳过保持");
         var doc = Verbatim();
         foreach (var t in new[] { ShellKeys.ConfirmKeysTitle, ShellKeys.DefaultConfirmHelp, BattleAimHint() })
             Assert.That(doc, Does.Contain(t), t);
-        // 数量编辑中仍标 Enter 的位置
+        // 数量编辑中的提交位（BM9 起编辑中隐藏提示）
         foreach (var f in new[] { "CardActions.razor", "DropQuantity.razor", "FireMenu.razor", "GearGive.razor" })
             Assert.That(Web("Components", f), Does.Contain("Edit=\""), f);
     }
@@ -332,7 +332,7 @@ public class BM8Tests : B41cTestBase
             Assert.That(src, Does.Contain("\"Space Enter\""), file);
         }
         var cap = Web("Components", "EnterCap.razor");
-        Assert.That(cap, Does.Contain("else {<kbd class=\"kc\" title=\"@ShellKeys.ConfirmKeysTitle\">@ShellKeys.SpaceCap</kbd>}"), "非编辑：空格键帽＋兼容键悬停句");
+        Assert.That(cap, Does.Contain("@if (On && !Edit)").And.Contain("<kbd class=\"kc kc-hint\" title=\"@ShellKeys.ConfirmKeysTitle\">@ShellKeys.ConfirmBadge</kbd>"), "BM9（Q705）：非编辑「[空格]」，编辑中隐藏");
     }
 
     private static string BattleAimHint()
@@ -365,10 +365,11 @@ public class BM8Tests : B41cTestBase
     [Test]
     public void Q661_TeachingTexts()
     {
+        // BM9（逐字稿 Q704—Q710 firstBattle／aimDefault／tutorialNote）：三处由本批新表取代
         var doc = Verbatim();
-        Assert.That(doc, Does.Contain($"| PRO04顶部系统提示替换全文 | {Cfg.Prologue.Tasks.Single(x => x.Id == "PRO04").Hint} |"));
+        Assert.That(doc, Does.Contain($"| Q706：PRO04任务guidance与顶部hint，两处统一全文 | {Cfg.Prologue.Tasks.Single(x => x.Id == "PRO04").Hint} |"));
         Assert.That(doc, Does.Contain($"| 默认攻击瞄准引导全文 | {BattleAimHint()} |"));
-        Assert.That(doc, Does.Contain($"> {Cfg.Story.Dialogues.Single(d => d.Id == "tutorial_arrive").Note}"));
+        Assert.That(doc, Does.Contain($"| tutorial_arrive的guide附注全文，饱饱对白正文不改 | {Cfg.Story.Dialogues.Single(d => d.Id == "tutorial_arrive").Note} |"));
     }
 
     // ───────────── Q664 组名只显示一次 ─────────────

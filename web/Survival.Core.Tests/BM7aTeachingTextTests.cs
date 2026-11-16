@@ -9,9 +9,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class BM7aTeachingTextTests : BattleTestBase
 {
-    /// <summary>逐字稿／N02：tutorial_arrive 的 guide 附注（note）完整新句（BM8：逐字稿 Q660 首战 tutorial_arrive 完整当前 guide，主键改空格、Enter 兼容）。</summary>
+    /// <summary>逐字稿／N02：tutorial_arrive 的 guide 附注（note）完整新句（BM8：逐字稿 Q660 首战 tutorial_arrive 完整当前 guide；BM9：逐字稿 Q704—Q710 tutorialNote 精简、不提 Enter）。</summary>
     public const string TutorialArriveNote =
-        "轮到我方某人时，可以使用他的行动点（AP）。先选技能，再把鼠标移到亮起的敌人上，看敌人旁的战斗信息浮框；右侧信息栏可看敌人详细属性，也可用←／→切换合法目标。看好后，点击亮起的目标，或按空格执行（Enter也可）。自用或无目标指令，选好后点击底部确认按钮，或按空格确认（Enter也可）；需要选择我方成员的技能，点击亮起的我方成员。用完行动点，或选“结束行动”后再确认，战斗就会继续。";
+        "轮到我方时使用当前人物的AP。选技能后，悬停亮起的敌人看预估，右栏看属性；←/→切目标，点击或空格执行。自用或无目标指令需确认；对我方施放时点亮起的成员。AP用尽或确认“结束行动”后，战斗继续。";
 
     /// <summary>Q629-A01：只换 note；饱饱正文、说话人、类型、事件与附注类型不变；实时附注即配置原句（记录按展示时的配置快照写）。</summary>
     [Test]
@@ -45,10 +45,10 @@ public class BM7aTeachingTextTests : BattleTestBase
         var help = Web("Services", "HelpCatalog.cs");
         var i = help.IndexOf("Id = \"actions\"", StringComparison.Ordinal);
         var actions = help[i..help.IndexOf("Figures =", i, StringComparison.Ordinal)];
-        Assert.That(actions, Does.Contain("“战斗信息”显示实际目标、成本、命中与暴击、伤害和目标状态；“预测详情”提供逐项来源。选好攻击技能后，悬停亮起的敌人可在敌人旁查看战斗信息浮框，右侧信息栏显示该敌人的详细属性。"));
+        // BM9（逐字稿 Q704—Q710 battleAttackHelp）：攻击操作段整段换精简全文（两层介绍、不自动攻击、右键／ESC 取消仍在，执行键改写空格、不提回车）
+        Assert.That(actions, Does.Contain("选攻击技能，亮起的敌人可作为目标。悬停或←/→切目标，查看预计生命与敌人旁的战斗信息浮框；右栏看详细属性，预测详情看逐项来源。点击目标、点“执行{指令名}”或按空格执行。未选技能时点敌人只查看；只剩一名敌人也不自动攻击。右键/ESC取消瞄准，不耗AP。"));
         Assert.That(actions, Does.Not.Contain("“战斗信息”里的“预测详情”写实际的目标"));
-        Assert.That(actions, Does.Contain("没选技能时点敌人只是选中查看，不会攻击；场上只剩一个敌人时也不会自动攻击。右键或 ESC 取消瞄准，不耗行动点。"));
-        Assert.That(actions, Does.Contain("点击亮起的敌人，或点底部“执行{指令名}”、按回车，就执行这一招。"));
+        Assert.That(actions, Does.Not.Contain("回车").And.Not.Contain("Enter"));
     }
 
     /// <summary>Q631-A01：主角调息成功的短反馈「你喘了口气」，只一条；卡面仍「调息」，数值战报与内核行动名原样。</summary>

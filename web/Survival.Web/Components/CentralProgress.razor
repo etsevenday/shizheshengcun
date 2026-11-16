@@ -94,8 +94,8 @@
             }
             else if (G.Running && !dlg)
             {
-                @* BM2（Q502）：常驻「跳过动画 空格」，只绑空格（app.js 按受理边界点同一按钮一次），不加中央 Enter；点击效果不变 *@
-                <button type="button" class="secondary cp-skip" data-skip-anim aria-keyshortcuts="Space" @onclick="G.SkipAnimation" title="@ShellKeys.SkipAnimTitle">@ShellKeys.SkipAnim <kbd class="kc">@ShellKeys.SpaceCap</kbd></button>
+                @* BM2（Q502）：常驻「跳过动画 空格」，只绑空格（app.js 按受理边界点同一按钮一次），不加中央 Enter；点击效果不变。BM9（S14 Q705 白名单「中央工作展示」）：提示样式统一为「[空格]」 *@
+                <button type="button" class="secondary cp-skip" data-skip-anim aria-keyshortcuts="Space" @onclick="G.SkipAnimation" title="@ShellKeys.SkipAnimTitle">@ShellKeys.SkipAnim <kbd class="kc kc-hint">@ShellKeys.ConfirmBadge</kbd></button>
             }
             @* 附带小改：退出会作废本次成果的行动（探索/清理/采集/制作/处理尸体/移动）在退出旁常驻写明后果 *@
             @if (p.Locked)

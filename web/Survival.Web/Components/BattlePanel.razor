@@ -37,7 +37,6 @@ else if (b != null)
     var aimSet = G.AimTargets();
     // 瞄准中：只对本次明确查看的合法目标给出预测（不预选目标、不自动攻击）；BM2（Q497）移出锚点到右栏时保留同一目标；自用/无目标指令按所选指令预测
     int? hoverTarget = aiming && G.BattleAimTarget is int hv && aimSet.Contains(hv) ? hv : null;
-    var aimName = aiming ? G.BattleAimConfirm().Name : "";
     var cmd = aiming
         ? BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : hoverTarget, G.BattleItem)
         : G.CurrentBattleCommand();
@@ -66,7 +65,7 @@ else if (b != null)
                 <div class="blocked">@($"{he.Slot}号位 {e.EnemyName(he)}：{e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, hx, G.BattleItem)) ?? "不是这个指令的目标"}")</div>
             }
             else if (!string.IsNullOrEmpty(st.Why)) { <div class="blocked">@st.Why</div> }
-            <div class="risk none">@ShellAim.Guide(aimName)</div>
+            <div class="risk none">@ShellAim.Guide</div>
             <div class="under">@ShellAim.ReadOnly</div>
         </div>
     }
@@ -78,7 +77,7 @@ else if (b != null)
             <div class="op-head"><h2>@p.Title</h2></div>
             @KeyRows(p)
             @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
-            @if (aiming) { <div class="under">@ShellAim.Guide(aimName)</div> }
+            @if (aiming) { <div class="under">@ShellAim.Guide</div> }
             else if (G.BattleConsoleConfirmText() is string confirmText) { <div class="under">@ShellAim.ConsoleGuide(confirmText)</div> }
         </div>
     }
