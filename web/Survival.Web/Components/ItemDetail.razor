@@ -161,6 +161,8 @@ else
             {
                 <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(inst))</b></div>
                 <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(inst))</b></div>
+                @* B51c1（S08／R02 B51 Q772）：被本单锁定、完成后确定归 0 的同一工具实例，详情状态写「本次生产结束后损坏」 *@
+                @if (CardStates.ToolOrderState(e, s, inst) is string toolOrder) { <div><span>状态</span><b>@toolOrder</b></div> }
             }
             @* BM5b1（S14 Q608／Q638）：主要数值之后的特性摘要（穿戴中「生效效果」、未穿戴「具备特性」）——已具备资格的固定特性按原配置顺序、每条一次，整行 *@
             @* BM8（S14 Q664）：组名只在本组第一行写一次，后续条目缩进对齐（读屏仍带组名） *@

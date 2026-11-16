@@ -376,8 +376,9 @@ public class B51aTests : TestBase
         Assert.That(Web("Components", "ItemDetail.razor"), Does.Contain("GroupBy(i => (i.ExpiresAt, i.ShelfPausedMinutes))").And.Contain("Ui.BatchFresh(e, s, b.Stacks, b.ExpiresAt, false)"));
         Assert.That(Web("Components", "CardActions.razor"), Does.Contain("Ui.BatchFresh(G.E, G.S, b.Stacks, b.ExpiresAt, b.Spoiled)"));
         Assert.That(Web("Components", "GearPeekDetail.razor"), Does.Contain("it.ShelfPausedMinutes != null ? Ui.FreshOf"));
+        // B51c1 改期望（出处 S06／S14 B51 §Q773 选 B）：部分暂停副标只写「含保质暂停」（见 B51c1Tests.Q773_A01），任何位置都不接「×{数量}」
         foreach (var f in new[] { "ItemShelf.razor", "ItemDetail.razor", "CardActions.razor", "BattleSupplies.razor" })
-            Assert.That(Web("Components", f), Does.Not.Contain("含保质暂停"), f + "：Q773 待定");
+            Assert.That(Web("Components", f), Does.Not.Contain("含保质暂停×"), f + "：Q773 选 B 不接数量");
     }
     // ───────────── M962 存档 53→54 ─────────────
 

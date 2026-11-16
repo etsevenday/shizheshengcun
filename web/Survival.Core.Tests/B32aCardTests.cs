@@ -258,7 +258,8 @@ public class B32aCardTests : TestBase
         var shelf = Web("Components", "ItemShelf.razor");
         Assert.That(shelf, Does.Not.Contain("k2-tag qty"), "去掉重复的主图数量角标");
         Assert.That(shelf, Does.Contain("<div class=\"k2-sub is-qty\" title=\"@tLine\">@CardStates.ItemQtyText(t.Count, t.ReservedBy != null ? t.Count : 0)</div>"), "独立工具卡副标「×1」，被预留时「×1（预留1）」");
-        Assert.That(shelf, Does.Contain("var tLine2 = deployed ? tLine : Ui.CardLine2(e, s, t);"), "自身阻断（已部署）排在第二行最前");
+        // B51c1 改期望（出处 S08／R02 B51 §Q772）：已部署仍排最前，其后本单锁定工具的「本次生产结束后损坏」，再原第二行
+        Assert.That(shelf, Does.Contain("var tLine2 = deployed ? tLine : CardStates.ToolOrderState(e, s, t) ?? Ui.CardLine2(e, s, t);"), "自身阻断（已部署）排在第二行最前");
         Assert.That(shelf, Does.Contain("var line2 = spoiledFront ? \"已腐败\" : pausedLine ?? Ui.CardLine2(e, s, stacked ? head : whole);"), "B51a Q724：全保护卡先写保护短句");
         Assert.That(shelf, Does.Contain("<PotCard @key=\"@(\"t:\" + inst)\" Pot=\"t\" />"), "复合锅卡仍走锅卡（水量与食材）");
         var ui = Web("Services", "Ui.cs");

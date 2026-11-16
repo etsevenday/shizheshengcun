@@ -18,6 +18,9 @@ namespace Survival.Core.Engine
         /// <summary>全保护但 R 不同的卡片短句（逐字稿 B51 表）：「保质暂停 · {批数}批」。</summary>
         public static string ShelfPausedBatchesText(int batches) => $"保质暂停 · {batches}批";
 
+        /// <summary>B51c1（S06／S14 B51 Q773 选 B）：同一显示堆只有部分份数暂停保质时的卡片副标。</summary>
+        public const string ShelfPartlyPausedText = "含保质暂停";
+
         /// <summary>只有将绑定有期限原料才显示的预估说明（逐字稿 B51 表，Q724）。</summary>
         public const string ProductionShelfNote = "开工后，所选原料暂停保质；退料恢复剩余保质。";
 

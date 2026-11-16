@@ -61,7 +61,8 @@
         @if (!p.Ok && p.BaseMinutes > 0) { <div><span>基础耗时</span><b>@(p.BaseMinutes)分钟</b></div> }
         @if (p.ToolName != null && p.ToolDurabilityBefore.HasValue && p.ToolMaxDurability.HasValue)
         {
-            <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @(p.PlanFailed ? GameEngine.NotEstimated : $"{Ui.N(p.ToolDurabilityAfter ?? 0)}/{Ui.N(p.ToolMaxDurability.Value)}")</b></div>
+            @* B51c1（S08／R02 B51 Q772）：本单完成后确定归 0 时，耐久前后值后接「 · 预计本次生产结束后损坏」（完成不可信时不接，Q875 A） *@
+            <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @(p.PlanFailed ? GameEngine.NotEstimated : $"{Ui.N(p.ToolDurabilityAfter ?? 0)}/{Ui.N(p.ToolMaxDurability.Value)}")@(p.ToolBreaksAfterOrder ? GameEngine.ToolBreakForecastSuffix : "")</b></div>
         }
     </div>
 

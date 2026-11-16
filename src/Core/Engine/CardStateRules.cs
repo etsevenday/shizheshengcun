@@ -68,6 +68,25 @@ namespace Survival.Core.Engine
             : i.MaxDurability.HasValue && i.Durability.HasValue ? ItemLine2.Durability
             : ItemLine2.None;
 
+        /// <summary>
+        /// B51c1（S08／R02 B51 Q772）：被本单锁定、按本单用量确定完成后损坏的同一工具实例，卡片第二行与详情状态写「本次生产结束后损坏」；否则 null（沿原第二行）。
+        /// </summary>
+        public static string? ToolOrderState(GameEngine e, GameState s, ItemInstance i) =>
+            e.ToolBreaksAfterOrder(s, i) ? GameEngine.ToolBreaksAfterOrderText : null;
+
+        /// <summary>
+        /// B51c1（S06／S14 B51 Q773 选 B）：卡内有期限、未腐败的份里只有部分受生产／晾制保护时，副标只写「含保质暂停」（不接到期、数量）；
+        /// 全部受保护时同 R 写「保质暂停，剩余{时长}」、R 不同写「保质暂停 · {批数}批」（B51a Q724）；没有受保护份返回 null，沿原副标。
+        /// </summary>
+        public static string? PausedCardLine(GameEngine e, GameState s, IEnumerable<ItemInstance> list)
+        {
+            var live = list.Where(i => (i.ExpiresAt.HasValue || i.ShelfPausedMinutes.HasValue) && !e.IsSpoiled(s, i)).ToList();
+            if (live.Count == 0 || live.All(i => i.ShelfPausedMinutes == null)) return null;
+            if (live.Any(i => i.ShelfPausedMinutes == null)) return GameEngine.ShelfPartlyPausedText;
+            var rs = live.Select(i => i.ShelfPausedMinutes!.Value).Distinct().ToList();
+            return rs.Count == 1 ? GameEngine.ShelfPausedText(rs[0]) : GameEngine.ShelfPausedBatchesText(live.Select(i => (i.ExpiresAt, i.ShelfPausedMinutes)).Distinct().Count());
+        }
+
         // ───────────── Q351 资源来源 ─────────────
 
         /// <summary>Q351：右栏资源详情「来源」行的值「{资源所在地点名} · {资源账短标}」。</summary>

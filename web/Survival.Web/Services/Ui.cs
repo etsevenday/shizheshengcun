@@ -82,15 +82,9 @@ public static class Ui
 
     /// <summary>
     /// B51a（Q724-A02）整卡副标：卡内有期限且未腐败的份全部受保护时，同 R 写“保质暂停，剩余{时长}”，R 不同写“保质暂停 · {批数}批”（批数按保护份真实批次边界）；
-    /// 部分保护（混合）或没有保护返回 null，沿原副标（Q773 待定，“含保质暂停×{数量}”拼法未接）。
+    /// B51c1（Q773 选 B）部分保护写“含保质暂停”；没有保护返回 null，沿原副标。判定在内核 CardStates.PausedCardLine。
     /// </summary>
-    public static string? PausedCardLine(GameEngine e, GameState s, IEnumerable<ItemInstance> list)
-    {
-        var live = list.Where(i => (i.ExpiresAt.HasValue || i.ShelfPausedMinutes.HasValue) && !e.IsSpoiled(s, i)).ToList();
-        if (live.Count == 0 || live.Any(i => i.ShelfPausedMinutes == null)) return null;
-        var rs = live.Select(i => i.ShelfPausedMinutes!.Value).Distinct().ToList();
-        return rs.Count == 1 ? GameEngine.ShelfPausedText(rs[0]) : GameEngine.ShelfPausedBatchesText(live.Select(i => (i.ExpiresAt, i.ShelfPausedMinutes)).Distinct().Count());
-    }
+    public static string? PausedCardLine(GameEngine e, GameState s, IEnumerable<ItemInstance> list) => CardStates.PausedCardLine(e, s, list);
 
     /// <summary>B32a Q356 物品卡第二行：明确状态优先（已腐败、已损坏），其次实际保质/到期（含受热保护），再耐久（不带弹仓）；都没有返回 null（不出第二行）。</summary>
     public static string? CardLine2(GameEngine e, GameState s, ItemInstance i) => CardStates.ItemLine2Of(e, s, i) switch

@@ -153,4 +153,162 @@ public class B51c1Tests : TestBase
                                     Web("..", "..", "src", "Core", "Engine", "GameEngine.ExitLock.cs"), Web("..", "..", "src", "Core", "Engine", "GameEngine.Progress.cs") })
             Assert.That(src, Does.Not.Contain("半成品。\""), "不再有玩家可见的半成品旧话");
     }
+
+    // ───────────── M2 Q772 工具本单损坏提示、Q773 部分暂停副标、Q774 晾制说明 ─────────────
+
+    private const string BreakSuffix = " · 预计本次生产结束后损坏";        // S08／R02 B51 §Q772
+    private const string BreakState = "本次生产结束后损坏";                 // 同上
+    private const string GuardNote = "耐久不足不会中断本次生产；工具将在本次生产结束后损坏。";   // 逐字稿 B51 表原工具本单保障说明
+
+    /// <summary>野犬尸体＋石刀（耐久 d）；野犬处理成功磨损 1（策划数据 animalCarcasses.carcass_feral_dog.toolWearOnSuccess）。</summary>
+    private (GameState s, ItemInstance knife, ItemInstance carcass) Carcass(double knifeDurability, GameEngine? eng = null)
+    {
+        var e = eng ?? E;
+        var s = e.NewGame(12345);
+        e.DebugLegacyStory(s);
+        s.Items.RemoveAll(i => i.ItemId is "stone_knife" or "kitchen_knife" or "hatchet");
+        var knife = e.CreateItems(s, "stone_knife", 1, ItemInstance.Carried).Single();
+        knife.Durability = knifeDurability;
+        var carcass = e.CreateItems(s, "carcass_feral_dog", 1, s.Ground).Single();
+        return (s, knife, carcass);
+    }
+
+    /// <summary>B51-Q772-01：本单成功磨损 1 把正耐久 1 的刀用到 0——预估工具行带后缀、保障说明在说明区只一次。</summary>
+    [Test]
+    public void Q772_A01_Forecast_ToolHitsZero_SuffixAndNoteOnce()
+    {
+        var (s, knife, carcass) = Carcass(1);
+        var p = E.Preview(s, ActionRequest.Butcher(carcass.InstanceId));
+        Assert.That((p.Ok, p.PlanFailed), Is.EqualTo((true, false)), p.Reason);
+        Assert.That((p.ToolDurabilityBefore, p.ToolDurabilityAfter), Is.EqualTo(((double?)1, (double?)0)));
+        Assert.That(p.ToolBreaksAfterOrder, Is.True);
+        Assert.That(GameEngine.ToolBreakForecastSuffix, Is.EqualTo(BreakSuffix));
+        Assert.That(p.Notes.Count(n => n == GuardNote), Is.EqualTo(1), "原保障说明只一次");
+        Assert.That(Web("Components", "PreviewView.razor"), Does.Contain("@(p.ToolBreaksAfterOrder ? GameEngine.ToolBreakForecastSuffix : \"\")</b>"), "接在工具行耐久前后值之后");
+    }
+
+    /// <summary>B51-Q772-01 配对：完成后仍大于 0 不误报（无后缀、无说明）。</summary>
+    [Test]
+    public void Q772_A01_Forecast_ToolStaysPositive_NoSuffix()
+    {
+        var (s, _, carcass) = Carcass(1.5);
+        var p = E.Preview(s, ActionRequest.Butcher(carcass.InstanceId));
+        Assert.That((p.Ok, p.PlanFailed, p.ToolDurabilityAfter), Is.EqualTo((true, false, (double?)0.5)), p.Reason);
+        Assert.That(p.ToolBreaksAfterOrder, Is.False);
+        Assert.That(p.Notes, Does.Not.Contain(GuardNote));
+    }
+
+    /// <summary>Q875 A（暂用）：完成计划不可信（推演算不完）时，即便当前耐久−本单磨损为 0 也不接后缀、不出说明。</summary>
+    [Test]
+    public void Q875_A_PlanUnreliable_NoSuffixNoNote()
+    {
+        var cfg = LoadConfig();
+        cfg.AnimalCarcasses.Single(x => x.CarcassItemId == "carcass_feral_dog").ButcherBaseMinutes = 100000;   // 远超预估推演上限，求不出完成
+        var e = new GameEngine(cfg);
+        var (s, _, carcass) = Carcass(1, e);
+        var p = e.Preview(s, ActionRequest.Butcher(carcass.InstanceId));
+        Assert.That((p.Ok, p.PlanFailed), Is.EqualTo((true, true)), p.Reason);
+        Assert.That(p.ToolBreaksAfterOrder, Is.False);
+        Assert.That(p.Notes, Does.Not.Contain(GuardNote));
+    }
+
+    /// <summary>
+    /// B51-Q772-01：进行中被本单锁定、按本单磨损确定完成后归 0 的同一工具实例写「本次生产结束后损坏」；同名另一把不标；完成后不再挂。
+    /// </summary>
+    [Test]
+    public void Q772_A01_InProgress_SameLockedToolOnly_ClearsAfterFinish()
+    {
+        var (s, knife, carcass) = Carcass(1);
+        var other = E.CreateItems(s, "stone_knife", 1, s.Ground).Single();
+        other.Durability = 1;
+        Start(s, ActionRequest.Butcher(carcass.InstanceId));
+        Assert.That(s.Main!.ToolGuardId, Is.EqualTo(knife.InstanceId));
+        Assert.That(CardStates.ToolOrderState(E, s, knife), Is.EqualTo(BreakState));
+        Assert.That(CardStates.ToolOrderState(E, s, other), Is.Null, "同名未锁定的另一把不标");
+        Run(s);
+        Assert.That(s.Main, Is.Null);
+        Assert.That(knife.Durability, Is.EqualTo(0), "按原规则完成磨到 0");
+        Assert.That(CardStates.ToolOrderState(E, s, knife), Is.Null, "完成后不再挂状态");
+        Assert.That(Web("Components", "ItemShelf.razor"), Does.Contain("CardStates.ToolOrderState(e, s, t) ?? Ui.CardLine2(e, s, t)"));
+        Assert.That(Web("Components", "ItemDetail.razor"), Does.Contain("CardStates.ToolOrderState(e, s, inst) is string toolOrder) { <div><span>状态</span><b>@toolOrder</b></div> }"));
+    }
+
+    /// <summary>B51-Q772-01 配对：进行中工具完成后仍为正（2−1＝1）不标。</summary>
+    [Test]
+    public void Q772_A01_InProgress_ToolStaysPositive_NotMarked()
+    {
+        var (s, knife, carcass) = Carcass(2);
+        Start(s, ActionRequest.Butcher(carcass.InstanceId));
+        Assert.That(CardStates.ToolOrderState(E, s, knife), Is.Null);
+    }
+
+    /// <summary>草药 5 份（有期限 600 分钟）随身，制作 n 份绷带只绑定 n 份草药。</summary>
+    private GameState Herbs5(int batch)
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId is "cloth" or "herb" or "bandage");
+        E.DebugGive(s, "cloth", batch);
+        foreach (var i in E.CreateItems(s, "herb", 5, ItemInstance.Carried)) i.ExpiresAt = s.GameMinute + 600;
+        Start(s, ActionRequest.Craft("bandage", batchCount: batch));
+        return s;
+    }
+
+    /// <summary>
+    /// B51-Q773-01：5 份中 2 份暂停保质——副标只写「含保质暂停」（S06／S14 B51 §Q773 选 B）；详情真实批：2 份保护（R）与 3 份未保护（原到期）分列；总数／预留数保持。
+    /// </summary>
+    [Test]
+    public void Q773_A01_PartlyPaused_SubtitleOnly_DetailSplitsBatches()
+    {
+        var s = Herbs5(2);
+        var e0 = s.GameMinute + 600;
+        var herbs = s.Items.Where(i => i.Owner == ItemInstance.Carried && i.ItemId == "herb").ToList();
+        Assert.That(CardStates.PausedCardLine(E, s, herbs), Is.EqualTo("含保质暂停"));
+        Assert.That(CardStates.TotalAndReserved(herbs), Is.EqualTo((5, 2)), "数量与预留不变");
+        var batches = E.BatchesOf(s, ItemInstance.Carried, "herb");
+        Assert.That(batches, Has.Count.EqualTo(2));
+        var paused = batches.Single(b => b.Stacks[0].ShelfPausedMinutes != null);
+        var free = batches.Single(b => b.Stacks[0].ShelfPausedMinutes == null);
+        Assert.That((paused.Count, paused.Stacks[0].ShelfPausedMinutes, paused.Reserved), Is.EqualTo((2, (int?)600, true)), "保护 2 份按 R 自成一批");
+        Assert.That((free.Count, free.ExpiresAt, free.Reserved), Is.EqualTo((3, (int?)e0, false)), "未保护 3 份原到期");
+        Assert.That(Web("Components", "ItemShelf.razor"), Does.Contain("pausedLine != GameEngine.ShelfPartlyPausedText"), "部分暂停不接批数");
+    }
+
+    /// <summary>B51-Q773-01 配对：全部保护沿 Q724 原「保质暂停，剩余{时长}」；没有保护不写暂停（沿原到期副标）。</summary>
+    [Test]
+    public void Q773_A01_AllPaused_OrNonePaused_Unchanged()
+    {
+        var all = Herbs5(5);
+        Assert.That(CardStates.PausedCardLine(E, all, all.Items.Where(i => i.Owner == ItemInstance.Carried && i.ItemId == "herb")), Is.EqualTo("保质暂停，剩余10小时"));
+        var none = New();
+        none.Items.RemoveAll(i => i.ItemId == "herb");
+        foreach (var i in E.CreateItems(none, "herb", 5, ItemInstance.Carried)) i.ExpiresAt = none.GameMinute + 600;
+        Assert.That(CardStates.PausedCardLine(E, none, none.Items.Where(i => i.Owner == ItemInstance.Carried && i.ItemId == "herb")), Is.Null);
+    }
+
+    /// <summary>
+    /// B51-Q774-01（S06／S14 B51 §Q774 选 A）：晾制投料预估只有 Q666 自身说明一次，不叠通用生产说明「开工后，所选原料暂停保质；退料恢复剩余保质。」；
+    /// 动词改「取出」随 Q778（B51c2）一起做，本批仍为原句。
+    /// </summary>
+    [Test]
+    public void Q774_A01_DryingFeed_OnlyOwnShelfNote()
+    {
+        var s = New();
+        s.GameMinute = At(2, 8, 0);
+        s.Skills["cooking"].Level = 5;
+        s.Items.RemoveAll(i => i.Owner == s.Ground || i.Owner == ItemInstance.Carried);
+        E.CreateItems(s, "wood", 4, s.Ground);
+        E.CreateItems(s, "rope", 2, s.Ground);
+        Start(s, ActionRequest.Craft("build_drying_rack"));
+        Run(s);
+        Assert.That(E.DryingRackHere(s), Is.True);
+        foreach (var i in E.CreateItems(s, "raw_meat", 1, ItemInstance.Carried)) i.ExpiresAt = s.GameMinute + 300;
+        E.CreateItems(s, "salt", 1, s.Ground);
+        var o = E.DryingPreview(s, "dry_meat");
+        Assert.That(o.PausesShelf, Is.True);
+        const string own = "开始制作后暂停原料保质计时，取消后恢复剩余时长";   // S11 Q666 原句（取出动词随 Q778）
+        Assert.That(o.Note.Split(own).Length - 1, Is.EqualTo(1), "Q666 自身说明一次");
+        Assert.That(o.Note, Does.Not.Contain("所选原料暂停保质").And.Not.Contain("退料恢复剩余保质"), "不叠通用说明");
+        Assert.That(E.StartDrying(s, "dry_meat").Ok, Is.True);
+        Assert.That(s.Log.Last().Text, Does.Not.Contain("退料恢复剩余保质").And.Not.Contain("恢复剩余保质，保质到"), "投料日志不加通用恢复句");
+    }
 }

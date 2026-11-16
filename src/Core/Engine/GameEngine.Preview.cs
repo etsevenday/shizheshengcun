@@ -24,6 +24,7 @@ namespace Survival.Core.Engine
                 p.Reason = err;
                 p.Label = DefaultLabel(r);
                 FillStatic(s, r, p, null);
+                p.ToolBreaksAfterOrder = false;   // B51c1（Q772）：开不了工没有本单，不报损坏
                 // Q254：开不了工（在办、已搜空、已领取）时点选详情也读得到全句；未发现的资源不公开
                 if (r.Type == ActionType.Gather && _res.TryGetValue(r.TargetId, out var res0) && s.Resources.TryGetValue(res0.NodeId, out var rs0) && rs0.Discovered
                     && NoOutputYieldLine(res0) is string yieldLine) p.Notes.Add(yieldLine);
@@ -96,6 +97,9 @@ namespace Survival.Core.Engine
             p.WouldDie = c.Progress.Dead;
             p.PlanFailed = !run.Done;
             p.PlanFailReason = run.FailReason;
+            // B51c1（S08／R02 B51 Q772；Q875 A 暂用）：完成可信时工具行接损坏后缀、原保障说明在说明区只一次；不可信不凭中途值断言损坏
+            if (p.ToolBreaksAfterOrder && p.PlanFailed) p.ToolBreaksAfterOrder = false;
+            if (p.ToolBreaksAfterOrder && !p.Notes.Contains(ToolGuardNote)) p.Notes.Add(ToolGuardNote);
             p.StatsAfter = c.Stats.Clone();
             if (p.Feed != null) p.Feed.TargetAfter = c.Actors[p.Feed.TargetActorId].Stats.Clone();
             p.EstimatedEndMinute = c.GameMinute;
@@ -364,6 +368,8 @@ namespace Survival.Core.Engine
                         p.ToolDurabilityBefore = tool.Durability;
                         p.ToolMaxDurability = tool.MaxDurability;
                         if (tool.Durability.HasValue) p.ToolDurabilityAfter = Math.Max(0, tool.Durability.Value - c.ToolWearOnSuccess);
+                        // B51c1（Q772）：本单保障工具（开工真实 D>0）按本单成功磨损完成后归 0；完成计划不可信时在推演后撤下（Q875 A）
+                        p.ToolBreaksAfterOrder = tool.Durability is double d0 && d0 > 0 && c.ToolWearOnSuccess > 0 && d0 - c.ToolWearOnSuccess <= ToolZeroEps;
                     }
                     // B51a（Q722／Q701，逐字稿 B51 表 butcherNote／corpseBefore／corpseDuring）：撤“保质期不刷新／完成时已腐败则没有产物／尸体还有…腐败”假失败语义
                     p.Notes.Add("按制造消耗，制造熟练不加速；取消退回原尸体，无产物。");

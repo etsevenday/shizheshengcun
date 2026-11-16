@@ -332,6 +332,10 @@ namespace Survival.Core.Engine
         public double? ToolDurabilityBefore { get; set; }
         public double? ToolDurabilityAfter { get; set; }
         public double? ToolMaxDurability { get; set; }
+        /// <summary>
+        /// B51c1（S08／R02 B51 Q772，Q875 A 暂用）：本单生产工具按本单用量完成后归 0（开工前正耐久、预估后值 0）；只在完成计划可信时为真（后值未预估不接损坏后缀）。
+        /// </summary>
+        public bool ToolBreaksAfterOrder { get; set; }
         public double HazardProbability { get; set; }
         public double HazardHealthLoss { get; set; }
         public string HazardLabel { get; set; } = "";

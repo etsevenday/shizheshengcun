@@ -40,6 +40,38 @@ namespace Survival.Core.Engine
         /// <summary>B51a（Q701.3）生产工具开工资格：无耐久恒真，有耐久者真实内部 D&gt;0（不以显示取整判断）。</summary>
         public static bool ProductionToolUsable(ItemInstance i) => i.Durability is not double d || d > 0;
 
+        // ───── B51c1（S08／R02／S14 B51 Q772；逐字稿 B51 表、Q701 表原句）工具本单保障的显示 ─────
+        /// <summary>预估工具行耐久前后值之后接的后缀。</summary>
+        public const string ToolBreakForecastSuffix = " · 预计本次生产结束后损坏";
+        /// <summary>进行中被本单锁定、按本单用量确定完成后损坏的同一工具卡与详情状态。</summary>
+        public const string ToolBreaksAfterOrderText = "本次生产结束后损坏";
+        /// <summary>原工具本单保障说明，预估说明区只一次。</summary>
+        public const string ToolGuardNote = "耐久不足不会中断本次生产；工具将在本次生产结束后损坏。";
+        private const double ToolZeroEps = 1e-9;
+
+        /// <summary>
+        /// 进行中（Q772；Q875 A 暂用）：这件工具被某个在办生产单（主行动、子行动、暂存原工作）作为本单保障工具锁定，且按本单剩余用量确定完成后归 0
+        /// （本单自磨已到 0 的 ToolGuardSpent，或当前耐久−本单成功磨损 ≤0）。只认同一工具实例，不按同名替换；没有本单保障或不耗工具的单为假。
+        /// </summary>
+        public bool ToolBreaksAfterOrder(GameState s, ItemInstance tool)
+        {
+            foreach (var a in new[] { s.Main, s.Sub, s.StashedWork })
+            {
+                if (a == null || a.ToolGuardId != tool.InstanceId || !a.LockedItemIds.Contains(tool.InstanceId)) continue;
+                if (a.ToolGuardSpent) return true;
+                if (OrderToolWear(s, a) is double w && w > 0 && tool.Durability is double d && d - w <= ToolZeroEps) return true;
+            }
+            return false;
+        }
+
+        /// <summary>本单完成时对保障工具的成功磨损（处理尸体：本单尸体配置的 ToolWearOnSuccess）；其他生产不磨保障工具为 null。</summary>
+        private double? OrderToolWear(GameState s, ActionState a)
+        {
+            if (a.Type != ActionType.Butcher) return null;
+            var carcass = a.ReservedItemIds.Select(id => FindItem(s, id)).FirstOrDefault(i => i != null);
+            return carcass != null && CarcassOf(OriginItemId(carcass)) is CarcassConfig c ? c.ToolWearOnSuccess : null;
+        }
+
         /// <summary>Q726-A02 零耐久拒绝句（逐字稿 B51 表）。</summary>
         public const string ToolBrokenText = "这件工具已损坏，请更换或维修。";
 
