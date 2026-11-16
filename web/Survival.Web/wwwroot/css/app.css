@@ -117,6 +117,9 @@
 }
 
 * { box-sizing: border-box; }
+/* B37a1（Q840 B）：全部位图（插画、人物、物品、门类、技能、状态图，含 img、SVG 内 image 与 CSS 背景图）放大、缩小与非整数窗口一律最近邻；
+   image-rendering 是继承属性，挂在根上覆盖全页；文字与矢量框体不受影响。 */
+:root { image-rendering: pixelated; }
 html, body { margin: 0; height: 100%; }
 body {
   background: var(--bg);
