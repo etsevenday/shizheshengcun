@@ -62,7 +62,7 @@ public class BM7aMenuFocusTests
         var obs = BM7aBattleTests.Slice(js, "var now = !!realMenu();",".observe(document.body");
         Assert.That(obs, Does.Contain("opener = pre && pre.isConnected && Date.now() - preAt < 1500 ? pre"), "打开前刚记下的原焦点优先");
         Assert.That(obs, Does.Contain("!inMenu(a) ? a : null"));
-        Assert.That(obs, Does.Contain("if (t) restore(t); else laterSrc();"), "打开前没有键盘焦点时不硬塞焦点");
+        Assert.That(obs, Does.Contain("if (t || battleDlg()) restore(t); else laterSrc();"), "打开前没有键盘焦点时不硬塞焦点（BM9 Q709：战斗对白仍在时回正文除外）");
         Assert.That(BM7aBattleTests.Slice(js, "function topMenu() {", "}"), Does.Contain("m.closest('[inert], .pop-ghosts')"), "Tab 循环不落到淡出残影");
         // 原规则保持：菜单打开时焦点进菜单底部关闭键；手动存档子页返回仍按 BM2 Q500 回关闭键（与 Q655 的关系另问）
         var mo = BM7aBattleTests.Web("Components", "MenuOverlay.razor");

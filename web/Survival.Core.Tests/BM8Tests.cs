@@ -321,7 +321,7 @@ public class BM8Tests : B41cTestBase
         Assert.That(ca, Does.Not.Contain("Edit=\"true\""), "不再无条件标 Enter");
         Assert.That(System.Text.RegularExpressions.Regex.Matches(ca, System.Text.RegularExpressions.Regex.Escape(foc)).Count, Is.EqualTo(2), "转移与倒出两个数量框跟踪编辑焦点");
         Assert.That(ca, Does.Contain("var goEdit = m.Mode == Mode.Stack && _qtyEditing;"), "单件（无数量框）永不标 Enter");
-        Assert.That(ca, Does.Contain("aria-keyshortcuts=\"@(goEdit ? \"Enter\" : \"Space Enter\")\""));
+        Assert.That(ca, Does.Contain("aria-keyshortcuts=\"@(goOff ? null : goEdit ? \"Enter\" : \"Space Enter\")\""), "BM9（Q710）：不可用时不报快捷键");
         Assert.That(ca, Does.Contain("Edit=\"@goEdit\""));
         Assert.That(ca, Does.Contain("Edit=\"@(max > 1 && _qtyEditing)\""));
         foreach (var file in new[] { "FireMenu.razor", "DropQuantity.razor", "GearGive.razor" })

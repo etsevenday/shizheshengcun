@@ -80,7 +80,8 @@
     var dlgStatic = dlg && G.FocusStaticDialogue != null && G.FocusStaticDialogue == e.ActiveDialogue(s)?.Id;
 }
 
-<div class="bfs" role="region" aria-label="@($"{BattleInfoCopy.Title(e.LocName(b.LocationId))} · {BattleInfoCopy.RoundText(b.Round)}")">
+@* BM9（S14／R03 Q708）：战场根 tabindex=-1，只作鼠标打开战斗信息后焦点回到的安全战场背景（不进 Tab 顺序、不画焦点框） *@
+<div class="bfs" id="bfs-root" tabindex="-1" role="region" aria-label="@($"{BattleInfoCopy.Title(e.LocName(b.LocationId))} · {BattleInfoCopy.RoundText(b.Round)}")">
     <div class="bfs-grid @(aiming ? "aiming" : "")" @oncontextmenu="CancelAim" @oncontextmenu:preventDefault="true">
         @* 顶条：「战斗 · {地点}」· 第{回合}回合 · 当前激活 [普通/追击] · AP 当前/本次上限 · 战斗菜单（A10 §2.2、§4.1）。
            B34（S14 Q575／Q576）：首战与普通战同一标题；容量、噪声、追击条件挪到队列行右端；系统说明只在战斗菜单里 *@
@@ -342,7 +343,7 @@
                     <span class="bx-hint @(p.Ok ? "" : "warn")" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">@(p.Ok ? (p.RetreatChance.HasValue ? $"成功率{Ui.Pct(p.RetreatChance.Value)}" : p.Notes.FirstOrDefault() ?? ShortName(sel)) : p.Reason)</span>
                 }
                 <button type="button" class="bx-go" id="bt-confirm" disabled="@(!p.Ok || locked)" title="@(p.Ok ? "点击确认才提交；同一指令只提交一次" : p.Reason)"
-                        aria-keyshortcuts="Space Enter" @onclick="() => Exec(token)">@G.BattleConsoleConfirmText()<EnterCap On="@(p.Ok && !locked)" /></button>
+                        aria-keyshortcuts="@(p.Ok && !locked ? "Space Enter" : null)" @onclick="() => Exec(token)">@G.BattleConsoleConfirmText()<EnterCap On="@(p.Ok && !locked)" /></button>
                 <button type="button" class="bx-x" aria-label="取消（ESC）" title="取消（ESC/右键），不执行" @onclick="G.ClearBattleAction">×</button>
             }
             else
@@ -350,13 +351,14 @@
                 @* B34（S14 Q577）：没选动作时不写文字催促；有真实战报就显示最新一条，没有就留空 *@
                 <span class="bx-last">@BattleInfoCopy.RoundWords(b.Log.LastOrDefault())</span>
             }
-            @* B34a（Q570）：主画面两个阅读入口——只展开对应页并聚焦页签，不选人、不确认 *@
+            @* B34a（Q570）：主画面两个阅读入口——只展开对应页并聚焦页签，不选人、不确认。
+               BM9（S14 Q708）：鼠标点开（ev.Detail > 0）且原待确认指令仍合法时焦点回战场背景，键盘激活仍留在页签 *@
             <span class="bfs-feed-btns" role="group" aria-label="阅读区入口">
                 @foreach (var (pg, label) in InfoPages)
                 {
                     var page = pg;
                     <button type="button" class="secondary bi-entry @(G.BattleInfoPage == page ? "on" : "")" id="@("bi-entry-" + page)" aria-expanded="@(G.BattleInfoPage == page)" aria-controls="bfs-infoarea"
-                            @onclick="() => G.OpenBattleInfo(page)">@label</button>
+                            @onclick="(MouseEventArgs ev) => G.OpenBattleInfo(page, ev.Detail > 0)">@label</button>
                 }
             </span>
         </footer>
@@ -370,7 +372,7 @@
                         @foreach (var (pg, label) in InfoPages)
                         {
                             var page = pg;
-                            <button type="button" role="tab" class="bi-tab @(infoPage == page ? "on" : "")" id="@("bi-tab-" + page)" aria-selected="@(infoPage == page)" @onclick="() => G.OpenBattleInfo(page)">@label</button>
+                            <button type="button" role="tab" class="bi-tab @(infoPage == page ? "on" : "")" id="@("bi-tab-" + page)" aria-selected="@(infoPage == page)" @onclick="(MouseEventArgs ev) => G.OpenBattleInfo(page, ev.Detail > 0)">@label</button>
                         }
                     </div>
                     @if (infoPage == "info")
@@ -1135,7 +1137,7 @@
         var st = G.BattleAimConfirm();
         var token = G.BattleExecToken();
         <span class="bp-confirm">
-            <button type="button" class="primary bp-go" data-aim-confirm aria-keyshortcuts="Space Enter" disabled="@(!st.Ok)" title="@st.Why"
+            <button type="button" class="primary bp-go" data-aim-confirm aria-keyshortcuts="@(st.Ok ? "Space Enter" : null)" disabled="@(!st.Ok)" title="@st.Why"
                     @onclick="() => G.BattleAimSubmit(token)">@ShellAim.ConfirmLabel(st.Name)<EnterCap On="@st.Ok" /></button>
             @if (!string.IsNullOrEmpty(st.Why)) { <span class="bp-why warn-text" role="status">@st.Why</span> }
         </span>

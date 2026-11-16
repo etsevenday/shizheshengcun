@@ -173,6 +173,7 @@
             var invalid = n < 1 || n > m.Available;
             var goEdit = m.Mode == Mode.Stack && _qtyEditing;   // BM8 试玩修复：只在数量框编辑中标 Enter
             var tooHeavy = !invalid && m.ToCarried && n > m.Max;
+            var goOff = invalid || tooHeavy || (m.ToCarried && m.Max < 1);   // BM9（S14 Q710）：不可用时读屏不报快捷键
             var unit = m.UnitGrams;
             // BM5b2（Q606）：物品组按自动配批的实际批次算重量与卡数（腐败物每份克重可不同）
             var plan = m.Group != null && !invalid ? GameEngine.PlanGroup(m.Group, n) : null;
@@ -197,7 +198,7 @@
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1, m)">+</button>
                         <button type="button" class="tbar-max" @onclick="() => SetN(m.ToCarried ? m.Max : m.Available)">@(m.ToCarried ? $"最多{m.Max}" : "全部")</button>
                     }
-                    <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(goEdit ? "Enter" : "Space Enter")" disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)<EnterCap On="@(!HideEnterCap && !(invalid || tooHeavy || (m.ToCarried && m.Max < 1)))" Edit="@goEdit" /></button>
+                    <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(goOff ? null : goEdit ? "Enter" : "Space Enter")" disabled="@goOff" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)<EnterCap On="@(!HideEnterCap && !goOff)" Edit="@goEdit" /></button>
                 </div>
                 @if (m.Instance != null && e.CarcassOf(m.Instance.ItemId) != null)
                 {
@@ -379,7 +380,7 @@
                         <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" @onfocus="() => _qtyEditing = true" @onblur="() => _qtyEditing = false" aria-label="转移数量" />
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => SetN(Math.Min(max, Parse() + 1))">+</button>
                     }
-                    <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(max > 1 && _qtyEditing ? "Enter" : "Space Enter")" disabled="@invalid" @onclick="() => Decant(water, zone, max > 1 ? n : 1)">取出@(e.ItemName(water.ItemId))@(max > 1 ? (invalid ? "" : $"{n}份") : "1份")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(!HideEnterCap && !invalid)" Edit="@(max > 1 && _qtyEditing)" /></button>
+                    <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(invalid ? null : max > 1 && _qtyEditing ? "Enter" : "Space Enter")" disabled="@invalid" @onclick="() => Decant(water, zone, max > 1 ? n : 1)">取出@(e.ItemName(water.ItemId))@(max > 1 ? (invalid ? "" : $"{n}份") : "1份")到@(zone == ItemInstance.Carried ? "随身" : "地面")<EnterCap On="@(!HideEnterCap && !invalid)" Edit="@(max > 1 && _qtyEditing)" /></button>
                 </div>
                 <div class="ca-note">每份@(e.PotConfig(m.PotInstance!).UnitMl)毫升 · 可取@(max)份 · 不耗时</div>
             }

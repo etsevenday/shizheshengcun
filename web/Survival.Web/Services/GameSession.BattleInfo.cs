@@ -25,18 +25,32 @@ public sealed partial class GameSession
     /// <summary>
     /// 点主画面入口「战斗信息」「战报」或展开区页签：只展开／切到对应页并聚焦该页签，不选人、不确认、不改瞄准（Q570-A02）。
     /// 点同一页签保持本页。对白锁时不开。
+    /// BM9（S14／R03 Q708）：鼠标点开（<paramref name="byPointer"/>）且原我方待确认指令仍合法、没有更高层时，焦点回战场背景（<see cref="BattleSafeFocusId"/>），
+    /// 不留在页签上——保留展开的信息、已选指令、行动者、武器页与明确目标，打开本身不执行；下一次独立空格／Enter 才走原唯一确认。
+    /// 键盘（Tab 聚焦后激活）、未选指令时仍按原规则聚焦页签。
     /// </summary>
-    public void OpenBattleInfo(string page)
+    public void OpenBattleInfo(string page, bool byPointer = false)
     {
         if (State == null || S.Battle == null || DialogueLocked) return;
         if (page is not ("info" or "log")) return;
         var wasOpen = BattleInfoPage != null;
         _infoPage = page;
         _infoBattle = S.Battle.BattleId;
-        BattleFocusId = "bi-tab-" + page;
+        BattleFocusId = byPointer && BattlePendingConfirm ? BattleSafeFocusId : "bi-tab-" + page;
         if (!wasOpen) BattleScrollTo = "info";
         Notify();
     }
+
+    /// <summary>BM9（Q708）：战场根元素 id（BattleScreen 的 .bfs，tabindex=-1）——鼠标打开战斗信息后的安全战场背景焦点。</summary>
+    public const string BattleSafeFocusId = "bfs-root";
+
+    /// <summary>
+    /// BM9（Q708）：原合法待确认情境——轮到我方、已选指令（瞄准或无目标待确认，不含调整站位选号位），无播放、菜单、子页、医疗小盘等更高层。
+    /// 只决定鼠标打开信息后焦点落点，不校验也不提交；确认时仍由原 BattleConfirmHover 同源重验。
+    /// </summary>
+    private bool BattlePendingConfirm =>
+        BattleAction != null && !BattleSwapAiming && !BattleBusy && !PlaybackActive && !BattleMenuOpen && !MedTrayOpen
+        && BattleDrawer == null && PendingDrop == null && E.AwaitingPlayer(S);
 
     /// <summary>「收起」或 Esc：只收起阅读区，焦点回原入口、战斗内容滚回原阅读位置；保留仍合法的指令与目标（Q570-A02）。</summary>
     public void CollapseBattleInfo()

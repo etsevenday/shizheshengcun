@@ -415,12 +415,12 @@
                     }
                     else
                     {
-                        <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(_qtyEditing ? "Enter" : "Space Enter")" disabled="@(!go)" @onclick="ev => Put(ev, slot, pot, st.It)">@(st.Water ? "装水" : "放入食材")<EnterCap On="@(go && cap)" Edit="@_qtyEditing" /></button>
+                        <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(!go ? null : _qtyEditing ? "Enter" : "Space Enter")" disabled="@(!go)" @onclick="ev => Put(ev, slot, pot, st.It)">@(st.Water ? "装水" : "放入食材")<EnterCap On="@(go && cap)" Edit="@_qtyEditing" /></button>
                     }
                 }
                 else if (slot is int sk)
                 {
-                    <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(_qtyEditing ? "Enter" : "Space Enter")" disabled="@(!go)" @onclick="ev => Put(ev, slot, null, st.It)">放入@(CardStates.FireSlotName(sk))<EnterCap On="@(go && cap)" Edit="@_qtyEditing" /></button>
+                    <button type="button" class="tbar-go" data-enter aria-keyshortcuts="@(!go ? null : _qtyEditing ? "Enter" : "Space Enter")" disabled="@(!go)" @onclick="ev => Put(ev, slot, null, st.It)">放入@(CardStates.FireSlotName(sk))<EnterCap On="@(go && cap)" Edit="@_qtyEditing" /></button>
                 }
             </div>
             @* Q588：「原因」控件悬停／聚焦／点按时，这一位显示那一行的完整真实原因；离开后恢复当前有效选择的说明 *@

@@ -183,7 +183,7 @@ public class BM2KeyAnswerTests : TestBase
         var panel = Web("Components/BattlePanel.razor");
         var bs = Web("Components/BattleScreen.razor");
         Assert.That(bs, Does.Contain("if (!G.BattleAiming) return;"), "无所选瞄准指令不出现");
-        Assert.That(bs, Does.Contain("data-aim-confirm aria-keyshortcuts=\"Space Enter\" disabled=\"@(!st.Ok)\" title=\"@st.Why\""));
+        Assert.That(bs, Does.Contain("data-aim-confirm aria-keyshortcuts=\"@(st.Ok ? \"Space Enter\" : null)\" disabled=\"@(!st.Ok)\" title=\"@st.Why\""));
         Assert.That(bs, Does.Contain("@onclick=\"() => G.BattleAimSubmit(token)\">@ShellAim.ConfirmLabel(st.Name)<EnterCap On=\"@st.Ok\" /></button>"));
         Assert.That(bs, Does.Contain("<span class=\"bp-why warn-text\" role=\"status\">@st.Why</span>"), "禁用时显示第一条真实原因");
         Assert.That(Regex.Matches(bs, "@AimConfirm\\(").Count, Is.EqualTo(1), "瞄准中在底部反馈位");

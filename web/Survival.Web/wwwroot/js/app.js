@@ -1640,10 +1640,22 @@ window.survivalBattleUi = (function () {
     var mb = document.querySelector('[data-menu-key], button[aria-keyshortcuts="Escape"]');
     return free(mb) && !covered(mb) ? mb : null;
   }
+  // BM9（S14／R03／N02 Q709）：战斗对白（.bfs-dlg 里的正式对白层，不含退场影子）仍在时，菜单真正关闭（ESC 或「返回战斗」同一路径）
+  // 焦点回当前同一句对白正文（.dlg-stream）：只聚焦、不滚动、不推进；普通主界面对白与非对白菜单流程不在此列
+  function battleDlg() {
+    var l = document.querySelector('.bfs-dlg > .dlg-layer:not(.dlg-ghost)');
+    return l && l.isConnected && shown(l) ? l : null;
+  }
   function restore(target) {
     var tries = 0;
     function go() {
       if (realMenu() || !lost()) return;   // 又开了菜单，或别的层／代码已把焦点放到有效位置
+      var dl = battleDlg();
+      if (dl) {
+        var body = dl.querySelector('.dlg-stream');
+        if (free(body)) { put(body); return; }
+        if (++tries < 10) { requestAnimationFrame(go); return; }   // 关菜单后对白层的 inert 下一帧才撤；仍不可用（如播放中）按下方原规则
+      }
       if (target && free(target) && !covered(target)) { put(target); return; }
       if (repairSrc()) return;   // 原位置是已消失的来源行：按 Q645 回下一／上一可选行或本层标题
       var f = menuFallback();
@@ -1665,8 +1677,8 @@ window.survivalBattleUi = (function () {
       } else {
         var t = opener;
         opener = null;
-        // 原焦点在来源行上则也走一次来源修复
-        if (t) restore(t); else laterSrc();
+        // 原焦点在来源行上则也走一次来源修复；BM9（Q709）：鼠标点开菜单（没记原焦点）时战斗对白仍在也回正文
+        if (t || battleDlg()) restore(t); else laterSrc();
       }
       return;
     }

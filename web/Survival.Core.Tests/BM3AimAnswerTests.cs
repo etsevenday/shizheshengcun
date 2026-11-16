@@ -149,7 +149,7 @@ public class BM3AimAnswerTests : TestBase
         Assert.That(src, Does.Contain("BattleAction == null || BattleAiming || DialogueLocked || !E.AwaitingPlayer(S)) return null;"), "没有对应按钮时不伪造");
         Assert.That(src, Does.Contain("ShellAim.ConsoleConfirmText(sel.Action == \"end_turn\", BattleShortName(sel), E.PreviewCommand(S, CurrentBattleCommand()).Ap)"));
         var screen = Web("Components/BattleScreen.razor");
-        Assert.That(screen, Does.Contain("aria-keyshortcuts=\"Space Enter\" @onclick=\"() => Exec(token)\">@G.BattleConsoleConfirmText()<EnterCap On=\"@(p.Ok && !locked)\" /></button>"), "按钮业务文字与指引同源，键帽另在按钮里");
+        Assert.That(screen, Does.Contain("aria-keyshortcuts=\"@(p.Ok && !locked ? \"Space Enter\" : null)\" @onclick=\"() => Exec(token)\">@G.BattleConsoleConfirmText()<EnterCap On=\"@(p.Ok && !locked)\" /></button>"), "按钮业务文字与指引同源，键帽另在按钮里");
         Assert.That(screen, Does.Not.Contain("$\"确认结束行动 · 剩余{p.Ap}AP清零\""), "按钮不再自拼");
         Assert.That(screen, Does.Contain("private static string ShortName(BattleCommandOption o) => GameSession.BattleShortName(o);"));
         var panel = Web("Components/BattlePanel.razor");

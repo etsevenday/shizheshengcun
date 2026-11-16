@@ -123,6 +123,66 @@ public class BM9Tests : B41cTestBase
         Assert.That(local.Single(r => r.Label == "继续／结束对话 空格").Note, Is.EqualTo("只推进当前一句对白；有分支时先明确选择。"));
     }
 
+    // ───────────── Q708 鼠标打开战斗信息后焦点回战场背景 ─────────────
+
+    /// <summary>
+    /// Q708-A01／A02：入口与页签用鼠标点开（click detail&gt;0）且原待确认指令仍合法时焦点交给战场根（tabindex=-1），否则（键盘激活、未选指令、更高层）仍聚焦页签；
+    /// 打开不提交；战场根上的空格／Enter 走原战斗确认（不在按钮上）。
+    /// </summary>
+    [Test]
+    public void Q708_A01_A02_MouseOpenInfoFocusesBattleBackground()
+    {
+        var bs = Web("Components", "BattleScreen.razor");
+        Assert.That(bs, Does.Contain("<div class=\"bfs\" id=\"bfs-root\" tabindex=\"-1\" role=\"region\""));
+        Assert.That(Regex.Matches(bs, Regex.Escape("@onclick=\"(MouseEventArgs ev) => G.OpenBattleInfo(page, ev.Detail > 0)\"")).Count, Is.EqualTo(2), "底部入口与页签");
+        var info = Web("Services", "GameSession.BattleInfo.cs");
+        Assert.That(info, Does.Contain("public void OpenBattleInfo(string page, bool byPointer = false)"));
+        Assert.That(info, Does.Contain("BattleFocusId = byPointer && BattlePendingConfirm ? BattleSafeFocusId : \"bi-tab-\" + page;"));
+        Assert.That(info, Does.Contain("public const string BattleSafeFocusId = \"bfs-root\";"));
+        Assert.That(info, Does.Contain("BattleAction != null && !BattleSwapAiming && !BattleBusy && !PlaybackActive && !BattleMenuOpen && !MedTrayOpen"), "无指令（Q618 只查看）与更高层不移焦点");
+        var open = info[info.IndexOf("public void OpenBattleInfo(", StringComparison.Ordinal)..];
+        open = open[..open.IndexOf("\n    }", StringComparison.Ordinal)];
+        Assert.That(open, Does.Not.Contain("Execute").And.Not.Contain("Submit").And.Not.Contain("BattleConfirmHover"), "打开只读、不提交");
+        Assert.That(Web("wwwroot", "css", "shell.css"), Does.Contain(".bfs:focus, .bfs:focus-visible { outline: none; }"));
+        var js = Web("wwwroot", "js", "app.js");
+        Assert.That(js, Does.Contain("var onCtl = document.activeElement && document.activeElement.closest && document.activeElement.closest('button, [role=button]');"), "战场根不是按钮：空格／Enter 走战斗确认");
+    }
+
+    // ───────────── Q709 战斗对白中关闭菜单回正文 ─────────────
+
+    /// <summary>Q709-A01／A02：菜单真正关闭（ESC 或返回战斗同一观察者）时战斗对白仍在就回同一句正文（只聚焦），对白层仍 inert 时逐帧再等，失效按原层规则；鼠标点开（无原焦点）也回正文。</summary>
+    [Test]
+    public void Q709_A01_A02_MenuCloseReturnsToDialogueBody()
+    {
+        var js = Web("wwwroot", "js", "app.js");
+        Assert.That(js, Does.Contain("var l = document.querySelector('.bfs-dlg > .dlg-layer:not(.dlg-ghost)');"), "只限战斗对白、不含退场影子");
+        var restore = js[js.IndexOf("function restore(target) {", StringComparison.Ordinal)..];
+        restore = restore[..restore.IndexOf("setTimeout(go, 0);", StringComparison.Ordinal)];
+        Assert.That(restore, Does.Contain("var body = dl.querySelector('.dlg-stream');").And.Contain("if (free(body)) { put(body); return; }"));
+        Assert.That(restore, Does.Not.Contain(".click()"), "回位不推进台词");
+        Assert.That(restore.IndexOf("var dl = battleDlg();", StringComparison.Ordinal), Is.LessThan(restore.IndexOf("if (target && free(target) && !covered(target))", StringComparison.Ordinal)), "战斗对白优先于原触发位置");
+        Assert.That(js, Does.Contain("if (t || battleDlg()) restore(t); else laterSrc();"));
+        Assert.That(Web("Components", "DialogueLayer.razor"), Does.Contain("<div class=\"dlg-stream\" @ref=\"_stream\" tabindex=\"0\""), "正文可聚焦");
+    }
+
+    // ───────────── Q710 读屏快捷键元信息按真实作用域 ─────────────
+
+    /// <summary>Q710-A01：锅层装水／放入按钮屏幕不加键帽（沿 Q584 cap），读屏非编辑可用报 Space Enter、编辑中只报 Enter、不可用不报；其他数量确认与战斗确认同口径。</summary>
+    [Test]
+    public void Q710_A01_AriaKeyShortcutsActualScope()
+    {
+        var fm = Web("Components", "FireMenu.razor");
+        Assert.That(Regex.Matches(fm, Regex.Escape("aria-keyshortcuts=\"@(!go ? null : _qtyEditing ? \"Enter\" : \"Space Enter\")\" disabled=\"@(!go)\"")).Count, Is.EqualTo(2));
+        Assert.That(Regex.Matches(fm, Regex.Escape("<EnterCap On=\"@(go && cap)\" Edit=\"@_qtyEditing\" />")).Count, Is.EqualTo(2), "屏幕键帽仍按 Q584");
+        Assert.That(Web("Components", "CardActions.razor"), Does.Contain("aria-keyshortcuts=\"@(goOff ? null : goEdit ? \"Enter\" : \"Space Enter\")\" disabled=\"@goOff\"")
+            .And.Contain("aria-keyshortcuts=\"@(invalid ? null : max > 1 && _qtyEditing ? \"Enter\" : \"Space Enter\")\" disabled=\"@invalid\""));
+        Assert.That(Web("Components", "DropQuantity.razor"), Does.Contain("aria-keyshortcuts=\"@(invalid ? null : _qtyEditing ? \"Enter\" : \"Space Enter\")\""));
+        Assert.That(Web("Components", "GearGive.razor"), Does.Contain("aria-keyshortcuts=\"@(p.Blocked != null ? null : p.ShowQuantity && _qtyEditing ? \"Enter\" : \"Space Enter\")\""));
+        var bs = Web("Components", "BattleScreen.razor");
+        Assert.That(bs, Does.Contain("aria-keyshortcuts=\"@(p.Ok && !locked ? \"Space Enter\" : null)\"").And.Contain("data-aim-confirm aria-keyshortcuts=\"@(st.Ok ? \"Space Enter\" : null)\""));
+        Assert.That(Web("Components", "EnterCap.razor"), Does.Not.Contain("aria-keyshortcuts=\""), "元信息不复制成可见提示");
+    }
+
     // ───────────── 逐字稿对照 ─────────────
 
     /// <summary>逐字稿 Q704—Q710 表：实现里的正式句与表行逐字一致。</summary>
