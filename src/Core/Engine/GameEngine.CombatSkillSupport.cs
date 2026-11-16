@@ -30,7 +30,7 @@ namespace Survival.Core.Engine
         /// <summary>攻击结算后用掉“下一次攻击”的增益（鼓舞、总攻令、斧蓄力）；鼓舞/总攻令被实际用掉才发指挥经验（A06 §3）。</summary>
         private void ConsumeAttackBuffs(GameState s, BattleState b, AttackSpec sp)
         {
-            if (sp.Reaction || sp.Desperate) return;
+            if (sp.Reaction) return;   // MT1：应急拳击也是"下一次攻击"，吃到的鼓舞／总攻令要用掉（A06 command_01／10，Q82 只排除反应攻击）
             if (InspireActive(b)) { b.InspireBonus = 0; GrantPendingCommandXp(s, b, "command_01"); }
             if (AllOutActive(b)) { b.AllOutFactor = 0; GrantPendingCommandXp(s, b, "command_10"); }
             if (AxeChargeActive(s, b, sp)) b.ChargeFactor = 0;
@@ -542,7 +542,11 @@ namespace Survival.Core.Engine
                     {
                         if (wi?.Durability != null) parts.Add(Wear(wi, 1));
                         var post = w.Trait("postMedicalDamage");
-                        if (post > 0) { b.PlayerNextDamageFactor = post; parts.Add($"下一次受到的直接伤害×{Fmt.T(post)}"); }
+                        if (post > 0)
+                        {
+                            using (FocusOn(s, target)) b.PlayerNextDamageFactor = post;   // MT1：A05 稳定给被治疗的目标
+                            parts.Add($"下一次受到的直接伤害×{Fmt.T(post)}");
+                        }
                     }
                     parts.Insert(0, "消耗" + string.Join("、", x.Items.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}")));
                     break;
