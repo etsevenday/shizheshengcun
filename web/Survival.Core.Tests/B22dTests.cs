@@ -100,7 +100,7 @@ public class B22dTests : TestBase
         Assert.That((CraftXp(s) - xp0, StationXpToday(s, day)), Is.EqualTo((12, 12)), "两类共享每日 12");
 
         Water(s);
-        Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "water_station").Single()), Does.Contain("已满12"));
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "water_station").Single()), Is.EqualTo("今日可获得生产制造经验已满"), "BM9（S08 Q842）：今日已完成批次用满日额时的在途说明");
         AdvanceTo(s, s.GameMinute + 30);
         Assert.That(Sum(s, "clean_water"), Is.EqualTo(12), "日额满了产物照出");
         Assert.That(CraftXp(s) - xp0, Is.EqualTo(12), "日额满后再完成给 0");

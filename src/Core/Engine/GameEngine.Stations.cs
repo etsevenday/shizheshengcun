@@ -183,6 +183,9 @@ namespace Survival.Core.Engine
             return sum;
         }
 
+        /// <summary>BM9（S08 Q842、逐字稿 2026-11-16 Q841—Q842）：今日已完成批次用满被动制造经验日额时的经验说明（原句无句末标点）。</summary>
+        public const string StationXpDailyFullText = "今日可获得生产制造经验已满";
+
         /// <summary>
         /// 经验说明（预估/进行中共用）：基础经验与完成日余额。xp 为这一批的快照（0 = 旧批次按原规则不给）；finishMinute 为预计完成时刻。
         /// </summary>
@@ -196,6 +199,9 @@ namespace Survival.Core.Engine
             if (SkillLevel(who, skill) >= SkillCap(skill)) return $"{SkillName(skill)}已满{SkillCap(skill)}级，完成不再获得经验";
             var day = Clock.Day(finishMinute);
             var free = StationXpRoom(who, day);
+            // BM9（S08 Q842，文案策划 shioko0315 定稿）：完成日是今日、今日已完成批次已用满原被动制造经验日额时，新批与在途批说明恰为此句，
+            // 不再接「先完成的在途批次预计占…」「完成不再给经验」「已满12」；日额、结算与其他分支不变
+            if (free <= 0 && day == Clock.Day(s.GameMinute)) return StationXpDailyFullText;
             var pending = StationXpPending(s, who.Id, day, finishMinute, self);
             var room = Math.Max(0, free - pending);
             var ahead = pending > 0 && room < xp ? $"；先完成的在途批次预计占{Math.Min(pending, free)}" : "";

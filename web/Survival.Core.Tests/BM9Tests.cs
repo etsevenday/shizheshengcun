@@ -183,6 +183,93 @@ public class BM9Tests : B41cTestBase
         Assert.That(Web("Components", "EnterCap.razor"), Does.Not.Contain("aria-keyshortcuts=\""), "元信息不复制成可见提示");
     }
 
+    // ───────────── R270 Q841／Q842（文案策划 shioko0315 定稿） ─────────────
+
+    /// <summary>COPY-Q841-01：右栏产物块可靠预估保留「产出 · 留在{地点}」；求不出可信完成的固定配方工作写「配方产物 · 留在{地点}」；不可开工沿原「产出」。</summary>
+    [Test]
+    public void Q841_OutputStatusText()
+    {
+        var p = new ActionPreview { OutputPlace = "农野荒地地面" };
+        Assert.That(GameEngine.OutputStatusText(p, ActionType.Craft), Is.EqualTo("产出 · 留在农野荒地地面"));
+        p.PlanFailed = true;
+        foreach (var t in new[] { ActionType.Craft, ActionType.Build, ActionType.Butcher, ActionType.Salvage })
+            Assert.That(GameEngine.OutputStatusText(p, t), Is.EqualTo("配方产物 · 留在农野荒地地面"), t.ToString());
+        Assert.That(GameEngine.OutputStatusText(p, ActionType.Gather), Is.EqualTo("产出 · 留在农野荒地地面"), "无固定配方的输出不换");
+        var view = Web("Components", "PreviewView.razor");
+        Assert.That(view, Does.Contain("Status=\"@GameEngine.OutputStatusText(p, Request.Type)\""));
+        Assert.That(view, Does.Contain("@foreach (var o in p.Outputs) { <ItemRow Icon=\"@o.ItemId\" Name=\"@o.Name\" Qty=\"@($\"×{o.Count}\")\" Status=\"产出\" /> }"), "不可开工分支沿原");
+    }
+
+    private GameState Workshop()
+    {
+        var s = New(84201);
+        s.Skills["crafting"].Level = 3;
+        s.Progress.Flags.Add("h03_ceramic_notice_read");
+        foreach (var (id, n) in new[] { ("stone", 8), ("clay", 6), ("iron_plate", 2) }) E.CreateItems(s, id, n, s.Ground);
+        Start(s, ActionRequest.Craft("build_kiln", null, null, 1));
+        Run(s);
+        foreach (var (id, n) in new[] { ("ceramic_shell", 4), ("plank", 2), ("cloth", 2) }) E.CreateItems(s, id, n, s.Ground);
+        Start(s, ActionRequest.Craft("build_water_station", null, null, 1));
+        Run(s);
+        s.Items.RemoveAll(i => i.ItemId is "clay" or "charcoal" or "dirty_water" or "filter_media" or "ceramic_shell" or "clean_water");
+        s.Skills["crafting"].Level = 3;
+        s.Skills["crafting"].Xp = 0;
+        return s;
+    }
+
+    private int _seq;
+
+    private void WaterBatch(GameState s)
+    {
+        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
+        var r = E.StartStationBatch(s, "ex_station_water", $"q842-{++_seq}", 1);
+        Assert.That(r.Ok, Is.True, r.Reason);
+    }
+
+    /// <summary>COPY-Q842-01：今日已完成批次用满被动制造日额后，新批预估与在途批说明恰为「今日可获得生产制造经验已满」，不接旧长句；完成结果句与日额规则不变。</summary>
+    [Test]
+    public void Q842_01_DailyCapUsedByCompletedBatches()
+    {
+        var s = Workshop();
+        var rc = Cfg.Recipes.Single(r => r.Id == "ex_station_water");
+        var day = Clock.Day(s.GameMinute);
+        for (var i = 0; i < 4; i++) { WaterBatch(s); AdvanceTo(s, s.GameMinute + 30); }   // 净水台每批 3，四批完成用满 12
+        Assume.That(Clock.Day(s.GameMinute), Is.EqualTo(day), "布场：仍在同一日");
+        Assert.That(s.Player.DailyCounts[$"{day}|stationXp|crafting"], Is.EqualTo(12));
+        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
+        Assert.That(E.StationBatchXpPreview(s, rc, 1), Is.EqualTo(GameEngine.StationXpDailyFullText), "新批");
+        Assert.That(GameEngine.StationXpDailyFullText, Is.EqualTo("今日可获得生产制造经验已满"));
+        var r = E.StartStationBatch(s, "ex_station_water", $"q842-{++_seq}", 1);
+        Assert.That(r.Ok, Is.True, r.Reason);
+        var note = E.StationBatchXpNote(s, E.StationBatchesHere(s, "water_station").Single());
+        Assert.That(note, Is.EqualTo("今日可获得生产制造经验已满"), "在途批");
+        Assert.That(note, Does.Not.Contain("在途批次预计占").And.Not.Contain("完成不再给经验").And.Not.Contain("已满12").And.Not.EndWith("。"));
+        var xp = s.Skills["crafting"].Xp;
+        AdvanceTo(s, s.GameMinute + 30);
+        Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(xp), "日额满后完成仍给 0");
+        Assert.That(s.Log.Last(l => l.Text.Contains("净水")).Text, Does.Contain("已满12"), "完成结果句不属本题，沿原");
+    }
+
+    /// <summary>COPY-Q842-02：未满或只被在途批次预计占满时沿原说明（含「先完成的在途批次预计占」）；不改主动制造日额。</summary>
+    [Test]
+    public void Q842_02_OtherBranchesUnchanged()
+    {
+        var s = Workshop();
+        var rc = Cfg.Recipes.Single(r => r.Id == "ex_station_water");
+        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
+        Assert.That(E.StationBatchXpPreview(s, rc, 1), Does.Contain("制造经验+3"), "未满：原句");
+        for (var i = 0; i < 4; i++) WaterBatch(s);   // 四批在途、同刻完成，预计占满 12
+        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
+        var preview = E.StationBatchXpPreview(s, rc, 1);
+        Assert.That(preview, Does.Contain("预计已满12").And.Contain("先完成的在途批次预计占12"), "在途占额：原句");
+        Assert.That(preview, Is.Not.EqualTo(GameEngine.StationXpDailyFullText));
+        Assert.That(Src("src", "Core", "Engine", "GameEngine.Stations.cs"), Does.Contain("if (free <= 0 && day == Clock.Day(s.GameMinute)) return StationXpDailyFullText;"), "只认今日已完成批次用满（free 为已结算的当日余额）");
+    }
+
     // ───────────── 逐字稿对照 ─────────────
 
     /// <summary>逐字稿 Q704—Q710 表：实现里的正式句与表行逐字一致。</summary>
