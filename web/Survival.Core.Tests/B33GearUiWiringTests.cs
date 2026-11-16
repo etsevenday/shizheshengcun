@@ -24,7 +24,9 @@ public class B33GearUiWiringTests
         Assert.That(g, Does.Contain("GearPanelCopy.PartyHead(").And.Contain("GearPanelCopy.MemberLine(").And.Contain("GearPanelCopy.SummaryCards(").And.Contain("GearPanelCopy.SummaryWeight("));
         Assert.That(g, Does.Contain("GearPanelCopy.Close").And.Contain("GearPanelCopy.CarriedEmpty").And.Contain("GearPanelCopy.GroundEmpty").And.Contain("GearPanelCopy.EmptyWork"));
         Assert.That(g, Does.Not.Contain("EquipmentSource(").And.Not.Contain("七槽装备 · 随身五卡").And.Not.Contain("只有你一人同行"));
-        Assert.That(g, Does.Contain("img/portraits/protagonist.svg").And.Contain("img/portraits/unknown.svg"));
+        // B37a2 改期望（02 Q806 A 整套肖像统一替换、Q839 A 主角 actor:p0、Q835 补问 B）：原临时形象 protagonist.svg／unknown.svg 改为按身份取清单肖像与全身图
+        Assert.That(g, Does.Contain("<img class=\"g3-face\" src=\"@ArtAssets.ActorPortrait(s, aid)\"").And.Contain("@ArtAssets.ActorFigure(s, me, \"g3-fig\")"));
+        Assert.That(g, Does.Not.Contain("img/portraits/"));
         Assert.That(g, Does.Not.Contain("<AnchorPop"), "整备页内工作区保持原位置");
     }
 

@@ -31,7 +31,7 @@
                 {
                     var aid = id;
                     <button type="button" role="tab" aria-selected="@(aid == me)" class="g3-member @(aid == me ? "on" : "")" data-actor="@aid" data-gear-member="@aid" @onclick="() => G.GearPickActor(aid)">
-                        <img class="g3-face" src="@Face(aid)" alt="" draggable="false" />
+                        <img class="g3-face" src="@ArtAssets.ActorPortrait(s, aid)" alt="" draggable="false" />
                         <span class="g3-mtext"><b>@e.ActorDisplayName(s, aid)</b><small>@GearPanelCopy.MemberLine(e.CarriedGramsOf(s, aid), e.RootCardCountOf(s, aid), e.MaxRootCards)</small></span>
                     </button>
                 }
@@ -40,7 +40,8 @@
 
         <section class="g3-col g3-figure-col" aria-label="@GearPanelCopy.Slots">
             <div class="g3-figure">
-                <img src="@Face(me)" alt="" draggable="false" />
+                @* B37a2（P03a portrait／art actor:*）：队员列表画肖像、中栏画当前队员全身图（ActorArt 身份顺序） *@
+                @ArtAssets.ActorFigure(s, me, "g3-fig")
                 <b>@name</b>
             </div>
             <div class="g3-summary">
@@ -143,7 +144,6 @@
 @code {
     private void Close() => G.OpenPanel(null);
 
-    private static string Face(string actorId) => actorId == GameState.PlayerId ? "img/portraits/protagonist.svg" : "img/portraits/unknown.svg";
 
     private void Key(KeyboardEventArgs ev, int id)
     {

@@ -241,7 +241,8 @@ public class BM4bRailTests : TestBase
         Assert.That(Web("Services", "Ui.cs"), Does.Contain("new(UnitRuns.Html(text))"));
         Assert.That(Web("wwwroot", "css", "rail.css"), Does.Contain("[data-detail-rail] .fire-detail .fs-head > span { flex: 1 1 auto; overflow: visible; text-overflow: clip; }"), "工位头状态句不截成省略号");
         var m = Web("Components", "MemberPeekDetail.razor");
-        Assert.That(m, Does.Contain("<Thumb><img src=\"@(isMe ? \"img/portraits/protagonist.svg\" : \"img/portraits/unknown.svg\")\""));
+        // B37a2 改期望（02 Q806 A、Q839 A、Q835 补问 B）：缩略图沿整备队员列表改为按身份取清单肖像
+        Assert.That(m, Does.Contain("<Thumb><img src=\"@ArtAssets.ActorPortrait(s, id)\""));
         Assert.That(Web("wwwroot", "css", "rail.css"), Does.Contain("[data-detail-rail] .rail-id h2 small { font-size: var(--fs-aux); margin-left: 6px; }"));
     }
 }

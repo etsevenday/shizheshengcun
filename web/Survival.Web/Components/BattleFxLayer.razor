@@ -5,7 +5,8 @@
    上一场的最后几段播放时下一场的演员、HP 不会混进来。BM7a（S14 Q633）：不可跳过——画面点击由这一层接住、什么也不做（不跳、不点穿、不排队）。
    B52b（R03 Q737）：只读子页（全记录等）开着时也不再退到下面——特写全屏，正文只在镜头间隙可读。
    B34（S14 Q573）：标题为本次真实指令名；结果字用战报原词「未命中」「格挡」「暴击」「倒地」及这次真实新生效的状态名，恢复「+{数值}」、扣血「−{数值}」取真实变化值；
-   不另加「行动名 · 伤害」结果条（同次战报原句只给读屏）。BM7a（Q633）：撤去「跳到结果」「跳过余下」按钮与键帽。人物图沿用战场现有立绘（主角立绘、敌人图标）。 *@
+   不另加「行动名 · 伤害」结果条（同次战报原句只给读屏）。BM7a（Q633）：撤去「跳到结果」「跳过余下」按钮与键帽。人物图沿用战场现有立绘（主角立绘、敌人图标）。
+   B37a2（动效合同 battle 七类“攻击者及目标素材 ID”）：我方按出手快照里的角色 ID 画其全身图（ActorArt 身份顺序），敌人仍是敌人图。 *@
 @if (G.FxNow is BattleFxEvent ev)
 {
     var look = ev.Look;
@@ -85,7 +86,7 @@
                 }
             </div>
             <div class="bfx-art">
-                @if (u.IsAlly) { <img src="img/portraits/protagonist.svg" alt="" draggable="false" /> }
+                @if (u.IsAlly) { @ArtAssets.ActorFigure(G.VS, u.Id) }
                 else { @Icons.Markup("enemy_" + u.EnemyId) }
                 @if (guarded) { <i class="bfx-shield"></i> }
                 @if (healed || aided) { <i class="bfx-glow @(aided ? "aid" : "")"></i> }

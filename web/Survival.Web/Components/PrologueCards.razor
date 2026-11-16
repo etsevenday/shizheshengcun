@@ -38,7 +38,7 @@
                         : $"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）";
                 <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(post || companion ? " post-card" : "")}{(preview != null ? " has-preview" : "")}{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(post || companion ? n.KindLabel : n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
                             Tooltip="@tip" DescribedBy="@(preview != null ? $"npc-pv-{id}" : null)" OnClick="() => Talk(id, why)">
-                    <Art><img class="npc-portrait" src="img/portraits/unknown.svg" alt="@($"{n.Name}（临时形象）")" draggable="false" /></Art>
+                    <Art>@* B37a2（P01e card art actor:*）：人物卡画本人全身图，代班画岗位 duty（不借原人图）；读屏名沿原 alt *@@ArtAssets.Figure(ActorArt.ForNpc(ArtAssets.Catalog, n.NpcId, n.Substitute), "npc-portrait", $"{n.Name}（临时形象）")</Art>
                     <ChildContent>
                         @{
                             // B24（A10-CITY §6）：卡面补组织、在场/代班与可接/可交短标（只定位，不自动接任务）

@@ -42,11 +42,12 @@
             {
                 <div class="dlog-read" data-wheel="y" tabindex="0" aria-label="对话内容">
                     <div class="dlog-read-head">
-                        <img src="img/portraits/protagonist.svg" alt="主角（临时形象）" />
+                        <img src="@ArtAssets.Portrait(ActorArt.Protagonist)" alt="主角（临时形象）" />
                         <span><b>@EventName(pick)</b> · @WhenWhere(pick)</span>
-                        @if (!string.IsNullOrEmpty(pick.Counterpart))
+                        @* B37a2（Q811 A）：回看按记录里每句的 LineId 查发言身份；这组已结束，右侧取最后一句对方人物对白（代班用岗位 duty，不借原人图），整组无对方发言时省略 *@
+                        @if (ActorArt.RightSpeakerLine(pick.Lines, int.MaxValue) is DialogueLine pickRight && pickRight.Speaker.Length > 0)
                         {
-                            <img src="@(pick.Counterpart == "饱饱" ? "img/portraits/baobao.svg" : "img/portraits/unknown.svg")" alt="@($"{pick.Counterpart}（临时形象）")" />
+                            <img src="@ArtAssets.LinePortrait(G.E.Config, pickRight)" alt="@($"{pickRight.Speaker}（临时形象）")" />
                         }
                     </div>
                     <div class="dlg-stream static">

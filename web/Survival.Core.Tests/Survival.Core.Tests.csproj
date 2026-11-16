@@ -26,6 +26,7 @@
   <ItemGroup>
     <!-- B37a1：取图规则是不依赖界面的纯类，直接编译进测试（网页工程是 WASM，不作项目引用） -->
     <Compile Include="../Survival.Web/Services/ArtCatalog.cs" Link="Linked/ArtCatalog.cs" />
+    <Compile Include="../Survival.Web/Services/ActorArt.cs" Link="Linked/ActorArt.cs" />
   </ItemGroup>
 
   <ItemGroup>
