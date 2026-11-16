@@ -42,7 +42,7 @@ python tools/feedback.py pull
 ## 3 修复
 
 1. **复现**：按 `feedback.md` 的游戏状态与最近日志在脑中或内核测试里重走一遍；界面问题用内置浏览器起本地开发版（`preview_start {name: "web"}`，5177 被占时用 `web-alt` 5180），用 `javascript_tool` 把 `save.json` 的内容写进 `localStorage` 的 `survival.save.v1` 后刷新、点“继续”，就能回到玩家出问题的那一刻。
-2. **改代码**：内核规则在 `src/Core/`，界面在 `web/Survival.Web/Components/`、`Services/GameSession.cs`、`wwwroot/css/app.css`。内核改动要补或改 `web/Survival.Core.Tests/` 里的用例。
+2. **改代码**：内核规则在 `src/Core/`，界面在 `web/Survival.Web/Components/`、`Services/GameSession.cs`、`wwwroot/css/app.css`。内核改动要补或改 `web/Survival.Core.Tests/` 里的用例，写法守 `/design-dev` 第 3 步"测试防假绿"那 7 条（本会话自己写也一样）：补的回归测试先在修复前的代码上跑一次，确认它能复现留言里的问题（是红的），修完变绿，这就是它的改坏验证；改已有测试的期望值必须有策划案条目或 Q 号出处，写进提交说明，"实际跑出来是这个"不算。
 3. **跑测试**：
 
 ```bash
