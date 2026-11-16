@@ -1,0 +1,138 @@
+{
+  "date": "2026-11-17",
+  "status": "user_approved_complete_original_B37_planning_target_not_runtime_verified",
+  "originalQuestions": [
+    834,
+    835,
+    836,
+    837,
+    838,
+    839,
+    840
+  ],
+  "answers": {
+    "834": "用户新裁定“让开发补图”，非原A/B/C。开发负责盘点、制作及接入正式缺图，不转交用户／美术，也不以随意程序借图视为补齐；原正式覆盖／清零及Q836用户验收结案要求未取消，临时占位只作过渡。Q835明确允许职业服设模板和配色组合作为正式人物方案，不能与无关借图冒称专用混淆。见S14及11／14／07号稿本批。",
+    "835": "用户新方案，非原A/B/C：开发制作正式人物模板，每个名册职业2套不同服装、多种衣色并适配角色实际肤色；该批候选首次公开时一次确定服设配色，之后同人所有可定位身份的头像／人物图及编队整备战斗读档等复用稳定组合，不重抽、不按行号绑。保留原性别／肤色／发型／发色／面部身份和独立展示子流，不改职业数值装备；色板和制作流水线由开发落实。必要补问B：无职业保底护送员保持现有固定通用图，不随机服设肤色或另做通用两套。取代旧Q276补员逐人外观要求，完整规则见A11／S14及11号定稿本批。",
+    "836": "选A。B37实际线上构建重验全部有效页、18项UI／14项美术，按最新取代规则判；交素材清单、缺项表、对接表和逐项验收记录至doc/验收/重墨V2 UI重做 v1.0/，记录构建、宽高、输入、结果及截图，四指定尺寸加非整倍窗口，只要求截图。原题意核对沿已有人工记录，开发核查真实绑定及新补图，用户最后确认结案；历史回退构建和题图不算当前证据。见07验收／S14本批。",
+    "837": "选A并明确开发补足。37处缺场景期间保持原统一占位、登记缺项，由开发补齐正式图；不按地貌／城市随意借图掩缺，原批准沿用7处旧地景保持。完成口径按Q834／Q836，见S14及14号稿本批。",
+    "838": "选A并明确缺图由开发补。准确同义的徒手／工坊建造／柴炉／南口路标按原正确键先接；腐败物、濒死、潜行、意志、公开救助残页五项继续占位登记并由开发补正式图，不漏原“其余4项”的具体第五项，不借相近警告／健康等图冒称完成。见S14及11／14号稿本批。",
+    "839": "选A。主角沿a9b93f0 manifest actor:p0：portrait-actor-p0.webp肖像及atlas-actor-survivor-sample.webp原全身裁窗，不用p0-design效果图版本，不重新生成角色。见S14及11号稿本批。",
+    "840": "选B：全部最近邻缩放，不选推荐平滑，也不限整数倍；人物／插画／物品等位图在放大、缩小及非整倍窗口和预缩缓存过程都保持最近邻。独立文字字体、读屏、框体／锚点／热区和真实状态层不改，正常窗口验收。取代16号及效果图默认平滑口径，见S14及11／14／16号稿本批。"
+  },
+  "formalMissingArtOwner": "developer",
+  "formalCompletion": "all_required_formal_art_integrated_and_full_evidence_review_confirmed_by_user",
+  "temporaryPlaceholdersNotCompletion": true,
+  "scenes": {
+    "missingCountAtQuestion": 37,
+    "temporary": "original_generic_placeholder",
+    "developerMustFill": true,
+    "previouslyApprovedOldLandscapes": 7
+  },
+  "namedMissingObjects": [
+    "腐败物",
+    "濒死",
+    "潜行",
+    "意志",
+    "公开救助残页"
+  ],
+  "correctMappings": {
+    "unarmed": "skillFamily:unarmed",
+    "workshopBuild": "facility:workbench",
+    "foldingStove": "item:folding_stove",
+    "southRouteMarker": "glyph:route"
+  },
+  "recruitAppearance": {
+    "scope": "actual_random_roster_profession_templates",
+    "formalArtOwner": "developer",
+    "outfitsPerProfession": 2,
+    "differentDesignsNotRecolors": true,
+    "multipleClothingColors": true,
+    "originalSkinLabels": [
+      "浅肤色",
+      "中浅肤色",
+      "中等肤色",
+      "中深肤色",
+      "深肤色"
+    ],
+    "skin": "reuse_already_generated_character_skin_not_new_independent_draw",
+    "selection": "one_time_by_first_publication_existing_independent_cosmetic_stream_uniform_valid_pools",
+    "persist": "stable_outfit_palette_and_actual_skin_keys_bound_to_candidate_and_actor_ID",
+    "portraitAndBodySameAppearance": true,
+    "noRerollOnReopenRecruitReadOrAssetUpdate": true,
+    "originalGenderHairFaceAndAllGameplayRulesUnchanged": true,
+    "noNewEquipmentOrDyeUi": true,
+    "emergencyEscort": {
+      "followup": "B",
+      "appearance": "fixed_recruitTemplate_legacy_neutral",
+      "randomOutfits": false,
+      "randomSkin": false,
+      "newProfession": false
+    }
+  },
+  "acceptance": {
+    "directory": "doc/验收/重墨V2 UI重做 v1.0/",
+    "allValidPages": true,
+    "originalUiChecks": 18,
+    "originalArtChecks": 14,
+    "viewportSizes": [
+      [
+        1280,
+        720
+      ],
+      [
+        1366,
+        768
+      ],
+      [
+        1600,
+        900
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "extraNonIntegerViewport": true,
+    "screenshotsRequired": true,
+    "videoNotRequired": true,
+    "developerTestsFirst": true,
+    "userFinalConfirmation": true,
+    "currentBuildEvidenceOnly": true
+  },
+  "protagonist": {
+    "choice": "A",
+    "key": "actor:p0",
+    "portrait": "portrait-actor-p0.webp",
+    "bodyAtlas": "atlas-actor-survivor-sample.webp",
+    "doNotUse": "portrait-p0-design.webp",
+    "sourceCommit": "a9b93f0",
+    "portraitSourceAudit": {
+      "source": "a9b93f0:doc/策划案/重墨V2离线评审 v1.0/素材/ink-v2/portrait-actor-p0.webp",
+      "sha256": "fe73a31aa1be969966fcc1c56533955a21657edb1eaaabc8e37b30b22678e32c"
+    }
+  },
+  "scaling": {
+    "choice": "B",
+    "allBitmapArt": "nearest_neighbor",
+    "downscaleAndNonIntegerWindows": true,
+    "noPriorSmoothCache": true,
+    "independentTextAndUiGeometryUnchanged": true
+  },
+  "acceptanceIds": [
+    "B37-Q834-01",
+    "B37-Q834-02",
+    "B37-Q835-01",
+    "B37-Q835-02",
+    "B37-Q835-03",
+    "B37-Q835-04",
+    "B37-Q835-05",
+    "B37-Q835-06",
+    "B37-Q836-01",
+    "B37-Q836-02",
+    "B37-Q837-01",
+    "B37-Q838-01",
+    "B37-Q839-01",
+    "B37-Q840-01",
+    "B37-Q840-02"
+  ]
+}
