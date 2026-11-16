@@ -21,7 +21,14 @@
 - `web/Survival.Core.Tests/CombatSkillSupportMutationGapSupportTests.cs`（34 项：医疗、快速装填、护身类、保护／掩护、整队、预览）
 - `web/Survival.Core.Tests/CombatSkillSupportMutationGapReactionTests.cs`（10 项：反击、架矛迎击）
 
-## 疑似 bug（未修，待用户定）
+## 补测发现的实现错误（已修，f6ba00cf）
+
+用户定"修了再一起推"。两处都改为与策划案一致，回归测试 `web/Survival.Core.Tests/MT1CombatBugfixTests.cs` 3 项修复前均红、修复后绿；全量 2871 项通过。本地 Release 包轻量试玩：加载、新游戏、控制台 0 错误；两处改动在界面上要指挥技能＋队友医疗＋体力耗尽的战斗才能走到，以测试为准。
+
+- 应急拳击：`ConsumeAttackBuffs` 不再对应急拳击直接返回，吃到的鼓舞／总攻令用掉，鼓舞用掉照常给施术者指挥经验+2（斧蓄力原本就不作用于应急拳击，不变）。
+- 救援医疗箱「稳定」：×0.9 记在被治疗的目标身上。
+
+原记录如下：
 
 | 位置 | 现象 | 依据 |
 | --- | --- | --- |
