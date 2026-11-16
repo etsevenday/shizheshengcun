@@ -37,7 +37,7 @@
             var grams = e.CarriedGrams(s);
             var over = grams > e.Config.Carry.SoftGrams;
             var night = p.Ok && !p.PlanFailed && !e.IsDaylight(p.EstimatedEndMinute);   // B51b（Q725）：求不出可信完成时不判到达是否入夜
-            var scene = ArtAssets.Scene(lc.Id, lc.Scene);
+            var scene = ArtAssets.Scene(lc.Id);
             @* B22f（Q202 ①，交开发方定）：远征入口浮窗限制在中部列里，不盖住右栏完整进入预告 *@
             <AnchorPop AnchorId="@pop.AnchorId" Title="@($"前往{lc.Name}")" CssClass="@("travel" + G.MenuHideCss)" Bound="@(expPv != null ? ".center" : null)"
                        Sub="@($"{(dir == MapDirection.None ? "" : GameEngine.DirectionHint(dir) + " · ")}{(ls.Visited ? "已访问" : "待访问")} · 单程{p.BaseMinutes}分钟")" OnClose="G.ClosePop">

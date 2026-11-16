@@ -8,14 +8,8 @@ public static class ArtAssets
 {
     public static readonly ArtCatalog Catalog = Load();
 
-    private static readonly HashSet<string> Scenes = new(StringComparer.Ordinal)
-    {
-        "camp", "field", "woods", "stream", "village", "hardware", "scrapyard", "clinic"
-    };
-
-    public static string Scene(string id, string? fallback = null) =>
-        id == "hardware" ? "art/v10/hardware.png" :
-        Scenes.Contains(id) ? $"art/v08/{id}.png" : fallback ?? $"scenes/{id}.svg";
+    /// <summary>地点场景图（B37a1，Q837 A）：清单 99 处用新图、16 号稿批准的 7 处沿用旧地景、其余 37 处统一占位并登记。</summary>
+    public static string Scene(string id) => Catalog.Scene(id);
 
     /// <summary>
     /// 清单裁窗：内层 viewport 只露出裁窗，外层按裁窗宽高适配图位。不预缩、不另存单图，浏览器按需取整张图集。

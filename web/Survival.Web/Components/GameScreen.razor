@@ -20,7 +20,7 @@
     else if (_lastInfo != null && !s.Progress.Dead) { _fadeInfo = _lastInfo; _lastInfo = null; _ = FadeOut(_fadeInfo); }
 }
 
-<div class="game wasteland" style="--scene-art: url('@Navigation.ToAbsoluteUri(ArtAssets.Scene(s.CurrentLocation, e.Location(s.CurrentLocation).Scene))')">
+<div class="game wasteland" style="--scene-art: url('@Navigation.ToAbsoluteUri(ArtAssets.Scene(s.CurrentLocation))')">
     <header class="top" inert="@fullBattle">
         <div class="brand">
             <b>@ShellText.Brand</b>
