@@ -1,0 +1,7959 @@
+{
+ "source": "a9b93f0 a9b93f0:doc/策划案/重墨V2离线评审 v1.0/素材/ink-v2/manifest.json",
+ "sourceSha256": "6dee53b3729286588b149b1066925cb8eb7974ef66eb227d7258cf21763ff906",
+ "generatedBy": "tools/b37a1-inventory.py",
+ "groups": {
+  "物品 item": [
+   {
+    "object": "dirty_water",
+    "name": "脏水",
+    "key": "item:dirty_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     91,
+     32,
+     201,
+     273
+    ]
+   },
+   {
+    "object": "clean_water",
+    "name": "净水",
+    "key": "item:clean_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     395,
+     31,
+     160,
+     271
+    ]
+   },
+   {
+    "object": "canned_food",
+    "name": "罐头",
+    "key": "item:canned_food",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     677,
+     45,
+     206,
+     256
+    ]
+   },
+   {
+    "object": "berry",
+    "name": "野果",
+    "key": "item:berry",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     942,
+     55,
+     278,
+     245
+    ]
+   },
+   {
+    "object": "raw_root",
+    "name": "生块根",
+    "key": "item:raw_root",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     31,
+     362,
+     283,
+     240
+    ]
+   },
+   {
+    "object": "cooked_root",
+    "name": "烤熟块根",
+    "key": "item:cooked_root",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     329,
+     329,
+     294,
+     272
+    ]
+   },
+   {
+    "object": "boiled_root",
+    "name": "水煮块根",
+    "key": "item:boiled_root",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     645,
+     330,
+     272,
+     273
+    ]
+   },
+   {
+    "object": "wood",
+    "name": "木材",
+    "key": "item:wood",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     941,
+     350,
+     293,
+     253
+    ]
+   },
+   {
+    "object": "fiber",
+    "name": "植物纤维",
+    "key": "item:fiber",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     18,
+     650,
+     296,
+     261
+    ]
+   },
+   {
+    "object": "stone",
+    "name": "石块",
+    "key": "item:stone",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     330,
+     661,
+     291,
+     233
+    ]
+   },
+   {
+    "object": "scrap",
+    "name": "废金属",
+    "key": "item:scrap",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     630,
+     642,
+     289,
+     254
+    ]
+   },
+   {
+    "object": "cloth",
+    "name": "布料",
+    "key": "item:cloth",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     941,
+     650,
+     299,
+     248
+    ]
+   },
+   {
+    "object": "parts",
+    "name": "零件",
+    "key": "item:parts",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     29,
+     957,
+     284,
+     254
+    ]
+   },
+   {
+    "object": "herb",
+    "name": "草药",
+    "key": "item:herb",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     337,
+     643,
+     267,
+     287
+    ]
+   },
+   {
+    "object": "bandage",
+    "name": "草药绷带",
+    "key": "item:bandage",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     637,
+     671,
+     294,
+     243
+    ]
+   },
+   {
+    "object": "stone_knife",
+    "name": "石刀",
+    "key": "item:stone_knife",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     955,
+     349,
+     276,
+     256
+    ]
+   },
+   {
+    "object": "hatchet",
+    "name": "简易斧",
+    "key": "item:hatchet",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     20,
+     649,
+     284,
+     271
+    ]
+   },
+   {
+    "object": "pot",
+    "name": "金属锅",
+    "key": "item:pot",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     337,
+     656,
+     277,
+     254
+    ]
+   },
+   {
+    "object": "lighter",
+    "name": "打火器",
+    "key": "item:lighter",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     652,
+     648,
+     265,
+     272
+    ]
+   },
+   {
+    "object": "kitchen_knife",
+    "name": "厨房刀",
+    "key": "item:kitchen_knife",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     30,
+     40,
+     283,
+     268
+    ]
+   },
+   {
+    "object": "crowbar",
+    "name": "撬棍",
+    "key": "item:crowbar",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     337,
+     41,
+     281,
+     266
+    ]
+   },
+   {
+    "object": "wooden_spear",
+    "name": "木矛",
+    "key": "item:wooden_spear",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     646,
+     28,
+     279,
+     281
+    ]
+   },
+   {
+    "object": "metal_spear",
+    "name": "金属矛",
+    "key": "item:metal_spear",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     959,
+     28,
+     276,
+     280
+    ]
+   },
+   {
+    "object": "wooden_bow",
+    "name": "木弓",
+    "key": "item:wooden_bow",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     78,
+     332,
+     199,
+     288
+    ]
+   },
+   {
+    "object": "crossbow",
+    "name": "弩",
+    "key": "item:crossbow",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     330,
+     346,
+     279,
+     266
+    ]
+   },
+   {
+    "object": "pistol",
+    "name": "手枪",
+    "key": "item:pistol",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     648,
+     376,
+     273,
+     219
+    ]
+   },
+   {
+    "object": "shotgun",
+    "name": "霰弹枪",
+    "key": "item:shotgun",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     947,
+     350,
+     292,
+     245
+    ]
+   },
+   {
+    "object": "rifle",
+    "name": "步枪",
+    "key": "item:rifle",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     20,
+     635,
+     294,
+     290
+    ]
+   },
+   {
+    "object": "arrow",
+    "name": "箭矢",
+    "key": "item:arrow",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     963,
+     633,
+     269,
+     285
+    ]
+   },
+   {
+    "object": "bolt",
+    "name": "弩矢",
+    "key": "item:bolt",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     23,
+     965,
+     287,
+     265
+    ]
+   },
+   {
+    "object": "ammo_9mm",
+    "name": "9mm弹",
+    "key": "item:ammo_9mm",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     388,
+     989,
+     213,
+     206
+    ]
+   },
+   {
+    "object": "shell_12g",
+    "name": "霰弹",
+    "key": "item:shell_12g",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     667,
+     974,
+     241,
+     239
+    ]
+   },
+   {
+    "object": "ammo_rifle",
+    "name": "步枪弹",
+    "key": "item:ammo_rifle",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     978,
+     956,
+     250,
+     248
+    ]
+   },
+   {
+    "object": "carcass_feral_dog",
+    "name": "野犬尸体",
+    "key": "item:carcass_feral_dog",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     931,
+     982,
+     310,
+     222
+    ]
+   },
+   {
+    "object": "carcass_wolf",
+    "name": "狼尸体",
+    "key": "item:carcass_wolf",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-12.webp",
+    "crop": [
+     34,
+     85,
+     286,
+     193
+    ]
+   },
+   {
+    "object": "carcass_boar",
+    "name": "野猪尸体",
+    "key": "item:carcass_boar",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-12.webp",
+    "crop": [
+     331,
+     64,
+     294,
+     209
+    ]
+   },
+   {
+    "object": "carcass_stag",
+    "name": "鹿尸体",
+    "key": "item:carcass_stag",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-12.webp",
+    "crop": [
+     636,
+     27,
+     303,
+     258
+    ]
+   },
+   {
+    "object": "raw_meat",
+    "name": "生肉",
+    "key": "item:raw_meat",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     941,
+     369,
+     280,
+     229
+    ]
+   },
+   {
+    "object": "hide",
+    "name": "兽皮",
+    "key": "item:hide",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     331,
+     954,
+     281,
+     271
+    ]
+   },
+   {
+    "object": "cooked_meat",
+    "name": "烤肉",
+    "key": "item:cooked_meat",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     40,
+     679,
+     274,
+     209
+    ]
+   },
+   {
+    "object": "boiled_meat",
+    "name": "水煮肉",
+    "key": "item:boiled_meat",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     337,
+     627,
+     276,
+     279
+    ]
+   },
+   {
+    "object": "antibiotics",
+    "name": "抗生素",
+    "key": "item:antibiotics",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     958,
+     661,
+     285,
+     256
+    ]
+   },
+   {
+    "object": "antiviral_cure",
+    "name": "病毒特效药",
+    "key": "item:antiviral_cure",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     71,
+     950,
+     178,
+     286
+    ]
+   },
+   {
+    "object": "antiviral_precursor",
+    "name": "抗病毒前体",
+    "key": "item:antiviral_precursor",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     639,
+     949,
+     276,
+     273
+    ]
+   },
+   {
+    "object": "lab_reagent",
+    "name": "实验室试剂",
+    "key": "item:lab_reagent",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     943,
+     951,
+     279,
+     262
+    ]
+   },
+   {
+    "object": "active_substance_white_unidentified",
+    "name": "未鉴定的活性物质",
+    "key": "item:active_substance_white_unidentified",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-12.webp",
+    "crop": [
+     989,
+     33,
+     214,
+     263
+    ]
+   },
+   {
+    "object": "plank",
+    "name": "木板",
+    "key": "item:plank",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     11,
+     62,
+     290,
+     229
+    ]
+   },
+   {
+    "object": "rope",
+    "name": "绳索",
+    "key": "item:rope",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     330,
+     64,
+     285,
+     222
+    ]
+   },
+   {
+    "object": "iron_plate",
+    "name": "铁片",
+    "key": "item:iron_plate",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     639,
+     69,
+     285,
+     221
+    ]
+   },
+   {
+    "object": "steel",
+    "name": "钢材",
+    "key": "item:steel",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     953,
+     55,
+     290,
+     235
+    ]
+   },
+   {
+    "object": "fastener",
+    "name": "紧固件",
+    "key": "item:fastener",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     24,
+     354,
+     272,
+     241
+    ]
+   },
+   {
+    "object": "leather",
+    "name": "皮革",
+    "key": "item:leather",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     326,
+     354,
+     280,
+     239
+    ]
+   },
+   {
+    "object": "thread",
+    "name": "缝线",
+    "key": "item:thread",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     647,
+     358,
+     260,
+     236
+    ]
+   },
+   {
+    "object": "rubber",
+    "name": "橡胶",
+    "key": "item:rubber",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     953,
+     356,
+     287,
+     232
+    ]
+   },
+   {
+    "object": "plastic",
+    "name": "塑料",
+    "key": "item:plastic",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     18,
+     651,
+     274,
+     255
+    ]
+   },
+   {
+    "object": "wire",
+    "name": "导线",
+    "key": "item:wire",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     326,
+     670,
+     289,
+     244
+    ]
+   },
+   {
+    "object": "electronics",
+    "name": "电子组件",
+    "key": "item:electronics",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     638,
+     667,
+     283,
+     233
+    ]
+   },
+   {
+    "object": "battery",
+    "name": "电池",
+    "key": "item:battery",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     966,
+     651,
+     254,
+     259
+    ]
+   },
+   {
+    "object": "adhesive",
+    "name": "黏合剂",
+    "key": "item:adhesive",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     18,
+     975,
+     283,
+     243
+    ]
+   },
+   {
+    "object": "oil",
+    "name": "机油",
+    "key": "item:oil",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     336,
+     972,
+     272,
+     249
+    ]
+   },
+   {
+    "object": "charcoal",
+    "name": "木炭",
+    "key": "item:charcoal",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     645,
+     981,
+     278,
+     231
+    ]
+   },
+   {
+    "object": "precision_parts",
+    "name": "精密零件",
+    "key": "item:precision_parts",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-09.webp",
+    "crop": [
+     953,
+     973,
+     279,
+     241
+    ]
+   },
+   {
+    "object": "weapon_parts",
+    "name": "武器组件",
+    "key": "item:weapon_parts",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     24,
+     37,
+     271,
+     247
+    ]
+   },
+   {
+    "object": "ballistic_fiber",
+    "name": "防护纤维",
+    "key": "item:ballistic_fiber",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     331,
+     37,
+     280,
+     275
+    ]
+   },
+   {
+    "object": "medical_gauze",
+    "name": "医用纱布",
+    "key": "item:medical_gauze",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     321,
+     979,
+     296,
+     253
+    ]
+   },
+   {
+    "object": "disinfectant",
+    "name": "消毒液",
+    "key": "item:disinfectant",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     686,
+     960,
+     190,
+     273
+    ]
+   },
+   {
+    "object": "saline",
+    "name": "盐水剂",
+    "key": "item:saline",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     969,
+     948,
+     250,
+     297
+    ]
+   },
+   {
+    "object": "repair_kit",
+    "name": "维修包",
+    "key": "item:repair_kit",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     635,
+     17,
+     292,
+     288
+    ]
+   },
+   {
+    "object": "gun_service_kit",
+    "name": "枪械养护包",
+    "key": "item:gun_service_kit",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     945,
+     14,
+     297,
+     291
+    ]
+   },
+   {
+    "object": "grain",
+    "name": "谷物",
+    "key": "item:grain",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     627,
+     653,
+     290,
+     253
+    ]
+   },
+   {
+    "object": "salt",
+    "name": "盐",
+    "key": "item:salt",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     13,
+     319,
+     286,
+     285
+    ]
+   },
+   {
+    "object": "cooking_oil",
+    "name": "食用油",
+    "key": "item:cooking_oil",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     985,
+     628,
+     207,
+     277
+    ]
+   },
+   {
+    "object": "canned_beans",
+    "name": "豆罐头",
+    "key": "item:canned_beans",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     74,
+     934,
+     205,
+     281
+    ]
+   },
+   {
+    "object": "dried_meat",
+    "name": "肉干",
+    "key": "item:dried_meat",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     329,
+     967,
+     274,
+     243
+    ]
+   },
+   {
+    "object": "iron_ore",
+    "name": "铁矿料",
+    "key": "item:iron_ore",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     320,
+     345,
+     298,
+     247
+    ]
+   },
+   {
+    "object": "soap",
+    "name": "肥皂",
+    "key": "item:soap",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     636,
+     358,
+     302,
+     224
+    ]
+   },
+   {
+    "object": "filter_media",
+    "name": "滤材",
+    "key": "item:filter_media",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     954,
+     318,
+     297,
+     289
+    ]
+   },
+   {
+    "object": "herb_extract",
+    "name": "草药浸膏",
+    "key": "item:herb_extract",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     56,
+     49,
+     248,
+     257
+    ]
+   },
+   {
+    "object": "metal_tube",
+    "name": "金属管",
+    "key": "item:metal_tube",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     4,
+     635,
+     308,
+     253
+    ]
+   },
+   {
+    "object": "spring",
+    "name": "弹簧",
+    "key": "item:spring",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     376,
+     628,
+     194,
+     263
+    ]
+   },
+   {
+    "object": "canvas",
+    "name": "帆布",
+    "key": "item:canvas",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     620,
+     636,
+     319,
+     254
+    ]
+   },
+   {
+    "object": "root_porridge",
+    "name": "块根粥",
+    "key": "item:root_porridge",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     635,
+     937,
+     271,
+     273
+    ]
+   },
+   {
+    "object": "meat_stew",
+    "name": "炖肉",
+    "key": "item:meat_stew",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-01.webp",
+    "crop": [
+     922,
+     934,
+     304,
+     281
+    ]
+   },
+   {
+    "object": "grain_cake",
+    "name": "谷饼",
+    "key": "item:grain_cake",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     11,
+     64,
+     293,
+     229
+    ]
+   },
+   {
+    "object": "berry_jam",
+    "name": "果酱",
+    "key": "item:berry_jam",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     352,
+     36,
+     245,
+     261
+    ]
+   },
+   {
+    "object": "dried_berries",
+    "name": "果干",
+    "key": "item:dried_berries",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     642,
+     30,
+     280,
+     267
+    ]
+   },
+   {
+    "object": "fried_root",
+    "name": "油煎块根",
+    "key": "item:fried_root",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     951,
+     58,
+     285,
+     233
+    ]
+   },
+   {
+    "object": "trail_ration",
+    "name": "行军口粮",
+    "key": "item:trail_ration",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     11,
+     360,
+     298,
+     245
+    ]
+   },
+   {
+    "object": "herbal_drink",
+    "name": "草药饮",
+    "key": "item:herbal_drink",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     350,
+     326,
+     258,
+     287
+    ]
+   },
+   {
+    "object": "sterile_bandage",
+    "name": "无菌绷带",
+    "key": "item:sterile_bandage",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     331,
+     53,
+     279,
+     248
+    ]
+   },
+   {
+    "object": "compression_bandage",
+    "name": "加压绷带",
+    "key": "item:compression_bandage",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     640,
+     57,
+     280,
+     248
+    ]
+   },
+   {
+    "object": "first_aid_pack",
+    "name": "急救包",
+    "key": "item:first_aid_pack",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     951,
+     41,
+     280,
+     266
+    ]
+   },
+   {
+    "object": "oral_rehydration",
+    "name": "口服补液",
+    "key": "item:oral_rehydration",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     64,
+     331,
+     215,
+     281
+    ]
+   },
+   {
+    "object": "cleaning_wipe",
+    "name": "清洁巾",
+    "key": "item:cleaning_wipe",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     945,
+     637,
+     310,
+     260
+    ]
+   },
+   {
+    "object": "water_filter",
+    "name": "便携滤水器",
+    "key": "item:water_filter",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     26,
+     915,
+     277,
+     315
+    ]
+   },
+   {
+    "object": "hand_lamp",
+    "name": "手持灯",
+    "key": "item:hand_lamp",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     331,
+     913,
+     269,
+     316
+    ]
+   },
+   {
+    "object": "fire_starter",
+    "name": "引火包",
+    "key": "item:fire_starter",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     624,
+     920,
+     295,
+     310
+    ]
+   },
+   {
+    "object": "repair_patch",
+    "name": "修补片",
+    "key": "item:repair_patch",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-10.webp",
+    "crop": [
+     945,
+     933,
+     298,
+     288
+    ]
+   },
+   {
+    "object": "field_bedroll",
+    "name": "行旅铺垫",
+    "key": "item:field_bedroll",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     19,
+     52,
+     295,
+     260
+    ]
+   },
+   {
+    "object": "clay",
+    "name": "黏土",
+    "key": "item:clay",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     334,
+     66,
+     271,
+     230
+    ]
+   },
+   {
+    "object": "ceramic_shell",
+    "name": "陶壳",
+    "key": "item:ceramic_shell",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     646,
+     45,
+     270,
+     257
+    ]
+   },
+   {
+    "object": "purification_tablet",
+    "name": "净水片",
+    "key": "item:purification_tablet",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     959,
+     45,
+     272,
+     266
+    ]
+   },
+   {
+    "object": "filter_cartridge",
+    "name": "长效滤芯",
+    "key": "item:filter_cartridge",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     19,
+     338,
+     292,
+     269
+    ]
+   },
+   {
+    "object": "ration_canteen",
+    "name": "分量水壶",
+    "key": "item:ration_canteen",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     360,
+     332,
+     227,
+     280
+    ]
+   },
+   {
+    "object": "hardtack",
+    "name": "远行硬饼",
+    "key": "item:hardtack",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     643,
+     348,
+     268,
+     256
+    ]
+   },
+   {
+    "object": "expedition_bar",
+    "name": "远征口粮棒",
+    "key": "item:expedition_bar",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     946,
+     363,
+     299,
+     226
+    ]
+   },
+   {
+    "object": "stew_portion",
+    "name": "谷肉炖食",
+    "key": "item:stew_portion",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-02.webp",
+    "crop": [
+     14,
+     675,
+     282,
+     243
+    ]
+   },
+   {
+    "object": "field_tarp",
+    "name": "野营遮雨布",
+    "key": "item:field_tarp",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     630,
+     349,
+     301,
+     265
+    ]
+   },
+   {
+    "object": "folding_stove",
+    "name": "折叠柴炉",
+    "key": "item:folding_stove",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     931,
+     340,
+     300,
+     272
+    ]
+   },
+   {
+    "object": "field_patch",
+    "name": "野外修补包（白）",
+    "key": "item:field_patch",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     14,
+     652,
+     288,
+     259
+    ]
+   },
+   {
+    "object": "field_patch_green",
+    "name": "野外修补包（绿）",
+    "key": "item:field_patch_green",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     314,
+     655,
+     295,
+     244
+    ]
+   },
+   {
+    "object": "field_patch_blue",
+    "name": "野外修补包（蓝）",
+    "key": "item:field_patch_blue",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     630,
+     647,
+     289,
+     261
+    ]
+   },
+   {
+    "object": "cable_bundle",
+    "name": "绝缘线束",
+    "key": "item:cable_bundle",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     945,
+     646,
+     294,
+     258
+    ]
+   },
+   {
+    "object": "flash_marker",
+    "name": "闪光标记器",
+    "key": "item:flash_marker",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     33,
+     956,
+     254,
+     271
+    ]
+   },
+   {
+    "object": "brace_pack",
+    "name": "支撑护带包",
+    "key": "item:brace_pack",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     320,
+     956,
+     295,
+     257
+    ]
+   },
+   {
+    "object": "rally_patch",
+    "name": "鼓舞提示贴",
+    "key": "item:rally_patch",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     629,
+     965,
+     302,
+     250
+    ]
+   },
+   {
+    "object": "antidiarrheal_powder",
+    "name": "止泻药粉",
+    "key": "item:antidiarrheal_powder",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     333,
+     362,
+     276,
+     244
+    ]
+   },
+   {
+    "object": "emergency_tonic",
+    "name": "应急恢复剂",
+    "key": "item:emergency_tonic",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-03.webp",
+    "crop": [
+     649,
+     337,
+     264,
+     275
+    ]
+   },
+   {
+    "object": "machete",
+    "name": "砍刀",
+    "key": "item:machete",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     330,
+     644,
+     277,
+     281
+    ]
+   },
+   {
+    "object": "guard_sword",
+    "name": "守备短剑",
+    "key": "item:guard_sword",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     653,
+     639,
+     271,
+     287
+    ]
+   },
+   {
+    "object": "fire_axe",
+    "name": "消防斧",
+    "key": "item:fire_axe",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     961,
+     635,
+     277,
+     290
+    ]
+   },
+   {
+    "object": "breach_axe",
+    "name": "破障斧",
+    "key": "item:breach_axe",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     43,
+     956,
+     257,
+     277
+    ]
+   },
+   {
+    "object": "rescue_axe",
+    "name": "救援短斧",
+    "key": "item:rescue_axe",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     355,
+     965,
+     238,
+     267
+    ]
+   },
+   {
+    "object": "pike",
+    "name": "加固长枪",
+    "key": "item:pike",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     636,
+     956,
+     282,
+     278
+    ]
+   },
+   {
+    "object": "barbed_spear",
+    "name": "倒刺短矛",
+    "key": "item:barbed_spear",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-04.webp",
+    "crop": [
+     972,
+     958,
+     263,
+     275
+    ]
+   },
+   {
+    "object": "wooden_club",
+    "name": "木棍",
+    "key": "item:wooden_club",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     33,
+     29,
+     267,
+     278
+    ]
+   },
+   {
+    "object": "steel_mace",
+    "name": "钢制钉锤",
+    "key": "item:steel_mace",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     349,
+     20,
+     265,
+     286
+    ]
+   },
+   {
+    "object": "shock_baton",
+    "name": "绝缘警棍",
+    "key": "item:shock_baton",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     664,
+     28,
+     255,
+     278
+    ]
+   },
+   {
+    "object": "recurve_bow",
+    "name": "复合木弓",
+    "key": "item:recurve_bow",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     985,
+     16,
+     250,
+     298
+    ]
+   },
+   {
+    "object": "hunter_bow",
+    "name": "猎手弓",
+    "key": "item:hunter_bow",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     41,
+     330,
+     247,
+     293
+    ]
+   },
+   {
+    "object": "repeater_crossbow",
+    "name": "轻型战术弩",
+    "key": "item:repeater_crossbow",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     323,
+     361,
+     289,
+     220
+    ]
+   },
+   {
+    "object": "service_pistol",
+    "name": "勤务手枪",
+    "key": "item:service_pistol",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     648,
+     373,
+     267,
+     215
+    ]
+   },
+   {
+    "object": "marksman_rifle",
+    "name": "精校步枪",
+    "key": "item:marksman_rifle",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     942,
+     364,
+     307,
+     202
+    ]
+   },
+   {
+    "object": "wooden_shield",
+    "name": "木盾",
+    "key": "item:wooden_shield",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     26,
+     651,
+     263,
+     271
+    ]
+   },
+   {
+    "object": "scrap_shield",
+    "name": "包铁盾",
+    "key": "item:scrap_shield",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     336,
+     648,
+     267,
+     274
+    ]
+   },
+   {
+    "object": "riot_shield",
+    "name": "防暴盾",
+    "key": "item:riot_shield",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     675,
+     641,
+     211,
+     286
+    ]
+   },
+   {
+    "object": "rescue_shield",
+    "name": "救援盾",
+    "key": "item:rescue_shield",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     982,
+     642,
+     236,
+     285
+    ]
+   },
+   {
+    "object": "signal_whistle",
+    "name": "信号哨",
+    "key": "item:signal_whistle",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     34,
+     989,
+     256,
+     235
+    ]
+   },
+   {
+    "object": "signal_flag",
+    "name": "战术旗",
+    "key": "item:signal_flag",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     334,
+     952,
+     282,
+     281
+    ]
+   },
+   {
+    "object": "field_radio",
+    "name": "战术电台",
+    "key": "item:field_radio",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     652,
+     941,
+     250,
+     294
+    ]
+   },
+   {
+    "object": "command_terminal",
+    "name": "便携指挥终端",
+    "key": "item:command_terminal",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-05.webp",
+    "crop": [
+     952,
+     952,
+     283,
+     284
+    ]
+   },
+   {
+    "object": "field_medkit",
+    "name": "随行医疗包",
+    "key": "item:field_medkit",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     39,
+     65,
+     277,
+     231
+    ]
+   },
+   {
+    "object": "trauma_bag",
+    "name": "创伤救护包",
+    "key": "item:trauma_bag",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     339,
+     66,
+     274,
+     240
+    ]
+   },
+   {
+    "object": "rescue_medkit",
+    "name": "救援医疗箱",
+    "key": "item:rescue_medkit",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     630,
+     62,
+     266,
+     238
+    ]
+   },
+   {
+    "object": "triage_kit",
+    "name": "分诊器材组",
+    "key": "item:triage_kit",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     924,
+     57,
+     298,
+     244
+    ]
+   },
+   {
+    "object": "padded_vest",
+    "name": "衬垫护具",
+    "key": "item:padded_vest",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     34,
+     353,
+     282,
+     241
+    ]
+   },
+   {
+    "object": "leather_armor",
+    "name": "皮革护具",
+    "key": "item:leather_armor",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     350,
+     340,
+     247,
+     255
+    ]
+   },
+   {
+    "object": "scrap_armor",
+    "name": "拼接铁甲",
+    "key": "item:scrap_armor",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     647,
+     340,
+     229,
+     259
+    ]
+   },
+   {
+    "object": "guard_armor",
+    "name": "守备护甲",
+    "key": "item:guard_armor",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     927,
+     339,
+     287,
+     257
+    ]
+   },
+   {
+    "object": "scout_armor",
+    "name": "侦察护具",
+    "key": "item:scout_armor",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     36,
+     630,
+     277,
+     260
+    ]
+   },
+   {
+    "object": "heavy_armor",
+    "name": "重型防护甲",
+    "key": "item:heavy_armor",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     339,
+     628,
+     273,
+     261
+    ]
+   },
+   {
+    "object": "medic_armor",
+    "name": "救护防护背心",
+    "key": "item:medic_armor",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     637,
+     632,
+     268,
+     254
+    ]
+   },
+   {
+    "object": "balanced_armor",
+    "name": "均衡战术甲",
+    "key": "item:balanced_armor",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     943,
+     633,
+     272,
+     247
+    ]
+   },
+   {
+    "object": "steady_ring",
+    "name": "稳手指环",
+    "key": "item:steady_ring",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     63,
+     954,
+     237,
+     226
+    ]
+   },
+   {
+    "object": "swift_pendant",
+    "name": "轻捷吊坠",
+    "key": "item:swift_pendant",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     365,
+     919,
+     233,
+     288
+    ]
+   },
+   {
+    "object": "guard_badge",
+    "name": "守护徽记",
+    "key": "item:guard_badge",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     648,
+     917,
+     257,
+     289
+    ]
+   },
+   {
+    "object": "hunter_token",
+    "name": "猎手护符",
+    "key": "item:hunter_token",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-06.webp",
+    "crop": [
+     973,
+     921,
+     225,
+     285
+    ]
+   },
+   {
+    "object": "focus_lens",
+    "name": "聚焦镜片",
+    "key": "item:focus_lens",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     27,
+     56,
+     268,
+     234
+    ]
+   },
+   {
+    "object": "aid_badge",
+    "name": "救护徽章",
+    "key": "item:aid_badge",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     345,
+     34,
+     251,
+     270
+    ]
+   },
+   {
+    "object": "resolve_medal",
+    "name": "镇定勋章",
+    "key": "item:resolve_medal",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     689,
+     21,
+     187,
+     293
+    ]
+   },
+   {
+    "object": "tactics_watch",
+    "name": "战术计时表",
+    "key": "item:tactics_watch",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     966,
+     31,
+     259,
+     270
+    ]
+   },
+   {
+    "object": "knuckle_wraps",
+    "name": "护拳绑带",
+    "key": "item:knuckle_wraps",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     22,
+     356,
+     281,
+     255
+    ]
+   },
+   {
+    "object": "work_shirt",
+    "name": "耐磨工作衣",
+    "key": "item:work_shirt",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     322,
+     334,
+     296,
+     275
+    ]
+   },
+   {
+    "object": "forage_jacket",
+    "name": "采集外套",
+    "key": "item:forage_jacket",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     657,
+     322,
+     264,
+     300
+    ]
+   },
+   {
+    "object": "scavenge_vest",
+    "name": "搜集背心",
+    "key": "item:scavenge_vest",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     956,
+     340,
+     275,
+     269
+    ]
+   },
+   {
+    "object": "craft_coat",
+    "name": "工匠围衣",
+    "key": "item:craft_coat",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     34,
+     631,
+     267,
+     299
+    ]
+   },
+   {
+    "object": "rest_coat",
+    "name": "休养外衣",
+    "key": "item:rest_coat",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     321,
+     635,
+     296,
+     294
+    ]
+   },
+   {
+    "object": "expedition_coat",
+    "name": "远征上衣",
+    "key": "item:expedition_coat",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     638,
+     633,
+     292,
+     294
+    ]
+   },
+   {
+    "object": "work_trousers",
+    "name": "工作长裤",
+    "key": "item:work_trousers",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     990,
+     628,
+     210,
+     299
+    ]
+   },
+   {
+    "object": "trail_trousers",
+    "name": "行路裤",
+    "key": "item:trail_trousers",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     65,
+     947,
+     194,
+     290
+    ]
+   },
+   {
+    "object": "utility_trousers",
+    "name": "作业长裤",
+    "key": "item:utility_trousers",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     371,
+     941,
+     205,
+     298
+    ]
+   },
+   {
+    "object": "reinforced_trousers",
+    "name": "加固长裤",
+    "key": "item:reinforced_trousers",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     674,
+     945,
+     211,
+     292
+    ]
+   },
+   {
+    "object": "recovery_trousers",
+    "name": "休养长裤",
+    "key": "item:recovery_trousers",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-07.webp",
+    "crop": [
+     978,
+     942,
+     226,
+     295
+    ]
+   },
+   {
+    "object": "expedition_trousers",
+    "name": "远征下衣",
+    "key": "item:expedition_trousers",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     53,
+     31,
+     227,
+     282
+    ]
+   },
+   {
+    "object": "gather_gloves",
+    "name": "采集手套",
+    "key": "item:gather_gloves",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     341,
+     47,
+     279,
+     258
+    ]
+   },
+   {
+    "object": "route_compass",
+    "name": "路线罗盘",
+    "key": "item:route_compass",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     654,
+     24,
+     246,
+     290
+    ]
+   },
+   {
+    "object": "filter_token",
+    "name": "净水操作套件",
+    "key": "item:filter_token",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     942,
+     37,
+     293,
+     268
+    ]
+   },
+   {
+    "object": "repair_manual",
+    "name": "维护手册",
+    "key": "item:repair_manual",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     27,
+     341,
+     281,
+     273
+    ]
+   },
+   {
+    "object": "medical_notes",
+    "name": "护理笔记",
+    "key": "item:medical_notes",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     343,
+     336,
+     257,
+     283
+    ]
+   },
+   {
+    "object": "ration_pouch",
+    "name": "配给袋",
+    "key": "item:ration_pouch",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-08.webp",
+    "crop": [
+     634,
+     340,
+     279,
+     268
+    ]
+   },
+   {
+    "object": "spoiled_matter",
+    "name": "腐败物",
+    "key": "item:spoiled_matter",
+    "status": "现有占位（Q838 缺项）",
+    "shownAs": "原“材料”分类占位矢量图"
+   }
+  ],
+  "敌人 enemy": [
+   {
+    "object": "shambler",
+    "name": "游荡尸",
+    "key": "enemy:shambler",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-01.webp",
+    "crop": [
+     147,
+     7,
+     266,
+     483
+    ]
+   },
+   {
+    "object": "crawler",
+    "name": "爬行尸",
+    "key": "enemy:crawler",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-01.webp",
+    "crop": [
+     529,
+     177,
+     480,
+     316
+    ]
+   },
+   {
+    "object": "runner",
+    "name": "狂奔尸",
+    "key": "enemy:runner",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-01.webp",
+    "crop": [
+     1059,
+     26,
+     430,
+     461
+    ]
+   },
+   {
+    "object": "worker",
+    "name": "厚衣工尸",
+    "key": "enemy:worker",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-01.webp",
+    "crop": [
+     137,
+     513,
+     320,
+     506
+    ]
+   },
+   {
+    "object": "riot",
+    "name": "防护尸",
+    "key": "enemy:riot",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-01.webp",
+    "crop": [
+     592,
+     513,
+     369,
+     506
+    ]
+   },
+   {
+    "object": "howler",
+    "name": "嚎叫尸",
+    "key": "enemy:howler",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-01.webp",
+    "crop": [
+     1097,
+     524,
+     379,
+     495
+    ]
+   },
+   {
+    "object": "feral_dog",
+    "name": "野犬",
+    "key": "enemy:feral_dog",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-07.webp",
+    "crop": [
+     31,
+     166,
+     444,
+     304
+    ]
+   },
+   {
+    "object": "wolf",
+    "name": "灰狼",
+    "key": "enemy:wolf",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-07.webp",
+    "crop": [
+     525,
+     73,
+     477,
+     398
+    ]
+   },
+   {
+    "object": "boar",
+    "name": "野猪",
+    "key": "enemy:boar",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-07.webp",
+    "crop": [
+     1038,
+     62,
+     477,
+     409
+    ]
+   },
+   {
+    "object": "stag",
+    "name": "警戒雄鹿",
+    "key": "enemy:stag",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-07.webp",
+    "crop": [
+     47,
+     514,
+     411,
+     474
+    ]
+   },
+   {
+    "object": "z_slow",
+    "name": "迟缓感染者",
+    "key": "enemy:z_slow",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-02.webp",
+    "crop": [
+     94,
+     18,
+     326,
+     484
+    ]
+   },
+   {
+    "object": "z_helmet",
+    "name": "护盔感染者",
+    "key": "enemy:z_helmet",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-02.webp",
+    "crop": [
+     636,
+     9,
+     298,
+     493
+    ]
+   },
+   {
+    "object": "z_spitter",
+    "name": "酸液感染者",
+    "key": "enemy:z_spitter",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-02.webp",
+    "crop": [
+     1154,
+     9,
+     257,
+     493
+    ]
+   },
+   {
+    "object": "z_hauler",
+    "name": "搬运感染者",
+    "key": "enemy:z_hauler",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-02.webp",
+    "crop": [
+     82,
+     517,
+     403,
+     499
+    ]
+   },
+   {
+    "object": "z_darter",
+    "name": "迅捷感染者",
+    "key": "enemy:z_darter",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-02.webp",
+    "crop": [
+     558,
+     610,
+     432,
+     398
+    ]
+   },
+   {
+    "object": "z_screamer",
+    "name": "尖啸感染者",
+    "key": "enemy:z_screamer",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-02.webp",
+    "crop": [
+     1127,
+     513,
+     317,
+     505
+    ]
+   },
+   {
+    "object": "z_guard",
+    "name": "重装守卫感染者",
+    "key": "enemy:z_guard",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-03.webp",
+    "crop": [
+     107,
+     8,
+     323,
+     496
+    ]
+   },
+   {
+    "object": "z_clinger",
+    "name": "攀附感染者",
+    "key": "enemy:z_clinger",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-03.webp",
+    "crop": [
+     536,
+     141,
+     445,
+     360
+    ]
+   },
+   {
+    "object": "z_bloater",
+    "name": "膨胀感染者",
+    "key": "enemy:z_bloater",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-03.webp",
+    "crop": [
+     1069,
+     10,
+     386,
+     491
+    ]
+   },
+   {
+    "object": "z_nurse",
+    "name": "制服感染者",
+    "key": "enemy:z_nurse",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-03.webp",
+    "crop": [
+     93,
+     518,
+     315,
+     496
+    ]
+   },
+   {
+    "object": "z_engineer",
+    "name": "机修感染者",
+    "key": "enemy:z_engineer",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-03.webp",
+    "crop": [
+     596,
+     518,
+     340,
+     497
+    ]
+   },
+   {
+    "object": "z_signal",
+    "name": "鸣响感染者",
+    "key": "enemy:z_signal",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-03.webp",
+    "crop": [
+     1084,
+     512,
+     381,
+     506
+    ]
+   },
+   {
+    "object": "z_pump_foreman",
+    "name": "泵室领班",
+    "key": "enemy:z_pump_foreman",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-04.webp",
+    "crop": [
+     78,
+     10,
+     352,
+     493
+    ]
+   },
+   {
+    "object": "z_isolation_guard",
+    "name": "隔离守卫",
+    "key": "enemy:z_isolation_guard",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-04.webp",
+    "crop": [
+     628,
+     9,
+     277,
+     495
+    ]
+   },
+   {
+    "object": "z_power_guard",
+    "name": "配电守卫",
+    "key": "enemy:z_power_guard",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-04.webp",
+    "crop": [
+     1136,
+     2,
+     318,
+     502
+    ]
+   },
+   {
+    "object": "z_relay_guard",
+    "name": "天线守卫",
+    "key": "enemy:z_relay_guard",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-04.webp",
+    "crop": [
+     127,
+     512,
+     318,
+     508
+    ]
+   },
+   {
+    "object": "raider_melee",
+    "name": "流窜掠夺者",
+    "key": "enemy:raider_melee",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-06.webp",
+    "crop": [
+     573,
+     517,
+     312,
+     503
+    ]
+   },
+   {
+    "object": "raider_gunner",
+    "name": "流窜枪手",
+    "key": "enemy:raider_gunner",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-06.webp",
+    "crop": [
+     1103,
+     514,
+     355,
+     506
+    ]
+   },
+   {
+    "object": "wild_dog_leader",
+    "name": "野犬首领",
+    "key": "enemy:wild_dog_leader",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-07.webp",
+    "crop": [
+     514,
+     579,
+     484,
+     397
+    ]
+   },
+   {
+    "object": "feral_boar",
+    "name": "暴躁野猪",
+    "key": "enemy:feral_boar",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-07.webp",
+    "crop": [
+     1024,
+     578,
+     497,
+     397
+    ]
+   },
+   {
+    "object": "ec_cantor",
+    "name": "低吟感染者",
+    "key": "enemy:ec_cantor",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-04.webp",
+    "crop": [
+     581,
+     528,
+     375,
+     487
+    ]
+   },
+   {
+    "object": "ec_labwalker",
+    "name": "试制区感染者",
+    "key": "enemy:ec_labwalker",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-04.webp",
+    "crop": [
+     1162,
+     514,
+     273,
+     503
+    ]
+   },
+   {
+    "object": "ec_cablecrawler",
+    "name": "缠线爬行者",
+    "key": "enemy:ec_cablecrawler",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-05.webp",
+    "crop": [
+     20,
+     153,
+     476,
+     338
+    ]
+   },
+   {
+    "object": "ec_stockbracer",
+    "name": "货架护卫感染者",
+    "key": "enemy:ec_stockbracer",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-05.webp",
+    "crop": [
+     579,
+     9,
+     390,
+     491
+    ]
+   },
+   {
+    "object": "ec_boss_crypt",
+    "name": "封锁祭室守卫",
+    "key": "enemy:ec_boss_crypt",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-05.webp",
+    "crop": [
+     1071,
+     6,
+     424,
+     494
+    ]
+   },
+   {
+    "object": "ec_boss_lab",
+    "name": "隔离核心守卫",
+    "key": "enemy:ec_boss_lab",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-05.webp",
+    "crop": [
+     108,
+     519,
+     306,
+     497
+    ]
+   },
+   {
+    "object": "ec_boss_armory",
+    "name": "军械库守卫",
+    "key": "enemy:ec_boss_armory",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-05.webp",
+    "crop": [
+     546,
+     520,
+     432,
+     494
+    ]
+   },
+   {
+    "object": "ec_boss_relay",
+    "name": "天线台守卫",
+    "key": "enemy:ec_boss_relay",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-05.webp",
+    "crop": [
+     1126,
+     512,
+     367,
+     505
+    ]
+   },
+   {
+    "object": "ec_boss_water",
+    "name": "泵房推挤者",
+    "key": "enemy:ec_boss_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-06.webp",
+    "crop": [
+     79,
+     1,
+     353,
+     510
+    ]
+   },
+   {
+    "object": "ec_boss_mine",
+    "name": "深井重击者",
+    "key": "enemy:ec_boss_mine",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-06.webp",
+    "crop": [
+     559,
+     10,
+     380,
+     499
+    ]
+   },
+   {
+    "object": "ec_boss_mall",
+    "name": "扶梯拦截者",
+    "key": "enemy:ec_boss_mall",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-06.webp",
+    "crop": [
+     1111,
+     0,
+     360,
+     509
+    ]
+   },
+   {
+    "object": "ec_boss_cold",
+    "name": "仓管守卫",
+    "key": "enemy:ec_boss_cold",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-foes-06.webp",
+    "crop": [
+     101,
+     517,
+     302,
+     500
+    ]
+   }
+  ],
+  "技能 skill": [
+   {
+    "object": "unarmed_01",
+    "name": "拳击",
+    "key": "skill:unarmed_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     941,
+     957,
+     308,
+     267
+    ]
+   },
+   {
+    "object": "unarmed_03",
+    "name": "推挡",
+    "key": "skill:unarmed_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     6,
+     34,
+     307,
+     263
+    ]
+   },
+   {
+    "object": "unarmed_05",
+    "name": "护身",
+    "key": "skill:unarmed_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-corrections-01.webp",
+    "crop": [
+     9,
+     23,
+     435,
+     421
+    ]
+   },
+   {
+    "object": "unarmed_07",
+    "name": "挣脱",
+    "key": "skill:unarmed_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     630,
+     29,
+     302,
+     267
+    ]
+   },
+   {
+    "object": "unarmed_10",
+    "name": "连拳",
+    "key": "skill:unarmed_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     941,
+     53,
+     304,
+     238
+    ]
+   },
+   {
+    "object": "blade_01",
+    "name": "斩击",
+    "key": "skill:blade_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     9,
+     341,
+     294,
+     274
+    ]
+   },
+   {
+    "object": "blade_03",
+    "name": "割伤",
+    "key": "skill:blade_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     330,
+     335,
+     290,
+     277
+    ]
+   },
+   {
+    "object": "blade_05",
+    "name": "反击架势",
+    "key": "skill:blade_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     633,
+     336,
+     284,
+     279
+    ]
+   },
+   {
+    "object": "blade_07",
+    "name": "突进斩",
+    "key": "skill:blade_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     937,
+     364,
+     311,
+     239
+    ]
+   },
+   {
+    "object": "blade_10",
+    "name": "处决",
+    "key": "skill:blade_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     9,
+     640,
+     295,
+     282
+    ]
+   },
+   {
+    "object": "axe_01",
+    "name": "劈砍",
+    "key": "skill:axe_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     314,
+     652,
+     305,
+     271
+    ]
+   },
+   {
+    "object": "axe_03",
+    "name": "破甲劈",
+    "key": "skill:axe_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     627,
+     648,
+     306,
+     278
+    ]
+   },
+   {
+    "object": "axe_05",
+    "name": "蓄力",
+    "key": "skill:axe_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     944,
+     640,
+     301,
+     286
+    ]
+   },
+   {
+    "object": "axe_07",
+    "name": "震退",
+    "key": "skill:axe_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     5,
+     958,
+     308,
+     274
+    ]
+   },
+   {
+    "object": "axe_10",
+    "name": "破阵",
+    "key": "skill:axe_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     314,
+     958,
+     307,
+     274
+    ]
+   },
+   {
+    "object": "spear_01",
+    "name": "刺击",
+    "key": "skill:spear_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-02.webp",
+    "crop": [
+     627,
+     984,
+     307,
+     247
+    ]
+   },
+   {
+    "object": "spear_03",
+    "name": "逼退",
+    "key": "skill:spear_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-corrections-01.webp",
+    "crop": [
+     444,
+     111,
+     443,
+     333
+    ]
+   },
+   {
+    "object": "spear_05",
+    "name": "架矛",
+    "key": "skill:spear_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     29,
+     70,
+     283,
+     231
+    ]
+   },
+   {
+    "object": "spear_07",
+    "name": "贯穿",
+    "key": "skill:spear_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     333,
+     75,
+     284,
+     224
+    ]
+   },
+   {
+    "object": "spear_10",
+    "name": "连刺",
+    "key": "skill:spear_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     639,
+     69,
+     284,
+     228
+    ]
+   },
+   {
+    "object": "blunt_01",
+    "name": "敲击",
+    "key": "skill:blunt_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     941,
+     70,
+     283,
+     228
+    ]
+   },
+   {
+    "object": "blunt_03",
+    "name": "震击",
+    "key": "skill:blunt_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     22,
+     381,
+     283,
+     227
+    ]
+   },
+   {
+    "object": "blunt_05",
+    "name": "压制",
+    "key": "skill:blunt_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     323,
+     396,
+     296,
+     195
+    ]
+   },
+   {
+    "object": "blunt_07",
+    "name": "打断",
+    "key": "skill:blunt_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     633,
+     384,
+     276,
+     214
+    ]
+   },
+   {
+    "object": "blunt_10",
+    "name": "重锤",
+    "key": "skill:blunt_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     941,
+     360,
+     294,
+     247
+    ]
+   },
+   {
+    "object": "archery_01",
+    "name": "射击",
+    "key": "skill:archery_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-corrections-01.webp",
+    "crop": [
+     887,
+     37,
+     444,
+     407
+    ]
+   },
+   {
+    "object": "archery_03",
+    "name": "致残射击",
+    "key": "skill:archery_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-corrections-01.webp",
+    "crop": [
+     1331,
+     102,
+     443,
+     342
+    ]
+   },
+   {
+    "object": "archery_05",
+    "name": "猎标",
+    "key": "skill:archery_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-corrections-01.webp",
+    "crop": [
+     0,
+     499,
+     444,
+     379
+    ]
+   },
+   {
+    "object": "archery_07",
+    "name": "穿透射击",
+    "key": "skill:archery_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-corrections-01.webp",
+    "crop": [
+     444,
+     577,
+     443,
+     301
+    ]
+   },
+   {
+    "object": "archery_10",
+    "name": "连射",
+    "key": "skill:archery_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-corrections-01.webp",
+    "crop": [
+     887,
+     510,
+     444,
+     368
+    ]
+   },
+   {
+    "object": "firearms_01",
+    "name": "开火",
+    "key": "skill:firearms_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     332,
+     972,
+     279,
+     226
+    ]
+   },
+   {
+    "object": "firearms_03",
+    "name": "火力压制",
+    "key": "skill:firearms_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     635,
+     980,
+     282,
+     219
+    ]
+   },
+   {
+    "object": "firearms_05",
+    "name": "快速装填",
+    "key": "skill:firearms_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-03.webp",
+    "crop": [
+     941,
+     971,
+     288,
+     229
+    ]
+   },
+   {
+    "object": "firearms_07",
+    "name": "专长射击",
+    "key": "skill:firearms_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     10,
+     52,
+     297,
+     255
+    ]
+   },
+   {
+    "object": "firearms_10",
+    "name": "决胜射击",
+    "key": "skill:firearms_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     345,
+     39,
+     264,
+     267
+    ]
+   },
+   {
+    "object": "shield_01",
+    "name": "盾击",
+    "key": "skill:shield_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     636,
+     39,
+     293,
+     267
+    ]
+   },
+   {
+    "object": "shield_03",
+    "name": "保护",
+    "key": "skill:shield_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     948,
+     27,
+     293,
+     276
+    ]
+   },
+   {
+    "object": "shield_05",
+    "name": "稳固",
+    "key": "skill:shield_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     8,
+     336,
+     300,
+     276
+    ]
+   },
+   {
+    "object": "shield_07",
+    "name": "掩护",
+    "key": "skill:shield_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-corrections-02.webp",
+    "crop": [
+     3,
+     77,
+     897,
+     714
+    ]
+   },
+   {
+    "object": "shield_10",
+    "name": "坚守",
+    "key": "skill:shield_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     631,
+     334,
+     301,
+     277
+    ]
+   },
+   {
+    "object": "command_01",
+    "name": "鼓舞",
+    "key": "skill:command_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     948,
+     338,
+     294,
+     275
+    ]
+   },
+   {
+    "object": "command_03",
+    "name": "整队",
+    "key": "skill:command_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     5,
+     666,
+     301,
+     251
+    ]
+   },
+   {
+    "object": "command_05",
+    "name": "稳心",
+    "key": "skill:command_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     319,
+     654,
+     293,
+     267
+    ]
+   },
+   {
+    "object": "command_07",
+    "name": "协同",
+    "key": "skill:command_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     632,
+     652,
+     298,
+     266
+    ]
+   },
+   {
+    "object": "command_10",
+    "name": "总攻令",
+    "key": "skill:command_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     942,
+     640,
+     302,
+     280
+    ]
+   },
+   {
+    "object": "medicine_01",
+    "name": "战地包扎",
+    "key": "skill:medicine_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     9,
+     953,
+     296,
+     272
+    ]
+   },
+   {
+    "object": "medicine_03",
+    "name": "创伤处理",
+    "key": "skill:medicine_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     321,
+     955,
+     299,
+     273
+    ]
+   },
+   {
+    "object": "medicine_05",
+    "name": "稳定伤势",
+    "key": "skill:medicine_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-04.webp",
+    "crop": [
+     637,
+     950,
+     284,
+     278
+    ]
+   },
+   {
+    "object": "medicine_07",
+    "name": "应急护理",
+    "key": "skill:medicine_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-corrections-02.webp",
+    "crop": [
+     946,
+     73,
+     927,
+     719
+    ]
+   },
+   {
+    "object": "medicine_10",
+    "name": "危急救护",
+    "key": "skill:medicine_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     29,
+     43,
+     281,
+     267
+    ]
+   },
+   {
+    "object": "crafting_01",
+    "name": "基础手作",
+    "key": "skill:crafting_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     333,
+     47,
+     275,
+     261
+    ]
+   },
+   {
+    "object": "crafting_03",
+    "name": "工坊装配",
+    "key": "skill:crafting_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     634,
+     51,
+     275,
+     254
+    ]
+   },
+   {
+    "object": "crafting_05",
+    "name": "精细加工",
+    "key": "skill:crafting_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     941,
+     41,
+     282,
+     269
+    ]
+   },
+   {
+    "object": "crafting_07",
+    "name": "专业制造",
+    "key": "skill:crafting_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     22,
+     342,
+     287,
+     266
+    ]
+   },
+   {
+    "object": "crafting_10",
+    "name": "大师装配",
+    "key": "skill:crafting_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     331,
+     343,
+     286,
+     267
+    ]
+   },
+   {
+    "object": "gathering_01",
+    "name": "辨识采集",
+    "key": "skill:gathering_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     637,
+     342,
+     278,
+     268
+    ]
+   },
+   {
+    "object": "gathering_03",
+    "name": "稳手采集",
+    "key": "skill:gathering_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     941,
+     343,
+     291,
+     272
+    ]
+   },
+   {
+    "object": "gathering_05",
+    "name": "合理取材",
+    "key": "skill:gathering_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     24,
+     651,
+     289,
+     267
+    ]
+   },
+   {
+    "object": "gathering_07",
+    "name": "熟练采伐",
+    "key": "skill:gathering_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     332,
+     644,
+     276,
+     271
+    ]
+   },
+   {
+    "object": "gathering_10",
+    "name": "精取",
+    "key": "skill:gathering_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     631,
+     645,
+     281,
+     273
+    ]
+   },
+   {
+    "object": "scavenging_01",
+    "name": "基础搜集",
+    "key": "skill:scavenging_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     941,
+     646,
+     287,
+     269
+    ]
+   },
+   {
+    "object": "scavenging_03",
+    "name": "分类勘整",
+    "key": "skill:scavenging_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     22,
+     957,
+     286,
+     266
+    ]
+   },
+   {
+    "object": "scavenging_05",
+    "name": "工具运用",
+    "key": "skill:scavenging_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     331,
+     960,
+     281,
+     259
+    ]
+   },
+   {
+    "object": "scavenging_07",
+    "name": "危险辨识",
+    "key": "skill:scavenging_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     633,
+     952,
+     279,
+     266
+    ]
+   },
+   {
+    "object": "scavenging_10",
+    "name": "周密检索",
+    "key": "skill:scavenging_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-05.webp",
+    "crop": [
+     941,
+     953,
+     286,
+     264
+    ]
+   },
+   {
+    "object": "cooking_01",
+    "name": "安全烹饪",
+    "key": "skill:cooking_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     21,
+     18,
+     292,
+     301
+    ]
+   },
+   {
+    "object": "cooking_03",
+    "name": "分量掌握",
+    "key": "skill:cooking_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     345,
+     45,
+     272,
+     274
+    ]
+   },
+   {
+    "object": "cooking_05",
+    "name": "干粮制作",
+    "key": "skill:cooking_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     627,
+     53,
+     306,
+     265
+    ]
+   },
+   {
+    "object": "cooking_07",
+    "name": "熟练炊事",
+    "key": "skill:cooking_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     948,
+     28,
+     285,
+     291
+    ]
+   },
+   {
+    "object": "cooking_10",
+    "name": "远征备餐",
+    "key": "skill:cooking_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     24,
+     369,
+     288,
+     251
+    ]
+   },
+   {
+    "object": "athletics_01",
+    "name": "行旅基础",
+    "key": "skill:athletics_01",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     322,
+     353,
+     293,
+     267
+    ]
+   },
+   {
+    "object": "athletics_03",
+    "name": "节奏行进",
+    "key": "skill:athletics_03",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     624,
+     367,
+     308,
+     249
+    ]
+   },
+   {
+    "object": "athletics_05",
+    "name": "轻装步伐",
+    "key": "skill:athletics_05",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     941,
+     349,
+     282,
+     270
+    ]
+   },
+   {
+    "object": "athletics_07",
+    "name": "耐力行进",
+    "key": "skill:athletics_07",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     16,
+     648,
+     298,
+     260
+    ]
+   },
+   {
+    "object": "athletics_10",
+    "name": "远途规划",
+    "key": "skill:athletics_10",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     319,
+     646,
+     293,
+     265
+    ]
+   }
+  ],
+  "熟练度门类 skillFamily": [
+   {
+    "object": "unarmed",
+    "name": "拳",
+    "key": "skillFamily:unarmed",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     18,
+     33,
+     287,
+     265
+    ]
+   },
+   {
+    "object": "blade",
+    "name": "刀剑",
+    "key": "skillFamily:blade",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     323,
+     31,
+     288,
+     282
+    ]
+   },
+   {
+    "object": "axe",
+    "name": "斧",
+    "key": "skillFamily:axe",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     642,
+     25,
+     272,
+     276
+    ]
+   },
+   {
+    "object": "spear",
+    "name": "矛",
+    "key": "skillFamily:spear",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     953,
+     36,
+     293,
+     256
+    ]
+   },
+   {
+    "object": "blunt",
+    "name": "钝器",
+    "key": "skillFamily:blunt",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     21,
+     332,
+     275,
+     275
+    ]
+   },
+   {
+    "object": "archery",
+    "name": "弓弩",
+    "key": "skillFamily:archery",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     319,
+     361,
+     298,
+     240
+    ]
+   },
+   {
+    "object": "firearms",
+    "name": "枪械",
+    "key": "skillFamily:firearms",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     634,
+     363,
+     300,
+     246
+    ]
+   },
+   {
+    "object": "shield",
+    "name": "盾",
+    "key": "skillFamily:shield",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     967,
+     332,
+     267,
+     277
+    ]
+   },
+   {
+    "object": "command",
+    "name": "指挥",
+    "key": "skillFamily:command",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     8,
+     640,
+     302,
+     276
+    ]
+   },
+   {
+    "object": "medicine",
+    "name": "医疗",
+    "key": "skillFamily:medicine",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     320,
+     654,
+     291,
+     264
+    ]
+   },
+   {
+    "object": "crafting",
+    "name": "制造",
+    "key": "skillFamily:crafting",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     643,
+     645,
+     277,
+     270
+    ]
+   },
+   {
+    "object": "gathering",
+    "name": "采集",
+    "key": "skillFamily:gathering",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     955,
+     648,
+     280,
+     269
+    ]
+   },
+   {
+    "object": "scavenging",
+    "name": "搜集",
+    "key": "skillFamily:scavenging",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     18,
+     954,
+     278,
+     276
+    ]
+   },
+   {
+    "object": "cooking",
+    "name": "烹饪",
+    "key": "skillFamily:cooking",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     325,
+     947,
+     286,
+     282
+    ]
+   },
+   {
+    "object": "athletics",
+    "name": "行旅",
+    "key": "skillFamily:athletics",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     631,
+     953,
+     302,
+     278
+    ]
+   },
+   {
+    "object": "stealth",
+    "name": "潜行",
+    "key": "skillFamily:stealth",
+    "status": "现有占位（Q838 缺项）",
+    "shownAs": "无图位（门类页属 B36）"
+   },
+   {
+    "object": "willpower",
+    "name": "意志",
+    "key": "skillFamily:willpower",
+    "status": "现有占位（Q838 缺项）",
+    "shownAs": "无图位（门类页属 B36）"
+   }
+  ],
+  "资源点 resource": [
+   {
+    "object": "field:roots",
+    "name": "块根地",
+    "key": "resource:field:roots",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     759,
+     33,
+     229,
+     207
+    ]
+   },
+   {
+    "object": "field:field_fiber",
+    "name": "荒地纤维丛",
+    "key": "resource:field:field_fiber",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     1003,
+     32,
+     238,
+     207
+    ]
+   },
+   {
+    "object": "stream:water",
+    "name": "脏水源",
+    "key": "resource:stream:water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     13,
+     273,
+     239,
+     209
+    ]
+   },
+   {
+    "object": "stream:herbs",
+    "name": "草药丛",
+    "key": "resource:stream:herbs",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     266,
+     266,
+     228,
+     215
+    ]
+   },
+   {
+    "object": "woods:wood",
+    "name": "可采木材",
+    "key": "resource:woods:wood",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     504,
+     274,
+     242,
+     202
+    ]
+   },
+   {
+    "object": "woods:stones",
+    "name": "地表石块",
+    "key": "resource:woods:stones",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     756,
+     286,
+     235,
+     188
+    ]
+   },
+   {
+    "object": "woods:berries",
+    "name": "野果丛",
+    "key": "resource:woods:berries",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     1003,
+     272,
+     238,
+     208
+    ]
+   },
+   {
+    "object": "woods:woods_fiber",
+    "name": "林下纤维丛",
+    "key": "resource:woods:woods_fiber",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     13,
+     512,
+     239,
+     207
+    ]
+   },
+   {
+    "object": "village:supply_box",
+    "name": "补给箱",
+    "key": "resource:village:supply_box",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     263,
+     531,
+     235,
+     181
+    ]
+   },
+   {
+    "object": "village:misc_box",
+    "name": "杂物箱",
+    "key": "resource:village:misc_box",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     507,
+     512,
+     234,
+     203
+    ]
+   },
+   {
+    "object": "hardware:pot_box",
+    "name": "锅具箱",
+    "key": "resource:hardware:pot_box",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     756,
+     519,
+     237,
+     196
+    ]
+   },
+   {
+    "object": "hardware:tool_box",
+    "name": "工具箱",
+    "key": "resource:hardware:tool_box",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     1003,
+     516,
+     234,
+     199
+    ]
+   },
+   {
+    "object": "clinic:med_cabinet",
+    "name": "药柜",
+    "key": "resource:clinic:med_cabinet",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     15,
+     742,
+     225,
+     217
+    ]
+   },
+   {
+    "object": "clinic:cloth_bag",
+    "name": "布料包",
+    "key": "resource:clinic:cloth_bag",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     260,
+     761,
+     236,
+     197
+    ]
+   },
+   {
+    "object": "scrapyard:metal_heap",
+    "name": "废金属堆",
+    "key": "resource:scrapyard:metal_heap",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     506,
+     747,
+     245,
+     206
+    ]
+   },
+   {
+    "object": "scrapyard:parts_box",
+    "name": "零件箱",
+    "key": "resource:scrapyard:parts_box",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     758,
+     745,
+     232,
+     211
+    ]
+   },
+   {
+    "object": "hardware:hardware_weapon_cache",
+    "name": "武器柜",
+    "key": "resource:hardware:hardware_weapon_cache",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     1017,
+     744,
+     210,
+     216
+    ]
+   },
+   {
+    "object": "village:village_weapon_locker",
+    "name": "旧储物柜",
+    "key": "resource:village:village_weapon_locker",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     13,
+     991,
+     238,
+     219
+    ]
+   },
+   {
+    "object": "clinic:clinic_medical_supply",
+    "name": "医药补给箱",
+    "key": "resource:clinic:clinic_medical_supply",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     262,
+     1008,
+     231,
+     196
+    ]
+   },
+   {
+    "object": "village:village_cold_box",
+    "name": "废弃冷藏箱",
+    "key": "resource:village:village_cold_box",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     507,
+     991,
+     229,
+     216
+    ]
+   },
+   {
+    "object": "w11_orchard:w11_orchard_a",
+    "name": "果园块根地",
+    "key": "resource:w11_orchard:w11_orchard_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     754,
+     991,
+     235,
+     213
+    ]
+   },
+   {
+    "object": "w11_orchard:w11_orchard_b",
+    "name": "果园旧布堆",
+    "key": "resource:w11_orchard:w11_orchard_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-01.webp",
+    "crop": [
+     1003,
+     993,
+     238,
+     217
+    ]
+   },
+   {
+    "object": "w12_canal:w12_canal_a",
+    "name": "渠岸纤维草丛",
+    "key": "resource:w12_canal:w12_canal_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     13,
+     22,
+     229,
+     216
+    ]
+   },
+   {
+    "object": "w12_canal:w12_canal_b",
+    "name": "渠边旧密封件",
+    "key": "resource:w12_canal:w12_canal_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     262,
+     24,
+     228,
+     208
+    ]
+   },
+   {
+    "object": "w13_mill:w13_mill_a",
+    "name": "磨坊遗留谷物",
+    "key": "resource:w13_mill:w13_mill_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     503,
+     24,
+     238,
+     209
+    ]
+   },
+   {
+    "object": "w13_mill:w13_mill_b",
+    "name": "磨坊旧木板",
+    "key": "resource:w13_mill:w13_mill_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     750,
+     32,
+     237,
+     204
+    ]
+   },
+   {
+    "object": "w14_cemeteryroad:w14_cemeteryroad_a",
+    "name": "荒径碎石带",
+    "key": "resource:w14_cemeteryroad:w14_cemeteryroad_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     1002,
+     39,
+     236,
+     197
+    ]
+   },
+   {
+    "object": "w14_cemeteryroad:w14_cemeteryroad_b",
+    "name": "荒径弃衣堆",
+    "key": "resource:w14_cemeteryroad:w14_cemeteryroad_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     9,
+     286,
+     238,
+     192
+    ]
+   },
+   {
+    "object": "w15_shrinewoods:w15_shrinewoods_a",
+    "name": "林下草药丛",
+    "key": "resource:w15_shrinewoods:w15_shrinewoods_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     261,
+     262,
+     224,
+     221
+    ]
+   },
+   {
+    "object": "w15_shrinewoods:w15_shrinewoods_b",
+    "name": "祈祷林倒木",
+    "key": "resource:w15_shrinewoods:w15_shrinewoods_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     500,
+     274,
+     238,
+     207
+    ]
+   },
+   {
+    "object": "w16_service:w16_service_a",
+    "name": "服务站废金属堆",
+    "key": "resource:w16_service:w16_service_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     748,
+     272,
+     238,
+     207
+    ]
+   },
+   {
+    "object": "w16_service:w16_service_b",
+    "name": "服务站塑料遗料",
+    "key": "resource:w16_service:w16_service_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     996,
+     275,
+     236,
+     204
+    ]
+   },
+   {
+    "object": "w17_switchback:w17_switchback_a",
+    "name": "山路碎石带",
+    "key": "resource:w17_switchback:w17_switchback_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     9,
+     514,
+     236,
+     211
+    ]
+   },
+   {
+    "object": "w17_switchback:w17_switchback_b",
+    "name": "山路废导线",
+    "key": "resource:w17_switchback:w17_switchback_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     260,
+     526,
+     234,
+     195
+    ]
+   },
+   {
+    "object": "w18_tunnel:w18_tunnel_a",
+    "name": "洞外露矿",
+    "key": "resource:w18_tunnel:w18_tunnel_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     501,
+     515,
+     235,
+     208
+    ]
+   },
+   {
+    "object": "w18_tunnel:w18_tunnel_b",
+    "name": "隧道维护紧固件",
+    "key": "resource:w18_tunnel:w18_tunnel_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     741,
+     522,
+     243,
+     193
+    ]
+   },
+   {
+    "object": "w19_survey:w19_survey_a",
+    "name": "测绘设备旧件",
+    "key": "resource:w19_survey:w19_survey_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     998,
+     514,
+     237,
+     214
+    ]
+   },
+   {
+    "object": "w19_survey:w19_survey_b",
+    "name": "测绘营备用电池",
+    "key": "resource:w19_survey:w19_survey_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     11,
+     770,
+     222,
+     189
+    ]
+   },
+   {
+    "object": "w20_powercut:w20_powercut_a",
+    "name": "塔基旧导线",
+    "key": "resource:w20_powercut:w20_powercut_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     251,
+     755,
+     232,
+     223
+    ]
+   },
+   {
+    "object": "w20_powercut:w20_powercut_b",
+    "name": "高压走廊旧电器",
+    "key": "resource:w20_powercut:w20_powercut_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     500,
+     754,
+     227,
+     215
+    ]
+   },
+   {
+    "object": "w21_pine:w21_pine_a",
+    "name": "针叶林倒木",
+    "key": "resource:w21_pine:w21_pine_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     741,
+     758,
+     244,
+     213
+    ]
+   },
+   {
+    "object": "w21_pine:w21_pine_b",
+    "name": "针叶林纤维草丛",
+    "key": "resource:w21_pine:w21_pine_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     1001,
+     763,
+     240,
+     207
+    ]
+   },
+   {
+    "object": "w22_ravine:w22_ravine_a",
+    "name": "沟谷露矿",
+    "key": "resource:w22_ravine:w22_ravine_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     10,
+     1010,
+     239,
+     209
+    ]
+   },
+   {
+    "object": "w22_ravine:w22_ravine_b",
+    "name": "沟谷碎石带",
+    "key": "resource:w22_ravine:w22_ravine_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     260,
+     1010,
+     229,
+     209
+    ]
+   },
+   {
+    "object": "w23_hunting:w23_hunting_a",
+    "name": "旧营皮料",
+    "key": "resource:w23_hunting:w23_hunting_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     501,
+     1010,
+     232,
+     207
+    ]
+   },
+   {
+    "object": "w23_hunting:w23_hunting_b",
+    "name": "旧营绳卷",
+    "key": "resource:w23_hunting:w23_hunting_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     741,
+     1016,
+     237,
+     205
+    ]
+   },
+   {
+    "object": "w24_cave:w24_cave_a",
+    "name": "洞口矿料堆",
+    "key": "resource:w24_cave:w24_cave_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-02.webp",
+    "crop": [
+     994,
+     1009,
+     244,
+     211
+    ]
+   },
+   {
+    "object": "w24_cave:w24_cave_b",
+    "name": "洞口旧炭袋",
+    "key": "resource:w24_cave:w24_cave_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     5,
+     20,
+     237,
+     219
+    ]
+   },
+   {
+    "object": "w25_wetland:w25_wetland_a",
+    "name": "湿地草药丛",
+    "key": "resource:w25_wetland:w25_wetland_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     260,
+     21,
+     229,
+     218
+    ]
+   },
+   {
+    "object": "w25_wetland:w25_wetland_b",
+    "name": "湿地纤维草丛",
+    "key": "resource:w25_wetland:w25_wetland_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     508,
+     15,
+     235,
+     226
+    ]
+   },
+   {
+    "object": "w26_island:w26_island_a",
+    "name": "陆洲块根地",
+    "key": "resource:w26_island:w26_island_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     761,
+     21,
+     230,
+     218
+    ]
+   },
+   {
+    "object": "w26_island:w26_island_b",
+    "name": "陆洲盐晶",
+    "key": "resource:w26_island:w26_island_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     1009,
+     22,
+     240,
+     210
+    ]
+   },
+   {
+    "object": "w27_relay:w27_relay_a",
+    "name": "中继设备遗件",
+    "key": "resource:w27_relay:w27_relay_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     9,
+     264,
+     228,
+     222
+    ]
+   },
+   {
+    "object": "w27_relay:w27_relay_b",
+    "name": "中继营精密机件",
+    "key": "resource:w27_relay:w27_relay_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     259,
+     271,
+     227,
+     210
+    ]
+   },
+   {
+    "object": "w28_highland:w28_highland_a",
+    "name": "高地碎石带",
+    "key": "resource:w28_highland:w28_highland_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     506,
+     279,
+     238,
+     202
+    ]
+   },
+   {
+    "object": "w28_highland:w28_highland_b",
+    "name": "高地草药丛",
+    "key": "resource:w28_highland:w28_highland_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     758,
+     264,
+     233,
+     221
+    ]
+   },
+   {
+    "object": "w29_riverbend:w29_riverbend_a",
+    "name": "河弯纤维草丛",
+    "key": "resource:w29_riverbend:w29_riverbend_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     1006,
+     265,
+     241,
+     222
+    ]
+   },
+   {
+    "object": "w29_riverbend:w29_riverbend_b",
+    "name": "河弯黏土层",
+    "key": "resource:w29_riverbend:w29_riverbend_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     8,
+     512,
+     234,
+     222
+    ]
+   },
+   {
+    "object": "w30_truckstop:w30_truckstop_a",
+    "name": "休息区机油余存",
+    "key": "resource:w30_truckstop:w30_truckstop_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     253,
+     529,
+     234,
+     207
+    ]
+   },
+   {
+    "object": "w30_truckstop:w30_truckstop_b",
+    "name": "休息区旧胶料",
+    "key": "resource:w30_truckstop:w30_truckstop_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     502,
+     528,
+     239,
+     199
+    ]
+   },
+   {
+    "object": "w31_suburb:w31_suburb_a",
+    "name": "棚户旧布堆",
+    "key": "resource:w31_suburb:w31_suburb_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     757,
+     528,
+     238,
+     208
+    ]
+   },
+   {
+    "object": "w31_suburb:w31_suburb_b",
+    "name": "棚户医用纱布余存",
+    "key": "resource:w31_suburb:w31_suburb_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     1007,
+     524,
+     238,
+     215
+    ]
+   },
+   {
+    "object": "w32_railcut:w32_railcut_a",
+    "name": "铁路废钢料",
+    "key": "resource:w32_railcut:w32_railcut_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     5,
+     770,
+     238,
+     201
+    ]
+   },
+   {
+    "object": "w32_railcut:w32_railcut_b",
+    "name": "铁路维护紧固件",
+    "key": "resource:w32_railcut:w32_railcut_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     257,
+     777,
+     236,
+     188
+    ]
+   },
+   {
+    "object": "w33_waterworks:w33_waterworks_a",
+    "name": "水厂黏合剂余存",
+    "key": "resource:w33_waterworks:w33_waterworks_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     505,
+     764,
+     235,
+     206
+    ]
+   },
+   {
+    "object": "w33_waterworks:w33_waterworks_b",
+    "name": "水厂消毒液余存",
+    "key": "resource:w33_waterworks:w33_waterworks_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     759,
+     767,
+     224,
+     202
+    ]
+   },
+   {
+    "object": "w34_depot:w34_depot_a",
+    "name": "应急仓豆罐头存货",
+    "key": "resource:w34_depot:w34_depot_a",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     1006,
+     767,
+     237,
+     205
+    ]
+   },
+   {
+    "object": "w34_depot:w34_depot_b",
+    "name": "应急仓盐水剂存货",
+    "key": "resource:w34_depot:w34_depot_b",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     5,
+     1009,
+     239,
+     220
+    ]
+   },
+   {
+    "object": "w12_canal:w12_canal_water",
+    "name": "灌溉渠岸取水口",
+    "key": "resource:w12_canal:w12_canal_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     256,
+     1020,
+     232,
+     206
+    ]
+   },
+   {
+    "object": "w25_wetland:w25_wetland_water",
+    "name": "黑水湿地取水口",
+    "key": "resource:w25_wetland:w25_wetland_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     506,
+     1012,
+     237,
+     217
+    ]
+   },
+   {
+    "object": "w29_riverbend:w29_riverbend_water",
+    "name": "河道弯口取水口",
+    "key": "resource:w29_riverbend:w29_riverbend_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     758,
+     1012,
+     234,
+     218
+    ]
+   },
+   {
+    "object": "w33_waterworks:w33_waterworks_water",
+    "name": "荒废水厂取水口",
+    "key": "resource:w33_waterworks:w33_waterworks_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-03.webp",
+    "crop": [
+     1005,
+     1003,
+     243,
+     228
+    ]
+   },
+   {
+    "object": "w08_reservoir:w08_reservoir_water",
+    "name": "旧水库取水口",
+    "key": "resource:w08_reservoir:w08_reservoir_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     12,
+     20,
+     236,
+     218
+    ]
+   },
+   {
+    "object": "w16_service:w16_service_cistern",
+    "name": "山间服务站蓄水池",
+    "key": "resource:w16_service:w16_service_cistern",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     263,
+     27,
+     233,
+     206
+    ]
+   },
+   {
+    "object": "w19_survey:w19_survey_cistern",
+    "name": "测绘营址蓄水池",
+    "key": "resource:w19_survey:w19_survey_cistern",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     509,
+     28,
+     233,
+     202
+    ]
+   },
+   {
+    "object": "w23_hunting:w23_hunting_cistern",
+    "name": "猎人旧营蓄水池",
+    "key": "resource:w23_hunting:w23_hunting_cistern",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     757,
+     18,
+     232,
+     218
+    ]
+   },
+   {
+    "object": "w27_relay:w27_relay_cistern",
+    "name": "废中继营蓄水池",
+    "key": "resource:w27_relay:w27_relay_cistern",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     1004,
+     11,
+     239,
+     227
+    ]
+   },
+   {
+    "object": "w30_truckstop:w30_truckstop_cistern",
+    "name": "货车休息区蓄水池",
+    "key": "resource:w30_truckstop:w30_truckstop_cistern",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     10,
+     269,
+     237,
+     221
+    ]
+   },
+   {
+    "object": "w13_mill:w13_mill_bottles",
+    "name": "旧磨坊瓶装净水",
+    "key": "resource:w13_mill:w13_mill_bottles",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     263,
+     256,
+     235,
+     234
+    ]
+   },
+   {
+    "object": "w31_suburb:w31_suburb_bottles",
+    "name": "城郊棚户瓶装净水",
+    "key": "resource:w31_suburb:w31_suburb_bottles",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     509,
+     299,
+     235,
+     185
+    ]
+   },
+   {
+    "object": "w34_depot:w34_depot_bottles",
+    "name": "应急仓外瓶装净水",
+    "key": "resource:w34_depot:w34_depot_bottles",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     758,
+     280,
+     233,
+     206
+    ]
+   },
+   {
+    "object": "d01_04:d01_04_cache0",
+    "name": "藏书密室·布料箱",
+    "key": "resource:d01_04:d01_04_cache0",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     1008,
+     277,
+     235,
+     208
+    ]
+   },
+   {
+    "object": "d01_06:d01_06_cache1",
+    "name": "骨龛回道·缝线箱",
+    "key": "resource:d01_06:d01_06_cache1",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     11,
+     526,
+     236,
+     208
+    ]
+   },
+   {
+    "object": "d01_04:d01_04_cache2",
+    "name": "藏书密室·皮革箱",
+    "key": "resource:d01_04:d01_04_cache2",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     266,
+     523,
+     227,
+     201
+    ]
+   },
+   {
+    "object": "d01_08:d01_08_unique",
+    "name": "圣所旧路档册",
+    "key": "resource:d01_08:d01_08_unique",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     503,
+     528,
+     239,
+     201
+    ]
+   },
+   {
+    "object": "d02_04:d02_04_cache0",
+    "name": "控制室·医用纱布箱",
+    "key": "resource:d02_04:d02_04_cache0",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     759,
+     526,
+     229,
+     206
+    ]
+   },
+   {
+    "object": "d02_06:d02_06_cache1",
+    "name": "检修竖井·实验室试剂箱",
+    "key": "resource:d02_06:d02_06_cache1",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     1006,
+     518,
+     236,
+     212
+    ]
+   },
+   {
+    "object": "d02_04:d02_04_cache2",
+    "name": "控制室·电子组件箱",
+    "key": "resource:d02_04:d02_04_cache2",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     10,
+     764,
+     236,
+     192
+    ]
+   },
+   {
+    "object": "d02_08:d02_08_unique",
+    "name": "封存区安全规程",
+    "key": "resource:d02_08:d02_08_unique",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     260,
+     758,
+     233,
+     202
+    ]
+   },
+   {
+    "object": "d03_04:d03_04_cache0",
+    "name": "值勤室·武器组件箱",
+    "key": "resource:d03_04:d03_04_cache0",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     505,
+     760,
+     241,
+     200
+    ]
+   },
+   {
+    "object": "d03_06:d03_06_cache1",
+    "name": "配电房·钢材箱",
+    "key": "resource:d03_06:d03_06_cache1",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     760,
+     760,
+     230,
+     198
+    ]
+   },
+   {
+    "object": "d03_04:d03_04_cache2",
+    "name": "值勤室·紧固件箱",
+    "key": "resource:d03_04:d03_04_cache2",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     1005,
+     759,
+     239,
+     200
+    ]
+   },
+   {
+    "object": "d03_08:d03_08_unique",
+    "name": "警备仓备用电源",
+    "key": "resource:d03_08:d03_08_unique",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     9,
+     1004,
+     238,
+     202
+    ]
+   },
+   {
+    "object": "d04_03:d04_03_cache0",
+    "name": "蓄电室·导线箱",
+    "key": "resource:d04_03:d04_03_cache0",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     260,
+     1004,
+     231,
+     208
+    ]
+   },
+   {
+    "object": "d04_05:d04_05_cache1",
+    "name": "屋顶梯井·电池箱",
+    "key": "resource:d04_05:d04_05_cache1",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     507,
+     1001,
+     237,
+     205
+    ]
+   },
+   {
+    "object": "d04_03:d04_03_cache2",
+    "name": "蓄电室·电子组件箱",
+    "key": "resource:d04_03:d04_03_cache2",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     757,
+     1007,
+     234,
+     204
+    ]
+   },
+   {
+    "object": "d04_07:d04_07_unique",
+    "name": "通信站联络日志",
+    "key": "resource:d04_07:d04_07_unique",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-04.webp",
+    "crop": [
+     1003,
+     995,
+     241,
+     218
+    ]
+   },
+   {
+    "object": "d05_04:d05_04_cache0",
+    "name": "滤料库·橡胶箱",
+    "key": "resource:d05_04:d05_04_cache0",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     11,
+     44,
+     240,
+     210
+    ]
+   },
+   {
+    "object": "d05_07:d05_07_cache1",
+    "name": "阀控室·消毒液箱",
+    "key": "resource:d05_07:d05_07_cache1",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     265,
+     13,
+     232,
+     241
+    ]
+   },
+   {
+    "object": "d05_04:d05_04_cache2",
+    "name": "滤料库·黏合剂箱",
+    "key": "resource:d05_04:d05_04_cache2",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     510,
+     42,
+     229,
+     212
+    ]
+   },
+   {
+    "object": "d05_07:d05_07_unique",
+    "name": "水厂阀控记录",
+    "key": "resource:d05_07:d05_07_unique",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     756,
+     45,
+     239,
+     206
+    ]
+   },
+   {
+    "object": "d06_03:d06_03_cache0",
+    "name": "浅矿脉·铁矿料箱",
+    "key": "resource:d06_03:d06_03_cache0",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     1001,
+     35,
+     243,
+     219
+    ]
+   },
+   {
+    "object": "d06_06:d06_06_cache1",
+    "name": "矿工营室·铁片箱",
+    "key": "resource:d06_06:d06_06_cache1",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     10,
+     282,
+     241,
+     214
+    ]
+   },
+   {
+    "object": "d06_03:d06_03_cache2",
+    "name": "浅矿脉·木炭箱",
+    "key": "resource:d06_03:d06_03_cache2",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     259,
+     282,
+     240,
+     209
+    ]
+   },
+   {
+    "object": "d06_08:d06_08_unique",
+    "name": "矿道作业手册",
+    "key": "resource:d06_08:d06_08_unique",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     511,
+     280,
+     224,
+     213
+    ]
+   },
+   {
+    "object": "d07_04:d07_04_cache0",
+    "name": "服装层·豆罐头箱",
+    "key": "resource:d07_04:d07_04_cache0",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     752,
+     279,
+     235,
+     212
+    ]
+   },
+   {
+    "object": "d07_07:d07_07_cache1",
+    "name": "屋顶避难点·布料箱",
+    "key": "resource:d07_07:d07_07_cache1",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     1001,
+     271,
+     244,
+     223
+    ]
+   },
+   {
+    "object": "d07_04:d07_04_cache2",
+    "name": "服装层·塑料箱",
+    "key": "resource:d07_04:d07_04_cache2",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     10,
+     514,
+     241,
+     215
+    ]
+   },
+   {
+    "object": "d07_07:d07_07_unique",
+    "name": "商场避难物资簿",
+    "key": "resource:d07_07:d07_07_unique",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     264,
+     520,
+     232,
+     209
+    ]
+   },
+   {
+    "object": "d08_03:d08_03_cache0",
+    "name": "干货库·盐水剂箱",
+    "key": "resource:d08_03:d08_03_cache0",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     507,
+     523,
+     233,
+     201
+    ]
+   },
+   {
+    "object": "d08_06:d08_06_cache1",
+    "name": "备用电房·医用纱布箱",
+    "key": "resource:d08_06:d08_06_cache1",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     752,
+     518,
+     243,
+     210
+    ]
+   },
+   {
+    "object": "d08_03:d08_03_cache2",
+    "name": "干货库·肉干箱",
+    "key": "resource:d08_03:d08_03_cache2",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     1002,
+     511,
+     246,
+     217
+    ]
+   },
+   {
+    "object": "d08_08:d08_08_unique",
+    "name": "冷链调度档案",
+    "key": "resource:d08_08:d08_08_unique",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     9,
+     750,
+     235,
+     215
+    ]
+   },
+   {
+    "object": "h03_workshop:h03_workshop_supply_disinfectant",
+    "name": "公共工坊消毒液配给柜",
+    "key": "resource:h03_workshop:h03_workshop_supply_disinfectant",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     263,
+     750,
+     226,
+     215
+    ]
+   },
+   {
+    "object": "w13_mill:w13_mill_supply_salt",
+    "name": "磨坊食盐存货",
+    "key": "resource:w13_mill:w13_mill_supply_salt",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     502,
+     755,
+     239,
+     208
+    ]
+   },
+   {
+    "object": "w15_shrinewoods:w15_shrinewoods_supply_berry",
+    "name": "祈祷林野果丛",
+    "key": "resource:w15_shrinewoods:w15_shrinewoods_supply_berry",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     752,
+     750,
+     239,
+     215
+    ]
+   },
+   {
+    "object": "m01_road:m01_road_crate",
+    "name": "路旁旧货箱",
+    "key": "resource:m01_road:m01_road_crate",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     1001,
+     755,
+     242,
+     208
+    ]
+   },
+   {
+    "object": "m01_road:m01_road_barrier",
+    "name": "路障金属堆",
+    "key": "resource:m01_road:m01_road_barrier",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     10,
+     1001,
+     241,
+     219
+    ]
+   },
+   {
+    "object": "m02_checkpoint:m02_checkpoint_duty",
+    "name": "检查哨值勤补给箱",
+    "key": "resource:m02_checkpoint:m02_checkpoint_duty",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     261,
+     987,
+     235,
+     235
+    ]
+   },
+   {
+    "object": "m02_checkpoint:m02_checkpoint_bench",
+    "name": "哨站维修台遗料",
+    "key": "resource:m02_checkpoint:m02_checkpoint_bench",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     506,
+     1006,
+     237,
+     214
+    ]
+   },
+   {
+    "object": "h02_square:h02_square_water",
+    "name": "营区净水配给处",
+    "key": "resource:h02_square:h02_square_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     753,
+     988,
+     231,
+     239
+    ]
+   },
+   {
+    "object": "h02_square:h02_square_ration",
+    "name": "营区罐头配给处",
+    "key": "resource:h02_square:h02_square_ration",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-05.webp",
+    "crop": [
+     1001,
+     987,
+     246,
+     240
+    ]
+   },
+   {
+    "object": "h03_workshop:h03_workshop_scrap",
+    "name": "公共工坊旧件回收台",
+    "key": "resource:h03_workshop:h03_workshop_scrap",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     18,
+     23,
+     236,
+     222
+    ]
+   },
+   {
+    "object": "h04_infirmary:h04_infirmary_dressing",
+    "name": "医务室纱布配给柜",
+    "key": "resource:h04_infirmary:h04_infirmary_dressing",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     267,
+     20,
+     227,
+     229
+    ]
+   },
+   {
+    "object": "w01_farm:w01_farm_crop",
+    "name": "农场块根畦",
+    "key": "resource:w01_farm:w01_farm_crop",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     508,
+     38,
+     236,
+     208
+    ]
+   },
+   {
+    "object": "w01_farm:w01_farm_barn",
+    "name": "农场旧谷仓布料",
+    "key": "resource:w01_farm:w01_farm_barn",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     751,
+     22,
+     239,
+     223
+    ]
+   },
+   {
+    "object": "w02_forest:w02_forest_wood",
+    "name": "林间倒木",
+    "key": "resource:w02_forest:w02_forest_wood",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     995,
+     48,
+     241,
+     193
+    ]
+   },
+   {
+    "object": "w02_forest:w02_forest_fiber",
+    "name": "林间纤维草丛",
+    "key": "resource:w02_forest:w02_forest_fiber",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     16,
+     261,
+     238,
+     225
+    ]
+   },
+   {
+    "object": "w03_quarry:w03_quarry_stone",
+    "name": "坡脚碎石带",
+    "key": "resource:w03_quarry:w03_quarry_stone",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     266,
+     287,
+     236,
+     195
+    ]
+   },
+   {
+    "object": "w03_quarry:w03_quarry_ore",
+    "name": "采石坡露矿",
+    "key": "resource:w03_quarry:w03_quarry_ore",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     505,
+     261,
+     240,
+     228
+    ]
+   },
+   {
+    "object": "a01_yard:a01_yard_steel",
+    "name": "货场废钢垛",
+    "key": "resource:a01_yard:a01_yard_steel",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     751,
+     272,
+     237,
+     211
+    ]
+   },
+   {
+    "object": "a01_yard:a01_yard_fastener",
+    "name": "货场紧固件匣",
+    "key": "resource:a01_yard:a01_yard_fastener",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     999,
+     272,
+     235,
+     219
+    ]
+   },
+   {
+    "object": "a02_pump:a02_pump_seal",
+    "name": "泵站密封件架",
+    "key": "resource:a02_pump:a02_pump_seal",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     22,
+     509,
+     225,
+     221
+    ]
+   },
+   {
+    "object": "a02_pump:a02_pump_fuel",
+    "name": "泵站机油余存",
+    "key": "resource:a02_pump:a02_pump_fuel",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     262,
+     502,
+     235,
+     235
+    ]
+   },
+   {
+    "object": "a03_foundry:a03_foundry_steel",
+    "name": "厂外钢料垛",
+    "key": "resource:a03_foundry:a03_foundry_steel",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     505,
+     524,
+     241,
+     206
+    ]
+   },
+   {
+    "object": "a03_foundry:a03_foundry_machine",
+    "name": "厂外机件堆",
+    "key": "resource:a03_foundry:a03_foundry_machine",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     751,
+     513,
+     238,
+     216
+    ]
+   },
+   {
+    "object": "b01_school:b01_school_fabric",
+    "name": "安置学校旧布架",
+    "key": "resource:b01_school:b01_school_fabric",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     995,
+     511,
+     244,
+     217
+    ]
+   },
+   {
+    "object": "b01_school:b01_school_leather",
+    "name": "安置学校旧皮料",
+    "key": "resource:b01_school:b01_school_leather",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     13,
+     758,
+     241,
+     214
+    ]
+   },
+   {
+    "object": "b02_station:b02_station_medical",
+    "name": "转运站纱布配给柜",
+    "key": "resource:b02_station:b02_station_medical",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     264,
+     746,
+     226,
+     230
+    ]
+   },
+   {
+    "object": "b02_station:b02_station_electronic",
+    "name": "转运站退役设备",
+    "key": "resource:b02_station:b02_station_electronic",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     505,
+     758,
+     239,
+     212
+    ]
+   },
+   {
+    "object": "b03_hospital:b03_hospital_medical",
+    "name": "外院医用纱布箱",
+    "key": "resource:b03_hospital:b03_hospital_medical",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     751,
+     753,
+     234,
+     221
+    ]
+   },
+   {
+    "object": "b03_hospital:b03_hospital_electronic",
+    "name": "外院旧设备间",
+    "key": "resource:b03_hospital:b03_hospital_electronic",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     995,
+     751,
+     245,
+     217
+    ]
+   },
+   {
+    "object": "w02_forest:w02_forest_plank",
+    "name": "林间旧木板堆",
+    "key": "resource:w02_forest:w02_forest_plank",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     14,
+     1007,
+     240,
+     214
+    ]
+   },
+   {
+    "object": "w02_forest:w02_forest_rope",
+    "name": "林间旧绳卷",
+    "key": "resource:w02_forest:w02_forest_rope",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     266,
+     1007,
+     236,
+     221
+    ]
+   },
+   {
+    "object": "b01_school:b01_school_thread",
+    "name": "安置学校缝线配给柜",
+    "key": "resource:b01_school:b01_school_thread",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     510,
+     994,
+     228,
+     233
+    ]
+   },
+   {
+    "object": "m01_road:m01_road_plastic",
+    "name": "公路塑料遗料",
+    "key": "resource:m01_road:m01_road_plastic",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     751,
+     1010,
+     234,
+     210
+    ]
+   },
+   {
+    "object": "a01_yard:a01_yard_wire",
+    "name": "货场旧导线卷",
+    "key": "resource:a01_yard:a01_yard_wire",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-06.webp",
+    "crop": [
+     995,
+     1006,
+     245,
+     218
+    ]
+   },
+   {
+    "object": "a02_pump:a02_pump_adhesive",
+    "name": "泵站黏合剂余存",
+    "key": "resource:a02_pump:a02_pump_adhesive",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     4,
+     13,
+     243,
+     236
+    ]
+   },
+   {
+    "object": "a02_pump:a02_pump_charcoal",
+    "name": "泵站旧炭袋",
+    "key": "resource:a02_pump:a02_pump_charcoal",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     258,
+     34,
+     236,
+     203
+    ]
+   },
+   {
+    "object": "b02_station:b02_station_battery",
+    "name": "转运站备用电池柜",
+    "key": "resource:b02_station:b02_station_battery",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     512,
+     21,
+     229,
+     218
+    ]
+   },
+   {
+    "object": "b02_station:b02_station_disinfectant",
+    "name": "转运站消毒液配给柜",
+    "key": "resource:b02_station:b02_station_disinfectant",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     761,
+     21,
+     225,
+     215
+    ]
+   },
+   {
+    "object": "h04_infirmary:h04_infirmary_saline",
+    "name": "医务室盐水剂配给柜",
+    "key": "resource:h04_infirmary:h04_infirmary_saline",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     1009,
+     21,
+     234,
+     216
+    ]
+   },
+   {
+    "object": "a03_foundry:a03_foundry_weapon_parts",
+    "name": "厂外武器组件箱",
+    "key": "resource:a03_foundry:a03_foundry_weapon_parts",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     9,
+     271,
+     237,
+     220
+    ]
+   },
+   {
+    "object": "b03_hospital:b03_hospital_ballistic_fiber",
+    "name": "外院防护纤维存货",
+    "key": "resource:b03_hospital:b03_hospital_ballistic_fiber",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     257,
+     269,
+     236,
+     227
+    ]
+   },
+   {
+    "object": "w01_farm:w01_farm_grain",
+    "name": "农场谷物畦",
+    "key": "resource:w01_farm:w01_farm_grain",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     507,
+     273,
+     236,
+     215
+    ]
+   },
+   {
+    "object": "h02_square:h02_square_beans",
+    "name": "营区豆罐头配给处",
+    "key": "resource:h02_square:h02_square_beans",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     757,
+     261,
+     236,
+     232
+    ]
+   },
+   {
+    "object": "w01_farm:w01_farm_salt",
+    "name": "农场食盐存货",
+    "key": "resource:w01_farm:w01_farm_salt",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     1009,
+     273,
+     237,
+     219
+    ]
+   },
+   {
+    "object": "w01_farm:w01_farm_cooking_oil",
+    "name": "农场食用油存货",
+    "key": "resource:w01_farm:w01_farm_cooking_oil",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     4,
+     527,
+     243,
+     208
+    ]
+   },
+   {
+    "object": "h01_gate:h01_gate_raw_water",
+    "name": "营门蓄水渠",
+    "key": "resource:h01_gate:h01_gate_raw_water",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     258,
+     517,
+     234,
+     225
+    ]
+   },
+   {
+    "object": "w03_quarry:w03_quarry_plate",
+    "name": "采石坡铁片回收堆",
+    "key": "resource:w03_quarry:w03_quarry_plate",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     502,
+     521,
+     243,
+     206
+    ]
+   },
+   {
+    "object": "h03_workshop:h03_workshop_contract",
+    "name": "工坊首次支援包",
+    "key": "resource:h03_workshop:h03_workshop_contract",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     754,
+     525,
+     240,
+     206
+    ]
+   },
+   {
+    "object": "m01_road:firetruck_cache",
+    "name": "消防车器材箱",
+    "key": "resource:m01_road:firetruck_cache",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     1005,
+     513,
+     242,
+     220
+    ]
+   },
+   {
+    "object": "w03_quarry:w03_quarry_blueprints",
+    "name": "采石坡野外装备图册",
+    "key": "resource:w03_quarry:w03_quarry_blueprints",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     2,
+     775,
+     246,
+     208
+    ]
+   },
+   {
+    "object": "d03_03:shield_cache",
+    "name": "器材室防暴盾箱",
+    "key": "resource:d03_03:shield_cache",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     257,
+     762,
+     236,
+     219
+    ]
+   },
+   {
+    "object": "d03_07:officer_cache",
+    "name": "守卫战利品箱",
+    "key": "resource:d03_07:officer_cache",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     502,
+     768,
+     243,
+     203
+    ]
+   },
+   {
+    "object": "d03_08:shotgun_cache",
+    "name": "封存仓霰弹枪箱",
+    "key": "resource:d03_08:shotgun_cache",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     752,
+     775,
+     247,
+     194
+    ]
+   },
+   {
+    "object": "d03_08:rifle_cache",
+    "name": "封存仓步枪箱",
+    "key": "resource:d03_08:rifle_cache",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     1003,
+     775,
+     250,
+     188
+    ]
+   },
+   {
+    "object": "d03_08:armor_cache",
+    "name": "封存仓防护装备箱",
+    "key": "resource:d03_08:armor_cache",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     5,
+     1019,
+     241,
+     212
+    ]
+   },
+   {
+    "object": "d03_08:ammo_reserve_cache",
+    "name": "封存仓备用弹药箱",
+    "key": "resource:d03_08:ammo_reserve_cache",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     262,
+     1028,
+     232,
+     198
+    ]
+   }
+  ],
+  "战斗动作 action": [
+   {
+    "object": "basic_attack",
+    "name": "basic_attack",
+    "key": "action:basic_attack",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     635,
+     639,
+     297,
+     267
+    ]
+   },
+   {
+    "object": "guard",
+    "name": "guard",
+    "key": "action:guard",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     938,
+     637,
+     299,
+     269
+    ]
+   },
+   {
+    "object": "breathe",
+    "name": "breathe",
+    "key": "action:breathe",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     16,
+     940,
+     298,
+     266
+    ]
+   },
+   {
+    "object": "switch_weapon",
+    "name": "switch_weapon",
+    "key": "action:switch_weapon",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     320,
+     944,
+     294,
+     263
+    ]
+   },
+   {
+    "object": "swap",
+    "name": "swap",
+    "key": "action:swap",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     620,
+     945,
+     307,
+     260
+    ]
+   },
+   {
+    "object": "reload",
+    "name": "reload",
+    "key": "action:reload",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-06.webp",
+    "crop": [
+     938,
+     940,
+     292,
+     265
+    ]
+   },
+   {
+    "object": "bandage",
+    "name": "bandage",
+    "key": "action:bandage",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-07.webp",
+    "crop": [
+     26,
+     47,
+     275,
+     267
+    ]
+   },
+   {
+    "object": "desperate_punch",
+    "name": "desperate_punch",
+    "key": "action:desperate_punch",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-07.webp",
+    "crop": [
+     331,
+     49,
+     279,
+     261
+    ]
+   },
+   {
+    "object": "retreat",
+    "name": "retreat",
+    "key": "action:retreat",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-07.webp",
+    "crop": [
+     645,
+     57,
+     272,
+     257
+    ]
+   },
+   {
+    "object": "end_turn",
+    "name": "end_turn",
+    "key": "action:end_turn",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-07.webp",
+    "crop": [
+     949,
+     50,
+     278,
+     264
+    ]
+   },
+   {
+    "object": "use_antibiotics",
+    "name": "use_antibiotics",
+    "key": "action:use_antibiotics",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-07.webp",
+    "crop": [
+     22,
+     357,
+     280,
+     256
+    ]
+   },
+   {
+    "object": "use_antiviral_cure",
+    "name": "use_antiviral_cure",
+    "key": "action:use_antiviral_cure",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-07.webp",
+    "crop": [
+     335,
+     346,
+     276,
+     277
+    ]
+   }
+  ],
+  "状态 status": [
+   {
+    "object": "status_unknown",
+    "name": "status_unknown",
+    "key": "status:status_unknown",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     761,
+     522,
+     209,
+     215
+    ]
+   },
+   {
+    "object": "status_diarrhea",
+    "name": "status_diarrhea",
+    "key": "status:status_diarrhea",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     282,
+     28,
+     220,
+     220
+    ]
+   },
+   {
+    "object": "status_bleed",
+    "name": "status_bleed",
+    "key": "status:status_bleed",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     544,
+     40,
+     156,
+     207
+    ]
+   },
+   {
+    "object": "status_bandage_cd",
+    "name": "status_bandage_cd",
+    "key": "status:status_bandage_cd",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     751,
+     57,
+     220,
+     192
+    ]
+   },
+   {
+    "object": "status_baobao",
+    "name": "status_baobao",
+    "key": "status:status_baobao",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-icons-corrections-01.webp",
+    "crop": [
+     87,
+     571,
+     380,
+     385
+    ]
+   },
+   {
+    "object": "status_infected",
+    "name": "status_infected",
+    "key": "status:status_infected",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     23,
+     277,
+     222,
+     215
+    ]
+   },
+   {
+    "object": "status_antibiotic",
+    "name": "status_antibiotic",
+    "key": "status:status_antibiotic",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     285,
+     273,
+     200,
+     211
+    ]
+   },
+   {
+    "object": "status_antibiotic_cd",
+    "name": "status_antibiotic_cd",
+    "key": "status:status_antibiotic_cd",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     526,
+     290,
+     191,
+     197
+    ]
+   },
+   {
+    "object": "status_bandage_virus_cd",
+    "name": "status_bandage_virus_cd",
+    "key": "status:status_bandage_virus_cd",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     751,
+     294,
+     225,
+     191
+    ]
+   },
+   {
+    "object": "status_shaken",
+    "name": "status_shaken",
+    "key": "status:status_shaken",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     21,
+     30,
+     233,
+     218
+    ]
+   },
+   {
+    "object": "status_zero",
+    "name": "status_zero",
+    "key": "status:status_zero",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-icons-corrections-01.webp",
+    "crop": [
+     539,
+     556,
+     454,
+     404
+    ]
+   },
+   {
+    "object": "status_low_energy",
+    "name": "status_low_energy",
+    "key": "status:status_low_energy",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     29,
+     567,
+     221,
+     140
+    ]
+   },
+   {
+    "object": "status_low_morale",
+    "name": "status_low_morale",
+    "key": "status:status_low_morale",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     271,
+     529,
+     213,
+     202
+    ]
+   },
+   {
+    "object": "status_panic",
+    "name": "status_panic",
+    "key": "status:status_panic",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     504,
+     518,
+     241,
+     221
+    ]
+   },
+   {
+    "object": "dying",
+    "name": "濒死",
+    "key": "status:dying",
+    "status": "现有占位（Q838 缺项）",
+    "shownAs": "status:status_unknown（清单内统一状态占位）"
+   }
+  ],
+  "设施 facility": [
+   {
+    "object": "hand",
+    "name": "手工",
+    "key": "facility:hand",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     506,
+     1021,
+     235,
+     214
+    ]
+   },
+   {
+    "object": "workbench",
+    "name": "工作台",
+    "key": "facility:workbench",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     752,
+     1019,
+     238,
+     214
+    ]
+   },
+   {
+    "object": "forge",
+    "name": "锻炉",
+    "key": "facility:forge",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     1005,
+     1003,
+     241,
+     234
+    ]
+   },
+   {
+    "object": "sewing",
+    "name": "缝纫台",
+    "key": "facility:sewing",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     18,
+     37,
+     227,
+     208
+    ]
+   },
+   {
+    "object": "medical",
+    "name": "医疗台",
+    "key": "facility:medical",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     268,
+     50,
+     229,
+     189
+    ]
+   },
+   {
+    "object": "armory",
+    "name": "军械台",
+    "key": "facility:armory",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     510,
+     33,
+     237,
+     210
+    ]
+   },
+   {
+    "object": "kiln",
+    "name": "陶窑",
+    "key": "facility:kiln",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     761,
+     13,
+     227,
+     234
+    ]
+   },
+   {
+    "object": "water_station",
+    "name": "固定净水台",
+    "key": "facility:water_station",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     1005,
+     27,
+     237,
+     220
+    ]
+   },
+   {
+    "object": "drying_rack",
+    "name": "晾制架",
+    "key": "facility:drying_rack",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     9,
+     270,
+     242,
+     213
+    ]
+   },
+   {
+    "object": "fire_lit",
+    "name": "火堆（点燃）",
+    "key": "facility:fire_lit",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     272,
+     273,
+     222,
+     206
+    ]
+   },
+   {
+    "object": "fire_out",
+    "name": "火堆（未点）",
+    "key": "facility:fire_out",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     514,
+     351,
+     229,
+     129
+    ]
+   },
+   {
+    "object": "shelter",
+    "name": "遮蔽棚",
+    "key": "facility:shelter",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     5,
+     514,
+     246,
+     225
+    ]
+   },
+   {
+    "object": "bed",
+    "name": "床垫",
+    "key": "facility:bed",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     1003,
+     291,
+     245,
+     183
+    ]
+   },
+   {
+    "object": "safehouse",
+    "name": "安全屋",
+    "key": "facility:safehouse",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     263,
+     516,
+     238,
+     222
+    ]
+   },
+   {
+    "object": "workshops",
+    "name": "营地工坊建造卡（Q838 同义）",
+    "key": "facility:workbench",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-07.webp",
+    "crop": [
+     752,
+     1019,
+     238,
+     214
+    ]
+   },
+   {
+    "object": "camping",
+    "name": "野营布",
+    "key": "facility:camping",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     505,
+     524,
+     246,
+     215
+    ]
+   },
+   {
+    "object": "charcoal",
+    "name": "烧炭",
+    "key": "facility:charcoal",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-sites-08.webp",
+    "crop": [
+     8,
+     758,
+     243,
+     234
+    ]
+   },
+   {
+    "object": "stove",
+    "name": "展开柴炉（Q838 同义）",
+    "key": "item:folding_stove",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-items-11.webp",
+    "crop": [
+     931,
+     340,
+     300,
+     272
+    ]
+   }
+  ],
+  "生命类小图标 glyph": [
+   {
+    "object": "health",
+    "name": "health",
+    "key": "glyph:health",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     1018,
+     529,
+     210,
+     205
+    ]
+   },
+   {
+    "object": "satiety",
+    "name": "satiety",
+    "key": "glyph:satiety",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     25,
+     786,
+     211,
+     186
+    ]
+   },
+   {
+    "object": "hydration",
+    "name": "hydration",
+    "key": "glyph:hydration",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     304,
+     770,
+     150,
+     213
+    ]
+   },
+   {
+    "object": "energy",
+    "name": "energy",
+    "key": "glyph:energy",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     547,
+     777,
+     160,
+     209
+    ]
+   },
+   {
+    "object": "wakefulness",
+    "name": "wakefulness",
+    "key": "glyph:wakefulness",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     754,
+     779,
+     224,
+     188
+    ]
+   },
+   {
+    "object": "morale",
+    "name": "morale",
+    "key": "glyph:morale",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     1003,
+     782,
+     234,
+     192
+    ]
+   },
+   {
+    "object": "immunity",
+    "name": "immunity",
+    "key": "glyph:immunity",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     19,
+     1013,
+     231,
+     218
+    ]
+   },
+   {
+    "object": "virus",
+    "name": "virus",
+    "key": "glyph:virus",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-ui-icons-01.webp",
+    "crop": [
+     277,
+     1012,
+     213,
+     216
+    ]
+   }
+  ],
+  "序章文书 document": [
+   {
+    "object": "village_south_sign",
+    "name": "南口路标",
+    "key": "glyph:route",
+    "status": "正式（ink-v2）（Q838 同义）",
+    "file": "art/ink-v2/atlas-ui-icons-03.webp",
+    "crop": [
+     761,
+     532,
+     215,
+     195
+    ]
+   },
+   {
+    "object": "relief_page_village",
+    "name": "公开救助残页",
+    "key": "document:relief_page_village",
+    "status": "现有占位（Q838 缺项）",
+    "shownAs": "统一占位矢量图 placeholder"
+   }
+  ],
+  "徒手 fists": [
+   {
+    "object": "fists",
+    "name": "徒手（Q838 同义）",
+    "key": "skillFamily:unarmed",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     18,
+     33,
+     287,
+     265
+    ]
+   }
+  ],
+  "Q883 待答图位": [
+   {
+    "object": "backpack",
+    "name": "顶栏负重",
+    "status": "现有图（Q883 待答）",
+    "shownAs": "art/v08/creatures.png 第 14 格"
+   },
+   {
+    "object": "outdoor",
+    "name": "帮助“世界时钟与昼夜”",
+    "status": "现有图（Q883 待答）",
+    "shownAs": "现有矢量图"
+   },
+   {
+    "object": "placeholder",
+    "name": "帮助“按键／Esc／中央推进条／保存与继续”四题、战斗未知指令兜底",
+    "status": "现有图（Q883 待答）",
+    "shownAs": "统一占位矢量图"
+   },
+   {
+    "object": "slot_empty",
+    "name": "制作帮助“空加工位”",
+    "status": "现有图（Q883 待答）",
+    "shownAs": "现有矢量图"
+   },
+   {
+    "object": "repair",
+    "name": "修理配方",
+    "status": "现有图（Q883 待答）",
+    "shownAs": "现有矢量图"
+   }
+  ],
+  "地点场景 scene": [
+   {
+    "object": "camp",
+    "name": "临时营地",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-camp-outskirts.webp"
+   },
+   {
+    "object": "field",
+    "name": "农野荒地",
+    "status": "批准沿用旧地景（16号稿）",
+    "file": "art/v08/field.png"
+   },
+   {
+    "object": "stream",
+    "name": "溪流浅滩",
+    "status": "批准沿用旧地景（16号稿）",
+    "file": "art/v08/stream.png"
+   },
+   {
+    "object": "woods",
+    "name": "树林边缘",
+    "status": "批准沿用旧地景（16号稿）",
+    "file": "art/v08/woods.png"
+   },
+   {
+    "object": "village",
+    "name": "废弃村庄",
+    "status": "批准沿用旧地景（16号稿）",
+    "file": "art/v08/village.png"
+   },
+   {
+    "object": "hardware",
+    "name": "五金店",
+    "status": "批准沿用旧地景（16号稿）",
+    "file": "art/v10/hardware.png"
+   },
+   {
+    "object": "clinic",
+    "name": "诊所",
+    "status": "批准沿用旧地景（16号稿）",
+    "file": "art/v08/clinic.png"
+   },
+   {
+    "object": "scrapyard",
+    "name": "废料场",
+    "status": "批准沿用旧地景（16号稿）",
+    "file": "art/v08/scrapyard.png"
+   },
+   {
+    "object": "m01_road",
+    "name": "旧公路",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-battle-checkpoint.webp"
+   },
+   {
+    "object": "m02_checkpoint",
+    "name": "检查哨",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-battle-checkpoint.webp"
+   },
+   {
+    "object": "h01_gate",
+    "name": "营门",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-01-幸存者营区.webp"
+   },
+   {
+    "object": "h02_square",
+    "name": "营区广场",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-01-幸存者营区.webp"
+   },
+   {
+    "object": "h03_workshop",
+    "name": "营区工坊",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-01-幸存者营区.webp"
+   },
+   {
+    "object": "h04_infirmary",
+    "name": "营区医务室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-01-幸存者营区.webp"
+   },
+   {
+    "object": "h05_homestead",
+    "name": "营外安全屋地块",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-01-幸存者营区.webp"
+   },
+   {
+    "object": "w01_farm",
+    "name": "近郊农场",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w02_forest",
+    "name": "林间营址",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w03_quarry",
+    "name": "采石坡",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w04_crossroads",
+    "name": "荒野岔路",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w05_marsh",
+    "name": "芦苇湿地",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w06_bridge",
+    "name": "断桥河滩",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w07_ridge",
+    "name": "山脊哨道",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w08_reservoir",
+    "name": "旧水库",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w09_logging",
+    "name": "深林伐木场",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w10_watchtower",
+    "name": "山顶瞭望台",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "a01_yard",
+    "name": "铁路货场",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "a02_pump",
+    "name": "旧泵站",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "a03_foundry",
+    "name": "铸造厂外",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "b01_school",
+    "name": "安置学校",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-camp-outskirts.webp"
+   },
+   {
+    "object": "b02_station",
+    "name": "急救转运站",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "b03_hospital",
+    "name": "医院外院",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "c01_pilgrim",
+    "name": "朝圣路",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-02-教会圣所地区.webp"
+   },
+   {
+    "object": "c02_church",
+    "name": "教会接待庭",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-02-教会圣所地区.webp"
+   },
+   {
+    "object": "c03_crypt",
+    "name": "教堂墓园",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-02-教会圣所地区.webp"
+   },
+   {
+    "object": "r01_observatory",
+    "name": "灰塔观测站",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-03-科学院封存地区.webp"
+   },
+   {
+    "object": "r02_academy",
+    "name": "科学院外院",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-03-科学院封存地区.webp"
+   },
+   {
+    "object": "r03_lab",
+    "name": "封存实验楼",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-03-科学院封存地区.webp"
+   },
+   {
+    "object": "o01_oldgate",
+    "name": "旧城门",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-battle-checkpoint.webp"
+   },
+   {
+    "object": "o02_market",
+    "name": "旧城商圈",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-battle-checkpoint.webp"
+   },
+   {
+    "object": "o03_police",
+    "name": "警备仓外",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "o04_transit",
+    "name": "旧城车站",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-battle-checkpoint.webp"
+   },
+   {
+    "object": "h05_appraisal",
+    "name": "鉴定所",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-01-幸存者营区.webp"
+   },
+   {
+    "object": "h06_shelter",
+    "name": "收容所",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-01-幸存者营区.webp"
+   },
+   {
+    "object": "c04_alms",
+    "name": "施济处",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-02-教会圣所地区.webp"
+   },
+   {
+    "object": "c05_admonition",
+    "name": "训诫堂",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-02-教会圣所地区.webp"
+   },
+   {
+    "object": "c06_archive",
+    "name": "典藏室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-02-教会圣所地区.webp"
+   },
+   {
+    "object": "c07_sanctuary",
+    "name": "圣堂",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-02-教会圣所地区.webp"
+   },
+   {
+    "object": "r04_reception",
+    "name": "接待处",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-03-科学院封存地区.webp"
+   },
+   {
+    "object": "r05_testing",
+    "name": "检测室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-03-科学院封存地区.webp"
+   },
+   {
+    "object": "r06_archive",
+    "name": "档案室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-03-科学院封存地区.webp"
+   },
+   {
+    "object": "r07_workshop",
+    "name": "试制工坊",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-03-科学院封存地区.webp"
+   },
+   {
+    "object": "r08_observation",
+    "name": "隔离观察区",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-03-科学院封存地区.webp"
+   },
+   {
+    "object": "w11_orchard",
+    "name": "荒弃果园",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w12_canal",
+    "name": "灌溉渠岸",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w13_mill",
+    "name": "旧磨坊",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w14_cemeteryroad",
+    "name": "墓地荒径",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w15_shrinewoods",
+    "name": "祈祷林",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w16_service",
+    "name": "山间服务站",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w17_switchback",
+    "name": "盘山公路",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w18_tunnel",
+    "name": "塌隧道外",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w19_survey",
+    "name": "测绘营址",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-camp-outskirts.webp"
+   },
+   {
+    "object": "w20_powercut",
+    "name": "高压走廊",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w21_pine",
+    "name": "深针叶林",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w22_ravine",
+    "name": "陡壁沟谷",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w23_hunting",
+    "name": "猎人旧营",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-camp-outskirts.webp"
+   },
+   {
+    "object": "w24_cave",
+    "name": "岩洞入口",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w25_wetland",
+    "name": "黑水湿地",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w26_island",
+    "name": "湖心陆洲",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w27_relay",
+    "name": "废中继营",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-camp-outskirts.webp"
+   },
+   {
+    "object": "w28_highland",
+    "name": "风蚀高地",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w29_riverbend",
+    "name": "河道弯口",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w30_truckstop",
+    "name": "货车休息区",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w31_suburb",
+    "name": "城郊棚户",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w32_railcut",
+    "name": "铁路线切口",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w33_waterworks",
+    "name": "荒废水厂",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "w34_depot",
+    "name": "应急仓外",
+    "status": "统一占位（Q837 缺项）",
+    "file": "scenes/placeholder.svg"
+   },
+   {
+    "object": "d01_01",
+    "name": "墓门缓冲",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d01_01.webp"
+   },
+   {
+    "object": "d01_02",
+    "name": "捐献仓",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d01_01.webp"
+   },
+   {
+    "object": "d01_03",
+    "name": "忏悔长廊",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d01_01.webp"
+   },
+   {
+    "object": "d01_04",
+    "name": "藏书密室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d01_01.webp"
+   },
+   {
+    "object": "d01_05",
+    "name": "环形礼拜厅",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d01_01.webp"
+   },
+   {
+    "object": "d01_06",
+    "name": "骨龛回道",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d01_01.webp"
+   },
+   {
+    "object": "d01_07",
+    "name": "封锁祭室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d01_01.webp"
+   },
+   {
+    "object": "d01_08",
+    "name": "旧路线档案",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d01_01.webp"
+   },
+   {
+    "object": "d02_01",
+    "name": "消洗门厅",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d02_01.webp"
+   },
+   {
+    "object": "d02_02",
+    "name": "观察廊",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d02_01.webp"
+   },
+   {
+    "object": "d02_03",
+    "name": "样本冷库",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d02_01.webp"
+   },
+   {
+    "object": "d02_04",
+    "name": "控制室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d02_01.webp"
+   },
+   {
+    "object": "d02_05",
+    "name": "试制间",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d02_01.webp"
+   },
+   {
+    "object": "d02_06",
+    "name": "检修竖井",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d02_01.webp"
+   },
+   {
+    "object": "d02_07",
+    "name": "隔离核心",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d02_01.webp"
+   },
+   {
+    "object": "d02_08",
+    "name": "流程终端",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d02_01.webp"
+   },
+   {
+    "object": "d02_09",
+    "name": "外排廊",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d02_01.webp"
+   },
+   {
+    "object": "d03_01",
+    "name": "装卸门",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d03_01.webp"
+   },
+   {
+    "object": "d03_02",
+    "name": "外仓",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d03_01.webp"
+   },
+   {
+    "object": "d03_03",
+    "name": "器材室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d03_01.webp"
+   },
+   {
+    "object": "d03_04",
+    "name": "值勤室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d03_01.webp"
+   },
+   {
+    "object": "d03_05",
+    "name": "内仓闸口",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d03_01.webp"
+   },
+   {
+    "object": "d03_06",
+    "name": "配电房",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d03_01.webp"
+   },
+   {
+    "object": "d03_07",
+    "name": "军械守卫",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d03_01.webp"
+   },
+   {
+    "object": "d03_08",
+    "name": "封存仓",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d03_01.webp"
+   },
+   {
+    "object": "d04_01",
+    "name": "地堡入口",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d04_01.webp"
+   },
+   {
+    "object": "d04_02",
+    "name": "缆线沟",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d04_01.webp"
+   },
+   {
+    "object": "d04_03",
+    "name": "蓄电室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d04_01.webp"
+   },
+   {
+    "object": "d04_04",
+    "name": "山腹机房",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d04_01.webp"
+   },
+   {
+    "object": "d04_05",
+    "name": "屋顶梯井",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d04_01.webp"
+   },
+   {
+    "object": "d04_06",
+    "name": "天线守卫台",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d04_01.webp"
+   },
+   {
+    "object": "d04_07",
+    "name": "联络台",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d04_01.webp"
+   },
+   {
+    "object": "d04_08",
+    "name": "逃生索道",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d04_01.webp"
+   },
+   {
+    "object": "d05_01",
+    "name": "检修井",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d05_01.webp"
+   },
+   {
+    "object": "d05_02",
+    "name": "分流室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d05_01.webp"
+   },
+   {
+    "object": "d05_03",
+    "name": "沉淀池",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d05_01.webp"
+   },
+   {
+    "object": "d05_04",
+    "name": "滤料库",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d05_01.webp"
+   },
+   {
+    "object": "d05_05",
+    "name": "环水渠",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d05_01.webp"
+   },
+   {
+    "object": "d05_06",
+    "name": "泵房守卫",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d05_01.webp"
+   },
+   {
+    "object": "d05_07",
+    "name": "阀控室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d05_01.webp"
+   },
+   {
+    "object": "d05_08",
+    "name": "出水涵洞",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d05_01.webp"
+   },
+   {
+    "object": "d06_01",
+    "name": "洞口",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d06_01.webp"
+   },
+   {
+    "object": "d06_02",
+    "name": "岔井",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d06_01.webp"
+   },
+   {
+    "object": "d06_03",
+    "name": "浅矿脉",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d06_01.webp"
+   },
+   {
+    "object": "d06_04",
+    "name": "废轨道",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d06_01.webp"
+   },
+   {
+    "object": "d06_05",
+    "name": "塌方绕道",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d06_01.webp"
+   },
+   {
+    "object": "d06_06",
+    "name": "矿工营室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d06_01.webp"
+   },
+   {
+    "object": "d06_07",
+    "name": "深井守卫",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d06_01.webp"
+   },
+   {
+    "object": "d06_08",
+    "name": "工具封库",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d06_01.webp"
+   },
+   {
+    "object": "d06_09",
+    "name": "通风出口",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d06_01.webp"
+   },
+   {
+    "object": "d07_01",
+    "name": "卷帘入口",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d07_01.webp"
+   },
+   {
+    "object": "d07_02",
+    "name": "中庭",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d07_01.webp"
+   },
+   {
+    "object": "d07_03",
+    "name": "食品层",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d07_01.webp"
+   },
+   {
+    "object": "d07_04",
+    "name": "服装层",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d07_01.webp"
+   },
+   {
+    "object": "d07_05",
+    "name": "药妆侧厅",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d07_01.webp"
+   },
+   {
+    "object": "d07_06",
+    "name": "扶梯守卫",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d07_01.webp"
+   },
+   {
+    "object": "d07_07",
+    "name": "屋顶避难点",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d07_01.webp"
+   },
+   {
+    "object": "d07_08",
+    "name": "消防出口",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d07_01.webp"
+   },
+   {
+    "object": "d08_01",
+    "name": "货台",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d08_01.webp"
+   },
+   {
+    "object": "d08_02",
+    "name": "温区分拣",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d08_01.webp"
+   },
+   {
+    "object": "d08_03",
+    "name": "干货库",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d08_01.webp"
+   },
+   {
+    "object": "d08_04",
+    "name": "冷库走廊",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d08_01.webp"
+   },
+   {
+    "object": "d08_05",
+    "name": "封存药架",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d08_01.webp"
+   },
+   {
+    "object": "d08_06",
+    "name": "备用电房",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d08_01.webp"
+   },
+   {
+    "object": "d08_07",
+    "name": "仓管守卫",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d08_01.webp"
+   },
+   {
+    "object": "d08_08",
+    "name": "调度室",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d08_01.webp"
+   },
+   {
+    "object": "d08_09",
+    "name": "卸货出口",
+    "status": "正式（ink-v2）",
+    "file": "art/ink-v2/scene-d08_01.webp"
+   }
+  ]
+ },
+ "summary": {
+  "物品 item": {
+   "正式（ink-v2）": 180,
+   "现有占位（Q838 缺项）": 1
+  },
+  "敌人 enemy": {
+   "正式（ink-v2）": 42
+  },
+  "技能 skill": {
+   "正式（ink-v2）": 75
+  },
+  "熟练度门类 skillFamily": {
+   "正式（ink-v2）": 15,
+   "现有占位（Q838 缺项）": 2
+  },
+  "资源点 resource": {
+   "正式（ink-v2）": 169
+  },
+  "战斗动作 action": {
+   "正式（ink-v2）": 12
+  },
+  "状态 status": {
+   "正式（ink-v2）": 14,
+   "现有占位（Q838 缺项）": 1
+  },
+  "设施 facility": {
+   "正式（ink-v2）": 18
+  },
+  "生命类小图标 glyph": {
+   "正式（ink-v2）": 8
+  },
+  "序章文书 document": {
+   "正式（ink-v2）（Q838 同义）": 1,
+   "现有占位（Q838 缺项）": 1
+  },
+  "徒手 fists": {
+   "正式（ink-v2）": 1
+  },
+  "Q883 待答图位": {
+   "现有图（Q883 待答）": 5
+  },
+  "地点场景 scene": {
+   "正式（ink-v2）": 99,
+   "批准沿用旧地景（16号稿）": 7,
+   "统一占位（Q837 缺项）": 37
+  }
+ },
+ "notIncluded": "肖像 52 张（actor:/duty:/recruitTemplate: 等）已随发并在运行时清单中，接线属 B37a2；本清单只列 B37a1 接线的物件与场景。"
+}
