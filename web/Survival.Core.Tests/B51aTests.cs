@@ -10,6 +10,8 @@ namespace Survival.Core.Tests;
 /// （Q701.1 原料暂停保质、Q701.3 工具本单保障、Q720 两成品独立期限、Q722／Q723 恢复句、Q724 保护显示、Q726 工具拒绝句、旧档迁移）。
 /// 设施并行（Q701.2、Q721、Q727）与预估 Q725、Q702／Q703／Q728 属 B51b，不在这里。正式句见《重墨 V2 开工裁定与界面逐字稿》B51 表。
 /// </summary>
+// B51c1 改期望（出处 S08 文首 2026-11-16 B51 §Q771 拼接顺序与短稿、02 Q874 开发方建议 A 暂用）：撤退保留／普通退出预告引句「退出将放弃本次{动作}。」→「退出将取消{动作}。」（维护→维修，现场修补用原名）、
+// 结果尾句「已耗时间保留。」→「已耗时间不退。」、删「未生成半成品。」「不会生成半成品。」；处理尸体沿 Q722 引句，只改尾句。锁定自动中止仍「已耗时间保留。」。
 public class B51aTests : TestBase
 {
     protected override bool NoEnemyApproach => true;
@@ -145,7 +147,8 @@ public class B51aTests : TestBase
         s.GameMinute += 50;   // 合法暂停期间（世界时间流逝）
         Assert.That(E.IsSpoiled(s, s.Items.Single(i => i.ItemId == "herb")), Is.False, "越过原截止仍不腐败");
         Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取消制作，预留材料已返还当前地面，未生成半成品。"), "普通取消句保持原句（Q771 待定）");
+        // B51c1（S08 B51 Q771 短稿＋保质至原句）：引句＋材料已退回当前地面＋实际恢复「{原料名}×{数量}保质至{日期时刻}」（仍余 30）＋已耗时间不退
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消制作。材料已退回{E.ZoneName(s, s.Ground)}地面。草药×1保质至{Clock.DayTime(s.GameMinute + 30)}。已耗时间不退。"));
         var herb = s.Items.Single(i => i.ItemId == "herb");
         Assert.That((herb.ExpiresAt, herb.ShelfPausedMinutes, herb.ReservedBy), Is.EqualTo(((int?)(s.GameMinute + 30), (int?)null, (int?)null)), "C＋R：仍余 30");
         // 放在工作外 10 分钟正常倒计时，再重开以当时剩余 20 重新记录
@@ -184,7 +187,7 @@ public class B51aTests : TestBase
     }
 
     /// <summary>
-    /// 处理尸体普通取消（逐字稿 B51 表、Q722 拼接合同）：「已取消处理尸体。」＋「尸体已返还{地点}地面。」＋实际恢复句＋「没有产物。」＋「已耗时间保留。」。
+    /// 处理尸体普通取消（逐字稿 B51 表、Q722 拼接合同）：「已取消处理尸体。」＋「尸体已返还{地点}地面。」＋实际恢复句＋「没有产物。」＋「已耗时间不退。」（B51c1 按 S08 B51 Q771：一次已耗时间不退）。
     /// </summary>
     [Test]
     public void Q722_A01_ButcherNormalCancel_FullComposition()
@@ -196,7 +199,7 @@ public class B51aTests : TestBase
         var r = carcass.ShelfPausedMinutes!.Value;
         Steps(s, 2);
         Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消处理尸体。尸体已返还{E.ZoneName(s, s.Ground)}地面。野犬尸体×1恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r)}。没有产物。已耗时间保留。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消处理尸体。尸体已返还{E.ZoneName(s, s.Ground)}地面。野犬尸体×1恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r)}。没有产物。已耗时间不退。"));
         Assert.That(carcass.ExpiresAt, Is.EqualTo(s.GameMinute + r));
     }
     // ───────────── M958 Q720 两成品从完成起按自身保质 ─────────────
@@ -436,6 +439,8 @@ public class B51aTests : TestBase
 }
 
 /// <summary>B51a 中撤退离地保留（Q471）的恢复句分组（Q723-A01）：同目的地／物主／卡侧内同名同精确截止合计，不同截止或不同目的地分句。</summary>
+// B51c1 改期望（出处 S08 文首 2026-11-16 B51 §Q771 拼接顺序与短稿、02 Q874 开发方建议 A 暂用）：撤退保留／普通退出预告引句「退出将放弃本次{动作}。」→「退出将取消{动作}。」（维护→维修，现场修补用原名）、
+// 结果尾句「已耗时间保留。」→「已耗时间不退。」、删「未生成半成品。」「不会生成半成品。」；处理尸体沿 Q722 引句，只改尾句。锁定自动中止仍「已耗时间保留。」。
 public class B51aKeptTests : B41bTestBase
 {
     [Test]
@@ -466,6 +471,6 @@ public class B51aKeptTests : B41bTestBase
         Assert.That(E.Cancel(s).Ok, Is.True);
         var text = s.Log.Last().Text;
         Assert.That(text, Does.StartWith("已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还" + field + "地面。"));
-        Assert.That(text, Does.Contain($"随身：{name}×2，保质至{Clock.DayTime(s.GameMinute + rc)}。{field}地面：{name}×1，保质至{Clock.DayTime(s.GameMinute + rg)}。未生成半成品。已耗时间保留。"));
+        Assert.That(text, Does.Contain($"随身：{name}×2，保质至{Clock.DayTime(s.GameMinute + rc)}。{field}地面：{name}×1，保质至{Clock.DayTime(s.GameMinute + rg)}。已耗时间不退。"));
     }
 }

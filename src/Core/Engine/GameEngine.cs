@@ -1081,11 +1081,10 @@ namespace Survival.Core.Engine
                 ActionType.Explore => "已取消探索，探索度不变，未获得物资；已消耗的时间保留。",
                 ActionType.Clear => "已取消清理，未获得物资；已扣除的1次清理机会不返还，已消耗的时间保留。",
                 ActionType.Gather => $"已取消{GatherVerbOf(a.TargetId)}，未获得产物，预留库存已释放。",
-                ActionType.Craft => "已取消制作，预留材料已返还当前地面，未生成半成品。",
-                ActionType.Build => "已取消建造，预留材料已返还当前地面，进度归零，没有建成。",
+                // B51c1（S08 B51 Q771）：制作／建造／维修／现场修补／拆解普通取消按实际动作分句；处理尸体沿 Q722 引句与返还分支
+                ActionType.Craft or ActionType.Build or ActionType.Repair or ActionType.Salvage or ActionType.Butcher =>
+                    PlainExitText(s, a, true, hadReserved, a.Type == ActionType.Butcher ? restoreText : FailureRestoreClauses(restored)),
                 ActionType.Sleep => "已提前醒来。",
-                // B51a（逐字稿 B51 表、Q722 拼接合同）：引句＋原普通取消地面返还＋实际恢复保质＋后果＋已耗时间；没有可返尸体时省返还与恢复
-                ActionType.Butcher => ButcherCancelLead + (hadReserved ? $"尸体已返还{ZoneName(s, s.Ground)}地面。" : "") + restoreText + ButcherResultAfter + ElapsedKept,
                 ActionType.Survey => "已取消遗迹勘整，未获得经验，不占今日勘整次数；已消耗的时间保留。",
                 ActionType.WaitCook => $"已退出等待加工（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
                 // B15 试玩修复 M333：城市事项/委托工作写实际进行的时长，不写计划工时

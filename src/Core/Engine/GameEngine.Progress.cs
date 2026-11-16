@@ -195,8 +195,9 @@ namespace Survival.Core.Engine
             ActionType.Clear => "退出将放弃本次清理：不获得物资，已扣的1次清理机会不返还（已耗时间不退）",
             ActionType.Gather => $"退出将放弃本次{GatherVerbOf(a.TargetId)}：不获得产物（已耗时间不退）",
             ActionType.Survey => "退出将放弃本次遗迹勘整：不获得经验，不占今日次数（已耗时间不退）",
-            ActionType.Craft or ActionType.Build => "退出将放弃本次制作：材料返还当前地面，不得半成品（已耗时间不退）",
-            ActionType.Butcher => "退出将放弃本次处理：尸体返还当前地面，没有产物（已耗时间不退）",
+            // B51c1（S08 B51 Q771）：制作／建造／维修／现场修补／拆解／处理尸体退出预告按实际动作分句，与 Cancel 结果同源
+            ActionType.Craft or ActionType.Build or ActionType.Repair or ActionType.Salvage or ActionType.Butcher =>
+                PlainExitText(s, a, false, a.ReservedItemIds.Any(id => FindItem(s, id) is ItemInstance ri && ri.ReservedBy == a.ActionId)),
             ActionType.Travel => $"退出将留在{LocName(a.SourceLocation)}（已走的时间与消耗不退）",
             _ => null,
         };

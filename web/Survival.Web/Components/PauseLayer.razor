@@ -163,7 +163,7 @@
     {
         ActionType.Travel => "留在出发地，已经流逝的时间与身体消耗保留。",
         ActionType.Gather => "不给产物、不磨损工具，预留库存释放。",
-        ActionType.Craft or ActionType.Build => "预留材料返还当前地面，不生成半成品。",
+        ActionType.Craft or ActionType.Build => "预留材料返还当前地面。",   // B51c1（Q771、Q874 A 暂用）：删「半成品」分句
         ActionType.Explore => "探索度不变、不给随机物资，已消耗的时间保留。",
         ActionType.Clear => "不给物资，已扣除的1次清理机会不返还，已消耗的时间保留。",
         ActionType.Survey => "不给经验、不占今日勘整次数，已消耗的时间保留。",

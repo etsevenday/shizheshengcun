@@ -8,6 +8,8 @@ namespace Survival.Core.Tests;
 /// B41c 续接补充（R05「Q488 返还来源持续到本次工作终结」「Q489 出安全屋不触发敌方主动入战检查」「Q490 维护、现场修补与拆解的当前目标复核」「Q491 移动的子行动阻断句」；
 /// 逐字稿「B41b Q488—Q491 续接补充逐字稿」；验收 Q488-A01、Q489-A01、Q490-A01—A02、Q491-A01）。
 /// </summary>
+// B51c1 改期望（出处 S08 文首 2026-11-16 B51 §Q771 拼接顺序与短稿、02 Q874 开发方建议 A 暂用）：撤退保留／普通退出预告引句「退出将放弃本次{动作}。」→「退出将取消{动作}。」（维护→维修，现场修补用原名）、
+// 结果尾句「已耗时间保留。」→「已耗时间不退。」、删「未生成半成品。」「不会生成半成品。」；处理尸体沿 Q722 引句，只改尾句。锁定自动中止仍「已耗时间保留。」。
 public class B41cResumeTests : B41cTestBase
 {
     private string FieldName => E.LocName("field");
@@ -67,12 +69,12 @@ public class B41cResumeTests : B41cTestBase
             Assert.That((main.RetreatKept, main.RetreatMoveOpen), Is.EqualTo((true, false)));
             // 人在原地时，地面部分返还原行动地＝当前地点；随身部分仍留随身（不落地）
             Assert.That(E.ActionProgress(g)!.ExitNote,
-                Is.EqualTo($"退出将放弃本次制作。随身预留材料解除预留后留在随身，地面预留材料会返还{FieldName}地面。不会生成半成品。已耗时间不退。"));
+                Is.EqualTo($"退出将取消制作。随身预留材料解除预留后留在随身，地面预留材料会返还{FieldName}地面。已耗时间不退。"));
             var allStone = g.Items.Where(i => i.ItemId == "stone").Sum(i => i.Count);
             var allFiber = g.Items.Where(i => i.ItemId == "fiber").Sum(i => i.Count);
             Assert.That(E.Cancel(g).Ok, Is.True);
             Assert.That(g.Log.Last().Text,
-                Is.EqualTo($"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。未生成半成品。已耗时间保留。"));
+                Is.EqualTo($"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。已耗时间不退。"));
             var gs = g.Items.Single(i => i.InstanceId == stone.InstanceId);
             var gf = g.Items.Single(i => i.InstanceId == fiber.InstanceId);
             Assert.That((gs.Owner, gs.ReservedBy), Is.EqualTo((ItemInstance.Carried, (int?)null)), "随身部分留在原物主随身");

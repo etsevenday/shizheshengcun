@@ -231,13 +231,17 @@ public class B22eTests : TestBase
         Assert.That(s.Main, Is.Not.Null);
         var elapsed = s.GameMinute - t0;
         Assert.That(elapsed, Is.GreaterThan(0));
+        // B51c1（S08 B51 Q771；Q874 A 暂用引句）：建造退出预告按实际动作分句，Q471 建造预告后果原句
+        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将取消建造。材料将退回{E.ZoneName(s, s.Ground)}地面。本次建造进度会清除，不会建成。已耗时间不退。"));
         Ok(E.Cancel(s));
         Assert.That(s.GameMinute - t0, Is.EqualTo(elapsed), "已过时间不退");
         Assert.That((Sum(s, "stone", "w03_quarry"), Sum(s, "wood", "w03_quarry")), Is.EqualTo((4, 2)), "预留材料返还当前地面");
         Assert.That(s.Items.Any(i => i.ReservedBy != null), Is.False);
         Assert.That((s.Locations["w03_quarry"].Facility.FireBuilt, E.HasFireAt(s, "w03_quarry")), Is.EqualTo((false, false)));
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(xp0), "取消经验 0");
-        Assert.That(s.Log.Last(l => l.Kind == GameEventKind.ActionCancelled.ToString()).Text, Does.Contain("预留材料已返还当前地面"));
+        // B51c1（S08 B51 Q771）：建造普通取消按实际动作分句——引句、材料退回当前地面、Q471 建造后果原句、一次已耗时间不退（无保质返料不接到期句）
+        Assert.That(s.Log.Last(l => l.Kind == GameEventKind.ActionCancelled.ToString()).Text,
+            Is.EqualTo($"已取消建造。材料已退回{E.ZoneName(s, s.Ground)}地面。本次建造进度已清除，没有建成。已耗时间不退。"));
         // 重新开工从头计算
         Start(s, Fire());
         Assert.That(s.Main!.WorkDone, Is.EqualTo(0));

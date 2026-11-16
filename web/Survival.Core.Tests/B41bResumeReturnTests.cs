@@ -8,6 +8,8 @@ namespace Survival.Core.Tests;
 /// B41b 里程碑 6：继续前的完整只读重验与分来源返还（R05「B41b Q463—Q471」Q465、Q466、Q471，「Q472—Q476」Q475、Q476；
 /// 逐字稿「B41b Q463—Q471 续接与返还逐字稿」；验收 Q440-A01 返还部分、Q440-A02、Q465-A01—A03、Q466-A01—A02、Q471-A01、Q475-A01、Q476-A01）。
 /// </summary>
+// B51c1 改期望（出处 S08 文首 2026-11-16 B51 §Q771 拼接顺序与短稿、02 Q874 开发方建议 A 暂用）：撤退保留／普通退出预告引句「退出将放弃本次{动作}。」→「退出将取消{动作}。」（维护→维修，现场修补用原名）、
+// 结果尾句「已耗时间保留。」→「已耗时间不退。」、删「未生成半成品。」「不会生成半成品。」；处理尸体沿 Q722 引句，只改尾句。锁定自动中止仍「已耗时间保留。」。
 public class B41bResumeReturnTests : B41bTestBase
 {
     private string Field => E.LocName("field");
@@ -41,11 +43,11 @@ public class B41bResumeReturnTests : B41bTestBase
         var campFiber = s.Items.Where(i => i.ItemId == "fiber" && i.Owner == "camp").Sum(i => i.Count);
         var allFiber = s.Items.Where(i => i.ItemId == "fiber").Sum(i => i.Count);
         Assert.That(E.ActionProgress(s)!.ExitNote,
-            Is.EqualTo($"退出将放弃本次制作。随身预留材料解除预留后留在随身，地面预留材料会返还{Field}地面。不会生成半成品。已耗时间不退。"));
+            Is.EqualTo($"退出将取消制作。随身预留材料解除预留后留在随身，地面预留材料会返还{Field}地面。已耗时间不退。"));
         Assert.That(E.ActionProgress(s)!.WorkPlace, Is.EqualTo(Field));
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(s.Log.Last().Text,
-            Is.EqualTo($"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{Field}地面。未生成半成品。已耗时间保留。"));
+            Is.EqualTo($"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{Field}地面。已耗时间不退。"));
         Assert.That(stone.ReservedBy, Is.Null);
         Assert.That(stone.Owner, Is.EqualTo(ItemInstance.Carried), "随身部分不被抛回远处");
         Assert.That(fiber.ReservedBy, Is.Null);
@@ -62,14 +64,14 @@ public class B41bResumeReturnTests : B41bTestBase
         var s = Field(3);
         KeptCraft(s, stoneCarried: false, fiberOnGround: true);
         Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消制作。地面预留材料已返还{Field}地面。未生成半成品。已耗时间保留。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消制作。地面预留材料已返还{Field}地面。已耗时间不退。"));
 
         var t = Field(3);
         var tid = KeptCraft(t, stoneCarried: true, fiberOnGround: false);
         var mine = new[] { Reserved(t, "stone", tid), Reserved(t, "fiber", tid) };
-        Assert.That(E.ActionProgress(t)!.ExitNote, Is.EqualTo("退出将放弃本次制作。随身预留材料解除预留后留在随身。不会生成半成品。已耗时间不退。"));
+        Assert.That(E.ActionProgress(t)!.ExitNote, Is.EqualTo("退出将取消制作。随身预留材料解除预留后留在随身。已耗时间不退。"));
         Assert.That(E.Cancel(t).Ok, Is.True);
-        Assert.That(t.Log.Last().Text, Is.EqualTo("已取消制作。随身预留材料已解除预留，仍在随身。未生成半成品。已耗时间保留。"));
+        Assert.That(t.Log.Last().Text, Is.EqualTo("已取消制作。随身预留材料已解除预留，仍在随身。已耗时间不退。"));
         Assert.That(mine.All(i => i.Owner == ItemInstance.Carried && i.ReservedBy == null), Is.True);
     }
 
@@ -229,7 +231,7 @@ public class B41bResumeReturnTests : B41bTestBase
         carcass.ShelfPausedMinutes = r0;
         Assert.That(E.ResumeBlockReason(s), Is.Null);
         Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消处理尸体。尸体已返还{Field}地面。野犬尸体×1恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r0)}。没有产物。已耗时间保留。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消处理尸体。尸体已返还{Field}地面。野犬尸体×1恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r0)}。没有产物。已耗时间不退。"));
         Assert.That(carcass.Owner, Is.EqualTo("field"));
         Assert.That((carcass.ExpiresAt, carcass.ShelfPausedMinutes), Is.EqualTo(((int?)(s.GameMinute + r0), (int?)null)), "C＋R");
 
@@ -241,7 +243,7 @@ public class B41bResumeReturnTests : B41bTestBase
             return ActionRequest.Butcher(E.CreateItems(g, "carcass_feral_dog", 1, ItemInstance.Carried).Single().InstanceId);
         });
         Assert.That(E.Cancel(t).Ok, Is.True);
-        Assert.That(t.Log.Last().Text, Does.StartWith("已取消处理尸体。尸体已解除预留，仍在随身。野犬尸体×1恢复剩余保质，保质到").And.EndWith("。没有产物。已耗时间保留。"));
+        Assert.That(t.Log.Last().Text, Does.StartWith("已取消处理尸体。尸体已解除预留，仍在随身。野犬尸体×1恢复剩余保质，保质到").And.EndWith("。没有产物。已耗时间不退。"));
         Assert.That(t.Items.Single(i => i.ItemId == "carcass_feral_dog").Owner, Is.EqualTo(ItemInstance.Carried));
     }
 
@@ -267,9 +269,9 @@ public class B41bResumeReturnTests : B41bTestBase
         Start(s, new ActionRequest { Type = ActionType.Craft, TargetId = GameEngine.FieldPatchRepairId, InstanceId = mach.InstanceId, PatchInstanceId = pack.InstanceId });
         Assert.That(s.Main!.Label, Does.StartWith("现场修补"));
         MarkKept(s);
-        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo("退出将放弃本次维护。不会完成本次维护。已耗时间不退。"));
+        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo("退出将取消现场修补。不会完成本次维护。已耗时间不退。"));
         Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取消维护。未完成本次维护。已耗时间保留。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取消现场修补。未完成本次维护。已耗时间不退。"));
         Assert.That(E.IsLocked(s, pack) || E.IsLocked(s, mach), Is.False);
         Assert.That(mach.Durability, Is.EqualTo(50));
 
@@ -285,7 +287,7 @@ public class B41bResumeReturnTests : B41bTestBase
         Assert.That(w.Main!.FixedWait, Is.True);
         MarkKept(w);
         Assert.That(E.Cancel(w).Ok, Is.True);
-        Assert.That(w.Log.Last().Text, Is.EqualTo($"已取消制作。地面预留材料已返还{E.ZoneName(w, w.Ground)}地面。未生成半成品。已耗时间保留。"));
+        Assert.That(w.Log.Last().Text, Is.EqualTo($"已取消制作。地面预留材料已返还{E.ZoneName(w, w.Ground)}地面。已耗时间不退。"));
         Assert.That(w.Items.Where(i => i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(4));
         Assert.That(w.Items.Any(i => i.ReservedBy != null), Is.False);
 

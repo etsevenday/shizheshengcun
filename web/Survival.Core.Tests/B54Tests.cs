@@ -8,6 +8,8 @@ namespace Survival.Core.Tests;
 /// 批次 B54「返料去向、保质短句与身体未知后值」（开发记录 B54）：S08 文首「2026-11-15 B51a Q787—Q790」「B51b Q791—Q792」，
 /// 逐字稿同两节，辅助合同 q787ToQ790、q791ToQ792。本类为撤退离地保留按来源返还（Q787 五根卡溢出、Q789 多去向恢复分句）。
 /// </summary>
+// B51c1 改期望（出处 S08 文首 2026-11-16 B51 §Q771 拼接顺序与短稿、02 Q874 开发方建议 A 暂用）：撤退保留／普通退出预告引句「退出将放弃本次{动作}。」→「退出将取消{动作}。」（维护→维修，现场修补用原名）、
+// 结果尾句「已耗时间保留。」→「已耗时间不退。」、删「未生成半成品。」「不会生成半成品。」；处理尸体沿 Q722 引句，只改尾句。锁定自动中止仍「已耗时间保留。」。
 public class B54KeptTests : B41bTestBase
 {
     private string Herb => E.ItemName("herb");
@@ -41,11 +43,11 @@ public class B54KeptTests : B41bTestBase
         // 只读预告：同源容量与原工作地，不挪物
         var before = SaveSerializer.Serialize(s);
         Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo(
-            $"退出将放弃本次制作。{Cloth}×2将退回{FieldName}地面。随身放不下，{Herb}×2将留在{FieldName}地面。{Herb}×2退回后恢复剩余保质，预计保质到{at}。不会生成半成品。已耗时间不退。"));
+            $"退出将取消制作。{Cloth}×2将退回{FieldName}地面。随身放不下，{Herb}×2将留在{FieldName}地面。{Herb}×2退回后恢复剩余保质，预计保质到{at}。已耗时间不退。"));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "预告只读");
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(s.Log.Last().Text, Is.EqualTo(
-            $"已取消制作。{Cloth}×2已退回{FieldName}地面。随身已满，{Herb}×2留在{FieldName}地面。{Herb}×2恢复剩余保质，保质到{at}。未生成半成品。已耗时间保留。"));
+            $"已取消制作。{Cloth}×2已退回{FieldName}地面。随身已满，{Herb}×2留在{FieldName}地面。{Herb}×2恢复剩余保质，保质到{at}。已耗时间不退。"));
         Assert.That(E.RootCardCount(s), Is.EqualTo(5), "不新增第六张根卡");
         var dropped = s.Items.Single(i => i.ItemId == "herb" && i.Owner == "field");
         Assert.That((dropped.Count, dropped.ExpiresAt, dropped.ShelfPausedMinutes, dropped.ReservedBy), Is.EqualTo((2, (int?)(s.GameMinute + r), (int?)null, (int?)null)));
@@ -64,10 +66,10 @@ public class B54KeptTests : B41bTestBase
         var id = KeptAtField(s, Setup(3, 2, "stone", "wood", "fiber"));
         Assert.That(E.RootCardCount(s), Is.EqualTo(4));
         var r = Reserved(s, "herb", id).ShelfPausedMinutes!.Value;
-        Assert.That(E.ActionProgress(s)!.ExitNote, Does.StartWith($"退出将放弃本次制作。随身预留材料解除预留后留在随身，地面预留材料会返还{FieldName}地面。"));
+        Assert.That(E.ActionProgress(s)!.ExitNote, Does.StartWith($"退出将取消制作。随身预留材料解除预留后留在随身，地面预留材料会返还{FieldName}地面。"));
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(s.Log.Last().Text, Is.EqualTo(
-            $"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。{Herb}×2恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r)}。未生成半成品。已耗时间保留。"));
+            $"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。{Herb}×2恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r)}。已耗时间不退。"));
         Assert.That(E.RootCardCount(s), Is.EqualTo(5));
         Assert.That(s.Items.Where(i => i.ItemId == "herb" && i.Owner == ItemInstance.Carried).Sum(i => i.Count), Is.EqualTo(3));
     }
@@ -124,7 +126,7 @@ public class B54KeptTests : B41bTestBase
     public void Q787_A02_StackCapMaximumLegalPortion()
     {
         var (s, at) = PartialFit();
-        Assert.That(E.ActionProgress(s)!.ExitNote, Does.StartWith($"退出将放弃本次制作。{Cloth}×3将退回{FieldName}地面。{Herb}×2将退回随身。随身放不下，{Herb}×1将留在{FieldName}地面。"));
+        Assert.That(E.ActionProgress(s)!.ExitNote, Does.StartWith($"退出将取消制作。{Cloth}×3将退回{FieldName}地面。{Herb}×2将退回随身。随身放不下，{Herb}×1将留在{FieldName}地面。"));
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(s.Log.Last().Text, Does.StartWith($"已取消制作。{Cloth}×3已退回{FieldName}地面。{Herb}×2已退回随身。随身已满，{Herb}×1留在{FieldName}地面。"));
         Assert.That(E.RootCardCount(s), Is.EqualTo(5));
@@ -165,11 +167,11 @@ public class B54KeptTests : B41bTestBase
         });
         var r = s.Items.Where(i => i.ItemId == "herb" && i.ReservedBy == id).Select(i => i.ShelfPausedMinutes!.Value).Distinct().Single();
         var at = Clock.DayTime(s.GameMinute + r);
-        Assert.That(E.ActionProgress(s)!.ExitNote, Does.Contain($"随身：{Herb}×1，预计保质至{at}。{FieldName}地面：{Herb}×1，预计保质至{at}。不会生成半成品。"));
+        Assert.That(E.ActionProgress(s)!.ExitNote, Does.Contain($"随身：{Herb}×1，预计保质至{at}。{FieldName}地面：{Herb}×1，预计保质至{at}。已耗时间不退。"));
 
         Assert.That(E.Cancel(s).Ok, Is.True);
         var text = s.Log.Last().Text;
-        Assert.That(text, Does.Contain($"随身：{Herb}×1，保质至{at}。{FieldName}地面：{Herb}×1，保质至{at}。未生成半成品。已耗时间保留。"));
+        Assert.That(text, Does.Contain($"随身：{Herb}×1，保质至{at}。{FieldName}地面：{Herb}×1，保质至{at}。已耗时间不退。"));
         Assert.That(text, Does.Not.Contain("恢复剩余保质"), "多去向不再用原单去向句");
     }
 
@@ -182,7 +184,7 @@ public class B54KeptTests : B41bTestBase
         Assert.That(E.ActionProgress(s)!.ExitNote, Does.Contain($"随身：{Herb}×2，预计保质至{t}。{FieldName}地面：{Herb}×1，预计保质至{t}。"));
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(s.Log.Last().Text, Is.EqualTo(
-            $"已取消制作。{Cloth}×3已退回{FieldName}地面。{Herb}×2已退回随身。随身已满，{Herb}×1留在{FieldName}地面。随身：{Herb}×2，保质至{t}。{FieldName}地面：{Herb}×1，保质至{t}。未生成半成品。已耗时间保留。"));
+            $"已取消制作。{Cloth}×3已退回{FieldName}地面。{Herb}×2已退回随身。随身已满，{Herb}×1留在{FieldName}地面。随身：{Herb}×2，保质至{t}。{FieldName}地面：{Herb}×1，保质至{t}。已耗时间不退。"));
     }
 
     /// <summary>Q789-A02：只有一个实际恢复目的地时沿原 Q723 单去向句（溢出全部落地也是单目的地）。</summary>

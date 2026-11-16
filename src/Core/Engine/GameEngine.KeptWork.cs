@@ -256,24 +256,64 @@ namespace Survival.Core.Engine
         public const string ButcherPreviewAfter = "不会获得产物。";
         public const string ButcherResultAfter = "没有产物。";
 
+        // ───────────── B51c1（S08 B51 Q771）普通取消／退出预告分句 ─────────────
+
+        /// <summary>Q771 已耗时间句：取消结果与退出预告一律只接一次（取代 Q471 结果的「已耗时间保留。」；锁定自动中止不在此列）。</summary>
+        public const string ElapsedNotRefunded = "已耗时间不退。";
+
         /// <summary>
-        /// Q471 完整句（B51a 按 Q722／Q723 拼接合同）：引句＋真实返还分句＋实际恢复保质分句＋后果＋「已耗时间不退。」（预告）／「已耗时间保留。」（结果）。
+        /// Q771 实际动作名（替换短稿里的「制作」）：建造、维修（Q874 A 暂用：总册写法「维修」，取代「维护」）、现场修补（原配方名）、拆解，其余制作。
+        /// </summary>
+        public static string CancelVerb(ActionState a) => a.Type switch
+        {
+            ActionType.Build => "建造",
+            ActionType.Repair => a.PatchInstanceId != null ? "现场修补" : "维修",
+            ActionType.Salvage => "拆解",
+            _ => "制作",
+        };
+
+        /// <summary>
+        /// Q771 拼接顺序里的「原真实未完成后果」（有专门既定句才保留，逐字稿 Q471 表原句）：制作原后果为已删的半成品旧话，故为空；
+        /// 处理尸体沿 Q722（逐字稿 B51 表）。
+        /// </summary>
+        private static string CancelAfter(ActionState a, bool result) => a.Type switch
+        {
+            ActionType.Build => result ? "本次建造进度已清除，没有建成。" : "本次建造进度会清除，不会建成。",
+            ActionType.Repair => result ? "未完成本次维护。" : "不会完成本次维护。",
+            ActionType.Salvage => result ? "未获得拆解产物。" : "不会获得拆解产物。",
+            ActionType.Butcher => result ? ButcherResultAfter : ButcherPreviewAfter,
+            _ => "",
+        };
+
+        /// <summary>Q771 引句：处理尸体沿 Q722 已定引句，其余「已取消{动作}。」／「退出将取消{动作}。」（预告为 Q874 A 暂用）。</summary>
+        private static string CancelLead(ActionState a, bool result) => a.Type == ActionType.Butcher
+            ? (result ? ButcherCancelLead : ButcherExitLead)
+            : result ? $"已取消{CancelVerb(a)}。" : $"退出将取消{CancelVerb(a)}。";
+
+        /// <summary>
+        /// 普通（非撤退离地保留）取消结果／退出预告（S08 B51 Q771）：引句→实际返还当前地面（有本行动实际预留物才写）→实际有保质返料的到期句→原后果→「已耗时间不退。」。
+        /// 结果 restore 为本次实际恢复分句（制作类「{原料名}×{数量}保质至{日期时刻}。」，处理尸体沿 Q722 拼接合同）；预告按现在立即退出只读算（逐字稿 B51 表「立即取消的只读返料预告」）。
+        /// </summary>
+        private string PlainExitText(GameState s, ActionState a, bool result, bool hasReturn, string? restore = null)
+        {
+            var zone = ZoneName(s, s.Ground);
+            var back = !hasReturn ? ""
+                : a.Type == ActionType.Butcher ? (result ? $"尸体已返还{zone}地面。" : $"尸体将返还{zone}地面。")
+                : result ? $"材料已退回{zone}地面。" : $"材料将退回{zone}地面。";
+            restore ??= result ? "" : RestorePreview(s, a, false);
+            return CancelLead(a, result) + back + restore + CancelAfter(a, result) + ElapsedNotRefunded;
+        }
+
+        /// <summary>
+        /// Q471 完整句（B51a 按 Q722／Q723 拼接合同；B51c1 按 Q771／Q874 A）：引句＋真实返还分句＋实际恢复保质分句＋后果＋「已耗时间不退。」（预告与结果同一句）。
         /// 结果的 restore 为本次真实恢复分句；预告不传，按现在立即退出的 C＋R 只读算（restorePreview）。
         /// </summary>
         /// <param name="parts">B54（Q787）：结果为本次实际按来源返还的去向（ReleaseToSources 记下的）；预告不传，按现在立即退出只读预演。有溢出时返还段按实际去向生成。</param>
         private string KeptExitText(GameState s, ActionState a, (bool carried, string? ground) src, bool result, string? restore = null, IReadOnlyList<KeptReturnPart>? parts = null)
         {
-            var (lead, after) = a.Type switch
-            {
-                ActionType.Build => result ? ("已取消建造。", "本次建造进度已清除，没有建成。") : ("退出将放弃本次建造。", "本次建造进度会清除，不会建成。"),
-                ActionType.Repair => result ? ("已取消维护。", "未完成本次维护。") : ("退出将放弃本次维护。", "不会完成本次维护。"),
-                ActionType.Salvage => result ? ("已取消拆解。", "未获得拆解产物。") : ("退出将放弃本次拆解。", "不会获得拆解产物。"),
-                ActionType.Butcher => result ? (ButcherCancelLead, ButcherResultAfter) : (ButcherExitLead, ButcherPreviewAfter),
-                _ => result ? ("已取消制作。", "未生成半成品。") : ("退出将放弃本次制作。", "不会生成半成品。"),
-            };
             restore ??= result ? "" : RestorePreview(s, a, true);
             parts ??= result ? null : KeptReturnPlan(s, a);
-            return lead + KeptReturnSegment(s, a, src, result, parts) + restore + after + (result ? "已耗时间保留。" : "已耗时间不退。");
+            return CancelLead(a, result) + KeptReturnSegment(s, a, src, result, parts) + restore + CancelAfter(a, result) + ElapsedNotRefunded;
         }
 
         /// <summary>

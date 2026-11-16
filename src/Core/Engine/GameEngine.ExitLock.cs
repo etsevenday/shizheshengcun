@@ -363,7 +363,7 @@ namespace Survival.Core.Engine
             }
             text += a.Type switch
             {
-                ActionType.Craft => "未生成半成品。",
+                ActionType.Craft => "",   // B51c1（Q771、Q874 A 暂用）：只删「未生成半成品」分句
                 ActionType.Build => "本次建造进度已清除，没有建成。",
                 ActionType.Repair => "未完成本次维护。",
                 ActionType.Salvage => "未获得拆解产物。",
