@@ -69,6 +69,8 @@ dotnet test web/Survival.sln
 
 等它结束（应用会在它结束时唤醒本会话），读它的报告，**自己核对一遍**再下结论：未通过的回第 3 步改，改完再起一轮试玩；两轮仍不过就把现象整理好问用户。
 
+试玩通过后、推送前，在**本地 Release 包**上复核一次（2026-11-16 用户定：本地验完再发布，不等上线后再看）：`dotnet publish web/Survival.Web -c Release -o publish/local` → `preview_start {name:"published"}`（5199）→ 用留言的 save.json "继续"，把留言里的问题再走一遍，看控制台 → `preview_stop`。Release 包上不对的回第 3 步。
+
 ## 5 更新上线
 
 1. `git status` 核对改动文件，`git add <具体路径>`。

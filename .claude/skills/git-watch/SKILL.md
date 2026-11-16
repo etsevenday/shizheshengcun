@@ -37,7 +37,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
         {"id": "BM1", "title": "次要问题合并", "kind": "A", "status": "minor", "items": ["R150"], "questions": ["Q412", "Q413"], "answered": {"Q412": "2026-11-11"}, "note": ""}
       ]
     },
-    "pendingPlaytest": ["<已上线但还没浏览器试玩的提交短号>"]
+    "pendingPlaytest": ["<2026-11-16 前遗留：已上线但还没浏览器试玩的提交短号>"]
   }
   ```
 
@@ -62,7 +62,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
    - 单个代理别一口气塞太多活：一批的开发量控制在一个代理 1–2 小时内（第 2 节分批时就按这个量切）。**代理跑着的时候也要续心跳**：起代理（开发、试玩、分析）后，同时后台跑 `python tools/git-watch-heartbeat.py <runId> <sessionId>`（Bash `run_in_background`），它每 20 分钟刷新一次 `heartbeat`，`runId` 不是自己的或本会话记录 45 分钟没写入就自己退出；代理返回后用 TaskStop 停掉。不要再在 scratchpad 里临时写心跳循环。阶段间的单次刷新也可以用它加 `--once`。这样两次心跳之间不会超过 1.5 小时。
 2. `git fetch origin`。看两样：
    - 新提交：`git log --format='%h %an %ad %s' <lastSeen>..origin/main`，只看作者不是 `etsevenday` 的。**不要用 `HEAD..origin/main`**：别的会话可能已把策划提交拉进本地 HEAD，那样会漏掉。
-   - 队列：`queue.batches` 里有没有可开工的 `pending`（按第 0 节 `dependsOn` 判断，预检结论里已分好；上一轮留下的 `running` 说明那轮中途死了：看它的 `commits` 与 origin/main 判断做到哪，没推上去的改回 `pending` 重做，已推上去的按第 4.1 节从试玩接着做）。
+   - 队列：`queue.batches` 里有没有可开工的 `pending`（按第 0 节 `dependsOn` 判断，预检结论里已分好；上一轮留下的 `running` 说明那轮中途死了：看它的 `commits` 与 origin/main 判断做到哪，没推上去的：已有本地提交就从第 4.1 节本地试玩接着做（试玩做没做完看开发记录"本地试玩结论"），没有提交就改回 `pending` 重做；已推上去的说明本地试玩已过，按第 5 节补完推送后的构建确认即可）。
    - 次要攒批：有 `minor` 批次、且满足第 2.3 节第 8 条的开批条件 → 改成 `pending` 排最前，当作有 pending 批次。
    两样都没有 → 清锁，结束，不通知、不汇报。没有策划新提交、`pending` 批次又都被 `waiting` 批次或没做完的依赖挡着 → 同样清锁结束。
 3. 本地有正在进行的工作就不碰：`git log origin/main..HEAD` 有未推送提交，或 `git status --porcelain` 里有已跟踪文件被改（未跟踪文件如 `doc/策划案.7z` 不算）→ 说明别的会话正在干活。`PushNotification`："git 有策划新提交/待处理批次 <短号或批次号>，但本地有未推送/未提交的工作，没自动处理"，清锁，结束（`lastSeen`、队列都不更新；照第 0 节记 `notifiedHead`，别的会话推送后 origin/main 变了自然会接着做）。
@@ -136,7 +136,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 - 开发前先走 3.0 开工前核对（顺带提前核对后面所有未核对的批次，3.0 第 5 条）；本批有缺口就整批挂起，不往下走。
 - 文档同步（`/design-dev` 第 6 步）只给本批做过的需求补【实现同步】与修改记录；后续批次的条目还没实现，不写【实现同步】、不当作偏差。
-- 本批做完（推送、线上试玩复验都结束）→ 批次 `status: "done"`，`commits` 记本批提交短号，`questions` 记本批新增的 Q；试玩两轮仍有没修好的，照样 `done`，遗留写进 `note`。然后按第 0 节把这条搬进 done 文件。
+- 本批做完（本地试玩复验、推送、线上构建确认都结束）→ 批次 `status: "done"`，`commits` 记本批提交短号，`questions` 记本批新增的 Q；试玩两轮仍有没修好的，照样 `done`，遗留写进 `note`。然后按第 0 节把这条搬进 done 文件。
 - 本批受阻（测试不绿修不好、推送前拉到冲突的策划提交等第 5 节要停下的情况）→ `status: "blocked"`，`note` 写原因，记 `notifiedHead`，通知用户，清锁结束；后面的批次等用户处理后再继续（不跳过去做，免得在不稳的基础上叠改动）。
 - 一轮只做一批：做完就走第 6 节收尾结束，下一批留给下次定时触发（10 分钟后）。
 
@@ -186,7 +186,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 完整走 `/design-dev` 第 1–6 步，按第 4 节的无人值守改法。计划写在 scratchpad 的 `plan.md`（不进 plan mode），里程碑编号接着 git 里最新的 M 号往下排（`git log --grep='^M[0-9]' -1 --format=%s`）。
 
-**每个批次一份开发记录**（2026-11-11 起，A/B/C/D 各类批次都一样；此前同一队列共用一份开发计划、每批加一节，`doc/开发计划 v0.9 全系统扩展.md` 涨到 1.1 MB，谁读谁慢）：开发代理把本批的内容写进新文件 `doc/开发记录/<批次号> <主题>.md`，结构照旧（来源与范围、工程映射与里程碑、开发假设、实施记录与偏差、试玩修复、线上复验结论、遗留），写法照 `doc/开发计划 v1.0 重墨V2 UI重做.md` 里任意一个批次节。本技能和 `/design-dev` 里说"写进开发计划""开发计划加一节"的地方，都指这份文件。`doc/开发计划 v*.md` 旧文件留作历史，**不再往里追加**，也不拆；要查旧批次做法用 Grep 按批次号或 M 号找，不要整份读。
+**每个批次一份开发记录**（2026-11-11 起，A/B/C/D 各类批次都一样；此前同一队列共用一份开发计划、每批加一节，`doc/开发计划 v0.9 全系统扩展.md` 涨到 1.1 MB，谁读谁慢）：开发代理把本批的内容写进新文件 `doc/开发记录/<批次号> <主题>.md`，结构照旧（来源与范围、工程映射与里程碑、开发假设、实施记录与偏差、试玩修复、本地试玩结论、遗留），写法照 `doc/开发计划 v1.0 重墨V2 UI重做.md` 里任意一个批次节。本技能和 `/design-dev` 里说"写进开发计划""开发计划加一节"的地方，都指这份文件。`doc/开发计划 v*.md` 旧文件留作历史，**不再往里追加**，也不拆；要查旧批次做法用 Grep 按批次号或 M 号找，不要整份读。
 
 ### 3.4 D 纯文档整理
 
@@ -199,29 +199,33 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 | 第 2 步用 `AskUserQuestion` 问阻塞空白 | 第 3.0 节：开工前有缺口就写成待确认问题推给策划，**整批挂起等答复**，不按推荐做法先实现 |
 | 第 2 步 `ExitPlanMode` 等批准 | 计划写好直接开发 |
 | 第 5 步"体验改进、策划案空白 → 列给用户拍板" | 不做，写成待确认问题（写清现状、可选做法、开发方建议） |
-| 第 5 步"两轮复验不过 → 问用户" | 已推送的不回滚；剩余问题写进开发计划与提交说明，`PushNotification` 告诉用户哪些没修好（第 4.1 节第 3 步） |
+| 第 5 步"两轮复验不过 → 问用户" | 还没推送：严重的不推、批次 `blocked`，只剩次要的照推并列出遗留（第 4.1 节第 3 步） |
 | 第 7 步"用 wrap_up 问现在推送吗" | 满足推送条件就推（第 5 节） |
 | 开发代理汇报里的"待确认" | 写成待确认问题；那部分没实现，答复后再做（不先按建议实现） |
 
 ### 4.1 无人值守试玩
 
-内置浏览器的 `preview_start` 在定时回合里会被应用拦下要人点确认（2026-10-27、10-28 实测，settings 放行无效），所以无人值守**不用内置浏览器**。用户 2026-10-28 定：**先推送上线，再对线上网站自动试玩并修改**，期间线上有 bug 可以接受。
+内置浏览器的 `preview_start` 在定时回合里会被应用拦下要人点确认（2026-10-27、10-28 实测，settings 放行无效），所以无人值守**不用内置浏览器**。
+**2026-11-16 用户改定：试玩在本地跑，不等发布**（此前 10-28 定的是"先推送上线，再对线上网站试玩并修改"，线上会挂着没试玩的版本）。现在一律 **本地 Release 包试玩 → 修 → 复验 → 才推送**；推送后只确认构建成功、线上能打开，不再在线上试玩。用 Release 包而不是 dev 服务器：它和线上是同一套发布产物（Release 编译、程序集裁剪），dev 服务器上好的东西裁剪后可能坏。
 
 流程（改了玩法或界面时）：
-1. 开发代理完成、测试全绿、文档同步 → 按第 5 节推送，等 GitHub Pages 构建成功（线上页脚"构建 <日期> · <短号>"显示本次推送的最后一个提交号才算部署到位；之后再推纯文档提交不会重新构建，页脚停在这个号上是正常的）。
-2. 起**试玩代理**（Agent，general-purpose，不传 model，effort high），只用 Bash 跑 `node tools/playtest/cdp.mjs`（零依赖无头 Chrome，不需要任何人点确认；用法见文件头注释：`start / open / find / clicktext / click / drag / wheel / key / eval / text / shot / errs / size / stop`），对 `https://etsevenday.github.io/shizheshengcun/?dev=1` 试玩。brief 照 `/design-dev` 第 4 步写（改了什么、规则在哪、必走路线、三档分辨率 `size 1280 720` / `1600 900` / `1920 1080`、报告格式），截图存 scratchpad 后用 Read 看。告诉它：每条 Bash 只写一条 `node tools/playtest/cdp.mjs <命令> …`（在仓库根目录、相对路径、不用变量、不和别的命令用 `;`/`&&` 串起来），这样才匹配本机 settings.local.json 的放行规则、定时回合里不弹确认；每步操作后用 `text`/`find`/`eval` 读界面确认结果；`clicktext` 报"被遮挡/禁用"要记下；结束 `stop`。这个无头浏览器有独立的配置目录，不会碰用户自己浏览器里的存档。
-3. 分类试玩结果（`/design-dev` 第 5 步）：bug 交同一个开发代理修（一次提交 `M<n> 试玩修复：…`、测试全绿、开发计划加"试玩修复"一节），推送，等部署，再 `SendMessage` 给同一个试玩代理在线上复验 + 快速回归。最多两轮；两轮仍不过 → 把剩余问题写进开发计划与提交说明，`PushNotification` 告诉用户哪些还没修好（线上已是最新提交，不回滚）。体验问题写成待确认问题；属于次要的标"（次要）"进攒批（第 2.3 节第 8 条），不为它另开批次。
-4. 待确认文档里相关 Q 的"处理结果"写"已上线，线上无头浏览器试玩复验通过"（或列出仍未修好的）。
-**试玩分两档（2026-11-14 用户定）**：统计发现小批次的推送后试玩与复验常是开发的好几倍（B44 开发 3 分钟、试玩复验 37 分钟；BM4b 5 对 59），用户选"改成只验改动"。
+1. 开发代理完成、测试全绿、文档同步、**本地提交但不推送** → 本会话打本地 Release 包并起服务（每条 Bash 一条命令，不串）：
+   - `dotnet publish web/Survival.Web -c Release -o publish/local`（约 20 秒；`publish/` 已在 .gitignore）
+   - `node tools/playtest/serve.mjs start`（后台起静态服务 http://localhost:5199/ ，能访问才返回；全部响应 no-store，不会拿到上一包的旧 js/css）
+   修复后重新 publish 即可，服务不用重启；浏览器那边 `node tools/playtest/cdp.mjs reload`。
+2. 起**试玩代理**（Agent，general-purpose，不传 model，effort high），只用 Bash 跑 `node tools/playtest/cdp.mjs`（零依赖无头 Chrome，不需要任何人点确认；用法见文件头注释：`start / open / find / clicktext / click / drag / wheel / key / eval / text / shot / errs / size / stop`），对 `http://localhost:5199/?dev=1` 试玩（**不去线上地址**）。brief 照 `/design-dev` 第 4 步写（改了什么、规则在哪、必走路线、三档分辨率 `size 1280 720` / `1600 900` / `1920 1080`、报告格式），截图存 scratchpad 后用 Read 看。告诉它：每条 Bash 只写一条 `node tools/playtest/cdp.mjs <命令> …`（在仓库根目录、相对路径、不用变量、不和别的命令用 `;`/`&&` 串起来），这样才匹配本机 settings.local.json 的放行规则、定时回合里不弹确认；每步操作后用 `text`/`find`/`eval` 读界面确认结果；`clicktext` 报"被遮挡/禁用"要记下；结束 `stop`。这个无头浏览器有独立的配置目录，不会碰用户自己浏览器里的存档。
+3. 分类试玩结果（`/design-dev` 第 5 步）：bug 交同一个开发代理修（一次提交 `M<n> 试玩修复：…`、测试全绿、开发计划加"试玩修复"一节，仍不推送），本会话重新 `dotnet publish … -o publish/local`，再 `SendMessage` 给同一个试玩代理在本地复验 + 快速回归。最多两轮；两轮仍不过 → 看剩下的是什么：违反策划案、坏存档、主流程走不通、控制台报错的**不推送**，批次 `blocked`，`note` 写清现象，`PushNotification` 告诉用户；只剩显示细节类小问题（第 2.3 节第 8 条"次要"的范围）的照常推送，遗留写进开发记录与提交说明并在通知里列出。体验问题写成待确认问题；属于次要的标"（次要）"进攒批（第 2.3 节第 8 条），不为它另开批次。
+4. 试玩结束（含复验）：`node tools/playtest/cdp.mjs stop`、`node tools/playtest/serve.mjs stop`，然后按第 5 节推送。待确认文档里相关 Q 的"处理结果"写"已上线，推送前本地 Release 包试玩复验通过"（或列出仍未修好的）。
+**试玩分两档（2026-11-14 用户定，11-16 起照样适用于本地试玩）**：统计发现小批次的试玩与复验常是开发的好几倍（B44 开发 3 分钟、试玩复验 37 分钟；BM4b 5 对 59），用户选"改成只验改动"。
 - **轻量档**——次要攒批（BM*），以及本批代码改动只涉及玩家可见文字、排版、样式、焦点、键帽这类显示层的批次（没改规则、数值、判定、存档、行动流程，也没加新页面）。拿不准就按完整档。
   - 第 2 步试玩只走本批改动项：照开发记录逐条列出的改动（每条 R/Q 一项）各走一遍，改动所在画面在三档分辨率各截一张核对，最后 `errs` 看控制台；**不走通用回归路线**（营地主流程、读档等）。brief 里写明"只验下列改动项，不做通用回归"，并列出改动项清单。
   - 第 3 步复验只看修过的那几条（加 `errs`），不再做快速回归。
 - **完整档**——其余批次（改了玩法、规则、数值、存档、行动流程，新页面，打开功能开关等）：照上面第 2、3 步原样做，含通用回归与复验后的快速回归。
-- 开发记录"线上复验结论"写明用的是哪一档。
+- 开发记录里这一节叫"本地试玩结论"（11-16 前的旧记录叫"线上复验结论"），写明用的是哪一档、试的是哪个提交打的 Release 包。
 
-5. 万一 `cdp.mjs` 也跑不起来（找不到 Chrome、网络不通）→ 状态文件记 `"pendingPlaytest": ["<提交短号>", …]`（追加），`PushNotification` 写明"已上线、未试玩"；下次用户在场的会话（手动 `/git-watch` 或用户说"试玩一下"）开头先看它，非空就补试玩、修、推，然后清空。
+5. 万一本地试玩跑不起来（`dotnet publish` 失败、找不到 Chrome、5199 端口被占且 `serve.mjs stop` 关不掉）→ **不推送**：批次 `blocked`，`note` 写原因，`PushNotification`"<批次> 已开发完、本地试玩起不来（原因），未推送"，清锁结束；等用户处理。`pendingPlaytest` 只剩 11-16 前"先上线后试玩"留下的旧记录：非空时用户在场的会话照旧补试玩、修、推，然后清空，不再往里追加。
 
-- 用户在场、想看着试玩时也可以用内置浏览器：本会话 `preview_start {name:"web-fb"}`（5190），让试玩代理复用这台、别自己 preview_start；开发代理自测用 `web`（5177）/`web-alt`（5180）。本地 dev 服务器的 js/css 带固定 `?v=dev`，可能拿到缓存旧文件，试玩前强制刷新（线上 pages.yml 换成提交号，不受影响）；服务器要 stop 再 start 才加载新版本。
+- 用户在场、想看着试玩时也可以用内置浏览器：本会话 `preview_start {name:"published"}`（5199，就是上面的本地 Release 包，launch.json 里调 `serve.mjs run`；别和后台 `serve.mjs start` 同时开）或 `{name:"web-fb"}`（5190，dev 服务器），让试玩代理复用这台、别自己 preview_start；开发代理自测用 `web`（5177）/`web-alt`（5180）。本地 dev 服务器的 js/css 带固定 `?v=dev`，可能拿到缓存旧文件，试玩前强制刷新（线上 pages.yml 换成提交号，不受影响）；服务器要 stop 再 start 才加载新版本。
 - 试玩手法：`?dev=1` 后菜单里有开发入口（测试箱含烤肉/水煮肉、放各种敌人、普通活性物质、跳日期等）；要触发暂停层，可在 `localStorage['survival.save.v1']` 里把 `Stats.Energy` 改到略高于低体力线再开行动；动存档前先另存一份到 `qa.backup.*`。批量连点时注意战斗结束后界面切回地块，同一坐标可能点到敌踪卡误接敌。
 - 试玩只记录现象：违反策划案的交开发代理修（第 5 步规则），体验问题写成待确认问题。
 
@@ -230,7 +234,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 ## 5 推送条件与提交说明
 
-**推送条件（全部满足）**：`dotnet build web/Survival.sln` 0 错误；`dotnet test web/Survival.sln` 全绿；改了玩法或界面时的试玩放在推送之后做（第 4.1 节：推送 → 线上无头试玩 → 修 → 再推）；文档已按 `/design-dev` 第 6 步同步。只改文档的跳过前三条。（2026-11-02 起 CI 不再因策划案先于实装而失败：只改 `doc/策划案/` 的推送不触发构建；`[Category("DesignSync")]` 对照测试在 CI 单独一步、失败不拦发布。本地推送前仍要 `dotnet test` 全绿；推送后 `gh run view` 里"策划案对照测试"一步若标黄，说明还有策划改了的数值没实装，要排进队列。）
+**推送条件（全部满足）**：`dotnet build web/Survival.sln` 0 错误；`dotnet test web/Survival.sln` 全绿；改了玩法或界面时，本地 Release 包试玩与复验已做完、结果达到第 4.1 节第 3 步的推送标准（2026-11-16 起：本地试玩 → 修 → 复验 → 推送，不再先推后试）；文档已按 `/design-dev` 第 6 步同步。只改文档的跳过前三条。（2026-11-02 起 CI 不再因策划案先于实装而失败：只改 `doc/策划案/` 的推送不触发构建；`[Category("DesignSync")]` 对照测试在 CI 单独一步、失败不拦发布。本地推送前仍要 `dotnet test` 全绿；推送后 `gh run view` 里"策划案对照测试"一步若标黄，说明还有策划改了的数值没实装，要排进队列。）
 
 **提交说明**：本轮最后一个提交（通常是文档同步那次）的说明末尾、`Co-Authored-By` 之前必须有这一段：
 
@@ -248,7 +252,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 - 改到本批涉及的策划案文件，但不是答复本批问题（别的修订、别批的 Q），或预演有冲突 → 不推，批次记 `blocked`，通知用户，清锁结束。
 - 只改了别的文件 → 照常推，下一轮会把它拆进队列。
 
-没有上面要停的情况就 `git push origin main`。**这次推送只改了 `doc/`、`AGENTS.md`、`README.md`、`.claude/`、`tools/` 的不触发构建**（2026-11-11 起，`pages.yml` 的 `paths-ignore`）：推完就算完，不用等构建、不用看线上页脚；这时 `gh run list --limit 1` 拿到的是上一次推送的构建，别拿它当本次的。推送里有别的文件（代码、`data/`、`.github/`）才往下：`gh run list --limit 1 --json databaseId,status,conclusion,headSha` 拿 run id（`headSha` 应是刚推的提交），`gh run watch <id> --exit-status --compact`；失败读日志修，修不了通知用户。成功后 `curl -s -o /dev/null -w "%{http_code}" https://etsevenday.github.io/shizheshengcun/` 应为 200。
+没有上面要停的情况就 `git push origin main`。**这次推送只改了 `doc/`、`AGENTS.md`、`README.md`、`.claude/`、`tools/` 的不触发构建**（2026-11-11 起，`pages.yml` 的 `paths-ignore`）：推完就算完，不用等构建、不用看线上页脚；这时 `gh run list --limit 1` 拿到的是上一次推送的构建，别拿它当本次的。推送里有别的文件（代码、`data/`、`.github/`）才往下：`gh run list --limit 1 --json databaseId,status,conclusion,headSha` 拿 run id（`headSha` 应是刚推的提交），`gh run watch <id> --exit-status --compact`；失败读日志修，修不了通知用户。成功后 `curl -s -o /dev/null -w "%{http_code}" https://etsevenday.github.io/shizheshengcun/` 应为 200，页脚"构建 <日期> · <短号>"是本次推送的最后一个代码提交。线上不再试玩（已在本地 Release 包上试过）。
 
 ## 6 通知与收尾
 

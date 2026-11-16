@@ -100,6 +100,11 @@ description: 接入《适者生存》新策划案的标准开发流程：git 拉
 
 ## 7 汇报与上线
 
+**推送前本地 Release 包复核**（2026-11-16 用户定：试玩都在本地做，不等发布；dev 服务器和线上不是同一种产物，不放心就在本地 Release 包上再跑一次）。改了代码的都做，在问用户推送之前：
+1. `dotnet publish web/Survival.Web -c Release -o publish/local`，再 `preview_start {name:"published"}`（5199，`tools/playtest/serve.mjs` 起的静态服务，和线上同一套发布产物，只是 base 在根路径）；无人值守时改用 `node tools/playtest/serve.mjs start` + `node tools/playtest/cdp.mjs`。
+2. 本会话自己走（或 `SendMessage` 让试玩代理走）一轮冒烟：新游戏进营地、本次改动涉及的每个画面各操作一次、旧档"继续"、1280×720 截图、控制台无报错。dev 服务器上通过、Release 包上坏了的（常见是裁剪掉了只靠反射用到的类型、序列化字段丢失）按 bug 交回开发代理。
+3. 结束 `preview_stop`（或 `serve.mjs stop`）。汇报里"试玩结论"写明 dev 服务器试玩与 Release 包复核各自的结果。
+
 汇报分四段：做了什么（里程碑与提交号、测试数、试玩结论一句话、策划案同步了哪些文件）、待用户确认的规则、待拍板的体验改进、需要知道的事（例如代理误清了哪个端口的本地存档）。用 `wrap_up` 问"现在推送 main 上线吗"。
 
 用户说推送后，先把策划这段时间可能新推的提交拉下来：
