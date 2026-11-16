@@ -387,6 +387,8 @@
     /// <summary>B43：顶栏按钮面——功能名与键帽同时常驻（读屏名「功能名 键位」）。</summary>
     private RenderFragment TopFace(int i) => __builder =>
     {
+        @* B37a2（a9b93f0 逐页坐标与组件槽 P01a 顶栏 12 键 art 槽）：键面左侧 glyph 图标，装饰图（按钮名照旧读屏） *@
+        <span class="nk-ico" aria-hidden="true">@Icons.Markup(ArtCatalog.TopKeyGlyphs[i])</span>
         <span class="nk-name">@ShellText.TopKeys[i]</span> <kbd class="kc">@ShellKeys.TopCaps[i]</kbd>
     };
 

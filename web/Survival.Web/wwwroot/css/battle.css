@@ -668,3 +668,11 @@
    等待下令的高亮框（立绘容器上）照常 ───── */
 .anc.ally.await-cmd.dying .anc-art > img { animation: none; filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86); transform-origin: bottom center; }
 @media (prefers-reduced-motion: reduce) { .anc.ally.await-cmd.dying .anc-art > img { animation: none !important; filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86); } }
+
+/* ───── B37a2（P05a 站位 art actor:*）：我方站位改画清单全身图（.anc-fig 是 ink-sprite 外层 svg），待机微动与濒死黯淡跪姿沿原 img 规则 ───── */
+.anc.ally.await-cmd .anc-art > .anc-fig { transform-origin: 50% 100%; animation: anc-idle calc(2400ms * var(--motion-k)) ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .anc.ally.await-cmd .anc-art > .anc-fig { animation: none !important; transform: none; filter: brightness(1.08); } }
+.anc.ally.dying .anc-art > .anc-fig { filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86); transform-origin: bottom center; }
+.anc.ally.await-cmd.dying .anc-art > .anc-fig { animation: none; filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86); transform-origin: bottom center; }
+@media (prefers-reduced-motion: reduce) { .anc.ally.await-cmd.dying .anc-art > .anc-fig { animation: none !important; filter: brightness(var(--dying-dim, .72)) saturate(.7); transform: scale(1, .86); } }
+.bc-face img { object-fit: contain; }

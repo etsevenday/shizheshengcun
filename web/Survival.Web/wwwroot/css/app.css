@@ -1804,3 +1804,7 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .fm-leader { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .fm-leader-note { flex-basis: 100%; }
 .cp-stash { display: flex; flex-direction: column; gap: 2px; }
+
+/* ───── B37a2（P03a）：人物肖像与全身图按清单原比例显示，不拉伸（Q840 B 最近邻由根上 image-rendering 继承） ───── */
+.g3-face { object-fit: contain; }
+.g3-figure > .g3-fig { height: clamp(64px, 15vh, 240px); width: auto; max-width: 100%; }

@@ -216,4 +216,36 @@ public class B37a2PortraitTests
         Assert.That(WebText("Components", "MemberPeekDetail.razor"), Does.Contain("<Thumb><img src=\"@ArtAssets.ActorPortrait(s, id)\""));
         Assert.That(WebText("Components", "PrologueCards.razor"), Does.Contain("@ArtAssets.Figure(ActorArt.ForNpc(ArtAssets.Catalog, n.NpcId, n.Substitute), \"npc-portrait\", $\"{n.Name}（临时形象）\")"));
     }
+
+    // ───── M7：顶栏键面图标、整备人物图、战斗特写 ─────
+
+    /// <summary>
+    /// a9b93f0《资料/逐页坐标与组件槽.json》P01a 顶栏 12 个 control 槽（区域地图…菜单）各含一个 18×18 art 槽，依次是
+    /// glyph:map、craft、rest、log、formation、equipment、growth、goal、warning、dialogue、help、menu；顺序与 ShellText.TopKeys 一一对应，清单都有图。
+    /// </summary>
+    [Test]
+    public void M7_TopKeyGlyphs()
+    {
+        var expect = new[] { "glyph:map", "glyph:craft", "glyph:rest", "glyph:log", "glyph:formation", "glyph:equipment",
+            "glyph:growth", "glyph:goal", "glyph:warning", "glyph:dialogue", "glyph:help", "glyph:menu" };
+        Assert.That(ArtCatalog.TopKeyGlyphs, Is.EqualTo(expect));
+        Assert.That(ShellText.TopKeys, Has.Count.EqualTo(12));
+        Assert.That(ShellText.TopKeys[0], Is.EqualTo("区域地图"));
+        Assert.That(ShellText.TopKeys[8], Is.EqualTo("生存提示"));
+        foreach (var k in expect) Assert.That(Cat.HasSprite(k), k);
+        Assert.That(WebText("Components", "GameScreen.razor"), Does.Contain("<span class=\"nk-ico\" aria-hidden=\"true\">@Icons.Markup(ArtCatalog.TopKeyGlyphs[i])</span>"));
+    }
+
+    /// <summary>P03a 整备：队员列表是 portrait 槽、中栏是当前队员全身 art 槽；P05a 战斗：队列与当前行动者是 portrait 槽、站位是全身 art 槽；特写用攻击者全身图（动效合同 battle）。</summary>
+    [Test]
+    public void M7_GearAndBattleSlots()
+    {
+        var g = WebText("Components", "GearOverlay.razor");
+        Assert.That(g, Does.Contain("<img class=\"g3-face\" src=\"@ArtAssets.ActorPortrait(s, aid)\"").And.Contain("@ArtAssets.ActorFigure(s, me, \"g3-fig\")"));
+        Assert.That(WebText("wwwroot", "css", "app.css"), Does.Contain(".g3-figure > .g3-fig {"));
+        Assert.That(WebText("wwwroot", "css", "battle.css"), Does.Contain(".anc.ally.dying .anc-art > .anc-fig {"), "濒死黯淡跪姿沿用到全身图");
+        // 清单全身裁窗：主角取 atlas-actor-survivor-sample.webp 原裁窗（Q839 A）
+        Assert.That(Cat.Sprites["actor:p0"].File, Is.EqualTo("atlas-actor-survivor-sample.webp"));
+        Assert.That(Cat.Sprites["actor:p0"].Crop, Is.EqualTo(new[] { 0, 0, 1024, 1536 }));
+    }
 }

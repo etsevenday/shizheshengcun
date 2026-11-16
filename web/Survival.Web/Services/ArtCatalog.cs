@@ -57,6 +57,16 @@ public sealed class ArtCatalog
         ("公开救助残页", "document:relief_page_village"),
     };
 
+    /// <summary>
+    /// B37a2：顶栏 12 键键面图标，顺序同 ShellText.TopKeys（区域地图、手工制作、休息、行动日志、编队、整备、成长、生存目标、生存提示、对话记录、系统说明、菜单）；
+    /// 取自 a9b93f0《资料/逐页坐标与组件槽.json》P01a 顶栏 12 个 control 槽内的 art 槽（18×18）。
+    /// </summary>
+    public static readonly IReadOnlyList<string> TopKeyGlyphs = new[]
+    {
+        "glyph:map", "glyph:craft", "glyph:rest", "glyph:log", "glyph:formation", "glyph:equipment",
+        "glyph:growth", "glyph:goal", "glyph:warning", "glyph:dialogue", "glyph:help", "glyph:menu",
+    };
+
     public IReadOnlyDictionary<string, Frame> Sprites { get; }
     public IReadOnlyDictionary<string, string> Portraits { get; }
     public IReadOnlyDictionary<string, string> Scenes { get; }

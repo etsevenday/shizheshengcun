@@ -546,3 +546,8 @@ button .kc, .wasteland button kbd.kc { color: inherit; border-color: currentColo
 .dlg-layer.dlg-static { animation-duration: 0s; }   /* 只把入场时长归零、不换动画名：静态结束后同一层不会重播淡入 */
 /* 全屏战斗：特写仍在独占播放（Q572）时对白区先不出现，对白接管时与背景聚焦一起淡入 */
 .bfs-dlg.wait > .dlg-layer { visibility: hidden; animation: none; }
+
+/* ───── B37a2（P01a 顶栏 art 槽 18×18）：键面左侧 glyph 图标；和功能名同一行，放不下时随原规则与键帽换行 ───── */
+.wasteland .top .nav button .nk-ico { flex: 0 0 auto; display: inline-flex; width: 18px; height: 18px; }
+.wasteland .top .nav button .nk-ico > svg { width: 18px; height: 18px; }
+.wasteland .top .nav button:is(:disabled, .off) .nk-ico { opacity: .7; }
