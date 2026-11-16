@@ -21,7 +21,7 @@
 - `web/Survival.Core.Tests/CombatSkillSupportMutationGapSupportTests.cs`（34 项：医疗、快速装填、护身类、保护／掩护、整队、预览）
 - `web/Survival.Core.Tests/CombatSkillSupportMutationGapReactionTests.cs`（10 项：反击、架矛迎击）
 
-## 补测发现的实现错误（已修，f6ba00cf）
+## 补测发现的实现错误（已修，d186af06）
 
 用户定"修了再一起推"。两处都改为与策划案一致，回归测试 `web/Survival.Core.Tests/MT1CombatBugfixTests.cs` 3 项修复前均红、修复后绿；全量 2871 项通过。本地 Release 包轻量试玩：加载、新游戏、控制台 0 错误；两处改动在界面上要指挥技能＋队友医疗＋体力耗尽的战斗才能走到，以测试为准。
 
@@ -58,6 +58,6 @@
 
 ## 过程备注
 
-- 两个开发代理各在独立 worktree 里做，提交 cherry-pick 到 main（ee9fd137、fc1df818）。
+- 两个开发代理各在独立 worktree 里做，提交 cherry-pick 到 main（1fc8b59e、5062968e）。
 - 一个代理的批量改坏脚本曾把实现文件行尾从 CRLF 改成 LF，已转回并确认与 HEAD 一致；最终 `git diff -- src/Core` 为空。
 - 复跑变异测试时初始测试 2996 项全绿（Stryker 初始运行，含本批新增）。
