@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "e7103bc3ef4e832176ce3049d5ab2fc22e73446a",
+  "originalBatch": "2026-11-17 来自 b7d1d44a B56（提前核对，主要；本批开发已暂停，等答复后继续）",
+  "questionIds": [
+    973,
+    974
+  ],
+  "answers": {
+    "Q973": "A_inherited_Q929_preserve_actual_water_yield",
+    "Q974": "A"
+  },
+  "waterFirstDaily": {
+    "passive": "yield.gatherFirstDaily",
+    "oldBonusMl": 500,
+    "newBonusUnits": 5,
+    "newUnitMl": 100,
+    "bonusMl": 500,
+    "preserveOriginalWaterEligibilityActorResourceDailyTriggerInventoryAndXP": true,
+    "otherItemPlusOneUnchanged": true,
+    "noDoubleUnitScaling": true
+  },
+  "budget": {
+    "preserveExistingMlFormula": true,
+    "internalSipMl": 250,
+    "internalSipHydration": 15,
+    "formula": "250 * ceil(extra / (15 - r/12) - 1e-9)",
+    "preserveOriginalExtraRatesRoutesMarginsReliabilityAndUnknownStates": true,
+    "displaySuggestedUnits": "ceil(requiredMl/100)",
+    "zeroMlMeansZeroUnits": true,
+    "doNotMultiplyAlreadyRoundedOldUnitCount": true,
+    "preserveOriginalMlResultStockGapAndPartyTotals": true,
+    "examples": [
+      {
+        "requiredMl": 500,
+        "suggested100mlUnits": 5
+      },
+      {
+        "requiredMl": 750,
+        "suggested100mlUnits": 8,
+        "reportedBudgetMl": 750
+      }
+    ],
+    "doNotAddUnitsWhereOriginallyMlOnly": true,
+    "actualDrinkUnitMl": 100,
+    "actualDrinkOneActionMinutes": 5,
+    "actualDrinkSelectMultipleUnits": true,
+    "no250mlDrinkOptionOrPerUnitActionTime": true,
+    "preserveReadOnlyAndNoPrologueBudget": true
+  },
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "W56-Q973-01",
+      "expected": "每日首次采集水额外量旧1份500毫升变新5份500毫升，预览与真实产量一致，不缩水或重复乘5。"
+    },
+    {
+      "id": "W56-Q973-02",
+      "expected": "仅原合法水资源触发，原角色资源日账、成功条件与库存上限照旧，其他物品+1不变且无重复经验。"
+    },
+    {
+      "id": "W56-Q974-01",
+      "expected": "预算保250毫升/15及原损耗分母、ceil与extra等公式，实际毫升结果和原可靠性／路线分支不改。"
+    },
+    {
+      "id": "W56-Q974-02",
+      "expected": "原有建议份数按ceil原需毫升/100重算，500→5，750毫升仍750但需备8份，不把旧取整份数再乘5。"
+    },
+    {
+      "id": "W56-Q974-03",
+      "expected": "真实饮水仍每份100毫升、多份一次固定5分钟；内部250估算不新增250饮水选项或每份5分钟成本。"
+    },
+    {
+      "id": "W56-Q974-04",
+      "expected": "原库存缺口与各人汇总毫升、实地范围及只读权限保持，未知不写0，不自动喝水或在序章新增预算。"
+    }
+  ]
+}
