@@ -413,7 +413,8 @@ public class BM5b2Tests : TestBase
         Assert.That(u.Items.Where(i => i.ItemId == Rot).Sum(i => E.ItemGrams(u, i)), Is.EqualTo(grams));
         Assert.That(u.Log.Count(l => l.Text == "已将存档中过期的物品转换为腐败物。"), Is.EqualTo(1), "提示只一次");
         var rot = u.Items.First(i => i.ItemId == Rot);
-        Assert.That(E.CanStart(u, ActionRequest.UseInstance(rot.InstanceId)), Is.EqualTo("腐败物不能用于此操作。"));
+        // B53a 改期望：食用拒绝改「腐败物不可食用。」（S12／S06 文首 2026-11-15 Q767；逐字稿 rotNotEdible），原「腐败物不能用于此操作。」只留给屠宰等其他用途
+        Assert.That(E.CanStart(u, ActionRequest.UseInstance(rot.InstanceId)), Is.EqualTo("腐败物不可食用。"));
     }
 
     /// <summary>Q610：腐败物不能食用、投料、处理尸体；菜单不呈现原用途（无 use、不是尸体）；开发入口与调试箱不造腐败物。</summary>

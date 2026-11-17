@@ -436,13 +436,15 @@ namespace Survival.Core.Engine
             return rows;
         }
 
-        /// <summary>普通行与锅内子项：“罐头×2”“野果×2（已腐败）”“罐头（保质到第3日 08:00）”；一份省略×1，无截止不加后缀。</summary>
+        /// <summary>普通行与锅内子项：“罐头×2”“野果×2（已腐败）”“罐头（保质到第3日 08:00）”；一份省略×1，无截止不加后缀；腐败物只写名称与数量（B53a Q767）。</summary>
         public string CompanionItemLine(GameState s, ItemInstance i)
         {
             var name = InstanceName(i);
             var text = i.Count > 1
                 ? FeedCopy.Fill(CompanionRowCopy.Stack, ("物名", name), ("数量", i.Count.ToString()))
                 : FeedCopy.Fill(CompanionRowCopy.Single, ("物名", name));
+            // B53a（S06 文首 Q767 选 A）：腐败物名称已说明状态，不再接重复的「（已腐败）」；尚未转换的其他过期原物仍附
+            if (IsSpoiledMatter(i)) return text;
             if (IsSpoiled(s, i)) return text + CompanionRowCopy.SpoiledSuffix;
             return i.ExpiresAt is int at ? text + FeedCopy.Fill(CompanionRowCopy.FreshSuffix, ("截止", Clock.DayTime(at))) : text;
         }

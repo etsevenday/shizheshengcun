@@ -620,7 +620,7 @@ namespace Survival.Core.Engine
                         }
                     }
                     var cfg = _items[inst.ItemId];
-                    if (IsSpoiledMatter(inst)) return SpoiledMatterRejectText;   // BM5b2（Q610）：腐败物不能食用、治疗
+                    if (IsSpoiledMatter(inst)) return SpoiledNotEdibleText;   // BM5b2（Q610）：腐败物不能食用、治疗；B53a（S12 文首 Q767）：食饮拒绝用「腐败物不可食用。」
                     if (inst.ReservedBy != null) return "该物品已被预留";
                     // B16 分量水壶：壶内直接喝 250 毫升（5 分钟，W+15；脏水同样腹泻）
                     if (cfg.Canteen != null)

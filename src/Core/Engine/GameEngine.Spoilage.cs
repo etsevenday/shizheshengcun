@@ -19,6 +19,12 @@ namespace Survival.Core.Engine
         /// <summary>腐败物拒绝原用途（逐字稿「拒绝原用途」）。</summary>
         public const string SpoiledMatterRejectText = "腐败物不能用于此操作。";
 
+        /// <summary>
+        /// 腐败物食饮拒绝（B53a，逐字稿 2026-11-15 B50a 表 rotNotEdible；S12／S06 文首 Q767）：本人食用与给同伴喂食的真实提交都用这句；
+        /// 屠宰、投料等其他原用途仍用 <see cref="SpoiledMatterRejectText"/>。
+        /// </summary>
+        public const string SpoiledNotEdibleText = "腐败物不可食用。";
+
         /// <summary>输入腐败停工分句（逐字稿「输入腐败停工分句」）。</summary>
         public const string SpoiledWorkClause = "腐败部分已变为腐败物。";
 

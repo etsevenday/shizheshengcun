@@ -199,7 +199,8 @@ public class V11CookProtectTests : TestBase
         Wait(t, 5);
         Assert.That(E.CanStart(t, ActionRequest.UseInstance(m2.InstanceId)), Is.Null);
         Assert.That(E.DoInstant(t, InstantRequest.TakeOut(m2.InstanceId, "camp")).Ok, Is.True);
-        Assert.That(E.CanStart(t, ActionRequest.UseInstance(m2.InstanceId)), Is.EqualTo("腐败物不能用于此操作。"), "取出先解除保护再判腐败（BM5b2：同事务转为腐败物）");
+        // B53a 改期望：食用腐败物拒绝句改「腐败物不可食用。」（S12／S06 文首 2026-11-15 Q767；逐字稿 rotNotEdible）
+        Assert.That(E.CanStart(t, ActionRequest.UseInstance(m2.InstanceId)), Is.EqualTo("腐败物不可食用。"), "取出先解除保护再判腐败（BM5b2：同事务转为腐败物）");
         Assert.That(m2.ItemId, Is.EqualTo(GameEngine.SpoiledMatterId));
     }
 

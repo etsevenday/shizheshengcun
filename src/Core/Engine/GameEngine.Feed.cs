@@ -194,6 +194,8 @@ namespace Survival.Core.Engine
             {
                 inst = FindItem(s, id);
                 if (inst == null) return FeedCopy.Changed;
+                // B53a（S12／S06 文首 Q767）：腐败物不能喂食——旧请求、确认后才变腐败也在这里先拒，不落到「无效物品」或「情况已变」
+                if (IsSpoiledMatter(inst)) return SpoiledNotEdibleText;
                 if (pot != null && inst.Owner != ItemInstance.ContainerOwner(pot.InstanceId)) return FeedCopy.Changed;
                 pot ??= inst.InContainer ? ContainerOf(s, inst) : null;
             }
