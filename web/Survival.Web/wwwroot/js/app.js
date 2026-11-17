@@ -131,6 +131,11 @@ window.survival = {
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     try { el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' }); } catch (e) { el.scrollIntoView(); }
   },
+  // B53b 试玩修复 B3：清单行下方的丢弃子区展开／换层后滚到可见（最近边对齐：已完整可见就不动）
+  revealNearest: function (el) {
+    if (!el || !el.scrollIntoView) return;
+    try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { el.scrollIntoView(false); }
+  },
   // B22 试玩修复 M408：滚到某元素（居中）并短暂高亮（回收箱卡“取出…”跳到人物页的回收箱块）
   scrollFlash: function (id) {
     var el = document.getElementById(id);

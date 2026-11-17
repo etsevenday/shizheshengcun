@@ -556,10 +556,14 @@ namespace Survival.Core.Engine
                 canteen.LiquidMl = 750;
                 parts.Add($"{ActorDisplayName(s, mate)}随身：野果3、金属锅（净水{2 * PotConfig(pot).UnitMl}毫升、野果1）、分量水壶（净水750毫升）");
             }
+            // B53b 试玩修复 B7：箱按「当前地点＋区」分开，只复用当前地点（屋内／屋外）已有的同名试用箱；换地点再点就在新地点另放，日志与实际一致
+            var zone = s.CurrentZone == SafehouseZone ? SafehouseZone : null;
+            var here = s.CurrentLocation + (zone != null ? "#" + zone : "");
             string Box(string key, string name, string? kind)
             {
+                key = $"{key}@{here}";
                 if (!s.Remains.ContainsKey(key))
-                    s.Remains[key] = new RemainsState { Name = name, LocationId = s.CurrentLocation, Minute = s.GameMinute, Cause = "开发试用", Kind = kind, Zone = s.CurrentZone == SafehouseZone ? SafehouseZone : null };
+                    s.Remains[key] = new RemainsState { Name = name, LocationId = s.CurrentLocation, Minute = s.GameMinute, Cause = "开发试用", Kind = kind, Zone = zone };
                 return ItemInstance.RemainsOwner(key);
             }
             var dead = Box("dev_b53b_remains", "试用者", null);

@@ -560,7 +560,10 @@ public class B53bTests : BattleTestBase
         Assert.That(s.Party.Count, Is.EqualTo(2), "主角＋一名固定队友");
         var mate = s.Party.Single(a => a != GameState.PlayerId);
         Assert.That(s.Items.Count(i => i.Owner == Bag(mate)), Is.EqualTo(3));
-        Assert.That(new[] { "dev_b53b_remains", "dev_b53b_claim", "dev_b53b_recovery", "dev_b53b_relic" }.All(k => E.RemainsHere(s).Any(kv => kv.Key == k)), Is.True);
+        // 试玩修复 B7（M1060）：箱键改为「试用箱名@当前地点」，原断言按固定键找改为按前缀找当地四种箱（出处：B53b 开发记录「试玩修复」B7）
+        var here = E.RemainsHere(s).Select(kv => kv.Key).ToList();
+        Assert.That(here.Count(k => k.StartsWith("dev_b53b_")), Is.EqualTo(4));
+        Assert.That(new[] { "dev_b53b_remains@", "dev_b53b_claim@", "dev_b53b_recovery@", "dev_b53b_relic@" }.All(k => here.Any(h => h.StartsWith(k))), Is.True);
         Assert.That(s.Items.Any(i => i.InSafehouseStorage || i.Owner.StartsWith(GameEngine.SealedPrefix)), Is.False);
         Assert.That(s.Items.Count, Is.GreaterThan(before));
     }
@@ -700,5 +703,83 @@ public class B53bTests : BattleTestBase
         spear.Quality = "green";
         spear.Durability = 20; spear.MaxDurability = 30;
         Assert.That(E.DiscardItemLabel(s, spear, 1), Is.EqualTo("木矛×1（绿 · 耐久20.00/30.00）"));
+    }
+
+    /// <summary>
+    /// 试玩修复 B7：换地点再点试用组，四种箱放在当前地点（日志里的地点＝实际所在），不往前一地点的旧箱里加；同一地点再点复用当地箱、不另开第二组。
+    /// </summary>
+    [Test]
+    public void Fix7_DevKit_BoxesFollowCurrentLocation()
+    {
+        var s = New();
+        var first = s.CurrentLocation;
+        E.DebugDiscardListKit(s);
+        int Here(GameState g) => E.RemainsHere(g).Count(kv => kv.Key.StartsWith("dev_b53b_"));
+        int ItemsIn(GameState g, string loc) => g.Items.Count(i => i.InRemains && g.Remains.TryGetValue(i.Owner.Substring(ItemInstance.RemainsPrefix.Length), out var r) && r.LocationId == loc && r.Cause == "开发试用");
+        var firstItems = ItemsIn(s, first);
+        Assert.That((Here(s), firstItems), Is.EqualTo((4, 6)), "直接放在箱里的堆数：遗物（野果、木材）2、认领（罐头、借用木矛）2、回收（生肉）1、旧实例（金属锅；脏水在锅里不算）1");
+        E.DebugTeleport(s, "field");
+        Assert.That(Here(s), Is.EqualTo(0), "前提：新地点还没有试用箱");
+        var text = E.DebugDiscardListKit(s);
+        Assert.That(Here(s), Is.EqualTo(4));
+        Assert.That(ItemsIn(s, "field"), Is.EqualTo(6));
+        Assert.That(ItemsIn(s, first), Is.EqualTo(firstItems), "前一地点的旧箱不变");
+        Assert.That(text, Does.Contain(E.LocName("field") + "遗物（野果2、木材3）"));
+        E.DebugDiscardListKit(s);
+        Assert.That(Here(s), Is.EqualTo(4), "同一地点复用当地箱");
+    }
+
+    // ───────────── 试玩修复（M1060，本地 Release 1280×720） ─────────────
+
+    /// <summary>
+    /// 试玩修复 B1（开发假设 3「切走即清草稿」；§Q857 B「关闭返回真实发起清单」）：人物页清单（同伴随身、遗物／认领箱、回收箱）开着的丢弃子区，
+    /// 右栏离开人物页（任何改页签的路径都经 DetailTab 设值）或打开／换到别的窗口时清草稿；柜子、封存沿原规则随所在窗离开清。
+    /// </summary>
+    [Test]
+    public void Fix1_PartyDraft_ClearedOnTabOrPanelSwitch()
+    {
+        var sess = Web("Services", "GameSession.cs");
+        var prop = Section(sess, "public DetailTab DetailTab", "private DetailTab _detailTab = DetailTab.Character;");
+        Assert.That(prop, Does.Contain("if (value != DetailTab.Character && _discard?.ListHost == DiscardHost.Party) _discard = null;"));
+        Assert.That(prop, Does.Contain("_detailTab = value;"));
+        Assert.That(sess, Does.Not.Contain("public DetailTab DetailTab { get; private set; }"), "所有改页签都经设值器");
+        Assert.That(sess, Does.Contain("if (_discard?.ListHost == DiscardHost.Party && next != null && next != from) _discard = null;"));
+        Assert.That(sess, Does.Contain("if (_discard?.ListHost is DiscardHost.Cabinet or DiscardHost.Sealed && next != from) _discard = null;"), "对照：柜子／封存原规则不变");
+    }
+
+    /// <summary>试玩修复 B2：同伴随身清单开着本人行的丢弃子区时放开内层 200px 限高，子区（标题到确认／返回）完整可见；没开子区时仍限高。</summary>
+    [Test]
+    public void Fix2_PartyItems_ReleaseHeightWhileSubOpen()
+    {
+        var party = Web("Components", "PartyPanel.razor");
+        Assert.That(party, Does.Contain("var subHere = G.Discarding is { ListHost: DiscardHost.Party } dd && rows.Any(r => r.InstanceId == dd.Target.InstanceId);"));
+        Assert.That(party, Does.Contain("<div class=\"party-items @(subHere ? \"has-discard\" : \"\")\" data-wheel=\"y\" data-party-items=\"@id\">"));
+        var css = Web("wwwroot", "css", "app.css");
+        Assert.That(css, Does.Contain(".party-items { max-height: 200px; overflow-y: auto;"), "对照：平时仍限高");
+        Assert.That(css, Does.Contain(".party-items.has-discard { max-height: none; overflow-y: visible; }"));
+    }
+
+    /// <summary>试玩修复 B3：清单子区展开或换层（键含阶段与请求号）后滚到可见，最近边对齐（已可见不动）；右栏子区不走此路径。</summary>
+    [Test]
+    public void Fix3_ListSub_RevealOnOpenAndStage()
+    {
+        var p = Web("Components", "DiscardPanel.razor");
+        Assert.That(p, Does.Contain("var key = Host != null && G.DiscardOpenFor(Target, Host) && G.Discarding is DiscardDraft d ? $\"{Target.Key}|{d.Stage}|{d.RequestId}\" : null;"));
+        Assert.That(p, Does.Contain("if (key == _shown) return;"));
+        Assert.That(p, Does.Contain("await JS.InvokeVoidAsync(\"survival.revealNearest\", _sub);"));
+        Assert.That(p, Does.Contain("<section @ref=\"_sub\" class=\"discard-sub"));
+        var js = Web("wwwroot", "js", "app.js");
+        Assert.That(Section(js, "revealNearest: function (el) {", "},"), Does.Contain("el.scrollIntoView({ block: 'nearest', inline: 'nearest' });"));
+    }
+
+    /// <summary>试玩修复 B5：本批新增的行末「丢弃／丢弃水」与清单子区内按钮（含数量加减）热区不低于 40px；同行原有按钮不改。</summary>
+    [Test]
+    public void Fix5_HitAreas_AtLeast40px()
+    {
+        var css = Web("wwwroot", "css", "app.css");
+        Assert.That(css, Does.Contain(".eq-btn.discard-row-btn, .linkish.discard-row-btn { min-height: 40px; min-width: 44px; }"));
+        Assert.That(css, Does.Contain(".discard-sub.in-list .discard-row > button { flex: 1 1 7em; min-height: 40px;"));
+        Assert.That(css, Does.Contain(".discard-sub.in-list .discard-qty button { min-width: 40px; min-height: 40px; }"));
+        Assert.That(css, Does.Contain(".party-items-btn { align-self: flex-start; min-height: 26px; padding: 0 6px; }"), "对照：同行原按钮不动");
     }
 }

@@ -1428,6 +1428,8 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 /* B29 队伍面板的随身物品：局部滚动，不把右栏撑长 */
 .party-items-btn { align-self: flex-start; min-height: 26px; padding: 0 6px; }
 .party-items { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
+/* B53b 试玩修复 B2：同伴随身清单里开着丢弃子区时放开内层 200px 限高，子区（标题到确认／返回）随右栏整体滚动完整可见，不被内层裁切 */
+.party-items.has-discard { max-height: none; overflow-y: visible; }
 .party-item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 6px; font-size: var(--fs-aux); line-height: 1.3; border-top: 1px dashed var(--line); padding-top: 2px; }
 .party-item.in-pot { margin-left: 12px; }
 .party-item .eq-btn { min-height: 26px; padding: 0 6px; }
@@ -1454,11 +1456,14 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .discard-row-btn { color: #f3e3d6; background: #5e3528; border: 1px solid #a8735d; border-radius: 4px; }
 .discard-row-btn:hover { background: #6e3f30; border-color: #d9a07f; }
 .linkish.discard-row-btn { padding: 0 6px; text-decoration: none; }
+/* B53b 试玩修复 B5：本批新增的清单行末「丢弃／丢弃水」与子区内按钮热区不低于 40px（触屏可点）；同行原有「取到随身／放地面」不动 */
+.eq-btn.discard-row-btn, .linkish.discard-row-btn { min-height: 40px; min-width: 44px; }
 .discard-sub.in-list { display: flex; flex-direction: column; gap: 6px; margin: 2px 0 6px; padding: 8px; border: 1px solid #a8735d; border-radius: 4px; background: #1d2421; font-size: var(--fs-aux); }
 .discard-sub.in-list .discard-title { margin: 0; font-size: var(--fs-body); font-weight: 600; }
 .discard-sub.in-list .discard-line { margin: 0; line-height: 1.6; overflow-wrap: anywhere; }
 .discard-sub.in-list .discard-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.discard-sub.in-list .discard-row > button { flex: 1 1 7em; min-height: 34px; padding: 4px 8px; border-radius: 4px; }
+.discard-sub.in-list .discard-row > button { flex: 1 1 7em; min-height: 40px; padding: 4px 8px; border-radius: 4px; }
+.discard-sub.in-list .discard-qty button { min-width: 40px; min-height: 40px; }
 .discard-sub.in-list .discard-opt { color: var(--text); background: #26342b; border: 1px solid var(--line); }
 .discard-sub.in-list .discard-opt.danger { color: #f3e3d6; background: #5e3528; border-color: #a8735d; }
 .discard-sub.in-list .discard-opt:disabled { color: #7d8578; background: transparent; border-color: var(--line); }

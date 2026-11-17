@@ -361,7 +361,17 @@ public sealed partial class GameSession
     public Selection Selected { get; private set; } = new();
 
     /// <summary>右栏当前页签：无选中时默认人物页，选中任何对象自动切到对象信息。</summary>
-    public DetailTab DetailTab { get; private set; } = DetailTab.Character;
+    public DetailTab DetailTab
+    {
+        get => _detailTab;
+        private set
+        {
+            // B53b 试玩修复 B1（假设 3「切走即清草稿」）：右栏离开人物页时，人物页清单（同伴随身、遗物／认领箱、回收箱）里开着的丢弃子区随之收起（不删除，回来是未展开的列表）
+            if (value != DetailTab.Character && _discard?.ListHost == DiscardHost.Party) _discard = null;
+            _detailTab = value;
+        }
+    }
+    private DetailTab _detailTab = DetailTab.Character;
 
     public void SetDetailTab(DetailTab tab)
     {
@@ -858,6 +868,8 @@ public sealed partial class GameSession
         if (!KeepState("gear")) GivePending = null;
         // B53b：从安全屋柜子／远征物资窗行末开的丢弃子区随该窗离开即收起（不删除，重开窗不恢复旧草稿）
         if (_discard?.ListHost is DiscardHost.Cabinet or DiscardHost.Sealed && next != from) _discard = null;
+        // B53b 试玩修复 B1：打开或换到别的窗口（制作、地图、日志等）也算切走，人物页清单里开着的丢弃子区收起，关窗回来是未展开的列表
+        if (_discard?.ListHost == DiscardHost.Party && next != null && next != from) _discard = null;
         FeedPending = null;
         HelpFromFeed = false;
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签

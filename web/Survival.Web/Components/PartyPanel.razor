@@ -187,7 +187,9 @@
                 @if (open)
                 {
                     var rows = e.CompanionCarried(s, id);
-                    <div class="party-items" data-wheel="y" data-party-items="@id">
+                    @* B53b 试玩修复 B2：本人随身行里开着丢弃子区时放开内层限高（子区完整可见、随右栏滚动） *@
+                    var subHere = G.Discarding is { ListHost: DiscardHost.Party } dd && rows.Any(r => r.InstanceId == dd.Target.InstanceId);
+                    <div class="party-items @(subHere ? "has-discard" : "")" data-wheel="y" data-party-items="@id">
                         @if (rows.Count == 0) { <div class="muted tiny">@FeedPanelCopy.EmptyItems</div> }
                         @foreach (var r in rows)
                         {
