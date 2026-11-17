@@ -1,0 +1,452 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-17",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "5e9be2095f2eaef91b13c2de0d2f102f39c64389",
+  "originalBatch": "2026-11-17 来自 89a8295e B53a（开发与试玩中发现）",
+  "questionIds": [
+    928,
+    929
+  ],
+  "answers": {
+    "Q928": "C",
+    "Q929": "user_new_water_design_not_old_A_or_B",
+    "Q929_boiling_scope": "A",
+    "Q929_drink_duration": "A"
+  },
+  "unit": {
+    "ml": 100,
+    "grams": 100,
+    "baseHydration": 6,
+    "waterStackMax": 100,
+    "stackVolumeMl": 10000
+  },
+  "containers": {
+    "pot": {
+      "capacityMl": 1000,
+      "waterUnits": 10,
+      "foodSlots": 2,
+      "foldFood": false
+    },
+    "ration_canteen": {
+      "capacityMl": 2000,
+      "waterUnits": 20,
+      "emptyGrams": 400,
+      "sipMl": 100,
+      "transferMl": 100,
+      "gramsPerMl": 1
+    }
+  },
+  "drink": {
+    "selectable": true,
+    "minUnits": 1,
+    "defaultUnits": 1,
+    "maxFormula": "floor(legal_free_source_ml / 100)",
+    "minutesPerConfirmedAction": 5,
+    "hydrationFormula": "actual_ml * 30 / 500",
+    "examples": [
+      {
+        "ml": 100,
+        "units": 1,
+        "baseW": 6,
+        "minutes": 5
+      },
+      {
+        "ml": 300,
+        "units": 3,
+        "baseW": 18,
+        "minutes": 5
+      },
+      {
+        "ml": 500,
+        "units": 5,
+        "baseW": 30,
+        "minutes": 5
+      },
+      {
+        "ml": 1000,
+        "units": 10,
+        "baseW": 60,
+        "minutes": 5
+      }
+    ],
+    "keepStatCapsAndMetabolism": true,
+    "dirtyPositiveVolumeKeepsDiarrheaHours": 12,
+    "companionExistingLegalDrinkSameUnits": true,
+    "doNotExtendBattleOrRemotePermissions": true
+  },
+  "waterBoiling": {
+    "allowedBatchMl": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900,
+      1000
+    ],
+    "heatMinutes": 15,
+    "exampleInputMl": 300,
+    "exampleOutputMl": 300,
+    "waterMlPerXp": 500,
+    "waterDailyCap": 4,
+    "preserveDailyCumulativeActualMl": true
+  },
+  "foodProcesses": [
+    {
+      "id": "boil_root",
+      "waterCostMl": 1000,
+      "heatMinutes": 30
+    },
+    {
+      "id": "boil_meat",
+      "waterCostMl": 1000,
+      "heatMinutes": 30
+    },
+    {
+      "id": "reboil_cooked_meat",
+      "waterCostMl": 1000,
+      "heatMinutes": 15
+    },
+    {
+      "id": "pot_stew",
+      "waterCostMl": 1000,
+      "heatMinutes": 45
+    },
+    {
+      "id": "pot_hardtack",
+      "waterCostMl": 500,
+      "heatMinutes": 60
+    }
+  ],
+  "recipeWaterConversions": [
+    {
+      "id": "make_antiviral_cure",
+      "waterId": "clean_water",
+      "inputOld": 2,
+      "inputNew": 10,
+      "ml": 1000
+    },
+    {
+      "id": "make_disinfectant",
+      "waterId": "clean_water",
+      "inputOld": 1,
+      "inputNew": 5,
+      "ml": 500
+    },
+    {
+      "id": "make_saline",
+      "waterId": "clean_water",
+      "inputOld": 1,
+      "inputNew": 5,
+      "ml": 500
+    },
+    {
+      "id": "make_herb_extract",
+      "waterId": "clean_water",
+      "inputOld": 1,
+      "inputNew": 5,
+      "ml": 500
+    },
+    {
+      "id": "ex_tablet_water",
+      "waterId": "dirty_water",
+      "inputOld": 4,
+      "inputNew": 20,
+      "ml": 2000,
+      "outputId": "clean_water",
+      "outputOld": 4,
+      "outputNew": 20,
+      "outputMl": 2000
+    },
+    {
+      "id": "ex_cartridge_water",
+      "waterId": "dirty_water",
+      "inputOld": 4,
+      "inputNew": 20,
+      "ml": 2000,
+      "outputId": "clean_water",
+      "outputOld": 4,
+      "outputNew": 20,
+      "outputMl": 2000
+    },
+    {
+      "id": "ex_hardtack",
+      "waterId": "clean_water",
+      "inputOld": 1,
+      "inputNew": 5,
+      "ml": 500
+    },
+    {
+      "id": "ex_stew_portion",
+      "waterId": "clean_water",
+      "inputOld": 2,
+      "inputNew": 10,
+      "ml": 1000
+    },
+    {
+      "id": "ex_emergency_tonic",
+      "waterId": "clean_water",
+      "inputOld": 1,
+      "inputNew": 5,
+      "ml": 500
+    },
+    {
+      "id": "ex_station_water",
+      "waterId": "dirty_water",
+      "inputOld": 4,
+      "inputNew": 20,
+      "ml": 2000,
+      "outputId": "clean_water",
+      "outputOld": 4,
+      "outputNew": 20,
+      "outputMl": 2000
+    }
+  ],
+  "preserveOtherActualMlAcrossRecipesResourcesLootTradeTasksBudget": true,
+  "discard": {
+    "fireMountedPotEntry": false,
+    "takePotDownFirst": true,
+    "quantityUnitMl": 100,
+    "quantityMaxFormula": "floor(legal_free_ml / 100)",
+    "allUsesActualMlIncludingRemainder": true,
+    "shortageText": "水分不足。",
+    "finalConfirmRequired": true,
+    "noHydration": true
+  },
+  "copy": {
+    "drinkTitle": "饮水",
+    "drinkAction": "饮用{毫升}毫升（5分钟）",
+    "quantityConfirm": "确认{数量}",
+    "amount": "{毫升}毫升",
+    "shortage": "水分不足。"
+  },
+  "supersedes": "取代本册及逐字稿中水卡／锅水每份500毫升、水壶固定一口250毫升、1000毫升锅仅2份水、壶余250毫升不能选择数量等冲突规则；特别取代S10文首B53主要原批及2026-11-17 B53a【实现同步】的旧水量单位、S12同行食饮固定单次量和S11／R06水煮每份500毫升的旧说明。未冲突历史事实保留；此处不把净化经验的每500毫升、烘制硬饼500毫升或其他实际水量一律改成100。旧档专属问题仍按用户通知前暂缓，不据此重开迁移提问。",
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "W100-Q928-01",
+      "expected": "锅留火堆位且熄火／无占用时，中央与右栏均无新增丢弃入口；先整锅取至随身／当前地面，再按原流程丢弃。"
+    },
+    {
+      "id": "W100-Q929-01",
+      "expected": "净／脏水单位100毫升、每份100克／补水6，堆上限100使总容量仍10升；锅1000毫升／2食槽，壶2000毫升／空重400克不变。"
+    },
+    {
+      "id": "W100-Q929-02",
+      "expected": "装／倒／转／取／数量丢水均以100毫升计，10份1000毫升可输入；不改满容器、混水和权限拒绝。"
+    },
+    {
+      "id": "W100-Q929-03",
+      "expected": "实际250毫升数量最大2，移200留50；不足100时数量禁用原因水分不足。全部丢弃最终确认仍可删真实尾水。"
+    },
+    {
+      "id": "W100-Q929-04",
+      "expected": "100／300／1000毫升自选饮水分别基础W+6／18／60，各只推进一次5分钟、扣一次实际水量，未确认无变化。"
+    },
+    {
+      "id": "W100-Q929-05",
+      "expected": "原合法本人及同行者水卡／锅水／壶水按同一选择量，原来源目标与战斗／忙碌锁不扩权，脏水正量原腹泻风险不乘N。"
+    },
+    {
+      "id": "W100-Q929-06",
+      "expected": "原容量／W上限／溢出与一次5分钟代谢仍计；数量不够或确认期间变化整次不扣、不推进且不饮另一来源。"
+    },
+    {
+      "id": "W100-Q929-07",
+      "expected": "300毫升脏水可15有效受热分钟变300净水，100至1000整百量可净化；不因少量要求满1升或多次耗15分钟。"
+    },
+    {
+      "id": "W100-Q929-08",
+      "expected": "水煮块根／水煮肉／复煮每次各预留并完成扣1000净水，原30／30／15分钟；炖食1000出2，硬饼仍500出2。"
+    },
+    {
+      "id": "W100-Q929-09",
+      "expected": "1升锅两份生肉不能同时各预留1升；只合法获得水预留的进程推进，补水前另一份不能免费熟成，锅不扩容。"
+    },
+    {
+      "id": "W100-Q929-10",
+      "expected": "连续5次各净化100毫升累计达到原500门槛给原1经验，共享当日上限4；100毫升一次不直接+1，取消不补经验。"
+    },
+    {
+      "id": "W100-Q929-11",
+      "expected": "净水片／滤芯／固定净水台原2升进出变20新水份进出，耗材／时间／经验／日额不随份数放大。"
+    },
+    {
+      "id": "W100-Q929-12",
+      "expected": "医疗／制造水数量表逐项×5守恒；固定水源／奖励／掉落／交易包／任务与预算保原毫升、价值与概率，不因单位获得5倍水。"
+    },
+    {
+      "id": "W100-Q929-13",
+      "expected": "水量预览／源明细／确认／扣水／余量／重量同源，旧一口250和每份500冲突显示撤下；保留非水动作与丢弃最终确认。"
+    },
+    {
+      "id": "W100-Q929-14",
+      "expected": "数量丢弃／倒出0分钟无补水或腹泻，饮水一次5分钟；无重复提交扣水、幽灵加工或取出中止批数提示。"
+    }
+  ],
+  "sourceConfigWaterFacts": {
+    "waterItems": [
+      {
+        "id": "dirty_water",
+        "unitVolumeMl": 500,
+        "weightGrams": 500,
+        "stackMax": 20,
+        "hydration": 30
+      },
+      {
+        "id": "clean_water",
+        "unitVolumeMl": 500,
+        "weightGrams": 500,
+        "stackMax": 20,
+        "hydration": 30
+      }
+    ],
+    "processes": [
+      {
+        "id": "boil_water",
+        "name": "烧水",
+        "target": "pot_liquid_batch",
+        "inputId": "dirty_water",
+        "outputId": "clean_water",
+        "allowedBatchMl": [
+          500,
+          1000
+        ],
+        "heatMinutes": 15,
+        "waterCostMl": 0,
+        "requiredOwner": "pot_inside_lit_fire",
+        "requiredLiquid": null
+      },
+      {
+        "id": "boil_root",
+        "name": "水煮",
+        "target": "single_food_instance",
+        "inputId": "raw_root",
+        "outputId": "boiled_root",
+        "allowedBatchMl": [],
+        "heatMinutes": 30,
+        "waterCostMl": 500,
+        "requiredOwner": "pot_inside_lit_fire",
+        "requiredLiquid": "clean_water"
+      },
+      {
+        "id": "boil_meat",
+        "name": "水煮",
+        "target": "single_food_instance",
+        "inputId": "raw_meat",
+        "outputId": "boiled_meat",
+        "allowedBatchMl": [],
+        "heatMinutes": 30,
+        "waterCostMl": 500,
+        "requiredOwner": "pot_inside_lit_fire",
+        "requiredLiquid": "clean_water"
+      },
+      {
+        "id": "reboil_cooked_meat",
+        "name": "复煮",
+        "target": "single_food_instance",
+        "inputId": "cooked_meat",
+        "outputId": "boiled_meat",
+        "allowedBatchMl": [],
+        "heatMinutes": 15,
+        "waterCostMl": 500,
+        "requiredOwner": "pot_inside_lit_fire",
+        "requiredLiquid": "clean_water"
+      },
+      {
+        "id": "pot_hardtack",
+        "name": "烘制",
+        "target": "pot_recipe",
+        "inputId": "",
+        "outputId": "hardtack",
+        "allowedBatchMl": [],
+        "heatMinutes": 60,
+        "waterCostMl": 500,
+        "requiredOwner": "pot_inside_lit_fire",
+        "requiredLiquid": "clean_water",
+        "inputCount": 1,
+        "outputCount": 2,
+        "recipeId": "ex_hardtack",
+        "foodInputs": {
+          "grain": 2
+        },
+        "auxInputs": {
+          "salt": 1
+        }
+      },
+      {
+        "id": "pot_stew",
+        "name": "炖煮",
+        "target": "pot_recipe",
+        "inputId": "",
+        "outputId": "stew_portion",
+        "allowedBatchMl": [],
+        "heatMinutes": 45,
+        "waterCostMl": 1000,
+        "requiredOwner": "pot_inside_lit_fire",
+        "requiredLiquid": "clean_water",
+        "inputCount": 1,
+        "outputCount": 2,
+        "recipeId": "ex_stew_portion",
+        "foodInputs": {
+          "grain": 1,
+          "raw_meat": 1
+        },
+        "auxInputs": {}
+      }
+    ]
+  },
+  "otherPendingOriginalsNotAnsweredInThisCommit": [
+    {
+      "questions": [
+        769,
+        770
+      ],
+      "reason": "待开发提供正常晾制同时缺料腐败的实例；Q770沿已答Q867短稿归集，不拆原批"
+    },
+    {
+      "questions": [
+        930,
+        931,
+        932,
+        933,
+        934,
+        935,
+        936,
+        937,
+        938,
+        939,
+        940,
+        941,
+        942,
+        943,
+        944,
+        945,
+        946,
+        947,
+        948,
+        949,
+        950,
+        951,
+        952,
+        953,
+        954,
+        955,
+        956,
+        957,
+        958,
+        959,
+        960,
+        961,
+        962,
+        963,
+        964
+      ],
+      "reason": "开发新推队列，逐原节待用户答复，推荐不是用户决定"
+    }
+  ]
+}
