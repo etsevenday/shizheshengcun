@@ -1,0 +1,123 @@
+{
+  "date": "2026-11-17",
+  "status": "whole_original_batch_planning_not_runtime_verified",
+  "originalBatch": "2026-11-17 来自1b50a095、7dbeb309 B37a 次要",
+  "questions": [
+    883,
+    884,
+    885,
+    886
+  ],
+  "choices": {
+    "883": "user_new_interim_mapping_then_developer_final_replacement",
+    "884": "B",
+    "885": "A",
+    "886": "A"
+  },
+  "answers": {
+    "883": "用户新裁定：可先按图中9处同义键接入，但最终要等开发替换，不把原A当最终图认可。负重storage／昼夜watch／空位add／维修crafting／按键help／Esc return／推进progress／保存save／未知unknown为暂用对应；清单标“暂用，待开发替换”，正式待办保留并由开发补、接入、验证，不因现glyph存在算已清零。正确裁窗、全部位图最近邻及原功能保持，见S14／美术14／16本批。",
+    "884": "选B。随机有职业招募同伴正式个人图未齐前，入队后编队／整备／战斗／特写／队列／人物卡／对白等本人身份展示统一glyph:unknown问号占位，不用推荐职业图冒充本人。真名职业属性和已固定服设／配色数据不改，正式齐后同人统一替换；无职业保底护送员仍用户已定固定通用图，名册候选卡Q893另随完整原批问、不代答。见A11／S14本批。",
+    "885": "选A。现有腐败物SVG可在B53暂接，但仍列“暂用，待开发替换”，由开发按统一像素位图风格补正式图后接入验证；不算缺项清零，不改腐败物普通卡／实际物品／不可食用规则。见S06／S14及美术14／16本批。",
+    "886": "选A。用正式肖像的原头像替代文字仅实际显示名，去“（临时形象）”；仍过渡问号／临时图保留“{显示名}（临时形象）”。正式换图随资源身份更新，已批准最终固定通用补员不误算临时；只读屏文字，不在名牌或正文添加／重复播报，不改发言者与剧情。见N02附录／S14及逐字稿本批。"
+  },
+  "icons": {
+    "interimMappings": [
+      {
+        "use": "顶栏负重",
+        "key": "glyph:storage"
+      },
+      {
+        "use": "世界时钟与昼夜帮助",
+        "key": "glyph:watch"
+      },
+      {
+        "use": "空加工位帮助",
+        "key": "glyph:add"
+      },
+      {
+        "use": "维修配方图",
+        "key": "skillFamily:crafting"
+      },
+      {
+        "use": "按键帮助",
+        "key": "glyph:help"
+      },
+      {
+        "use": "Esc帮助",
+        "key": "glyph:return"
+      },
+      {
+        "use": "中央推进条帮助",
+        "key": "glyph:progress"
+      },
+      {
+        "use": "保存与继续帮助",
+        "key": "glyph:save"
+      },
+      {
+        "use": "战斗未知指令兜底",
+        "key": "glyph:unknown"
+      }
+    ],
+    "status": "暂用，待开发替换",
+    "finalDeveloperReplacementRequiredForAllNine": true,
+    "notAcceptedAsFinal": true,
+    "correctLogicalAtlasCropRequired": true,
+    "nearestForAllBitmaps": true
+  },
+  "randomRecruits": {
+    "interimPersonalImage": "glyph:unknown",
+    "portraitAsset": "portrait-glyph-unknown.webp",
+    "notProfessionPortrait": true,
+    "allPostRecruitPersonalSurfaces": true,
+    "actualIdentityAndAppearanceSnapshotUnchanged": true,
+    "formalQ835StillDeveloperWork": true,
+    "emergencyEscortStillFixedLegacyNeutral": true,
+    "rosterQ893NotPreAnswered": true
+  },
+  "spoiled": {
+    "interim": "assets/20261115/永久丢弃与腐败物/腐败物图标.svg",
+    "finalPixelBitmapStillDeveloperRequired": true,
+    "keepMissingItem": true
+  },
+  "accessibility": {
+    "formal": "{显示名}",
+    "temporary": "{显示名}（临时形象）",
+    "notVisibleNameplateCopy": true,
+    "approvedFixedFallbackCanBeFormal": true
+  },
+  "acceptance": [
+    {
+      "id": "B37A-Q883-01",
+      "rule": "9处暂用键与用途准确、正确裁窗，现图仅临时接入；清单标暂用待开发替换，非已正式完成。"
+    },
+    {
+      "id": "B37A-Q883-02",
+      "rule": "开发正式替换待办仍覆盖9处，正式绑定／证据可追溯；不改其他共用glyph用途、功能／热区，位图最近邻。"
+    },
+    {
+      "id": "B37A-Q884-01",
+      "rule": "随机有职业同伴入队后本人展示统一问号占位，实际姓名职业属性保留，不用职业肖像冒充本人。"
+    },
+    {
+      "id": "B37A-Q884-02",
+      "rule": "正式服设快照数据不因问号重抽／清除，正式图齐后同一人各界面统一替换；名册卡Q893不代答。"
+    },
+    {
+      "id": "B37A-Q884-03",
+      "rule": "保底护送员仍已定固定通用图，主角／命名人物正式图不被统一问号覆盖。"
+    },
+    {
+      "id": "B37A-Q885-01",
+      "rule": "腐败物SVG可暂接，清单仍列正式像素位图缺项由开发补；卡片规则／图标含义和实际物品不改。"
+    },
+    {
+      "id": "B37A-Q886-01",
+      "rule": "正式头像读实际名无临时括注，过渡头像读实际名＋临时形象；名牌与对白正文不加这段。"
+    },
+    {
+      "id": "B37A-Q886-02",
+      "rule": "正式换图后括注随资源身份更新，固定通用补员不误标临时、不改发言身份或重复播报。"
+    }
+  ]
+}
