@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "d32a222ee97fdb430f377c7bba88e91fec023f93",
+  "originalBatch": "2026-11-17 来自 b571cab2、68885f37 B36c（提前核对，次要）",
+  "questionIds": [
+    961,
+    962,
+    963,
+    964
+  ],
+  "answers": {
+    "Q961": "A",
+    "Q962": "B",
+    "Q963": "A",
+    "Q964": "A"
+  },
+  "journeyCopy": {
+    "subtitle": "浏览不耗时；仅作准备确认，不是出发门槛。",
+    "total": "合计{N}基础分钟",
+    "footnote": "仅含已知路线，不含探索、清障及实际行动耗时。",
+    "noTeleportSeparateLine": "主世界与营区之间没有传送。",
+    "missing": "还缺：{实际缺项}",
+    "removeRedundantMissingTail": true,
+    "confirmed": "已确认准备（为远行打包：已记录）。出发仍需沿真实道路移动。",
+    "preserveActualNumbersAndPreparationSemantics": true
+  },
+  "sealReason": {
+    "format": "取到随身：{原因}",
+    "removeGroundTutorialParenthesis": true,
+    "preserveActualReasonsButtonsPermissionsCapacityAndDestinations": true,
+    "noAutomaticGroundFallback": true
+  },
+  "titleMenu": {
+    "title": "序章 · 醒来",
+    "onlyVisiblePageAction": "继续",
+    "escOpensNormalGameMenu": true,
+    "includesExistingSaveAndReturnToTitle": true,
+    "closeReturnsToTitlePageAndFocusContinue": true,
+    "noDialogueTaskRewardTimeOrContinueOnMenuNavigation": true,
+    "singleInputConsumptionNoClickThrough": true,
+    "saveUncontinuedStageResumesTitlePerQ894": true,
+    "explicitContinueEntersOriginalFirstLineOnce": true,
+    "noNewDialogueRecordButtonOrOldSaveMigration": true
+  },
+  "journeyLayout": {
+    "keepIndependentPanel": true,
+    "knownRouteDisplay": "existing_segmented_text",
+    "changeFramesAndLayoutOnly": true,
+    "embedMap": false,
+    "addMapButtons": false,
+    "addWaterBudget": false,
+    "preserveActualRouteCostsAndSeparateDungeonBudget": true,
+    "preserveActualMapEntrancesAndLayerSwitching": true,
+    "noOldReturnOrAutomaticTravel": true
+  },
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "B36C-Q961-01",
+      "expected": "顶部用已定准备短句，合计仅合计N基础分钟并接已定脚注，无传送事实另行保留，旧重复预算长句撤掉。"
+    },
+    {
+      "id": "B36C-Q961-02",
+      "expected": "缺项保真实清单但无知情继续尾句，原已确认整句保留；真实分钟、准备记录和非出发门槛不改。"
+    },
+    {
+      "id": "B36C-Q962-01",
+      "expected": "取到随身禁用／失败只取到随身：真实原因，无先放地面再拾取括注。"
+    },
+    {
+      "id": "B36C-Q962-02",
+      "expected": "原三个物资按钮及实地权限／容量／真实去向保持，删说明不删除按钮或自动改投地面。"
+    },
+    {
+      "id": "B36C-Q963-01",
+      "expected": "序章标题页只继续，ESC开正常游戏菜单含保存并返回标题；关菜单回标题且焦点继续。"
+    },
+    {
+      "id": "B36C-Q963-02",
+      "expected": "开关菜单不继续台词／任务／时间，输入只消费一次不穿透；保存未继续标题后重进仍标题。"
+    },
+    {
+      "id": "B36C-Q963-03",
+      "expected": "继续明确激活才原开场首句一次，已进入后续状态不重播；无新记录按钮或旧档追补流程。"
+    },
+    {
+      "id": "B36C-Q964-01",
+      "expected": "远行准备仍独立文字逐段路线，只换框体，无主世界／当前层／回当前位置三键及内嵌地图／饮水预算。"
+    },
+    {
+      "id": "B36C-Q964-02",
+      "expected": "原公开路线及真实费用不改，地图自身功能与地牢预算保持，不自动移动或恢复返程。"
+    }
+  ]
+}
