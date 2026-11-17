@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "9e3db2047922b80c841e0e12985a16470433e9e0",
+  "originalBatch": "2026-11-17 来自 bc0b32ad、08333115 B35b（提前核对，次要）",
+  "questionIds": [
+    946,
+    947,
+    948,
+    949
+  ],
+  "answers": {
+    "Q946": "B_short_offered_copy_with_Q943C_help",
+    "Q947": "A",
+    "Q948": "A",
+    "Q949": "A"
+  },
+  "fuelNote": {
+    "removeRawPlusFuelTotal": true,
+    "perExecution": "每份耗{燃料名}{数量}",
+    "kilnPerBatch": "每批耗{燃料名}{数量}",
+    "preserveNonSumFactsAndActualCosts": true,
+    "helpInheritedUnchanged": "锻炉每份、陶窑每批耗木炭1。燃料须先投入本设施，不能取回。",
+    "doNotRestoreFuelInMaterialTableOrSceneCard": true
+  },
+  "disabledButtons": {
+    "activeActionNameOnlyWhenCannotStart": true,
+    "keepSpecificReasonBesideButton": true,
+    "reliableEnabledKeepsRealTime": true,
+    "enabledUnreliableKeepsExistingUnestimatedWithReason": true,
+    "passiveLabel": "投料（{批数}批 · {时长}）",
+    "preserveZeroMaterialSitePlacement": true
+  },
+  "repairLabels": {
+    "toolMaintenance": "工具维护",
+    "fieldPatch": "现场修补",
+    "bothButtonBase": "开始维修",
+    "associateLabelToEachButtonAndAccessibleName": true,
+    "preserveBothOriginalTransactionsCostsAndEffects": true
+  },
+  "sourceSidePage": {
+    "leftVisible": true,
+    "leftSelectable": true,
+    "selectionReturnsToRecipeInOneNavigation": true,
+    "retainOldSourceSelection": false,
+    "discardOldSourceDetailAndLocateIntents": true,
+    "ignoreStaleSourceUpdates": true,
+    "executionHiddenWhileViewingSources": true,
+    "navigationNeverStartsOrConsumes": true,
+    "preserveWorkspaceVisibilityAndPerFacilityPreferences": true,
+    "preserveReturnEscParentStack": true
+  },
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "B35B-Q946-01",
+      "expected": "右栏无原料＋燃料＝总计混算，只用每份耗燃料名数量／陶窑每批耗燃料名数量，执行份数及产物事实保持。"
+    },
+    {
+      "id": "B35B-Q946-02",
+      "expected": "重复系统帮助逐字沿Q943 C两句，不再追加旧合计／返燃料长句，不改变真实每次成本与本座库存。"
+    },
+    {
+      "id": "B35B-Q946-03",
+      "expected": "不因右栏短注记恢复材料表燃料行、场景卡库存行，来源侧页分账与无燃料工序范围保持。"
+    },
+    {
+      "id": "B35B-Q947-01",
+      "expected": "因缺料等不能开工的主动按钮只写动作名无括号，原具体原因在旁，校验条件不变。"
+    },
+    {
+      "id": "B35B-Q947-02",
+      "expected": "能开工可靠时仍显示同源预计时长；能开工但预估不可靠仍原未预估及真实原因，不伪造0或删说明。"
+    },
+    {
+      "id": "B35B-Q947-03",
+      "expected": "窑／净水台受阻仍显示原静态批数与加工时长；缺料不能施工不等于不能0料放工地。"
+    },
+    {
+      "id": "B35B-Q948-01",
+      "expected": "物品卡两组标签分别工具维护／现场修补，两个按钮都叫开始维修；禁用无时长时标签仍可区分。"
+    },
+    {
+      "id": "B35B-Q948-02",
+      "expected": "两按钮各调用原做法，耗材／修复／门槛／实际时长不变，标签不二次执行且读屏能区分。"
+    },
+    {
+      "id": "B35B-Q949-01",
+      "expected": "来源侧页左列仍可选，选配方／分类一次切回配方并改选，原来源选择／定位缓存不保留。"
+    },
+    {
+      "id": "B35B-Q949-02",
+      "expected": "来源页制作区隐藏，点击导航不穿透开工／扣料／推进，旧异步来源不能盖回新配方。"
+    },
+    {
+      "id": "B35B-Q949-03",
+      "expected": "显式返回配方／ESC保持原父层与候选上下文，不连退两层；工作区范围和每座分类偏好不被抹掉。"
+    }
+  ]
+}
