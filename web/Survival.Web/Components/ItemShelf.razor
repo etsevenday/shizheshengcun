@@ -82,7 +82,8 @@
                             @* B50a（S06 文首 Q715）：腐败物后层角标／悬停「第{序号}批×{数量}」，不再重复已腐败；悬停保留真实重量／上限／预留／来源 *@
                             var layer = GameEngine.SpoiledLayerText(k + 1, b.Count);
                             var layerTitle = layer + " · " + e.SpoiledUnitText(b.Stacks, e.NeedsStackCapNote(allKb, b)) + (b.Reserved ? " · 预留" : "") + (e.OriginListText(b.Stacks) is string org ? " · " + org : "");
-                            <button type="button" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, bk)" class="stack-layer spoiled @(b.Reserved ? "reserved" : "")" style="--i:@k"
+                            @* B53a（Q766）：腐败物后层走普通后层样式，不因身份加灰化／危险 *@
+                            <button type="button" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, bk)" class="stack-layer @(b.Reserved ? "reserved" : "")" style="--i:@k"
                                     title="@layerTitle" aria-label="@layerTitle" @onclick="() => SelectSide(id, allKb, kb)">
                                 <span class="sl-art">@Icons.Markup(id)</span>
                                 <span class="sl-tag"><b>@layer</b></span>
@@ -107,17 +108,20 @@
                     var qtyText = CardStates.ItemQtyText(total, reservedN);
                     // B32a Q356（取代 Q340 物品副标优先级）：副标固定写本卡实际数量（B32c Q361：部分或全部预留都写「×{总数}（预留{数量}）」），不再出主图数量角标；
                     // 第二行先写已腐败、已损坏等明确状态，其次实际保质/到期，再耐久；效果、重量、批次数与完整信息在悬停、聚焦提示与右栏
-                    var spoiledFront = stacked ? kb![0].Spoiled : allSpoiled;
+                    // B53a（S06／S14 B50a §Q766）：腐败物用普通卡——名称、数量、真实重量；不挂危险叠层、不重复「已腐败」（未转换的过期原物照旧）
+                    var spoiledFront = !rotGroup && (stacked ? kb![0].Spoiled : allSpoiled);
+                    if (rotGroup) infoLine = CardStates.RotWeightLine(e, s, list) + (!stacked && batches > 1 ? $" · {batches}批" : "");
                     // B51a（Q724）：整卡全部受保护时按保护份 R 写短句；B51c1（Q773 选 B）：部分保护只写「含保质暂停」，不接到期、数量或批数
                     var pausedLine = spoiledFront ? null : Ui.PausedCardLine(e, s, stacked ? kb![0].Stacks : list);
                     if (pausedLine != null) infoLine = pausedLine + (!stacked && batches > 1 && !pausedLine.Contains("批") && pausedLine != GameEngine.ShelfPartlyPausedText ? $" · {batches}批" : "");
                     var line2 = spoiledFront ? "已腐败" : pausedLine ?? Ui.CardLine2(e, s, stacked ? head : whole);
+                    if (rotGroup) line2 = CardStates.RotWeightLine(e, s, list);
                     var line2Danger = line2 is "已腐败" or "已损坏";
                 }
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@
                 @* B42：卡片本体是悬停热区（与点击同一物品身份；分卡时带这一侧的批次） *@
                 <div id="@(gSel ? "card-sel" : null)" data-peek="@Peek.Sel(SelectionKind.ItemGroup, id, Owner, null, split ? (sideKb.FirstOrDefault(b => !b.Reserved && !b.Spoiled) ?? sideKb.FirstOrDefault())?.Key : null)" data-tip="@($"{title} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drag-title="@title" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item k2i @(spoiledFront ? "st-danger" : "") @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
+                     class="card item k2i @(spoiledFront ? "st-danger" : "") @(allSpoiled && !rotGroup ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
                      role="button" tabindex="0" @onclick="() => SelectSide(id, kb, split ? sideKb : null)" @onkeydown="ev => OnCardKey(ev, () => SelectSide(id, kb, split ? sideKb : null))" title="@(dr ? "本实例战利品：这次地牢里领到的奖励，可以封存；成功离开地牢后并回同名物品。" + e.Item(id).Desc : e.Item(id).Desc)">
                     @{ var qtyTip = stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null; }
                     @* B32a（Q340、Q356）：重墨 V2 物品卡——上部主图，下部纸色信息条「名称 + 数量副标 + 状态第二行」，转移箭头在信息条右端 *@

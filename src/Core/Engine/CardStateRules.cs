@@ -36,6 +36,12 @@ namespace Survival.Core.Engine
         /// <summary>耐久为 0 的工具（有耐久上限且当前耐久 ≤0）。</summary>
         public static bool BrokenTool(ItemInstance i) => i.MaxDurability.HasValue && i.Durability.HasValue && i.Durability.Value <= 0;
 
+        // ───────────── B53a（S06／S14 2026-11-15 B50a §Q766）腐败物普通卡 ─────────────
+
+        /// <summary>腐败物卡第二行（逐字稿 B50a rotWeight「{重量}公斤」）：这张卡全部腐败物的真实总重；不再写「已腐败」，也不挂危险叠层。</summary>
+        public static string RotWeightLine(GameEngine e, GameState s, IEnumerable<ItemInstance> rot) =>
+            Fmt.Kg(rot.Sum(i => (long)e.ItemGrams(s, i)));
+
         // ───────────── Q356 物品卡副标与第二行 ─────────────
 
         /// <summary>Q356：常规物品卡与独立工具卡副标固定为本卡实际数量；Q361：本卡实际预留数大于 0（部分或全部预留）写「×{总数}（预留{数量}）」。</summary>

@@ -44,7 +44,7 @@
                 var batches = list.Select(i => (i.ExpiresAt, i.ShelfPausedMinutes)).Distinct().Count();
                 <div class="bsup-card" tabindex="0" title="@($"{title}×{list.Sum(i => i.Count)}：{Ui.ItemLine(e, s, head)}{(batches > 1 ? $"（{batches}批，最早到期在前）" : "")}")">
                     <span class="bsup-art" aria-hidden="true">@Icons.Markup(id)</span>
-                    <span class="bsup-text"><b>@title ×@list.Sum(i => i.Count)@(dr ? "（战利品）" : "")</b><small>@(e.IsSpoiled(s, head) ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</small></span>
+                    <span class="bsup-text"><b>@title ×@list.Sum(i => i.Count)@(dr ? "（战利品）" : "")</b><small>@(id == GameEngine.SpoiledMatterId ? CardStates.RotWeightLine(e, s, list) : e.IsSpoiled(s, head) ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</small></span>
                 </div>
             }
             else

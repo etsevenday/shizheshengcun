@@ -816,4 +816,47 @@ public class B53aTests : TestBase
         var p = Web("Components", "DiscardPanel.razor");
         Assert.That(System.Text.RegularExpressions.Regex.Matches(p, @"<EscCap On=""@escHere"" />").Count, Is.EqualTo(3), "每层承接 ESC 的那个按钮显示键帽");
     }
+
+    // ───────────── M5 腐败物普通卡（S06／S14 2026-11-15 B50a §Q766；逐字稿 rotName／rotWeight） ─────────────
+
+    /// <summary>Q766：腐败物卡第二行写这张卡的真实总重「{重量}公斤」（野果每份 200 克，S06 物品表；3 份 → 0.60公斤），不写「已腐败」。</summary>
+    [Test]
+    public void Q766_RotCard_SecondLineIsRealWeight()
+    {
+        var s = New();
+        var rot = RotBerries(s, ItemInstance.Carried, 3);
+        Assert.That(CardStates.RotWeightLine(E, s, new[] { rot }), Is.EqualTo("0.60公斤"));
+        var more = RotBerries(s, s.Ground, 2);
+        Assert.That(CardStates.RotWeightLine(E, s, new[] { rot, more }), Is.EqualTo("1.00公斤"), "整卡多堆按真实克数合计");
+    }
+
+    /// <summary>Q766：卡面只对腐败物去掉危险叠层、灰化与重复「已腐败」；未转换的过期原物仍「已腐败」并挂危险（对照）。</summary>
+    [Test]
+    public void Q766_RotCard_NoDangerOverlay_ExpiredOriginalKeeps()
+    {
+        var shelf = Web("Components", "ItemShelf.razor");
+        Assert.That(shelf, Does.Contain("var spoiledFront = !rotGroup && (stacked ? kb![0].Spoiled : allSpoiled);"));
+        Assert.That(shelf, Does.Contain("if (rotGroup) line2 = CardStates.RotWeightLine(e, s, list);"));
+        Assert.That(shelf, Does.Contain("if (rotGroup) infoLine = CardStates.RotWeightLine(e, s, list)"));
+        Assert.That(shelf, Does.Contain("@(allSpoiled && !rotGroup ? \"spoiled\" : \"\")"));
+        var rotLayer = Section(shelf, "if (rotGroup)", "continue;");
+        Assert.That(rotLayer, Does.Contain("class=\"stack-layer @(b.Reserved ? \"reserved\" : \"\")\""), "后层也不灰化");
+        // 对照：过期原物照旧
+        Assert.That(shelf, Does.Contain("var line2 = spoiledFront ? \"已腐败\" : pausedLine ?? Ui.CardLine2(e, s, stacked ? head : whole);"));
+        Assert.That(shelf, Does.Contain("@(spoiledFront ? \"st-danger\" : \"\")"));
+        Assert.That(shelf, Does.Contain("class=\"stack-layer @(b.Spoiled ? \"spoiled\" : \"\") @(b.Reserved ? \"reserved\" : \"\")\""));
+        var sup = Web("Components", "BattleSupplies.razor");
+        Assert.That(sup, Does.Contain("@(id == GameEngine.SpoiledMatterId ? CardStates.RotWeightLine(e, s, list) : e.IsSpoiled(s, head) ? \"已腐败\" : Ui.ItemLine(e, s, head))"));
+    }
+
+    /// <summary>Q766：腐败物用本批专用腐烂物图标（assets/20261115/永久丢弃与腐败物/腐败物图标.svg 原样内联），不再用原分类占位图。</summary>
+    [Test]
+    public void Q766_RotIcon_FromDesignAsset()
+    {
+        var icons = Web("Services", "Icons.cs");
+        var line = icons.Split('\n').Single(l => l.Contains("[\"spoiled_matter\"]"));
+        Assert.That(line, Does.Contain("<path d=\"\"M 12 77 C 8 66 17 55 28 52 C 29 40 40 31 52 36 C 63 27 78 37 77 51 C 90 55 96 70 87 79 C 72 91 28 91 12 77 Z\"\" fill=\"\"#89704e\"\""));
+        Assert.That(line, Does.Contain("<ellipse cx=\"\"73.5\"\" cy=\"\"69.5\"\" rx=\"\"2.5\"\" ry=\"\"2.5\"\" fill=\"\"#a0ab65\"\"/>"));
+        Assert.That(line, Does.Not.Contain("<rect x=\"\"16\"\" y=\"\"34\"\""), "旧分类占位图已换下");
+    }
 }
