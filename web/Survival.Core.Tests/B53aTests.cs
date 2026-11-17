@@ -723,4 +723,97 @@ public class B53aTests : TestBase
         Assert.That(E.DiscardViewOf(s, tp).Blocked, Is.EqualTo(Processing), "净化中的水不能借丢弃解除绑定");
         Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(pot.InstanceId)).Blocked, Is.EqualTo(Processing));
     }
+
+    // ───────────── M4 右栏入口、子区与 ESC（S14 2026-11-15 B50a／2026-11-17 B53，B53-Q857-01 右栏部分、Q857-02） ─────────────
+
+    private static string Section(string text, string from, string to)
+    {
+        var i = text.IndexOf(from, StringComparison.Ordinal);
+        Assert.That(i, Is.GreaterThanOrEqualTo(0), from);
+        var j = text.IndexOf(to, i + from.Length, StringComparison.Ordinal);
+        Assert.That(j, Is.GreaterThan(i), to);
+        return text.Substring(i, j - i);
+    }
+
+    /// <summary>B53-Q857-01（右栏部分）：正式点选的物品详情有「丢弃」，锅水有「丢弃水」，水壶在水量行末「丢弃水」；悬停只读、加工菜单只读、鸟瞰浏览不放入口。</summary>
+    [Test]
+    public void Q857_01_RightRailEntries_OnlyOnRealSelection()
+    {
+        var d = Web("Components", "ItemDetail.razor");
+        Assert.That(d, Does.Contain("var canDiscard = !ReadOnly && !G.CityBrowsing;"));
+        Assert.That(d, Does.Contain("var discardTarget = !canDiscard || potLiquid ? null"), "锅水只有丢弃水，不给整组丢弃");
+        Assert.That(d, Does.Contain("potLiquid && sel.InstanceId is int potId ? DiscardTarget.PotWater(potId, sel.Id)"));
+        Assert.That(d, Does.Contain("canteen ? DiscardTarget.CanteenWater(inst.InstanceId)"));
+        Assert.That(d, Does.Contain("<div class=\"wide row-act\"><span>水量</span><b>@e.CanteenLabel(inst)</b>"), "水壶水量行");
+        Assert.That(d, Does.Contain("@onclick=\"() => G.OpenDiscard(waterTarget)\">@DiscardCopy.DiscardWater</button>"), "水量行末丢弃水");
+        Assert.That(d, Does.Contain("<DiscardPanel Target=\"@discardTarget\" />"));
+        Assert.That(d, Does.Contain("<DiscardPanel Target=\"@waterTarget\" HideButton=\"@canteen\" />"));
+        // 对照：悬停与加工菜单打开时传入只读
+        Assert.That(Web("Components", "SelectionDetail.razor"), Does.Contain("ReadOnly=\"@(Peek || G.InFireCrumbs(sel) != null)\""));
+        var p = Web("Components", "DiscardPanel.razor");
+        Assert.That(p, Does.Contain("@(Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>"));
+    }
+
+    /// <summary>B53-Q857-02：入口只开子区；两个子按钮都只到确认层；只有确认层「确认丢弃」提交；取消／返回不删除。</summary>
+    [Test]
+    public void Q857_02_OnlyFinalConfirmDeletes()
+    {
+        var p = Web("Components", "DiscardPanel.razor");
+        Assert.That(System.Text.RegularExpressions.Regex.Matches(p, @"G\.ConfirmDiscard\(").Count, Is.EqualTo(1), "全文件只一处提交");
+        var confirm = Section(p, "case DiscardStage.Confirm", "@code");
+        Assert.That(confirm, Does.Contain("@onclick=\"Confirm\">@DiscardCopy.Confirm</button>"));
+        var menu = Section(p, "case DiscardStage.Menu:", "case DiscardStage.Quantity:");
+        Assert.That(menu, Does.Contain("@onclick=\"G.DiscardChooseQuantity\">@DiscardCopy.ChooseQuantity</button>"));
+        Assert.That(menu, Does.Contain("@onclick=\"G.DiscardAll\">@DiscardCopy.DiscardAll</button>"));
+        Assert.That(menu, Does.Contain("@onclick=\"G.CancelDiscard\">@DiscardCopy.Cancel"));
+        var qty = Section(p, "case DiscardStage.Quantity:", "case DiscardStage.Confirm");
+        Assert.That(qty, Does.Contain("@onclick=\"G.DiscardNext\">@DiscardCopy.Next</button>"));
+        Assert.That(qty, Does.Contain("@onclick=\"G.DiscardBack\">@DiscardCopy.Back"));
+        var sess = Web("Services", "GameSession.Discard.cs");
+        var all = Section(sess, "public void DiscardAll()", "private void ToConfirm");
+        Assert.That(all, Does.Not.Contain("E.Discard("), "全部丢弃只到确认层");
+        Assert.That(Section(sess, "private void ToConfirm", "public void DiscardBack()"), Does.Contain("E.DiscardPreview(S, d.Target, n, all, out var why)"));
+        var commit = Section(sess, "public ActionResult ConfirmDiscard()", "private void DropDiscard()");
+        Assert.That(commit, Does.Contain("Stamp = d.Plan.Stamp, RequestId = d.RequestId"), "带确认快照与请求号");
+        Assert.That(System.Text.RegularExpressions.Regex.Matches(sess, @"E\.Discard\(").Count, Is.EqualTo(1));
+    }
+
+    /// <summary>S14 B50a：不接无焦点空格／Enter 默认删除——丢弃子区不挂 data-enter、不自动聚焦；对照：数量框（DropQuantity）挂了 data-enter，检查本身能发现。</summary>
+    [Test]
+    public void Q857_02_NoDefaultEnterOrAutofocus()
+    {
+        var p = Web("Components", "DiscardPanel.razor");
+        Assert.That(p, Does.Not.Contain("data-enter"));
+        Assert.That(p, Does.Not.Contain("autofocus"));
+        Assert.That(p, Does.Not.Contain("focusSelect"));
+        Assert.That(p, Does.Not.Contain("FocusAsync"));
+        Assert.That(Web("Components", "DropQuantity.razor"), Does.Contain("data-enter"), "对照");
+    }
+
+    /// <summary>S14 B50a：ESC 每次退一层（确认→数量／主层→收起），在清选中之前；换卡、清选中、读档清草稿。</summary>
+    [Test]
+    public void Q857_02_EscStepsBackOneLevel_DraftClearedOnReselect()
+    {
+        var keys = Web("Services", "GameSession.Keys.cs");
+        var order = Section(keys, "public EscOwner NormalEscOwner()", "public bool EscOnDisk");
+        var iGear = order.IndexOf("return EscOwner.GearSub;", StringComparison.Ordinal);
+        var iDiscard = order.IndexOf("if (Discarding != null && ShelfSelectionKind) return EscOwner.Discard;", StringComparison.Ordinal);
+        var iPanelSel = order.IndexOf("return EscOwner.PanelSelection;", StringComparison.Ordinal);
+        var iSel = order.IndexOf("return EscOwner.Selection;", StringComparison.Ordinal);
+        Assert.That(new[] { iGear, iDiscard, iPanelSel, iSel }, Is.All.GreaterThanOrEqualTo(0));
+        Assert.That(iGear < iDiscard && iDiscard < iPanelSel && iPanelSel < iSel, Is.True, "在整备子层之后、清选中之前");
+        Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("case EscOwner.Discard: G.DiscardBack(); break;"));
+        var sess = Web("Services", "GameSession.Discard.cs");
+        var back = Section(sess, "public void DiscardBack()", "public void CancelDiscard()");
+        Assert.That(back, Does.Contain("d.Stage = d.All ? DiscardStage.Menu : DiscardStage.Quantity;"));
+        Assert.That(back, Does.Contain("d.Stage = DiscardStage.Menu;"));
+        Assert.That(back, Does.Contain("_discard = null;"));
+        Assert.That(back, Does.Not.Contain("E.Discard("));
+        var main = Web("Services", "GameSession.cs");
+        Assert.That(main, Does.Contain("if (sel.Key != Selected.Key) DropDiscard();"));
+        Assert.That(System.Text.RegularExpressions.Regex.Matches(main, @"DropDiscard\(\);").Count, Is.EqualTo(4), "换卡、程序清选中、ESC 清选中、读档");
+        Assert.That(sess, Does.Contain("_discard != null && _discard.SelectionKey == Selected.Key ? _discard : null"), "旧卡草稿不出现在新卡上");
+        var p = Web("Components", "DiscardPanel.razor");
+        Assert.That(System.Text.RegularExpressions.Regex.Matches(p, @"<EscCap On=""@escHere"" />").Count, Is.EqualTo(3), "每层承接 ESC 的那个按钮显示键帽");
+    }
 }

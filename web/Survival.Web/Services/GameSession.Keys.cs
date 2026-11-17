@@ -38,6 +38,8 @@ public enum EscOwner
     Panel,
     /// <summary>右栏人物二级页：「‹ 人物」。</summary>
     CharPage,
+    /// <summary>B53a：右栏丢弃子区——确认层「返回」退回数量／主层，数量层「返回」退回主层，主层「取消」收起（都不删除）。</summary>
+    Discard,
     Selection,
     FeedTail,
     /// <summary>B34 试玩修复 B2：战斗自然收束后仍开着的只读「战斗记录」页（「返回当前画面」）。</summary>
@@ -115,6 +117,7 @@ public sealed partial class GameSession
         if (GearHasSubLayer) return EscOwner.GearSub;
         if (Panel == FireMenuPanel && FireMenuLevel > 0) return EscOwner.FacBack;
         if (Panel == "growth" && PracticeOpen) return EscOwner.PracticeBack;
+        if (Discarding != null && ShelfSelectionKind) return EscOwner.Discard;   // B53a：右栏丢弃子区先逐层退，再清选中
         if (Panel != null && Panel != "help" && Panel != FireMenuPanel && !CardPopCovered && ShelfSelectionKind) return EscOwner.PanelSelection;
         if (Panel == "help") return EscOwner.HelpBack;
         if (Panel != null) return EscOwner.Panel;

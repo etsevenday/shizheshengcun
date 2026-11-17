@@ -21,6 +21,8 @@
         ? e.BatchesOf(s, sel.Owner, sel.Id).Select(b => new Batch(b.Key, b.ExpiresAt, b.Count, b.Reserved, b.Stacks)).ToList()
         : list.GroupBy(i => (i.ExpiresAt, i.ShelfPausedMinutes)).Select(g => new Batch((g.Key.ExpiresAt?.ToString() ?? "-") + (g.Key.ShelfPausedMinutes is int r ? "|p:" + r : ""), g.Key.ExpiresAt, g.Sum(i => i.Count), g.Any(i => i.ReservedBy != null), g.ToList())).ToList();   // B51a：保护份按 R 分批，不与同截止未保护份合并
     var busy = e.IsBusy(s) || G.Running;
+    // B53a（S14 B50a／B53）：正式点选的物品详情才有「丢弃」／「丢弃水」；悬停只读、加工菜单只读、鸟瞰浏览不放执行入口
+    var canDiscard = !ReadOnly && !G.CityBrowsing;
 }
 
 @if (!stillThere || list.Count == 0)
@@ -74,6 +76,14 @@ else
     var emptyPot = potInfo && potLiquids.Count == 0 && potFoods.Count == 0;
     var attackWeapon = e.Weapon(cfg.Id) is WeaponConfig { CanAttack: true } aw ? aw : null;
     var hasDesc = !string.IsNullOrEmpty(descText) || durRange != null || moreEquip.Count > 0 || cfg.ShelfLifeMinutes.HasValue || takeOutNote != null || emptyPot || attackWeapon != null || total <= 1;
+    // B53a：本次丢弃目标——锅水按锅＋水种（§Q859）；展开指定的单件（设施／锅内一份、工具）按该件；其余按所点那张卡的同 owner、同物品、同卡侧（未手选，§Q858）
+    var canteen = !potLiquid && e.CanteenOf(inst) != null;
+    var discardTarget = !canDiscard || potLiquid ? null
+        : sel.Kind == SelectionKind.Tool && sel.InstanceId is int discardId ? DiscardTarget.Instance(discardId)
+        : DiscardTarget.Group(sel.Owner, sel.Id, e.CardSideOf(chosen.Stacks[0]));
+    var waterTarget = !canDiscard ? null
+        : potLiquid && sel.InstanceId is int potId ? DiscardTarget.PotWater(potId, sel.Id)
+        : canteen ? DiscardTarget.CanteenWater(inst.InstanceId) : null;
 
     <div class="detail-scroll rail-page" data-rail-type="@railType">
         <RailHead Source="@e.RailSourceLine(s, inst)">
@@ -151,6 +161,11 @@ else
                 <div class="@(label == "品质" ? "q-" + (inst.Quality ?? "white") : "") @(value.Length > 14 ? "wide" : "")"><span>@label</span><b>@value</b></div>
             }
             <div><span>合计重量</span><b>@Ui.Kg(list.Sum(i => e.ItemGrams(s, i)))公斤@(e.IsPot(inst) ? "（含锅内）" : "")</b></div>
+            @if (canteen)
+            {
+                @* B53a（S14 B53 §Q859）：水壶详情的「水量」行，行末「丢弃水」；水量沿原卡下操作窗同源写法 *@
+                <div class="wide row-act"><span>水量</span><b>@e.CanteenLabel(inst)</b>@if (waterTarget != null && !G.DiscardOpenFor(waterTarget)) {<button type="button" class="discard-btn inline" @onclick="() => G.OpenDiscard(waterTarget)">@DiscardCopy.DiscardWater</button>}</div>
+            }
             @if (total > 1) { <div><span>单件重量</span><b>@Ui.UnitKg(e, list)公斤</b></div> }
             @if (rot && e.OriginEntries(list) is { Count: > 0 } origins)
             {
@@ -220,6 +235,10 @@ else
             <div class="risk none">该批次正被当前行动预留，不能拾取、放下或使用。</div>
         }
         @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
+
+        @* B53a：右栏本物品操作末尾「丢弃」（锅水为「丢弃水」）；水壶的「丢弃水」按钮在水量行末，子区在这里展开 *@
+        @if (discardTarget != null) { <DiscardPanel Target="@discardTarget" /> }
+        @if (waterTarget != null) { <DiscardPanel Target="@waterTarget" HideButton="@canteen" /> }
 
         @* 次要信息折叠组（没有明确偏好时收起；空组不显示） *@
         @if (hasDesc)

@@ -535,6 +535,7 @@
             case EscOwner.GearSub: G.GearBack(); break;
             // B32d（Q378）：选卡盘已因来源被面板盖住收起时，Esc 直接退面板（焦点已交给面板），不先清选中
             case EscOwner.PanelSelection: G.ClearSelection(); break;
+            case EscOwner.Discard: G.DiscardBack(); break;
             case EscOwner.HelpBack: G.HelpBack(); break;
             case EscOwner.FacBack: G.FireMenuBack(); break;
             // BM4a（Q554）：成长页练习盘开着时 ESC 与盘内「返回」同效，只收盘、丢草稿，焦点回「练习潜行」入口；下一次 ESC 才关成长页

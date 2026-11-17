@@ -90,3 +90,26 @@
 /* M835：火源「内容」组工位头——状态句放不下时整句换到工位名下一行，句内只在数值片段之间换行，不再截成省略号 */
 [data-detail-rail] .fire-detail .fs-head { flex-wrap: wrap; row-gap: 0; }
 [data-detail-rail] .fire-detail .fs-head > span { flex: 1 1 auto; overflow: visible; text-overflow: clip; }
+
+/* ───────────── B53a 右栏永久丢弃（S14 2026-11-15 B50a、2026-11-17 B53；改图「永久丢弃右栏改图」） ─────────────
+   入口「丢弃」在本物品详情操作末尾（锅水为「丢弃水」，水壶在水量行末）；子区原地展开：可丢弃数 → 选择数量／全部丢弃 → 确认丢弃。
+   删除类按钮用暗红底；取消／返回为线框。窄屏按钮换行，不横向溢出。 */
+[data-detail-rail] .discard-entry { display: flex; }
+[data-detail-rail] .discard-btn { flex: 1 1 auto; min-height: 40px; padding: 6px 14px; font-size: var(--fs-body); color: #f3e3d6; background: #5e3528; border: 1px solid #a8735d; border-radius: 4px; }
+[data-detail-rail] .discard-btn:hover { background: #6e3f30; border-color: #d9a07f; }
+[data-detail-rail] .discard-btn.inline { flex: 0 0 auto; min-height: 30px; padding: 2px 10px; font-size: var(--fs-aux); margin-left: 8px; }
+[data-detail-rail] .lines .row-act { align-items: center; }
+[data-detail-rail] .lines .row-act > b { flex: 1 1 auto; }
+[data-detail-rail] .discard-sub { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid #a8735d; border-radius: 4px; background: #1d2421; }
+[data-detail-rail] .discard-title { margin: 0; font-size: var(--fs-body); font-weight: 600; }
+[data-detail-rail] .discard-avail { font-size: var(--fs-body); }
+[data-detail-rail] .discard-line { margin: 0; font-size: var(--fs-body); line-height: 1.6; overflow-wrap: anywhere; }
+[data-detail-rail] .discard-row { display: flex; flex-wrap: wrap; gap: 8px; }
+[data-detail-rail] .discard-row > button { flex: 1 1 8em; min-height: 40px; padding: 6px 10px; font-size: var(--fs-body); border-radius: 4px; }
+[data-detail-rail] .discard-opt { color: var(--text); background: #26342b; border: 1px solid var(--line); }
+[data-detail-rail] .discard-opt.danger { color: #f3e3d6; background: #5e3528; border-color: #a8735d; }
+[data-detail-rail] .discard-opt:hover:not(:disabled) { border-color: var(--accent); }
+[data-detail-rail] .discard-opt:disabled { color: #7d8578; background: transparent; border-color: var(--line); }
+[data-detail-rail] .discard-back { color: var(--text); background: transparent; border: 1px solid var(--line); }
+[data-detail-rail] .discard-back:hover { background: #2f3a31; }
+[data-detail-rail] .discard-qty { align-items: center; flex-wrap: wrap; }

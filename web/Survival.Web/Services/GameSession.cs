@@ -1600,6 +1600,7 @@ public sealed partial class GameSession
         HelpTopic = null;
         HelpEntry = null;
         DialogLogPick = null;
+        DropDiscard();   // B53a：读档、新局、回标题清丢弃草稿
         ResetPeek();   // B42：读档、新局、回标题清依附旧界面的悬停上下文
         _uiLocation.Reset();
         _skip = false;
@@ -1615,6 +1616,7 @@ public sealed partial class GameSession
     public void Select(Selection sel)
     {
         if (sel.Key != Selected.Key) { SelectedBatchKey = null; FeedPending = null; }
+        if (sel.Key != Selected.Key) DropDiscard();   // B53a：换卡清丢弃草稿
         Selected = sel;
         CardPopCovered = false;   // B32d（Q378）：玩家重新点来源，操作盘照原条件再打开
         Pop = null;
@@ -1691,12 +1693,14 @@ public sealed partial class GameSession
         Selected = new Selection();
         CardPopCovered = false;
         DetailTab = DetailTab.Character;
+        DropDiscard();
     }
 
     /// <summary>Esc 或收起操作条：清空选中，右栏回到默认的人物页。</summary>
     public void ClearSelection()
     {
         DropCardFeed();
+        DropDiscard();
         Selected = new Selection();
         CardPopCovered = false;
         Pop = null;

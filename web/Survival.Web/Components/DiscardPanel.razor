@@ -1,0 +1,85 @@
+@inherits GameComponent
+
+@*
+    B53a（S14 2026-11-15 B50a、2026-11-17 B53；逐字稿 B50a 表与 B53 水句）：右栏「丢弃」／「丢弃水」子区。
+    入口按钮 → 子区主层（可丢弃数、「选择数量」「全部丢弃」「取消」）→ 数量层（整数、默认 1、「下一步」「返回」）→ 最终「确认丢弃」层（真实清单、「确认丢弃」「返回」）。
+    只有最后「确认丢弃」删除；不挂局部回车确认标记、不自动聚焦，无焦点的空格／Enter 不会删除；ESC 每次退一层（GameSession.EscOwner.Discard）。
+*@
+@{
+    var open = G.DiscardOpenFor(Target) ? G.Discarding : null;
+    var escHere = G.EscOwner == EscOwner.Discard;
+}
+
+@if (open == null)
+{
+    @if (!HideButton)
+    {
+        <div class="discard-entry">
+            <button type="button" class="discard-btn" @onclick="() => G.OpenDiscard(Target)">@(Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>
+        </div>
+    }
+}
+else
+{
+    var v = G.DiscardViewOf(Target);
+    <section class="discard-sub" role="group" aria-label="@(Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)">
+        @if (Target.IsWater)
+        {
+            <h4 class="discard-title">@DiscardCopy.DiscardWater</h4>
+        }
+        @switch (open.Stage)
+        {
+            case DiscardStage.Menu:
+                <div class="discard-avail">@(Target.IsWater ? DiscardCopy.WaterAvailable(v.Available) : DiscardCopy.Available(v.Available))</div>
+                @if ((open.Error ?? v.Blocked) is string why)
+                {
+                    <div class="blocked">@why</div>
+                }
+                <div class="discard-row">
+                    <button type="button" class="discard-opt" disabled="@(v.MaxUnits < 1)" @onclick="G.DiscardChooseQuantity">@DiscardCopy.ChooseQuantity</button>
+                    <button type="button" class="discard-opt danger" disabled="@(v.Available < 1)" @onclick="G.DiscardAll">@DiscardCopy.DiscardAll</button>
+                </div>
+                <div class="discard-row">
+                    <button type="button" class="discard-back" @onclick="G.CancelDiscard">@DiscardCopy.Cancel<EscCap On="@escHere" /></button>
+                </div>
+                break;
+            case DiscardStage.Quantity:
+                <div class="discard-avail">@(Target.IsWater ? DiscardCopy.WaterAvailable(v.Available) : DiscardCopy.Available(v.Available))</div>
+                <div class="tbar-row discard-qty">
+                    <span class="tbar-qlabel">@(Target.IsWater ? DiscardCopy.WaterQuantity(v.UnitMl) : DiscardCopy.Quantity)</span>
+                    <button type="button" class="tbar-step" aria-label="减少" @onclick="() => G.DiscardStep(-1)">−</button>
+                    <input type="text" inputmode="numeric" value="@open.QuantityText" @oninput="e => G.DiscardSetQuantity(e.Value?.ToString() ?? string.Empty)" aria-label="@DiscardCopy.Quantity" />
+                    <button type="button" class="tbar-step" aria-label="增加" @onclick="() => G.DiscardStep(1)">+</button>
+                </div>
+                @if (open.Error is string qe)
+                {
+                    <div class="blocked">@qe</div>
+                }
+                <div class="discard-row">
+                    <button type="button" class="discard-opt" @onclick="G.DiscardNext">@DiscardCopy.Next</button>
+                    <button type="button" class="discard-back" @onclick="G.DiscardBack">@DiscardCopy.Back<EscCap On="@escHere" /></button>
+                </div>
+                break;
+            case DiscardStage.Confirm when open.Plan != null:
+                <h4 class="discard-title">@DiscardCopy.ConfirmTitle</h4>
+                @foreach (var line in open.Plan.Lines)
+                {
+                    <p class="discard-line">@line</p>
+                }
+                <div class="discard-row">
+                    <button type="button" class="discard-opt danger" @onclick="Confirm">@DiscardCopy.Confirm</button>
+                    <button type="button" class="discard-back" @onclick="G.DiscardBack">@DiscardCopy.Back<EscCap On="@escHere" /></button>
+                </div>
+                break;
+        }
+    </section>
+}
+
+@code {
+    /// <summary>本次丢弃的真实目标（同组／单件／锅水／壶水）。</summary>
+    [Parameter, EditorRequired] public DiscardTarget Target { get; set; } = null!;
+    /// <summary>入口按钮已画在别处（水壶「水量」行末）时只画子区。</summary>
+    [Parameter] public bool HideButton { get; set; }
+
+    private void Confirm() => G.ConfirmDiscard();
+}
