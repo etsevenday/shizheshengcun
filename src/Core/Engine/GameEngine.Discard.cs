@@ -410,5 +410,29 @@ namespace Survival.Core.Engine
                 units -= take;
             }
         }
+
+        // ───────────── 开发：试玩起点 ─────────────
+
+        /// <summary>
+        /// 开发：B53a 永久丢弃试用组（只造起点）：当前地面野果两批（3份2小时后到期、5份按原保质）、金属锅（净水1000毫升＋生肉1）；
+        /// 随身分量水壶（净水750毫升）、野果3份（1分钟后到期，等一下即在原位转成腐败物）。
+        /// </summary>
+        public string DebugDiscardKit(GameState s)
+        {
+            var berries = CreateItems(s, "berry", 8, s.Ground).Single();
+            var soon = SplitOff(s, berries, 3);   // 同组拆成两批（不经合堆）
+            soon.ExpiresAt = s.GameMinute + 120;
+            var pot = CreateItems(s, "pot", 1, s.Ground).Single();
+            CreateItems(s, "clean_water", 2, ItemInstance.ContainerOwner(pot.InstanceId));
+            CreateItems(s, "raw_meat", 1, ItemInstance.ContainerOwner(pot.InstanceId));
+            var canteen = CreateItems(s, "ration_canteen", 1, ItemInstance.Carried).Single();
+            canteen.LiquidId = "clean_water";
+            canteen.LiquidMl = 750;
+            var rot = CreateItems(s, "berry", 3, ItemInstance.Carried).Single();
+            rot.ExpiresAt = s.GameMinute + 1;
+            var text = $"开发：野果3（2小时后到期）＋野果5、金属锅（净水1000毫升、生肉1）放在{ZoneName(s, s.Ground)}地面；随身分量水壶（净水750毫升）、野果3（1分钟后到期，转腐败物）";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
     }
 }

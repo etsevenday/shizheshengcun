@@ -108,6 +108,7 @@ public sealed partial class GameSession
         if (EndedLog != null) return EscOwner.EndedLog;   // B34 试玩修复 B2：收束后的只读战斗记录页在最上层
         if (PendingDrop != null) return EscOwner.DropQty;
         if (StatusPinned != null) return EscOwner.Status;
+        if (Discarding != null && ShelfSelectionKind) return EscOwner.Discard;   // B53a：右栏丢弃子区是最近打开的一层——先逐层退，再收选卡盘／清选中
         if (DiskMaskShown) return EscOwner.Disk;
         if (Pop != null) return EscOwner.Pop;
         if (Panel == "citymap" && CityPick != null) return EscOwner.CityPick;
@@ -117,7 +118,6 @@ public sealed partial class GameSession
         if (GearHasSubLayer) return EscOwner.GearSub;
         if (Panel == FireMenuPanel && FireMenuLevel > 0) return EscOwner.FacBack;
         if (Panel == "growth" && PracticeOpen) return EscOwner.PracticeBack;
-        if (Discarding != null && ShelfSelectionKind) return EscOwner.Discard;   // B53a：右栏丢弃子区先逐层退，再清选中
         if (Panel != null && Panel != "help" && Panel != FireMenuPanel && !CardPopCovered && ShelfSelectionKind) return EscOwner.PanelSelection;
         if (Panel == "help") return EscOwner.HelpBack;
         if (Panel != null) return EscOwner.Panel;

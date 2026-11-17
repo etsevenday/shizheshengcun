@@ -45,8 +45,8 @@ else
                 break;
             case DiscardStage.Quantity:
                 <div class="discard-avail">@(Target.IsWater ? DiscardCopy.WaterAvailable(v.Available) : DiscardCopy.Available(v.Available))</div>
+                <div class="discard-qlabel">@(Target.IsWater ? DiscardCopy.WaterQuantity(v.UnitMl) : DiscardCopy.Quantity)</div>
                 <div class="tbar-row discard-qty">
-                    <span class="tbar-qlabel">@(Target.IsWater ? DiscardCopy.WaterQuantity(v.UnitMl) : DiscardCopy.Quantity)</span>
                     <button type="button" class="tbar-step" aria-label="减少" @onclick="() => G.DiscardStep(-1)">−</button>
                     <input type="text" inputmode="numeric" value="@open.QuantityText" @oninput="e => G.DiscardSetQuantity(e.Value?.ToString() ?? string.Empty)" aria-label="@DiscardCopy.Quantity" />
                     <button type="button" class="tbar-step" aria-label="增加" @onclick="() => G.DiscardStep(1)">+</button>

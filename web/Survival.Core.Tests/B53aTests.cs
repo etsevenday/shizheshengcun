@@ -744,7 +744,7 @@ public class B53aTests : TestBase
         Assert.That(d, Does.Contain("var discardTarget = !canDiscard || potLiquid ? null"), "锅水只有丢弃水，不给整组丢弃");
         Assert.That(d, Does.Contain("potLiquid && sel.InstanceId is int potId ? DiscardTarget.PotWater(potId, sel.Id)"));
         Assert.That(d, Does.Contain("canteen ? DiscardTarget.CanteenWater(inst.InstanceId)"));
-        Assert.That(d, Does.Contain("<div class=\"wide row-act\"><span>水量</span><b>@e.CanteenLabel(inst)</b>"), "水壶水量行");
+        Assert.That(d, Does.Contain("<div class=\"row-act\"><span>水量</span><b>@e.CanteenLabel(inst)</b>"), "水壶水量行");
         Assert.That(d, Does.Contain("@onclick=\"() => G.OpenDiscard(waterTarget)\">@DiscardCopy.DiscardWater</button>"), "水量行末丢弃水");
         Assert.That(d, Does.Contain("<DiscardPanel Target=\"@discardTarget\" />"));
         Assert.That(d, Does.Contain("<DiscardPanel Target=\"@waterTarget\" HideButton=\"@canteen\" />"));
@@ -796,12 +796,13 @@ public class B53aTests : TestBase
     {
         var keys = Web("Services", "GameSession.Keys.cs");
         var order = Section(keys, "public EscOwner NormalEscOwner()", "public bool EscOnDisk");
-        var iGear = order.IndexOf("return EscOwner.GearSub;", StringComparison.Ordinal);
+        var iStatus = order.IndexOf("return EscOwner.Status;", StringComparison.Ordinal);
         var iDiscard = order.IndexOf("if (Discarding != null && ShelfSelectionKind) return EscOwner.Discard;", StringComparison.Ordinal);
+        var iDisk = order.IndexOf("return EscOwner.Disk;", StringComparison.Ordinal);
         var iPanelSel = order.IndexOf("return EscOwner.PanelSelection;", StringComparison.Ordinal);
         var iSel = order.IndexOf("return EscOwner.Selection;", StringComparison.Ordinal);
-        Assert.That(new[] { iGear, iDiscard, iPanelSel, iSel }, Is.All.GreaterThanOrEqualTo(0));
-        Assert.That(iGear < iDiscard && iDiscard < iPanelSel && iPanelSel < iSel, Is.True, "在整备子层之后、清选中之前");
+        Assert.That(new[] { iStatus, iDiscard, iDisk, iPanelSel, iSel }, Is.All.GreaterThanOrEqualTo(0));
+        Assert.That(iStatus < iDiscard && iDiscard < iDisk && iDisk < iPanelSel && iPanelSel < iSel, Is.True, "在选卡盘（会清选中）之前：先逐层退丢弃子区");
         Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("case EscOwner.Discard: G.DiscardBack(); break;"));
         var sess = Web("Services", "GameSession.Discard.cs");
         var back = Section(sess, "public void DiscardBack()", "public void CancelDiscard()");
@@ -858,5 +859,27 @@ public class B53aTests : TestBase
         Assert.That(line, Does.Contain("<path d=\"\"M 12 77 C 8 66 17 55 28 52 C 29 40 40 31 52 36 C 63 27 78 37 77 51 C 90 55 96 70 87 79 C 72 91 28 91 12 77 Z\"\" fill=\"\"#89704e\"\""));
         Assert.That(line, Does.Contain("<ellipse cx=\"\"73.5\"\" cy=\"\"69.5\"\" rx=\"\"2.5\"\" ry=\"\"2.5\"\" fill=\"\"#a0ab65\"\"/>"));
         Assert.That(line, Does.Not.Contain("<rect x=\"\"16\"\" y=\"\"34\"\""), "旧分类占位图已换下");
+    }
+
+    // ───────────── M6 开发试玩起点 ─────────────
+
+    /// <summary>开发：B53a 丢弃试用组只造起点——地面野果两批（3＋5）、锅水 1000 毫升＋生肉；随身壶水 750、待腐野果 3。</summary>
+    [Test]
+    public void DevKit_BuildsStartingPointOnly()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "berry" || i.ItemId == "ration_canteen");
+        var minute = s.GameMinute;
+        E.DebugDiscardKit(s);
+        Assert.That(s.GameMinute, Is.EqualTo(minute));
+        var ground = s.Items.Where(i => i.ItemId == "berry" && i.Owner == s.Ground).OrderBy(i => i.Count).Select(i => i.Count);
+        Assert.That(ground, Is.EqualTo(new[] { 3, 5 }), "两批");
+        var t = DiscardTarget.Group(s.Ground, "berry", null);
+        Assert.That(E.DiscardViewOf(s, t).Available, Is.EqualTo(8));
+        var pot = s.Items.Single(i => i.ItemId == "pot" && i.Owner == s.Ground && E.PotLiquids(s, i.InstanceId).Count > 0);
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.PotWater(pot.InstanceId, "clean_water")).Available, Is.EqualTo(1000));
+        var c = s.Items.Single(i => i.ItemId == "ration_canteen");
+        Assert.That((c.Owner, c.LiquidId, c.LiquidMl), Is.EqualTo((ItemInstance.Carried, "clean_water", 750)));
+        Assert.That(s.Items.Single(i => i.ItemId == "berry" && i.Owner == ItemInstance.Carried).Count, Is.EqualTo(3));
     }
 }
