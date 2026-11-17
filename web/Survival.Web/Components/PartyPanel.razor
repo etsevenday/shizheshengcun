@@ -86,11 +86,15 @@
                     var iid = it.InstanceId;
                     var whyCarry = e.TakeFromRemainsBlocked(s, deadId, iid, false);
                     var whyGround = e.TakeFromRemainsBlocked(s, deadId, iid, true);
-                    <div class="remains-row">
+                    var dt = e.DiscardRowTarget(s, iid);
+                    <div class="remains-row" data-remains-item="@iid">
                         <span>@e.InstanceName(it)@(it.Count > 1 ? $"×{it.Count}" : "")@(it.LoanSlot != null ? "（借用）" : "")</span>
                         <button type="button" class="eq-btn" disabled="@(whyCarry != null)" title="@(whyCarry ?? "取到你的随身（五张卡与30公斤校验）")" @onclick="() => G.TakeRemains(deadId, iid, false)">取到随身</button>
                         <button type="button" class="eq-btn" disabled="@(whyGround != null)" title="@(whyGround ?? "放到当前地面")" @onclick="() => G.TakeRemains(deadId, iid, true)">放地面</button>
+                        @* B53b（§Q857 B）：遗物／认领箱／回收箱行末「丢弃」，子区画在本行下方，确认或取消后回到原清单 *@
+                        @if (!G.CityBrowsing) { @DiscardEnd(dt) }
                     </div>
+                    @if (!G.CityBrowsing) { <DiscardPanel Target="@dt" Host="@DiscardHost.Party" HideButton="true" /> }
                 }
             </div>
         }
@@ -100,6 +104,15 @@
 @code {
     /// <summary>BM4b：放在右栏人物页「成员」折叠组里（组头已写队伍人数）。</summary>
     [Parameter] public bool InFold { get; set; }
+
+    /// <summary>B53b：清单行末「丢弃」／「丢弃水」按钮（本行子区开着时不再画，子区在行下方）。</summary>
+    private RenderFragment DiscardEnd(DiscardTarget t) => __builder =>
+    {
+        if (!G.DiscardOpenFor(t, DiscardHost.Party))
+        {
+            <button type="button" class="eq-btn discard-row-btn" data-discard-row @onclick="() => G.OpenListDiscard(t, DiscardHost.Party)">@(t.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>
+        }
+    };
 
     /// <summary>B22 M408：回收箱卡“取出…”跳过来时滚到对应块并高亮一次。</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -181,6 +194,7 @@
                             var fe = r.Feed;
                             var anchor = $"feed-src-{r.InstanceId}";
                             var feedWhy = fe == null ? null : G.CityBrowsing ? GameSession.CityReadOnlyText : G.Running ? "行动进行中" : fe.Blocked;
+                            var dt = e.DiscardRowTarget(s, r.InstanceId);
                             <div class="party-item @(r.InPot ? "in-pot" : "")" id="@anchor">
                                 <span>@r.Text</span>
                                 @if (fe != null)
@@ -188,7 +202,10 @@
                                     <button type="button" class="eq-btn" data-feed-entry disabled="@(feedWhy != null)" title="@(feedWhy ?? fe.Title)" @onclick="() => G.OpenFeed(fe, anchor, id)">@fe.Title</button>
                                     @if (feedWhy != null) { <small class="warn-text">@feedWhy</small> }
                                 }
+                                @* B53b（§Q857 B）：同伴随身行末「丢弃」（锅里的水行为「丢弃水」，§Q859），子区画在本行下方 *@
+                                @if (!G.CityBrowsing) { @DiscardEnd(dt) }
                             </div>
+                            @if (!G.CityBrowsing) { <DiscardPanel Target="@dt" Host="@DiscardHost.Party" HideButton="true" /> }
                         }
                     </div>
                 }

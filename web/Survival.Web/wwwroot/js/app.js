@@ -236,9 +236,13 @@ window.survival = {
     }
     function shown(el) { return !!(el && (el.offsetWidth || el.offsetHeight)); }
     // B53a：右栏丢弃子区（.discard-sub）可见、不在 inert 里，且上面没有数量框／确认窗等模态层
+    // B53b：清单行末开的子区（.discard-sub.in-list，在安全屋面板、远征物资窗里）同样算——在远征物资窗（.overflow-layer）里开着时以它为准
     function discardSubOpen() {
-      if (Array.prototype.some.call(document.querySelectorAll('.modal-back, .overflow-layer'), shown)) return false;
-      return Array.prototype.some.call(document.querySelectorAll('[data-detail-rail] .discard-sub'), function (x) { return shown(x) && !(x.closest && x.closest('[inert]')); });
+      if (Array.prototype.some.call(document.querySelectorAll('.modal-back'), shown)) return false;
+      var subs = Array.prototype.filter.call(document.querySelectorAll('[data-detail-rail] .discard-sub, .discard-sub.in-list'), function (x) { return shown(x) && !(x.closest && x.closest('[inert]')); });
+      var ov = Array.prototype.filter.call(document.querySelectorAll('.overflow-layer'), shown);
+      if (ov.length) return subs.some(function (x) { return ov[ov.length - 1].contains(x); });
+      return subs.length > 0;
     }
     function focusVisible(el) { try { return !!el.matches(':focus-visible'); } catch (e) { return false; } }
     // 当前最上层的模态层（数量框、强制整理与确认窗、居中局部盘）；没有时为 null

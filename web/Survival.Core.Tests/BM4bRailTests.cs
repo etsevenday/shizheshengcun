@@ -112,7 +112,7 @@ public class BM4bRailTests : TestBase
         var item = Web("Components", "ItemDetail.razor");
         var firstFold = item.IndexOf("<RailFold", StringComparison.Ordinal);
         foreach (var main in new[] { "<RailHead Source=\"@e.RailSourceLine(s, inst)\">", "<span>即时效果</span>", "<span>合计重量</span>", "<span>耐久</span>", "<span>@RailText.Batch</span>",
-                                     "<div class=\"blocked\">@p.Reason</div>", "已腐败，不能食用或用于配方。", "该批次正被当前行动预留", "行动占用：这口锅正被当前行动使用", "<span>水量</span>", "<span>处理进度</span>" })
+                                     "<div class=\"blocked\">@p.Reason</div>", "GameEngine.ExpiredOriginalDetailText", "该批次正被当前行动预留", "行动占用：这口锅正被当前行动使用", "<span>水量</span>", "<span>处理进度</span>" })
         {
             var at = item.IndexOf(main, StringComparison.Ordinal);
             Assert.That(at, Is.GreaterThan(0).And.LessThan(firstFold), main);

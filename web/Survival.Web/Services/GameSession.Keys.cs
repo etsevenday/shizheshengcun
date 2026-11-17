@@ -109,6 +109,7 @@ public sealed partial class GameSession
         if (PendingDrop != null) return EscOwner.DropQty;
         if (StatusPinned != null) return EscOwner.Status;
         if (Discarding != null && ShelfSelectionKind) return EscOwner.Discard;   // B53a：右栏丢弃子区是最近打开的一层——先逐层退，再收选卡盘／清选中
+        if (Discarding is { ListHost: not null }) return EscOwner.Discard;   // B53b：清单行末开的子区同样先逐层退，再关所在窗口
         if (DiskMaskShown) return EscOwner.Disk;
         if (Pop != null) return EscOwner.Pop;
         if (Panel == "citymap" && CityPick != null) return EscOwner.CityPick;

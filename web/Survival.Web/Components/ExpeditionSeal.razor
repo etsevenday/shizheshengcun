@@ -34,11 +34,18 @@
                     var iid = r.InstanceId;
                     var whyCarry = e.UnsealBlocked(s, iid, false);
                     var whyGround = e.UnsealBlocked(s, iid, true);
+                    var dt = e.DiscardRowTarget(s, iid);
                     <div class="exp-row remains-row" data-sealed="@iid">
                         <span>@r.Text</span>
                         <button type="button" class="eq-btn @(whyCarry != null ? "btn-off" : "")" disabled="@(whyCarry != null)" title="@(whyCarry ?? "取到你的随身（五张卡与30公斤校验）")" @onclick="() => G.UnsealItem(iid, false)">取到随身</button>
                         <button type="button" class="eq-btn @(whyGround != null ? "btn-off" : "")" disabled="@(whyGround != null)" title="@(whyGround ?? "放到当前地面")" @onclick="() => G.UnsealItem(iid, true)">放地面</button>
+                        @* B53b（§Q857 B）：封存栏行末「丢弃」，子区画在本行下方，确认或取消后回到本窗清单 *@
+                        @if (!G.DiscardOpenFor(dt, DiscardHost.Sealed))
+                        {
+                            <button type="button" class="eq-btn discard-row-btn" data-discard-row @onclick="() => G.OpenListDiscard(dt, DiscardHost.Sealed)">@DiscardCopy.Discard</button>
+                        }
                     </div>
+                    <DiscardPanel Target="@dt" Host="@DiscardHost.Sealed" HideButton="true" />
                     @* B22 试玩修复 M408：不能取到随身的原因直接写在行下（不只在悬停里） *@
                     @if (whyCarry != null && whyGround == null)
                     {

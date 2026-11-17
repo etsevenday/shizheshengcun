@@ -721,7 +721,8 @@ public class B50aTests : TestBase
     public void Q715_Q669_Shell_LayerTag_PhysicalDetail_Origin_RejectText()
     {
         Assert.That(GameEngine.SpoiledLayerText(2, 3), Is.EqualTo("第2批×3"));
-        Assert.That(GameEngine.SpoiledMatterDetailText, Is.EqualTo("不可食用或用于配方，可放下丢弃。"));
+        // B53b：S06／S12／逐字稿文首 2026-11-17 §Q867 B 定稿（合同 b53-discard-copy-q862-q868.json copy.spoiled），取代逐字稿 Q715 原句「不可食用或用于配方，可放下丢弃。」
+        Assert.That(GameEngine.SpoiledMatterDetailText, Is.EqualTo("不可食用或用于配方。可放下或永久丢弃。"));
         var s = New();
         var r = Rotten(s, "camp", 3, 250, 10, new Dictionary<string, int> { ["raw_meat"] = 1 });
         Assert.That(E.SpoiledUnitText(new[] { r }, true), Is.EqualTo("每份0.25公斤 · 每堆最多10份"));

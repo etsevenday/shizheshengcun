@@ -856,6 +856,8 @@ public sealed partial class GameSession
         if (!InChainAfter("formation")) { FormationDraft = null; FormationPick = null; FormationLeader = null; }
         if (!InChainAfter("growth")) ClosePracticeDraft();   // B41e2：离开成长页就丢弃练习盘草稿
         if (!KeepState("gear")) GivePending = null;
+        // B53b：从安全屋柜子／远征物资窗行末开的丢弃子区随该窗离开即收起（不删除，重开窗不恢复旧草稿）
+        if (_discard?.ListHost is DiscardHost.Cabinet or DiscardHost.Sealed && next != from) _discard = null;
         FeedPending = null;
         HelpFromFeed = false;
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
@@ -3653,6 +3655,7 @@ public sealed partial class GameSession
     {
         PartyItemsOpen = PartyItemsOpen == actorId ? null : actorId;
         if (FeedPending?.PartyActor != null) FeedPending = null;
+        if (_discard?.ListHost == DiscardHost.Party) _discard = null;   // B53b：展开／收起／换人时人物页清单里开着的丢弃子区随之收起（不删除）
         Notify();
     }
 

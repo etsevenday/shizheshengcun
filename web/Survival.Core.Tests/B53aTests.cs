@@ -496,12 +496,13 @@ public class B53aTests : TestBase
         E.DiscardViewOf(s, t);
         var p = E.DiscardPreview(s, t, 4, false, out _)!;
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "预览与子区只读");
-        Assert.That(p.Lines, Is.EqualTo(new[] { "永久丢弃：野果（保质到第2日 08:00）×3、野果（保质到第3日 08:00）×1。", "丢弃后无法找回。" }));
+        // B53b：§Q864 A 定稿「{物名}×{数量}（保质至{截止}）」，取代 B53a 暂用「{物名}（保质到…）×{数量}」
+        Assert.That(p.Lines, Is.EqualTo(new[] { "永久丢弃：野果×3（保质至第2日 08:00）、野果×1（保质至第3日 08:00）。", "丢弃后无法找回。" }));
         var minute = s.GameMinute;
         Assert.That(E.Discard(s, new DiscardRequest { Target = t, Count = 4, Stamp = p.Stamp }).Ok, Is.True);
         Assert.That(s.GameMinute, Is.EqualTo(minute), "0 世界分钟");
         Assert.That(s.Main, Is.Null, "不开行动");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：野果（保质到第2日 08:00）×3、野果（保质到第3日 08:00）×1。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：野果×3（保质至第2日 08:00）、野果×1（保质至第3日 08:00）。"));
         Assert.That(s.Items.Any(i => i.ItemId == "berry" && i.Owner != s.Ground), Is.False, "不进随身／别处");
     }
 
@@ -561,13 +562,14 @@ public class B53aTests : TestBase
         var potGrams = E.ItemGrams(s, pot);
         var t = DiscardTarget.Instance(pot.InstanceId);
         var p = E.DiscardPreview(s, t, 1, false, out _)!;
-        Assert.That(p.Lines, Is.EqualTo(new[] { "永久丢弃：金属锅×1。", "包含：净水500毫升、生肉×1。", "丢弃后无法找回。" }));
+        // B53b：包含行内容按 §Q865 B「不同物名／品质／真实期限…依Q864仍区分」用 §Q864 写法，生肉带「（保质至…）」（开局第1日 08:00＋保质 720 分钟）
+        Assert.That(p.Lines, Is.EqualTo(new[] { "永久丢弃：金属锅×1。", "包含：净水500毫升、生肉×1（保质至第1日 20:00）。", "丢弃后无法找回。" }));
         var ground = s.Items.Count(i => i.Owner == s.Ground);
         Assert.That(E.Discard(s, new DiscardRequest { Target = t, Count = 1, Stamp = p.Stamp }).Ok, Is.True);
         Assert.That(s.Items.Any(i => i.InstanceId == pot.InstanceId || i.Owner == ItemInstance.ContainerOwner(pot.InstanceId)), Is.False, "父与内容都没了，无孤儿子物");
         Assert.That(E.CarriedGrams(s), Is.EqualTo(grams - potGrams), "只扣一次（锅含内容的重量）");
         Assert.That(s.Items.Count(i => i.Owner == s.Ground), Is.EqualTo(ground), "不落地");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：金属锅×1。同时丢弃：净水500毫升、生肉×1。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：金属锅×1。同时丢弃：净水500毫升、生肉×1（保质至第1日 20:00）。"));
     }
 
     /// <summary>PD-A04 对照：空锅不造「包含」行。</summary>
@@ -589,7 +591,8 @@ public class B53aTests : TestBase
         Assert.That(Confirm(s, DiscardTarget.Group(ItemInstance.Carried, Rot, null), 1, false).Ok, Is.True);
         Assert.That(rot.Count, Is.EqualTo(2));
         Assert.That(rot.SpoiledOrigins, Is.EqualTo(new Dictionary<string, int> { ["berry"] = 2 }));
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：腐败物×1。"));
+        // B53b：§Q864 A 腐败物「腐败物×{数量} · {单重}公斤/份」（Q852 短单位；原物野果单重 200 克），取代 B53a 暂用「腐败物×{n}」
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：腐败物×1 · 0.20公斤/份。"));
     }
 
     /// <summary>B53-Q859-01：锅内一份食材单删；锅、水、另一份食材不动，锅内不折叠。</summary>
@@ -605,7 +608,7 @@ public class B53aTests : TestBase
         Assert.That(Confirm(s, DiscardTarget.Instance(m1.InstanceId), 1, false).Ok, Is.True);
         Assert.That(s.Items.Where(i => i.Owner == inside).Select(i => i.InstanceId), Is.EquivalentTo(new[] { water.InstanceId, m2.InstanceId }));
         Assert.That(s.Items.Contains(pot), Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：生肉（保质到第1日 20:00）×1。"), "暂用逐项写法（Q864 待答）：生肉保质 720 分钟，开局第1日 08:00 起");
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：生肉×1（保质至第1日 20:00）。"), "§Q864 A 定稿写法（B53b 替换暂用）：生肉保质 720 分钟，开局第1日 08:00 起");
     }
 
     /// <summary>B53-Q859-01：锅在燃烧的火堆上水煮食材时，这份食材与整口锅都拒「加工中：先停止加工。」，不制造缺料。</summary>
@@ -814,7 +817,8 @@ public class B53aTests : TestBase
         var main = Web("Services", "GameSession.cs");
         Assert.That(main, Does.Contain("if (sel.Key != Selected.Key) DropDiscard();"));
         Assert.That(System.Text.RegularExpressions.Regex.Matches(main, @"DropDiscard\(\);").Count, Is.EqualTo(4), "换卡、程序清选中、ESC 清选中、读档");
-        Assert.That(sess, Does.Contain("_discard != null && _discard.SelectionKey == Selected.Key ? _discard : null"), "旧卡草稿不出现在新卡上");
+        // B53b：Discarding 另认清单发起的草稿（§Q857 B 行末入口，要求原窗口仍开着），右栏草稿仍须同一选中对象
+        Assert.That(sess, Does.Contain(": _discard.SelectionKey == Selected.Key ? _discard : null;"), "旧卡草稿不出现在新卡上");
         var p = Web("Components", "DiscardPanel.razor");
         Assert.That(System.Text.RegularExpressions.Regex.Matches(p, @"<EscCap On=""@escHere"" />").Count, Is.EqualTo(3), "每层承接 ESC 的那个按钮显示键帽");
     }
@@ -915,12 +919,15 @@ public class B53aTests : TestBase
         return c;
     }
 
-    /// <summary>子区正式句（逐字稿「2026-11-15 B50a」表 available；b53-discard-main-q857-q861.json water.text「可丢弃：{水量}毫升」「数量（每份{单位毫升}毫升）」）。</summary>
+    /// <summary>
+    /// 子区正式句（b53-discard-main-q857-q861.json water.text「数量（每份{单位毫升}毫升）」）。B53b：原「可丢弃：{n}」「可丢弃：{水量}毫升」两句
+    /// 按 S06／S14／逐字稿文首 2026-11-17 §Q863 A「此行取代重复的单独『可丢弃：…』行」换成总数行（合同 b53-discard-copy-q862-q868.json ui.totals）。
+    /// </summary>
     [Test]
     public void MT_SubPanelCopy_Literal()
     {
-        Assert.That(DiscardCopy.Available(7), Is.EqualTo("可丢弃：7"));
-        Assert.That(DiscardCopy.WaterAvailable(250), Is.EqualTo("可丢弃：250毫升"));
+        Assert.That(DiscardCopy.Totals(3, 3), Is.EqualTo("总数3，可丢弃3"));   // §Q863 例句
+        Assert.That(DiscardCopy.WaterTotals(250, 250), Is.EqualTo("总数250毫升，可丢弃250毫升"));   // §Q863「液体沿真实毫升」
         Assert.That(DiscardCopy.WaterQuantity(500), Is.EqualTo("数量（每份500毫升）"));
     }
 
@@ -1148,7 +1155,9 @@ public class B53aTests : TestBase
         Assert.That(E.DiscardViewOf(s, DiscardTarget.PotWater(wood.InstanceId, "clean_water")).Blocked, Is.EqualTo(Changed));
     }
 
-    /// <summary>{物品清单}暂用写法（开发记录 B53a.5，Q864 待答）：装备加品质「（{品质}）」；同写法的多堆合并份数。</summary>
+    /// <summary>
+    /// {物品清单}：独立件逐件「{物名}×1」接非白品质与状态摘要（§Q864 A／Q762 A；B53b 起括注内「 · 」相接为暂用排法，见开发记录 B53b 暂用文案）；同批多堆合并份数。
+    /// </summary>
     [Test]
     public void MT_ListLabel_EquipmentQuality_MergedHeaps()
     {
@@ -1156,7 +1165,10 @@ public class B53aTests : TestBase
         s.Items.RemoveAll(i => i.ItemId == "wooden_spear" || i.ItemId == "wood");
         var spear = Give(s, "wooden_spear", ItemInstance.Carried);
         spear.Quality = "green";
-        Assert.That(E.DiscardPreview(s, DiscardTarget.Instance(spear.InstanceId), 1, false, out _)!.Lines[0], Is.EqualTo("永久丢弃：木矛（绿）×1。"));
+        spear.Durability = 12.5;
+        spear.MaxDurability = 30;
+        // B53b：原 B53a 暂用「木矛（绿）×1」按 §Q864 A「独立件逐件写『{物名}×1』，接已经定稿的品质与现有状态摘要」改
+        Assert.That(E.DiscardPreview(s, DiscardTarget.Instance(spear.InstanceId), 1, false, out _)!.Lines[0], Is.EqualTo("永久丢弃：木矛×1（绿 · 耐久12.50/30.00）。"));
         var wood = Give(s, "wood", s.Ground, 9);
         E.SplitOff(s, wood, 2);   // 起点：同组两堆 7＋2
         var p = E.DiscardPreview(s, DiscardTarget.Group(s.Ground, "wood", null), 0, true, out _)!;
@@ -1194,7 +1206,8 @@ public class B53aTests : TestBase
         Assert.That(E.PotLiquids(s, pot.InstanceId).Count, Is.EqualTo(2), "前提：两堆不合堆");
         Give(s, "raw_meat", inside);
         Give(s, "raw_meat", inside);
-        Assert.That(E.DiscardPreview(s, DiscardTarget.Instance(pot.InstanceId), 1, false, out _)!.Lines[1], Is.EqualTo("包含：净水1000毫升、生肉×2。"));
+        // B53b：§Q865 B 内容按 §Q864 写法、同摘要（同保质截止）合并真实数量
+        Assert.That(E.DiscardPreview(s, DiscardTarget.Instance(pot.InstanceId), 1, false, out _)!.Lines[1], Is.EqualTo("包含：净水1000毫升、生肉×2（保质至第1日 20:00）。"));
         var t = DiscardTarget.PotWater(pot.InstanceId, "clean_water");
         var v = E.DiscardViewOf(s, t);
         Assert.That((v.Total, v.Available, v.MaxUnits), Is.EqualTo((1000, 1000, 2)));
@@ -1337,8 +1350,10 @@ public class B53aTests : TestBase
         var js = Web("wwwroot", "js", "app.js");
         Assert.That(js, Does.Contain("function discardSubOpen() {"));
         var fn = Section(js, "function discardSubOpen() {", "function focusVisible(el)");
-        Assert.That(fn, Does.Contain("document.querySelectorAll('.modal-back, .overflow-layer'), shown)) return false;"), "数量框、确认窗在它之上时照原规则");
-        Assert.That(fn, Does.Contain("document.querySelectorAll('[data-detail-rail] .discard-sub')"));
+        Assert.That(fn, Does.Contain("document.querySelectorAll('.modal-back'), shown)) return false;"), "数量框在它之上时照原规则");
+        // B53b（§Q857 B 清单行末子区可在远征物资窗 .overflow-layer 里）：有 .overflow-layer 时只认该层里的子区，右栏子区不再吞键（与原「overflow-layer 在上即照原规则」同效）
+        Assert.That(fn, Does.Contain("document.querySelectorAll('[data-detail-rail] .discard-sub, .discard-sub.in-list')"));
+        Assert.That(fn, Does.Contain("if (ov.length) return subs.some(function (x) { return ov[ov.length - 1].contains(x); });"));
         const string guard = "if ((k === 'Enter' || (k === ' ' && !editable(tgt))) && !mod && !control(fae) && discardSubOpen()) { ev.preventDefault(); eatSpace(ev); return; }";
         Assert.That(System.Text.RegularExpressions.Regex.Matches(js, System.Text.RegularExpressions.Regex.Escape(guard)).Count, Is.EqualTo(1));
         var iGuard = js.IndexOf(guard, StringComparison.Ordinal);
@@ -1351,16 +1366,19 @@ public class B53aTests : TestBase
         Assert.That(Web("Components", "DiscardPanel.razor"), Does.Not.Contain("data-enter"));
     }
 
-    /// <summary>试玩 4（合同 water.text empty）：空容器子区只写「无可丢弃的水。」，不再同时写「可丢弃：0毫升」；有水时照写可丢弃毫升。</summary>
+    /// <summary>
+    /// 试玩 4（合同 water.text empty）：空容器写「无可丢弃的水。」。B53b：按 §Q863 A「子区始终显示…无可删量仍0并显示原真实原因」，
+    /// 总数行（「总数0毫升，可丢弃0毫升」）不再因空容器隐藏，原因行写在其下；原「可丢弃：0毫升」单行已由总数行取代。
+    /// </summary>
     [Test]
     public void Fix4_EmptyWater_OnlyNoWaterLine()
     {
         var menu = Section(Web("Components", "DiscardPanel.razor"), "case DiscardStage.Menu:", "case DiscardStage.Quantity:");
-        var iCond = menu.IndexOf("@if (!(Target.IsWater && v.Blocked == DiscardCopy.NoWater))", StringComparison.Ordinal);
-        var iAvail = menu.IndexOf("<div class=\"discard-avail\">", StringComparison.Ordinal);
-        var iWhy = menu.IndexOf("@if ((open.Error ?? v.Blocked) is string why)", StringComparison.Ordinal);
-        Assert.That(new[] { iCond, iAvail, iWhy }, Is.All.GreaterThanOrEqualTo(0));
-        Assert.That(iCond < iAvail && iAvail < iWhy, Is.True);
+        Assert.That(menu, Does.Not.Contain("DiscardCopy.NoWater"), "B53b：总数行不再按空容器条件隐藏（§Q863）");
+        var iAvail = menu.IndexOf("<div class=\"discard-avail\">@totals</div>", StringComparison.Ordinal);
+        var iWhy = menu.IndexOf("@foreach (var why in DiscardRules.WhyLines(open.Error, v.Reasons))", StringComparison.Ordinal);
+        Assert.That(new[] { iAvail, iWhy }, Is.All.GreaterThanOrEqualTo(0));
+        Assert.That(iAvail < iWhy, Is.True);
         // 内核：空壶原因正是 NoWater（隐藏条件命中）；对照：有水时没有原因、可丢弃照写
         var s = New();
         var empty = Canteen(s, 0);

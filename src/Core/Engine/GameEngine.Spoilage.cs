@@ -253,8 +253,11 @@ namespace Survival.Core.Engine
         /// <summary>腐败物叠卡后层角标／悬停「第{序号}批×{数量}」（逐字稿 Q715，不再重复已腐败）。</summary>
         public static string SpoiledLayerText(int ordinal, int count) => $"第{ordinal}批×{count}";
 
-        /// <summary>当前物品详情里腐败物的拒绝句（逐字稿 Q715）。</summary>
-        public const string SpoiledMatterDetailText = "不可食用或用于配方，可放下丢弃。";
+        /// <summary>当前物品详情里腐败物的说明（逐字稿 Q715；B53b 按 S06／S12 文首 2026-11-17 §Q867 B 定稿，区分「放下」与「永久丢弃」）。</summary>
+        public const string SpoiledMatterDetailText = "不可食用或用于配方。可放下或永久丢弃。";
+
+        /// <summary>当前物品详情里尚未转换的过期原物的说明（B53b，S06／S12 文首 2026-11-17 §Q867 B 定稿；原写在 ItemDetail.razor）。</summary>
+        public const string ExpiredOriginalDetailText = "已腐败，不能食用或用于配方。仍有重量，可放下或永久丢弃。";
 
         /// <summary>这一批在同一列明细里是否要附上限：另有每份克重相同而继承上限不同的腐败物批（否则两行无法区分）。</summary>
         public bool NeedsStackCapNote(IEnumerable<ItemBatch> all, ItemBatch b)

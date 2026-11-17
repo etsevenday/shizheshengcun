@@ -470,13 +470,14 @@ namespace Survival.Core.Engine
             MoveDryingOut(s, items, toCarried ? ItemInstance.Carried : place);
             RememberRequest(s, requestId);
             // B50a（Q713）：缺料／未知停止位用正式清理句；位内已无物时只写该位已空，不造虚拟物品
-            // B53a（S11 §Q765）：缺料／未知停止位清理时位内确有腐败物，句末接一次「腐败物不可食用。」；腐败停止位原句已有「腐败的不能吃」括注，沿原句（Q868 待答）
-            var rotNote = plainStop && DryingHasRot(s, items) ? SpoiledNotEdibleText : "";
+            // B53a（S11 §Q765）：缺料／未知停止位清理时位内确有腐败物，句末接一次「腐败物不可食用。」
+            // B53b（S11／S12 文首 2026-11-17 §Q868 A①）：腐败停止位删旧重复括注「（腐败的不能吃，按腐败物处理）」，同样只在确有腐败物时接一次
+            var rotNote = spoiled && DryingHasRot(s, items) ? SpoiledNotEdibleText : "";
             Emit(s, GameEventKind.Info, plainStop
                 ? (items.Count == 0 ? $"清理{ZoneName(s, place)}晾制架工位{slot + 1}：该位已空。"
                                     : $"清理{ZoneName(s, place)}晾制架工位{slot + 1}：{what}取到{DestName(s, toCarried)}，该位已空。{rotNote}")
                 : spoiled
-                ? $"清理{ZoneName(s, place)}晾制架工位{slot + 1}：{what}取到{DestName(s, toCarried)}（腐败的不能吃，按腐败物处理），这一位空出。"
+                ? $"清理{ZoneName(s, place)}晾制架工位{slot + 1}：{what}取到{DestName(s, toCarried)}，这一位空出。{rotNote}"
                 : $"从{ZoneName(s, place)}晾制架工位{slot + 1}取出{what}到{DestName(s, toCarried)}，这一位空出。");
             UpdateFlags(s);
             return ActionResult.Success();

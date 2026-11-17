@@ -9,13 +9,16 @@ public enum DiscardStage { Menu, Quantity, Confirm }
 /// <summary>
 /// B53a（S14 2026-11-15 B50a、2026-11-17 B53）：右栏「丢弃」／「丢弃水」的会话草稿。只在会话内；换选中对象、清选中、读档即作废。
 /// 打开子区、选数量、看确认都不改游戏状态；只有最终「确认丢弃」带确认时的快照和请求号提交一次。
-/// 数量 → 确认这一段与目标无关，B53b 无右栏清单行末「丢弃」可直接用 <see cref="OpenDiscard"/> 复用。
+/// 数量 → 确认这一段与目标无关：B53b（S06／S14 文首 2026-11-17 §Q857 B）无右栏清单（同伴随身、柜子、遗物／认领箱、回收箱、封存栏）的行末「丢弃」
+/// 用 <see cref="GameSession.OpenListDiscard"/> 开同一份草稿，子区画在发起清单原窗口该行下方，确认或取消后回到原清单。
 /// </summary>
 public sealed class DiscardDraft
 {
     public DiscardTarget Target { get; init; } = null!;
     /// <summary>发起时的选中对象键（换卡即作废）。</summary>
     public string SelectionKey { get; init; } = "";
+    /// <summary>B53b：从无右栏清单的行末发起时为该清单（<see cref="DiscardHost"/>）；右栏发起为 null。</summary>
+    public string? ListHost { get; init; }
     public DiscardStage Stage { get; set; } = DiscardStage.Menu;
     /// <summary>数量路径的整数 N（输入框原文另存，便于提示非法）。</summary>
     public string QuantityText { get; set; } = "1";
@@ -33,17 +36,29 @@ public sealed partial class GameSession
 {
     private DiscardDraft? _discard;
 
-    /// <summary>仍属于当前选中对象的丢弃草稿（换卡后旧草稿不再出现）。</summary>
-    public DiscardDraft? Discarding => _discard != null && _discard.SelectionKey == Selected.Key ? _discard : null;
+    /// <summary>
+    /// 仍有效的丢弃草稿：右栏发起的要仍是同一选中对象（换卡后旧草稿不再出现）；清单发起的要该清单的原窗口仍开着（右栏人物页／安全屋面板／远征物资窗）。
+    /// </summary>
+    public DiscardDraft? Discarding => _discard == null ? null
+        : _discard.ListHost != null ? (DiscardRules.HostShown(_discard.ListHost, DetailTab == DetailTab.Character, Panel) ? _discard : null)
+        : _discard.SelectionKey == Selected.Key ? _discard : null;
 
-    /// <summary>这一目标的丢弃子区开着。</summary>
-    public bool DiscardOpenFor(DiscardTarget t) => Discarding is DiscardDraft d && d.Target.Key == t.Key;
+    /// <summary>这一目标的丢弃子区开着（清单行另按发起处区分，同一件不在两处同时展开）。</summary>
+    public bool DiscardOpenFor(DiscardTarget t, string? host = null) => Discarding is DiscardDraft d && d.Target.Key == t.Key && d.ListHost == host;
 
     /// <summary>点「丢弃」／「丢弃水」：只开子区，不删除。</summary>
     public void OpenDiscard(DiscardTarget t)
     {
         if (State == null) return;
         _discard = new DiscardDraft { Target = t, SelectionKey = Selected.Key };
+        Notify();
+    }
+
+    /// <summary>B53b：清单行末「丢弃」：在原窗口该行下方开同一套子区，不删除；同时只开一处。</summary>
+    public void OpenListDiscard(DiscardTarget t, string host)
+    {
+        if (State == null) return;
+        _discard = new DiscardDraft { Target = t, SelectionKey = Selected.Key, ListHost = host };
         Notify();
     }
 

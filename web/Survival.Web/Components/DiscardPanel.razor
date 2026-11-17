@@ -4,9 +4,11 @@
     B53a（S14 2026-11-15 B50a、2026-11-17 B53；逐字稿 B50a 表与 B53 水句）：右栏「丢弃」／「丢弃水」子区。
     入口按钮 → 子区主层（可丢弃数、「选择数量」「全部丢弃」「取消」）→ 数量层（整数、默认 1、「下一步」「返回」）→ 最终「确认丢弃」层（真实清单、「确认丢弃」「返回」）。
     只有最后「确认丢弃」删除；不挂局部回车确认标记、不自动聚焦，无焦点的空格／Enter 不会删除；ESC 每次退一层（GameSession.EscOwner.Discard）。
+    B53b（S06／S14／逐字稿文首 2026-11-17 §Q857 B、§Q862—Q866）：无右栏清单行末「丢弃」复用本组件（Host＝发起清单，入口按钮画在行末、子区画在该行下方）；
+    子区顶部标题「丢弃 · {物名}」（水仍「丢弃水」）；「总数{总数}，可丢弃{可丢弃数}」一直显示（水按毫升），取代原「可丢弃：…」单行；命中的拒绝原因逐条列出。
 *@
 @{
-    var open = G.DiscardOpenFor(Target) ? G.Discarding : null;
+    var open = G.DiscardOpenFor(Target, Host) ? G.Discarding : null;
     var escHere = G.EscOwner == EscOwner.Discard;
 }
 
@@ -15,27 +17,23 @@
     @if (!HideButton)
     {
         <div class="discard-entry">
-            <button type="button" class="discard-btn" @onclick="() => G.OpenDiscard(Target)">@(Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>
+            <button type="button" class="discard-btn" @onclick="Open">@(Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>
         </div>
     }
 }
 else
 {
     var v = G.DiscardViewOf(Target);
-    <section class="discard-sub" role="group" aria-label="@(Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)">
-        @if (Target.IsWater)
-        {
-            <h4 class="discard-title">@DiscardCopy.DiscardWater</h4>
-        }
+    var title = Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Title(v.Name);
+    var totals = Target.IsWater ? DiscardCopy.WaterTotals(v.Total, v.Available) : DiscardCopy.Totals(v.Total, v.Available);
+    <section class="discard-sub @(Host != null ? "in-list" : "")" role="group" aria-label="@title" data-discard-host="@Host">
+        <h4 class="discard-title">@title</h4>
         @switch (open.Stage)
         {
             case DiscardStage.Menu:
-                @* B53a 试玩修复：空容器只写合同 water.text empty「无可丢弃的水。」，不再同时写「可丢弃：0毫升」 *@
-                @if (!(Target.IsWater && v.Blocked == DiscardCopy.NoWater))
-                {
-                    <div class="discard-avail">@(Target.IsWater ? DiscardCopy.WaterAvailable(v.Available) : DiscardCopy.Available(v.Available))</div>
-                }
-                @if ((open.Error ?? v.Blocked) is string why)
+                @* B53b（§Q863 A）：总数行一直显示（相等、为 0 也显示），取代 B53a 的「可丢弃：…」单行；无可删量时其下逐条写真实原因（§Q866 B） *@
+                <div class="discard-avail">@totals</div>
+                @foreach (var why in DiscardRules.WhyLines(open.Error, v.Reasons))
                 {
                     <div class="blocked">@why</div>
                 }
@@ -48,7 +46,7 @@ else
                 </div>
                 break;
             case DiscardStage.Quantity:
-                <div class="discard-avail">@(Target.IsWater ? DiscardCopy.WaterAvailable(v.Available) : DiscardCopy.Available(v.Available))</div>
+                <div class="discard-avail">@totals</div>
                 <div class="discard-qlabel">@(Target.IsWater ? DiscardCopy.WaterQuantity(v.UnitMl) : DiscardCopy.Quantity)</div>
                 <div class="tbar-row discard-qty">
                     <button type="button" class="tbar-step" aria-label="减少" @onclick="() => G.DiscardStep(-1)">−</button>
@@ -82,8 +80,17 @@ else
 @code {
     /// <summary>本次丢弃的真实目标（同组／单件／锅水／壶水）。</summary>
     [Parameter, EditorRequired] public DiscardTarget Target { get; set; } = null!;
-    /// <summary>入口按钮已画在别处（水壶「水量」行末）时只画子区。</summary>
+    /// <summary>入口按钮已画在别处（水壶「水量」行末、清单行末）时只画子区。</summary>
     [Parameter] public bool HideButton { get; set; }
+    /// <summary>B53b：从无右栏清单发起时为该清单（<see cref="DiscardHost"/>）；右栏为 null。</summary>
+    [Parameter] public string? Host { get; set; }
+
+    private void Open()
+    {
+        if (Host != null) G.OpenListDiscard(Target, Host);
+        else G.OpenDiscard(Target);
+    }
 
     private void Confirm() => G.ConfirmDiscard();
+
 }

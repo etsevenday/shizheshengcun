@@ -1449,6 +1449,22 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .card.item .loot-badge.apr-badge { background: #5a6470; }   /* B22d M418：已鉴定白色活性物质卡角标 */
 .card.item .loot-badge { position: absolute; left: 3px; top: 3px; min-width: 18px; height: 18px; padding: 0 3px; border-radius: 9px; background: #4f7a3a; color: #f3ecd2; font-size: var(--fs-aux); line-height: 18px; text-align: center; font-weight: 700; box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); pointer-events: auto; }
 .remains-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: var(--fs-aux); }
+/* B53b（S14 文首 2026-11-17 §Q857 B）：无右栏清单（同伴随身、遗物／认领箱、回收箱在右栏人物页；柜子在安全屋面板；封存栏在远征物资窗）
+   行末「丢弃」与行下展开的同一套子区。行末按钮沿各清单原按钮尺寸、暗红底；子区占满整行宽，按钮换行不横向溢出 */
+.discard-row-btn { color: #f3e3d6; background: #5e3528; border: 1px solid #a8735d; border-radius: 4px; }
+.discard-row-btn:hover { background: #6e3f30; border-color: #d9a07f; }
+.linkish.discard-row-btn { padding: 0 6px; text-decoration: none; }
+.discard-sub.in-list { display: flex; flex-direction: column; gap: 6px; margin: 2px 0 6px; padding: 8px; border: 1px solid #a8735d; border-radius: 4px; background: #1d2421; font-size: var(--fs-aux); }
+.discard-sub.in-list .discard-title { margin: 0; font-size: var(--fs-body); font-weight: 600; }
+.discard-sub.in-list .discard-line { margin: 0; line-height: 1.6; overflow-wrap: anywhere; }
+.discard-sub.in-list .discard-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.discard-sub.in-list .discard-row > button { flex: 1 1 7em; min-height: 34px; padding: 4px 8px; border-radius: 4px; }
+.discard-sub.in-list .discard-opt { color: var(--text); background: #26342b; border: 1px solid var(--line); }
+.discard-sub.in-list .discard-opt.danger { color: #f3e3d6; background: #5e3528; border-color: #a8735d; }
+.discard-sub.in-list .discard-opt:disabled { color: #7d8578; background: transparent; border-color: var(--line); }
+.discard-sub.in-list .discard-back { color: var(--text); background: transparent; border: 1px solid var(--line); }
+.discard-sub.in-list .discard-qty { display: flex; align-items: center; gap: 6px; }
+.discard-sub.in-list .discard-qty input { flex: 1 1 auto; min-width: 0; }
 
 /* B8a（Q86）顶栏“编队”面板：四格号位 + 同行角色 + 保存/取消；1280×720 起四格一行，按钮不被挤出 */
 .nav button.off { opacity: .55; cursor: not-allowed; }

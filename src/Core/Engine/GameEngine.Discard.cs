@@ -7,7 +7,8 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// 永久丢弃的正式文字（逐字稿文首「2026-11-15 B50a Q763—Q768与永久丢弃」表与「2026-11-17 B53主要原批Q857—Q861」§Q859 水句；
-    /// 合同 assets/20261117/b53-discard-main-q857-q861.json water.text）。{物品清单}／{内容清单}每项写法 Q864 待答，见 <see cref="GameEngine.DiscardItemLabel"/>（暂用）。
+    /// 合同 assets/20261117/b53-discard-main-q857-q861.json water.text）。B53b：子区标题与总数行按「2026-11-17 B53次要原批Q862—Q868」§Q862／Q863
+    /// （合同 b53-discard-copy-q862-q868.json ui），取代原「可丢弃：…」单行；{物品清单}／{内容清单}每项写法见 <see cref="GameEngine.DiscardItemLabel"/>（§Q864／Q865）。
     /// </summary>
     public static class DiscardCopy
     {
@@ -30,13 +31,17 @@ namespace Survival.Core.Engine
         public const string NoPermission = "当前无法丢弃该物品。";
         public const string NoWater = "无可丢弃的水。";
 
-        public static string Available(int n) => $"可丢弃：{n}";
+        /// <summary>§Q862 A：物品子区标题「丢弃 · {物名}」（水子区仍是 <see cref="DiscardWater"/>，不叠两个标题）。</summary>
+        public static string Title(string name) => $"丢弃 · {name}";
+        /// <summary>§Q863 A：子区一直显示「总数{总数}，可丢弃{可丢弃数}」，相等也显示。</summary>
+        public static string Totals(int total, int available) => $"总数{total}，可丢弃{available}";
+        /// <summary>§Q863 A：水按真实毫升「总数{总毫升}毫升，可丢弃{可丢弃毫升}毫升」。</summary>
+        public static string WaterTotals(int totalMl, int availableMl) => $"总数{totalMl}毫升，可丢弃{availableMl}毫升";
         public static string InvalidQuantity(int max) => $"请输入1至{max}的整数。";
         public static string ConfirmItems(string list) => $"永久丢弃：{list}。";
         public static string Contents(string list) => $"包含：{list}。";
         public static string Result(string list) => $"已永久丢弃：{list}。";
         public static string ResultContents(string list) => $"同时丢弃：{list}。";
-        public static string WaterAvailable(int ml) => $"可丢弃：{ml}毫升";
         public static string WaterQuantity(int unitMl) => $"数量（每份{unitMl}毫升）";
         public static string WaterConfirm(string water, int ml) => $"永久丢弃：{water}{ml}毫升。";
         public static string WaterResult(string water, int ml) => $"已永久丢弃：{water}{ml}毫升。";
@@ -84,8 +89,14 @@ namespace Survival.Core.Engine
         public int UnitMl { get; set; }
         /// <summary>「选择数量」的上限 N：物品＝可丢弃份数；水＝floor(可丢弃毫升／每份)，为 0 时数量路径禁用。</summary>
         public int MaxUnits { get; set; }
-        /// <summary>无可丢弃时的最优先真实原因（有可丢弃时为 null）。</summary>
+        /// <summary>无可丢弃时的第一条真实原因（有可丢弃时为 null）；等于 <see cref="Reasons"/> 的第一条。</summary>
         public string? Blocked { get; set; }
+        /// <summary>
+        /// 无可丢弃时命中的全部真实原因（§Q866 B）：输入锁→加工→预留／行动占用→穿戴→部署→无处置权，相同句去重；有可丢弃时为空（合法子集照常可删，不列被过滤份的原因）。
+        /// </summary>
+        public List<string> Reasons { get; set; } = new List<string>();
+        /// <summary>物品子区标题里的 {物名}（当前真实显示名）；水子区不用。</summary>
+        public string Name { get; set; } = "";
         /// <summary>水种名（水）。</summary>
         public string WaterName { get; set; } = "";
     }
@@ -136,13 +147,26 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 本批可处置的来源（B53a）：主角随身、当前区地面、当前区火堆加工位、根在随身或当前地面的锅里。同伴随身／柜子／遗物认领／回收／封存（无右栏清单）归 B53b，在这里扩。
+        /// 可处置的来源：主角随身、当前区地面、当前区火堆加工位、根在这些地方的锅里（B53a）；
+        /// B53b（S06／S14 文首 2026-11-17 §Q857 B「原可管理同伴随身、柜内、遗物／认领箱、回收箱、封存栏」，只对真实有权同地点区域物、不扩权）：
+        /// 同行（在场、编入同行的）同伴随身；人在该屋屋内时这间安全屋的柜子；当前地点（屋内遗物只在屋内）的遗物、认领箱、远征回收箱、旧实例遗物认领箱；
+        /// 人在本次远征地牢里时该实例的封存战利品——与各清单原有取出资格同一口径（ActiveCompanions、CabinetBlocked、TakeFromRemainsBlocked、UnsealBlocked）。
         /// </summary>
         public bool DiscardOwnerAllowed(GameState s, ItemInstance i)
         {
             if (i.InContainer) return ContainerOf(s, i) is ItemInstance pot && DiscardOwnerAllowed(s, pot);
             if (ItemInstance.TryFacilityId(i.Owner, out var fid)) return FacilityLocation(fid) == s.Ground;
-            return i.Owner == ItemInstance.Carried || i.Owner == s.Ground;
+            if (i.Owner == ItemInstance.Carried || i.Owner == s.Ground) return true;
+            if (ActiveCompanions(s).Any(r => ItemInstance.CarriedOwner(r.ActorId) == i.Owner)) return true;
+            // 穿在主角或同行同伴身上的：有处置权，真实挡住的是「先卸下再丢弃。」，不另报无权限（§Q866 B 只列真实原因）
+            if (ItemInstance.TryEquip(i.Owner, out var wearer, out _)) return wearer == GameState.PlayerId || ActiveCompanions(s).Any(r => r.ActorId == wearer);
+            if (i.InSafehouseStorage) return s.CurrentZone == SafehouseZone && CabinetOwnerOf(s, s.CurrentLocation) == i.Owner;
+            if (i.InRemains)
+                return s.Remains.TryGetValue(i.Owner.Substring(ItemInstance.RemainsPrefix.Length), out var rem)
+                       && rem.LocationId == s.CurrentLocation && (rem.Zone == null || rem.Zone == s.CurrentZone);
+            if (i.Owner.StartsWith(SealedPrefix))
+                return DungeonAt(s.CurrentLocation) is string d && ExpeditionEnabled(d) && i.Owner == SealedOwner(InstanceId(s, d));
+            return false;
         }
 
         /// <summary>这一件是否被加工绑定：火堆／锅加工记录未完成、锅食谱辅料、晾制位里未完成的原料、工坊批次输入；锅连内部任一子物。</summary>
@@ -159,18 +183,33 @@ namespace Survival.Core.Engine
         private bool DiscardOccupied(GameState s, ItemInstance i) =>
             i.ReservedBy != null || IsLocked(s, i) || (IsPot(i) && PotContents(s, i.InstanceId).Any(c => c.ReservedBy != null || IsLocked(s, c)));
 
+        /// <summary>这一件为什么不能永久丢弃的第一条原因（可以为 null）；全部原因见 <see cref="DiscardItemBlocks"/>。</summary>
+        public string? DiscardItemBlock(GameState s, ItemInstance i) => DiscardItemBlocks(s, i).FirstOrDefault();
+
         /// <summary>
-        /// 这一件为什么不能永久丢弃（可以为 null）。多条同时命中时只出一句，暂按 加工＞预留占用＞穿戴＞部署＞无权限（Q866 待答，开发方暂用其选项 A 的顺序）；
-        /// 输入锁另在整体先判。首战教学样本不因教学身份拒绝（§Q860 选 A）；借用物等无处置权用「当前无法丢弃该物品。」。
+        /// 这一件命中的全部拒绝原因（§Q866 B：逐条显示，按 加工→预留／行动占用→穿戴→部署→无处置权 的既定分类顺序；输入锁另在整体先判）。
+        /// 首战教学样本不因教学身份拒绝（§Q860 选 A）；借用物等无处置权用「当前无法丢弃该物品。」。
         /// </summary>
-        public string? DiscardItemBlock(GameState s, ItemInstance i)
+        public List<string> DiscardItemBlocks(GameState s, ItemInstance i)
         {
-            if (DiscardProcessing(s, i)) return DiscardCopy.Processing;
-            if (DiscardOccupied(s, i)) return DiscardCopy.Busy;
-            if (i.IsWorn) return DiscardCopy.Worn;
-            if (IsDeployed(s, i)) return DiscardCopy.Deployed;
-            if (i.LoanSlot != null || !DiscardOwnerAllowed(s, i)) return DiscardCopy.NoPermission;
-            return null;
+            var list = new List<string>();
+            if (DiscardProcessing(s, i)) list.Add(DiscardCopy.Processing);
+            if (DiscardOccupied(s, i)) list.Add(DiscardCopy.Busy);
+            if (i.IsWorn) list.Add(DiscardCopy.Worn);
+            if (IsDeployed(s, i)) list.Add(DiscardCopy.Deployed);
+            if (i.LoanSlot != null || !DiscardOwnerAllowed(s, i)) list.Add(DiscardCopy.NoPermission);
+            return list;
+        }
+
+        /// <summary>
+        /// B53b（§Q857 B「只作用于点中的实际行」）：无右栏清单的一行就是一件真实实例（一堆或一件），丢弃目标按该件；
+        /// 同伴锅里的水行按 §Q859 的「丢弃水」（该锅＋该水种，按毫升）。
+        /// </summary>
+        public DiscardTarget DiscardRowTarget(GameState s, int instanceId)
+        {
+            var i = FindItem(s, instanceId);
+            if (i != null && i.InContainer && IsLiquid(i) && ContainerOf(s, i) is ItemInstance pot && IsPot(pot)) return DiscardTarget.PotWater(pot.InstanceId, i.ItemId);
+            return DiscardTarget.Instance(instanceId);
         }
 
         /// <summary>手选批的批次身份：真实批次键去掉预留段（同一批里预留的份与未预留的份是同一批，§Q858 例「该批预留1只可删2」）。</summary>
@@ -203,19 +242,26 @@ namespace Survival.Core.Engine
 
         // ───────────── 子区数据 ─────────────
 
-        /// <summary>丢弃子区：可丢弃数（水为毫升）、总数、每份毫升、数量上限与无可丢弃时的原因。</summary>
+        /// <summary>
+        /// 丢弃子区：标题物名、本次范围总数与可丢弃数（§Q863：两数同一范围，水为毫升）、每份毫升、数量上限与无可丢弃时的全部原因（§Q866 B）。
+        /// </summary>
         public DiscardView DiscardViewOf(GameState s, DiscardTarget t)
         {
             if (t.IsWater) return WaterDiscardView(s, t);
             var v = new DiscardView();
             var scope = DiscardScope(s, t);
             v.Total = scope.Sum(i => i.Count);
-            if (DiscardInputLock(s) is string lockWhy) { v.Blocked = lockWhy; return v; }
-            if (scope.Count == 0) { v.Blocked = DiscardCopy.Changed; return v; }
-            v.Available = DiscardLegal(s, scope).Sum(i => i.Count);
+            v.Name = scope.Count > 0 ? InstanceName(scope[0]) : t.Kind == DiscardKind.Group && _items.ContainsKey(t.ItemId) ? ItemName(t.ItemId) : "";
+            var lockWhy = DiscardInputLock(s);
+            var legal = DiscardLegal(s, scope);
+            if (lockWhy != null) v.Reasons.Add(lockWhy);
+            else v.Available = legal.Sum(i => i.Count);
             v.MaxUnits = v.Available;
-            if (v.Available == 0)
-                v.Blocked = scope.Select(i => DiscardItemBlock(s, i)).Where(x => x != null).OrderBy(BlockRank).FirstOrDefault() ?? DiscardCopy.Changed;
+            // 只在本次范围里没有合法份时列原因：输入锁在前，其后本范围各份命中的原因按分类顺序去重；合法子集可删时不列被过滤份的原因（§Q866 B「合法7预留2」）
+            if (scope.Count > 0 && legal.Count == 0)
+                v.Reasons.AddRange(scope.SelectMany(i => DiscardItemBlocks(s, i)).Distinct().OrderBy(BlockRank));
+            if (v.Available == 0 && v.Reasons.Count == 0) v.Reasons.Add(DiscardCopy.Changed);
+            v.Blocked = v.Reasons.FirstOrDefault();
             return v;
         }
 
@@ -228,80 +274,126 @@ namespace Survival.Core.Engine
             _ => 4,
         };
 
-        /// <summary>水：容器、水种、每份、总毫升、可丢毫升与原因。</summary>
-        private (ItemInstance? container, string? liquid, int unit, int total, int free, string? why) WaterState(GameState s, DiscardTarget t)
+        /// <summary>
+        /// 水：容器、水种、每份、总毫升、可丢毫升与全部原因（§Q866 B：加工→占用→无处置权逐条；都没有时才是空容器「无可丢弃的水。」）。
+        /// </summary>
+        private (ItemInstance? container, string? liquid, int unit, int total, int free, List<string> whys) WaterState(GameState s, DiscardTarget t)
         {
+            var whys = new List<string>();
             var c = t.InstanceId is int id ? FindItem(s, id) : null;
-            if (c == null) return (null, null, 0, 0, 0, DiscardCopy.Changed);
+            if (c == null) { whys.Add(DiscardCopy.Changed); return (null, null, 0, 0, 0, whys); }
             if (t.Kind == DiscardKind.CanteenWater)
             {
                 var cfg = CanteenOf(c);
-                if (cfg == null) return (null, null, 0, 0, 0, DiscardCopy.Changed);
+                if (cfg == null) { whys.Add(DiscardCopy.Changed); return (null, null, 0, 0, 0, whys); }
                 var liquid = c.LiquidMl > 0 ? c.LiquidId : null;
                 var unit = liquid != null ? _items[liquid].UnitVolumeMl ?? cfg.TransferMl : cfg.TransferMl;
                 var total = liquid != null ? c.LiquidMl : 0;
-                string? why = DiscardProcessing(s, c) ? DiscardCopy.Processing
-                    : DiscardOccupied(s, c) ? DiscardCopy.Busy
-                    : c.LoanSlot != null || !DiscardOwnerAllowed(s, c) || c.IsWorn ? DiscardCopy.NoPermission
-                    : total <= 0 ? DiscardCopy.NoWater : null;
-                return (c, liquid, unit, total, why == null ? total : 0, why);
+                if (DiscardProcessing(s, c)) whys.Add(DiscardCopy.Processing);
+                if (DiscardOccupied(s, c)) whys.Add(DiscardCopy.Busy);
+                if (c.LoanSlot != null || !DiscardOwnerAllowed(s, c) || c.IsWorn) whys.Add(DiscardCopy.NoPermission);
+                if (whys.Count == 0 && total <= 0) whys.Add(DiscardCopy.NoWater);
+                return (c, liquid, unit, total, whys.Count == 0 ? total : 0, whys);
             }
-            if (!IsPot(c)) return (null, null, 0, 0, 0, DiscardCopy.Changed);
+            if (!IsPot(c)) { whys.Add(DiscardCopy.Changed); return (null, null, 0, 0, 0, whys); }
             var pc = PotConfig(c);
             var waters = PotLiquids(s, c.InstanceId).Where(w => w.ItemId == t.ItemId).ToList();
             var all = waters.Sum(w => w.Count) * pc.UnitMl;
             // 锅水只能作为加工输入被绑定：净化中的锅水（加工记录以锅为目标）整锅水都在加工；水煮食材预留的毫升不可丢
             var purifying = AllProcesses(s).Any(p => p.Status != ProcessStatus.Done && p.TargetInstanceId == c.InstanceId);
             var freeUnits = waters.Count == 0 ? 0 : Math.Min(waters.Sum(w => w.Count), PotFreeWaterUnits(s, c));
-            string? whyPot = purifying ? DiscardCopy.Processing
-                : IsLocked(s, c) || c.ReservedBy != null || waters.Any(w => w.ReservedBy != null || IsLocked(s, w)) ? DiscardCopy.Busy
-                : c.LoanSlot != null || !DiscardOwnerAllowed(s, c) ? DiscardCopy.NoPermission
-                : all <= 0 ? DiscardCopy.NoWater
-                : freeUnits <= 0 ? DiscardCopy.Processing : null;
-            return (c, waters.Count > 0 ? t.ItemId : null, pc.UnitMl, all, whyPot == null ? freeUnits * pc.UnitMl : 0, whyPot);
+            if (purifying || (all > 0 && freeUnits <= 0)) whys.Add(DiscardCopy.Processing);
+            if (IsLocked(s, c) || c.ReservedBy != null || waters.Any(w => w.ReservedBy != null || IsLocked(s, w))) whys.Add(DiscardCopy.Busy);
+            if (c.LoanSlot != null || !DiscardOwnerAllowed(s, c)) whys.Add(DiscardCopy.NoPermission);
+            if (whys.Count == 0 && all <= 0) whys.Add(DiscardCopy.NoWater);
+            return (c, waters.Count > 0 ? t.ItemId : null, pc.UnitMl, all, whys.Count == 0 ? freeUnits * pc.UnitMl : 0, whys);
         }
 
         private DiscardView WaterDiscardView(GameState s, DiscardTarget t)
         {
-            var (_, liquid, unit, total, free, why) = WaterState(s, t);
+            var (_, liquid, unit, total, free, whys) = WaterState(s, t);
             var v = new DiscardView { IsWater = true, UnitMl = unit, Total = total, WaterName = liquid != null ? ItemName(liquid) : "" };
-            if (DiscardInputLock(s) is string lockWhy) { v.Blocked = lockWhy; return v; }
-            v.Available = free;
-            v.MaxUnits = unit > 0 ? free / unit : 0;
-            v.Blocked = free > 0 ? null : why ?? DiscardCopy.NoWater;
+            if (DiscardInputLock(s) is string lockWhy) v.Reasons.Add(lockWhy);
+            else v.Available = free;
+            v.MaxUnits = unit > 0 ? v.Available / unit : 0;
+            if (free <= 0) v.Reasons.AddRange(whys);   // 本容器本身没有可丢的水时才列水的原因（whys 为空即有水可丢）
+            v.Reasons = v.Reasons.Distinct().ToList();
+            v.Blocked = v.Reasons.FirstOrDefault();
             return v;
         }
 
         // ───────────── 确认清单 ─────────────
 
         /// <summary>
-        /// 确认清单与成功日志里的一项（暂用写法，Q864 待答）：「{名}×{数}」，有保质截止加「（保质到{日期时刻}）」，装备加品质「（{品质}）」；同写法的多堆合并份数。
+        /// 确认清单与成功日志里的一项（§Q864 A，合同 b53-discard-copy-q862-q868.json items）：普通可分批物每批「{物名}×{数量}（保质至{截止}）」，无期限省括注；
+        /// 腐败物「腐败物×{数量} · {单重}公斤/份」（Q852 短单位）；工具／装备／锅／水壶等独立件逐件「{物名}×1」，接非白品质与现有状态摘要（暂用写法，见开发记录 B53b 暂用文案）。
+        /// 返回该项的写法（{n} 处填本次真实数量）与是否逐件：同写法的可分批物合并真实数量，逐件不合并。
         /// </summary>
-        public string DiscardItemLabel(GameState s, ItemInstance i)
+        private (string pattern, bool piece) DiscardEntryKey(ItemInstance i)
         {
             var name = InstanceName(i);
-            if (_items.TryGetValue(i.ItemId, out var cfg) && cfg.IsEquipment) name += $"（{QualityName(i)}）";
-            if (i.ExpiresAt is int x && !IsSpoiledMatter(i)) name += $"（保质到{Clock.DayTime(x)}）";
-            return name;
+            if (IsSpoiledMatter(i)) return ($"{name}×{{n}} · {Fmt.KgValue(UnitGrams(i))}公斤/份", false);
+            if (_items.TryGetValue(i.ItemId, out var cfg) && !cfg.IsStackable) return (name + "×1" + DiscardPieceNote(i), true);
+            return (name + "×{n}" + (i.ExpiresAt is int x ? $"（保质至{Clock.DayTime(x)}）" : ""), false);
         }
 
-        private string DiscardListText(GameState s, IEnumerable<(ItemInstance inst, int n)> plan) =>
-            string.Join("、", plan.GroupBy(x => DiscardItemLabel(s, x.inst)).Select(g => $"{g.Key}×{g.Sum(x => x.n)}"));
-
-        /// <summary>容器内容清单：锅水「{水种}{毫升}毫升」、锅内其他各份「{名}×{数}」；水壶「{水种}{毫升}毫升」；空容器为 null（不造包含行）。</summary>
-        private string? DiscardContentsText(GameState s, ItemInstance c)
+        /// <summary>独立件的状态摘要（Q762 A：非白品质公开名＋原一行适用的耐久／弹仓／保质；白色省略）；没有可写的为空串。</summary>
+        private string DiscardPieceNote(ItemInstance i)
         {
             var parts = new List<string>();
-            if (CanteenOf(c) != null)
+            if (_items.TryGetValue(i.ItemId, out var cfg) && cfg.IsEquipment && (i.Quality ?? "white") != "white") parts.Add(QualityName(i));
+            if (i.Durability.HasValue && i.MaxDurability.HasValue) parts.Add(i.Durability.Value <= 0 ? "已损坏" : $"耐久{DurabilityText(i)}");
+            if (i.LoadedAmmoId != null) parts.Add($"弹{i.LoadedAmmo}");
+            if (i.ExpiresAt is int x) parts.Add($"保质至{Clock.DayTime(x)}");
+            return parts.Count == 0 ? "" : $"（{string.Join(" · ", parts)}）";
+        }
+
+        /// <summary>一项的显示文字（数量 n 为本次真实份数）。</summary>
+        public string DiscardItemLabel(GameState s, ItemInstance i, int n) => DiscardEntryKey(i).pattern.Replace("{n}", n.ToString());
+
+        /// <summary>本次清单：按本次实际选取的稳定顺序，同批（同键）合并真实数量、独立件逐件，项间「、」。</summary>
+        private string DiscardListText(GameState s, IEnumerable<(ItemInstance inst, int n)> plan)
+        {
+            var entries = new List<(string pattern, bool piece, int n)>();
+            foreach (var (inst, n) in plan)
             {
-                if (c.LiquidId != null && c.LiquidMl > 0) parts.Add($"{ItemName(c.LiquidId)}{c.LiquidMl}毫升");
+                var (pattern, piece) = DiscardEntryKey(inst);
+                var at = piece ? -1 : entries.FindIndex(e => !e.piece && e.pattern == pattern);
+                if (at >= 0) entries[at] = (pattern, false, entries[at].n + n);
+                else entries.Add((pattern, piece, n));
             }
-            else if (IsPot(c))
+            return string.Join("、", entries.Select(e => e.pattern.Replace("{n}", e.n.ToString())));
+        }
+
+        /// <summary>
+        /// 本次整件删除的全部容器的连带内容合计成一条（§Q865 B，合同 contents）：同种水实际毫升相加、净水脏水分开（水在前，按首次出现）；
+        /// 其他内容按 §Q864 写法、同摘要合并真实数量；所选容器全空为 null（省「包含／同时丢弃」）。
+        /// </summary>
+        private string? DiscardContentsText(GameState s, IEnumerable<ItemInstance> containers)
+        {
+            var waters = new List<(string id, int ml)>();
+            var goods = new List<(ItemInstance inst, int n)>();
+            void AddWater(string id, int ml)
             {
-                var unit = PotConfig(c).UnitMl;
-                foreach (var w in PotLiquids(s, c.InstanceId).GroupBy(w => w.ItemId)) parts.Add($"{ItemName(w.Key)}{w.Sum(x => x.Count) * unit}毫升");
-                foreach (var g in PotContents(s, c.InstanceId).Where(x => !IsLiquid(x)).GroupBy(x => InstanceName(x))) parts.Add($"{g.Key}×{g.Sum(x => x.Count)}");
+                var at = waters.FindIndex(w => w.id == id);
+                if (at >= 0) waters[at] = (id, waters[at].ml + ml);
+                else waters.Add((id, ml));
             }
+            foreach (var c in containers)
+            {
+                if (CanteenOf(c) != null)
+                {
+                    if (c.LiquidId != null && c.LiquidMl > 0) AddWater(c.LiquidId, c.LiquidMl);
+                }
+                else if (IsPot(c))
+                {
+                    var unit = PotConfig(c).UnitMl;
+                    foreach (var w in PotLiquids(s, c.InstanceId)) AddWater(w.ItemId, w.Count * unit);
+                    goods.AddRange(PotContents(s, c.InstanceId).Where(x => !IsLiquid(x)).Select(x => (x, x.Count)));
+                }
+            }
+            var parts = waters.Select(w => $"{ItemName(w.id)}{w.ml}毫升").ToList();
+            if (goods.Count > 0) parts.Add(DiscardListText(s, goods));
             return parts.Count == 0 ? null : string.Join("、", parts);
         }
 
@@ -340,17 +432,17 @@ namespace Survival.Core.Engine
             var legal = DiscardLegal(s, DiscardScope(s, t));
             plan = PlanGroup(legal, all ? legal.Sum(i => i.Count) : count);
             var items = DiscardListText(s, plan);
-            var contents = plan.Where(x => x.n >= x.inst.Count).Select(x => DiscardContentsText(s, x.inst)).Where(x => x != null).ToList();
+            // §Q865 B：本次整件删除的全部容器内容合计一条「包含：」，全空省行
+            var contents = DiscardContentsText(s, plan.Where(x => x.n >= x.inst.Count).Select(x => x.inst));
             var lines = new List<string> { DiscardCopy.ConfirmItems(items) };
-            // 一次可丢多件容器时每件一行「包含：」（Q865 待答；本批右栏容器都是单件，实际只出一行）
-            lines.AddRange(contents.Select(x => DiscardCopy.Contents(x!)));
+            if (contents != null) lines.Add(DiscardCopy.Contents(contents));
             lines.Add(DiscardCopy.Irreversible);
             var stamp = "i|" + t.Key + "|" + string.Join(";", plan.Select(x => StampOf(x.inst, x.n)
                         + (x.n >= x.inst.Count && (IsPot(x.inst) || CanteenOf(x.inst) != null) ? "{" + string.Join(",", PotContents(s, x.inst.InstanceId).Select(c => StampOf(c, c.Count))) + "}" : "")));
             return new DiscardPlanView
             {
                 All = all, Count = plan.Sum(x => x.n), Stamp = stamp, Lines = lines,
-                ResultText = DiscardCopy.Result(items) + (contents.Count > 0 ? DiscardCopy.ResultContents(string.Join("、", contents)) : ""),
+                ResultText = DiscardCopy.Result(items) + (contents != null ? DiscardCopy.ResultContents(contents) : ""),
             };
         }
 
@@ -369,6 +461,8 @@ namespace Survival.Core.Engine
             if (view == null) return ActionResult.Fail(DiscardCopy.Changed);   // 输入锁已先判；确认后数量、占用、物主、腐败变种或水量变化都按「物品已变」整次拒绝（§Q858-03／Q859-03）
             if (view.Stamp != r.Stamp) return ActionResult.Fail(DiscardCopy.Changed);
 
+            // 遗物／认领箱／回收箱删空后与原「取出」一样从地点上移除（TakeFromRemains），不留空箱
+            var boxes = plan.Select(x => x.inst.Owner).Where(o => o.StartsWith(ItemInstance.RemainsPrefix)).Distinct().ToList();
             if (r.Target.IsWater) RemoveWater(s, r.Target, container!, view.WaterMl);
             else
                 foreach (var (inst, n) in plan)
@@ -384,6 +478,8 @@ namespace Survival.Core.Engine
                         inst.Count -= n;
                     }
                 }
+            foreach (var key in boxes.Select(o => o.Substring(ItemInstance.RemainsPrefix.Length)))
+                if (RemainsItems(s, key).Count == 0) s.Remains.Remove(key);
             RememberRequest(s, r.RequestId);
             Emit(s, GameEventKind.Info, view.ResultText);
             SyncFacilities(s);
@@ -431,6 +527,64 @@ namespace Survival.Core.Engine
             var rot = CreateItems(s, "berry", 3, ItemInstance.Carried).Single();
             rot.ExpiresAt = s.GameMinute + 1;
             var text = $"开发：野果3（2小时后到期）＋野果5、金属锅（净水1000毫升、生肉1）放在{ZoneName(s, s.Ground)}地面；随身分量水壶（净水750毫升）、野果3（1分钟后到期，转腐败物）";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
+        /// <summary>
+        /// 开发：B53b 清单行末丢弃试用组（只造起点）：第一名固定队友编入同行，随身放野果3、金属锅（净水2份＋野果1）、分量水壶（净水750毫升）；
+        /// 当前地点（当前区）放四个箱：遗物（野果2、木材3）、认领箱（罐头1、借用木矛1）、远征回收箱（生肉2）、旧实例遗物认领箱（金属锅连脏水1份）；
+        /// 人在已建安全屋屋内时柜子里放野果2、木材2；人在本次远征地牢里时封存账放罐头1。
+        /// </summary>
+        public string DebugDiscardListKit(GameState s)
+        {
+            s.Progress.Flags.Add("hub_registered");
+            s.Progress.Flags.Add("church_route_record");
+            s.Progress.Flags.Add("academy_safety_record");
+            var parts = new List<string>();
+            var mate = Config.Party.NamedCompanions.Select(n => n.ActorId).FirstOrDefault(id => RosterOf(s, id) == null || s.Party.Contains(id));
+            if (mate != null && RosterOf(s, mate) == null) DebugRecruit(s, mate);
+            if (mate != null && s.Party.Contains(mate))
+            {
+                var bag = ItemInstance.CarriedOwner(mate);
+                CreateItems(s, "berry", 3, bag);
+                var pot = CreateItems(s, "pot", 1, bag).Single();
+                CreateItems(s, "clean_water", 2, ItemInstance.ContainerOwner(pot.InstanceId));
+                CreateItems(s, "berry", 1, ItemInstance.ContainerOwner(pot.InstanceId));
+                var canteen = CreateItems(s, "ration_canteen", 1, bag).Single();
+                canteen.LiquidId = "clean_water";
+                canteen.LiquidMl = 750;
+                parts.Add($"{ActorDisplayName(s, mate)}随身：野果3、金属锅（净水{2 * PotConfig(pot).UnitMl}毫升、野果1）、分量水壶（净水750毫升）");
+            }
+            string Box(string key, string name, string? kind)
+            {
+                if (!s.Remains.ContainsKey(key))
+                    s.Remains[key] = new RemainsState { Name = name, LocationId = s.CurrentLocation, Minute = s.GameMinute, Cause = "开发试用", Kind = kind, Zone = s.CurrentZone == SafehouseZone ? SafehouseZone : null };
+                return ItemInstance.RemainsOwner(key);
+            }
+            var dead = Box("dev_b53b_remains", "试用者", null);
+            CreateItems(s, "berry", 2, dead);
+            CreateItems(s, "wood", 3, dead);
+            var claim = Box("dev_b53b_claim", "试用者", RemainsState.ClaimKind);
+            CreateItems(s, "canned_food", 1, claim);
+            CreateItems(s, "wooden_spear", 1, claim).Single().LoanSlot = "loan_1";
+            CreateItems(s, "raw_meat", 2, Box("dev_b53b_recovery", "试用远征回收箱", RemainsState.RecoveryKind));
+            var relicPot = CreateItems(s, "pot", 1, Box("dev_b53b_relic", "试用旧实例遗物认领箱", RemainsState.RelicKind)).Single();
+            CreateItems(s, "dirty_water", 1, ItemInstance.ContainerOwner(relicPot.InstanceId));
+            parts.Add($"{LocName(s.CurrentLocation)}遗物（野果2、木材3）、认领箱（罐头1、借用木矛1）、试用远征回收箱（生肉2）、试用旧实例遗物认领箱（金属锅连脏水{PotConfig(relicPot).UnitMl}毫升）");
+            if (s.CurrentZone == SafehouseZone && CabinetOwnerOf(s, s.CurrentLocation) is string cab)
+            {
+                CreateItems(s, "berry", 2, cab);
+                CreateItems(s, "wood", 2, cab);
+                parts.Add("安全屋柜子：野果2、木材2");
+            }
+            if (s.Expedition is ExpeditionState ex && DungeonAt(s.CurrentLocation) == ex.DungeonId)
+            {
+                var sealedFood = CreateItems(s, "canned_food", 1, SealedOwner(ex.InstanceId)).Single();
+                sealedFood.RewardOrigin = ex.InstanceId;
+                parts.Add("封存战利品：罐头1");
+            }
+            var text = "开发：" + string.Join("；", parts);
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }

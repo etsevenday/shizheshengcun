@@ -55,10 +55,17 @@
                             var id = it.InstanceId;
                             var n = it.Count;
                             var maxC = e.MaxTakeFromCabinet(s, it, ItemInstance.Carried, out var whyC);
+                            var dt = e.DiscardRowTarget(s, id);
                             <ItemRow Icon="@it.ItemId" Name="@($"{e.ItemName(it.ItemId)}")" Qty="@($"×{n}")" Status="@($"{Ui.Kg(e.ItemGrams(s, it))}公斤{ExpiryText(it)}")">
                                 <button type="button" class="linkish" disabled="@(blocked != null || maxC < 1)" title="@(whyC ?? $"取{n}份到随身（0分钟）")" @onclick="() => Take(id, n, ItemInstance.Carried)">到随身</button>
                                 <button type="button" class="linkish" disabled="@(blocked != null)" title="@($"取{n}份到屋内地面（0分钟）")" @onclick="() => Take(id, n, G.S.Ground)">到地面</button>
+                                @* B53b（§Q857 B）：柜内行末「丢弃」，子区画在本行下方，确认或取消后回到柜子清单 *@
+                                @if (!G.DiscardOpenFor(dt, DiscardHost.Cabinet))
+                                {
+                                    <button type="button" class="linkish discard-row-btn" data-discard-row @onclick="() => G.OpenListDiscard(dt, DiscardHost.Cabinet)">@DiscardCopy.Discard</button>
+                                }
                             </ItemRow>
+                            <DiscardPanel Target="@dt" Host="@DiscardHost.Cabinet" HideButton="true" />
                         }
                         @if (items.Count == 0) { <div class="risk none">柜子是空的。</div> }
                     </div>
