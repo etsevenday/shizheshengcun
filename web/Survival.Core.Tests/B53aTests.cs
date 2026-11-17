@@ -882,4 +882,445 @@ public class B53aTests : TestBase
         Assert.That((c.Owner, c.LiquidId, c.LiquidMl), Is.EqualTo((ItemInstance.Carried, "clean_water", 750)));
         Assert.That(s.Items.Single(i => i.ItemId == "berry" && i.Owner == ItemInstance.Carried).Count, Is.EqualTo(3));
     }
+
+    // ───────────── 变异测试补测（Stryker 89a8295e..1b4fcc8e，开发记录 B53a.8） ─────────────
+
+    private FacilityState GroundFac(GameState s) => s.Locations[s.Ground].Facility;
+
+    /// <summary>起点：锅在燃烧火堆上水煮一份生块根（与 Q859_01 同做法）；waterUnits 份净水先倒进锅。</summary>
+    private (ItemInstance pot, ItemInstance root) Boiling(GameState s, int waterUnits)
+    {
+        var pot = s.Items.First(i => i.ItemId == "pot");
+        s.Items.RemoveAll(i => i.ItemId == "clean_water" && i.Owner == s.Ground);
+        E.DebugGive(s, "clean_water", waterUnits, s.Ground);
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "clean_water" && i.Owner == s.Ground).InstanceId, pot.InstanceId, waterUnits)).Ok, Is.True);
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
+        var fac = GroundFac(s);
+        fac.FireLit = true;
+        fac.FuelMinutes = 180;
+        E.DebugGive(s, "raw_root", 1, s.Ground);
+        var root = s.Items.First(i => i.ItemId == "raw_root" && i.Owner == s.Ground);
+        Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(root.InstanceId, pot.InstanceId, 1)).Ok, Is.True);
+        var inPot = s.Items.Single(i => i.ItemId == "raw_root" && i.Owner == ItemInstance.ContainerOwner(pot.InstanceId));
+        Assert.That(E.ProcessOf(s, inPot), Is.Not.Null, "前提：在水煮");
+        return (pot, inPot);
+    }
+
+    private ItemInstance Canteen(GameState s, int ml, string? owner = null)
+    {
+        var c = Give(s, "ration_canteen", owner ?? ItemInstance.Carried);
+        c.LiquidId = ml > 0 ? "clean_water" : null;
+        c.LiquidMl = ml;
+        return c;
+    }
+
+    /// <summary>子区正式句（逐字稿「2026-11-15 B50a」表 available；b53-discard-main-q857-q861.json water.text「可丢弃：{水量}毫升」「数量（每份{单位毫升}毫升）」）。</summary>
+    [Test]
+    public void MT_SubPanelCopy_Literal()
+    {
+        Assert.That(DiscardCopy.Available(7), Is.EqualTo("可丢弃：7"));
+        Assert.That(DiscardCopy.WaterAvailable(250), Is.EqualTo("可丢弃：250毫升"));
+        Assert.That(DiscardCopy.WaterQuantity(500), Is.EqualTo("数量（每份500毫升）"));
+    }
+
+    /// <summary>
+    /// S06 B50a「不能通过删物绕过原战斗、主／子行动、对白等整理输入锁」：死亡与战斗沿原整理拒绝句（与放下同句），物品与水子区都拒；对照：锁前可丢。
+    /// </summary>
+    [Test]
+    public void MT_InputLock_DeadBattleAndWaterView()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "wood");
+        var wood = Give(s, "wood", ItemInstance.Carried, 2);
+        var c = Canteen(s, 750);
+        var t = DiscardTarget.Group(ItemInstance.Carried, "wood", null);
+        var tw = DiscardTarget.CanteenWater(c.InstanceId);
+        Assert.That((E.DiscardViewOf(s, t).Blocked, E.DiscardViewOf(s, tw).Available), Is.EqualTo(((string?)null, 750)), "对照：锁前可丢");
+
+        // 主行动：水子区同样上锁（原整理句「行动进行中，不能整理物品」）
+        Start(s, ActionRequest.Wait(30));
+        var wv = E.DiscardViewOf(s, tw);
+        Assert.That((wv.Blocked, wv.Available, wv.MaxUnits), Is.EqualTo(("行动进行中，不能整理物品", 0, 0)));
+        E.Cancel(s);
+
+        var dead = New();
+        dead.Items.RemoveAll(i => i.ItemId == "wood");
+        Give(dead, "wood", ItemInstance.Carried, 2);
+        dead.Progress.Dead = true;   // 起点：角色已死亡
+        Assert.That(E.DiscardViewOf(dead, t).Blocked, Is.EqualTo("角色已死亡"));
+        Assert.That(E.Discard(dead, new DiscardRequest { Target = t, All = true, Stamp = "x" }).Reason, Is.EqualTo("角色已死亡"));
+
+        var b = New();
+        b.Items.RemoveAll(i => i.ItemId == "wood");
+        var bw = Give(b, "wood", ItemInstance.Carried, 2);
+        var enemy = E.DebugSpawnEnemy(b, "shambler", b.Ground);
+        Assert.That(E.DebugStartBattle(b, new[] { enemy.Id }, GameEngine.FearEncounter), Is.True);
+        const string battle = "战斗中不能整理物品；换武器、装填与用药请用战斗指令";
+        Assert.That(E.DiscardViewOf(b, t).Blocked, Is.EqualTo(battle));
+        Assert.That(E.DoInstant(b, InstantRequest.Drop(bw.InstanceId, 1)).Reason, Is.EqualTo(battle), "与原整理拒绝句同句");
+        Assert.That(E.Discard(b, new DiscardRequest { Target = t, All = true, Stamp = "x" }).Reason, Is.EqualTo(battle));
+        Assert.That(bw.Count, Is.EqualTo(2));
+    }
+
+    /// <summary>别处有加工在进行（锅在火上水煮）时，与该加工无关的随身木材照常可丢（加工只绑它自己的输入与锅）。</summary>
+    [Test]
+    public void MT_UnrelatedItem_NotBlockedByOtherProcess()
+    {
+        var s = New();
+        Boiling(s, 2);
+        s.Items.RemoveAll(i => i.ItemId == "wood");
+        Give(s, "wood", ItemInstance.Carried, 3);
+        var v = E.DiscardViewOf(s, DiscardTarget.Group(ItemInstance.Carried, "wood", null));
+        Assert.That((v.Available, v.Blocked), Is.EqualTo((3, (string?)null)));
+    }
+
+    /// <summary>晾制中的原料拒「加工中：先停止加工。」；对照：晾好后的成品不是加工中（本批无晾制位右栏入口，按无权限「当前无法丢弃该物品。」，B53b 才扩来源）。</summary>
+    [Test]
+    public void MT_DryingInProgress_Processing_DoneIsNot()
+    {
+        var s = Rack();
+        Give(s, "berry", ItemInstance.Carried, 2);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        var owner = ItemInstance.DryingOwner(s.Ground, 0);
+        var raw = s.Items.Where(i => i.Owner == owner).ToList();
+        Assert.That(raw.Count, Is.EqualTo(1));
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(raw[0].InstanceId)).Blocked, Is.EqualTo(Processing));
+        AdvanceTo(s, s.GameMinute + E.Recipe("dry_berries").BaseMinutes + 5);
+        Assert.That(DrySlots(s).Single().Status, Is.EqualTo(DryingSlot.Done));
+        var done = s.Items.Where(i => i.Owner == owner).ToList();
+        Assert.That(done.Count, Is.EqualTo(1));
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(done[0].InstanceId)).Blocked, Is.EqualTo(NoPermission));
+    }
+
+    private GameState Kiln()
+    {
+        var s = New();
+        s.Skills["crafting"].Level = 3;
+        s.Progress.Flags.Add("h03_ceramic_notice_read");
+        foreach (var (id, n) in new[] { ("stone", 8), ("clay", 6), ("iron_plate", 2) }) E.CreateItems(s, id, n, s.Ground);
+        Start(s, ActionRequest.Craft("build_kiln", null, null, 1));
+        Run(s);
+        Assert.That(E.WorkshopBuilt(s, s.Ground, "kiln"), Is.True);
+        s.Items.RemoveAll(i => i.ItemId is "clay" or "charcoal");
+        return s;
+    }
+
+    /// <summary>
+    /// 陶窑批次已绑定的黏土拒「加工中：先停止加工。」（对照：投料前可丢）；同组另有一份被行动预留时，多条原因只出最优先的一句
+    /// （开发记录 B53a.5 暂用 Q866 选项 A 顺序：加工＞预留占用＞穿戴＞部署＞无权限）。
+    /// </summary>
+    [Test]
+    public void MT_StationBatchInput_Processing_OutranksBusy()
+    {
+        var s = Kiln();
+        E.CreateItems(s, "clay", 2, ItemInstance.Carried);
+        E.CreateItems(s, "charcoal", 1, s.Ground);
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Group(ItemInstance.Carried, "clay", null)).Available, Is.EqualTo(2), "对照：投料前可丢");
+        Assert.That(E.StartStationBatch(s, "ex_ceramic_shell").Ok, Is.True);
+        var t = DiscardTarget.Group(s.Ground, "clay", null);
+        var v = E.DiscardViewOf(s, t);
+        Assert.That((v.Total, v.Available, v.Blocked), Is.EqualTo((2, 0, Processing)));
+        var held = Give(s, "clay", s.Ground, 1);
+        held.ReservedBy = 783;   // 起点：同组另一份被行动预留
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(held.InstanceId)).Blocked, Is.EqualTo(Busy), "前提：这份单看是占用");
+        v = E.DiscardViewOf(s, t);
+        Assert.That((v.Total, v.Available, v.Blocked), Is.EqualTo((3, 0, Processing)));
+    }
+
+    /// <summary>锅内某份食材被行动预留时，整口锅拒「物品被占用，不能丢弃。」（锅连内部任一子物）；对照：未预留时整锅可丢。</summary>
+    [Test]
+    public void MT_PotWithReservedChild_Busy()
+    {
+        var s = New();
+        var pot = Give(s, "pot", ItemInstance.Carried);
+        var meat = Give(s, "raw_meat", ItemInstance.ContainerOwner(pot.InstanceId));
+        var t = DiscardTarget.Instance(pot.InstanceId);
+        Assert.That(E.DiscardViewOf(s, t).Blocked, Is.Null, "对照");
+        meat.ReservedBy = 784;
+        Assert.That(E.DiscardViewOf(s, t).Blocked, Is.EqualTo(Busy));
+    }
+
+    /// <summary>
+    /// S06 §数量范围「沿既定到期／品质排序取前N」＋组内顺序「同到期品质白→绿→蓝再稳定实例ID」：同组三把木矛（蓝、白、绿先后放下）选 1 先删白，再选 1 删绿，蓝最后。
+    /// </summary>
+    [Test]
+    public void MT_QualityOrder_WhiteGreenBlue()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "wooden_spear");
+        foreach (var q in new[] { "blue", "white", "green" }) Give(s, "wooden_spear", s.Ground).Quality = q;
+        var t = DiscardTarget.Group(s.Ground, "wooden_spear", null);
+        string Left() => string.Join(",", s.Items.Where(i => i.ItemId == "wooden_spear").OrderBy(i => i.InstanceId).Select(i => i.Quality));
+        Assert.That(E.DiscardViewOf(s, t).Available, Is.EqualTo(3));
+        Assert.That(Confirm(s, t, 1, false).Ok, Is.True);
+        Assert.That(Left(), Is.EqualTo("blue,green"));
+        Assert.That(Confirm(s, t, 1, false).Ok, Is.True);
+        Assert.That(Left(), Is.EqualTo("blue"));
+    }
+
+    /// <summary>S06 组内顺序「…再稳定实例ID」：同到期同品质的三把白木矛选 1，删实例号最小的那把。</summary>
+    [Test]
+    public void MT_SameExpirySameQuality_LowestInstanceFirst()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "wooden_spear");
+        var ids = Enumerable.Range(0, 3).Select(_ => { var x = Give(s, "wooden_spear", s.Ground); x.Quality = "white"; return x.InstanceId; }).ToList();
+        Assert.That(Confirm(s, DiscardTarget.Group(s.Ground, "wooden_spear", null), 1, false).Ok, Is.True);
+        Assert.That(s.Items.Where(i => i.ItemId == "wooden_spear").Select(i => i.InstanceId).OrderBy(x => x), Is.EqualTo(new[] { ids[1], ids[2] }));
+    }
+
+    /// <summary>
+    /// S06 B53 §Q858「腐败变种变化按物品已变」：本次范围里只剩已到原截止、尚未转换的原物时，没有可丢份额，子区原因是「物品已变，请重选。」；对照：未到期时可丢。
+    /// </summary>
+    [Test]
+    public void MT_OnlyDueItems_BlockedChanged()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "berry");
+        var b = Give(s, "berry", s.Ground, 2);
+        var t = DiscardTarget.Group(s.Ground, "berry", null);
+        Assert.That(E.DiscardViewOf(s, t).Available, Is.EqualTo(2), "对照");
+        b.ExpiresAt = s.GameMinute;   // 起点：到期但还没经过转换事务
+        var v = E.DiscardViewOf(s, t);
+        Assert.That((v.Total, v.Available, v.Blocked), Is.EqualTo((2, 0, Changed)));
+    }
+
+    /// <summary>壶被行动预留拒「物品被占用，不能丢弃。」，借用壶、不在可处置范围（别区地面）的壶拒「当前无法丢弃该物品。」，可丢都是 0（Q866 暂用顺序，开发记录 B53a.5）。</summary>
+    [Test]
+    public void MT_CanteenWater_BusyLoanOutOfScope()
+    {
+        var s = New();
+        var c = Canteen(s, 750);
+        var t = DiscardTarget.CanteenWater(c.InstanceId);
+        Assert.That(E.DiscardViewOf(s, t).Available, Is.EqualTo(750), "对照");
+        c.ReservedBy = 785;
+        var v = E.DiscardViewOf(s, t);
+        Assert.That((v.Blocked, v.Available, v.MaxUnits), Is.EqualTo((Busy, 0, 0)));
+        c.ReservedBy = null;
+        c.LoanSlot = "loan_1";
+        v = E.DiscardViewOf(s, t);
+        Assert.That((v.Blocked, v.Available, v.MaxUnits), Is.EqualTo((NoPermission, 0, 0)));
+        c.LoanSlot = null;
+        Assert.That(s.Ground, Is.Not.EqualTo("field"));
+        c.Owner = "field";   // 起点：壶在别区地面（S06「只读远处汇总无可执行删除」）
+        v = E.DiscardViewOf(s, t);
+        Assert.That((v.Blocked, v.Available), Is.EqualTo((NoPermission, 0)));
+    }
+
+    /// <summary>锅被预留、锅里的水被预留都拒「物品被占用，不能丢弃。」，借用锅拒「当前无法丢弃该物品。」（Q866 暂用顺序）；对照：都没有时 1000 毫升可丢。</summary>
+    [Test]
+    public void MT_PotWater_BusyAndLoan()
+    {
+        var s = New();
+        var pot = Give(s, "pot", ItemInstance.Carried);
+        var w = Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId), 2);
+        var t = DiscardTarget.PotWater(pot.InstanceId, "clean_water");
+        Assert.That(E.DiscardViewOf(s, t).Available, Is.EqualTo(1000), "对照");
+        pot.ReservedBy = 786;
+        Assert.That((E.DiscardViewOf(s, t).Blocked, E.DiscardViewOf(s, t).Available), Is.EqualTo((Busy, 0)));
+        pot.ReservedBy = null;
+        w.ReservedBy = 787;
+        Assert.That((E.DiscardViewOf(s, t).Blocked, E.DiscardViewOf(s, t).Available), Is.EqualTo((Busy, 0)));
+        w.ReservedBy = null;
+        pot.LoanSlot = "loan_1";
+        Assert.That((E.DiscardViewOf(s, t).Blocked, E.DiscardViewOf(s, t).Available), Is.EqualTo((NoPermission, 0)));
+    }
+
+    /// <summary>B53-Q859 锅水「水煮食材预留的毫升不可丢」：锅里只有 1 份水且全被水煮预留时，拒「加工中：先停止加工。」，不是「无可丢弃的水。」。</summary>
+    [Test]
+    public void MT_PotWater_AllReservedByBoiling_Processing()
+    {
+        var s = New();
+        var (pot, _) = Boiling(s, 1);
+        var v = E.DiscardViewOf(s, DiscardTarget.PotWater(pot.InstanceId, "clean_water"));
+        Assert.That((v.Total, v.Available, v.MaxUnits, v.Blocked), Is.EqualTo((500, 0, 0, Processing)));
+    }
+
+    /// <summary>子区打开后容器已不在（或不是锅）：「物品已变，请重选。」，数量上限 0。</summary>
+    [Test]
+    public void MT_WaterContainerGone_Changed()
+    {
+        var s = New();
+        var v = E.DiscardViewOf(s, DiscardTarget.CanteenWater(987654));
+        Assert.That((v.Blocked, v.Available, v.MaxUnits), Is.EqualTo((Changed, 0, 0)));
+        var wood = Give(s, "wood", ItemInstance.Carried);
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.PotWater(wood.InstanceId, "clean_water")).Blocked, Is.EqualTo(Changed));
+    }
+
+    /// <summary>{物品清单}暂用写法（开发记录 B53a.5，Q864 待答）：装备加品质「（{品质}）」；同写法的多堆合并份数。</summary>
+    [Test]
+    public void MT_ListLabel_EquipmentQuality_MergedHeaps()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "wooden_spear" || i.ItemId == "wood");
+        var spear = Give(s, "wooden_spear", ItemInstance.Carried);
+        spear.Quality = "green";
+        Assert.That(E.DiscardPreview(s, DiscardTarget.Instance(spear.InstanceId), 1, false, out _)!.Lines[0], Is.EqualTo("永久丢弃：木矛（绿）×1。"));
+        var wood = Give(s, "wood", s.Ground, 9);
+        E.SplitOff(s, wood, 2);   // 起点：同组两堆 7＋2
+        var p = E.DiscardPreview(s, DiscardTarget.Group(s.Ground, "wood", null), 0, true, out _)!;
+        Assert.That(p.Lines[0], Is.EqualTo("永久丢弃：木材×9。"));
+    }
+
+    /// <summary>PD-A04 水壶连内容：整只壶确认列「包含：净水750毫升。」、日志接「同时丢弃：…」；对照：空壶不造包含行。</summary>
+    [Test]
+    public void MT_WholeCanteen_ContentsLine()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "ration_canteen");
+        var c = Canteen(s, 750);
+        var t = DiscardTarget.Instance(c.InstanceId);
+        var p = E.DiscardPreview(s, t, 1, false, out _)!;
+        Assert.That(p.Lines, Is.EqualTo(new[] { "永久丢弃：分量水壶×1。", "包含：净水750毫升。", "丢弃后无法找回。" }));
+        Assert.That(E.Discard(s, new DiscardRequest { Target = t, Count = 1, Stamp = p.Stamp }).Ok, Is.True);
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：分量水壶×1。同时丢弃：净水750毫升。"));
+        var empty = Canteen(s, 0);
+        Assert.That(E.DiscardPreview(s, DiscardTarget.Instance(empty.InstanceId), 1, false, out _)!.Lines, Is.EqualTo(new[] { "永久丢弃：分量水壶×1。", "丢弃后无法找回。" }));
+    }
+
+    /// <summary>
+    /// 锅里同水种分两堆（另一份是带奖励来源、不与普通水合堆的净水）与两份生肉：包含行按水种合计毫升、食材合计份数；水可丢 1000；
+    /// 选 1 份只删 500（按稳定实例 ID 先删前一堆，S06 组内顺序），全部丢弃后锅里不留空水堆。
+    /// </summary>
+    [Test]
+    public void MT_PotTwoWaterHeaps_SumsAndExactRemoval()
+    {
+        var s = New();
+        var pot = Give(s, "pot", ItemInstance.Carried);
+        var inside = ItemInstance.ContainerOwner(pot.InstanceId);
+        var w1 = Give(s, "clean_water", inside, 1);
+        var w2 = E.CreateItems(s, "clean_water", 1, inside, false, new ItemSource { GrantEventId = "mt-reward-water" }).Single();
+        Assert.That(E.PotLiquids(s, pot.InstanceId).Count, Is.EqualTo(2), "前提：两堆不合堆");
+        Give(s, "raw_meat", inside);
+        Give(s, "raw_meat", inside);
+        Assert.That(E.DiscardPreview(s, DiscardTarget.Instance(pot.InstanceId), 1, false, out _)!.Lines[1], Is.EqualTo("包含：净水1000毫升、生肉×2。"));
+        var t = DiscardTarget.PotWater(pot.InstanceId, "clean_water");
+        var v = E.DiscardViewOf(s, t);
+        Assert.That((v.Total, v.Available, v.MaxUnits), Is.EqualTo((1000, 1000, 2)));
+        Assert.That(Confirm(s, t, 1, false).Ok, Is.True);
+        var left = E.PotLiquids(s, pot.InstanceId);
+        Assert.That(left.Select(i => (i.InstanceId, i.Count)), Is.EqualTo(new[] { (w2.InstanceId, 1) }), "只删 500：先删实例号小的一堆，另一堆不动");
+        Assert.That(s.Items.Contains(w1), Is.False);
+        Assert.That(Confirm(s, t, 0, true).Ok, Is.True);
+        Assert.That(s.Items.Count(i => i.Owner == inside && i.ItemId == "clean_water"), Is.EqualTo(0), "不留 0 份水堆");
+        Assert.That(s.Items.Count(i => i.Owner == inside && i.ItemId == "raw_meat"), Is.EqualTo(2), "食材不动");
+    }
+
+    /// <summary>B53-Q858-03：确认整锅后锅里内容变了（又放进一份生肉），提交整次拒绝「物品已变，请重选。」，锅与内容都不删。</summary>
+    [Test]
+    public void MT_WholePot_ContentsChangedAfterConfirm_Rejected()
+    {
+        var s = New();
+        var pot = Give(s, "pot", ItemInstance.Carried);
+        var inside = ItemInstance.ContainerOwner(pot.InstanceId);
+        Give(s, "clean_water", inside, 1);
+        var t = DiscardTarget.Instance(pot.InstanceId);
+        var p = E.DiscardPreview(s, t, 1, false, out _)!;
+        Give(s, "raw_meat", inside);
+        var res = E.Discard(s, new DiscardRequest { Target = t, Count = 1, Stamp = p.Stamp });
+        Assert.That((res.Ok, res.Reason), Is.EqualTo((false, Changed)));
+        Assert.That(s.Items.Contains(pot), Is.True);
+        Assert.That(s.Items.Count(i => i.Owner == inside), Is.EqualTo(2));
+    }
+
+    /// <summary>B53-Q859-03：选 1 份（500）确认后壶里 1000 变 750——仍够 1 份，但确认时的水量已变，整次拒绝「物品已变，请重选。」。</summary>
+    [Test]
+    public void MT_CanteenWater_StillEnoughButChanged_Rejected()
+    {
+        var s = New();
+        var c = Canteen(s, 1000);
+        var t = DiscardTarget.CanteenWater(c.InstanceId);
+        var p = E.DiscardPreview(s, t, 1, false, out _)!;
+        Assert.That((p.Count, p.WaterMl), Is.EqualTo((1, 500)));
+        c.LiquidMl = 750;
+        var res = E.Discard(s, new DiscardRequest { Target = t, Count = 1, Stamp = p.Stamp });
+        Assert.That((res.Ok, res.Reason), Is.EqualTo((false, Changed)));
+        Assert.That(c.LiquidMl, Is.EqualTo(750));
+    }
+
+    /// <summary>
+    /// S06 B53 §Q858「进入最终确认前固定真实范围」：按整组（未手选）确认 3 份后改成手选那一批提交，即使要删的实例与份数相同也整次拒绝；
+    /// 同一只水壶的「丢弃」与「丢弃水」是两个不同的子区（S14：水量行末另开）。
+    /// </summary>
+    [Test]
+    public void MT_StampBoundToTarget_AndTargetsDistinct()
+    {
+        var s = New();
+        var (near, _) = Berries35(s);
+        var group = DiscardTarget.Group(s.Ground, "berry", null);
+        var p = E.DiscardPreview(s, group, 3, false, out _)!;
+        var picked = DiscardTarget.Group(s.Ground, "berry", null, GameEngine.DiscardBatchKeyOf(near));
+        var res = E.Discard(s, new DiscardRequest { Target = picked, Count = 3, Stamp = p.Stamp });
+        Assert.That((res.Ok, res.Reason), Is.EqualTo((false, Changed)));
+        Assert.That(Berries(s), Is.EqualTo(8));
+        Assert.That(DiscardTarget.Instance(42).Key, Is.Not.EqualTo(DiscardTarget.CanteenWater(42).Key));
+    }
+
+    /// <summary>选择数量 N＝4（临期 3＋新鲜批拆 1）：确认清单的份数是 4，不是单批最大份数（界面按它提交）。</summary>
+    [Test]
+    public void MT_PlanCount_IsN()
+    {
+        var s = New();
+        Berries35(s);
+        Assert.That(E.DiscardPreview(s, DiscardTarget.Group(s.Ground, "berry", null), 4, false, out _)!.Count, Is.EqualTo(4));
+    }
+
+    /// <summary>PD-A01／Discard 注释「先做到期转换，再按同一范围重算」：锅里生肉确认时已到原截止尚未转换，提交时先转成腐败物，内容变了整次拒绝。</summary>
+    [Test]
+    public void MT_Submit_ConvertsDueFirst_ContentsChangedRejected()
+    {
+        var s = New();
+        var pot = Give(s, "pot", ItemInstance.Carried);
+        var meat = Give(s, "raw_meat", ItemInstance.ContainerOwner(pot.InstanceId));
+        meat.ExpiresAt = s.GameMinute;   // 起点：到期但还没经过转换事务
+        var t = DiscardTarget.Instance(pot.InstanceId);
+        var p = E.DiscardPreview(s, t, 1, false, out _)!;
+        var res = E.Discard(s, new DiscardRequest { Target = t, Count = 1, Stamp = p.Stamp });
+        Assert.That((res.Ok, res.Reason), Is.EqualTo((false, Changed)));
+        Assert.That((meat.ItemId, s.Items.Contains(pot)), Is.EqualTo((Rot, true)));
+    }
+
+    /// <summary>S06「不删除…设施建筑、工位」且删除当次即从状态移除：丢掉火堆加工位上的空锅，加工位空出、位数不变。</summary>
+    [Test]
+    public void MT_PotOnFireSlot_SlotFreedNotRemoved()
+    {
+        var s = New();
+        var pot = s.Items.First(i => i.ItemId == "pot");
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
+        var slots = GroundFac(s).ProcessingSlots;
+        Assert.That(slots.Contains(pot.InstanceId), Is.True, "前提：锅占一个加工位");
+        var n = slots.Count;
+        Assert.That(Confirm(s, DiscardTarget.Instance(pot.InstanceId), 1, false).Ok, Is.True);
+        Assert.That((slots.Contains(pot.InstanceId), slots.Count), Is.EqualTo((false, n)));
+    }
+
+    /// <summary>Q765-A03：缺料停止位里既有腐败物又有完好的盐，说明末仍接一次「腐败物不可食用。」。</summary>
+    [Test]
+    public void MT_MissingStopWithRotAndSalt_NotEdibleNote()
+    {
+        var s = Rack();
+        Stopped(s, 0, "dry_meat", DryingSlot.StopMissing);
+        RotIn(s, ItemInstance.DryingOwner(s.Ground, 0), "raw_meat", 1);
+        Give(s, "salt", ItemInstance.DryingOwner(s.Ground, 0));
+        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；清理可取回剩余物品。腐败物不可食用。"));
+    }
+
+    /// <summary>Q764-A01「只对缺可信原因的已停止位补」：55 档里晾制中的位（原因为空）不补原因；配方已不存在的停止位按「无法证明」为未知。</summary>
+    [Test]
+    public void MT_Q764_InProgressUntouched_UnknownRecipeUnknown()
+    {
+        var s = Rack();
+        Give(s, "berry", ItemInstance.Carried, 2);
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        var live = DrySlots(s).Single();
+        Assert.That((live.Status, live.StopReason), Is.EqualTo((DryingSlot.Drying, (string?)null)), "前提：晾制中、原因为空");
+        Stopped(s, 1, "no_such_recipe", DryingSlot.StopLegacy);
+        Stopped(s, 2, "dry_meat", null);
+        Give(s, "salt", ItemInstance.DryingOwner(s.Ground, 2));
+        var t = SaveSerializer.Deserialize(AsSchema(s, "55"), Cfg);
+        var bySlot = DrySlots(t).ToDictionary(b => b.Slot, b => (b.Status, b.StopReason));
+        Assert.That(bySlot[0], Is.EqualTo((DryingSlot.Drying, (string?)null)));
+        Assert.That(bySlot[1].StopReason, Is.EqualTo("unknown"));
+        Assert.That(bySlot[2].StopReason, Is.EqualTo("missing"), "对照：同档里原因为空的停止位照补（只剩盐→缺料）");
+    }
 }
