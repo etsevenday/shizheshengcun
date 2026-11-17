@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "96de4460a53210071f76baf1b6bc3249890aa9c8",
+  "originalBatch": "2026-11-17 来自 b571cab2、68885f37 B36a（提前核对，次要）",
+  "questionIds": [
+    950,
+    951,
+    952,
+    953,
+    954,
+    955
+  ],
+  "answers": {
+    "Q950": "A",
+    "Q951": "A",
+    "Q952": "A",
+    "Q953": "A",
+    "Q954": {
+      "part1": "A",
+      "part2": "A",
+      "part3": "A"
+    },
+    "Q955": "B"
+  },
+  "formation": {
+    "name": "入场站位",
+    "empty": "未分配",
+    "emptyHover": "{n}号位未分配：先点一名角色，再点这里",
+    "renameSubtitleAndPartyDescription": true,
+    "preserveOtherSubtitleAndValidBottomText": true,
+    "doNotRestoreQ825FalseSentence": true,
+    "battleEmptyUnchanged": true,
+    "preserveActualFormationRules": true
+  },
+  "growth": {
+    "leftTitle": "熟练度",
+    "groups": [
+      "战斗",
+      "医疗（战内外）",
+      "求生与行动"
+    ],
+    "retainActual17": true,
+    "detailLevel": "当前等级 {L}/{上限}级",
+    "detailExperience": "经验 {xp}/{升级所需}，升到{L+1}级",
+    "next": "下一个技能：{L}级 {技能名}",
+    "maxLevelOriginalCopy": true,
+    "ordinaryNodeStateAndBottomRetained": true,
+    "willpowerReferenceOnly": true,
+    "preserveQ823Q824Q892": true
+  },
+  "reserve": {
+    "group": "留守候补",
+    "personPrefix": "候补",
+    "location": "所在地点 {地点名}",
+    "separateGroup": true,
+    "actualLocationInline": true,
+    "expandedBoxHeading": "认领箱",
+    "originalIndividualBoxNamesRetained": true,
+    "preserveTwoOriginalDescriptionsWithQ950Rename": true,
+    "preserveQ891LocalPermissionsAndFoldRules": true
+  },
+  "boxJump": {
+    "expandOnExplicitLocalBoxJump": true,
+    "scrollAndHighlightOriginalTargetOnce": true,
+    "returnFolds": true,
+    "otherPartyEntryStillDefaultFold": true,
+    "originalStableBoxIdentityAndPermissions": true,
+    "doesNotTransferMoveOrAdvanceTime": true
+  },
+  "goals": {
+    "commissionProgress": "当前进度：{真实进度}",
+    "preserveResultAndMainObjectiveNextAndPrologue": true,
+    "stageOriginalTitleAndFocusTwoParagraphs": true,
+    "currentStageOriginalBadge": true,
+    "addStagePrefix": false,
+    "leftSingleTaskAndCompletedCheckUnchanged": true,
+    "commissionFooter": "到相应地点与岗位交谈或在“事项”里办理；浏览不耗时",
+    "pageSubtitle": "存活第{日}日 · 序章任务{x}/{y} · 建议日程，不是失败倒计时",
+    "retainCommissionFooterAndPageSubtitle": true,
+    "doNotRestoreSurvivalTipsSubtitle": true,
+    "preserveQ888AndTaskRules": true
+  },
+  "help": {
+    "independentExitFromFood": "返回",
+    "deprecateOldFoodBackCopy": "返回食饮",
+    "internalBack": "‹ 返回",
+    "independentExitReturnsToActualFoodPanel": true,
+    "internalAndEscBodyThenTopicThenActualParent": true,
+    "twoControlsRetained": true,
+    "topLevelExitStillClose": true,
+    "preserveActualParentValidationAndNoConsumption": true
+  },
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "B36A-Q950-01",
+      "expected": "编队副标与队伍说明统一入场站位；编队空位名及悬停统一未分配，战斗空位不改。"
+    },
+    {
+      "id": "B36A-Q950-02",
+      "expected": "副标其余部分和合法底部说明保留，Q825错误句不恢复；编队保存取消与资格不变。"
+    },
+    {
+      "id": "B36A-Q951-01",
+      "expected": "熟练度左标题、原三组和实际17项均在，普通详情显示当前等级／经验／下一个技能，满级不编下一等级。"
+    },
+    {
+      "id": "B36A-Q951-02",
+      "expected": "普通节点状态／底句保留，意志仅等级抵抗和达到点亮；单卡、运行内门类记卡及切人真实数据保持。"
+    },
+    {
+      "id": "B36A-Q952-01",
+      "expected": "候补独立留守候补组，每人仍标候补并直显真实所在地；同行原号位与原顺序保持。"
+    },
+    {
+      "id": "B36A-Q952-02",
+      "expected": "展开箱区有认领箱总标题与原各箱名，三类默认收展和物权／实地权限不变；两段原说明保留且名词随Q950。"
+    },
+    {
+      "id": "B36A-Q953-01",
+      "expected": "本地回收箱取出…自动展开人物页箱区，滚到并高亮对应箱一次；返回仍折叠，不需再点击展开。"
+    },
+    {
+      "id": "B36A-Q953-02",
+      "expected": "仅此跳转触发展开、目标按原真实身份校验；导航不取物不耗时不移动，换区和子窗返回规则保持。"
+    },
+    {
+      "id": "B36A-Q954-01",
+      "expected": "委托详情进度前缀当前进度：与事项盘一致；原结果行保持，主目标下一步及序章原无前缀内容不改。"
+    },
+    {
+      "id": "B36A-Q954-02",
+      "expected": "序章任务名下显示实际所属阶段原标题和重点，当前阶段原角标，无所属阶段前缀；左仍每条独立且完成✓。"
+    },
+    {
+      "id": "B36A-Q954-03",
+      "expected": "每条委托末尾保留原办理说明，生存目标页保留真实日数／任务进度副标；不复活生存提示页已删副标。"
+    },
+    {
+      "id": "B36A-Q954-04",
+      "expected": "各任务仍共享主目标区／原有效入口，任务文本事实、条件与奖励不变，不以浏览触发执行。"
+    },
+    {
+      "id": "B36A-Q955-01",
+      "expected": "食饮进入帮助的独立退出只写返回、不写返回食饮；正文内部仍‹ 返回，两控件去向各自正确。"
+    },
+    {
+      "id": "B36A-Q955-02",
+      "expected": "内部返回／ESC正文先主题再父页，一次只退一层；顶栏关闭、实际父页及食饮来源重验恢复保持，无重复消费。"
+    }
+  ]
+}
