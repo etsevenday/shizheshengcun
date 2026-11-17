@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-17",
+  "status": "three_whole_single_question_originals_planning_not_runtime_verified",
+  "questions": [
+    904,
+    905,
+    906
+  ],
+  "choices": {
+    "904": "B",
+    "905": "B",
+    "906": "B"
+  },
+  "originals": [
+    {
+      "batch": "B35a1",
+      "questions": [
+        904
+      ]
+    },
+    {
+      "batch": "B35b",
+      "questions": [
+        905
+      ]
+    },
+    {
+      "batch": "B35a2",
+      "questions": [
+        906
+      ]
+    }
+  ],
+  "answers": {
+    "904": "选B。合法材料拖到材料卡／营地地点卡的候选，也列当前同地同区已存在对应设施的相关配方，点击进该真实设施工作区；顶栏本身三类范围不扩。保留原知识／技能／公共开放权限／相关性与真实开工校验，导航不扣物／预留／推进，见S07／S08／S14本批。",
+    "905": "选B。材料表不再列燃料，删除旧同炭混算分账条及“连同原料共需”等；原料与原份数／产量信息保留。燃料只看左侧真实对应设施状态，仍按本设施库存和原成本校验／核销；不足短句保持，不自动从包补燃料，见S08／S14本批。",
+    "906": "选B。投入设施的按份燃料库存只能供加工消耗，不提供取回入口，全部取出也不含库存；不新增取出燃料按钮／数量窗／结果句。未耗预留在取消／取走原料后仅解锁留原设施，不随原料返地面／随身；已耗不返，原料仍原真实退回。火堆分钟燃料／原取炭不改，不加中止／返料时间解释，见S11／S14本批。"
+  },
+  "candidates": {
+    "currentSameLocationAndZoneBuiltStations": true,
+    "selectionNavigatesToActualStation": true,
+    "topHandCraftScopeUnchanged": true,
+    "noImplicitCraftReserveOrRandom": true,
+    "originalAvailabilityAndPublicPermissions": true,
+    "directPotAndStationDragUnchanged": true
+  },
+  "fuelDisplay": {
+    "fuelRowInMaterialTable": false,
+    "oldCombinedCharcoalAccountingStrip": false,
+    "stationFuelInLeftPersistentArea": true,
+    "originalInputAndQuantityOutputInformation": true,
+    "noBackpackAutoFuel": true,
+    "originalCostsAndEligibility": true
+  },
+  "fuelInventory": {
+    "withdrawable": false,
+    "noWithdrawButtonOrQuantityDialog": true,
+    "notIncludedInTakeAll": true,
+    "onCancelUnconsumedReservedFuel": "unlock_in_same_actual_station_inventory",
+    "consumedFuelNotRefunded": true,
+    "ordinaryInputsOriginalReturnRules": true,
+    "noFuelOnReturnedItemList": true,
+    "noPassiveStopBatchOrShelfLifeChangeNarration": true,
+    "fireMinuteFuelAndExistingCharcoalRulesUnchanged": true
+  },
+  "acceptance": [
+    {
+      "id": "B35X-Q904-01",
+      "rule": "当前区工作台存在时，相关材料／营地地点拖拽候选可列工作台配方；点候选进真实工作台工作区而非徒手开工。"
+    },
+    {
+      "id": "B35X-Q904-02",
+      "rule": "当前区无对应已建设施则此快捷候选不列；异地设施、未开放公共权限、锁定配方不被绕过。"
+    },
+    {
+      "id": "B35X-Q904-03",
+      "rule": "拖拽和选候选不预留、扣物或推进，明确开始整单重验；直接锅／设施拖拽及添燃料原语义保持。"
+    },
+    {
+      "id": "B35X-Q905-01",
+      "rule": "材料表无燃料行或旧同炭总量分账／混算说明，原料、份数、产量等必要信息保留；左侧对应设施真实燃料状态仍在。"
+    },
+    {
+      "id": "B35X-Q905-02",
+      "rule": "原料1和设施燃料2的例子不从包自动补燃料，不借另一设施；完成各按真实来源扣一次。"
+    },
+    {
+      "id": "B35X-Q905-03",
+      "rule": "燃料不足仍原短句及真实开工校验，表隐藏不删成本或放宽批数。"
+    },
+    {
+      "id": "B35X-Q906-01",
+      "rule": "设施库存没有取出燃料／对应数量或箭头入口，单件取出／全部取出不包含燃料；主动锻炉不添全部取出。"
+    },
+    {
+      "id": "B35X-Q906-02",
+      "rule": "取消／移出原料只解除未耗燃料预留并留原设施，已耗不返；不返地面／随身，不误删未耗库存。"
+    },
+    {
+      "id": "B35X-Q906-03",
+      "rule": "同名原料炭与燃料炭分角色，取消只返实际原料炭；取出日志不列留下的燃料，不加中止批数／返料保质变化说明。"
+    },
+    {
+      "id": "B35X-Q906-04",
+      "rule": "火堆分钟制与原取炭、实际配方成本、其他设施库存和原整理权限不变。"
+    }
+  ]
+}
