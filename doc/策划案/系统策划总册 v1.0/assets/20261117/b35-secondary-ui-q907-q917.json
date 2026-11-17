@@ -1,0 +1,139 @@
+{
+  "date": "2026-11-17",
+  "status": "whole_original_eleven_planning_not_runtime_verified",
+  "originalBatch": "2026-11-17 来自7f08f0ee、1b50a095 B35 提前核对次要",
+  "questions": [
+    907,
+    908,
+    909,
+    910,
+    911,
+    912,
+    913,
+    914,
+    915,
+    916,
+    917
+  ],
+  "choices": {
+    "907": "A",
+    "908": "B",
+    "909": "A",
+    "910": "A",
+    "911": "A",
+    "912": "A",
+    "913": "A",
+    "914": "A",
+    "915": "B",
+    "916": "A",
+    "917": "A"
+  },
+  "answers": {
+    "907": "选A。顶栏手工制作未绑定设施，不放设施图标／燃料块或当前火堆状态；进入真实设施工作区才显示本座同源状态。Q904候选可进入设施、Q905燃料仅左侧、Q906不可取回保持，见S08／S14本批。",
+    "908": "选B。分类本机长期记忆按每座真实设施稳定身份分别保存，同类型／同名／不同世界不互盖；同一设施正常关页刷新读档恢复合法选择，无／失效仍全部配方默认。顶栏独立记忆，非Q892成长记卡，不新增旧档迁移，见S08／S14本批。",
+    "909": "选A。已开放公共工作台／锻炉／军械台等跟本座真实制作中／空闲，原名称／必要公共身份保留；未开放保留原因，不把同类另一座或NPC假设当本人制作。业务资格／中央进度不改，见S08／S14本批。",
+    "910": "选A。删除安全屋列表的原路线段落及要自己逐段走句，保留名称／常用／柜子记录；不删地图本来路线，不恢复返程／连走，见S02／S09／S14本批。",
+    "911": "选A。正常新开来源页按原顺序默认首个可获取且有已知地点行；都无则不选、内右空，不回退选不可获取或未知行。左公开来源／线索及原手选只读定位和逐层返回保持，不移动，见S08／S14本批。",
+    "912": "选A。物品卡和制作页现场修补按钮统一“开始维修（{实际时长}）”，未知沿未预估及实际原因格式；不改现场修补业务／耗时／消耗或工具维护配方名，见S08／S14本批。",
+    "913": "选A。城市图只读下尝试随身操作给“在城市层只能查看；关闭地图后再操作。”，查看卡片仍可，原其他操作资格不放宽，撤旧返回当前地点提示，见S02／S14本批。",
+    "914": "选A。删除“共{n}段。本次先走{起}→{止}，到达后请再次选择下一段。”，不另加替句，只显示路线；仍Q793 B必须明确改选相邻站，见S02／S14本批。",
+    "915": "选新增短稿B。删地图副标和路线区旧两条自动寻路／只确认下一段说明，远处因不相邻禁用出发旁只“先选相邻地点。”，不叠原长句。其他真实拒绝及Q803其他帮助位置保持，见S02／S14本批。",
+    "916": "选A。三处移动帮助同句：“点相邻地图卡在浮窗里确认移动；在区域地图上，先选相邻地点，在路线区点‘出发’。”，分别指地点栏卡与区域地图，不恢复地图旧浮窗，不撤真实入口，见S02／S14本批。",
+    "917": "选A。仅将三处窗口引用“制造”换“手工制作”：入口段、关闭窗口看火堆提示、同伴供料段，原其他句／徒手制造分类不改；不全局替技能行业词，也不恢复被后续裁定取代机制。三段完整同源文字见正式逐字稿／S08／S14本批。"
+  },
+  "workspace": {
+    "topHandCraftFacilityBlock": false,
+    "actualStationPersistentBlock": true,
+    "classificationMemory": "per_actual_facility_stable_identity_local_persistent",
+    "noCrossFacilityOrWorldCollision": true,
+    "defaultClass": "全部配方",
+    "topHandCraftMemoryIndependent": true,
+    "publicOpenCardsShowActualCraftState": true,
+    "unopenedPublicReasonPreserved": true
+  },
+  "sourcePage": {
+    "default": "first_usable_and_known_location_in_original_order",
+    "fallbackWhenNone": "no_selection_and_empty_inner_right",
+    "leftPublicRowsAndHintsPreserved": true,
+    "readOnlyNoMovement": true,
+    "validManualSelectionNotResetOnRedraw": true
+  },
+  "repair": {
+    "fieldPatchBothButtons": "开始维修（{实际时长}）",
+    "unknownNoReason": "开始维修（未预估）",
+    "unknownWithReason": "开始维修（未预估：{实际原因}）",
+    "businessAndRecipeToolMaintenanceNameUnchanged": true
+  },
+  "map": {
+    "safehouseRouteParagraph": false,
+    "cityReadOnlyReason": "在城市层只能查看；关闭地图后再操作。",
+    "removeFarRouteConfirm": true,
+    "noReplacementForFarRouteConfirm": true,
+    "removeTwoLegacyRouteLines": true,
+    "farNonAdjacentDepartReason": "先选相邻地点。",
+    "otherReasonsAndOtherQ803PlacesUnchanged": true,
+    "threeHelpCopies": "点相邻地图卡在浮窗里确认移动；在区域地图上，先选相邻地点，在路线区点“出发”。",
+    "manualAdjacentMovementUnchanged": true
+  },
+  "naming": {
+    "entryParagraph": "系统说明入口段：“不需要固定设施的物品在‘手工制作’中的‘徒手制造’里制作。未建设施在‘设施建造’里查看条件并建造；建成后，点击对应设施查看和操作它的配方。维护与修补仍须满足原目标、材料和工具条件。”",
+    "fireJump": "关闭手工制作窗口，打开火堆加工菜单",
+    "partyParagraph": "系统说明同伴补料段：“在手工制作或设施工作区，若同伴材料能补齐缺口，可勾选‘允许使用同伴的材料’。优先使用你和当前地面的材料，同伴只补不足部分，先取最快到期的有效批次。实际开工才转移并预留同伴材料；取消或中止后，未消耗的同伴材料留在原工作地点地面。勾选会长期保留，直到手动取消。”",
+    "originalOtherTextUnchanged": true,
+    "handCraftCategory": "徒手制造"
+  },
+  "acceptance": [
+    {
+      "id": "B35S-Q907-01",
+      "rule": "顶栏手工制作无设施／火堆燃料块，进入真实设施工作区后本座状态常驻；Q904入口不撤。"
+    },
+    {
+      "id": "B35S-Q908-01",
+      "rule": "工作台甲选装备不覆盖工作台乙上次分类，同名／同类型／不同世界设施不串。"
+    },
+    {
+      "id": "B35S-Q908-02",
+      "rule": "同一真实设施正常关页刷新读档恢复本机合法分类，顶栏独立；无／失效记忆默认全部配方，缓存不授予资格。"
+    },
+    {
+      "id": "B35S-Q909-01",
+      "rule": "已开放公共设施真实在此制作才制作中，完成空闲，同类别座不串；未开放保留真实原因。"
+    },
+    {
+      "id": "B35S-Q910-01",
+      "rule": "安全屋面板无原路线段落，名称常用柜子记录保留，地图路线和只读定位原入口保持，无自动返程。"
+    },
+    {
+      "id": "B35S-Q911-01",
+      "rule": "首次来源页选原顺序首个可获取且有已知地点行；无符合者不选且内右空，不默认不可获取／未知行。"
+    },
+    {
+      "id": "B35S-Q911-02",
+      "rule": "左公开来源和线索保留、定位不移动，正常有效手选不被重绘抢回默认，原返回草稿保持。"
+    },
+    {
+      "id": "B35S-Q912-01",
+      "rule": "物品卡与制作页现场修补都开始维修（真实时长），不可靠带原实际原因，业务与工具维护配方名不变。"
+    },
+    {
+      "id": "B35S-Q913-01",
+      "rule": "城市只读下尝试随身操作给已定关闭地图提示，查看仍允许，普通地图操作范围不误锁。"
+    },
+    {
+      "id": "B35S-Q914-01",
+      "rule": "删除远处本次先走下一段旧句且不加替句，远处只看路线，仍必须明确改选相邻站。"
+    },
+    {
+      "id": "B35S-Q915-01",
+      "rule": "旧两条重复路线说明删除，远处因不相邻禁用只提示“先选相邻地点。”，其他真实原因和远城只读不误覆盖。"
+    },
+    {
+      "id": "B35S-Q916-01",
+      "rule": "三处移动帮助同句解释地点卡浮窗和地图路线出发；不恢复地图旧浮窗或改变实际入口。"
+    },
+    {
+      "id": "B35S-Q917-01",
+      "rule": "三处窗口名均手工制作，徒手制造分类及其余原句不变，不全局替技能行业词或恢复被取代机制。"
+    }
+  ]
+}
