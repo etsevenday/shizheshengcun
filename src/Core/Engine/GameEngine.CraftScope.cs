@@ -297,7 +297,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 开发入口「B35a1 设施试用组」：只造试玩起点——在能建工坊的当前区直接记工作台、锻炉、缝纫台已建成，
-        /// 当前地面放废料3、铁矿石3、木炭2、木材4（拖拽候选、独立设施卡、工作区分组与“制作中／空闲”用）。不开工、不推进时间。
+        /// 当前地面放废金属3、铁矿石3、木炭2、木材4（拖拽候选、独立设施卡、工作区分组与“制作中／空闲”用）。不开工、不推进时间。
         /// </summary>
         public string DebugCraftScopeKit(GameState s)
         {
@@ -306,7 +306,7 @@ namespace Survival.Core.Engine
             foreach (var id in new[] { "workbench", "forge", "sewing" })
                 if (!fac.Workshops.Contains(id)) fac.Workshops.Add(id);
             foreach (var (id, n) in new[] { ("scrap", 3), ("iron_ore", 3), ("charcoal", 2), ("wood", 4) }) CreateItems(s, id, n, s.Ground);
-            var text = $"开发：{ZoneName(s, s.Ground)}记工作台、锻炉、缝纫台已建成；地面放废料3、铁矿石3、木炭2、木材4";
+            var text = $"开发：{ZoneName(s, s.Ground)}记工作台、锻炉、缝纫台已建成；地面放废金属3、铁矿石3、木炭2、木材4";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }
