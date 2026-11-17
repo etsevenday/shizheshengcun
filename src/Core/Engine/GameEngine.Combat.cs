@@ -1196,7 +1196,9 @@ namespace Survival.Core.Engine
         public ActionResult ExecuteCommand(GameState s, BattleCommand c)
         {
             var had = s.Battle;
-            var r = ExecuteCommandCore(s, c);
+            ActionResult r;
+            try { r = ExecuteCommandCore(s, c); }
+            finally { _fxCmdAp = null; }   // BM11（R280）：提交前 AP 只供本条指令的第一条出手
             AfterBattleBoundary(s, had);
             return r;
         }
@@ -1212,6 +1214,7 @@ namespace Survival.Core.Engine
             var b = s.Battle!;
             // B9a：这条指令属于正在激活的成员；结算途中他若战死（例如击倒膨胀感染者被喷溅），激活已在 AllyDownInBattle 里结束
             var actor = b.FocusId;
+            if (!s.SimCopy) _fxCmdAp = (actor, b.PlayerAp);   // BM11（R280，R03 §Q617）：AP 到第一段出手结果帧才显示扣后值
             bool StillActing() => s.Battle != null && !s.Progress.Dead && ActingAlly(b) == actor;
             // 武器技能与应急拳击（B7 R25）：扣技能 AP 后按类型执行（攻击 / 格挡增益指挥医疗装填）
             if (IsSkillAction(c.Action) || c.Action == DesperatePunch)
@@ -1269,10 +1272,11 @@ namespace Survival.Core.Engine
                 case "reload":
                 {
                     var need = w.MagazineCapacity - wi!.LoadedAmmo;
+                    var loaded0 = wi.LoadedAmmo;
                     var took = TakeCarried(s, w.AmmoId!, need);
                     wi.LoadedAmmo += took;
                     wi.LoadedAmmoId = w.AmmoId;
-                    FxShort(s, ActionName(c.Action), FxAlly(s, actor));
+                    FxShort(s, ActionName(c.Action), FxAlly(s, actor), AmmoHoldOf(wi, loaded0));   // BM11（Q919 B）：短反馈期间显示装填前弹数
                     BattleLog(s, $"{Who(s)}装填{ItemName(w.AmmoId!)}{took}发（弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}）。");
                     break;
                 }

@@ -207,11 +207,13 @@
                         var pi = e.WeaponOnPage(s, page, out var pw);
                         var onPage = b.ActiveWeaponSlot == page;
                         var slotName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page)!);
-                        var warn = pi != null && !GameEngine.HasWear(pi, cfg.Wear.PerExecutedAttackCommand) ? "耐久不足" : pi != null && pw.UsesMagazine && pi.LoadedAmmo <= 0 ? "弹仓空" : null;
+                        // BM11（Q919 B）：成功装填／快速装填的短反馈期间本武器弹数与派生的「弹仓空」按装填前值，短反馈结束追齐真实值
+                        var shownAmmo = pi == null ? 0 : G.ShownLoadedAmmo(pi);
+                        var warn = pi != null && !GameEngine.HasWear(pi, cfg.Wear.PerExecutedAttackCommand) ? "耐久不足" : pi != null && pw.UsesMagazine && shownAmmo <= 0 ? "弹仓空" : null;
                         var sub = string.Join(" · ", new[] {
                             warn,
                             warn == null && pi?.Durability != null ? $"耐久{GameEngine.DurabilityText(pi)}" : null,
-                            pw.UsesMagazine && pi != null ? $"弹{pi.LoadedAmmo}/{pw.MagazineCapacity}" : null,
+                            pw.UsesMagazine && pi != null ? $"弹{shownAmmo}/{pw.MagazineCapacity}" : null,
                             pw.ConsumesLooseAmmo ? $"箭{s.Items.Where(i => GameEngine.CarriedByMe(s, i) && i.ItemId == pw.AmmoId).Sum(i => i.Count)}" : null,
                             pi == null ? "空槽·拳" : null,
                         }.Where(x => x != null));

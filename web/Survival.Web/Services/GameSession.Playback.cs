@@ -174,13 +174,42 @@ public sealed partial class GameSession
         FxPulses.Clear();
         _fxPulseNames.Clear();
         _fxPulseUntilMs = 0;
+        _ammoHold = null;   // BM11（Q919）：载入／新局不把上一局的装填前弹数串过来
         EndClosingHold();
         E.DrainBattleFx();
         E.DrainLifeFx();   // B47b（Q692-A02）：读档／新局不补播历史生命镜头
     }
 
+    // ── BM11（Q919 选 B，R03／S14 文首 2026-11-17 Q918—Q920 节）：成功装填／快速装填的短反馈期间，这把武器的常驻弹数保留装填前值 ──
+    // 只绑定这场战斗、这次动作、这把武器（实例号）；短反馈自然结束才追齐真实值。新指令提交、切武器页、读档／新局时清掉；旧的结束回调按序号不覆盖更晚的等待。
+    private (int BattleId, int WeaponId, int Loaded, int Seq)? _ammoHold;
+    private int _ammoHoldSeq;
+
+    /// <summary>Q919：武器页签上显示的弹仓数（本武器装填短反馈期间为装填前值，否则为真实值）。合法性校验仍读真实状态。</summary>
+    public int ShownLoadedAmmo(ItemInstance wi) =>
+        _ammoHold is { } h && State?.Battle is { } b && b.BattleId == h.BattleId && wi.InstanceId == h.WeaponId ? h.Loaded : wi.LoadedAmmo;
+
+    /// <summary>Q919：提交后首次重绘前，按本次出手里的装填短反馈先定住显示（短反馈开始播时才计结束时刻）。</summary>
+    private void PrimeAmmoHold(List<BattleFxEvent> evs)
+    {
+        var ev = evs.LastOrDefault(x => x.Short && x.AmmoHold != null);
+        _ammoHold = ev == null ? null : (ev.BattleId, ev.AmmoHold!.WeaponInstanceId, ev.AmmoHold.LoadedBefore, ++_ammoHoldSeq);
+    }
+
+    /// <summary>Q919：清掉装填显示等待（新动作、切武器、离场／载入），之后按真实当前状态显示。</summary>
+    public void ClearAmmoHold() => _ammoHold = null;
+
+    private async Task ReleaseAmmoHold(int seq, int gen)
+    {
+        await Task.Delay(MotionMs(FxPulseBaseMs) + 50);   // 与 ClearPulse 撤下短反馈同一时刻
+        if (gen != _fxGen || _ammoHold is not { } h || h.Seq != seq) return;   // 已被更晚的动作或上下文切换取代
+        _ammoHold = null;
+        Notify();
+    }
+
     private void Pulse(BattleFxEvent ev, int gen)
     {
+        if (ev.AmmoHold != null && _ammoHold is { } ah && ah.BattleId == ev.BattleId && ah.WeaponId == ev.AmmoHold.WeaponInstanceId) _ = ReleaseAmmoHold(ah.Seq, gen);
         var u = ev.Actor;
         var key = u.Side + ":" + u.Id;
         var seq = FxPulses.TryGetValue(key, out var v) ? v + 1 : 1;

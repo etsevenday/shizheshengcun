@@ -554,11 +554,13 @@ namespace Survival.Core.Engine
                 }
                 case "reload":
                 {
-                    FxShort(s, n.Name, me);   // B47b（R03 §Q615 表）：快速装填按原装填类原地动作反馈，不播支援特写
                     var need = w.MagazineCapacity - wi!.LoadedAmmo;
+                    var loaded0 = wi.LoadedAmmo;
                     var took = TakeCarried(s, w.AmmoId!, need);
                     wi.LoadedAmmo += took;
                     wi.LoadedAmmoId = w.AmmoId;
+                    // B47b（R03 §Q615 表）：快速装填按原装填类原地动作反馈，不播支援特写；BM11（Q919 B）：短反馈期间显示装填前弹数
+                    FxShort(s, n.Name, me, AmmoHoldOf(wi, loaded0));
                     parts.Add($"装填{ItemName(w.AmmoId!)}{took}发（弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}）");
                     break;
                 }

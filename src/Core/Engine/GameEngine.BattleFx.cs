@@ -18,6 +18,8 @@ namespace Survival.Core.Engine
         private int _fxSeq;
         /// <summary>B47b（Q617）：最近一次结束的出手结束时的显示快照（父出手在子事件之后继续出段时，作为续段开始前的显示）。</summary>
         private GameState? _fxLastClose;
+        /// <summary>BM11（R280，R03 §Q617）：本次指令提交前行动者的 AP；本条指令记下的第一条出手取走它（见 <see cref="FxBegin"/>）。</summary>
+        private (string Actor, int Ap)? _fxCmdAp;
 
         /// <summary>取走自上次以来记下的出手事件（按真实发生顺序；反击／迎击插在触发处）。界面每次提交或每一步之后调用一次。</summary>
         public List<BattleFxEvent> DrainBattleFx()
@@ -73,6 +75,13 @@ namespace Survival.Core.Engine
                 // B47b（R03 §Q617）：这一段开始前的显示快照（播放时上一段结果帧之后切到它）
                 View = shortFeedback ? null : view ?? s.DisplayClone(),
             };
+            // BM11（R280，R03 §Q617）：本次指令真实扣 AP 在第一段出手开始之前；这条指令的第一段全屏出手的开始快照把行动者 AP 还原成提交前值，
+            // AP 与 HP 一样到该段结果帧才追齐（续段、子事件不再改）。第一条记录是短反馈的（防御、装填等）沿原规则立即显示真实 AP。
+            if (_fxCmdAp is { } pre)
+            {
+                _fxCmdAp = null;
+                if (!shortFeedback && _fxOpen.Count == 0 && ev.View?.Battle is BattleState vb && vb.BattleId == b.BattleId) vb.Fighter(pre.Actor).Ap = pre.Ap;
+            }
             if (_fx.Count >= 400) _fx.RemoveRange(0, _fx.Count - 300);   // 没人取走（测试、离线推进）时不无限增长
             _fx.Add(ev);
             _fxOpen.Add(ev);
@@ -151,10 +160,18 @@ namespace Survival.Core.Engine
         public static string BreatheShortText(string who) => $"{who}喘了口气";
 
         /// <summary>短反馈（R03 §Q571：防御、调息、调整站位、撤退、装填、整队；敌方非攻击意图；支撑护带包）。只记行动者，不造数值。</summary>
-        private void FxShort(GameState s, string name, BattleFxUnit actor)
+        private void FxShort(GameState s, string name, BattleFxUnit actor, BattleFxAmmoHold? ammoHold = null)
         {
-            using (FxBegin(s, name, BattleFxMotion.Short, actor, shortFeedback: true)) { }
+            using (FxBegin(s, name, BattleFxMotion.Short, actor, shortFeedback: true))
+                if (ammoHold != null && _fxOpen.Count > 0) _fxOpen[_fxOpen.Count - 1].AmmoHold = ammoHold;
         }
+
+        /// <summary>
+        /// BM11（Q919 选 B，R03／S14 文首 2026-11-17 Q918—Q920 节）：成功装填／快速装填的短反馈带上这把武器装填前的弹仓数，
+        /// 界面在本次短反馈期间按它显示、短反馈结束才追齐真实值。真实装弹、扣弹药、AP 与战报照原事务提交。装填前后弹数没变（未实际装填）不带。
+        /// </summary>
+        private static BattleFxAmmoHold? AmmoHoldOf(ItemInstance wi, int loadedBefore) =>
+            wi.LoadedAmmo == loadedBefore ? null : new BattleFxAmmoHold { WeaponInstanceId = wi.InstanceId, LoadedBefore = loadedBefore };
 
         /// <summary>敌人这一步实际执行的动作名（意图正式名去掉括注与数值，与执行时的战报动词同源）；只在执行时调用，不预告未来计划。</summary>
         private string FxEnemyActName(BattleEnemy e, BattleState b)

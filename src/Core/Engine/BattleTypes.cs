@@ -178,6 +178,13 @@ namespace Survival.Core.Engine
         public bool IsAlly => Side == AllySide;
     }
 
+    /// <summary>BM11（Q919 选 B）：一次真实成功装填的武器实例与装填前弹仓数（只供显示，不进存档）。</summary>
+    public sealed class BattleFxAmmoHold
+    {
+        public int WeaponInstanceId { get; set; }
+        public int LoadedBefore { get; set; }
+    }
+
     /// <summary>一段真实结果：Outcome 为 hit／crit／miss／blocked（护甲完全挡住）／effect（命中但无伤或无数值的效果）／heal。</summary>
     public sealed class BattleFxResult
     {
@@ -234,6 +241,8 @@ namespace Survival.Core.Engine
         /// 最后一段结果帧后回到真实状态。不进存档；内核没有在战斗中记录时为 null。
         /// </summary>
         [Newtonsoft.Json.JsonIgnore] public GameState? View { get; set; }
+        /// <summary>BM11（Q919 选 B）：成功装填／快速装填短反馈所装武器与装填前弹仓数（界面短反馈期间显示它）；其余出手为 null。</summary>
+        public BattleFxAmmoHold? AmmoHold { get; set; }
         /// <summary>B47b：结算途中发生、等本出手结束时并到承受者最后一段上的生命姿态变化（阵营:编号 → 变化）。</summary>
         internal List<(BattleFxUnit Unit, string? Life, bool Dead, double Amount)> LifeMarks { get; } = new List<(BattleFxUnit, string?, bool, double)>();
 

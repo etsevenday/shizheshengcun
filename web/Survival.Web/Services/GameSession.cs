@@ -2999,6 +2999,7 @@ public sealed partial class GameSession
         MedTrayOpen = false;
         BattleAllyView = null;
         ClearPairDraft();
+        ClearAmmoHold();   // BM11（Q919）：换场／离场清旧装填显示等待
         BattleShownActor = null;
         ResetBattleInfoUi();   // B34a：阅读区回默认收起
         EndedLog = null;   // B34 试玩修复 B2：读档、新局、新场次不留上一场的只读记录页
@@ -3206,6 +3207,7 @@ public sealed partial class GameSession
             var res = E.ExecuteCommand(S, cmd);
             var fx = E.DrainBattleFx();
             if (res.Ok && !res.Duplicate && gen == _fxGen) PrimeFxView(fx);   // B47b（Q617）：首次重绘前把常驻显示定在第一段特写之前
+            if (res.Ok && !res.Duplicate && gen == _fxGen) PrimeAmmoHold(fx);   // BM11（Q919 B）：新动作取代旧装填等待；本次是成功装填时短反馈期间显示装填前弹数
             // B34 试玩修复 E2（Q572-A01）：这一条指令让战斗收束（撤退成功等）且行动者有短反馈——先冻结战斗画面亮完短反馈，再露出收束画面
             var closing = res.Ok && !res.Duplicate && State != null && S.Battle == null && !S.Progress.Dead
                 ? fx.LastOrDefault(x => x.Short && x.Actor.IsAlly) : null;
@@ -3872,6 +3874,7 @@ public sealed partial class GameSession
             BattleItem = null;
             BattleHover = null;
             ClearPairDraft();
+            ClearAmmoHold();   // BM11（Q919）：换武器页即结束旧装填显示等待
             Commit();
         }
         Notify();
