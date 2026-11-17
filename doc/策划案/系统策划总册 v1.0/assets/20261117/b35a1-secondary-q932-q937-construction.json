@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-17",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "88b3f16986ad0e4ea43482f03fb9fb1c2dbba685",
+  "originalBatch": "2026-11-17 来自 bc0b32ad、08333115 B35a1（提前核对，次要）",
+  "questionIds": [
+    932,
+    933,
+    934,
+    935,
+    936,
+    937
+  ],
+  "answers": {
+    "Q932": "A",
+    "Q933": [
+      "A",
+      "A",
+      "A"
+    ],
+    "Q934": "A",
+    "Q935": "B_with_user_new_staged_construction",
+    "Q935_execution": "A",
+    "Q935_interruption": "A",
+    "Q936": "B_short_offered_copy",
+    "Q937": "B_short_offered_copy"
+  },
+  "help": {
+    "fireAndStoveReadOnlyFold": "处理说明",
+    "defaultCollapsed": true,
+    "keepSystemHelp": true,
+    "handCraftAutomaticTab": false,
+    "viewFireButton": false,
+    "q917SecondJumpHint": false,
+    "stepsUseLatestRules": true
+  },
+  "candidates": {
+    "campTargetAddsHandRecipes": false,
+    "addActualBuiltLocalStationRecipes": true,
+    "includePotRecipes": false,
+    "includeDryingRecipes": false,
+    "showUnavailableActualPublicStationRecipesForReadOnly": true,
+    "preserveRecipeVisibilityAndInputFilters": true,
+    "siteCountsAsBuiltStation": false,
+    "showStationName": true,
+    "backToPreservedCandidateBeforeClosing": true,
+    "revalidateOnReturn": true
+  },
+  "construction": {
+    "scope": "all_player_on_site_build_recipes",
+    "excludePublicAndDeployable": true,
+    "allowZeroMaterialSite": true,
+    "placeMinutes": 0,
+    "inputMinutes": 0,
+    "demolishUnfinishedMinutes": 0,
+    "ap": 0,
+    "needsAllInvestedMaterialsBeforeWork": true,
+    "startRequiresExplicitPlayerAction": true,
+    "occupiesActor": true,
+    "autoBuild": false,
+    "useOriginalWorkAndSpeed": true,
+    "retainSiteMaterialsAndWorkOnInterruption": true,
+    "canLeaveAfterLegalExitAndResumeSameSite": true,
+    "progressStoredAsBaseWork": true,
+    "noGenericCarryDuplication": true,
+    "materialPhysicalOwner": "this_real_site",
+    "capInputsAtRecipeRemaining": true,
+    "noAutomaticSourceConsumption": true,
+    "existingLegalCompanionConsentAndSourceOrder": true,
+    "materialInputAndDemolitionRequireLegalIdle": true,
+    "unfinishedHasNoBuiltBenefits": true,
+    "locationZoneAndOriginalKnowledgeSkillPermissionGuards": true,
+    "siteAndBuiltShareOriginalUniqueTypeQuota": true,
+    "normalSaveContinuePreservesSite": true,
+    "demolitionReturnDestination": "site_original_local_zone_ground",
+    "refundOnlyActualInvestedMaterials": true,
+    "refundPreservesRealAttributes": true,
+    "noRefundElapsedTime": true,
+    "noCompletedOrPublicDemolition": true,
+    "finalizeOnceConsumesMaterialsAndGivesOriginalXp": true,
+    "intermediateActionXp": 0,
+    "stageLabels": {
+      "pendingOrStopped": "未完工",
+      "working": "施工中",
+      "built": "已建成"
+    },
+    "allBuildEntrancesUseSiteWorkflow": true,
+    "existingSiteRoutesToSameProject": true,
+    "oldStartCannotDebitBackpackToBypassSite": true,
+    "investedInputsUnavailableForOtherUsesUntilDemolition": true
+  },
+  "buildRecipes": [
+    {
+      "id": "shelter",
+      "name": "建遮蔽棚",
+      "baseMinutes": 120,
+      "inputs": {
+        "wood": 4,
+        "fiber": 4
+      },
+      "facilityResult": "shelterBuilt"
+    },
+    {
+      "id": "bed",
+      "name": "铺床垫",
+      "baseMinutes": 60,
+      "inputs": {
+        "fiber": 4,
+        "cloth": 2
+      },
+      "facilityResult": "bedBuilt"
+    },
+    {
+      "id": "build_workbench",
+      "name": "建工作台",
+      "baseMinutes": 120,
+      "inputs": {
+        "plank": 4,
+        "fastener": 4,
+        "parts": 2
+      },
+      "facilityResult": "workshop:workbench"
+    },
+    {
+      "id": "build_forge",
+      "name": "建锻炉",
+      "baseMinutes": 180,
+      "inputs": {
+        "stone": 8,
+        "iron_plate": 4,
+        "parts": 2
+      },
+      "facilityResult": "workshop:forge"
+    },
+    {
+      "id": "build_sewing",
+      "name": "建缝纫台",
+      "baseMinutes": 120,
+      "inputs": {
+        "plank": 3,
+        "parts": 2,
+        "thread": 2
+      },
+      "facilityResult": "workshop:sewing"
+    },
+    {
+      "id": "build_medical",
+      "name": "建医疗台",
+      "baseMinutes": 150,
+      "inputs": {
+        "plank": 3,
+        "iron_plate": 2,
+        "medical_gauze": 4
+      },
+      "facilityResult": "workshop:medical"
+    },
+    {
+      "id": "build_armory",
+      "name": "建军械台",
+      "baseMinutes": 240,
+      "inputs": {
+        "iron_plate": 6,
+        "steel": 4,
+        "precision_parts": 2
+      },
+      "facilityResult": "workshop:armory"
+    },
+    {
+      "id": "safehouse_base",
+      "name": "建安全屋",
+      "baseMinutes": 240,
+      "inputs": {
+        "wood": 8,
+        "fiber": 6,
+        "cloth": 2,
+        "stone": 4
+      },
+      "facilityResult": "safehouse"
+    },
+    {
+      "id": "safehouse_bed",
+      "name": "铺屋内床垫",
+      "baseMinutes": 60,
+      "inputs": {
+        "fiber": 4,
+        "cloth": 2
+      },
+      "facilityResult": "bedBuilt"
+    },
+    {
+      "id": "safehouse_fire",
+      "name": "建屋内火堆",
+      "baseMinutes": 30,
+      "inputs": {
+        "stone": 4,
+        "wood": 2
+      },
+      "facilityResult": "fireBuilt"
+    },
+    {
+      "id": "wild_fixed_fire",
+      "name": "建野外火堆",
+      "baseMinutes": 30,
+      "inputs": {
+        "stone": 4,
+        "wood": 2
+      },
+      "facilityResult": "fireBuilt"
+    },
+    {
+      "id": "build_kiln",
+      "name": "建陶窑",
+      "baseMinutes": 180,
+      "inputs": {
+        "stone": 8,
+        "clay": 6,
+        "iron_plate": 2
+      },
+      "facilityResult": "workshop:kiln"
+    },
+    {
+      "id": "build_water_station",
+      "name": "建固定净水台",
+      "baseMinutes": 90,
+      "inputs": {
+        "ceramic_shell": 4,
+        "plank": 2,
+        "cloth": 2
+      },
+      "facilityResult": "workshop:water_station"
+    },
+    {
+      "id": "build_drying_rack",
+      "name": "建晾制架",
+      "baseMinutes": 60,
+      "inputs": {
+        "wood": 4,
+        "rope": 2
+      },
+      "facilityResult": "workshop:drying_rack"
+    }
+  ],
+  "publicCard": {
+    "badge": "公共",
+    "stateOnly": "制作中／空闲",
+    "tooltip": "公共设施。",
+    "preserveNameFeesAndEligibility": true
+  },
+  "safehouse": {
+    "removeSubtitle": true,
+    "removeOldEmptyLongText": true,
+    "insideTooltip": "柜子存取、改名与收藏",
+    "outsideTooltip": "收藏与改名（柜子只能在屋内存取）",
+    "noEmptyLivingPanelWithoutLocalBuiltHouse": true,
+    "constructionPageDistinct": true,
+    "remoteEntry": false
+  },
+  "q600Help": {
+    "reuseOriginalCopyUnchanged": true,
+    "placeAfter": "系统说明→手工制作→入口段",
+    "source": "S08 2026-11-14 Q600主控设计：38条秘密配方的发现与预览",
+    "visibilityListUnchanged": true
+  },
+  "copy": {
+    "place": "放置工地",
+    "input": "投入材料",
+    "quantityTitle": "投入材料 · {物名}",
+    "quantityConfirm": "确认{数量}",
+    "start": "开始建造",
+    "resume": "继续建造",
+    "demolish": "拆除设施",
+    "placed": "已放置{设施名}工地。",
+    "invested": "已投入{物品清单}。",
+    "stopped": "已停止建造。",
+    "demolishedWithMaterials": "已拆除{设施名}，材料退至{地点}地面：{物品清单}。",
+    "demolishedEmpty": "已拆除{设施名}。"
+  },
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "B35A1S-Q932-01",
+      "expected": "两类火源主层有默认收起的只读处理说明四类；手工无自动加工分类／查看火堆及其旧跳转提示，步骤按最新水量同源。"
+    },
+    {
+      "id": "B35A1S-Q933-01",
+      "expected": "拖到营地地点卡列原建造及当地已建成设施相关配方，不额外列徒手；材料对材料的原手工范围不被误删。"
+    },
+    {
+      "id": "B35A1S-Q933-02",
+      "expected": "通用候选不列锅食谱／晾制；未开放但真实存在公共设施的已掌握配方可浏览但不能开工，灰工地不当设备。"
+    },
+    {
+      "id": "B35A1S-Q934-01",
+      "expected": "设施候选小字加真实设施名，进入后返回／ESC先回保留候选再退出，返回重验无重复投料／扣物。"
+    },
+    {
+      "id": "B35A1S-Q935-01",
+      "expected": "任一合法玩家现场建设可0材料0分钟放独立灰虚线工地，不自动显示所有未建卡；公共既有设施和直接部署物不套用。"
+    },
+    {
+      "id": "B35A1S-Q935-02",
+      "expected": "原选址／知识／技能／区域／唯一限额仍校验；同类工地占位防重复，但未完工不提供建成能力。"
+    },
+    {
+      "id": "B35A1S-Q935-03",
+      "expected": "遮蔽棚需求木材4纤维4，可先投木材2并保存离开；投料0分钟，来源只减实际2，工地显示2/4与0/4，无自动开工。"
+    },
+    {
+      "id": "B35A1S-Q935-04",
+      "expected": "工地材料仅投需求缺口，不收无关／超额物；确认重验真实源与同伴授权，失败无部分搬入、双计或隐式自动补料。"
+    },
+    {
+      "id": "B35A1S-Q935-05",
+      "expected": "齐料仍需玩家点击开始，单角色按原速度／时长施工；其他工作或离开时工程进度不自动涨。"
+    },
+    {
+      "id": "B35A1S-Q935-06",
+      "expected": "施工一半退出后工地／材料／完成基础工作量保留，可离开回原地续建剩余，不重扣料或折作另一工程的免费余量。"
+    },
+    {
+      "id": "B35A1S-Q935-07",
+      "expected": "自动暂停沿原补给继续；施工进行／暂停时先合法退出再投料／拆工地，不用0分钟绕过段锁／战斗／对白。"
+    },
+    {
+      "id": "B35A1S-Q935-08",
+      "expected": "未完工拆除0分钟全返实际已投材料到工程本区地面，保品质期限，清进度及卡并释占位；空工地不造材料。"
+    },
+    {
+      "id": "B35A1S-Q935-09",
+      "expected": "放置／投料／停止／继续／拆未完工不给经验；真正完工只一次核销材料、建实体与原经验，重发不刷经验／柜子。"
+    },
+    {
+      "id": "B35A1S-Q935-10",
+      "expected": "未开工／停止角标未完工、实际施工写施工中、完工已建成；保存继续、候选与其他系统都读同一工程状态。"
+    },
+    {
+      "id": "B35A1S-Q935-11",
+      "expected": "安全屋灰卡只开施工页无屋内／柜子，完工后才沿Q931本地生活入口；不开放成品／公共拆除或远程退料。"
+    },
+    {
+      "id": "B35A1S-Q936-01",
+      "expected": "公共卡保真实名与公共角标，状态仅制作中／空闲，悬停公共设施。锁定原因／费用／业务条件保持。"
+    },
+    {
+      "id": "B35A1S-Q937-01",
+      "expected": "已建安全屋删重复副标／旧无屋长空态，本地内外按钮用所定短悬停；无合法生活入口不开空面板，不恢复返程。"
+    },
+    {
+      "id": "B35A1S-Q937-02",
+      "expected": "Q600已定系统说明原段逐字在手工制作入口段后，原秘密配方清单与过滤不被本批改动。"
+    }
+  ]
+}
