@@ -694,4 +694,165 @@ public class B35a1CraftScopeTests : TestBase
         Assert.That(next, Is.GreaterThan(at), "秘密配方段在入口段之后");
         Assert.That(craft.Substring(at, next - at).Count(ch => ch == '"'), Is.EqualTo(2), "两段之间没有别的段落");
     }
+
+    // ═════════════ 变异测试补测（基线 19fe378f..ea3c20e5，第一次 210 个变异存活 37、无覆盖 2） ═════════════
+
+    /// <summary>Q600 合同 emptySkillMapMatches=false：空技能表不算满足；同一配方接取指定任务即显现（对照）。</summary>
+    [Test]
+    public void Mut_Q600_EmptySkillMapNeverMatches()
+    {
+        var rc = new RecipeConfig { Id = "mut_secret", Reveal = new RecipeRevealConfig { AnyAcceptedQuest = { "EXQ06" } } };
+        Assert.That(rc.Reveal.SkillsAll, Is.Empty);
+        var s = Camp();
+        Assert.That(E.RecipeVisible(s, rc), Is.False, "空技能表不算满足（Q600 emptySkillMapMatches: false）");
+        s.Progress.Flags.Add(GameEngine.QuestFact("EXQ06", "accepted"));
+        Assert.That(E.RecipeVisible(s, rc), Is.True, "接取指定任务显现（Q600 revealAnyAcceptedQuest）");
+    }
+
+    /// <summary>S14 B35 节（Q594 工作区列表）：沿现有可开工优先排序——无门槛原因的在前，同档按配置原顺序稳定排列。</summary>
+    [Test]
+    public void Mut_Q594_WorkspaceListOpenFirstThenConfigOrder()
+    {
+        var s = Camp();
+        Fac(s).Workshops.Add("workbench");
+        s.Skills["crafting"].Level = 1;
+        var all = E.WorkspaceRecipes(s, "workbench", "all");
+        var open = all.Where(r => E.RecipeLocks(s, r).Count == 0).Select(r => r.Id).ToList();
+        // 制造1、无做法知识的工作台配方（config.v0.6 recipes：minSkills crafting 1、无 knowledge）
+        Assert.That(open, Is.EqualTo(new[] { "make_iron_plate", "make_fastener", "make_rubber", "make_plastic", "make_wire", "make_battery", "make_grain", "make_salt", "make_cooking_oil" }));
+        Assert.That(all, Has.Count.GreaterThan(open.Count), "也列有门槛的配方");
+        Assert.That(all.Take(open.Count).Select(r => r.Id), Is.EqualTo(open), "可开工的全部排在前面");
+        var locked = all.Skip(open.Count).ToList();
+        Assert.That(locked, Has.Count.EqualTo(all.Count - open.Count));
+        Assert.That(locked.All(r => E.RecipeLocks(s, r).Count > 0), Is.True);
+        Assert.That(locked[0].Id, Is.EqualTo("make_machete"), "有门槛的第一条是配置里第一条工作台配方");
+        var idx = locked.Select(r => Cfg.Recipes.IndexOf(r)).ToList();
+        Assert.That(idx, Is.Ordered.Ascending, "同档按配置原顺序");
+    }
+
+    /// <summary>Q594／Q933②：拆解、设施建造、锅食谱、晾制即使挂在工坊上也不算设施工作区配方；不存在的工坊不算；真实工作台配方算（对照）。</summary>
+    [Test]
+    public void Mut_Q594_WorkspaceRecipeExcludesOtherKinds()
+    {
+        Assert.That(E.IsWorkspaceRecipe(R("make_fastener")), Is.True, "工作台配方是工作区配方");
+        var kinds = new[] { "salvage", "build", "pot", "drying" };
+        Assert.That(kinds, Has.Length.EqualTo(4));
+        foreach (var kind in kinds)
+            Assert.That(E.IsWorkspaceRecipe(new RecipeConfig { Id = "mut_" + kind, Kind = kind, Station = "workbench" }), Is.False, kind);
+        Assert.That(E.IsWorkspaceRecipe(new RecipeConfig { Id = "mut_craft", Kind = "craft", Station = "workbench" }), Is.True, "同站普通制作算（对照）");
+        Assert.That(E.IsWorkspaceRecipe(new RecipeConfig { Id = "mut_nowhere", Kind = "craft", Station = "no_such_station" }), Is.False, "不存在的工坊不算");
+    }
+
+    /// <summary>Q797：固定净水台配方无原分组只有“全部配方”；陶窑配方原分组 material 列“材料”。只看本座配方。</summary>
+    [Test]
+    public void Mut_Q797_TabsOnlyFromThisStation()
+    {
+        var s = Camp();
+        Fac(s).Workshops.AddRange(new[] { "kiln", "water_station" });
+        Assert.That(E.RecipeVisible(s, R("ex_ceramic_shell")) && E.RecipeVisible(s, R("ex_station_water")), Is.True);
+        Assert.That(E.WorkspaceTabs(s, "water_station"), Is.EqualTo(new List<(string, string)> { ("all", "全部配方") }));
+        Assert.That(E.WorkspaceTabs(s, "kiln"), Is.EqualTo(new List<(string, string)> { ("all", "全部配方"), ("material", "材料") }));
+    }
+
+    /// <summary>Q594 重验：按稳定身份找回本座设施；未知身份、离开该区后都为 null（显示“该设施已不可用”）。</summary>
+    [Test]
+    public void Mut_Q594_WorkspaceHereByKey()
+    {
+        var s = Camp();
+        Fac(s).Workshops.AddRange(new[] { "workbench", "forge" });
+        var wb = E.WorkspaceForStationHere(s, "workbench")!;
+        var fg = E.WorkspaceForStationHere(s, "forge")!;
+        Assert.That(E.WorkspaceHere(s, wb.Key)!.StationId, Is.EqualTo("workbench"));
+        Assert.That(E.WorkspaceHere(s, fg.Key)!.StationId, Is.EqualTo("forge"));
+        Assert.That(E.WorkspaceHere(s, "ws|bogus"), Is.Null);
+        E.DebugTeleport(s, "woods");
+        Assert.That(E.WorkspaceHere(s, wb.Key), Is.Null, "离开后失效");
+    }
+
+    /// <summary>Q796：别处同类设施的在办制作（暂存工作）不把本地公共工作台标“制作中”；在本地开的才算（对照）。</summary>
+    [Test]
+    public void Mut_Q796_CraftElsewhereNotMarkedHere()
+    {
+        var s = Registered("h03_workshop");
+        string Wb() => E.FacilityCardsHere(s).Single(c => c.Kind == "public" && c.StationId == "workbench").State;
+        Assert.That(Wb(), Is.EqualTo("空闲"));
+        s.StashedWork = new ActionState { Type = ActionType.Craft, TargetId = "make_fastener", SourceLocation = "camp", Status = ActionStatus.Paused };
+        Assert.That(Wb(), Is.EqualTo("空闲"), "营地工作台的活不算这座");
+        s.StashedWork = new ActionState { Type = ActionType.Craft, TargetId = "make_fastener", SourceLocation = "h03_workshop", Status = ActionStatus.Paused };
+        Assert.That(Wb(), Is.EqualTo("制作中"), "本座的暂存工作仍算（Q972 暂用 A）");
+    }
+
+    /// <summary>Q795 B：遮蔽棚、床垫卡只在营地外部区出；在别处有在办的遮蔽棚建造也不出卡；回营地出“施工中”卡（对照）。床垫建成出卡。</summary>
+    [Test]
+    public void Mut_Q795_ShelterBedCardsOnlyAtCampExterior()
+    {
+        var s = Camp();
+        Fac(s).ShelterBuilt = true;
+        Fac(s).BedBuilt = true;
+        var cards = E.FacilityCardsHere(s);
+        Assert.That(cards, Has.Count.EqualTo(2));
+        Assert.That(cards.Select(c => (c.Kind, c.Stage)), Is.EqualTo(new[] { ("shelter", FacilityStage.Built), ("bed", FacilityStage.Built) }));
+
+        var w = Camp();
+        E.DebugTeleport(w, "woods");
+        w.StashedWork = new ActionState { Type = ActionType.Build, TargetId = "shelter", SourceLocation = "camp", Status = ActionStatus.Paused };
+        Assert.That(E.FacilityCardsHere(w).Where(c => c.Kind == "shelter"), Is.Empty, "不在营地外部区不出遮蔽棚卡");
+        var c2 = Camp();
+        c2.StashedWork = new ActionState { Type = ActionType.Build, TargetId = "shelter", SourceLocation = "camp", Status = ActionStatus.Paused };
+        var here = E.FacilityCardsHere(c2);
+        Assert.That(here, Has.Count.EqualTo(1));
+        Assert.That((here[0].Kind, here[0].Stage), Is.EqualTo(("shelter", FacilityStage.Building)));
+    }
+
+    /// <summary>Q727：陶窑独立卡状态行用被动批次汇总句（不是“{名} · 制作中／空闲”）。</summary>
+    [Test]
+    public void Mut_Q727_KilnCardUsesBatchSummary()
+    {
+        var s = Camp();
+        Fac(s).Workshops.Add("kiln");
+        s.Skills["crafting"].Level = 3;                 // ex_ceramic_shell minSkills crafting 3（config.v0.6）
+        s.Progress.Flags.Add("knowledge:ceramic_methods");
+        string Card() => E.FacilityCardsHere(s).Single(c => c.StationId == "kiln").State;
+        Assert.That(Card(), Is.EqualTo($"{E.StationName("kiln")} · 空闲"));
+        E.CreateItems(s, "clay", 2, s.Ground);
+        E.CreateItems(s, "charcoal", 1, s.Ground);
+        var t0 = s.GameMinute;
+        Ok(E.StartStationBatch(s, "ex_ceramic_shell"));
+        // 陶壳 baseMinutes 60（config.v0.6）；Q727 汇总句
+        Assert.That(Card(), Is.EqualTo($"{E.StationName("kiln")} · 加工中1批 · 最近{Clock.DayTime(t0 + 60)}完成"));
+    }
+
+    /// <summary>拖拽候选提示：材料拖到材料沿原 D12 行11“查看可制作的配方”；材料拖到营地地点卡同字（Q969 暂用 A）。</summary>
+    [Test]
+    public void Mut_Q904_Q969_CandidateLabels()
+    {
+        var s = New();
+        var mat = E.ResolveDrop(s, DropSource.Parse("card:camp|stone")!, DropTarget.Parse("card:camp|fiber", 0)!);
+        Assert.That(mat.Ok && mat.Verb == DropVerb.PreviewRecipe, Is.True, mat.Reason);
+        Assert.That(mat.Label, Is.EqualTo("查看可制作的配方"));
+        var camp = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse("loc:camp", 0)!);
+        Assert.That(camp.Ok && camp.Verb == DropVerb.PreviewRecipe, Is.True, camp.Reason);
+        Assert.That(camp.Label, Is.EqualTo("查看可制作的配方"));
+    }
+
+    /// <summary>Q908：本地记录里值为空的条目不保留（不当成分类）；有效条目照常保留（对照）。</summary>
+    [Test]
+    public void Mut_Q908_NullEntriesDropped()
+    {
+        var p = CraftTabPrefs.Parse("{\"x\":null,\"y\":\"all\"}");
+        Assert.That(p.Get("y"), Is.EqualTo("all"));
+        Assert.That(p.Serialize(), Is.EqualTo("{\"y\":\"all\"}"));
+    }
+
+    /// <summary>Q600／Q594：悬停详情重验配方——只在制作面板、非拆解；候选模式要仍在候选里且仍可显示，否则按当前上下文（InCraftScope：可显示且属本分类／本座设施）。</summary>
+    [Test]
+    public void Mut_PeekValid_RecipeBranch()
+    {
+        var peek = Web("Services", "GameSession.Peek.cs");
+        var branch = Slice(peek, "case PeekKey.Recipe:", "case PeekKey.Skill:");
+        Assert.That(branch, Does.Contain("Panel == \"craft\" && E.Config.Recipes.FirstOrDefault(r => r.Id == first && !r.IsSalvage) is { } prc"));
+        Assert.That(branch, Does.Contain("(CraftCandidates != null ? CraftCandidates.Any(c => c.RecipeId == first) && E.RecipeVisible(S, prc) : InCraftScope(prc))"));
+        var craft = Web("Services", "GameSession.Craft.cs");
+        Assert.That(craft, Does.Contain("State != null && E.RecipeVisible(S, rc) && (CraftSite is { } w ? E.IsWorkspaceRecipe(rc) && rc.Station == w.StationId : E.HandCraftTabOf(rc) != null)"));
+    }
 }
