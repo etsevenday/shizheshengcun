@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-17",
+  "originalBatch": "2026-11-15 来自364eff1 B52",
+  "questions": [
+    780,
+    781,
+    782,
+    783,
+    784,
+    785,
+    786
+  ],
+  "answers": {
+    "780": "待定（策划确认本次不做）：按用户已明确的开发阶段旧档问题策略，本次暂缓Ticks=0旧在战区分／补标记／升档，不选A或B；开发已实现“冻结”沿现状暂留，非批准未来旧档方案。用户明确通知恢复旧档审查后再提出。见S01／R03／S14本批。",
+    "781": "选A，三处一起最小删改：撤退预估删“本回合推进5分钟后”，保留“成功：脱战，”及原真实后半句；回合末等待“回合末结算”；敌人详情删“每回合推进5分钟世界时间；”，保留原真实撤退去向句。只修旧说明，不改落点／成功率／费用／时间规则，见R03／S14及逐字稿本批。",
+    "782": "选A。系统说明“中央行动”原动画说明后接一遍“生命特写不可跳过；播完恢复快进。”不额外在游玩画面反复提示。见R09／S14及逐字稿本批。",
+    "783": "用户澄清：全屏特写播放时不能操作其他业务。按已定Q737，播放及收束拦战场／正文点击、滚动和键盘，不穿透、不跳过、不排队，真实镜头间隙才可查看。帮助精简“特写播放时无法操作；镜头间隙可查看战斗信息。”由总控归到原战斗不可跳过句后另条（原A位置，不冒记用户选A），不再追问位置；原ESC系统菜单冻结／返回续原帧例外保留，不构成继续播放中并行操作。见R03／S14本批。",
+    "784": "选A。真实提升就显示“命中强化”，包括武器特性预判firstCommandAccuracy单独生效；不另造首令技能。沿实际受益者／结果帧、同字去重及零变化不出，原触发／次数／数值／消耗保持。见R03／S14本批。",
+    "785": "选A。守卫标记无目标落空不出“标记”短反馈，原AP照花、落空战报保留，不造状态或全屏镜头；成功及警戒观察沿原反馈。见R03／S14本批。",
+    "786": "沿用户已答Q738 A，按所有真实当前健康分数范围（对应本题B的当前值含义），包含属性详情／悬停／提醒、诊所、留守／远行预览的真实当前健康行；原无分数不新增，未来预估／差值／历史不冒作当前生命态。真濒死“0/{上限} · 濒死”，恢复撤下、正小数取整0不误标；Q856左栏同行去重与原抵抗规则保持。见R09／S14本批。"
+  },
+  "status": "complete_original_batch_planning_not_runtime_verified",
+  "explicitDeferredThisTime": [
+    780
+  ],
+  "userNewAnswers": [
+    781,
+    782,
+    783,
+    784,
+    785
+  ],
+  "carriedAnswer": {
+    "786": "Q738_A_all_actual_current_health_fractions"
+  },
+  "help": {
+    "lifeText": "生命特写不可跳过；播完恢复快进。",
+    "lifeLocation": "中央行动原动画说明后",
+    "readingText": "特写播放时无法操作；镜头间隙可查看战斗信息。",
+    "readingLocation": "原战斗不可跳过说明后另条",
+    "readingLocationAuthority": "controller_routine_placement_not_user_chosen_A",
+    "noRepeatedGameplayHints": true
+  },
+  "playback": {
+    "businessInputBlocked": true,
+    "noClickOrScrollThrough": true,
+    "noQueuedCommands": true,
+    "originalEscMenuFreezesAndResumes": true,
+    "onlyExistingActualIntervalsReadable": true
+  },
+  "accuracyFeedback": {
+    "actualPositiveGain": true,
+    "includesPrejudgeAlone": true,
+    "text": "命中强化",
+    "noNewFirstCommandSkill": true,
+    "noNumericalChanges": true
+  },
+  "guardMarkWhiffFeedback": false,
+  "health": {
+    "allActualCurrentFractions": true,
+    "includesDetailsHoverAndCurrentRowsInsidePreviews": true,
+    "noNewFractions": true,
+    "excludeHistoricalAndFutureValues": true,
+    "actualLifeStateNotRoundedZero": true,
+    "leftRowDedupQ856": true
+  },
+  "acceptance": [
+    {
+      "id": "B52-Q780-01",
+      "rule": "本次不新增旧在战标记／迁移／版本任务，暂缓记录明确为用户策略而非用户选A。"
+    },
+    {
+      "id": "B52-Q781-01",
+      "rule": "撤退预估、回合等待、敌人详情三处均无每回合推进5分钟；原真实后半句／去向保留，回合规则与战外计时不改。"
+    },
+    {
+      "id": "B52-Q782-01",
+      "rule": "中央行动帮助原动画句后仅一遍生命特写短句；快进镜头正常不可跳过、结束恢复原快进。"
+    },
+    {
+      "id": "B52-Q783-01",
+      "rule": "特写及收束期间战场／正文点击、滚动、键盘不穿透、不排队；镜头真实间隙才可读，无新增阅读洞或间隙。"
+    },
+    {
+      "id": "B52-Q783-02",
+      "rule": "战斗帮助不可跳过句后仅一条精简说明；原ESC菜单冻结／续播保持，游玩不反复提示。"
+    },
+    {
+      "id": "B52-Q784-01",
+      "rule": "仅预判带来真实命中增益也出命中强化；同次鼓舞加预判同人只一份，零变化不出、原数值次数保持。"
+    },
+    {
+      "id": "B52-Q785-01",
+      "rule": "守卫标记无目标落空无标记短反馈，原AP和落空战报保留；成功仍一次反馈，不造状态。"
+    },
+    {
+      "id": "B52-Q786-01",
+      "rule": "真实当前健康分数在详情／悬停／诊所／预览当前行均标真濒死，恢复撤下，正小数显示0不误标。"
+    },
+    {
+      "id": "B52-Q786-02",
+      "rule": "原无分数不新增；历史和未来值不按当前标签误标；左栏仅一次濒死并保留抵抗，战外头像不全暗。"
+    }
+  ]
+}
