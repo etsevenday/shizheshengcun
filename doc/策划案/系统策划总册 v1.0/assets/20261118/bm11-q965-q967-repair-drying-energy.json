@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "45901d6d1b5353c9eba6a0dcbd1ef8c5e1fd309b",
+  "originalBatch": "2026-11-17 来自 BM11 试玩（次要）",
+  "questionIds": [
+    965,
+    966,
+    967
+  ],
+  "answers": {
+    "Q965": "A_inherited_user_Q912_Q948",
+    "Q966": "user_exact_new_copy_not_option_A",
+    "Q967": "A"
+  },
+  "repair": {
+    "baseButton": "开始维修",
+    "recipeName": "工具维护",
+    "inheritedFrom": [
+      912,
+      948
+    ],
+    "preserveQ947DisabledAndExistingTimeRules": true,
+    "preserveOriginalRepairTransactions": true
+  },
+  "drying": {
+    "pauseCopy": "晾晒时，不会变质",
+    "appendTerminalPunctuation": false,
+    "replaceOnlyOriginalDryingPauseDescription": true,
+    "keepExistingValidProtectionDisplayConditions": true,
+    "noGlobalFacilityOrActionRename": true,
+    "preserveActualInputPauseRemovalResumeAndFinishedExpiry": true,
+    "removeObsoleteCancelHint": "已过制作时间不退，没有成品，不给经验。",
+    "obsoleteCancelRemovalFrom": [
+      778,
+      877,
+      878,
+      880
+    ],
+    "doNotAddStopCostsOrReturnedShelfNotifications": true,
+    "preserveQ882AndActualDetailsAndActiveWorkCancellation": true
+  },
+  "energy": {
+    "scope": "combat_closeup_action_header_actual_actor_energy_display",
+    "holdActualPreActionEnergyBeforeResult": true,
+    "syncWithExistingAPResultFrame": true,
+    "perActionAndActorNoFutureFinalLeak": true,
+    "trueDebitAndValidationTimingUnchanged": true,
+    "noBusinessDebitOnDisplayFrame": true,
+    "preserveOtherHpInventoryAmmoLogsAndNoCloseupFeedback": true,
+    "menuPauseFreezesDisplayFrame": true,
+    "ignoreStaleActionsAndAlignToRealityOnFinish": true,
+    "noNewCostsInputLocksOrWorldTime": true
+  },
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "BM11F-Q965-01",
+      "expected": "维修面板确认和制作窗口统一开始维修、配方工具维护不改，各原配方标签与真实维修事务保持。"
+    },
+    {
+      "id": "BM11F-Q965-02",
+      "expected": "不能开始仅动作名且原因在旁，可靠用实际预计时长、未知沿原未预估；不改维修耗材效果或重复执行。"
+    },
+    {
+      "id": "BM11F-Q966-01",
+      "expected": "晾架原暂停说明逐字晾晒时，不会变质，不加末标点、不采用旧长句或总控备选；只替原说明且按原保护条件显示。"
+    },
+    {
+      "id": "BM11F-Q966-02",
+      "expected": "在制原料暂停、取出恢复、成品正常计时与经验不改，不把成品或未投入材料标成不会变质。"
+    },
+    {
+      "id": "BM11F-Q966-03",
+      "expected": "旧晾制取消成本提示随旧入口撤掉，不新增中止／恢复保质解释；主动维修取消与真实详情不误删。"
+    },
+    {
+      "id": "BM11F-Q967-01",
+      "expected": "出手特写开始显示本次行动者出手前体力，既定结果帧与AP同时变真实后值，不先露整串最终值。"
+    },
+    {
+      "id": "BM11F-Q967-02",
+      "expected": "真实体力/AP与伤害等原时机只结算一次，显示快照不作业务校验，不在结果帧重扣或串人。"
+    },
+    {
+      "id": "BM11F-Q967-03",
+      "expected": "原HP物资弹仓日志时序与无特写短反馈保持，菜单暂停冻结显示；回调不盖新动作，结束对齐真实值。"
+    }
+  ]
+}
