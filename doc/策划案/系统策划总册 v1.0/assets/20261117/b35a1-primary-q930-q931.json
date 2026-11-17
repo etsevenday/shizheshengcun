@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-17",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "b7d1d44ab80b309e575c12ab30c57ba36acd120a",
+  "originalBatch": "2026-11-17 来自 bc0b32ad、08333115 B35a1（提前核对，主要；本批开发已暂停，等答复后继续）",
+  "questionIds": [
+    930,
+    931
+  ],
+  "answers": {
+    "Q930": "B",
+    "Q931": "B"
+  },
+  "workshop": {
+    "services": [
+      "hub_workshop_access",
+      "academy_workshop_access"
+    ],
+    "previewHead": "从设施卡进入。",
+    "keepRealAccessLists": true,
+    "openPanelAfterService": false,
+    "autoSelectFirstStation": false,
+    "fallbackToHandCraft": false,
+    "stationChoicePage": false,
+    "preserveServiceCostTimeEligibility": true,
+    "entry": "real_local_public_station_card",
+    "keepExistingExplicitCraftNavigation": true
+  },
+  "safehouse": {
+    "requireBuiltAtCurrentLocation": true,
+    "allowExistingLocalOutdoorEntry": true,
+    "cabinetTransferRequiresInside": true,
+    "mapButton": false,
+    "renameMapButtonToSafehouse": false,
+    "unbuiltPlaceholderCard": false,
+    "remoteReturnCardEntry": false,
+    "remoteCabinetRecordView": false,
+    "preserveStoredHistoricalData": true,
+    "preserveLocalPanelNamesRenameFavoriteRules": true,
+    "renameMaxCharacters": 12,
+    "emptyNameUsesExistingDefault": true,
+    "favoriteIsBookmarkOnly": true,
+    "metadataActionsMinutes": 0,
+    "locationChangeInvalidatesPage": true,
+    "preserveManualMapMovement": true,
+    "routeParagraph": false,
+    "autoReturn": false,
+    "crossBatchDependency": "B35c地图撤按钮与B35a1卡片／地点校验联动，全部满足才验Q931"
+  },
+  "copy": {
+    "serviceHead": "从设施卡进入。",
+    "newRemoteButton": null,
+    "newOutOfLocationTeaching": null
+  },
+  "acceptance": [
+    {
+      "id": "B35A1-Q930-01",
+      "expected": "两处工坊服务首句均为从设施卡进入。原开放清单、未开放真实原因与试制工坊告示仍在。"
+    },
+    {
+      "id": "B35A1-Q930-02",
+      "expected": "成功办理两处服务均不自动打开首座公共设施、手工制作或设施选择页；不自动启动配方。"
+    },
+    {
+      "id": "B35A1-Q930-03",
+      "expected": "当地无已开放设施时仍列原真实原因，不回退开手工；原服务资格／费用／耗时与重复提交保护不变。"
+    },
+    {
+      "id": "B35A1-Q930-04",
+      "expected": "三座营区公共设施与试制工作台各由其真实卡进入，配方仅本座；顶栏手工与Q904导航保留。"
+    },
+    {
+      "id": "B35A1-Q931-01",
+      "expected": "所有地图层均无安全屋返程／改名安全屋的远程按钮，未建占位卡及返程▸不恢复。"
+    },
+    {
+      "id": "B35A1-Q931-02",
+      "expected": "人在无已建安全屋的地点即使别处有屋／常用／旧记录也不能开安全屋面板，恢复路径不能绕过。"
+    },
+    {
+      "id": "B35A1-Q931-03",
+      "expected": "人在已建安全屋所在地屋外或屋内可按原卡入口开面板；柜子实际存取仍仅本屋屋内且过原校验。"
+    },
+    {
+      "id": "B35A1-Q931-04",
+      "expected": "本地面板保留原名称／改名／常用业务，外地柜子上次记录不展示，相关悬停／读屏也不泄漏；不删除历史数据。"
+    },
+    {
+      "id": "B35A1-Q931-05",
+      "expected": "离开本地点不保留悬空安全屋页或远程柜子操作；关闭返回沿原层级，路线段落和自动返程不恢复。"
+    },
+    {
+      "id": "B35A1-Q931-06",
+      "expected": "B35a1本地卡访问校验与B35c地图按钮撤除均满足才验本题完成；原建设、地图普通标记和玩家逐段移动照旧。"
+    }
+  ],
+  "oldSaveQuestionsDeferred": true
+}
