@@ -564,4 +564,141 @@ public class B53bTests : BattleTestBase
         Assert.That(s.Items.Any(i => i.InSafehouseStorage || i.Owner.StartsWith(GameEngine.SealedPrefix)), Is.False);
         Assert.That(s.Items.Count, Is.GreaterThan(before));
     }
+
+    // ───────────── 变异测试补测（M1059；第一次 Stryker 3a1b74b9..2aecff51 存活／无覆盖） ─────────────
+
+    /// <summary>
+    /// §Q866 B「只有真实阻挡本次请求的原因」＋§Q857 B「原可管理同伴」：同行同伴身上穿着的木矛只报「先卸下再丢弃。」；
+    /// 该同伴留作候补后不再可管理，再加「当前无法丢弃该物品。」。
+    /// </summary>
+    [Test]
+    public void MT_CompanionWorn_ActiveOnlyWorn_ReserveAlsoNoPermission()
+    {
+        var s = Party();
+        var worn = s.Items.First(i => i.IsWornBy(Lin));
+        var t = DiscardTarget.Instance(worn.InstanceId);
+        Assert.That(E.DiscardViewOf(s, t).Reasons, Is.EqualTo(new[] { Worn }));
+        E.DebugToggleActive(s, Lin);
+        Assert.That(s.Party, Does.Not.Contain(Lin), "前提：留作候补");
+        Assert.That(E.DiscardViewOf(s, t).Reasons, Is.EqualTo(new[] { Worn, NoPermission }));
+    }
+
+    /// <summary>§Q857 B「真实地点／区域」：放在安全屋屋内的遗物（Zone＝屋内）只在屋内可丢，出门后拒「当前无法丢弃该物品。」；同地点屋外遗物（Zone 空）屋内外都可丢。</summary>
+    [Test]
+    public void MT_RemainsInSafehouseZone_InsideOnly()
+    {
+        var s = New();
+        s.Progress.Flags.Add("hub_registered");
+        E.DebugBuildSafehouse(s);
+        Assert.That(E.EnterSafehouse(s).Ok, Is.True);
+        s.Remains["t_in"] = new RemainsState { Name = "试用者", LocationId = s.CurrentLocation, Minute = s.GameMinute, Cause = "测试", Zone = GameEngine.SafehouseZone };
+        var inside = Give(s, "wood", ItemInstance.RemainsOwner("t_in"), 2);
+        var outside = Give(s, "stone", Box(s, "t_out", null), 1);
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(inside.InstanceId)).Available, Is.EqualTo(2));
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(outside.InstanceId)).Available, Is.EqualTo(1));
+        Assert.That(E.ExitSafehouse(s).Ok, Is.True);
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(inside.InstanceId)).Reasons, Is.EqualTo(new[] { NoPermission }));
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(outside.InstanceId)).Available, Is.EqualTo(1), "对照：屋外遗物在屋外仍可丢");
+    }
+
+    /// <summary>行已不存在（实例号找不到）时按该件目标，不当锅水处理（§Q857「只作用于点中的实际行」）。</summary>
+    [Test]
+    public void MT_RowTarget_MissingInstance_IsInstance()
+    {
+        var s = New();
+        var t = E.DiscardRowTarget(s, int.MaxValue);
+        Assert.That((t.Kind, t.InstanceId), Is.EqualTo((DiscardKind.Instance, (int?)int.MaxValue)));
+    }
+
+    /// <summary>
+    /// §Q862 A「使用当前真实显示名」：同组目标范围已空（都被拿走）时标题仍用该物品的显示名；找不到的单件、不存在的物品为空名（不显示内部 ID）。
+    /// </summary>
+    [Test]
+    public void MT_ViewName_EmptyScope()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "wood");
+        var v = E.DiscardViewOf(s, DiscardTarget.Group(s.Ground, "wood", null));
+        Assert.That((v.Total, v.Name), Is.EqualTo((0, "木材")));
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(int.MaxValue)).Name, Is.EqualTo(""));
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.Group(s.Ground, "no_such_item", null)).Name, Is.EqualTo(""));
+    }
+
+    /// <summary>壶水目标指向的已不是水壶（实例号被别的物品占用）时拒「物品已变，请重选。」（逐字稿 B50a changed）；对照：真水壶有水可丢。</summary>
+    [Test]
+    public void MT_CanteenWaterTarget_NotCanteen_Changed()
+    {
+        var s = New();
+        var berry = Give(s, "berry", ItemInstance.Carried, 1);
+        var v = E.DiscardViewOf(s, DiscardTarget.CanteenWater(berry.InstanceId));
+        Assert.That((v.Available, v.Reasons), Is.EqualTo((0, new List<string> { "物品已变，请重选。" })));
+        var c = Give(s, "ration_canteen", ItemInstance.Carried);
+        c.LiquidId = "clean_water";
+        c.LiquidMl = 750;
+        Assert.That(E.DiscardViewOf(s, DiscardTarget.CanteenWater(c.InstanceId)).Available, Is.EqualTo(750));
+    }
+
+    /// <summary>
+    /// §Q864 A＋§Q865 B「同摘要合并真实数量」：同单重的两堆腐败物合成一项「腐败物×3 · 0.20公斤/份」；同写法的三堆木材合成「木材×6」（不止前两堆）。
+    /// </summary>
+    [Test]
+    public void MT_ListMerge_SameRot_ThreeHeaps()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == Rot || i.ItemId == "wood");
+        s.Items.Add(new ItemInstance { InstanceId = s.NextInstanceId++, ItemId = Rot, Count = 2, Owner = ItemInstance.Carried, SpoiledFrom = "berry", SpoiledUnitGrams = 200, SpoiledStackMax = 20 });
+        s.Items.Add(new ItemInstance { InstanceId = s.NextInstanceId++, ItemId = Rot, Count = 1, Owner = ItemInstance.Carried, SpoiledFrom = "berry", SpoiledUnitGrams = 200, SpoiledStackMax = 20 });
+        Assert.That(s.Items.Count(i => i.ItemId == Rot), Is.EqualTo(2));
+        Assert.That(E.DiscardPreview(s, DiscardTarget.Group(ItemInstance.Carried, Rot, null), 0, true, out _)!.Lines[0], Is.EqualTo("永久丢弃：腐败物×3 · 0.20公斤/份。"));
+
+        var w = Give(s, "wood", s.Ground, 6);
+        E.SplitOff(s, w, 2);   // 起点：同写法拆成三堆（不经合堆）
+        E.SplitOff(s, w, 2);
+        Assert.That(s.Items.Count(i => i.ItemId == "wood" && i.Owner == s.Ground), Is.EqualTo(3));
+        Assert.That(E.DiscardPreview(s, DiscardTarget.Group(s.Ground, "wood", null), 0, true, out _)!.Lines[0], Is.EqualTo("永久丢弃：木材×6。"));
+    }
+
+    /// <summary>
+    /// §Q864 A 独立件逐件接现有状态摘要（拼法为 B53b.5 暂用）：耐久为 0 写「已损坏」；未定品质（按白色）省略品质；手枪接弹仓「弹{n}」；
+    /// 有保质期的独立件（野犬尸体）接「保质至{截止}」。
+    /// </summary>
+    [Test]
+    public void MT_PieceNote_BrokenNullQualityAmmoExpiry()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.Owner == s.Ground);
+        string Line(ItemInstance i) => E.DiscardPreview(s, DiscardTarget.Instance(i.InstanceId), 0, true, out _)!.Lines[0];
+        var broken = Give(s, "wooden_spear", s.Ground);
+        broken.Quality = "white";
+        broken.Durability = 0; broken.MaxDurability = 30;
+        Assert.That(Line(broken), Is.EqualTo("永久丢弃：木矛×1（已损坏）。"));
+        var plain = Give(s, "wooden_spear", s.Ground);
+        plain.Quality = null;
+        plain.Durability = 10; plain.MaxDurability = 30;
+        Assert.That(Line(plain), Is.EqualTo("永久丢弃：木矛×1（耐久10.00/30.00）。"), "未定品质按白色省略");
+        var gun = Give(s, "pistol", s.Ground);
+        gun.Quality = "white";
+        gun.Durability = 20; gun.MaxDurability = 40;
+        gun.LoadedAmmo = 2;
+        gun.LoadedAmmoId = "ammo_9mm";
+        Assert.That(Line(gun), Is.EqualTo("永久丢弃：手枪×1（耐久20.00/40.00 · 弹2）。"));
+        var dog = Give(s, "carcass_feral_dog", s.Ground);
+        dog.ExpiresAt = At(2, 8, 0);
+        dog.Durability = null; dog.MaxDurability = null;
+        Assert.That(Line(dog), Is.EqualTo("永久丢弃：野犬尸体×1（保质至第2日 08:00）。"));
+    }
+
+    /// <summary>§Q864 A：单项显示文字与确认清单同源（「{物名}×{数量}（保质至{截止}）」，数量为传入的真实份数）。</summary>
+    [Test]
+    public void MT_ItemLabel_SameAsList()
+    {
+        var s = New();
+        var b = Give(s, "berry", ItemInstance.Carried, 3);
+        b.ExpiresAt = At(2, 8, 0);
+        Assert.That(E.DiscardItemLabel(s, b, 2), Is.EqualTo("野果×2（保质至第2日 08:00）"));
+        var spear = Give(s, "wooden_spear", ItemInstance.Carried);
+        spear.Quality = "green";
+        spear.Durability = 20; spear.MaxDurability = 30;
+        Assert.That(E.DiscardItemLabel(s, spear, 1), Is.EqualTo("木矛×1（绿 · 耐久20.00/30.00）"));
+    }
 }
