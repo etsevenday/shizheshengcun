@@ -158,7 +158,7 @@ public class B51bTests : TestBase
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         obj["SchemaVersion"] = "54";
         var old = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(old.SchemaVersion, Is.EqualTo("55"));
+        Assert.That(old.SchemaVersion, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
         var u = old.GameMinute;
         var nq = Batches(old, "water_station");
         Assert.That(nq.Select(b => (b.BatchId, b.XpSnapshot)), Is.EqualTo(ids), "批次 ID 与经验快照不变");
@@ -193,7 +193,7 @@ public class B51bTests : TestBase
         Assert.That(s.SchemaVersion, Is.EqualTo("54"));
         Assert.That(Batches(s, "water_station").Select(b => (b.Queued, b.DoneMinutes)), Is.EqualTo(new[] { (false, 10), (true, 0) }));
         var back = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(back.SchemaVersion, Is.EqualTo("55"));
+        Assert.That(back.SchemaVersion, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
         Assert.That(Batches(back, "water_station").Select(b => (b.Queued, b.DoneMinutes, b.StartMinute)),
             Is.EqualTo(new[] { (false, 10, Batches(s, "water_station")[0].StartMinute), (false, 0, back.GameMinute) }));
     }

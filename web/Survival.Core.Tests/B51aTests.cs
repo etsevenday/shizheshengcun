@@ -41,7 +41,7 @@ public class B51aTests : TestBase
     [Test]
     public void M956_Schema54_ActionFieldsCloneAndSave()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("55"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
         var a = new ActionState { ToolGuardId = 7, ToolGuardSpent = true };
         var c = a.Clone();
         Assert.That((c.ToolGuardId, c.ToolGuardSpent), Is.EqualTo(((int?)7, true)));

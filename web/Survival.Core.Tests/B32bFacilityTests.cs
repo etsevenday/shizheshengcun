@@ -71,7 +71,7 @@ public class B32bFacilityTests : TestBase
         AdvanceTo(s, s.GameMinute + 120);
         Assert.That(E.DryingSlotBusy(s, 0), Is.False, "已晾好不挂加工中");
         Assert.That(CardStates.DryingStatusText(E.DryingSlotViews(s)[0].Status), Is.EqualTo("可收取"));
-        Assert.That(CardStates.DryingStatusText(DryingSlot.Spoiled), Is.EqualTo("原料已腐败"));
+        Assert.That(CardStates.DryingStatusText(DryingSlot.Spoiled), Is.EqualTo("待清理"));   // B53a 改期望：已停止位短状态「待清理」（S11 文首 2026-11-15 §Q765、逐字稿 dryStopped；Q861 选 A）
     }
 
     /// <summary>Q374-A01：新晾制日志与拒绝原因引用工位时写「工位{序号}」，序号与面板一致。</summary>

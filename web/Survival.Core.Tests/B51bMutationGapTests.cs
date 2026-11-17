@@ -258,7 +258,7 @@ public class B51bMutationGapTests : TestBase
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         obj["SchemaVersion"] = "54";
         var old = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(old.SchemaVersion, Is.EqualTo("55"));
+        Assert.That(old.SchemaVersion, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
         Assert.That(old.GameMinute, Is.EqualTo(t0 + 20));
 
         var b = Batches(old, "water_station").Single();

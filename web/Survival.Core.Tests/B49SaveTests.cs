@@ -24,7 +24,7 @@ public class B49SaveTests : BattleTestBase
     [Test]
     public void C01_SchemaUnchanged()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("55"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
     }
 
     /// <summary>

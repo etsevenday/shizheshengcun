@@ -77,8 +77,9 @@ namespace Survival.Core.State
         /// "55" 起陶窑与固定净水台每座最多 10 批全部并行（S08 文首 Q701.2、B51 Q721／Q727，开发记录 B51b）：StationBatch.Queued 不再使用（恒为 false），
         /// 批次输入带暂停保质 R；54→55 旧等候批在升级时刻转为在办、从未来第一个世界段起各自推进（不补等候进度），在办批保留已耗进度，
         /// 各批真实预留且在升级时刻未到期的有期限输入从升级时剩余保护（静默）。
+        /// "56" 起已停止晾制位不再有 legacy 原因（B53a，S11 文首 2026-11-15 Q764 选 A）：55→56 一次把缺可信原因的旧停止位按当前可证明实物分为缺料／腐败／未知（静默）。
         /// </summary>
-        public const string CurrentSchema = "55";
+        public const string CurrentSchema = "56";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -596,7 +597,7 @@ namespace Survival.Core.State
         /// </summary>
         public bool ShelfPaused { get; set; }
 
-        /// <summary>停止原因（S11 文首 Q713，B50a，存档 53）：缺料 missing ／原料腐败 spoiled ／未知 unknown；旧档在 53 前已停止的位为 legacy（显示沿原「原料已腐败」口径，Q764 待定）；未停止为 null。</summary>
+        /// <summary>停止原因（S11 文首 Q713，B50a，存档 53）：缺料 missing ／原料腐败 spoiled ／未知 unknown；旧档在 53 前已停止的位为 legacy，56 起由 55→56 迁移按 Q764 选 A 改为前三种之一（B53a）；未停止为 null。</summary>
         public string? StopReason { get; set; }
 
         public const string StopMissing = "missing";

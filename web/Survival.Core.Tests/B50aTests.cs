@@ -67,7 +67,7 @@ public class B50aTests : TestBase
     [Test]
     public void M946_Schema53_CloneDeepCopiesLedger_StopReasonField()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("55"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
         var i = new ItemInstance { ItemId = Rot, Count = 3, SpoiledOrigins = new Dictionary<string, int> { ["raw_meat"] = 1, ["cooked_meat"] = 2 } };
         var c = i.Clone();
         c.SpoiledOrigins!["raw_meat"] = 9;
@@ -89,7 +89,7 @@ public class B50aTests : TestBase
             foreach (var it in o["Items"]!) ((JObject)it).Remove("SpoiledOrigins");
         });
         var t = SaveSerializer.Deserialize(json, Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("55"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
         var r = t.Items.Single(i => i.InstanceId == rot.InstanceId);
         Assert.That((r.SpoiledFrom, r.SpoiledOrigins, r.Count, r.SpoiledUnitGrams), Is.EqualTo(("raw_meat", (Dictionary<string, int>?)null, 2, rot.SpoiledUnitGrams)));
         Assert.That(t.Log.Count, Is.EqualTo(s.Log.Count), "静默迁移，不写说明（Q714）");
@@ -460,7 +460,7 @@ public class B50aTests : TestBase
         var logs = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema(s, "52"), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("55"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
         Assert.That(t.Log.Count, Is.EqualTo(logs), "52→53 静默，不写说明");
         var ts = DrySlots(t);
         var f0 = t.Items.Where(i => i.Owner == ItemInstance.DryingOwner(place, 0)).ToList();
@@ -469,7 +469,8 @@ public class B50aTests : TestBase
         Assert.That((b0.ShelfPaused, b0.DoneMinutes, b0.XpSnapshot, b0.Status), Is.EqualTo((true, 40, 12, DryingSlot.Drying)), "进度与经验快照不动");
         Assert.That(t.Items.Single(i => i.InstanceId == meat[0].InstanceId).ShelfPausedMinutes, Is.EqualTo(30), "可信肉干快照不重算");
         var b2 = ts.Single(b => b.Slot == 2);
-        Assert.That((b2.Status, b2.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopLegacy)), "已腐败停止不复活，记旧档停止原因");
+        // B53a 改期望：52→53 记的 legacy 在 55→56 按 Q764 选 A 判因（S11 文首 2026-11-15 §Q764）——位内野果×2 已过截止＝齐料且有腐败物→腐败
+        Assert.That((b2.Status, b2.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopSpoiled)), "已腐败停止不复活，旧档停止原因按 Q764 判为腐败");
         Assert.That(ts.Single(b => b.Slot == 3).ShelfPaused, Is.False, "升级时已到期的不保护");
 
         var view = E.DryingSlotViews(t).Single(v => v.Slot == 0);

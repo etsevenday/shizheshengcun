@@ -32,7 +32,7 @@ public class B41aMigrationTests : B41aTestBase
     [Test]
     public void NewGame_ModelVersionIsV2()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("55"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
         Assert.That(E.NewGame(1).EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2), "新局直接是新版卡模型");
     }
 
@@ -47,7 +47,7 @@ public class B41aMigrationTests : B41aTestBase
         var log = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema45(s), CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("55"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
         Assert.That(t.EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2));
         Assert.That(t.Encounter, Is.Null, "旧待处理名单转成组卡后清掉");
         Assert.That(t.EnemyCards.Groups, Has.Count.EqualTo(1));

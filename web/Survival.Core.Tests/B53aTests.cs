@@ -151,4 +151,179 @@ public class B53aTests : TestBase
         old.ExpiresAt = s.GameMinute;   // 到期但还没经过转换事务的原物
         Assert.That(E.CompanionItemLine(s, old), Is.EqualTo("野果×2（已腐败）"));
     }
+
+    // ───────────── M2 存档 56（Q764）、待清理（Q765／Q861）、帮助（Q768） ─────────────
+
+    private static string Web(params string[] parts) =>
+        File.ReadAllText(Path.Combine(new[] { TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "Survival.Web" }.Concat(parts).ToArray()));
+
+    private static string AsSchema(GameState s, string version)
+    {
+        var o = JObject.Parse(SaveSerializer.Serialize(s));
+        o["SchemaVersion"] = version;
+        return o.ToString();
+    }
+
+    private GameState Rack()
+    {
+        var s = New();
+        s.GameMinute = At(2, 8, 0);
+        s.Skills["cooking"].Level = 5;
+        s.Items.RemoveAll(i => i.Owner == s.Ground || i.Owner == ItemInstance.Carried);
+        E.CreateItems(s, "wood", 4, s.Ground);
+        E.CreateItems(s, "rope", 2, s.Ground);
+        Start(s, ActionRequest.Craft("build_drying_rack"));
+        Run(s);
+        Assert.That(E.DryingRackHere(s), Is.True);
+        s.Items.RemoveAll(i => i.Owner == s.Ground || i.Owner == ItemInstance.Carried);
+        return s;
+    }
+
+    private static List<DryingSlot> DrySlots(GameState s) => s.Locations[s.Ground].Facility.DryingSlots;
+
+    /// <summary>造一个已停止的晾制位（旧档／异常起点，只造起点不造结果）。</summary>
+    private static DryingSlot Stopped(GameState s, int k, string recipe, string? reason)
+    {
+        var b = new DryingSlot { Slot = k, BatchId = 5300 + k, RecipeId = recipe, Status = DryingSlot.Spoiled, StartMinute = s.GameMinute - 60,
+                                 DoneMinutes = 55, RequiredMinutes = 120, EndMinute = s.GameMinute - 5, InitiatorActorId = GameState.PlayerId, StopReason = reason };
+        DrySlots(s).Add(b);
+        return b;
+    }
+
+    /// <summary>位内一份原物已转成的腐败物（旧档起点：原物 SpoiledFrom 是原业务字段）。</summary>
+    private static ItemInstance RotIn(GameState s, string owner, string from, int count)
+    {
+        var i = new ItemInstance { InstanceId = s.NextInstanceId++, ItemId = Rot, Count = count, Owner = owner, SpoiledFrom = from, SpoiledUnitGrams = 100, SpoiledStackMax = 10 };
+        s.Items.Add(i);
+        return i;
+    }
+
+    [Test]
+    public void Schema56_Current()
+    {
+        // 开发假设：B53a 把存档升到 56（Q764 迁移）；字面量对照，防止版本号被别处挪动
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("56"));
+    }
+
+    /// <summary>
+    /// Q764-A01（S11 文首 2026-11-15 §Q764 选 A）：缺可信原因的旧停止位按当前可证明实物三分支补一次原因——
+    /// 原料不齐且无腐败物＝缺料；齐料且有腐败物＝腐败；其他＝未知；已有可信原因不覆盖；不改实物、不写说明、反复读档不再变。
+    /// </summary>
+    [Test]
+    public void Q764_A01_LegacyStoppedSlots_ClassifiedOnce()
+    {
+        var s = Rack();
+        var place = s.Ground;
+        string O(int k) => ItemInstance.DryingOwner(place, k);
+        // 工位1 肉干：只剩盐，无腐败物 → 缺料
+        Stopped(s, 0, "dry_meat", DryingSlot.StopLegacy);
+        Give(s, "salt", O(0));
+        // 工位2 肉干：生肉已成腐败物＋盐 → 齐料且有腐败物 → 腐败
+        Stopped(s, 1, "dry_meat", DryingSlot.StopLegacy);
+        RotIn(s, O(1), "raw_meat", 1);
+        Give(s, "salt", O(1));
+        // 工位3 果干：只剩 1 份腐败野果 → 不齐但有腐败物 → 未知
+        Stopped(s, 2, "dry_berries", DryingSlot.StopLegacy);
+        RotIn(s, O(2), "berry", 1);
+        // 工位4 果干：野果 2 份完好 → 齐但无腐败物 → 未知
+        Stopped(s, 3, "dry_berries", DryingSlot.StopLegacy);
+        var fresh = Give(s, "berry", O(3), 2);
+        fresh.ExpiresAt = null;
+        fresh.ShelfPausedMinutes = 300;
+        // 工位5 已有可信原因「缺料」，即使现在齐料又有腐败物也不覆盖
+        Stopped(s, 4, "dry_meat", DryingSlot.StopMissing);
+        RotIn(s, O(4), "raw_meat", 1);
+        Give(s, "salt", O(4));
+        // 工位6 原因字段为空的旧停止位同样补：只剩盐 → 缺料
+        Stopped(s, 5, "dry_meat", null);
+        Give(s, "salt", O(5));
+        var items = s.Items.Select(i => (i.InstanceId, i.ItemId, i.Count, i.Owner)).ToList();
+        var logs = s.Log.Count;
+
+        var t = SaveSerializer.Deserialize(AsSchema(s, "55"), Cfg);
+        Assert.That(t.SchemaVersion, Is.EqualTo("56"));
+        var reasons = DrySlots(t).OrderBy(b => b.Slot).Select(b => b.StopReason).ToList();
+        Assert.That(reasons, Is.EqualTo(new[] { "missing", "spoiled", "unknown", "unknown", "missing", "missing" }));
+        Assert.That(t.Items.Select(i => (i.InstanceId, i.ItemId, i.Count, i.Owner)), Is.EquivalentTo(items), "只补原因，不改实物");
+        Assert.That(t.Log.Count, Is.EqualTo(logs), "静默");
+        Assert.That(DrySlots(t).Select(b => b.Status), Is.All.EqualTo(DryingSlot.Spoiled), "不复活");
+
+        var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(t), Cfg);
+        Assert.That(DrySlots(again).OrderBy(b => b.Slot).Select(b => b.StopReason), Is.EqualTo(reasons), "56 档读档不再重判");
+    }
+
+    /// <summary>
+    /// Q765-A03／Q861 选 A（B53-Q861-01）：已停止位的标题短状态都写「待清理」；架摘要仍按真实原因分「缺料{n}／停止{n}／腐败{n}」工位数。
+    /// </summary>
+    [Test]
+    public void Q861_01_StoppedSlots_ShortStatusPending_SummaryKeepsCauses()
+    {
+        var s = Rack();
+        Stopped(s, 0, "dry_meat", DryingSlot.StopMissing);
+        Stopped(s, 1, "dry_meat", DryingSlot.StopMissing);
+        Stopped(s, 2, "dry_berries", DryingSlot.StopUnknown);
+        Stopped(s, 3, "dry_berries", DryingSlot.StopSpoiled);
+        var views = E.DryingSlotViews(s);
+        Assert.That(views.Take(4).Select(v => CardStates.DryingStatusText(v.Status)), Is.All.EqualTo("待清理"));
+        Assert.That(views.Take(4).Select(v => v.StopKind), Is.EqualTo(new[] { "missing", "missing", "unknown", "spoiled" }), "各位原实际原因仍可查看");
+        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "缺料2", "停止1", "腐败1", "空4" }), "不合并成待清理总数");
+    }
+
+    /// <summary>B53-Q861-01 对照：没有异常位时摘要不出异常计数，正常晾制位短状态仍是晾制中；正常齐料晾制越过原截止照常晾好（Q765-A01）。</summary>
+    [Test]
+    public void Q861_01_NoAbnormal_NoCounts_NormalDryingStillProtected()
+    {
+        var s = Rack();
+        var t0 = s.GameMinute;
+        var b = Give(s, "berry", ItemInstance.Carried, 2);
+        b.ExpiresAt = t0 + 30;   // 原截止早于晾制完成
+        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        var v = E.DryingSlotViews(s)[0];
+        Assert.That(CardStates.DryingStatusText(v.Status), Is.EqualTo("晾制中"));
+        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "晾制中1", "空7" }));
+        AdvanceTo(s, t0 + E.Recipe("dry_berries").BaseMinutes + 5);
+        Assert.That(DrySlots(s).Single().Status, Is.EqualTo(DryingSlot.Done), "越过原截止不缺料、不腐败停止");
+        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "待取1", "空7" }));
+    }
+
+    /// <summary>Q765-A03：缺料／未知停止位里确有腐败物时，位内说明与清理日志末各接一次「腐败物不可食用。」。</summary>
+    [Test]
+    public void Q765_A03_RotInStoppedSlot_NotEdibleOnceInLineAndCleanupLog()
+    {
+        var s = Rack();
+        Stopped(s, 0, "dry_berries", DryingSlot.StopUnknown);
+        RotIn(s, ItemInstance.DryingOwner(s.Ground, 0), "berry", 1);
+        var line = E.DryingSlotViews(s)[0].Line;
+        Assert.That(line, Is.EqualTo($"{E.Recipe("dry_berries").Name}已停止，无成品；清理可取回剩余物品。腐败物不可食用。"));
+        Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
+        Assert.That(s.Log.Last().Text, Does.Match(@"^清理.+晾制架工位1：腐败物×1取到.+，该位已空。腐败物不可食用。$"));
+    }
+
+    /// <summary>Q765-A03 对照：位内没有腐败物时不接「腐败物不可食用。」。</summary>
+    [Test]
+    public void Q765_A03_NoRot_NoNotEdibleNote()
+    {
+        var s = Rack();
+        Stopped(s, 0, "dry_meat", DryingSlot.StopMissing);
+        Give(s, "salt", ItemInstance.DryingOwner(s.Ground, 0));
+        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；清理可取回剩余物品。"));
+        Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
+        Assert.That(s.Log.Last().Text, Does.Not.Contain(NotEdible));
+    }
+
+    /// <summary>Q768-A01：面板 ⓘ 撤下旧果干无保护句，换被动信息＋晾制保质短句；系统说明「保质与腐败」补同源短句一次。</summary>
+    [Test]
+    public void Q768_A01_HelpTexts()
+    {
+        // 逐字稿 2026-11-15 B50a 表 dryShelf／dryPassive
+        Assert.That(GameEngine.DryingShelfHelpText, Is.EqualTo("晾制时原料暂停保质，退料恢复剩余时长；成品从完成起计时，留在架上也会到期。"));
+        Assert.That(GameEngine.DryingPassiveText, Is.EqualTo("按世界时间推进，不占行动；离开继续，暂停不推进。"));
+        var overlay = Web("Components", "DryingOverlay.razor");
+        Assert.That(overlay, Does.Contain("title=\"@(GameEngine.DryingPassiveText + GameEngine.DryingShelfHelpText)\""));
+        Assert.That(overlay, Does.Not.Contain("果干原料没有受热保护"));
+        var help = Web("Services", "HelpCatalog.cs");
+        var spoil = help.Substring(help.IndexOf("Title = \"保质与腐败\"", StringComparison.Ordinal));
+        spoil = spoil.Substring(0, spoil.IndexOf("new HelpEntry", StringComparison.Ordinal));
+        Assert.That(System.Text.RegularExpressions.Regex.Matches(spoil, "GameEngine.DryingShelfHelpText").Count, Is.EqualTo(1));
+    }
 }

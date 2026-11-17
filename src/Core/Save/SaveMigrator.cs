@@ -91,6 +91,7 @@ namespace Survival.Core.Save
         public const string Schema52 = "52";
         public const string Schema53 = "53";
         public const string Schema54 = "54";
+        public const string Schema55 = "55";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -160,6 +161,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema52) From52To53(s, config);
             if (s.SchemaVersion == Schema53) From53To54(s, config);
             if (s.SchemaVersion == Schema54) From54To55(s);
+            if (s.SchemaVersion == Schema55) From55To56(s, config);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
@@ -1554,7 +1556,7 @@ namespace Survival.Core.Save
         /// </summary>
         private static void From54To55(GameState s)
         {
-            s.SchemaVersion = GameState.CurrentSchema;
+            s.SchemaVersion = Schema55;
             var u = s.GameMinute;
             foreach (var (_, fac) in DryingFacilities(s))
             {
@@ -1569,6 +1571,38 @@ namespace Survival.Core.Save
                     foreach (var it in s.Items.Where(i => i.ReservedBy == b.BatchId)) Engine.GameEngine.PauseShelf(s, it);   // 只建 E>U、未暂停、非腐败物
                 }
             }
+        }
+
+        /// <summary>
+        /// 55 → 56（B53a，S11 文首「2026-11-15 B50a Q763—Q768」§Q764 已明确答复的旧失败位判因个案、验收 Q764-A01）：只对缺可信停止原因（legacy／空）的已停止晾制位，
+        /// 按当前位内可证明的实物补一次原因——当前配方原料不齐且没有腐败物为缺料；原料齐全且有腐败物为腐败；其他／无法证明为未知。
+        /// 原料身份按原业务字段（腐败物的原物 SpoiledFrom），不从来源账或日志猜；已有可信原因（缺料／腐败／未知）不覆盖。只补原因，不改实物与进度、不复活、不发经验。静默。
+        /// </summary>
+        private static void From55To56(GameState s, GameConfig config)
+        {
+            s.SchemaVersion = GameState.CurrentSchema;
+            foreach (var (place, fac) in DryingFacilities(s))
+                foreach (var b in fac.DryingSlots ?? new List<DryingSlot>())
+                {
+                    if (b.Status != DryingSlot.Spoiled) continue;
+                    if (b.StopReason != null && b.StopReason != DryingSlot.StopLegacy) continue;
+                    b.StopReason = LegacyStopReason(s, config, place, b);
+                }
+        }
+
+        /// <summary>Q764 选 A 三分支：不齐且无腐败物→缺料；齐且有腐败物→腐败；其他→未知（配方已不存在也算无法证明）。</summary>
+        internal static string LegacyStopReason(GameState s, GameConfig config, string place, DryingSlot b)
+        {
+            var rc = config.Recipes.FirstOrDefault(r => r.Id == b.RecipeId);
+            if (rc == null) return DryingSlot.StopUnknown;
+            var owner = ItemInstance.DryingOwner(place, b.Slot);
+            var items = s.Items.Where(i => i.Owner == owner).ToList();
+            var hasRot = items.Any(i => i.ItemId == Engine.GameEngine.SpoiledMatterId
+                                        || (i.ShelfPausedMinutes == null && i.ExpiresAt is int e && e <= s.GameMinute));
+            var whole = rc.Inputs.All(kv => items.Where(i => Engine.GameEngine.OriginItemId(i) == kv.Key).Sum(i => i.Count) >= kv.Value);
+            if (!whole && !hasRot) return DryingSlot.StopMissing;
+            if (whole && hasRot) return DryingSlot.StopSpoiled;
+            return DryingSlot.StopUnknown;
         }
 
         /// <summary>
