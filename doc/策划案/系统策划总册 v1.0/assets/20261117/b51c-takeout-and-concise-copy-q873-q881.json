@@ -1,0 +1,129 @@
+{
+  "date": "2026-11-17",
+  "status": "whole_original_batch_planning_not_runtime_verified",
+  "originalBatch": "2026-11-16 来自6be0ec79 B51c 次要",
+  "questions": [
+    873,
+    874,
+    875,
+    876,
+    877,
+    878,
+    879,
+    880,
+    881
+  ],
+  "choices": {
+    "873": "A",
+    "874": "A",
+    "875": "A",
+    "876": "B",
+    "877": "user_new_no_batch_count_outer_objects_takeout",
+    "878": "user_new_no_termination_explanation",
+    "879": "A",
+    "880": "B_user_short_copy_and_map_only_cleanup",
+    "881": "A"
+  },
+  "answers": {
+    "873": "选A。每处原预估未知值都带本次真实原因“未预估（{实际原因}）”，不只第一处；只取实际中止原因正文／续做拒因、去返料后果和末标点。无可靠原因只未预估，不编。可信值保留、卡片同源，原开始按钮若显示未知有因用“开始制作（未预估：{实际原因}）”避免嵌套括号。见S08／S14本批。",
+    "874": "选A。退出“退出将取消{动作}。”，尾“已耗时间不退。”；普通维修行动／暂停名统一维修，配方工具维护不改，现场修补／拆解等保持各自名。自动中止／帮助／暂停层删半成品旧句，保留实际返料和后果，自动中止不伪装主动取消。被动设施取出不套此取消话术，见S08／S14本批。",
+    "875": "选A。完成后工具耐久未知时不接预计结束损坏，不能据中途数值或未定义独立单据断言；进行中按本单锁定的真实工具和本单确定磨损显示原状态，真实保障／耐久结算不改。见S08／S14本批。",
+    "876": "选B。取出结果清单名×数、同名合实际数量、顿号连接，锅只锅名数量，腐败物不加已腐败重复括注；地点取设施真实区名。句序实际去向清单→有则真实保质／取出即腐败结果，按Q877／Q878用户新裁定不再追加中止批数／成本尾句。箭头原随身去向准确，永久丢弃逐件确认不变。见S11／S14本批。",
+    "877": "用户新裁定，不选原A／B计数。火堆主层全部取出就是整口锅连水食材、直接烹饪食材等全部合法外层物移出到实际所在地面，不是只取锅内食材或重复取子物；物离开自然不再本座加工。撤向玩家报中止几批／另行中止概念，不需新增火堆批计数；内部对应工序和预留／保护一次解除，原守恒／保质热量／已耗不退／未完无产物经验保持。见S11／S10／S14本批。",
+    "878": "用户新裁定：放入合法材料自行加工、取出后自然不再加工，不特别说明中止。四类被动设施取出结果都删“已中止{批数}批加工；已耗时间和燃料不退。”及无燃料变体的额外尾句，不再要求区分这两种提示；只报真实取出及必要保质／腐败。真实已耗时间燃料仍不退，主动动作异常中止仍保留实际原因。见S11／S14本批。",
+    "879": "选A。不新增全部取出悬停说明或额外确认，不能取时置灰并说明原真实原因；单件火堆取出原进度／实际腐败后果预告保留。不要附中止教学，见S11／S14本批。",
+    "880": "选B但以用户进一步极简要求为准：满位只“已满”，仍在晾制只“晾制中”，不接教玩家取出长句。“清理”仅地图原行动义；其他界面按真实动作替为取出／待取出／取到随身／取到地面，原无余物异常位合法复位用清空／已清空。原取消专用失效句撤下、主动制作取消不动，旧待清理状态由此取代但原分原因摘要不合并。完整映射与原事实保留见S11／S14及逐字稿本批。",
+    "881": "选A。独立设施卡和B51-Q777-01验收随B35做，B51c先做规则、临时沿聚合入口；最终仍每座真实设施一张卡直接进入，临时状态不算验收通过，不推翻已定设施／锅次级页。见S09／S11／S14本批。"
+  },
+  "forecast": {
+    "allUnknownsWithActualReason": true,
+    "noReliableReason": "未预估",
+    "stripReturnConsequencesAndTrailingPunctuation": true,
+    "noFakeReasons": true
+  },
+  "active": {
+    "repairAction": "维修",
+    "recipeNameUnchanged": "工具维护",
+    "removeHalfProductClauses": true,
+    "unreliableToolAfterValueNoBreakWarning": true
+  },
+  "takeout": {
+    "fireAllTargets": "all_legal_outer_objects_including_whole_pots_with_contents_and_direct_cooking_food",
+    "notOnlyPotChildren": true,
+    "noDoubleChildrenTransfer": true,
+    "noPlayerTerminationStepOrBatchCounter": true,
+    "noTerminationOrCostLogSuffixForFourPassiveTypes": true,
+    "realCostsNotRefunded": true,
+    "noUnfinishedOutputOrExperience": true,
+    "actualBindingsAndShelfHeatEffectsUnchanged": true,
+    "moveText": "已取出至{地点}地面：{物品清单}。",
+    "namesAndQuantitiesOnly": true,
+    "spoiledNoRepeatedAnnotation": true
+  },
+  "copy": {
+    "full": "已满",
+    "drying": "晾制中",
+    "awaitingTake": "待取出",
+    "takeCarry": "取到随身",
+    "takeGround": "取到地面",
+    "emptyReset": "清空",
+    "emptyResetResult": "已清空。",
+    "cleanupWordOnlyForMapAction": true,
+    "noAddedTakeAllTooltipOrConfirm": true,
+    "originalActualBlockingReasonsAndSpoilageWarningsRemain": true
+  },
+  "delivery": {
+    "independentFacilityCards": "B35",
+    "temporaryAggregateIsNotFinalAcceptance": true
+  },
+  "acceptance": [
+    {
+      "id": "B51C-Q873-01",
+      "rule": "同一真实原因的每处未知数值都带括注，当前可信值不丢；无可靠原因只未预估，不编固定燃料不足。"
+    },
+    {
+      "id": "B51C-Q874-01",
+      "rule": "普通维修动作统一维修、配方工具维护保留，取消／退出用短稿，自动中止仍真实类型，半成品旧句不再出现。"
+    },
+    {
+      "id": "B51C-Q875-01",
+      "rule": "工具后值未知不挂预计完工损坏；进行中只给本单锁定且确定磨损工具挂原状态，结算不改。"
+    },
+    {
+      "id": "B51C-Q876-01",
+      "rule": "取出日志名×数顿号同名合量、锅写锅名数量、腐败物无已腐败括注，真实去向／期限／腐败条件准确。"
+    },
+    {
+      "id": "B51C-Q877-01",
+      "rule": "火堆主层全取将整锅连内容和直接烤制物全部合法外层物取出，不留下锅或将子食材重复取第二次。"
+    },
+    {
+      "id": "B51C-Q877-02",
+      "rule": "离开后不再幽灵加工／发未完产物经验，原保质热量／实际耗时燃料不退；不新增玩家火堆批计数。"
+    },
+    {
+      "id": "B51C-Q878-01",
+      "rule": "四类被动取出结果无已中止几批或成本解释尾句，无需另点中止；主动动作真正异常中止仍保留真实原因。"
+    },
+    {
+      "id": "B51C-Q879-01",
+      "rule": "全取无新增悬停教学／额外确认，禁用原因可达，原单件真实腐败后果预告仍在。"
+    },
+    {
+      "id": "B51C-Q880-01",
+      "rule": "设施满位只已满，仍在晾制只晾制中，不在同一处再接教取出长句；上限不改。"
+    },
+    {
+      "id": "B51C-Q880-02",
+      "rule": "玩家非地图界面无待清理／清理到随身等混词，改待取出／取到随身／取到地面；地图清理及次数不变。"
+    },
+    {
+      "id": "B51C-Q880-03",
+      "rule": "仅原空异常位可清空并报已清空，无真物丢失／0物清单／新仓；真实腐败提示仅一次且限实际有物。"
+    },
+    {
+      "id": "B51C-Q881-01",
+      "rule": "本批临时聚合入口保持，B35交独立设施卡及其验收，最终直接进入目标不撤销也不提前报通过。"
+    }
+  ]
+}
