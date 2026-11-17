@@ -277,30 +277,38 @@ public class B51bMutationGapTests : TestBase
 
     // ───────────── 5. Q721：取消本批不带 batchId 的两句 ─────────────
 
-    /// <summary>S08 Q701.4／逐字稿 Q701 表 + Q721 答复：没有带 batchId 的请求，当前区这座没有在办批时「当前区的{设施名}没有进行中的加工批次。」。</summary>
+    /// <summary>
+    /// B51c2a1 改写（S11 Q880：撤取消入口后「当前区的{设施名}没有进行中的加工批次。」不再可达，撤下；逐字稿 B51 表「没有可取出的物品。」）：
+    /// 当前区这座没有在办批时「全部取出」拒「没有可取出的物品。」，不改任何东西。
+    /// </summary>
     [Test]
     public void Q721_CancelWithoutBatchId_NoBatch_EmptyText()
     {
         var s = Workshop();
-        var r = E.CancelStationBatch(s, "water_station", null, "none");
+        Assert.That(E.TakeAllBlocked(s, s.Ground, "water_station"), Is.EqualTo("没有可取出的物品。"));
+        var r = E.TakeAll(s, s.Ground, "water_station", E.StationTakeStamp(s, s.Ground, "water_station"), "none");
         Assert.That(r.Ok, Is.False);
-        Assert.That(r.Reason, Is.EqualTo("当前区的固定净水台没有进行中的加工批次。"));
+        Assert.That(r.Reason, Is.EqualTo("没有可取出的物品。"));
     }
 
-    /// <summary>逐字稿 B51 表 changedBatch ＋ Q721（取消只认所点 batchId）：有在办批但请求没带 batchId 时「加工批次已变化，请重新选择。」，不改指任何一批，批次与预留不动。</summary>
+    /// <summary>
+    /// B51c2a1 改写（S11 Q880：撤「加工批次已变化，请重新选择。」，过时计划沿「物品已变，请重选。」）：有在办批但请求带的计划快照不是当前的（这里为空计划）时
+    /// 整次拒「物品已变，请重选。」，不改指任何一批，批次与原料不动。
+    /// </summary>
     [Test]
     public void Q721_CancelWithoutBatchId_WithBatch_ChangedText()
     {
         var s = Workshop();
+        var emptyStamp = E.StationTakeStamp(s, s.Ground, "water_station");
         E.CreateItems(s, "dirty_water", 4, s.Ground);
         E.CreateItems(s, "filter_media", 1, s.Ground);
         Ok(E.StartStationBatch(s, Water, "one"));
-        var r = E.CancelStationBatch(s, "water_station", null, "nil");
+        var r = E.TakeAll(s, s.Ground, "water_station", emptyStamp, "nil");
         Assert.That(r.Ok, Is.False);
-        Assert.That(r.Reason, Is.EqualTo("加工批次已变化，请重新选择。"));
+        Assert.That(r.Reason, Is.EqualTo("物品已变，请重选。"));
         var b = Batches(s, "water_station");
         Assert.That(b.Count, Is.EqualTo(1));
-        Assert.That(BatchBound(s, b[0].BatchId).Sum(i => i.Count), Is.EqualTo(5), "脏水 4＋滤材 1 仍归本批");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
+        Assert.That(BatchBound(s, b[0].BatchId).Sum(i => i.Count), Is.EqualTo(5), "脏水 4＋滤材 1 仍归本批");
     }
 
     // ───────────── 附：在办旧批（经验快照 0）的经验说明 ─────────────

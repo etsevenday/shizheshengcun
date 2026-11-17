@@ -92,9 +92,10 @@ public class B17StationTests : TestBase
         Start(s, ActionRequest.Travel(next));
         Run(s);
         var bid = s.Locations["camp"].Facility.StationBatches.Single().BatchId;
-        Assert.That(E.CancelStationBatch(s, "kiln", bid).Ok, Is.False, "不能远程取消/出货");
+        // B51c2a1 改调用（S11 Q870 B／Q778：撤「取消本批」，改每批「取出」）：原 CancelStationBatch；期望不变——不能远程、当地取出后原料回营地地面、木炭解锁留营地（Q921）
+        Assert.That(E.TakeStationBatch(s, "camp", "kiln", bid, E.StationTakeStamp(s, "camp", "kiln", bid)).Ok, Is.False, "不能远程取出");
         E.DebugTeleport(s, "camp");
-        Ok(E.CancelStationBatch(s, "kiln", bid));
+        Ok(E.TakeStationBatch(s, "camp", "kiln", bid, E.StationTakeStamp(s, "camp", "kiln", bid)));
         Assert.That((Sum(s, "clay", "camp"), Sum(s, "charcoal", "camp"), Sum(s, "ceramic_shell")), Is.EqualTo((2, 1, 0)));
         Assert.That(s.Items.Any(i => i.ReservedBy != null), Is.False);
     }

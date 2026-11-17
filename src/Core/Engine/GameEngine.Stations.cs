@@ -11,12 +11,12 @@ namespace Survival.Core.Engine
     /// 只建在临时营地外部或已完工安全屋屋内（Q107 每区每类一座）。被动批次：在当前区的工坊投料（0 分钟、不占行动），原料从随身/当前地面取、
     /// B51c2a1（S11 Q872 选 B，存档 57）起原料（配方 Inputs）移进设施该批（owner <see cref="ItemInstance.StationOwner"/>），燃料（配方 Fuel）仍移到该区地面按批预留（Q921，待 B35a2a 燃料库存）；
     /// 按世界时间推进（陶窑 60 分钟、净水台 30 分钟，不吃熟练/装备/夜间倍率），离开也继续、不能远程投取；
-    /// 完成一次核销原料与燃料（陶窑每批另耗木炭1），产物落该区地面、不自动入包；取消把原料放回该区地面、燃料只解锁，时间不退、没有产物。
+    /// 完成一次核销原料与燃料（陶窑每批另耗木炭1），产物落该区地面、不自动入包；取出（GameEngine.TakeAll.cs）把原料放回该区地面、燃料只解锁，时间不退、没有产物。
     /// B22d（Q174 选 B，passiveCraftXp）：每成功整批给首次投料且完成时仍存活的角色制造经验（陶窑 6、净水台 3，投料时快照），
     /// 两类共享每角色每世界日 12（按完成日，剩余不足给剩余，满级 0），与主动制造/建造经验独立，不另给烹饪；取消/原料不全/读档/领取都不给。
     /// B32e（Q380 选 B，S08「2026-11-10 Q380」）原为每座一个加工位＋等待队列；B51b（S08 文首 Q701.2、B51 Q721／Q727，存档 55）起改为每座最多 10 批全部并行：
     /// 成功投料的每批立即从自己的投料时刻开始，每个世界 5 分钟段对段首在办的每批各 +5，各自按本批耗时完成；没有等待批。投料时本批实际绑定的有期限输入暂停保质（Q701.1），
-    /// 完成核销、取消／失败释放时恢复 C＋R。「取消本批」只绑定所点批次的稳定 batchId（不认整列表版本），本批已结束提示「加工批次已变化，请重新选择。」。
+    /// 完成核销、取出／失败释放时恢复 C＋R。B51c2a1（Q778／Q870 B）撤「取消本批」，改为每批「取出」与「全部取出」（GameEngine.TakeAll.cs）。
     /// </summary>
     public sealed partial class GameEngine
     {
@@ -26,14 +26,8 @@ namespace Survival.Core.Engine
         /// <summary>Q701.2：每座工坊最多同时加工的未完成批数（原 Q380 含加工中 10 批上限转为 10 并行批上限）。</summary>
         public const int StationParallelCap = 10;
 
-        /// <summary>Q721：新的独立请求中原批已结束／不在原设施（逐字稿 B51 表 changedBatch）。</summary>
-        public const string StationBatchChanged = "加工批次已变化，请重新选择。";
-
         /// <summary>Q727：有加工批时才显示一次的并行说明（逐字稿 B51 表 parallelHelp）。</summary>
         public const string StationParallelHelp = "各批同时加工，每座最多10批。";
-
-        /// <summary>批次按钮（逐字稿 B51 表 cancelBatch）。</summary>
-        public const string StationCancelLabel = "取消本批";
 
         /// <summary>某区这座工坊的全部未完成批次，按原创建顺序（列表先后＝创建先后）。</summary>
         private static List<StationBatch> StationList(FacilityState? fac, string stationId) =>
@@ -110,8 +104,10 @@ namespace Survival.Core.Engine
             return list.Count == 1 ? $"预计{Clock.DayTime(list[0])}完成" : $"预计分别于{string.Join("、", list.Select(Clock.DayTime))}完成";
         }
 
-        /// <summary>Q701.4 设施主标题：「加工中{批数}批（最多10批）」。</summary>
-        public static string StationTitle(int batches) => $"加工中{batches}批（最多{StationParallelCap}批）";
+        /// <summary>
+        /// Q701.4 设施主标题「加工中{批数}批（最多10批）」；Q779 选 B：同处显示并行说明「各批同时加工，每座最多10批。」时只写「加工中{批数}批」，不重复上限。
+        /// </summary>
+        public static string StationTitle(int batches, bool helpShown) => helpShown ? $"加工中{batches}批" : $"加工中{batches}批（最多{StationParallelCap}批）";
 
         /// <summary>Q727 并行批次主行（逐字稿 B51 表 batchRow）：「批次{序号} · {配方名} · {已进行}/{所需}分 · 预计{日期时刻}完成」，序号只作显示。</summary>
         public string StationBatchRow(GameState s, StationBatch b, int seq) =>
@@ -140,7 +136,7 @@ namespace Survival.Core.Engine
             var ins = string.Join("、", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"));
             var fuel = rc.Fuel.Count > 0 ? "＋燃料" + string.Join("、", rc.Fuel.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}")) : "";
             var outs = string.Join("、", rc.Outputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"));
-            return $"{ins}{fuel} → {outs}，被动{rc.BaseMinutes}世界分钟（不占行动，离开也继续），完成后放在本区地面；取消退回原料，时间不退";
+            return $"{ins}{fuel} → {outs}，被动{rc.BaseMinutes}世界分钟（不占行动，离开也继续），完成后放在本区地面；取出退回原料，时间不退";   // B51c2a1（S11 Q880）：撤取消入口，原句只把动词「取消」换成「取出」
         }
 
         private const string DailyStationXp = "stationXp";
@@ -365,42 +361,8 @@ namespace Survival.Core.Engine
             return back;
         }
 
-        /// <summary>BM5a（02 Q563 选 A，照 Q446⑦ 最小删词）：工坊「取消本批」战斗中的拒绝句；普通敌踪卡在场不挡。</summary>
+        /// <summary>BM5a（02 Q563 选 A，照 Q446⑦ 最小删词）：工坊操作战斗中的拒绝句（B51c2a1 起用于「取出」「全部取出」，Q871 原战斗阻断保持）；普通敌踪卡在场不挡。</summary>
         public const string StationBattleBlocked = "战斗时不能操作";
-
-        /// <summary>
-        /// 「取消本批」（S08 文首 Q701.2、B51 Q721／Q727）：只取消当前区这座工坊里所点中的那一批（稳定 batchId），释放该批全部未核销材料和燃料到本区地面
-        /// （暂停保质的恢复 C＋R），已过时间不退，没有产物和经验；其他批继续原进度。只能在当地操作，0 分钟。
-        /// 不认整列表版本：其他批完成、取消、新投或本批正常进度更新都不影响；本批已完成／已取消／不在这座设施时「加工批次已变化，请重新选择。」，不改指另一批。
-        /// seenSeq 为点击时所见的显示序号（日志用；缺省取当前位置）。同一 requestId 只生效一次（重复不双返）。
-        /// </summary>
-        public ActionResult CancelStationBatch(GameState s, string stationId, int? batchId, string? requestId = null, int? seenSeq = null)
-        {
-            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            if (s.Progress.Dead) return ActionResult.Fail("本局已结束");
-            if (s.Battle != null) return ActionResult.Fail(StationBattleBlocked);
-            var place = s.Ground;
-            var fac = FacOf(s, place);
-            var list = StationList(fac, stationId);
-            if (batchId == null) return ActionResult.Fail(list.Count == 0 ? $"当前区的{StationName(stationId)}没有进行中的加工批次。" : StationBatchChanged);
-            var idx = list.FindIndex(x => x.BatchId == batchId.Value);
-            if (fac == null || idx < 0) return ActionResult.Fail(StationBatchChanged);
-            var b = list[idx];
-            var seq = seenSeq ?? idx + 1;
-            var hasReturn = StationBatchInputs(s, place, b).Count > 0 || s.Items.Any(i => i.ReservedBy == b.BatchId);
-            fac.StationBatches.Remove(b);
-            ReleaseStationBatch(s, place, b);
-            Normalize(s, place);
-            RememberRequest(s, requestId);
-            var zone = ZoneName(s, place);
-            var head = $"已取消{zone}{StationName(stationId)}的批次{seq} · {RecipeNameOf(b.RecipeId)}（已进行{Clock.Duration(b.DoneMinutes)}）。";
-            // Q727（逐字稿 B51 表 batchCancelResult／batchCancelNoReturn）：返料→恢复保质分句（可为空）→后果→已耗时间
-            Emit(s, GameEventKind.ActionCancelled, hasReturn
-                ? $"{head}未消耗原料已退回{zone}地面。没有产物和经验。已耗时间保留。"   // BM11（S08 Q882 用户新裁定）：撤恢复保质分句
-                : $"{head}没有可返还的剩余原料，没有产物和经验。已耗时间保留。");
-            UpdateFlags(s);
-            return ActionResult.Success();
-        }
 
         /// <summary>
         /// 每个世界 5 分钟段（Q701.2）：每区每座工坊段首在办的每一批各 +5 分钟（世界只推进一次），达标即重验该批原料（设施内 owner，B51c2a1）与燃料（地面预留）、

@@ -186,8 +186,9 @@ public class B32eStationQueueTests : TestBase
     // ───────────── Q380-A03／Q721 ─────────────
 
     /// <summary>
-    /// Q721-A01／A02、Q727-A02：取消本批只释放所点批的预留，其他批继续原进度（不重启）；已完成批照原记录；同一请求重复不双返；
-    /// 本批已结束的新请求「加工批次已变化，请重新选择。」，不改指同序号的另一批；日志用所见序号与配方名。
+    /// B51c2a1 改写（S11 Q870 B 每批「取出」取代 Q721「取消本批」；Q876 B 结果清单；Q880 撤取消专用失效句，过时计划「物品已变，请重选。」）：
+    /// 取出只结束所点批、原料退本区地面，其他批继续原进度（不重启）；已完成批照原记录；同一请求重复不双返；
+    /// 本批已结束的新请求「物品已变，请重选。」，不改指另一批。原断言的取消日志句与「当前区的…没有进行中的加工批次。」随取消入口撤下。
     /// </summary>
     [Test]
     public void Q380_A03_CancelThisBatch_Idempotent_BoundToId()
@@ -202,30 +203,34 @@ public class B32eStationQueueTests : TestBase
         var q = Queue(s, "water_station");
         Assert.That(q.Count, Is.EqualTo(4));
         var (a, b, c, d) = (q[0], q[1], q[2], q[3]);
+        string Stamp(StationBatch x) => E.StationTakeStamp(s, s.Ground, "water_station", x.BatchId);
 
-        // 点中批次2（乙）后，批次1（甲）先取消、列表换序：仍只取消乙，日志用所见序号 2
-        Ok(E.CancelStationBatch(s, "water_station", a.BatchId, "c-a", 1));
+        // 点中乙后，甲先取出、列表换序：仍只取出乙
+        var bStamp = Stamp(b);
+        Ok(E.TakeStationBatch(s, s.Ground, "water_station", a.BatchId, Stamp(a), "c-a"));
         var reservedBefore = Reserved(s, "dirty_water");
-        Ok(E.CancelStationBatch(s, "water_station", b.BatchId, "c-b", 2));
-        Assert.That(Reserved(s, "dirty_water"), Is.EqualTo(reservedBefore - 4), "只释放该批预留");
-        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && !InAnyBatch(i)).All(i => i.Owner == "camp"), Is.True, "退到本区地面");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy == null 认未投入
-        var zone = E.ZoneName(s, s.Ground);
-        Assert.That(s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionCancelled)).Text,
-            Is.EqualTo($"已取消{zone}固定净水台的批次2 · {Cfg.Recipes.Single(r => r.Id == Water).Name}（已进行15分钟）。未消耗原料已退回{zone}地面。没有产物和经验。已耗时间保留。"));
+        Ok(E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, bStamp, "c-b"));
+        Assert.That(Reserved(s, "dirty_water"), Is.EqualTo(reservedBefore - 4), "只释放该批");
+        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && !InAnyBatch(i)).Sum(i => i.Count), Is.EqualTo(8), "甲乙两批脏水退回");
+        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && !InAnyBatch(i)).All(i => i.Owner == "camp"), Is.True, "退到本区地面");
+        // Q876 B：「已取出至{地点}地面：{物品清单}。」名×数、顿号（A07 ex_station_water 每批脏水4、滤材1；地点为营地区名）
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×4、滤材×1。"));
         Assert.That(Queue(s, "water_station"), Is.EqualTo(new[] { c, d }), "其他批不动");
         Assert.That((c.DoneMinutes, d.DoneMinutes), Is.EqualTo((0, 0)), "不重启、不串行");
-        Assert.That(E.CancelStationBatch(s, "water_station", b.BatchId, "c-b").Duplicate, Is.True, "同一请求重复只生效一次");
-        var stale = E.CancelStationBatch(s, "water_station", b.BatchId, "c-b-2");
-        Assert.That((stale.Ok, stale.Reason), Is.EqualTo((false, GameEngine.StationBatchChanged)), "本批已结束才报变化");
-        Assert.That(Queue(s, "water_station").Count, Is.EqualTo(2), "不取消现在同序号的另一批");
+        Assert.That(E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, bStamp, "c-b").Duplicate, Is.True, "同一请求重复只生效一次");
+        var stale = E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, bStamp, "c-b-2");
+        Assert.That((stale.Ok, stale.Reason), Is.EqualTo((false, "物品已变，请重选。")), "本批已结束才报变化");
+        Assert.That(Queue(s, "water_station").Count, Is.EqualTo(2), "不取出现在同序号的另一批");
 
         // 本批正常进度更新、别批完成都不使请求失效
+        var cStamp = Stamp(c);
+        AdvanceTo(s, t0 + 25);
+        Assert.That(Stamp(c), Is.EqualTo(cStamp), "进度推进不改计划快照");
         AdvanceTo(s, t0 + 45);
         Assert.That(Sum(s, "clean_water"), Is.EqualTo(8), "丙、丁照原进度在 30 分钟完成");
-        Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(6L), "取消批没有经验，完成批照原记录");
-        var gone = E.CancelStationBatch(s, "water_station", c.BatchId, "c-c");
-        Assert.That(gone.Reason, Is.EqualTo(GameEngine.StationBatchChanged), "已完成批报变化");
-        Assert.That(E.CancelStationBatch(s, "water_station", null, "c-none").Reason, Is.EqualTo("当前区的固定净水台没有进行中的加工批次。"));
+        Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(6L), "取出批没有经验，完成批照原记录");
+        var gone = E.TakeStationBatch(s, s.Ground, "water_station", c.BatchId, cStamp, "c-c");
+        Assert.That(gone.Reason, Is.EqualTo("物品已变，请重选。"), "已完成批报变化");
     }
 
     /// <summary>Q701-A04：完成时预留缺失只终止该批（释放剩余预留、无产物无经验），其他批照原进度、只用自己绑定的预留。</summary>
@@ -329,19 +334,26 @@ public class B32eStationQueueTests : TestBase
         var razor = RazorOf(Path.Combine("Components", "CraftOverlay.razor"));
         Assert.That(razor, Does.Contain(">投料批数<"));
         Assert.That(razor, Does.Contain("投料（@(batch)批）"));
-        Assert.That(razor, Does.Contain("@GameEngine.StationTitle(sbList.Count)"));
+        Assert.That(razor, Does.Contain("@GameEngine.StationTitle(sbList.Count, true)"));   // B51c2a1 改期望（S11 Q779 选 B：说明显示时标题不重复上限）
         Assert.That(razor, Does.Contain("@GameEngine.StationParallelHelp"));
         Assert.That(razor, Does.Contain("e.StationBatchRow(s, sbItem, seq)"));
         Assert.That(razor, Does.Contain("@e.StationOutputGround(s, zonePlace)"));
-        Assert.That(razor, Does.Contain(">@GameEngine.StationCancelLabel<"));
-        Assert.That(razor, Does.Contain("CancelStationBatch(G.S, stationId, batchId, $\"station-cancel:{batchId}\", seenSeq)"));
+        // B51c2a1 改期望（S11 Q870 B／Q778：撤「取消本批」，每批「取出」、操作区「全部取出」）：原断言取消键与 CancelStationBatch 接线
+        Assert.That(razor, Does.Contain(">@GameEngine.TakeLabel<"));
+        Assert.That(razor, Does.Contain(">@GameEngine.TakeAllLabel<"));
+        Assert.That(razor, Does.Contain("G.E.TakeStationBatch(G.S, place, stationId, batchId, stamp, $\"station-take:{batchId}\")"));
+        Assert.That(razor, Does.Not.Contain("CancelStationBatch"));
+        Assert.That(razor, Does.Not.Contain("data-station-cancel"));
+        Assert.That(razor, Does.Not.Contain("StationCancelLabel"));
         Assert.That(razor, Does.Not.Contain("CancelStationQueue"));
         Assert.That(razor, Does.Not.Contain("排队中"));
         Assert.That(razor, Does.Not.Contain(">取消当前批<"));
         Assert.That(razor, Does.Not.Contain("投料（被动）"));
-        Assert.That(GameEngine.StationTitle(3), Is.EqualTo("加工中3批（最多10批）"));
+        // B51c2a1 改期望（S11 Q779 选 B）：说明可见时「加工中{批数}批」，说明不可见的原分支保留「（最多10批）」
+        Assert.That(GameEngine.StationTitle(3, true), Is.EqualTo("加工中3批"));
+        Assert.That(GameEngine.StationTitle(3, false), Is.EqualTo("加工中3批（最多10批）"));
         Assert.That(GameEngine.StationParallelHelp, Is.EqualTo("各批同时加工，每座最多10批。"));
-        Assert.That(GameEngine.StationCancelLabel, Is.EqualTo("取消本批"));
+        Assert.That((GameEngine.TakeLabel, GameEngine.TakeAllLabel), Is.EqualTo(("取出", "全部取出")));   // B51c2a1：原断言取消键「取消本批」（Q778 撤）
     }
 
     // ───────────── Q397—Q399（S08「Q397–Q399 · B32e 文案定稿」）与 Q701.4 ─────────────
@@ -400,9 +412,11 @@ public class B32eStationQueueTests : TestBase
         var razor = RazorOf(Path.Combine("Components", "CraftOverlay.razor"));
         var css = RazorOf(Path.Combine("wwwroot", "css", "app.css"));
         Assert.That(razor, Does.Contain("ev.Detail <= 1 && !StationHeld"), "连击第二下起不提交");
-        Assert.That(razor, Does.Contain("(MouseEventArgs ev) => CancelStation(rc.Station, bid, seq, ev)"), "批号与所见序号在渲染时绑定");
+        // B51c2a1 改期望（S11 Q870 B：取消键换成每批「取出」，批号与本批快照戳在渲染时绑定；Q879 被挡时置灰）
+        Assert.That(razor, Does.Contain("(MouseEventArgs ev) => TakeStation(zonePlace, stationId, bid, takeStamp, ev)"), "批号与快照戳在渲染时绑定");
         Assert.That(razor, Does.Contain("(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)"));
-        Assert.That(razor.Split("disabled=\"@StationHeld\"").Length - 1, Is.EqualTo(1), "取消键提交后停用");
+        Assert.That(razor, Does.Contain("disabled=\"@(takeWhy != null || StationHeld)\""), "取出键提交后停用");
+        Assert.That(razor, Does.Contain("disabled=\"@(allWhy != null || StationHeld)\""), "全部取出键提交后停用");
         Assert.That(razor, Does.Contain("disabled=\"@(sbWhy != null || StationHeld)\""));
         // B51b 试玩修复 M972：批次区移出原料滚动区，在配方说明区（.cm-body，陶窑／净水台自成滚动区）与投料栏之间自成一区，逐批列表单独滚动；
         // 「投料批数」步进器移进投料栏、在「投料」按钮上方

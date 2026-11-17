@@ -315,13 +315,15 @@
                         </div>
                         @if (sbList.Count > 0)
                         {
-                            @* B51b（S08 文首 Q701.2／Q701.4、B51 Q721／Q727，逐字稿 B51 表）：标题「加工中{批数}批（最多10批）」与并行说明（有批时一次，Q779 待定两句都显示）；
+                            @* B51b（S08 文首 Q701.2／Q701.4、B51 Q721／Q727，逐字稿 B51 表）：标题与并行说明（有批时一次）；Q779 选 B：说明显示时标题只写「加工中{批数}批」。
                                每批一行「批次{序号} · {配方名} · {已进行}/{所需}分 · 预计{日期时刻}完成」，明细分行写原经验说明与「完成后放在{区域}地面。」；
-                               「取消本批」绑定该行渲染时的真实 batchId 与所见序号（序号只作显示、按当前位置从1重排）。
+                               B51c2a1（S11 Q870 B／Q872 B／Q923 B）：撤「取消本批」，每批一行「取出」（绑定该行渲染时的真实 batchId 与本批计划快照戳）；
+                               批内原料在设施里，按只读物品行列出（不可拖、不可选，箭头与数量取出归 B51c2b）。燃料仍在地面预留，不在批内列（Q921）。
+                               Q879：「取出」不加悬停说明，不能取时置灰、悬停写真实拒绝原因。
                                B51b 试玩修复 M972：队列区在 .cm-body 与投料栏之间自成一区，标题与并行说明固定、逐批列表单独滚动，优先分高度 *@
                             var zonePlace = s.Ground;
                             <div class="station-queue" data-station-queue>
-                                <div class="sq-head"><b data-station-title>@GameEngine.StationTitle(sbList.Count)</b><small class="tiny muted" data-station-help>@GameEngine.StationParallelHelp</small></div>
+                                <div class="sq-head"><b data-station-title>@GameEngine.StationTitle(sbList.Count, true)</b><small class="tiny muted" data-station-help>@GameEngine.StationParallelHelp</small></div>
                                 <div class="sq-rows" data-wheel="y">
                                 @for (var k = 0; k < sbList.Count; k++)
                                 {
@@ -329,9 +331,20 @@
                                     var bid = sbItem.BatchId;
                                     var seq = k + 1;
                                     var rowText = e.StationBatchRow(s, sbItem, seq);
+                                    var takeWhy = e.StationBatchTakeBlocked(s, zonePlace, rc.Station, bid);
+                                    var takeStamp = e.StationTakeStamp(s, zonePlace, rc.Station, bid);
+                                    var stationId = rc.Station;
                                     <div class="sq-row" data-station-batch="@bid">
                                         <span class="cg-facts"><b title="@rowText">@rowText</b><small class="cg-xp" title="@e.StationBatchXpNote(s, sbItem)">@e.StationBatchXpNote(s, sbItem)</small><small class="cg-sum">@e.StationOutputGround(s, zonePlace)</small></span>
-                                        <button type="button" class="secondary cg-start" data-station-cancel title="只取消实际加工中的一批，释放该批全部未核销材料和燃料到本区地面，不退时间，没有产物和经验" disabled="@StationHeld" @onclick="(MouseEventArgs ev) => CancelStation(rc.Station, bid, seq, ev)">@GameEngine.StationCancelLabel</button>
+                                        <button type="button" class="secondary cg-start" data-station-take title="@takeWhy" disabled="@(takeWhy != null || StationHeld)"
+                                                @onclick="(MouseEventArgs ev) => TakeStation(zonePlace, stationId, bid, takeStamp, ev)">@GameEngine.TakeLabel</button>
+                                        <div class="sq-inputs" data-station-inputs>
+                                            @foreach (var inp in e.StationBatchInputs(s, zonePlace, sbItem))
+                                            {
+                                                <ItemRow Icon="@inp.ItemId" Name="@e.ItemName(inp.ItemId)" Qty="@($"×{inp.Count}")" CssClass="sq-input"
+                                                         Status="@(inp.ShelfPausedMinutes is int r ? GameEngine.ShelfPausedText(r) : null)" />
+                                            }
+                                        </div>
                                     </div>
                                 }
                                 </div>
@@ -355,12 +368,18 @@
                         }
                         else if (e.IsStationBatchRecipe(rc))
                         {
-                            @* B17（A07 X1.4）：陶窑/固定净水台是被动批次：投料0分钟、不占行动，原料移到本区地面锁定，离开也继续。
-                               B32e（Q380）原为每座一个加工位＋等待队列；B51b（Q701.2）起每座最多10批同时加工，面板逐批列出，「取消本批」绑定所见批次，
+                            @* B17（A07 X1.4）：陶窑/固定净水台是被动批次：投料0分钟、不占行动，离开也继续；B51c2a1（Q872 B）起原料移进设施该批、燃料仍地面预留。
+                               B32e（Q380）原为每座一个加工位＋等待队列；B51b（Q701.2）起每座最多10批同时加工，面板逐批列出，B51c2a1 起每批「取出」、操作区「全部取出」，
                                投料按钮「投料（{批数}批）」可在加工中继续投新批（新批从投料时刻开始） *@
                             var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc, batch);
                             var loadKey = $"station-load:{s.Ground}:{rc.Station}:{s.NextActionId}:{batch}";
                             var stMax = e.StationBatchMaxNew(s, rc);
+                            // B51c2a1（Q778／Q923 B）：操作区常驻「全部取出」；空设施置灰、悬停「没有可取出的物品。」，被挡时悬停真实原因（Q879 不加别的悬停）
+                            var allPlace = s.Ground;
+                            var allStation = rc.Station;
+                            var allWhy = e.TakeAllBlocked(s, allPlace, allStation);
+                            var allStamp = e.StationTakeStamp(s, allPlace, allStation);
+                            var allKey = $"station-takeall:{allPlace}:{allStation}:{string.Join(",", sbList.Select(b => b.BatchId))}";
                             <div class="craft-go" data-station-go>
                                 <span class="cg-facts">
                                     @if (sbWhy == null)
@@ -384,6 +403,8 @@
                                     </div>
                                     <button type="button" data-pt="station-load" class="primary cg-start" disabled="@(sbWhy != null || StationHeld)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
                                             data-enter @onclick="(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)">投料（@(batch)批）<EnterCap On="@(sbWhy == null && !StationHeld)" /></button>
+                                    <button type="button" class="secondary cg-start" data-station-take-all title="@allWhy" disabled="@(allWhy != null || StationHeld)"
+                                            @onclick="(MouseEventArgs ev) => TakeAllStation(allPlace, allStation, allStamp, allKey, ev)">@GameEngine.TakeAllLabel</button>
                                 </div>
                             </div>
                         }
@@ -482,8 +503,8 @@ else
         return null;
     }
 
-    // B32e（Q380）：提交绑定所见的批次，请求号由渲染时所见状态决定；B51b（Q721）起只认所点批次的 batchId，本批已结束才回「加工批次已变化，请重新选择。」。
-    // B32e 试玩修复 M680：连点「取消当前批」时第一下刷新出新的当前批，第二下落在新按钮上按新批号提交、连取消两批。
+    // B32e（Q380）：提交绑定所见的批次，请求号由渲染时所见状态决定；B51c2a1（Q870 B）起「取出」只认所点批次的 batchId 与计划快照戳，过时回「物品已变，请重选。」。
+    // B32e 试玩修复 M680：连点同一处按钮时第一下刷新出新内容，第二下落在新按钮上按新批号提交（原「取消当前批」连取消两批）。
     // 现在：同一次连击的后续点击（MouseEventArgs.Detail > 1）不提交；任一队列提交成功后三个按钮停用 StationHoldMs 再随重渲恢复。
     private const int StationHoldMs = 600;
     private DateTime _stationHoldUntil = DateTime.MinValue;
@@ -505,11 +526,18 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    /// <summary>B51b（Q721／Q727）：「取消本批」只认所点行渲染时的真实 batchId，日志用所见序号；本批已结束由内核回「加工批次已变化，请重新选择。」。</summary>
-    private void CancelStation(string stationId, int batchId, int seenSeq, MouseEventArgs ev)
+    /// <summary>B51c2a1（Q870 B）：一批「取出」只认所点行渲染时的真实 batchId 与本批计划快照戳；批已结束或计划变了由内核回「物品已变，请重选。」。</summary>
+    private void TakeStation(string place, string stationId, int batchId, string stamp, MouseEventArgs ev)
     {
         if (!StationClickAccepted(ev)) return;
-        HoldStation(G.EngineDo(() => G.E.CancelStationBatch(G.S, stationId, batchId, $"station-cancel:{batchId}", seenSeq)));
+        HoldStation(G.EngineDo(() => G.E.TakeStationBatch(G.S, place, stationId, batchId, stamp, $"station-take:{batchId}")));
+    }
+
+    /// <summary>B51c2a1（Q778）：「全部取出」带渲染时的整座计划快照戳；请求号按所见批次，同一计划连点只生效一次。</summary>
+    private void TakeAllStation(string place, string stationId, string stamp, string requestKey, MouseEventArgs ev)
+    {
+        if (!StationClickAccepted(ev)) return;
+        HoldStation(G.EngineDo(() => G.E.TakeAll(G.S, place, stationId, stamp, requestKey)));
     }
 
     /// <summary>投料：所选批数整次提交，成功后批数回到默认 1（失败保留所选，不自动缩批）。</summary>

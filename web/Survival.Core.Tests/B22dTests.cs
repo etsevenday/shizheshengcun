@@ -163,9 +163,11 @@ public class B22dTests : TestBase
         var cx = CraftXp(c);
         Water(c);
         AdvanceTo(c, c.GameMinute + 15);
-        Ok(E.CancelStationBatch(c, "water_station", E.StationBatchesHere(c, "water_station").Single().BatchId));
+        // B51c2a1 改调用（S11 Q870 B／Q778「本次被中止的未完成批不生成成品或完成经验」）：原 CancelStationBatch，期望不变
+        var cb = E.StationBatchesHere(c, "water_station").Single().BatchId;
+        Ok(E.TakeStationBatch(c, c.Ground, "water_station", cb, E.StationTakeStamp(c, c.Ground, "water_station", cb)));
         AdvanceTo(c, c.GameMinute + 60);
-        Assert.That(CraftXp(c), Is.EqualTo(cx), "取消没有经验");
+        Assert.That(CraftXp(c), Is.EqualTo(cx), "取出没有经验");
     }
 
     // ───────────── Q171 基础陶工做法 / Q172 camp 两区 / Q175 部署等待（核对现状） ─────────────

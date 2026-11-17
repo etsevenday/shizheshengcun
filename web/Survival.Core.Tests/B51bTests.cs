@@ -72,15 +72,12 @@ public class B51bTests : TestBase
         Assert.That(s.Items.Where(i => InAnyBatch(i) && i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(4), "在制越过原截止不转腐败物");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
         Assert.That(s.Items.Any(i => i.ItemId == "dirty_water" && !InAnyBatch(i)), Is.False, "余料照常到期");
         var b = Batches(s, "water_station").Single();
-        Ok(E.CancelStationBatch(s, "water_station", b.BatchId, "p1c", 1));
+        Ok(E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, E.StationTakeStamp(s, s.Ground, "water_station", b.BatchId), "p1c"));   // B51c2a1：原 CancelStationBatch（S11 Q870 B）
         var back = s.Items.Where(i => i.ItemId == "dirty_water").ToList();
         Assert.That(back.Sum(i => i.Count), Is.EqualTo(4));
         Assert.That(back.All(i => i.ShelfPausedMinutes == null && i.ExpiresAt == s.GameMinute + 20 && i.ReservedBy == null && i.Owner == s.Ground), Is.True, "恢复 C＋R，回到本区地面");
-        var zone = E.ZoneName(s, s.Ground);
-        Assert.That(s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionCancelled)).Text,
-            // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
-            Is.EqualTo($"已取消{zone}固定净水台的批次1 · {Cfg.Recipes.Single(r => r.Id == Water).Name}（已进行25分钟）。未消耗原料已退回{zone}地面。" +
-                       "没有产物和经验。已耗时间保留。"));
+        // B51c2a1 改期望（S11 Q876 B 清单、Q878 不接中止／成本尾句、Q882 不接保质恢复句）：原为取消日志全文
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×4、滤材×1。"));
     }
 
     /// <summary>Q701-A03：受保护输入超过原截止仍按时完成核销；完成产物正常出、无残留 R。</summary>
@@ -96,7 +93,10 @@ public class B51bTests : TestBase
         Assert.That(Sum(s, "dirty_water") + Sum(s, GameEngine.SpoiledMatterId), Is.EqualTo(0), "受保护原料直接核销，不转腐败物");
     }
 
-    /// <summary>Q727：取消无实际可返料的批用无返料版全文。</summary>
+    /// <summary>
+    /// B51c2a1 改写（逐字稿 B51 表「没有任何本来可移物品 → 没有可取出的物品。」；原 Q727 取消无返料句随「取消本批」撤下，S11 Q778／Q880）：
+    /// 批内已没有原料时这一批「取出」拒「没有可取出的物品。」，不结束该批、不写成功句。
+    /// </summary>
     [Test]
     public void Q727_CancelNoReturn_Text()
     {
@@ -105,11 +105,13 @@ public class B51bTests : TestBase
         Ok(E.StartStationBatch(s, Water, "nr"));
         var b = Batches(s, "water_station").Single();
         var gone = BatchBound(s, b.BatchId);
-        s.Items.RemoveAll(gone.Contains);   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
-        Ok(E.CancelStationBatch(s, "water_station", b.BatchId, "nrc"));
-        var zone = E.ZoneName(s, s.Ground);
-        Assert.That(s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionCancelled)).Text,
-            Is.EqualTo($"已取消{zone}固定净水台的批次1 · {Cfg.Recipes.Single(r => r.Id == Water).Name}（已进行0分钟）。没有可返还的剩余原料，没有产物和经验。已耗时间保留。"));
+        Assert.That(gone.Sum(i => i.Count), Is.EqualTo(5));
+        s.Items.RemoveAll(gone.Contains);
+        var logs = s.Log.Count;
+        var r = E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, E.StationTakeStamp(s, s.Ground, "water_station", b.BatchId), "nrc");
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "没有可取出的物品。")));
+        Assert.That(Batches(s, "water_station"), Has.Count.EqualTo(1), "不结束该批");
+        Assert.That(s.Log.Count, Is.EqualTo(logs), "不写成功句");
     }
 
     /// <summary>Q727-A01：工坊汇总取全部在办批最早完成，无批空闲；工坊卡用同一汇总、不再按单批写「加工中：陶窑25/60分」。</summary>
