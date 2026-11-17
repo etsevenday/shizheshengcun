@@ -62,11 +62,12 @@
             <div class="loc-actions">
                 @if (e.CityOf(LocationId) != null)
                 {
-                    @* B24（A10-CITY §3）：三城父节点与城内建筑（营门登记前也有）显示“主城鸟瞰”；浏览 0 分钟，再按一次只退浏览层 *@
+                    @* B24（A10-CITY §3）：三城父节点与城内建筑（营门登记前也有）显示“主城鸟瞰”；浏览 0 分钟。
+                       B35c（Q595）：快捷入口打开同一张区域地图并定位本城城市层，不另开独立城市面板；地图已开在本城层时再按只收起地图 *@
                     var cityWhy = e.CityOverviewBlocked(s);
-                    var cityOn = G.Panel == "citymap";
+                    var cityOn = G.MapCityShown == e.CityOf(LocationId);
                     <button @key="@("citymap")" type="button" class="loc-btn city-btn @(cityOn ? "on" : "")" disabled="@(cityWhy != null && !cityOn)" aria-pressed="@cityOn"
-                            title="@(cityWhy ?? (cityOn ? "返回当前地点（关闭鸟瞰，不移动）" : $"{e.CityTitle(e.CityOf(LocationId)!)}主城鸟瞰：查看城内建筑、人物与路线（浏览不耗时）"))"
+                            title="@(cityWhy ?? $"{e.CityTitle(e.CityOf(LocationId)!)}主城鸟瞰：查看城内建筑、人物与路线（浏览不耗时）")"
                             @onclick="() => G.ToggleCityOverview()" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                         <strong>主城鸟瞰</strong>
                         @if (cityWhy != null && !cityOn) { <small>@cityWhy</small> }

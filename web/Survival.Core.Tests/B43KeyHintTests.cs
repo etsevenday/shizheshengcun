@@ -103,7 +103,9 @@ public class B43KeyHintTests : TestBase
         Assert.That(Web("Components/HelpOverlay.razor"), Does.Contain("@G.PanelCloseLabel<EscCap On=\"@G.EscOnHelpClose\" />").And.Contain("‹ 返回<EscCap On=\"@G.EscOnHelpBack\" />"));
         Assert.That(Web("Components/GearCompare.razor") + Web("Components/GearGive.razor"), Does.Contain("@GearPanelCopy.Back<EscCap On=\"@(G.EscOwner == EscOwner.GearSub)\" />"));
         Assert.That(Web("Components/AttrDetail.razor"), Does.Contain("‹ 人物<EscCap On=\"@(G.EscOwner == EscOwner.CharPage)\" />"));
-        Assert.That(Web("Components/CityOverview.razor"), Does.Contain("返回当前地点<EscCap On=\"@(G.EscOwner == EscOwner.CityMap)\" />"));
+        // B35c 改期望（S14 2026-11-16 B35 节 Q804：城市层撤“返回当前地点”；Q595：鸟瞰并入地图）：城市层不再有自己的关闭键，Esc 先取消所选目的地（MapPick），再由地图关闭键（EscOwner.Panel，上面 MapOverlay 已断）收起
+        Assert.That(Web("Components/CityOverview.razor"), Does.Not.Contain("返回当前地点<EscCap").And.Not.Contain("EscOwner.CityMap"));
+        Assert.That(Web("Services/GameSession.Keys.cs"), Does.Contain("if (Panel == \"map\" && MapPicked != null && SourceItem == null) return EscOwner.MapPick;"));
         Assert.That(Web("Components/DropQuantity.razor"), Does.Contain("取消<EscCap On=\"@(G.EscOwner == EscOwner.DropQty)\" />"));
         var disk = "<EscCap On=\"@G.EscOnDisk\" />";
         Assert.That(Regex.Matches(Web("Components/ActionPops.razor"), Regex.Escape(disk)).Count, Is.GreaterThanOrEqualTo(5), "就近盘的取消／关闭");

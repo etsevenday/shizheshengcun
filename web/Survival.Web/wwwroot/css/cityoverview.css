@@ -1,7 +1,8 @@
 /* ───── 三城主城鸟瞰（开发计划 v0.9 B24，A10-CITY §3/§4）：覆盖①②③三行，④随身原位只读；示意建筑为程序绘制，正式美术后续替换 ───── */
-.city-panel { display: flex; flex-direction: column; }
-.city-panel .sub-head h2 { color: var(--accent); }
-.city-panel .sub-head > button { white-space: nowrap; flex: 0 0 auto; }
+/* B35c（Q595）：鸟瞰并入区域地图的城市层——铺满地图图区（.map-view），右列在层内；标题用地图层名，压在城图左上角 */
+.map-stage.city-stage .map-view { display: flex; }
+.city-layer { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.city-title { position: absolute; left: 10px; top: 6px; z-index: 2; margin: 0; padding: 1px 10px; font-size: var(--fs-body); color: var(--accent); background: #11181bd9; border: 1px solid #4b4535; border-radius: 4px; pointer-events: none; }
 .city-outside { color: var(--muted); }
 .city-legacy { margin: 6px 14px 0; padding: 4px 10px; border: 1px dashed var(--warn); border-radius: 4px; color: var(--warn); font-size: var(--fs-aux); }
 .city-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 6px 14px 8px; gap: 4px; }
@@ -13,6 +14,9 @@
 .city-roads .road { stroke: #8f8466; stroke-width: 7; stroke-linecap: round; opacity: .85; }
 .city-roads .road.locked { stroke: #c46b5a; stroke-width: 4; stroke-dasharray: 10 8; opacity: .9; }
 .city-roads .road.on { stroke: var(--accent); stroke-width: 9; opacity: 1; }
+/* B35c（Q591）：现在可以出发的相邻路线描金、轻微呼吸；减少动态效果时只留静态描金 */
+.city-roads .road.departable { stroke: #f0cf7e; opacity: 1; animation: map-depart-pulse 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .city-roads .road.departable { animation: none; } }
 .road-tag { position: absolute; transform: translate(-50%, -50%); font-size: var(--fs-aux); line-height: 1.2; padding: 1px 6px; border-radius: 10px;
   background: #11181bd9; color: var(--muted); border: 1px solid #4b4535; white-space: nowrap; pointer-events: auto; }
 .road-tag.locked { color: #f0b3a5; border-color: #c46b5a; border-style: dashed; }
@@ -50,6 +54,16 @@
 .city-main .city-map { flex: 1; min-width: 0; }
 .city-side { flex: 0 0 clamp(220px, 30%, 340px); min-height: 0; overflow-y: auto; border: 1px solid var(--line); border-radius: 6px; background: #121a1df2; padding: 8px 10px; }
 .city-side .ci-hint { color: var(--muted); font-size: var(--fs-aux); }
+.city-side { font-size: var(--fs-aux); line-height: 1.4; display: flex; flex-direction: column; gap: 2px; }
+.city-side .ci-k { color: var(--muted); font-size: var(--fs-aux); margin-top: 4px; }
+.city-side .ci-k:first-child { margin-top: 0; }
+.city-side .ci-line { overflow-wrap: anywhere; }
+.city-side .ci-line.warn { color: #f0b3a5; }
+.city-side .ci-here { color: #e7ce94; font-size: var(--fs-body); }
+.city-side .ci-remote { color: var(--warn); }
+.city-side .ci-est { color: var(--muted); }
+.city-side .ci-actions { display: flex; flex-direction: column; align-items: stretch; gap: 4px; margin: 4px 0 6px; }
+.city-side .ci-actions button { min-height: 36px; font-size: var(--fs-body); }
 .city-info { font-size: var(--fs-aux); line-height: 1.4; display: flex; flex-direction: column; gap: 2px; }
 .city-info.pinned { }
 .city-info .ci-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
@@ -61,10 +75,6 @@
 .city-info .ci-quest { color: var(--warn); }
 .city-info .ci-route { color: var(--text); }
 .city-info .ci-leg { color: var(--muted); font-size: var(--fs-aux); }
-.city-info .ci-actions { display: flex; flex-direction: column; align-items: stretch; gap: 4px; margin: 4px 0 6px; }
-.city-info .ci-actions button { min-height: 36px; font-size: var(--fs-body); }
-.city-head-btns { display: flex; gap: 8px; align-items: center; flex: 0 0 auto; }
-.city-head-btns .loc-btn.city-btn { min-height: 36px; padding: 2px 12px; }
 /* 主行动进行中打开鸟瞰：中央进度卡停靠到鸟瞰下沿（图例处），不盖住边栏顶部的“前往”与禁用原因 */
 /* 主行动进行中打开鸟瞰：中央进度卡停靠到边栏下部（不盖住图上的楼、路线，也不盖边栏顶部的“前往”与禁用原因） */
 .center.city-open .cprog.float { left: auto; right: 20px; top: auto; bottom: calc(25% + 14px); transform: none; width: clamp(220px, 28%, 330px); padding: 6px 10px; gap: 4px; }
@@ -83,7 +93,6 @@
 .card-pop .city-readonly { display: flex; flex-direction: column; gap: 2px; padding: 10px 56px 10px 10px; min-height: 52px; max-width: 340px; font-size: var(--fs-aux); color: var(--warn); }
 .card-pop .city-readonly b { color: var(--text); font-size: var(--fs-aux); }
 @media (max-height: 800px) {
-  .city-panel .sub-head { padding: 5px 12px; }
   .city-body { padding: 4px 10px 6px; }
   .city-bldg .bldg-name { font-size: var(--fs-aux); }
   .city-info { font-size: var(--fs-aux); min-width: 200px; }

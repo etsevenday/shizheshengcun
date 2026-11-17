@@ -264,7 +264,8 @@ public class B31bShellTests : TestBase
         Assert.That(pause, Does.Contain("<div class=\"pause-scrim @(").And.Contain("<div class=\"pause-dock\""));
         Assert.That(pause, Does.Contain("@if (G.Notice != null) { <div class=\"notice\">@G.Notice</div> }"), "收成窄条时 Q318 忙碌句仍在暂停条下");
         var screen = Web("Components", "GameScreen.razor");
-        Assert.That(screen, Does.Contain("var dockProgress = centerPanel && G.Panel != \"citymap\";"));
+        // B35c 改期望（S14 2026-11-13 B35 节 Q595、2026-11-16 B36 节 Q807）：独立 citymap 面板撤掉，鸟瞰成为地图城市层；城市层仍盖①②③，进度卡沿用原鸟瞰位置，判据改为 G.CityBrowsing
+        Assert.That(screen, Does.Contain("var dockProgress = centerPanel && !G.CityBrowsing;").And.Not.Contain("\"citymap\""));
         Assert.That(screen, Does.Contain("<PauseLayer Docked=\"@dockProgress\" />").And.Contain("<CentralProgress Info=\"progress\" Docked=\"@dockProgress\" />"));
         var css = Web("wwwroot", "css", "shell.css");
         Assert.That(css, Does.Contain(".pause-scrim {").And.Contain(".wasteland .cprog.float.docked, .pause-dock {"));

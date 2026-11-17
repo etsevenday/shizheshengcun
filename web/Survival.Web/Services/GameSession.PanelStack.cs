@@ -93,8 +93,6 @@ public sealed partial class GameSession
                 return E.SafehousePanelBlocked(S) != null ? "" : null;
             case "formation":
                 return FormationDraft == null || E.FormationEditBlocked(S) != null ? "" : null;
-            case "citymap":
-                return E.CityOverviewBlocked(S) != null ? "" : null;
             default:
                 return null;
         }
@@ -135,11 +133,10 @@ public sealed partial class GameSession
         {
             case FireMenuPanel: FireMenu = null; break;
             case "craft": CraftSite = null; _candidateReturn = null; CraftCandidates = null; break;
-            case "map": SourceItem = null; break;
+            case "map": SourceItem = null; CityHover = null; CityLegacyNote = false; break;
             case "formation": FormationDraft = null; FormationPick = null; FormationLeader = null; break;
             case "growth": ClosePracticeDraft(); break;
             case "gear": GivePending = null; break;
-            case "citymap": CityPick = null; CityHover = null; CityLegacyNote = false; break;
             case "help": HelpTopic = null; HelpEntry = null; _helpDirect = false; break;
         }
     }

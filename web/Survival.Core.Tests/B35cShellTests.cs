@@ -130,4 +130,132 @@ public class B35cShellTests
         var view = File.ReadAllText(Path.Combine(Root(), "src", "Core", "Engine", "GameEngine.MapView.cs"));
         Assert.That(view, Does.Contain("if (SafehouseBuilt(s, id)) n.Roles.Add(s.FavoriteSafehouse == id ? \"常用安全屋\" : \"安全屋\");"), "地图普通标记照旧");
     }
+
+    // ───────────── 城市层并入地图（Q595-A01、B35-Q804-01、B36-Q807／Q808／Q810-01、B35S-Q913／Q914-01） ─────────────
+
+    /// <summary>Q595-A01：城市层就在区域地图里画建筑鸟瞰（不再另开 citymap 面板）；地点卡“主城鸟瞰”与首次到城都打开同一张地图的本城层。</summary>
+    [Test]
+    public void Q595_A01_CityLayerInsideMap()
+    {
+        var map = Web("Components/MapOverlay.razor");
+        Assert.That(map, Does.Contain("var cityLayer = v.LayerKey.StartsWith(\"city:\") ? v.LayerKey.Substring(5) : null;"));
+        Assert.That(map, Does.Contain("<CityOverview CityId=\"@cityLayer\" />"));
+        var stage = Slice(map, "<CityOverview CityId=\"@cityLayer\" />", "<div class=\"map-foot\"");
+        Assert.That(stage, Does.Contain("<div class=\"map-viewport\" @ref=\"_vp\""), "普通层才画可拖动画布");
+        Assert.That(stage, Does.Contain("@if (cityLayer == null)").And.Contain("<MapRouteArea OnPickNext=\"PickNext\" />"), "城市层出发在层内右列，普通层用路线区");
+        var screen = Web("Components/GameScreen.razor");
+        Assert.That(Code(screen), Does.Not.Contain("<CityOverview").And.Not.Contain("\"citymap\""), "独立城市面板撤掉");
+        Assert.That(Web("Services/GameSession.PanelStack.cs") + Web("Services/GameSession.Keys.cs"), Does.Not.Contain("citymap").And.Not.Contain("CityMap"));
+        var session = Web("Services/GameSession.cs");
+        Assert.That(Slice(session, "public static bool IsTopPanel(", ";"), Does.Not.Contain("citymap"));
+        var open = Slice(session, "private void OpenMapCityLayer(string city)", "public void HoverCity(");
+        Assert.That(open, Does.Contain("if (Panel != \"map\") OpenPanel(\"map\");").And.Contain("MapLayer = \"city:\" + city;").And.Contain("MapPicked = null;"));
+        Assert.That(Slice(session, "public void ToggleCityOverview()", "private void OpenMapCityLayer("), Does.Contain("OpenMapCityLayer(city!);").And.Contain("if (city != null && MapCityShown == city) { OpenPanel(null); return; }"));
+        var tick = Slice(session, "private void CityOverviewTick()", "public static bool IsTopPanel(");
+        Assert.That(tick, Does.Contain("var legacy = E.MarkCityOverviewShown(S);").And.Contain("OpenMapCityLayer(city);"), "首次到城一次触发开同一地图本城层（Q804／Q807 A）");
+        var card = Web("Components/LocationCard.razor");
+        Assert.That(card, Does.Contain("var cityOn = G.MapCityShown == e.CityOf(LocationId);").And.Contain("@onclick=\"() => G.ToggleCityOverview()\""));
+    }
+
+    /// <summary>
+    /// B35-Q804-01：城市层标题用地图层名；撤“返回当前地点”“进入当前地点”与旧会话状态；只有从城市层出发并真实到达才提示“已到达{地点}。”。
+    /// 底部三键「主世界」「势力鸟瞰」「回到当前位置」（Q595 底部按钮，生成界面.cjs 原词），城市层里不显示「势力鸟瞰」，缩放／总览／图例只属普通层。
+    /// </summary>
+    [Test]
+    public void Q804_CityLayerChrome_FootButtons()
+    {
+        Assert.That((MapCopy.World, MapCopy.FactionView), Is.EqualTo(("主世界", "势力鸟瞰")), "Q595 底部按钮原词");
+        var city = Web("Components/CityOverview.razor");
+        Assert.That(city, Does.Contain("<h2 class=\"city-title\">@e.MapLayerName(\"city:\" + v.CityId)</h2>"));
+        var cityCode = Code(city);
+        foreach (var old in new[] { "返回当前地点", "进入当前地点", "EnterCurrentFromCity", "CityGo(", "主城鸟瞰</" })
+            Assert.That(cityCode, Does.Not.Contain(old), old);
+        var session = Web("Services/GameSession.cs");
+        foreach (var old in new[] { "CityTarget", "EnterCurrentFromCity", "public async Task CityGo(", "PickCity(" })
+            Assert.That(session, Does.Not.Contain(old), old);
+        var depart = Slice(session, "public async Task MapDepart(", "private void CityOverviewTick()");
+        Assert.That(depart, Does.Contain("var fromCity = CityBrowsing;"));
+        Assert.That(depart.IndexOf("if (State == null || !fromCity) return;", StringComparison.Ordinal), Is.GreaterThan(depart.IndexOf("await RunLoop();", StringComparison.Ordinal)), "跑完这一段再看是否真实到达");
+        Assert.That(depart, Does.Contain("if (E.CityArrivalNote(S, targetId) is string note)"));
+        var map = Web("Components/MapOverlay.razor");
+        Assert.That(map, Does.Contain("var factionLayer = cityLayer == null ? FactionLayer(layers) : null;"), "城市层里不显示势力鸟瞰");
+        var foot = Slice(map, "<div class=\"map-foot\"", "</div>");
+        var world = foot.IndexOf("@MapCopy.World", StringComparison.Ordinal);
+        var faction = foot.IndexOf("@MapCopy.FactionView", StringComparison.Ordinal);
+        Assert.That(world, Is.GreaterThan(0));
+        Assert.That(faction, Is.GreaterThan(world));
+        Assert.That(foot.IndexOf("data-map-cmd=\"here\"", StringComparison.Ordinal), Is.GreaterThan(faction), "回到当前位置在底部第三键（0 键同一按钮）");
+        Assert.That(Regex.Matches(map, "data-map-cmd=\"here\"").Count, Is.EqualTo(1), "工具条上不再重复");
+        var tools = Slice(map, "@if (cityLayer == null)", "<button type=\"button\" class=\"secondary\" @onclick=\"Close\">");
+        Assert.That(tools, Does.Contain("data-map-cmd=\"out\"").And.Contain("data-map-cmd=\"in\"").And.Contain(">总览</button>").And.Contain(">图例</button>"));
+        var pickFirst = Slice(map, "private string? FactionLayer(", "private void ToggleLegend()");
+        Assert.That(pickFirst.IndexOf("G.MapPicked is string p && G.E.IsCityParent(p)", StringComparison.Ordinal), Is.LessThan(pickFirst.IndexOf("G.E.CityOf(G.S.CurrentLocation)", StringComparison.Ordinal)), "Q1004 暂用 A：先所选城，再所在城");
+    }
+
+    /// <summary>B36-Q807-01：城市层盖①②③（tall-panel、进度卡沿原鸟瞰位置），④随身只读判据 CityBrowsing 只看“地图开着且显示城市层”；普通主世界／地牢层不误锁。</summary>
+    [Test]
+    public void Q807_CityLayerCoversRows_ReadOnlyOnlyOnCityLayer()
+    {
+        var session = Web("Services/GameSession.cs");
+        Assert.That(session, Does.Contain("public bool CityBrowsing => MapCityShown != null;"));
+        var shown = Slice(session, "public string? MapCityShown", "public const string CityReadOnlyText");
+        Assert.That(shown, Does.Contain("if (State == null || Panel != \"map\") return null;"));
+        Assert.That(shown, Does.Contain("var layer = E.ResolveMapLayer(S, MapLayer);").And.Contain("var city = layer.StartsWith(\"city:\") ? layer.Substring(5) : null;"));
+        var screen = Web("Components/GameScreen.razor");
+        Assert.That(screen, Does.Contain("<section class=\"center @(G.CityBrowsing ? \"city-open\" : \"\")\""));
+        Assert.That(screen, Does.Contain("G.Panel is \"craft\" or \"safehouse\" or \"drying\" || G.CityBrowsing ||"));
+        Assert.That(screen, Does.Contain("case EscOwner.MapPick: G.PickMapNode(null); break;"));
+        Assert.That(Web("Services/GameSession.Keys.cs"), Does.Contain("if (Panel == \"map\" && MapPicked != null && SourceItem == null) return EscOwner.MapPick;"));
+    }
+
+    /// <summary>B36-Q808-01：城市层右列顺序——所选建筑（原状态词）／当前位置／下一路段，后接完整路线与人物、服务、任务；未选写 P07b 原句；不加右列标题。</summary>
+    [Test]
+    public void Q808_CitySideOrder()
+    {
+        Assert.That((CityCopy.PickedTitle, CityCopy.NoPick), Is.EqualTo(("所选建筑", "选择图上的建筑查看路线。")), "逐字稿 P07b");
+        var side = Slice(Web("Components/CityOverview.razor"), "<aside class=\"city-side\"", "</aside>");
+        int At(string x) { var i = side.IndexOf(x, StringComparison.Ordinal); Assert.That(i, Is.GreaterThanOrEqualTo(0), x); return i; }
+        Assert.That(At("@CityCopy.PickedTitle"), Is.LessThan(At("@MapCopy.Here")));
+        Assert.That(At("@MapCopy.Here"), Is.LessThan(At("@MapCopy.NextLegTitle")));
+        Assert.That(At("@MapCopy.NextLegTitle"), Is.LessThan(At(">@MapCopy.Depart</button>")));
+        Assert.That(At(">@MapCopy.Depart</button>"), Is.LessThan(At("路线：@string.Join")));
+        Assert.That(At("路线：@string.Join"), Is.LessThan(At("人物：")));
+        Assert.That(At("人物："), Is.LessThan(At("服务：")));
+        Assert.That(side, Does.Contain("<div class=\"ci-hint\">@CityCopy.NoPick</div>"));
+        Assert.That(side, Does.Contain("@MapCopy.NextLeg(e.LocName(leg.From), e.LocName(leg.To), leg.Minutes)"));
+        Assert.That(side, Does.Not.Contain("<h2").And.Not.Contain("<h3"), "不加右列标题");
+    }
+
+    /// <summary>B36-Q810-01：远城只读——右列只写 Q810 原句，不给下一路段与出发（远城分支在出发分支之前且互斥）。</summary>
+    [Test]
+    public void Q810_RemoteCityReadOnly()
+    {
+        Assert.That(CityCopy.RemoteOnly, Is.EqualTo("仅供查看；前往请用主世界地图。"), "Q810 答复原句");
+        var side = Slice(Web("Components/CityOverview.razor"), "<aside class=\"city-side\"", "</aside>");
+        var remote = Slice(side, "@if (v.Remote)", "else if (route?.TargetId is string to)");
+        Assert.That(remote, Does.Contain("@CityCopy.RemoteOnly"));
+        Assert.That(remote, Does.Not.Contain("MapCopy.Depart").And.Not.Contain("NextLeg"));
+    }
+
+    /// <summary>B35S-Q913-01：城市层只读拒绝用 Q913 定稿句（拖拽、卡片浮窗、会话拦截同一常量）；只在城市层生效（判据见 Q807 用例）。</summary>
+    [Test]
+    public void Q913_ReadOnlyText()
+    {
+        Assert.That(CityCopy.ReadOnly, Is.EqualTo("在城市层只能查看；关闭地图后再操作。"), "Q913 A 定稿句");
+        Assert.That(Web("Services/GameSession.cs"), Does.Contain("public const string CityReadOnlyText = CityCopy.ReadOnly;"));
+        Assert.That(Web("Components/CardPop.razor"), Does.Contain("@GameSession.CityReadOnlyText"));
+        Assert.That(Web("Services/DragController.cs"), Does.Contain("if (G.CityBrowsing) return Result(false, GameSession.CityReadOnlyText);"));
+    }
+
+    /// <summary>B35S-Q914-01：城市层删多段“本次先走…到达后请再次选择下一段”整句且不加替句；远处只看路线，仍要明确改选相邻站（选中下一段）。</summary>
+    [Test]
+    public void Q914_NoMultiLegConfirmSentence()
+    {
+        var city = Code(Web("Components/CityOverview.razor"));
+        foreach (var old in new[] { "本次先走", "到达后请再次选择下一段", "远处地点仅供查看。", "CityCopy.Confirm" })
+            Assert.That(city, Does.Not.Contain(old), old);
+        var side = Slice(city, "<aside class=\"city-side\"", "</aside>");
+        var far = Slice(side, "<button type=\"button\" class=\"primary\" disabled>@MapCopy.Depart</button>", "@if (G.Notice != null && _tried)");
+        Assert.That(far, Does.Contain("@if (route.Blocked is string why)").And.Contain("@onclick=\"() => Pick(nx)\">@MapCopy.SelectNext(e.LocName(nx))</button>"));
+    }
 }

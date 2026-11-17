@@ -59,8 +59,8 @@
             // 顶栏面板（地图/制作/休息/日志/目标/提示/对话记录/说明）只覆盖①②两行，③当前地面、④随身不动（S14 §18.1：
             // 导航面板不得重新分配四行高度）；手工制作仍能把地面卡拖进材料槽
             var centerPanel = GameSession.IsTopPanel(G.Panel);
-            // B31b（R55）：一级面板开着时中央行动位收成中部底部窄条，不盖面板里的按钮；三城鸟瞰沿用自己的右下角位置（B24）。
-            var dockProgress = centerPanel && G.Panel != "citymap";
+            // B31b（R55）：一级面板开着时中央行动位收成中部底部窄条，不盖面板里的按钮；地图城市层沿用原鸟瞰的右下角位置（B24→B35c）。
+            var dockProgress = centerPanel && !G.CityBrowsing;
             // B31c（Q324）：没开面板、居中局部盘开着时同样收成窄条，居中盘不挡「退出行动」
             if (!centerPanel && G.LocalDiskOpen) dockProgress = true;
             // B31d（Q338）：居中局部盘开着时四轨加遮罩（点遮罩＝取消本盘）；窄条在遮罩之上
@@ -68,8 +68,8 @@
         }
         @* 固定四行（S14 §18.1）：中部净高均分四份——①地图/场景 ②设施/资源 ③当前地面 ④随身；选卡、展开锅、悬停、开面板、对白、
            战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。战斗/面板只占①②合并区域；普通对白（BM5a）覆盖③④。 *@
-        <section class="center @(G.Panel == "citymap" ? "city-open" : "")" aria-label="当前地点">
-            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(G.Panel is "gear" or "growth" or GameSession.FireMenuPanel ? "full-panel" : G.Panel is "craft" or "safehouse" or "drying" or "citymap" || (G.Panel == "city" && G.CityPanelTall) ? "tall-panel" : "") @(battleUi ? "battle" : "") @(dockProgress && (G.PauseLayerShown || progress != null) ? "docked-prog" : "")">
+        <section class="center @(G.CityBrowsing ? "city-open" : "")" aria-label="当前地点">
+            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(G.Panel is "gear" or "growth" or GameSession.FireMenuPanel ? "full-panel" : G.Panel is "craft" or "safehouse" or "drying" || G.CityBrowsing || (G.Panel == "city" && G.CityPanelTall) ? "tall-panel" : "") @(battleUi ? "battle" : "") @(dockProgress && (G.PauseLayerShown || progress != null) ? "docked-prog" : "")">
                 <div class="rows2" data-row="1-2">
                     <div class="rows2-inner" inert="@dlgLock">
                         @* 全屏战斗时地块栏两行换成空白（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
@@ -97,7 +97,6 @@
                                 case "safehouse": <SafehouseOverlay /> break;
                                 case "drying": <DryingOverlay /> break;
                                 case GameSession.FireMenuPanel: <FireMenu /> break;
-                                case "citymap": <CityOverview /> break;
                             }
                         </div>
                     }
@@ -525,9 +524,8 @@
             // B31d（Q338）：居中局部盘是当前操作层，Esc 先撤回本盘（同点遮罩），焦点回到触发控件
             case EscOwner.Disk: CancelDisk(); break;
             case EscOwner.Pop: G.ClosePop(); break;
-            // B24（A10-CITY §7）：鸟瞰里 Esc 先收固定说明/确认窗，再关鸟瞰；不撤销已发生的移动
-            case EscOwner.CityPick: G.PickCity(null); break;
-            case EscOwner.CityMap: G.OpenPanel(null); break;
+            // B24（A10-CITY §7）→B35c：地图（含城市层）里 Esc 先取消所选目的地，再关地图；不撤销已发生的移动
+            case EscOwner.MapPick: G.PickMapNode(null); break;
             case EscOwner.Ignite: G.Hover(null); G.CloseIgniteMenu(); break;
             // B10 试玩修复 2/6：最上层先退——交接确认浮窗、面板开着时选中卡的操作浮窗，再到面板本身
             case EscOwner.Feed: G.CancelFeed(); break;

@@ -47,7 +47,7 @@ public class B26CityCopyTests : TestBase
     public void Q223_LinesVerbatim_AfterB35c()
     {
         Assert.That(CityCopy.ReadOnly, Is.EqualTo("在城市层只能查看；关闭地图后再操作。"), "Q913 A 原句");
-        Assert.That(CityCopy.ReadOnly, Is.Not.EqualTo(T("readOnly")), "旧只读句（要求点“返回当前地点”）已撤");
+        Assert.That(T("readOnly"), Is.Not.EqualTo(CityCopy.ReadOnly), "旧只读句（要求点“返回当前地点”）已撤");
         Assert.That(T("legacyReveal"), Is.EqualTo(CityCopy.LegacyReveal));
         Assert.That(CityCopy.Arrived("鉴定所"), Is.EqualTo(T("arrived", ("最终目标", "鉴定所"))));
         Assert.That(CityCopy.Arrived("鉴定所"), Is.EqualTo("已到达鉴定所。"), "Q804“已到达{地点}。”");

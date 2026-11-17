@@ -20,8 +20,8 @@ public enum EscOwner
     /// <summary>居中局部盘（就近盘、点火、食饮、选卡盘）：盘里的「取消」。</summary>
     Disk,
     Pop,
-    CityPick,
-    CityMap,
+    /// <summary>B35c：地图（普通层与城市层）有所选目的地时，Esc 先取消选择（沿原鸟瞰“先收固定说明再关”），下一次才关地图。查来源定位时不在此层。</summary>
+    MapPick,
     Ignite,
     Feed,
     /// <summary>整备交接盘或比较／来源工作区：「返回」。</summary>
@@ -112,8 +112,7 @@ public sealed partial class GameSession
         if (Discarding is { ListHost: not null }) return EscOwner.Discard;   // B53b：清单行末开的子区同样先逐层退，再关所在窗口
         if (DiskMaskShown) return EscOwner.Disk;
         if (Pop != null) return EscOwner.Pop;
-        if (Panel == "citymap" && CityPick != null) return EscOwner.CityPick;
-        if (Panel == "citymap") return EscOwner.CityMap;
+        if (Panel == "map" && MapPicked != null && SourceItem == null) return EscOwner.MapPick;
         if (IgniteMenuOpen) return EscOwner.Ignite;
         if (FeedPending != null && Panel != "help") return EscOwner.Feed;
         if (GearHasSubLayer) return EscOwner.GearSub;

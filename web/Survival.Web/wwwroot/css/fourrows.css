@@ -1238,6 +1238,10 @@
 .map-route .mr-hint { color: var(--muted); }
 .map-route .mr-lines > div { display: flex; justify-content: space-between; gap: 8px; }
 .map-route .mr-next { align-self: flex-start; min-height: 32px; }
+/* B35c（逐字稿 P07b）：地图底部三键「主世界」「势力鸟瞰」「回到当前位置」 */
+.map-foot { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-top: 1px solid var(--line); flex: none; }
+.map-foot .secondary { min-height: 32px; padding: 4px 12px; font-size: var(--fs-aux); white-space: nowrap; }
+.map-foot .secondary.on { border-color: #d8ba78; color: #f0d9a0; }
 .map-route .mr-facts { display: flex; flex-wrap: wrap; gap: 2px 10px; }
 .map-route .mr-go { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin-top: 2px; }
 .map-route .mr-depart { min-height: 36px; min-width: 96px; font-size: var(--fs-body); }

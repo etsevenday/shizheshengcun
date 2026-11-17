@@ -857,9 +857,8 @@ public sealed partial class GameSession
             if (from == null && cover && CardPopShown) _cardPopBase = Selected.Key;
             CollapseCardPopForPanel(CardPopShown);
         }
-        // B24（A10-CITY §3/§7）：主城鸟瞰打开时记住右栏页签，关闭后原样恢复（不自动展开人物板块、不改折叠偏好）
-        var leavingCity = from == "citymap" && !InChainAfter("citymap");
-        if (next == "citymap" && !restore && from != "citymap") { _cityTabBefore = DetailTab; CityPick = null; CityHover = null; NewCityRequest(); }
+        // B35c（Q595／Q804）：城市层并入地图，地图真正关闭（不在下层）时清悬停建筑与旧档补显说明
+        var leavingMap = from == "map" && !InChainAfter("map");
         HoverPreview = null;
         Pop = null;
         // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）；BM4a：盖在下层时保留草稿
@@ -879,7 +878,7 @@ public sealed partial class GameSession
         // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）。
         // 试玩修复 M77-B8：原来这句 else 挂在 dialogs 判断上，打开休息/制作/地图也会被切回人物页，右栏看不到“详细预估”
         if (next == null && Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
-        if (leavingCity) { if (Selected.Kind == SelectionKind.None) DetailTab = _cityTabBefore; CityPick = null; CityHover = null; CityLegacyNote = false; }
+        if (leavingMap) { CityHover = null; CityLegacyNote = false; }
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入（BM4a：制作页盖在下层或恢复时保留）
         if (!KeepState("craft"))
         {
@@ -944,23 +943,32 @@ public sealed partial class GameSession
     }
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
-    // ───────────── 三城主城鸟瞰（B24，A10-CITY §3—§7、S07 中枢联动归档 1/2） ─────────────
+    // ───────────── 地图城市层（B24 三城主城鸟瞰，B35c 并入区域地图：S14 B35 节 Q595／Q804、B36 节 Q807／Q808／Q810） ─────────────
 
-    /// <summary>主城鸟瞰正在打开：上三行被覆盖，第四行随身只看不提交。</summary>
-    public bool CityBrowsing => State != null && Panel == "citymap";
+    /// <summary>
+    /// 地图正开在城市层（B35c，Q807 A：城市层盖①②③，④随身只看不提交；主世界／地牢普通层盖①②、③④照原合法操作）。
+    /// 属性名沿用原“鸟瞰浏览中”，各只读拦截（拖拽、转移、穿戴、丢弃、开始行动）照旧按它判定。
+    /// </summary>
+    public bool CityBrowsing => MapCityShown != null;
+    /// <summary>地图当前显示的城市层所属城市（父城节点）；地图没开或不在城市层为 null。按局面版本与所选层缓存（每次渲染多处读）。</summary>
+    public string? MapCityShown
+    {
+        get
+        {
+            if (State == null || Panel != "map") return null;
+            if (_cityLayerAt.Ver == Version && _cityLayerAt.Layer == MapLayer && _cityLayerAt.Loc == S.CurrentLocation) return _cityLayerAt.City;
+            var layer = E.ResolveMapLayer(S, MapLayer);
+            var city = layer.StartsWith("city:") ? layer.Substring(5) : null;
+            _cityLayerAt = (Version, MapLayer, S.CurrentLocation, city);
+            return city;
+        }
+    }
+    private (int Ver, string? Layer, string? Loc, string? City) _cityLayerAt = (-1, null, null, null);
     public const string CityReadOnlyText = CityCopy.ReadOnly;
-    /// <summary>鸟瞰里固定（点选）的建筑；悬停/聚焦的建筑。只存会话。</summary>
-    public string? CityPick { get; private set; }
+    /// <summary>城市层悬停/聚焦的建筑（只存会话；点选用 <see cref="MapPicked"/>）。</summary>
     public string? CityHover { get; private set; }
-    /// <summary>多段路线的最终目标（首期逐段走：到达中途节点后再打开鸟瞰时默认选中它；只存会话，不进存档）。</summary>
-    public string? CityTarget { get; private set; }
-    /// <summary>本次是旧档补显（顶部写一句说明，不补奖励）。</summary>
+    /// <summary>本次是旧档补显（城市层顶部写一句说明，不补奖励）。</summary>
     public bool CityLegacyNote { get; private set; }
-    /// <summary>当前确认窗的路线请求号：同一确认只发一个，双击/重复回调不重复走路（A10-CITY §5）。</summary>
-    public string CityRequest { get; private set; } = "";
-    private DetailTab _cityTabBefore = DetailTab.Character;
-
-    private void NewCityRequest() => CityRequest = "city:" + Guid.NewGuid().ToString("N");
 
     private ActionResult CityReadOnlyFail()
     {
@@ -969,13 +977,30 @@ public sealed partial class GameSession
         return ActionResult.Fail(CityReadOnlyText);
     }
 
-    /// <summary>当前地点卡旁“主城鸟瞰”：开着再按只退浏览层；不能开时提示原因。</summary>
+    /// <summary>
+    /// 当前地点卡旁“主城鸟瞰”快捷入口（Q595：打开同一地图并定位当前城市层，不另开独立城市面板）：地图已开在本城层时再按只收起地图（不移动）；
+    /// 不能开时提示原因。
+    /// </summary>
     public void ToggleCityOverview()
     {
         if (State == null) return;
-        if (Panel == "citymap") { OpenPanel(null); return; }
+        var city = E.CityOf(S.CurrentLocation);
+        if (city != null && MapCityShown == city) { OpenPanel(null); return; }
         if (E.CityOverviewBlocked(S) is string why) { Notice = why; Notify(); return; }
-        OpenPanel("citymap");
+        OpenMapCityLayer(city!);
+    }
+
+    /// <summary>打开地图并定位到某城的城市层（快捷入口与首次到城自动打开同一口径）：已开着地图只切层；不移动、不耗时。</summary>
+    private void OpenMapCityLayer(string city)
+    {
+        if (Panel != "map") OpenPanel("map");
+        if (Panel != "map") return;
+        MapLayer = "city:" + city;
+        MapAnchor = S.CurrentLocation;
+        MapPicked = null;
+        CityHover = null;
+        Pop = null;
+        Notify();
     }
 
     public void HoverCity(string? nodeId)
@@ -985,19 +1010,13 @@ public sealed partial class GameSession
         Notify();
     }
 
-    /// <summary>点建筑：只固定说明与确认窗（不移动）；再点同一栋或右键取消未提交选择。</summary>
-    public void PickCity(string? nodeId)
+    /// <summary>地图上点选／取消所选目的地（城市层建筑、普通层地点同一状态；只选中，不移动、不办服务）。</summary>
+    public void PickMapNode(string? nodeId)
     {
-        CityPick = nodeId == CityPick ? null : nodeId;
-        NewCityRequest();
+        PeekClear();
+        MapPicked = nodeId;
+        Pop = null;
         Notify();
-    }
-
-    /// <summary>“进入当前地点 · 不耗时”：关闭鸟瞰回当前地点（不移动、不触发服务）。</summary>
-    public void EnterCurrentFromCity()
-    {
-        CityTarget = null;
-        OpenPanel(null);
     }
 
     /// <summary>
@@ -1033,35 +1052,27 @@ public sealed partial class GameSession
     }
 
     /// <summary>
-    /// 每次刷新时：鸟瞰开着但出现敌踪/战斗/死亡就自动关闭（对白期间只收起未提交的确认，读完恢复可读图）；
-    /// 首次到达父节点、对白读完且安全空闲时自动打开一次（A10-CITY §3，开发假设 B24-1）。
+    /// 每次刷新时：地图开在城市层但出现战斗或死亡就收起地图（对白期间照常可读图）；
+    /// 首次到达父节点、对白读完且安全空闲时自动打开一次同一地图的本城层（A10-CITY §3，开发假设 B24-1；B35c Q804／Q807 A）。
     /// </summary>
     private void CityOverviewTick()
     {
         if (State == null) return;
-        if (Panel == "citymap")
+        if (Panel == "map")
         {
-            if (DialogueLocked) { CityPick = null; return; }
-            if (E.CityOverviewBlocked(S) != null)
-            {
-                Panel = null;
-                if (Selected.Kind == SelectionKind.None) DetailTab = _cityTabBefore;
-                CityPick = null; CityHover = null; CityLegacyNote = false;
-            }
+            if (CityBrowsing && (S.Progress.Dead || S.Battle != null)) CloseAllPanels();
             return;
         }
         if (Panel != null || Running || !E.CityOverviewAutoOpenDue(S) || OverflowPending || DuplicateWeaponsPending) return;
-        CityLegacyNote = E.MarkCityOverviewShown(S);
-        _cityTabBefore = DetailTab;
-        CityPick = null;
-        CityHover = null;
-        NewCityRequest();
-        Panel = "citymap";
+        var city = S.City.OverviewPending!;
+        var legacy = E.MarkCityOverviewShown(S);
+        OpenMapCityLayer(city);
+        CityLegacyNote = legacy;
         Commit();
     }
 
     public static bool IsTopPanel(string? panel) =>
-        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city" or "safehouse" or "drying" or "citymap" or FireMenuPanel;
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city" or "safehouse" or "drying" or FireMenuPanel;
 
     // ───────────── 新手序章（B13，S15 §3—§8、A10-TUTOR） ─────────────
 

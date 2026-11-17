@@ -4,6 +4,7 @@
 
 @* 分层地图（开发计划 v0.9 批次 B12，R38；A10「A10-EXUI」§1「分层导航与发现权限」、S14「地图、来源与四类账」、S02「最新地图与道路」）。
    Part="center"：中部 ①② 合并区的地图与面板内路线区（B35c，Q591／Q793 B：点地点只选中，在路线区点“出发”才走一段相邻路线；撤节点旁确认浮窗）；
+   城市层（B35c，Q595）：同一张地图的 city:{城} 层直接画建筑鸟瞰（CityOverview），不再另开独立城市面板；底部三键「主世界」「势力鸟瞰」「回到当前位置」（逐字稿 P07b）。
    Part="detail"：右栏的地点信息、远处路径预览与详细移动预估（只读，Q591 全局右栏不放执行按钮）。
    三层：主世界 → 城内/地牢；面包屑与层切换只换阅读，不移动、不退出地牢；“回到当前位置”只平移视口。
    缩放档的地名 15px、状态 14px 不随缩放变小；“总览”档只画点（悬停看名称），不画小于 14px 的字（S14 §1.2）。
@@ -27,6 +28,9 @@
     var w = (v.MaxX - v.MinX) * k + 2 * PadX;
     var h = (v.MaxY - v.MinY) * k + 2 * PadY;
     var nodeAt = v.Nodes.ToDictionary(n => n.Id);
+    // B35c（Q595）：城市层画建筑鸟瞰；缩放、总览、图例只属普通层
+    var cityLayer = v.LayerKey.StartsWith("city:") ? v.LayerKey.Substring(5) : null;
+    var factionLayer = cityLayer == null ? FactionLayer(layers) : null;
     _view = v; _k = k;
     <div class="sub-panel map-panel" role="dialog" aria-label="区域地图">
         <div class="map-bar">
@@ -63,16 +67,18 @@
                     </optgroup>
                 </select>
                 @* B43（S14「地图放大／缩小」「地图定位」）：键值写在按钮上「缩小 -」「放大 +」「回到当前位置 0」；键盘由 app.js 按 data-map-cmd 点同一按钮（禁用时键也无效） *@
+                @if (cityLayer == null)
+                {
                 <button type="button" class="secondary" data-map-cmd="out" aria-keyshortcuts="-" title="缩小（−）" disabled="@(G.MapZoom <= 1)" @onclick="() => Zoom(G.MapZoom - 1)">@ShellKeys.ZoomOut <kbd class="kc">@ShellKeys.ZoomOutCap</kbd></button>
                 <button type="button" class="secondary" data-map-cmd="in" aria-keyshortcuts="+" title="放大（+）" disabled="@(G.MapZoom >= Zooms.Length - 1)" @onclick="() => Zoom(G.MapZoom + 1)">@ShellKeys.ZoomIn <kbd class="kc">@ShellKeys.ZoomInCap</kbd></button>
                 <button type="button" class="secondary @(overview ? "on" : "")" title="总览：只画点，悬停看地名" @onclick="() => Zoom(overview ? GameSession.MapDefaultZoom : 0)">总览</button>
-                <button type="button" class="secondary" data-map-cmd="here" aria-keyshortcuts="0" title="视口回到当前位置（只平移，不移动，0）" @onclick="BackToHere">@ShellKeys.BackToHere <kbd class="kc">@ShellKeys.BackToHereCap</kbd></button>
                 @* B35a1（S02／S14 2026-11-17 Q931 B、Q798）：地图「安全屋返程」按钮删除，不改名保留远程入口（与 B35c 地图改版联动交付） *@
                 <button type="button" class="secondary @(G.MapLegend ? "on" : "")" aria-expanded="@G.MapLegend" @onclick="ToggleLegend">图例</button>
+                }
                 <button type="button" class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
             </div>
         </div>
-        <div class="map-stage">
+        <div class="map-stage @(cityLayer != null ? "city-stage" : "")">
         <div class="map-view">
         @if (G.SourceItem is string srcItem)
         {
@@ -101,6 +107,12 @@
                 @if (srcHint != null) { <div class="ms-row ms-hint" data-source-hint>@srcHint</div> }
             </div>
         }
+        @if (cityLayer != null)
+        {
+            <CityOverview CityId="@cityLayer" />
+        }
+        else
+        {
             <div class="map-viewport" @ref="_vp" tabindex="0" aria-label="@($"{v.LayerName}，已知{v.Nodes.Count}处；拖动平移，+ − 缩放，0 回到当前位置")"
                  data-map-key="@MapKey(v.LayerKey)">
                 <svg class="map-canvas" width="@F(w)" height="@F(h)" viewBox="@($"0 0 {F(w)} {F(h)}")" role="img" aria-label="地点与路线">
@@ -238,8 +250,21 @@
                 </svg>
                 _mini = m;
             }
+        }
         </div>
-        <MapRouteArea OnPickNext="PickNext" />
+        @if (cityLayer == null)
+        {
+            <MapRouteArea OnPickNext="PickNext" />
+        }
+        </div>
+        @* B35c（逐字稿 P07b、Q595）：底部三键。「势力鸟瞰」进主世界上所选的城，没选城时进人所在的城（Q1004 暂用 A）；城市层里不显示 *@
+        <div class="map-foot" role="group" aria-label="地图层">
+            <button type="button" class="secondary @(v.LayerKey == GameEngine.WorldLayer ? "on" : "")" aria-pressed="@(v.LayerKey == GameEngine.WorldLayer)" title="切到主世界查看（只切换查看，不移动）" @onclick="() => SwitchLayer(GameEngine.WorldLayer)">@MapCopy.World</button>
+            @if (factionLayer != null)
+            {
+                <button type="button" class="secondary" data-faction-layer="@factionLayer" title="@($"查看{e.MapLayerName(factionLayer)}（只切换查看，不移动）")" @onclick="() => SwitchLayer(factionLayer)">@MapCopy.FactionView</button>
+            }
+            <button type="button" class="secondary" data-map-cmd="here" aria-keyshortcuts="0" title="视口回到当前位置（只平移，不移动，0）" @onclick="BackToHere">@ShellKeys.BackToHere <kbd class="kc">@ShellKeys.BackToHereCap</kbd></button>
         </div>
     </div>
 }
@@ -447,6 +472,17 @@ else
         G.Notify();
     }
 
+    /// <summary>
+    /// 「势力鸟瞰」的目标城市层（B35c，Q1004 暂用 A）：普通层上已选中某座已知主城父节点就进那座城，否则进人所在的城；
+    /// 都没有（人不在城里且没选城）不显示。只切换查看，不移动、不耗时。
+    /// </summary>
+    private string? FactionLayer(List<(string Key, string Name)> layers)
+    {
+        bool Known(string key) => layers.Any(l => l.Key == key);
+        if (G.MapPicked is string p && G.E.IsCityParent(p) && Known("city:" + p)) return "city:" + p;
+        return G.E.CityOf(G.S.CurrentLocation) is string c && Known("city:" + c) ? "city:" + c : null;
+    }
+
     private void ToggleLegend()
     {
         G.MapLegend = !G.MapLegend;
@@ -475,6 +511,7 @@ else
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (Part != "center" || G.State == null || _view == null) return;
+        if (_view.LayerKey.StartsWith("city:")) { _lastLayer = _view.LayerKey; return; }   // B35c：城市层不画可拖动画布，没有视口可量、可居中
         var here = G.S.CurrentLocation;
         if (here != _lastHere) { _lastHere = here; _needCenter = true; _centerWorld = null; }
         if (_view.LayerKey != _lastLayer) { _lastLayer = _view.LayerKey; _needCenter = true; }
