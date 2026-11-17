@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-17",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "3e48a86488bc3a4e8e0077124ae1ef8e90869edc",
+  "originalBatch": "2026-11-17 来自 bc0b32ad B35a2（提前核对，主要；本批开发已暂停，等答复后继续）",
+  "questionIds": [
+    938,
+    939
+  ],
+  "answers": {
+    "Q938": "B",
+    "Q938_searchPauseScope": "A",
+    "Q939": "C"
+  },
+  "search": {
+    "manualPause": false,
+    "preserveExistingAutomaticStatPause": true,
+    "preserveSupplyContinueAndSettlement": true
+  },
+  "facilityFuel": {
+    "appliesTo": "existing_per_item_station_inventory_fuel",
+    "minutes": 0,
+    "ap": 0,
+    "xp": 0,
+    "requiresFullyIdle": true,
+    "allowPausedMain": false,
+    "allowAnySub": false,
+    "allowTravel": false,
+    "buttonAndDragSameGuards": true,
+    "busyText": "行动进行中，暂不能整理物品",
+    "revalidateOnConfirm": true,
+    "preserveExistingLegalFuelSourceOwnerAndCapacityGuards": true,
+    "canWithdraw": false,
+    "preserveExistingFireMinuteFuelAndMaintenanceRules": true
+  },
+  "fireCompanionInputs": {
+    "heatSources": [
+      "fire",
+      "deployed_stove"
+    ],
+    "inputKinds": [
+      "pot_recipe",
+      "charcoal_recipe",
+      "direct_food_to_slot",
+      "whole_pot_to_slot"
+    ],
+    "checkbox": "允许使用同伴的材料",
+    "checkboxPosition": "above_material_list_on_corresponding_input_or_item_selection_page",
+    "allocationPosition": "same_page_actual_person_item_quantity",
+    "useExistingDefaultAndLongTermConsentMemory": true,
+    "useExistingSelfGroundThenCompanionShortfallAndBatchOrder": true,
+    "sourceEligibility": "existing_qualified_same_location_same_zone_companion_sources_only",
+    "allowRemoteOrReserve": false,
+    "confirmBeforeMove": true,
+    "revalidateExactIdentityOwnerQuantityAndOriginalProcessingGuards": true,
+    "atomicMoveNoSourceDuplicate": true,
+    "wholePotIncludesAllContents": true,
+    "doNotExtractInsideCompanionPotToFillOtherRecipe": true,
+    "potWaterFromActualSelectedPotOnly": true,
+    "waterUnitMl": 100,
+    "boiledFoodWaterCostMl": 1000,
+    "recipeCostsTimeXpAndHeatRulesUnchanged": true,
+    "singleAndAllTakeoutDestination": "actual_heat_source_local_zone_ground",
+    "preserveExplicitTransferDestinations": true,
+    "takeoutBlockedDuringRunningOrPausedActions": true,
+    "noBatchStopOrReturnedExpiryNarration": true,
+    "doesNotExtendManualFireFuelFeeding": true
+  },
+  "copy": {
+    "checkbox": "允许使用同伴的材料",
+    "busy": "行动进行中，暂不能整理物品",
+    "changed": "物品已变，请重选。",
+    "reuseExistingAllocationTemplates": true,
+    "newGameplayEnterHints": false
+  },
+  "acceptance": [
+    {
+      "id": "B35A2-Q938-01",
+      "expected": "搜索无手动暂停入口，但原属性低值／归零／濒死等自动暂停、补给继续仍按原边界生效。"
+    },
+    {
+      "id": "B35A2-Q938-02",
+      "expected": "完全空闲时按钮／拖入锻炉或陶窑合法燃料成功一次，0世界分钟、0AP、0经验，库存只加一次。"
+    },
+    {
+      "id": "B35A2-Q938-03",
+      "expected": "主行动进行／暂停、有子行动或移动途中，两条添燃料路径均拒绝原忙碌原因，不扣源／不添库存。"
+    },
+    {
+      "id": "B35A2-Q938-04",
+      "expected": "先打开数量窗再开始其他行动不能绕过重验；战斗／对白／实地／物权／预留／容量校验保持。"
+    },
+    {
+      "id": "B35A2-Q938-05",
+      "expected": "新增设施燃料仍独立、投入不可取回、未耗留本座；不把现有火堆分钟制和原维护例外改掉。"
+    },
+    {
+      "id": "B35A2-Q939-01",
+      "expected": "火堆和柴炉四类入口均可勾选同伴来源：锅食谱、煅烧、直接放食材、直接放整锅，无漏掉后两类。"
+    },
+    {
+      "id": "B35A2-Q939-02",
+      "expected": "复选框在对应投料／选物页材料列表上方，同页看真实出物人／物品／数量；本人／地面优先、同伴只补缺、原记忆和排序保持。"
+    },
+    {
+      "id": "B35A2-Q939-03",
+      "expected": "未勾选不动同伴物；异地／候补／不同区／无权或加工预留穿戴等非法物不能入候选后被扣取。"
+    },
+    {
+      "id": "B35A2-Q939-04",
+      "expected": "预览／选物不搬物，确认重验后一次原子扣源并迁入设施，失败无部分扣料或副本，重复请求不双扣。"
+    },
+    {
+      "id": "B35A2-Q939-05",
+      "expected": "同伴整锅可作为合法源连内容迁入／取出，不能拆内部补其他配方；仍2食材槽不可折叠，原容量及工位规则保持。"
+    },
+    {
+      "id": "B35A2-Q939-06",
+      "expected": "锅食谱从本锅真实水预留；100毫升单位／水煮1000保持，不跨同伴暗补水，不把煅烧木材又算燃料。"
+    },
+    {
+      "id": "B35A2-Q939-07",
+      "expected": "单项／全部取出回火源所在地面，不自动归还同伴；原明确目的地移动仍保持，忙碌禁取与无中止批数／返料期限通知保持。"
+    }
+  ],
+  "oldSaveQuestionsDeferred": true
+}
