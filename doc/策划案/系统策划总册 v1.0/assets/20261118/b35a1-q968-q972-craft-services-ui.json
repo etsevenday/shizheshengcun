@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "bce610d5ddf7787bac54957e6d313c8ff8522459",
+  "originalBatch": "2026-11-17 来自 3e48a864、98ab638b B35a1（开工前重核，次要）",
+  "questionIds": [
+    968,
+    969,
+    970,
+    971,
+    972
+  ],
+  "answers": {
+    "Q968": "A",
+    "Q969": "A",
+    "Q970": "A",
+    "Q971": "A",
+    "Q972": "A"
+  },
+  "workshopServices": {
+    "hubButton": "使用营区工坊（0分钟）",
+    "academyButton": "使用试制工坊（0分钟）",
+    "previewFirstLine": "从设施卡进入。",
+    "preserveAvailabilityAndQualificationAndCosts": true,
+    "openCraftPageOnSuccess": false,
+    "autoSelectFacilityOnSuccess": false,
+    "noRecipeExecutionOnService": true
+  },
+  "campDrop": {
+    "hint": "查看可制作的配方",
+    "preserveQ933LocalBuiltFacilityAndConstructionScope": true,
+    "noAdditionalHandDryingOrPotRecipes": true,
+    "preserveKnowledgeAndPublicBrowseOnlyQualifications": true,
+    "noResourceCommitOrAutoCraft": true
+  },
+  "showAll": {
+    "label": "显示全部",
+    "keep": true,
+    "exitCandidates": true,
+    "destination": "top_level_handcraft_all_recipes",
+    "includeFacilityRecipes": false,
+    "preserveKnowledgeAndBuildRequirements": true,
+    "clearOldUncommittedIntentWithoutExecution": true,
+    "preserveTopLevelReturnAndPerFacilityPreferences": true,
+    "preserveQ934FacilityCandidateReturn": true
+  },
+  "shelterSubtitle": {
+    "removeIndoor": true,
+    "removeOutdoor": true,
+    "indoorRemoved": "{名}屋内 · 柜子存取0分钟",
+    "outdoorRemoved": "收藏与改名 · 柜子只能在屋内存取",
+    "preserveTitleNameFavoriteCabinetAndNecessaryStatus": true,
+    "preserveLocalEntranceIndoorPermissionsAndZeroTime": true,
+    "preserveOriginalHoverAndNoRemoteOrUnfinishedHouseServices": true
+  },
+  "manualFacilityState": {
+    "pausedUnfinishedOwnAction": "制作中",
+    "actualFinishedCancelledExited": "original_actual_idle_state",
+    "bindActualFacilityIdentity": true,
+    "publicOpenSameRuleAndUnavailableReasonPreserved": true,
+    "preserveQ936PublicNameBadgeAndTooltip": true,
+    "noAdvancementOrReleaseOnPause": true,
+    "noConstructionOrPassiveStateOverride": true,
+    "noNewSearchPauseOrPermissionExceptions": true
+  },
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "B35R-Q968-01",
+      "expected": "两项工坊提交按钮准确使用营区工坊（0分钟）／使用试制工坊（0分钟），无打开制作旧名，预览原首句和开放清单保持。"
+    },
+    {
+      "id": "B35R-Q968-02",
+      "expected": "办理成功不打开或代选制作页，资格费用及原事务不改，点服务不执行配方。"
+    },
+    {
+      "id": "B35R-Q969-01",
+      "expected": "材料拖营地地点卡提示查看可制作的配方，范围仍原建造加本地已建设施，不新增徒手／锅／晾制候选。"
+    },
+    {
+      "id": "B35R-Q969-02",
+      "expected": "知识和公共设施灰配方／未开放原因保持，工地不当建成，拖拽不扣物不自动开工。"
+    },
+    {
+      "id": "B35R-Q970-01",
+      "expected": "显示全部保留，退出候选进顶栏手工制作全部配方，不含设施配方或绕过知识／建设。"
+    },
+    {
+      "id": "B35R-Q970-02",
+      "expected": "链接只导航且清旧未提交意图，顶栏返回与各设备偏好保持，普通点设施候选的Q934返回链不改。"
+    },
+    {
+      "id": "B35R-Q971-01",
+      "expected": "屋内屋外两种原副标均删除，名称收藏柜子内容与必要状态保持，无同义重复新句。"
+    },
+    {
+      "id": "B35R-Q971-02",
+      "expected": "当地入口和屋内存取权限／0分钟／原按钮悬停不变，灰工地不当已建安全屋、无远程入口。"
+    },
+    {
+      "id": "B35R-Q972-01",
+      "expected": "本座主动制作因身体提醒自动暂停仍制作中，实际完成／取消／退出才回原真实空闲，不串同类另一座。"
+    },
+    {
+      "id": "B35R-Q972-02",
+      "expected": "公共身份与未开放原因、施工／被动状态保持，状态显示不推进暂停行动或释放料，不新增手动暂停搜索。"
+    }
+  ]
+}
