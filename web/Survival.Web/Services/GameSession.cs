@@ -859,7 +859,7 @@ public sealed partial class GameSession
         }
         // B24（A10-CITY §3/§7）：主城鸟瞰打开时记住右栏页签，关闭后原样恢复（不自动展开人物板块、不改折叠偏好）
         var leavingCity = from == "citymap" && !InChainAfter("citymap");
-        if (next == "citymap" && !restore && from != "citymap") { _cityTabBefore = DetailTab; CityPick = State != null ? E.CityDefaultPick(S, CityTarget) : null; CityHover = null; NewCityRequest(); }
+        if (next == "citymap" && !restore && from != "citymap") { _cityTabBefore = DetailTab; CityPick = null; CityHover = null; NewCityRequest(); }
         HoverPreview = null;
         Pop = null;
         // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）；BM4a：盖在下层时保留草稿
@@ -1005,7 +1005,7 @@ public sealed partial class GameSession
     {
         if (State == null) return;
         var path = E.CityOverviewOf(S)?.Buildings.FirstOrDefault(b => b.NodeId == targetId)?.Path;
-        var res = E.StartCityOverviewTravel(S, targetId, CityRequest);
+        var res = E.StartMapDeparture(S, targetId, CityRequest);
         if (res.Duplicate) return;
         if (!res.Ok) { Notice = res.Reason; Notify(); return; }
         CityTarget = path != null && path.Count > 1 ? targetId : null;
@@ -1022,7 +1022,7 @@ public sealed partial class GameSession
         if (State == null) return;
         if (CityTarget != null && (S.CurrentLocation == CityTarget || E.CityOf(S.CurrentLocation) != E.CityOf(CityTarget))) CityTarget = null;
         // B26（Q223）：到终点写“已到达”，半路写还剩几段，路线失效写真实原因；单段路线也提示到达
-        if (E.CityArrivalNote(S, targetId, firstTo) is string note)
+        if (E.CityArrivalNote(S, targetId) is string note)
         {
             Notice = note;
             Notify();
@@ -1050,7 +1050,7 @@ public sealed partial class GameSession
         if (Panel != null || Running || !E.CityOverviewAutoOpenDue(S) || OverflowPending || DuplicateWeaponsPending) return;
         CityLegacyNote = E.MarkCityOverviewShown(S);
         _cityTabBefore = DetailTab;
-        CityPick = E.CityDefaultPick(S, CityTarget);   // 试玩修复 M504：多段路线途经父节点首次自动打开时，同手动打开一样预选最终目标
+        CityPick = null;
         CityHover = null;
         NewCityRequest();
         Panel = "citymap";

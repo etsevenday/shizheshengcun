@@ -8,16 +8,27 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// 鸟瞰定稿文案（批次 B26，Q222/Q223；策划合同 content-feeding-adjudications.json cityCopy，逐字）。
-    /// 地点名、段数都由调用方按真实已知路线填入；到达终点用 Arrived，不写“还有0段”。
+    /// B35c（S14 2026-11-16 B35 节 Q804、B36 节 Q808／Q810，2026-11-17 B35 次要节 Q913／Q914）：鸟瞰并入地图城市层——
+    /// 只读句换 Q913；删 confirm 多段句（Q914）与“继续前往”到达句（Q804），到达只留 Arrived；新增远城只读句、图例句与未选提示。
     /// </summary>
     public static class CityCopy
     {
-        public const string ReadOnly = "主城鸟瞰浏览中只能查看；使用、转移、穿戴、融合和开始行动，请先点“返回当前地点”再操作。";
+        /// <summary>Q913 A：城市层只读下尝试随身操作的提示（取代要求点“返回当前地点”的旧句）。</summary>
+        public const string ReadOnly = "在城市层只能查看；关闭地图后再操作。";
         public const string LegacyReveal = "已按旧存档的到访记录补显城内建筑，仅用于浏览与定位，不补发奖励，也不开通新路线。";
         public static string Outside(string place) => $"{place}是城外独立地点，不在鸟瞰内，经区域地图前往。";
-        public static string Confirm(int legs, string from, string to) => $"共{legs}段。本次先走{from}→{to}，到达后请再次选择下一段。";
-        public static string Arrival(string at, string target, int left) => $"已到达{at}。继续前往{target}：请再打开“主城鸟瞰”选择下一段（还有{left}段）。";
+        /// <summary>Q804：城市层点“出发”到达后的提示（Q1005 暂用：只在城市层出发到达后显示）。</summary>
         public static string Arrived(string target) => $"已到达{target}。";
+        /// <summary>Q810 A：远城只读，替代下一路段与“出发”。</summary>
+        public const string RemoteOnly = "仅供查看；前往请用主世界地图。";
+        /// <summary>Q804：城市层图例移动句。</summary>
+        public const string LegendMove = "选相邻建筑，再点‘出发’。";
+        /// <summary>原图例前半句（开发方原句，Q1003 暂用 A：保留后接 Q804 句）。</summary>
+        public const string LegendRoads = "道路只连已发现的城内真实路线。";
+        /// <summary>Q808 A：城市层右列未选建筑时的提示（逐字稿 §2 P07b）。</summary>
+        public const string NoPick = "选择图上的建筑查看路线。";
+        /// <summary>逐字稿 §2 P07b 区名。</summary>
+        public const string PickedTitle = "所选建筑";
     }
 
     /// <summary>
@@ -30,10 +41,10 @@ namespace Survival.Core.Engine
         public string CityId { get; set; } = "";
         /// <summary>城邦名（“幸存者营区”）。</summary>
         public string Title { get; set; } = "";
-        /// <summary>当前真实所在地点（一定在本城内）。</summary>
+        /// <summary>当前真实所在地点（本城视图在本城内；远城视图为城外的真实所在地）。</summary>
         public string HereId { get; set; } = "";
-        /// <summary>“前往”现在不能提交的原因（主行动占用等）；能提交为 null。浏览照常。</summary>
-        public string? TravelBlocked { get; set; }
+        /// <summary>B35c（Q810 A）：远城只读视图——人不在这座城里：不给路线、下一路段和“出发”，只看公开建筑信息。</summary>
+        public bool Remote { get; set; }
         public List<CityBuildingView> Buildings { get; set; } = new List<CityBuildingView>();
         /// <summary>本城内两端都已知、已开通或已揭示的内部边（只画已知道路，不画捷径）。</summary>
         public List<MapViewEdge> Roads { get; set; } = new List<MapViewEdge>();
@@ -103,7 +114,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 鸟瞰能不能打开（A10-CITY §7、开发假设 B24-2）：死亡、对白读完锁、战斗与敌踪中不能开；不在三城内不能开。
-        /// 主行动进行中/暂停时可以浏览（“前往”另看 <see cref="CityOverviewView.TravelBlocked"/>）。
+        /// 主行动进行中/暂停时可以浏览。B35c 起地点卡“主城鸟瞰”快捷入口据此打开同一地图的本城层（Q595），“出发”走普通移动校验。
         /// </summary>
         public string? CityOverviewBlocked(GameState s)
         {
@@ -115,7 +126,7 @@ namespace Survival.Core.Engine
             return null;
         }
 
-        /// <summary>“前往”现在不能提交的原因：先满足能打开，再要求没有主/子行动。</summary>
+        /// <summary>首次到城自动打开的安全空闲判定：先满足能打开，再要求没有主/子行动（B35c 起只用于自动打开，“出发”走普通移动校验）。</summary>
         public string? CityTravelBlocked(GameState s)
         {
             if (CityOverviewBlocked(s) is string why) return why;
@@ -126,10 +137,20 @@ namespace Survival.Core.Engine
         /// <summary>当前所在主城的鸟瞰视图；不在三城内为 null。只读、0 分钟。</summary>
         public CityOverviewView? CityOverviewOf(GameState s)
         {
+            var city = CityOf(s.CurrentLocation);
+            return city == null ? null : CityOverviewOf(s, city);
+        }
+
+        /// <summary>
+        /// 某城的鸟瞰视图（B35c，Q595／Q810：地图城市层）：人在这座城里为本城视图（路线、可出发标记）；人不在这座城里为远城只读视图——
+        /// 已发现建筑照常给公开名称、人物、服务与任务标记，不给路线与下一路段，未发现仍只给轮廓。不是三城父节点或父城未发现为 null。只读、0 分钟。
+        /// </summary>
+        public CityOverviewView? CityOverviewOf(GameState s, string city)
+        {
+            if (!IsCityParent(city) || !Known(s, city)) return null;
             var here = s.CurrentLocation;
-            var city = CityOf(here);
-            if (city == null) return null;
-            var v = new CityOverviewView { CityId = city, Title = CityTitle(city), HereId = here, TravelBlocked = CityTravelBlocked(s) };
+            var remote = CityOf(here) != city;
+            var v = new CityOverviewView { CityId = city, Title = CityTitle(city), HereId = here, Remote = remote };
             var members = CityMembers(city);
             foreach (var id in members)
             {
@@ -140,7 +161,8 @@ namespace Survival.Core.Engine
                     b.Name = lc.Name;
                     FillBuilding(s, b);
                 }
-                if (b.IsHere) b.Path = new List<MapPathStep>();
+                if (remote) { if (!b.Discovered) b.Blocked = MapCopy.Unknown; }
+                else if (b.IsHere) b.Path = new List<MapPathStep>();
                 else
                 {
                     b.Path = b.Discovered ? CityPath(s, city, here, id) : null;
@@ -156,7 +178,7 @@ namespace Survival.Core.Engine
                 if (!Known(s, e.A) || !Known(s, e.B)) continue;
                 var open = EdgeOpen(s, e);
                 if (!open && !EdgeRevealed(s, e)) continue;
-                v.Roads.Add(new MapViewEdge { Id = e.Id, A = e.A, B = e.B, Open = open, Minutes = e.BaseMinutes, Reason = open ? "" : GateBlockedReason(s, e), Near = e.Touches(here) });
+                v.Roads.Add(new MapViewEdge { Id = e.Id, A = e.A, B = e.B, Open = open, Minutes = e.BaseMinutes, Reason = open ? "" : GateBlockedReason(s, e), Near = !remote && e.Touches(here), Departable = !remote && EdgeDepartable(s, e, open) });
             }
             return v;
         }
@@ -262,49 +284,12 @@ namespace Survival.Core.Engine
             return steps;
         }
 
-        // ───────────────────────── 前往（A10-CITY §5，开发假设 B24-4） ─────────────────────────
-
         /// <summary>
-        /// 鸟瞰里点“前往”：重新核对真实位置、目标、城内路线与门槛，只提交第一条相邻边的普通移动（首期逐段：到达后再次选择下一段，
-        /// A10-CITY §5 末段允许）；同一请求号重复提交只生效一次（双击不重复走路）。目标不进存档。路过/到达按真实到达处理。
+        /// 城市层点“出发”走完这一段后的提示（Q804：“已到达{地点}。”；B35c 删“继续前往原远处目标”旧提醒，Q1005 暂用只在城市层出发后由界面调用）。
+        /// 只在这一段已真实到达（人在目标、没有进行中的主行动）时写；中途退出、仍在路上为 null。只读。
         /// </summary>
-        public ActionResult StartCityOverviewTravel(GameState s, string targetId, string? requestId = null)
-        {
-            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            if (CityTravelBlocked(s) is string why) return ActionResult.Fail(why);
-            var here = s.CurrentLocation;
-            var city = CityOf(here)!;
-            if (CityOf(targetId) != city) return ActionResult.Fail("目标不在这座城内");
-            if (targetId == here) return ActionResult.Fail("已在此地");
-            if (!Known(s, targetId)) return ActionResult.Fail("尚未发现");
-            var path = CityPath(s, city, here, targetId);
-            if (path == null) return ActionResult.Fail(CityPathBlocked(s, city, here, targetId));
-            var r = ActionRequest.Travel(path[0].To);
-            r.RequestId = requestId;
-            return Start(s, r);
-        }
-
-        /// <summary>
-        /// 鸟瞰“前往”走完一段后的提示（批次 B26，Q223）：到终点写 Arrived；还在半路按真实已知路线写还剩几段；路线已失效写真实原因，不按旧文案强走。
-        /// 没到这一段的终点（中途退出、仍在行动）不写。只读。
-        /// </summary>
-        public string? CityArrivalNote(GameState s, string targetId, string? firstTo)
-        {
-            if (firstTo == null || s.Main != null || s.CurrentLocation != firstTo) return null;
-            if (s.CurrentLocation == targetId) return CityCopy.Arrived(LocName(targetId));
-            var city = CityOf(s.CurrentLocation);
-            if (city == null || CityOf(targetId) != city) return null;
-            var path = CityPath(s, city, s.CurrentLocation, targetId);
-            return path == null ? CityPathBlocked(s, city, s.CurrentLocation, targetId) : CityCopy.Arrival(LocName(s.CurrentLocation), LocName(targetId), path.Count);
-        }
-
-        /// <summary>打开鸟瞰时默认选中的建筑：多段路线还没走到的最终目标（手动打开与首次自动打开同一口径）；已到或已离开这座城为 null。只读。</summary>
-        public string? CityDefaultPick(GameState s, string? targetId)
-        {
-            if (targetId == null || targetId == s.CurrentLocation) return null;
-            var city = CityOf(s.CurrentLocation);
-            return city != null && CityOf(targetId) == city ? targetId : null;
-        }
+        public string? CityArrivalNote(GameState s, string targetId) =>
+            s.Main == null && s.CurrentLocation == targetId ? CityCopy.Arrived(LocName(targetId)) : null;
 
         /// <summary>城外独立地点的提示（A10-CITY §2 特别边界，Q222）：只在玩家已发现该地点时写；这些地点不进城内路线图。</summary>
         public string? CityOutsideNote(GameState s, string cityId)

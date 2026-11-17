@@ -150,7 +150,8 @@ public class B24CityOverviewTests : TestBase
         Start(s, ActionRequest.Travel("h03_workshop"));
         Assert.That(E.CityOverviewBlocked(s), Is.Null, "主行动中可以浏览");
         Assert.That(E.CityTravelBlocked(s), Does.StartWith("主行动占用"));
-        Assert.That(E.CityOverviewOf(s)!.TravelBlocked, Does.StartWith("主行动占用"));
+        // B35c（Q595“移动相关实际执行与 Q591 普通出发同源”）：鸟瞰视图不再单带“前往”原因，城市层出发走普通移动校验的真实原因（GameEngine.Validate 原句）
+        Assert.That(E.StartMapDeparture(s, "h01_gate", "busy").Reason, Is.EqualTo("已有进行中的行动"));
         E.Cancel(s);
         s.Progress.Dead = true;
         Assert.That(E.CityOverviewBlocked(s), Is.EqualTo("角色已死亡"));
@@ -221,35 +222,44 @@ public class B24CityOverviewTests : TestBase
         Assert.That(again.City.OverviewPending, Is.Null);
     }
 
-    // ───────────── 前往（CITY-UI05/06/07、UI-X02） ─────────────
+    // ───────────── 出发（CITY-UI05/06/07、UI-X02；B35c 起城市层与地图同一“出发”，Q793 B） ─────────────
 
-    /// <summary>CITY-UI05/07：工坊点鉴定所“前往”只提交第一段 h03→h02（真实移动、按行动规则计时）；同一请求号双击只走一次；到达后再选下一段。</summary>
+    /// <summary>
+    /// CITY-UI05/07 + B35-Q793-01／B36-Q808-01（B35c 改写，原用例为“前往远处建筑直接走第一段”，Q793 B 撤掉此便利）：
+    /// 工坊选鉴定所（远处两段）不能出发，拒绝原因“先选相邻地点。”（Q915）、不耗时；改选相邻首站广场才走这一段，同一请求号双击只走一次；
+    /// 到站不自动继续，再选鉴定所（此时相邻）才走第二段。
+    /// </summary>
     [Test]
-    public void CITY_UI07_FirstLegOnly_RequestOnce()
+    public void CITY_UI07_RemoteRefused_AdjacentLegOnly_RequestOnce()
     {
         var s = Registered("h03_workshop");
         var t0 = s.GameMinute;
-        var r = E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-1");
+        var far = E.StartMapDeparture(s, "h05_appraisal", "city-req-0");
+        Assert.That(far.Ok, Is.False);
+        Assert.That(far.Reason, Is.EqualTo("先选相邻地点。"), "Q915 B 原句");
+        Assert.That(s.Main, Is.Null, "远处不出发");
+        Assert.That(s.GameMinute, Is.EqualTo(t0));
+        var r = E.StartMapDeparture(s, "h02_square", "city-req-1");
         Assert.That(r.Ok, Is.True, r.Reason);
         Assert.That(s.Main!.Type, Is.EqualTo(ActionType.Travel));
-        Assert.That(s.Main.TargetId, Is.EqualTo("h02_square"), "只走第一条相邻边");
+        Assert.That(s.Main.TargetId, Is.EqualTo("h02_square"), "只走选中的相邻一段");
         var id = s.Main.ActionId;
-        var again = E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-1");
+        var again = E.StartMapDeparture(s, "h02_square", "city-req-1");
         Assert.That(again.Duplicate, Is.True, "重复点击不重复走路");
         Assert.That(s.Main.ActionId, Is.EqualTo(id));
-        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-2").Ok, Is.False, "主行动占用");
+        Assert.That(E.StartMapDeparture(s, "h02_square", "city-req-2").Ok, Is.False, "主行动占用");
         Run(s);
         ReadDialogues(s);
         Assert.That(s.CurrentLocation, Is.EqualTo("h02_square"));
-        Assert.That(s.GameMinute - t0, Is.GreaterThanOrEqualTo(5), "第一段按真实移动扣时");
-        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-1").Duplicate, Is.True, "旧请求号到达后也不重发");
-        Assert.That(s.Main, Is.Null);
-        Ok(E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-3"));
+        Assert.That(s.Main, Is.Null, "到站不自动继续走向鉴定所");
+        Assert.That(s.GameMinute - t0, Is.GreaterThanOrEqualTo(5), "这一段按真实移动扣时");
+        Assert.That(E.StartMapDeparture(s, "h02_square", "city-req-1").Duplicate, Is.True, "旧请求号到达后也不重发");
+        Ok(E.StartMapDeparture(s, "h05_appraisal", "city-req-3"));
         Run(s);
         ReadDialogues(s);
         Assert.That(s.CurrentLocation, Is.EqualTo("h05_appraisal"));
         Assert.That(s.GameMinute - t0, Is.GreaterThanOrEqualTo(10), "两段都真实扣时，不免费跨两边");
-        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-4").Reason, Is.EqualTo("已在此地"));
+        Assert.That(E.StartMapDeparture(s, "h05_appraisal", "city-req-4").Reason, Is.EqualTo("已在此地"));
     }
 
     /// <summary>UI-X02/CITY-UI06：提交后未抵达前设施栏仍是出发地人物、目标人物不能交谈；5 分钟一段不可中途退出（B41c2）；读档后仍在途、不算已到达。</summary>
@@ -257,7 +267,7 @@ public class B24CityOverviewTests : TestBase
     public void UI_X02_NoServiceBeforeArrival()
     {
         var s = Registered("h03_workshop");
-        Ok(E.StartCityOverviewTravel(s, "h05_appraisal", "x02"));
+        Ok(E.StartMapDeparture(s, "h02_square", "x02"));
         Steps(s, 0);
         Assert.That(E.NpcsHere(s).Select(n => n.NpcId), Does.Contain("npc_luo_zheng"));
         Assert.That(E.NpcsHere(s).Select(n => n.NpcId), Does.Not.Contain("npc_tao_cen"));
@@ -271,22 +281,23 @@ public class B24CityOverviewTests : TestBase
         Assert.That(E.NpcsHere(s).Select(n => n.NpcId), Does.Contain("npc_luo_zheng"));
     }
 
-    /// <summary>CITY-UI08：前往被锁的楼栋直接拒绝并给原因，不规划穿锁路线、不耗时。</summary>
+    /// <summary>CITY-UI08：出发去被锁的楼栋直接拒绝并给门槛原因（相邻未开通沿原“路线未开通，{原因}”），不规划穿锁路线、不耗时；别的城（不在任何已知路线上）拒绝。</summary>
     [Test]
     public void CITY_UI08_TravelToLockedRefused()
     {
         var s = At("h01_gate");
         var t0 = s.GameMinute;
-        var r = E.StartCityOverviewTravel(s, "h02_square", "lock");
+        var r = E.StartMapDeparture(s, "h02_square", "lock");
         Assert.That(r.Ok, Is.False);
-        Assert.That(r.Reason, Does.StartWith("需要："));
+        Assert.That(r.Reason, Does.StartWith("路线未开通，需要："), "MapOverlay 原句“路线未开通，{原因}”");
         Assert.That(s.Main, Is.Null);
         Assert.That(s.GameMinute, Is.EqualTo(t0));
-        Assert.That(E.StartCityOverviewTravel(s, "c02_church", "far").Reason, Is.EqualTo("目标不在这座城内"));
+        Assert.That(E.StartMapDeparture(s, "c02_church", "far").Ok, Is.False);
+        Assert.That(s.Main, Is.Null);
     }
 
     /// <summary>
-    /// CITY-UI06/14：战斗中鸟瞰不可用（界面据此自动关闭）、“前往”拒绝；自动打开等到战斗结束；关闭/再开不改真实位置与库存。
+    /// CITY-UI06/14：战斗中鸟瞰不可用（界面据此自动关闭）、“出发”拒绝；自动打开等到战斗结束；关闭/再开不改真实位置与库存。
     /// （B41e3 起没有旧版待处理敌踪，原用例的敌踪锁改用战斗；敌踪卡本身不挡操作。）
     /// </summary>
     [Test]
@@ -296,7 +307,7 @@ public class B24CityOverviewTests : TestBase
         E.MarkCityOverviewShown(s);
         s.Battle = new BattleState();
         Assert.That(E.CityOverviewBlocked(s), Is.EqualTo("先处理眼前的敌踪"));
-        Assert.That(E.StartCityOverviewTravel(s, "h03_workshop", "enc").Ok, Is.False);
+        Assert.That(E.StartMapDeparture(s, "h03_workshop", "enc").Ok, Is.False);
         Assert.That(s.Main, Is.Null);
         E.DebugResetCityOverview(s);
         s.City.OverviewPending = "h02_square";

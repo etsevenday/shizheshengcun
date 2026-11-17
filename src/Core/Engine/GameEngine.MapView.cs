@@ -74,6 +74,8 @@ namespace Survival.Core.Engine
         public string Reason { get; set; } = "";
         /// <summary>与当前位置相连。</summary>
         public bool Near { get; set; }
+        /// <summary>B35c（Q591）：当前可出发的相邻路线——从当前位置出发、已开通、此端可走且移动开工校验通过（高亮并带微动态）；未知、锁定、单向不通、被权限阻断的边为 false。</summary>
+        public bool Departable { get; set; }
     }
 
     public sealed class MapPortal
@@ -241,10 +243,16 @@ namespace Survival.Core.Engine
             return list;
         }
 
-        public MapView BuildMapView(GameState s, string? layerKey = null)
+        /// <summary>实际显示的层：未指定用默认层；不合法或没有已知节点时退回主世界（与 <see cref="BuildMapView"/> 同一口径）。只读。</summary>
+        public string ResolveMapLayer(GameState s, string? layerKey)
         {
             var layer = layerKey ?? DefaultMapLayer(s);
-            if (!KnownMapLayers(s).Any(x => x.Key == layer)) layer = WorldLayer;
+            return KnownMapLayers(s).Any(x => x.Key == layer) ? layer : WorldLayer;
+        }
+
+        public MapView BuildMapView(GameState s, string? layerKey = null)
+        {
+            var layer = ResolveMapLayer(s, layerKey);
             var here = s.CurrentLocation;
             var view = new MapView { LayerKey = layer, LayerName = MapLayerName(layer) };
 
@@ -330,6 +338,7 @@ namespace Survival.Core.Engine
                         OneWayFrom = e.Bidirectional ? null : ra,
                         Reason = open ? "" : GateBlockedReason(s, e),
                         Near = e.Touches(here),
+                        Departable = EdgeDepartable(s, e, open),
                     };
                     if (!pairs.TryGetValue(key, out var old) || (me.Open && !old.Open) || (me.Open == old.Open && me.Minutes < old.Minutes))
                         pairs[key] = me;

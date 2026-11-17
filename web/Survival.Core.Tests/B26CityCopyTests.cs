@@ -39,15 +39,20 @@ public class B26CityCopyTests : TestBase
 
     private static CityBuildingView B(CityOverviewView v, string id) => v.Buildings.Single(b => b.NodeId == id);
 
-    /// <summary>五句定稿与合同逐字一致。</summary>
+    /// <summary>
+    /// 定稿句与合同逐字一致。B35c 改：readOnly 由 Q913 A 取代为“在城市层只能查看；关闭地图后再操作。”（S14 2026-11-17 B35 次要节 Q913），
+    /// confirm 多段句按 Q914 A 删除、arrival“继续前往”句按 Q804 删除，合同里这两句不再有对应输出；legacyReveal、arrived 仍逐字。
+    /// </summary>
     [Test]
-    public void Q223_FiveLinesVerbatim()
+    public void Q223_LinesVerbatim_AfterB35c()
     {
-        Assert.That(T("readOnly"), Is.EqualTo(CityCopy.ReadOnly));
+        Assert.That(CityCopy.ReadOnly, Is.EqualTo("在城市层只能查看；关闭地图后再操作。"), "Q913 A 原句");
+        Assert.That(CityCopy.ReadOnly, Is.Not.EqualTo(T("readOnly")), "旧只读句（要求点“返回当前地点”）已撤");
         Assert.That(T("legacyReveal"), Is.EqualTo(CityCopy.LegacyReveal));
-        Assert.That(CityCopy.Confirm(2, "营区工坊", "营区广场"), Is.EqualTo(T("confirm", ("段数", 2), ("当前地点", "营区工坊"), ("下一地点", "营区广场"))));
-        Assert.That(CityCopy.Arrival("营区广场", "鉴定所", 1), Is.EqualTo(T("arrival", ("到达地点", "营区广场"), ("最终目标", "鉴定所"), ("剩余段数", 1))));
         Assert.That(CityCopy.Arrived("鉴定所"), Is.EqualTo(T("arrived", ("最终目标", "鉴定所"))));
+        Assert.That(CityCopy.Arrived("鉴定所"), Is.EqualTo("已到达鉴定所。"), "Q804“已到达{地点}。”");
+        Assert.That(typeof(CityCopy).GetMethod("Confirm"), Is.Null, "Q914 A：删“共{n}段。本次先走…”且不加替句");
+        Assert.That(typeof(CityCopy).GetMethod("Arrival"), Is.Null, "Q804：删“继续前往{目标}…还有{n}段”");
     }
 
     /// <summary>PLAN-Q222-01：只有已发现的城外独立地点写提示，句子逐字；它们不进城内路线图。</summary>
@@ -64,70 +69,25 @@ public class B26CityCopyTests : TestBase
         Assert.That(E.CityOverviewOf(s)!.Buildings.Select(b => b.NodeId), Does.Not.Contain(outside), "不塞进城内路线图");
     }
 
-    /// <summary>PLAN-Q223-01：多段路线到中途写还剩几段（只走了第一段，没有自动多走）；再走完写“已到达”，不写“还有0段”。</summary>
-    [Test]
-    public void Q223_MultiLegArrival_ThenFinal()
-    {
-        var s = Registered("h03_workshop");
-        DiscoverCity(s, "h02_square");
-        var path = B(E.CityOverviewOf(s)!, "h05_appraisal").Path!;
-        Assert.That(path.Count, Is.EqualTo(2));
-        Assert.That(E.CityArrivalNote(s, "h05_appraisal", path[0].To), Is.Null, "还没到不提示");
-        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "req-1").Ok, Is.True);
-        Assert.That(E.CityArrivalNote(s, "h05_appraisal", path[0].To), Is.Null, "路上不提示");
-        Run(s);
-        ReadDialogues(s);
-        Assert.That(s.CurrentLocation, Is.EqualTo(path[0].To), "只走第一段");
-        Assert.That(E.CityArrivalNote(s, "h05_appraisal", path[0].To), Is.EqualTo(T("arrival", ("到达地点", E.LocName(path[0].To)), ("最终目标", E.LocName("h05_appraisal")), ("剩余段数", 1))));
-
-        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "req-2").Ok, Is.True);
-        Run(s);
-        ReadDialogues(s);
-        Assert.That(s.CurrentLocation, Is.EqualTo("h05_appraisal"));
-        var note = E.CityArrivalNote(s, "h05_appraisal", "h05_appraisal");
-        Assert.That(note, Is.EqualTo(T("arrived", ("最终目标", E.LocName("h05_appraisal")))));
-        Assert.That(note, Does.Not.Contain("段"));
-    }
-
     /// <summary>
-    /// 试玩修复 M504：工坊选鉴定所走第一段，首次到广场时待自动打开鸟瞰，此时默认选中最终目标（与手动打开同一函数）；
-    /// 已到目标、没有目标、已离开这座城都不预选。
+    /// B35-Q804-01（B35c 改写，原 PLAN-Q223-01 多段“还剩几段”提示按 Q804 删除）：城市层出发到达这一段写“已到达{地点}。”，
+    /// 不再写继续前往原远处目标或剩余段数；还在路上、没到这一段的终点都不写。
     /// </summary>
     [Test]
-    public void CityDefaultPick_AutoOpenKeepsFinalTarget()
+    public void Q804_ArrivedOnly_NoContinueReminder()
     {
         var s = Registered("h03_workshop");
         DiscoverCity(s, "h02_square");
-        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "req-1").Ok, Is.True);
+        Assert.That(E.CityArrivalNote(s, "h02_square"), Is.Null, "还没出发不提示");
+        Assert.That(E.StartMapDeparture(s, "h02_square", "req-1").Ok, Is.True);
+        Assert.That(E.CityArrivalNote(s, "h02_square"), Is.Null, "路上不提示");
         Run(s);
         ReadDialogues(s);
         Assert.That(s.CurrentLocation, Is.EqualTo("h02_square"));
-        Assert.That(E.CityOverviewAutoOpenDue(s), Is.True, "首次到父节点");
-        Assert.That(E.CityDefaultPick(s, "h05_appraisal"), Is.EqualTo("h05_appraisal"));
-        Assert.That(E.CityDefaultPick(s, null), Is.Null);
-        Assert.That(E.CityDefaultPick(s, "h02_square"), Is.Null, "已在目标");
-        Assert.That(E.CityDefaultPick(s, "c04_alms"), Is.Null, "不是这座城");
-        E.DebugMapTeleport(s, "c02_church");
-        ReadDialogues(s);
-        Assert.That(E.CityDefaultPick(s, "h05_appraisal"), Is.Null, "已离开这座城");
-    }
-
-    /// <summary>单段路线也写“已到达”；中途路线失效写真实原因（不写“还有N段”）。</summary>
-    [Test]
-    public void Q223_SingleLeg_And_RouteLost()
-    {
-        var s = Registered("h03_workshop");
-        DiscoverCity(s, "h02_square");
-        Assert.That(B(E.CityOverviewOf(s)!, "h02_square").Path!.Count, Is.EqualTo(1));
-        Assert.That(E.StartCityOverviewTravel(s, "h02_square", "req-1").Ok, Is.True);
-        Run(s);
-        ReadDialogues(s);
-        Assert.That(E.CityArrivalNote(s, "h02_square", "h02_square"), Is.EqualTo(T("arrived", ("最终目标", E.LocName("h02_square")))));
-
-        s.Locations["h05_appraisal"].Discovered = false;
-        var why = E.CityArrivalNote(s, "h05_appraisal", "h02_square");
-        Assert.That(why, Is.Not.Null);
-        Assert.That(why, Does.Not.Contain("还有"));
+        var note = E.CityArrivalNote(s, "h02_square");
+        Assert.That(note, Is.EqualTo("已到达营区广场。"), "Q804 原句，地点名为 config 里 h02_square 的名称");
+        Assert.That(note, Does.Not.Contain("继续前往").And.Not.Contain("段"));
+        Assert.That(E.CityArrivalNote(s, "h05_appraisal"), Is.Null, "没到远处目标不写，也不提醒继续");
     }
 
     /// <summary>PLAN-Q224-01：已接且记录已取、交谈可完成标“可交”；已领奖不再标；标记不代办。</summary>
