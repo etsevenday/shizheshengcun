@@ -449,4 +449,216 @@ public class B51c2a1Tests : TestBase
         var menu = File.ReadAllText(Path.Combine(Root(), "web", "Survival.Web", "Components", "MenuOverlay.razor"));
         Assert.That(menu, Does.Contain("G.E.DebugLegacyStation56"));
     }
+
+    // ───────────── 变异测试补测（基线 9e3db204..d3daa00b） ─────────────
+
+    /// <summary>空批起点：投一批后删掉其批内原料（只旧档异常数据会出现）。</summary>
+    private StationBatch EmptyBatch(GameState s)
+    {
+        WaterInputs(s, 1);
+        Ok(E.StartStationBatch(s, Water, "empty"));
+        var b = Batches(s, "water_station").Last();
+        s.Items.RemoveAll(i => i.Owner == ItemInstance.StationOwner(s.Ground, b.BatchId));
+        return b;
+    }
+
+    /// <summary>
+    /// 物主解析（开发假设 1：`station:{区}#{批ID}`）：格式对才算设施批原料；区为空、批号不是整数、没有批号、不是设施前缀都不算。
+    /// </summary>
+    [Test]
+    public void MT_TryStation_Parse()
+    {
+        Assert.That(ItemInstance.TryStation(ItemInstance.StationOwner("camp", 15), out var place, out var id), Is.True);
+        Assert.That((place, id), Is.EqualTo(("camp", 15)));
+        Assert.That(ItemInstance.TryStation("station:#5", out _, out _), Is.False, "区为空");
+        Assert.That(ItemInstance.TryStation("station:camp#x", out _, out _), Is.False, "批号不是整数");
+        Assert.That(ItemInstance.TryStation("station:camp", out _, out _), Is.False, "没有批号");
+        Assert.That(ItemInstance.TryStation("camp", out _, out _), Is.False, "地面物主");
+    }
+
+    /// <summary>
+    /// 永久丢弃（B53a「加工中：先停止加工。」）：设施批内原料按归属认批（S11 Q872 B 真实归属本设施该批），批记录里的输入清单缺了也照样算加工中；
+    /// 批记录已不在的孤立设施原料不算加工中（配对）。
+    /// </summary>
+    [Test]
+    public void MT_Discard_OwnerBound_OrphanNot()
+    {
+        var s = Workshop();
+        WaterInputs(s, 2);
+        Ok(E.StartStationBatch(s, Water, "w", 2));
+        var q = Batches(s, "water_station");
+        q[0].InputInstanceIds.Clear();   // 起点：批记录里的输入清单缺失
+        var a = E.StationBatchInputs(s, s.Ground, q[0]).Single(i => i.ItemId == "dirty_water");
+        Assert.That(E.DiscardItemBlocks(s, a), Does.Contain("加工中：先停止加工。"), "按归属认批");
+        var b = E.StationBatchInputs(s, s.Ground, q[1]).Single(i => i.ItemId == "dirty_water");
+        q[1].InputInstanceIds.Clear();
+        E.FacOf(s, s.Ground)!.StationBatches.Remove(q[1]);   // 起点：第二批的批记录丢了（孤立）
+        Assert.That(E.DiscardItemBlocks(s, b), Does.Not.Contain("加工中：先停止加工。"), "孤立的不算加工中");
+    }
+
+    /// <summary>
+    /// S06 Q666-A05「无保护的工作输入真腐败……没有同事件普通腐败重复句」：在办批内无保护的原料到期原位变腐败物、不写普通腐败句；
+    /// 批记录已不在的孤立设施原料到期照常写「{原物名}×{数量}已腐败，变为腐败物×{数量}。」（S06 B50a 普通腐败句，配对）。
+    /// </summary>
+    [Test]
+    public void MT_Spoil_LiveBatchInput_NoPlainLine_OrphanHasLine()
+    {
+        var s = Workshop();
+        WaterInputs(s, 2);
+        Ok(E.StartStationBatch(s, Water, "w", 2));
+        var q = Batches(s, "water_station");
+        foreach (var i in s.Items.Where(i => i.InStation && i.ItemId == "dirty_water"))
+        {
+            i.ShelfPausedMinutes = null;   // 起点：无保护（如 54 档升级时已到期的输入）
+            i.ExpiresAt = s.GameMinute + 5;
+        }
+        E.StationBatchInputs(s, s.Ground, q[1]).Single(i => i.ItemId == "dirty_water").Count = 3;   // 起点：孤立那份 3 份，与在办批的 4 份区分
+        E.FacOf(s, s.Ground)!.StationBatches.Remove(q[1]);   // 起点：第二批孤立
+        var logs = s.Log.Count;
+        AdvanceTo(s, s.GameMinute + 10);
+        var live = BatchBound(s, q[0].BatchId).Where(i => i.ItemId == GameEngine.SpoiledMatterId).ToList();
+        Assert.That(live.Sum(i => i.Count), Is.EqualTo(4), "在办批内的脏水原位变腐败物");
+        var lines = s.Log.Skip(logs).Select(l => l.Text).Where(t => t.Contains("已腐败，变为腐败物")).ToList();
+        Assert.That(lines, Has.Count.EqualTo(1));
+        Assert.That(lines[0], Is.EqualTo("脏水×3已腐败，变为腐败物×3。"), "只有孤立那份写普通腐败句，在办批那份不写");
+    }
+
+    /// <summary>投料取料（配方原料数）：先到期的一堆正好够数时只拿这一堆，后面的堆不动，设施里不出现 0 份的空堆。</summary>
+    [Test]
+    public void MT_Start_TakesExactStacks_NoZeroSplit()
+    {
+        var s = Workshop();
+        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        foreach (var i in s.Items.Where(i => i.ItemId == "dirty_water")) i.ExpiresAt = s.GameMinute + 100;   // 起点：先到期的一堆 4
+        E.CreateItems(s, "dirty_water", 3, s.Ground);   // 无期限的一堆 3
+        E.CreateItems(s, "filter_media", 1, s.Ground);
+        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water").Select(i => i.Count).OrderBy(n => n), Is.EqualTo(new[] { 3, 4 }), "起点：两堆");
+        Ok(E.StartStationBatch(s, Water, "w"));
+        var b = Batches(s, "water_station").Single();
+        var ins = E.StationBatchInputs(s, s.Ground, b);
+        Assert.That(ins, Has.Count.EqualTo(2));
+        Assert.That(ins.Select(i => (i.ItemId, i.Count)), Is.EquivalentTo(new[] { ("dirty_water", 4), ("filter_media", 1) }));
+        Assert.That(ins.Single(i => i.ItemId == "dirty_water").ShelfPausedMinutes, Is.EqualTo(100), "拿的是先到期那堆");
+        var ground = s.Items.Where(i => i.ItemId == "dirty_water" && i.Owner == s.Ground).ToList();
+        Assert.That(ground.Select(i => (i.Count, i.ExpiresAt)), Is.EqualTo(new[] { (3, (int?)null) }), "无期限那堆原样留在地面");
+    }
+
+    /// <summary>
+    /// B51b Q701-A02「投料即对本批有期限输入记 R＝E−S」，燃料随批分账（Q921 原 Fuel 分账）：有期限的燃料投料时也暂停保质；
+    /// 取出只解锁、原地不动，在取出时刻 C 恢复 C＋R。
+    /// </summary>
+    [Test]
+    public void MT_KilnFuel_ShelfPaused_ResumedOnTake()
+    {
+        var s = Workshop();
+        KilnInputs(s, 1);
+        var fuel = s.Items.Single(i => i.ItemId == "charcoal");
+        fuel.ExpiresAt = s.GameMinute + 20;   // 起点：测试注入有限期限（现有配置木炭无期限）
+        var t0 = s.GameMinute;
+        Ok(E.StartStationBatch(s, Kiln, "k"));
+        Assert.That(fuel.ShelfPausedMinutes, Is.EqualTo(20), "R＝E−S");
+        AdvanceTo(s, t0 + 25);
+        Assert.That((fuel.ItemId, fuel.Count), Is.EqualTo(("charcoal", 1)), "受保护越过原截止不腐败");
+        var c = s.GameMinute;
+        Ok(TakeBatch(s, Batches(s, "kiln").Single()));
+        Assert.That((fuel.ShelfPausedMinutes, fuel.ExpiresAt, fuel.ReservedBy, fuel.Owner), Is.EqualTo(((int?)null, (int?)(c + 20), (int?)null, s.Ground)));
+    }
+
+    /// <summary>配方说明（S11 Q880：原说明只把动词「取消」换成「取出」）：原料、燃料、产物、分钟与落点。</summary>
+    [Test]
+    public void MT_StationBatchSummary_Text()
+    {
+        Assert.That(E.StationBatchSummary(Cfg.Recipes.Single(r => r.Id == Water)),
+            Is.EqualTo("脏水×4、滤材×1 → 净水×4，被动30世界分钟（不占行动，离开也继续），完成后放在本区地面；取出退回原料，时间不退"));
+        Assert.That(E.StationBatchSummary(Cfg.Recipes.Single(r => r.Id == Kiln)),
+            Is.EqualTo("黏土×2＋燃料木炭×1 → 陶壳×2，被动60世界分钟（不占行动，离开也继续），完成后放在本区地面；取出退回原料，时间不退"));
+    }
+
+    /// <summary>B51-Q778-04（计划绑定设施／批次／物品）：「全部取出」的计划戳不能拿来取单批，哪怕这座只有这一批；本批自己的戳可取（配对）。</summary>
+    [Test]
+    public void MT_Stamp_ScopeBound()
+    {
+        var s = Workshop();
+        WaterInputs(s, 1);
+        Ok(E.StartStationBatch(s, Water, "w"));
+        var b = Batches(s, "water_station").Single();
+        var all = E.StationTakeStamp(s, s.Ground, "water_station");
+        var r = E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, all, "x");
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "物品已变，请重选。")));
+        Assert.That(Batches(s, "water_station"), Has.Count.EqualTo(1));
+        Ok(TakeBatch(s, b, "y"));
+    }
+
+    /// <summary>B51-Q778-04（S11 Q880 快照变化仍用「物品已变，请重选。」）：渲染后批内原料份数变了，旧戳整次拒、一样不动；重取戳后按真实份数取（配对）。</summary>
+    [Test]
+    public void MT_Stamp_CountChanged_Rejected()
+    {
+        var s = Workshop();
+        WaterInputs(s, 1);
+        Ok(E.StartStationBatch(s, Water, "w"));
+        var b = Batches(s, "water_station").Single();
+        var stamp = E.StationTakeStamp(s, s.Ground, "water_station", b.BatchId);
+        E.StationBatchInputs(s, s.Ground, b).Single(i => i.ItemId == "dirty_water").Count = 3;   // 起点：渲染后份数变了
+        var r = E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, stamp, "x");
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "物品已变，请重选。")));
+        Assert.That(BatchBound(s, b.BatchId).Sum(i => i.Count), Is.EqualTo(4), "一样不动（脏水3＋滤材1）");
+        Ok(TakeBatch(s, b, "y"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×3、滤材×1。"));   // S11 Q876 B
+    }
+
+    /// <summary>批已结束后即使用此刻重算的戳再取，仍拒「物品已变，请重选。」（批不在），不报「没有可取出的物品。」。</summary>
+    [Test]
+    public void MT_GoneBatch_FreshStamp_Changed()
+    {
+        var s = Workshop();
+        WaterInputs(s, 1);
+        Ok(E.StartStationBatch(s, Water, "w"));
+        var b = Batches(s, "water_station").Single();
+        Ok(TakeBatch(s, b, "a"));
+        var r = TakeBatch(s, b, "b");
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "物品已变，请重选。")));
+    }
+
+    /// <summary>
+    /// 逐字稿 B51 表「没有可取出的物品。」与 B51-Q778-04「未移出批进度保留」：批内已无原料的批，本批「取出」置灰写「没有可取出的物品。」；
+    /// 「全部取出」只结束真有原料的批，空批留着、进度不变；全是空批时拒「没有可取出的物品。」、不写日志。
+    /// </summary>
+    [Test]
+    public void MT_EmptyBatch_TakeBlocked_TakeAllSkips()
+    {
+        var s = Workshop();
+        var empty = EmptyBatch(s);
+        Assert.That(E.StationBatchTakeBlocked(s, s.Ground, "water_station", empty.BatchId), Is.EqualTo("没有可取出的物品。"));
+        Assert.That(E.TakeAllBlocked(s, s.Ground, "water_station"), Is.EqualTo("没有可取出的物品。"));
+        var logs = s.Log.Count;
+        var r0 = TakeAllNow(s, "water_station", "a0");
+        Assert.That((r0.Ok, r0.Reason), Is.EqualTo((false, "没有可取出的物品。")));
+        Assert.That((Batches(s, "water_station").Count, s.Log.Count), Is.EqualTo((1, logs)), "空批不结束、不写日志");
+
+        WaterInputs(s, 1);
+        Ok(E.StartStationBatch(s, Water, "full"));
+        AdvanceTo(s, s.GameMinute + 10);
+        var done = Batches(s, "water_station").Single(b => b.BatchId == empty.BatchId).DoneMinutes;
+        Ok(TakeAllNow(s, "water_station", "a1"));
+        Assert.That(Batches(s, "water_station").Select(b => (b.BatchId, b.DoneMinutes)), Is.EqualTo(new[] { (empty.BatchId, done) }), "空批留着、进度不变");
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×4、滤材×1。"));   // S11 Q876 B
+    }
+
+    /// <summary>存档 56→57：配方已不存在的批不迁（读档不出错），它的地面预留原料原样留在地面；配方在的批照常移进设施（配对）。</summary>
+    [Test]
+    public void MT_Migrate56To57_MissingRecipe_Untouched()
+    {
+        var s = Workshop();
+        WaterInputs(s, 2);
+        Ok(E.StartStationBatch(s, Water, "w", 2));
+        var q = Batches(s, "water_station");
+        E.DebugLegacyStation56(s);
+        q[1].RecipeId = "no_such_recipe";   // 起点：旧档里这一批的配方已从配置删除
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(m.SchemaVersion, Is.EqualTo("57"));
+        Assert.That(m.Items.Where(i => i.Owner == ItemInstance.StationOwner(m.Ground, q[0].BatchId)).Sum(i => i.Count), Is.EqualTo(5), "配方在的批：脏水4＋滤材1移进设施");
+        var left = m.Items.Where(i => i.ReservedBy == q[1].BatchId).ToList();
+        Assert.That(left.Sum(i => i.Count), Is.EqualTo(5));
+        Assert.That(left.All(i => i.Owner == m.Ground), Is.True, "配方不在的批原样留在地面预留");
+    }
 }
