@@ -1,0 +1,118 @@
+{
+  "date": "2026-11-17",
+  "status": "three_whole_original_batches_planning_not_runtime_verified",
+  "originalBatches": [
+    {
+      "name": "B49开发中",
+      "questions": [
+        843,
+        844
+      ]
+    },
+    {
+      "name": "B49线上试玩",
+      "questions": [
+        845,
+        846,
+        847
+      ]
+    },
+    {
+      "name": "B51c1单题",
+      "questions": [
+        882
+      ]
+    }
+  ],
+  "questions": [
+    843,
+    844,
+    845,
+    846,
+    847,
+    882
+  ],
+  "choices": {
+    "843": "A",
+    "844": "A",
+    "845": "B",
+    "846": "A",
+    "847": "A",
+    "882": "user_new_no_extra_return_shelf_change_explanation"
+  },
+  "answers": {
+    "843": "选A。传播风险句沿已定原句，饱饱信息保留并合为“饱饱使主角病毒累积；免疫≥{阈值}时停止。”，阈值读原fullSuppressImmunityAtLeast当前80；沿原主角真实饱饱触发条件，不改任何病毒规则／同伴归属。见R04／S14及逐字稿本批。",
+    "844": "选A。右栏敌组详情与中央盘每名有源成员各列一次参考我方人物标题及该成员真实传播类型／条件概率，不能全组合并丢成员归属；无源无概率组，同一界面只选一位我方参考、不全员展开。原战前参考主角，战中跟Q845 B查看者。见R04／S14本批。",
+    "845": "选B。感染预估跟当前明确查看的我方角色，立即按该人真实免疫／infected／V更新；实际行动FocusId、AP、指令、目标、武器、回合不变。无明确查看时默认当前合法行动者；明确选择后看敌人仍保持该我方参考，失效不借别人概率，原UI清空／换场重置。只读浏览不改真实受击／保护承伤者感染判定。见R04／R03／S14本批。",
+    "846": "选A。natural句首去重复“每小时”，各免疫区间仍带符号和“/小时”，区间边界／表序／数值及后半句不改；当前真实净变化不拿帮助基础率覆盖。见R04／S12及逐字稿本批。",
+    "847": "选A。已感染且本人真实V≤原naturalCure.loadAtMost时隐藏整行“自然治愈还需”，V>阈值才列原病毒≤阈值，按未舍入真实值；连续高免疫实际时长仍显示，实际治愈条件／处理完全不变。见R04／S12／S14本批。",
+    "882": "用户新裁定，不选原A／B：这类返料保质时间变化不需额外说明，让玩家自行查看。取消／退出预告／自动停止／失败返料／处理尸体／撤退保留／多去向／被动取出均撤附加恢复剩余保质、预计保质至／保质至等变化解释及额外提醒；保留实际物品数量和去向、必要真实后果，详情仍刷新真实C＋R，玩法守恒／超卡返料／原永久删除期限明细不改。动作统一维修／配方工具维护沿用户Q874，后果词同步维修。见S08／S06／S11／S14及逐字稿本批。"
+  },
+  "infection": {
+    "baobaoTip": "饱饱使主角病毒累积；免疫≥{阈值}时停止。",
+    "thresholdSource": "infection.baobaoInput.fullSuppressImmunityAtLeast",
+    "eachSourceEnemyHasOwnProbabilityGroup": true,
+    "battleReference": "explicitly_viewed_ally_not_action_FocusId",
+    "defaultIfNoExplicitView": "current_valid_acting_ally",
+    "keepAllyReferenceWhenOpeningEnemyDetails": true,
+    "invalidExplicitReference": "static_paths_only_no_borrowed_actor",
+    "viewDoesNotChangeActionOrActualExposure": true,
+    "naturalUnits": "per_interval_only_remove_leading_duplicate",
+    "hideSatisfiedVirusCureRequirement": true,
+    "realValueComparison": true
+  },
+  "returnCopy": {
+    "noExtraShelfRestoreExplanation": true,
+    "removePredictionAndResultRestoreExpiryClauses": true,
+    "allOriginalReturnPaths": true,
+    "keepItemsAndActualDestination": true,
+    "keepActualShelfDetailsAndCPlusR": true,
+    "keepCapacityAndInventoryConservation": true,
+    "keepWorldAndActionTimeDisplays": true,
+    "keepRealSpoilageResult": true,
+    "keepDiscardConfirmationExpiryDetails": true,
+    "repairActionNameCarriedFromQ874": true
+  },
+  "acceptance": [
+    {
+      "id": "SMALL-Q843-01",
+      "rule": "原传播提示后饱饱两句合成已定短稿，阈值读配置、主角真实归属与触发不变。"
+    },
+    {
+      "id": "SMALL-Q844-01",
+      "rule": "组内两名有源敌人各有本人途径／同一我方参考的条件概率组，无源无概率组，不按我方全员展开。"
+    },
+    {
+      "id": "SMALL-Q845-01",
+      "rule": "主角行动点同伴查看后感染参考立即变同伴、标题和I/V本人对应，实际行动者／AP／指令／回合不变。"
+    },
+    {
+      "id": "SMALL-Q845-02",
+      "rule": "再看敌人仍保持明确我方参考；只悬停或瞄准不换人，失效不借别人概率，换场原UI重置。"
+    },
+    {
+      "id": "SMALL-Q845-03",
+      "rule": "具体合法攻击／保护转移仍按真实承伤者判感染，浏览不改真实生命／概率抽签或库存。"
+    },
+    {
+      "id": "SMALL-Q846-01",
+      "rule": "natural句首无每小时，各区间仍/小时、区间符号与配置速率不变，真实药效净率不被替换。"
+    },
+    {
+      "id": "SMALL-Q847-01",
+      "rule": "已感染病毒真实≤阈值整行还需隐藏，>阈值恢复，非舍入判断；连续免疫时长与真实治愈流程保持。"
+    },
+    {
+      "id": "SMALL-Q882-01",
+      "rule": "取消／预告／失败／尸体／撤退／取出单多去向结果均无额外恢复期限说明，实际物品和去向可查。"
+    },
+    {
+      "id": "SMALL-Q882-02",
+      "rule": "详情仍真实C+R，合堆／五卡落地／来源守恒与幂等不改，原永久删除期限明细与真实腐败结果保留。"
+    },
+    {
+      "id": "SMALL-Q882-03",
+      "rule": "维修动作与暂停／后果词统一，配方工具维护不动；新短稿A未冒作用户选择，不另发时间变更提醒。"
+    }
+  ]
+}
