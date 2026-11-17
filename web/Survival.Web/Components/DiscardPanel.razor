@@ -30,7 +30,11 @@ else
         @switch (open.Stage)
         {
             case DiscardStage.Menu:
-                <div class="discard-avail">@(Target.IsWater ? DiscardCopy.WaterAvailable(v.Available) : DiscardCopy.Available(v.Available))</div>
+                @* B53a 试玩修复：空容器只写合同 water.text empty「无可丢弃的水。」，不再同时写「可丢弃：0毫升」 *@
+                @if (!(Target.IsWater && v.Blocked == DiscardCopy.NoWater))
+                {
+                    <div class="discard-avail">@(Target.IsWater ? DiscardCopy.WaterAvailable(v.Available) : DiscardCopy.Available(v.Available))</div>
+                }
                 @if ((open.Error ?? v.Blocked) is string why)
                 {
                     <div class="blocked">@why</div>

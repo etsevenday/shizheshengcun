@@ -95,6 +95,10 @@
    入口「丢弃」在本物品详情操作末尾（锅水为「丢弃水」，水壶在水量行末）；子区原地展开：可丢弃数 → 选择数量／全部丢弃 → 确认丢弃。
    删除类按钮用暗红底；取消／返回为线框。窄屏按钮换行，不横向溢出。 */
 [data-detail-rail] .discard-entry { display: flex; }
+/* B53a 试玩修复：入口与展开的子区同在一个贴底容器里，贴在详情滚动区底边（sticky）——仍在本物品操作末尾，内容较长（1280×720）时首屏可见、
+   不落到下方脚注后面，两块一起移动不互相遮挡；滚到原位时与原排版一致 */
+[data-detail-rail] .detail-scroll > .discard-dock { position: sticky; bottom: 0; z-index: 2; flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; padding-top: 6px; background: var(--surface); box-shadow: 0 -8px 8px -8px rgba(0, 0, 0, .7); }
+[data-detail-rail] .discard-dock:empty { display: none; }
 [data-detail-rail] .discard-btn { flex: 1 1 auto; min-height: 40px; padding: 6px 14px; font-size: var(--fs-body); color: #f3e3d6; background: #5e3528; border: 1px solid #a8735d; border-radius: 4px; }
 [data-detail-rail] .discard-btn:hover { background: #6e3f30; border-color: #d9a07f; }
 [data-detail-rail] .discard-btn.inline { flex: 0 0 auto; min-height: 30px; padding: 2px 10px; font-size: var(--fs-aux); margin-left: 8px; }

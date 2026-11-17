@@ -235,6 +235,11 @@ window.survival = {
       return !!el.closest('button, a[href], [role=button], [role=radio], [role=tab], [role=checkbox], [role=option], input, summary');
     }
     function shown(el) { return !!(el && (el.offsetWidth || el.offsetHeight)); }
+    // B53a：右栏丢弃子区（.discard-sub）可见、不在 inert 里，且上面没有数量框／确认窗等模态层
+    function discardSubOpen() {
+      if (Array.prototype.some.call(document.querySelectorAll('.modal-back, .overflow-layer'), shown)) return false;
+      return Array.prototype.some.call(document.querySelectorAll('[data-detail-rail] .discard-sub'), function (x) { return shown(x) && !(x.closest && x.closest('[inert]')); });
+    }
     function focusVisible(el) { try { return !!el.matches(':focus-visible'); } catch (e) { return false; } }
     // 当前最上层的模态层（数量框、强制整理与确认窗、居中局部盘）；没有时为 null
     function topModal() {
@@ -438,6 +443,9 @@ window.survival = {
           && !(fae.closest('[data-detail-rail]') && (focusVisible(fae) || fae.hasAttribute('data-peek-name')))) fae = null;
       // BM8（S14 Q660）：空格是局部唯一默认确认的主键（Enter 兼容，同一按钮 click）。编辑框里的空格归输入；焦点在具体控件上按它自己的语义；
       // 前景默认确认先于中央「跳过动画」（不穿透）。没有唯一可用确认时空格照下方原规则（中央跳过／战斗确认／不处理）
+      // B53a 试玩修复：右栏丢弃子区开着时它是最近打开的一层（ESC 也先退它，GameSession.NormalEscOwner），焦点不在具体控件上的空格／Enter
+      // 到此为止——不落到背后选卡盘的「拾取…」等唯一主确认、也不触发中央跳过；子区自己不挂回车确认（S14 B50a）。数量框、确认窗等模态层在它之上时照原规则
+      if ((k === 'Enter' || (k === ' ' && !editable(tgt))) && !mod && !control(fae) && discardSubOpen()) { ev.preventDefault(); eatSpace(ev); return; }
       if ((k === 'Enter' || (k === ' ' && !editable(tgt))) && !mod && !control(fae)) {
         var sc = enterScope(fae);
         if (sc) {

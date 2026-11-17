@@ -1323,4 +1323,65 @@ public class B53aTests : TestBase
         Assert.That(bySlot[1].StopReason, Is.EqualTo("unknown"));
         Assert.That(bySlot[2].StopReason, Is.EqualTo("missing"), "对照：同档里原因为空的停止位照补（只剩盐→缺料）");
     }
+
+    // ───────────── 试玩修复（开发记录 B53a.7） ─────────────
+
+    /// <summary>
+    /// 试玩 1：丢弃子区开着时，焦点不在具体控件上的空格／Enter 到此为止，不落到背后选卡盘「拾取…」的唯一主确认（S14 B50a「不接无焦点空格／Enter 默认删除」，
+    /// 子区是最近打开的一层，ESC 也先退它）；判断在局部唯一确认之前。对照：子区没开时同一按键仍走原局部唯一确认（go.click()）。
+    /// </summary>
+    [Test]
+    public void Fix1_DiscardSubOpen_SpaceEnterDoNotReachPickDisk()
+    {
+        var js = Web("wwwroot", "js", "app.js");
+        Assert.That(js, Does.Contain("function discardSubOpen() {"));
+        var fn = Section(js, "function discardSubOpen() {", "function focusVisible(el)");
+        Assert.That(fn, Does.Contain("document.querySelectorAll('.modal-back, .overflow-layer'), shown)) return false;"), "数量框、确认窗在它之上时照原规则");
+        Assert.That(fn, Does.Contain("document.querySelectorAll('[data-detail-rail] .discard-sub')"));
+        const string guard = "if ((k === 'Enter' || (k === ' ' && !editable(tgt))) && !mod && !control(fae) && discardSubOpen()) { ev.preventDefault(); eatSpace(ev); return; }";
+        Assert.That(System.Text.RegularExpressions.Regex.Matches(js, System.Text.RegularExpressions.Regex.Escape(guard)).Count, Is.EqualTo(1));
+        var iGuard = js.IndexOf(guard, StringComparison.Ordinal);
+        var iScope = js.IndexOf("var sc = enterScope(fae);", StringComparison.Ordinal);
+        var iSkip = js.IndexOf("var ss = document.querySelector('.cprog[data-single-show]", StringComparison.Ordinal);
+        Assert.That(new[] { iGuard, iScope, iSkip }, Is.All.GreaterThanOrEqualTo(0));
+        Assert.That(iGuard < iScope && iScope < iSkip, Is.True, "先于选卡盘等的唯一主确认与中央跳过");
+        Assert.That(js, Does.Contain("if (go) { ev.preventDefault(); eatSpace(ev); go.click(); return; }"), "对照：原局部唯一确认仍在");
+        // 子区自身仍不挂回车确认（S14 B50a）
+        Assert.That(Web("Components", "DiscardPanel.razor"), Does.Not.Contain("data-enter"));
+    }
+
+    /// <summary>试玩 4（合同 water.text empty）：空容器子区只写「无可丢弃的水。」，不再同时写「可丢弃：0毫升」；有水时照写可丢弃毫升。</summary>
+    [Test]
+    public void Fix4_EmptyWater_OnlyNoWaterLine()
+    {
+        var menu = Section(Web("Components", "DiscardPanel.razor"), "case DiscardStage.Menu:", "case DiscardStage.Quantity:");
+        var iCond = menu.IndexOf("@if (!(Target.IsWater && v.Blocked == DiscardCopy.NoWater))", StringComparison.Ordinal);
+        var iAvail = menu.IndexOf("<div class=\"discard-avail\">", StringComparison.Ordinal);
+        var iWhy = menu.IndexOf("@if ((open.Error ?? v.Blocked) is string why)", StringComparison.Ordinal);
+        Assert.That(new[] { iCond, iAvail, iWhy }, Is.All.GreaterThanOrEqualTo(0));
+        Assert.That(iCond < iAvail && iAvail < iWhy, Is.True);
+        // 内核：空壶原因正是 NoWater（隐藏条件命中）；对照：有水时没有原因、可丢弃照写
+        var s = New();
+        var empty = Canteen(s, 0);
+        var v = E.DiscardViewOf(s, DiscardTarget.CanteenWater(empty.InstanceId));
+        Assert.That((v.Blocked, v.Available), Is.EqualTo((NoWater, 0)));
+        var full = Canteen(s, 750);
+        var f = E.DiscardViewOf(s, DiscardTarget.CanteenWater(full.InstanceId));
+        Assert.That((f.Blocked, f.Available), Is.EqualTo(((string?)null, 750)));
+    }
+
+    /// <summary>试玩 3：右栏「丢弃」入口与子区放进同一个贴底容器（sticky bottom），1280×720 详情较长时首屏可见、不落到脚注后面；位置仍在本物品操作末尾、说明折叠组之前。</summary>
+    [Test]
+    public void Fix3_DiscardDock_StickyAtRailBottom()
+    {
+        var d = Web("Components", "ItemDetail.razor");
+        var dock = Section(d, "<div class=\"discard-dock\">", "</div>");
+        Assert.That(dock, Does.Contain("<DiscardPanel Target=\"@discardTarget\" />"));
+        Assert.That(dock, Does.Contain("<DiscardPanel Target=\"@waterTarget\" HideButton=\"@canteen\" />"));
+        var iDock = d.IndexOf("<div class=\"discard-dock\">", StringComparison.Ordinal);
+        Assert.That(iDock, Is.LessThan(d.IndexOf("@* 次要信息折叠组", StringComparison.Ordinal)), "仍在折叠组之前（操作末尾）");
+        Assert.That(iDock, Is.LessThan(d.IndexOf("<div class=\"detail-foot\">", StringComparison.Ordinal)), "在滚动区内、脚注之前");
+        var css = Web("wwwroot", "css", "rail.css");
+        Assert.That(css, Does.Contain("[data-detail-rail] .detail-scroll > .discard-dock { position: sticky; bottom: 0; z-index: 2;"));
+    }
 }

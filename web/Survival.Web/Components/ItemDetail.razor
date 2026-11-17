@@ -237,8 +237,14 @@ else
         @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
 
         @* B53a：右栏本物品操作末尾「丢弃」（锅水为「丢弃水」）；水壶的「丢弃水」按钮在水量行末，子区在这里展开 *@
-        @if (discardTarget != null) { <DiscardPanel Target="@discardTarget" /> }
-        @if (waterTarget != null) { <DiscardPanel Target="@waterTarget" HideButton="@canteen" /> }
+        @* B53a 试玩修复：入口与子区放进同一个贴底容器（sticky，见 rail.css .discard-dock），1280×720 内容较长时首屏可见；两块一起贴底、互不遮挡 *@
+        @if (discardTarget != null || waterTarget != null)
+        {
+            <div class="discard-dock">
+                @if (discardTarget != null) { <DiscardPanel Target="@discardTarget" /> }
+                @if (waterTarget != null) { <DiscardPanel Target="@waterTarget" HideButton="@canteen" /> }
+            </div>
+        }
 
         @* 次要信息折叠组（没有明确偏好时收起；空组不显示） *@
         @if (hasDesc)
