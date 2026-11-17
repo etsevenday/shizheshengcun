@@ -243,4 +243,143 @@ public class B35cMapDepartTests : TestBase
         Assert.That(E.ResolveMapLayer(s, "city:c02_church"), Is.EqualTo(GameEngine.WorldLayer), "未知城市层退回主世界");
         Assert.That(E.ResolveMapLayer(s, "nonsense"), Is.EqualTo(GameEngine.WorldLayer));
     }
+
+    // ───────────── 变异测试补测（Stryker 9a1c88e4..9b63129b 存活／无覆盖项） ─────────────
+
+    private GameState Unregistered(string loc)
+    {
+        var s = New();
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        E.DebugMapTeleport(s, loc);
+        ReadDialogues(s);
+        return s;
+    }
+
+    /// <summary>A10-EXUI §1 原右栏按钮“选中下一段：前往{站}”（Q793 B 保留，移进路线区）。</summary>
+    [Test]
+    public void Mut_SelectNextText()
+    {
+        Assert.That(MapCopy.SelectNext("营区广场"), Is.EqualTo("选中下一段：前往营区广场"));
+    }
+
+    /// <summary>
+    /// S14 Q595“势力鸟瞰仅在已知所选／当前城市可看时进入该城”、A10-EXUI 未知不泄露：未发现的主城没有城市层视图，
+    /// 不是主城父节点（城内建筑本身）也没有；与已知本城有视图配对。
+    /// </summary>
+    [Test]
+    public void Mut_CityOverviewOf_OnlyKnownCityParent()
+    {
+        var s = Registered("h03_workshop");
+        Assert.That(E.CityOverviewOf(s, "h02_square"), Is.Not.Null, "已知本城有视图");
+        Assert.That(s.Locations["c02_church"].Discovered, Is.False, "前提：教会未发现");
+        Assert.That(E.CityOverviewOf(s, "c02_church"), Is.Null, "未发现的主城不给城市层");
+        Assert.That(s.Locations["h03_workshop"].Discovered, Is.True, "前提：工坊已知");
+        Assert.That(E.CityOverviewOf(s, "h03_workshop"), Is.Null, "城内建筑不是主城父节点");
+    }
+
+    /// <summary>B36-Q810-01（Q810“未发现仍遮蔽”、A10-CITY CITY-UI08“尚未发现”）：远城里未发现的建筑标“尚未发现”，已发现的不标拦截。</summary>
+    [Test]
+    public void Mut_RemoteCity_UndiscoveredBlocked()
+    {
+        var s = Registered("h02_square");
+        foreach (var id in E.CityMembers("c02_church")) s.Locations[id].Discovered = true;
+        s.Locations["c07_sanctuary"].Discovered = false;
+        var v = E.CityOverviewOf(s, "c02_church")!;
+        Assert.That(v.Remote, Is.True);
+        Assert.That(v.Buildings.Single(b => b.NodeId == "c07_sanctuary").Blocked, Is.EqualTo("尚未发现"));
+        Assert.That(v.Buildings.Single(b => b.NodeId == "c04_alms").Blocked, Is.Null);
+    }
+
+    /// <summary>
+    /// 城市层道路（A10-CITY §4 道路悬停“未开通：{原因}”、CITY-UI08）：已开通的路无原因；未开通但已揭示的路带门槛原因（营门登记边，原因以“需要：”开头，
+    /// 同 B24 CITY_UI08 楼栋原因）。Near＝与当前位置相连（MapViewEdge.Near 原义），本城才有，远城没有。
+    /// </summary>
+    [Test]
+    public void Mut_CityRoads_ReasonAndNear()
+    {
+        var s = Registered("h03_workshop");
+        var v = E.CityOverviewOf(s, "h02_square")!;
+        string K(MapViewEdge r) => string.CompareOrdinal(r.A, r.B) < 0 ? r.A + "|" + r.B : r.B + "|" + r.A;
+        var roads = v.Roads.ToDictionary(K);
+        var near = roads["h02_square|h03_workshop"];
+        var far = roads["h02_square|h05_appraisal"];
+        Assert.That((near.Open, near.Reason, near.Near), Is.EqualTo((true, "", true)));
+        Assert.That((far.Open, far.Reason, far.Near), Is.EqualTo((true, "", false)), "不与当前位置相连");
+        // 已开通（锁存）的路即使门槛条件此刻不再满足，也仍是已开通、不写未开通原因（S02 Q30B 门槛契约：除每次重验的单向出口外开通后锁存）
+        s.Progress.Flags.ExceptWith(new[] { "registration_authorized", "hub_registered" });
+        Assert.That(E.GateBlockedReason(s, E.EdgeBetween("h02_square", "h03_workshop")!), Does.StartWith("需要："), "前提：登记门槛此刻不满足");
+        var latched = E.CityOverviewOf(s, "h02_square")!.Roads.Single(r => K(r) == "h02_square|h03_workshop");
+        Assert.That((latched.Open, latched.Reason), Is.EqualTo((true, "")));
+        var g = Unregistered("h01_gate");
+        var gv = E.CityOverviewOf(g, "h02_square")!;
+        var gate = gv.Roads.Single(r => K(r) == "h01_gate|h02_square");
+        Assert.That(gate.Open, Is.False);
+        Assert.That(gate.Reason, Does.StartWith("需要："));
+        Assert.That(gate.Near, Is.True);
+    }
+
+    /// <summary>B35S-Q915-01：别的相邻未开通路线的原因不借给远处目的地——营门旁检查哨路线未开通时，选城内远处工坊仍是“先选相邻地点。”；选检查哨本身才是“路线未开通，需要：…”。</summary>
+    [Test]
+    public void Mut_Route_OtherLockedEdgeNotBorrowed()
+    {
+        var s = Registered("h01_gate");
+        s.Locations["m02_checkpoint"].Discovered = true;
+        Assert.That(E.AdjacentLocked(s).Select(x => x.Target), Is.EqualTo(new[] { "m02_checkpoint" }), "前提：检查哨路线未开通且已揭示");
+        Assert.That(E.MapRouteOf(s, "m02_checkpoint").Blocked, Does.StartWith("路线未开通，需要："));
+        var r = E.MapRouteOf(s, "h03_workshop");
+        Assert.That(r.Blocked, Is.EqualTo("先选相邻地点。"));
+        Assert.That(Steps(r.Path), Is.EqualTo("h01_gate>h02_square:5|h02_square>h03_workshop:5"), "A08：营门—广场、广场—工坊各 5 分钟");
+    }
+
+    /// <summary>B35-Q793-01 主世界层（不在城内）：远处目的地照样按真实已知路线给第一段与“选中下一段”，出发拦截“先选相邻地点。”（A08：农场、林地各距广场 25 分钟）。</summary>
+    [Test]
+    public void Mut_Route_WorldRemote()
+    {
+        var s = Registered("w01_farm");
+        s.Locations["w02_forest"].Discovered = true;
+        var r = E.MapRouteOf(s, "w02_forest");
+        Assert.That(Steps(r.Path), Is.EqualTo("w01_farm>h02_square:25|h02_square>w02_forest:25"));
+        Assert.That((r.SelectNext, r.Blocked), Is.EqualTo(("h02_square", "先选相邻地点。")));
+    }
+
+    /// <summary>B35S-Q915-01（其他真实原因照原）：城内远处建筑走不到时写城内路线上第一条未开通边的门槛原因（登记前营门→广场→工坊，原因以“需要：”开头，同 B24 CITY_UI08），不写主世界的“目前没有已开通的路线能走到这里”。</summary>
+    [Test]
+    public void Mut_Route_SameCityBlockedReason()
+    {
+        var s = Unregistered("h01_gate");
+        // 已揭示的城内路（S02 揭示规则：从探索满 100% 的已到过端点可见）：营门、广场都已到过且探索满
+        foreach (var id in new[] { "h01_gate", "h02_square" }) { var l = s.Locations[id]; l.Discovered = true; l.Visited = true; l.Progress = 100; }
+        s.Locations["h03_workshop"].Discovered = true;
+        var r = E.MapRouteOf(s, "h03_workshop");
+        Assert.That(r.Path, Is.Null);
+        Assert.That(r.Blocked, Does.StartWith("需要："));
+        Assert.That(r.Blocked, Is.Not.EqualTo("目前没有已开通的路线能走到这里"));
+    }
+
+    /// <summary>原城市出发“已在此地”（B24 StartCityOverviewTravel、原移动校验）：对当前位置出发被拒，不耗时、不开行动。</summary>
+    [Test]
+    public void Mut_Depart_SameLocationRefused()
+    {
+        var s = Registered("h03_workshop");
+        var t0 = s.GameMinute;
+        var r = E.StartMapDeparture(s, "h03_workshop", "here");
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "已在此地")));
+        Assert.That(s.Main, Is.Null);
+        Assert.That(s.GameMinute, Is.EqualTo(t0));
+    }
+
+    /// <summary>原鸟瞰“遭遇中拒绝出发”（B24 CITY-UI06）：战斗中出发被拒，原因是原移动校验句“战斗中：请使用战斗指令”，不开行动；战斗结束后同一目的地可出发。</summary>
+    [Test]
+    public void Mut_Depart_InBattleRefused()
+    {
+        var s = Registered("h03_workshop");
+        s.Battle = new BattleState();
+        var r = E.StartMapDeparture(s, "h02_square", "b1");
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "战斗中：请使用战斗指令")));
+        Assert.That(s.Main, Is.Null);
+        s.Battle = null;
+        Assert.That(E.StartMapDeparture(s, "h02_square", "b2").Ok, Is.True);
+    }
 }
