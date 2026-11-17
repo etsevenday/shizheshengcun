@@ -1,7 +1,7 @@
 @inherits GameComponent
 
 @* 就近执行浮窗（S14 §14.1、S02 §5、R05 §7、S08 §5）：一个时刻只有一个当前操作上下文（G.Pop）。
-   travel/mapnode：相邻地图卡或区域地图节点旁预览基础时间、预计完成、负重与入夜影响，“确认移动”一次确认；
+   travel：相邻地图卡旁预览基础时间、预计完成、负重与入夜影响，“确认移动”一次确认（B35c 起区域地图不再弹节点旁浮窗，改在地图路线区点“出发”，Q591）；
    enemycard：点敌踪卡打开的居中操作盘（B41e1，主动接近／潜行接近／躲避）；gather：拖工具到资源卡后在卡旁确认开始；
    charcoal：火堆卡“煅烧木炭”旁的投料确认（Q111，S14 本轮章）：4木→3炭、原料来源、空位、60有效分钟、燃料另计与冷火55提示，“确认投料”才投（0分钟）。
    每次渲染都从内核现算预览；目标失效（不再相邻、敌人离开、预览被替换）时直接收起，不保留失效按钮。
@@ -19,7 +19,6 @@
     switch (pop.Kind)
     {
         case "travel":
-        case "mapnode":
         {
             var to = pop.Id;
             var lc = e.Location(to);
@@ -79,7 +78,7 @@
                     }
                     else
                     {
-                        <button type="button" class="primary apop-go" data-enter disabled="@(!p.Ok || moveBusy)" @onclick='() => Travel(req, pop.Kind == "mapnode")'>@(p.Ok ? (needExp ? "确认开始远征并前往" : "确认移动") : "无法移动")<EnterCap On="@(p.Ok && !moveBusy)" /></button>
+                        <button type="button" class="primary apop-go" data-enter disabled="@(!p.Ok || moveBusy)" @onclick="() => Travel(req)">@(p.Ok ? (needExp ? "确认开始远征并前往" : "确认移动") : "无法移动")<EnterCap On="@(p.Ok && !moveBusy)" /></button>
                     }
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
                 </Actions>
@@ -298,7 +297,6 @@
         var ok = pop.Kind switch
         {
             "travel" => s.Battle == null && G.Panel == null && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
-            "mapnode" => G.Panel == "map" && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
             // B41e1（R05 Q457）：卡键仍在当前地点、当前区域的可操作卡里；失效即收盘（DropPop 一并清该卡详情），不改选别的敌人
             GameSession.EnemyCardPop => s.Battle == null && e.EnemyCardHere(s, pop.Id) != null,
             // B45：煅烧投料盘从中央火堆加工菜单的空加工位打开（盘叠在菜单之上）
@@ -312,18 +310,12 @@
         return ok;
     }
 
-    private async Task Travel(ActionRequest req, bool fromMap)
+    private async Task Travel(ActionRequest req)
     {
         if (_go) return;
         _go = true;
         _tried = true;
-        try
-        {
-            var t = G.StartAction(req);
-            // 区域地图上确认后收起地图，让中央推进条与地块栏可见（原右栏确认的 OnStarted 行为）
-            if (fromMap && G.S.Main?.Type == ActionType.Travel) G.CloseAllPanels();   // BM4a（Q590）：真实出发，返回链作废
-            await t;
-        }
+        try { await G.StartAction(req); }
         finally { _go = false; }
     }
 

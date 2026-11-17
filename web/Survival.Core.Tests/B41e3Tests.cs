@@ -172,7 +172,11 @@ public class B41e3Tests : B41cTestBase
         var map = Web("Components/MapOverlay.razor");
         Assert.That(map, Does.Contain("else if (adjacent.Contains(target) && (!e.IsBusy(s) || e.PausedTravelOpen(s)))"), "右栏显示移动预估");
         Assert.That(map, Does.Contain("@if (e.IsBusy(s) && !e.PausedTravelOpen(s))"), "不再提示「行动进行中，地图只能浏览」");
-        Assert.That(map, Does.Contain("if (adjacent && (!G.E.IsBusy(s) || G.E.PausedTravelOpen(s)) && !G.Running && !G.DialogueLocked) G.OpenPop(\"mapnode\""), "节点旁打开移动确认");
+        // B35c（S14 B35 节 Q591：撤区域地图节点旁确认浮窗，改在地图路线区点“出发”）：暂停期间的移动入口改由路线区同一 moveBusy 判定
+        Assert.That(map, Does.Not.Contain("G.OpenPop(\"mapnode\""), "Q591：不再在节点旁打开移动确认");
+        var route = Web("Components/MapRouteArea.razor");
+        Assert.That(route, Does.Contain("var moveBusy = (e.IsBusy(s) && !e.PausedTravelOpen(s)) || G.Running || G.BattleBusy || G.DialogueLocked || _go;"));
+        Assert.That(route, Does.Contain("disabled=\"@(!p.Ok || moveBusy)\""), "路线区出发按 moveBusy 判定");
         var card = Web("Components/LocationCard.razor");
         Assert.That(card, Does.Contain("前往 ▸"), "地点卡「前往 ▸」入口沿用");
     }

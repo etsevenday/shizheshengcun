@@ -998,13 +998,18 @@
 .map-tools .secondary { min-height: 32px; padding: 4px 10px; font-size: var(--fs-aux); white-space: nowrap; }
 .map-tools .secondary.on { border-color: #d8ba78; color: #f0d9a0; }
 .map-tools .map-layer { font-size: var(--fs-aux); min-height: 32px; max-width: 11em; background: #1d211c; color: var(--text); border: 1px solid var(--line); border-radius: 4px; }
-.map-stage { position: relative; flex: 1; min-height: 0; }
+/* B35c（Q591）：地图面板内左图右路线区；图区沿原相对定位承载视口、图例、缩略导航与来源列表 */
+.map-stage { position: relative; flex: 1; min-height: 0; display: flex; }
+.map-view { position: relative; flex: 1; min-width: 0; min-height: 0; }
 .map-viewport { position: absolute; inset: 0; overflow: auto; cursor: grab; outline: none; }
 .map-viewport:focus-visible { box-shadow: inset 0 0 0 2px #d6b77988; }
 .map-viewport.dragging { cursor: grabbing; user-select: none; }
 .map-viewport .map-canvas { display: block; margin: auto; width: auto; height: auto; min-height: 0; }
 .map-canvas .map-edge line { stroke: #6f7f6a; stroke-width: 3; }
-.map-canvas .map-edge.near line { stroke: #d6b779; stroke-width: 4; }
+/* B35c（Q591）：只有当前真实可出发的相邻路线描金并轻微呼吸；减少动态效果时保留静态描金（不按动画判定可达） */
+.map-canvas .map-edge.departable line { stroke: #f0cf7e; stroke-width: 5; animation: map-depart-pulse 1.8s ease-in-out infinite; }
+@keyframes map-depart-pulse { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: .5; } }
+@media (prefers-reduced-motion: reduce) { .map-canvas .map-edge.departable line { animation: none; } }
 .map-canvas .map-edge.locked line { stroke: #b0584a; stroke-width: 3; stroke-dasharray: 5 7; }
 .map-canvas .map-edge rect { fill: #1b221e; }
 .map-canvas .map-edge.locked rect { fill: #2a1d1a; }
@@ -1223,3 +1228,17 @@
   .center-scroll.four > .dlg-layer .dlg-face { padding: 4px 4px 2px; gap: 2px; }
   .center-scroll.four > .dlg-layer .dlg-name { min-height: 0; }
 }
+
+/* ───── B35c 地图路线区（Q591／Q793 B／Q803／Q915；逐字稿 P07a）：面板内右列，当前位置／所选目的地／下一路段／已知路线／出发 ───── */
+.map-route { flex: 0 0 clamp(220px, 28%, 330px); min-height: 0; overflow-y: auto; border-left: 1px solid var(--line); background: #121a1df2; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-aux); line-height: 1.4; }
+.map-route .mr-sec { display: grid; gap: 1px; }
+.map-route .mr-k { color: var(--muted); font-size: var(--fs-aux); }
+.map-route .mr-v { color: var(--text); font-size: var(--fs-body); overflow-wrap: anywhere; }
+.map-route .mr-here { color: #e7ce94; }
+.map-route .mr-hint { color: var(--muted); }
+.map-route .mr-lines > div { display: flex; justify-content: space-between; gap: 8px; }
+.map-route .mr-next { align-self: flex-start; min-height: 32px; }
+.map-route .mr-facts { display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.map-route .mr-go { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin-top: 2px; }
+.map-route .mr-depart { min-height: 36px; min-width: 96px; font-size: var(--fs-body); }
+.map-route .mr-why { color: #f0b3a5; }

@@ -3,7 +3,8 @@
 @inject IJSRuntime JS
 
 @* 分层地图（开发计划 v0.9 批次 B12，R38；A10「A10-EXUI」§1「分层导航与发现权限」、S14「地图、来源与四类账」、S02「最新地图与道路」）。
-   Part="center"：中部 ①② 合并区的地图（相邻地点旁锚定“确认移动”浮窗）；Part="detail"：右栏的地点信息、远处路径预览与详细移动预估（只读）。
+   Part="center"：中部 ①② 合并区的地图与面板内路线区（B35c，Q591／Q793 B：点地点只选中，在路线区点“出发”才走一段相邻路线；撤节点旁确认浮窗）；
+   Part="detail"：右栏的地点信息、远处路径预览与详细移动预估（只读，Q591 全局右栏不放执行按钮）。
    三层：主世界 → 城内/地牢；面包屑与层切换只换阅读，不移动、不退出地牢；“回到当前位置”只平移视口。
    缩放档的地名 15px、状态 14px 不随缩放变小；“总览”档只画点（悬停看名称），不画小于 14px 的字（S14 §1.2）。
    视图数据全部来自 GameEngine.BuildMapView（只读，未知节点不泄露）；缩放、拖图、切层不耗时。 *@
@@ -72,6 +73,7 @@
             </div>
         </div>
         <div class="map-stage">
+        <div class="map-view">
         @if (G.SourceItem is string srcItem)
         {
             @* B23（A10-EXUI §4）：缺料来源查询——只列已发现的来源（产量、工时、库存/日补、合格工具、路线），耗尽/已领/本代搜空不亮“可获取”；
@@ -113,7 +115,8 @@
                         if (oneWay && ed.OneWayFrom == ed.B) { (sx, sy, tx, ty) = (tx, ty, sx, sy); }
                         var mx = (x1 + x2) / 2; var my = (y1 + y2) / 2;
                         var tip = ed.Open ? $"{e.LocName(ed.A)}—{e.LocName(ed.B)} · {ed.Minutes}分钟{(oneWay ? " · 单向出口" : "")}" : $"未开通：{ed.Reason}";
-                        <g class="map-edge @(ed.Open ? "open" : "locked") @(ed.Near ? "near" : "")">
+                        @* B35c（Q591）：只有当前真实可出发的相邻路线高亮并带微动态（减少动态效果时静态高亮）；不可走／未知边不伪高亮 *@
+                        <g class="map-edge @(ed.Open ? "open" : "locked") @(ed.Departable ? "departable" : "")">
                             <title>@tip</title>
                             <line x1="@F(sx)" y1="@F(sy)" x2="@F(tx)" y2="@F(ty)" marker-end="@(oneWay ? "url(#oneway)" : null)" />
                             @if (labels)
@@ -214,7 +217,7 @@
             @if (G.MapLegend)
             {
                 <div class="map-legend-pop" role="note">
-                    <div><i class="lg-line open"></i>实线：已开通的路线（金色为当前地点相连）</div>
+                    <div><i class="lg-line open"></i>实线：已开通的路线（金色为现在可以出发的相邻路线）</div>
                     <div><i class="lg-line locked"></i>红色虚线“未开通”：已发现但门槛未满足，悬停看原因</div>
                     <div><i class="lg-arrow">➜</i>箭头：单向出口，只能从箭尾一侧走</div>
                     <div><i class="lg-box dashed"></i>虚线框：已发现、还没去过</div>
@@ -236,12 +239,15 @@
                 _mini = m;
             }
         </div>
+        <MapRouteArea OnPickNext="PickNext" />
+        </div>
     </div>
 }
 else
 {
     @* B42：悬停已公开节点时右栏临时读该节点（与点选同一份内容，只读）；离开保留，点选或切层后回到点选结果 *@
     var target = PeekNode ?? picked ?? here;
+    if (!s.Locations.TryGetValue(target, out var tst) || !tst.Discovered) target = here;   // B35c：城市层可选未发现楼栋，右栏不泄露其名称
     var tl = e.Location(target);
     var ts = s.Locations[target];
     if (target == here)
@@ -273,14 +279,13 @@ else
                     }
                 </div>
             }
-            <div class="tiny muted">在地图上点选相邻地点：地点旁出现移动确认，这里显示详细预估。点远处地点可看实际路线。</div>
+            <div class="tiny muted">@MapCopy.DefaultHint</div>
         </div>
     }
     else if (adjacent.Contains(target) && (!e.IsBusy(s) || e.PausedTravelOpen(s)))
     {
         <PreviewView Request="ActionRequest.Travel(target, e.NeedsExpeditionConfirm(s, target))" Eyebrow="@($"区域地图 · {tl.Name} · {(ts.Visited ? $"探索度{ts.Progress}%" : "待访问")}")" Title="@($"前往{tl.Name}")"
-                     Confirmable="false" FootNote="在地图上该地点旁的浮窗确认移动；时间为预计值"
-                     Subtitle="一次只移动一段相邻路线，不提供自动寻路。" />
+                     Confirmable="false" FootNote="@MapCopy.FootNote" />
     }
     else
     {
@@ -310,12 +315,7 @@ else
                         <div><span>@e.LocName(st.From) → @e.LocName(st.To)</span><b>@(st.Minutes)分钟</b></div>
                     }
                 </div>
-                var next = path[0].To;
-                <div class="tiny muted">不提供自动寻路：一次只能确认下一段。</div>
-                @if (PeekNode == null)
-                {
-                    <button type="button" class="primary small-btn" @onclick="() => PickNext(next)">选中下一段：前往@(e.LocName(next))</button>
-                }
+                @* B35c（Q591 全局右栏只读、Q915 删“不提供自动寻路”句）：“选中下一段”移进地图路线区 *@
             }
             else
             {
@@ -515,21 +515,20 @@ else
         catch (JSException) { /* 旧缓存的脚本没有 survivalMap 时只是不居中 */ }
     }
 
-    /// <summary>点地图节点：右栏显示详细预估或远处路线；相邻且空闲时在节点旁打开移动确认浮窗（S02 §5、S14 §14.1），本身不移动。</summary>
+    /// <summary>
+    /// 点地图节点（B35c，Q591）：只设为所选目的地，路线区与右栏显示路线和预估；不移动、不再在节点旁打开确认浮窗（取代 Q20 节点旁确认）。
+    /// 撤退离地保留的暂停期间（B41e3）出发是否可用由路线区按移动预览判定。
+    /// </summary>
     private void Pick(string id)
     {
         G.PeekClear();   // B42：明确点选结束悬停查看，右栏回到点选结果
         G.MapPicked = id;
         G.Guide("location", id);   // B13d（Q128）：在地图上查看外出/返营/出区路线是操作前引导的上下文
-        var s = G.S;
-        var adjacent = G.E.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == id);
-        // B41e3 试玩修复（R05 Q464、Q473）：撤退离地保留的暂停期间照常在节点旁打开移动确认
-        if (adjacent && (!G.E.IsBusy(s) || G.E.PausedTravelOpen(s)) && !G.Running && !G.DialogueLocked) G.OpenPop("mapnode", id, $"mn-{id}");
-        else G.ClosePop();
+        G.ClosePop();
         G.Notify();
     }
 
-    /// <summary>右栏“选中下一段”：切到下一段目的地所在层并选中它（只确认下一段相邻路，A10-EXUI §1）。</summary>
+    /// <summary>路线区“选中下一段”：切到下一段目的地所在层并选中它（只确认下一段相邻路，A10-EXUI §1；Q793 B）。</summary>
     private void PickNext(string id)
     {
         var layer = G.E.MapLayerOf(id);

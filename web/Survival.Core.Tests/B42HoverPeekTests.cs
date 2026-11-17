@@ -219,7 +219,9 @@ public class B42HoverPeekTests
     public void PanelHotZones()
     {
         var map = Web("Components/MapOverlay.razor");
-        Assert.That(map, Does.Contain("data-peek=\"@Peek.Node(id)\"").And.Contain("var target = PeekNode ?? picked ?? here;").And.Contain("@if (PeekNode == null)"));
+        // B35c（S14 B35 节 Q591 全局右栏只读、Q793 B）：“选中下一段”从右栏移进地图路线区，右栏（含悬停版）都不再给，原 PeekNode==null 分支随之撤
+        Assert.That(map, Does.Contain("data-peek=\"@Peek.Node(id)\"").And.Contain("var target = PeekNode ?? picked ?? here;").And.Not.Contain("@if (PeekNode == null)"));
+        Assert.That(Web("Components/MapRouteArea.razor"), Does.Contain("@MapCopy.SelectNext(e.LocName(nx))"));
         var craft = Web("Components/CraftOverlay.razor");
         // B35a1（Q932 A）：处理说明条目撤出制作页（迁火堆加工菜单只读折叠区），只剩配方行热区
         Assert.That(craft, Does.Contain("data-peek=\"@Peek.Recipe(id)\"").And.Not.Contain("ProcPrefix"));

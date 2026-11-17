@@ -184,7 +184,7 @@
         if (G.CityPick != null) G.PickCity(null);
     }
 
-    private async Task Go(string id) => await G.CityGo(id);
+    private async Task Go(string id) => await G.MapDepart(id, G.CityRequest);
 
     /// <summary>方向键按建筑逻辑顺序（父城在前、再按地图配置顺序）移动焦点；不提交任何东西。</summary>
     private async Task Arrow(KeyboardEventArgs ev, int idx)

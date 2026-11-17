@@ -738,7 +738,7 @@ public sealed partial class GameSession
 
     /// <summary>
     /// 就近操作浮窗（S14 §14.1、S02 §5、R05 §7）：一个时刻只有一个当前操作上下文。Kind：travel（相邻地图卡确认移动）、
-    /// mapnode（区域地图节点确认移动）、approach（敌踪卡接近并开战）、gather（拖工具到资源卡后的开始确认）。
+    /// approach（敌踪卡接近并开战）、gather（拖工具到资源卡后的开始确认）。
     /// （B3 起战斗换武器浮窗取消，改为武器Ⅰ/武器Ⅱ页签。）
     /// 只是界面状态，不进存档；Esc/关闭只收起，不提交、不取消已运行的行动。切对象、开面板、开始行动、进入战斗或对话时收起。
     /// </summary>
@@ -1000,28 +1000,31 @@ public sealed partial class GameSession
         OpenPanel(null);
     }
 
-    /// <summary>“前往”：内核重验后只提交第一段真实移动，立即关闭鸟瞰回常态主界面，用中央推进条与退出按钮。</summary>
-    public async Task CityGo(string targetId)
+    /// <summary>
+    /// 地图路线区“出发”（B35c；Q591、Q793 B，Q595 城市层与普通层同源）：内核按真实相邻关系与移动规则重验后只提交这一段，
+    /// 成功立即收起地图（返回链作废，BM4a Q590），用中央推进条与退出按钮；失败留在原页并给原具体原因。
+    /// 从城市层出发且这一段真实到达时提示“已到达{地点}。”（Q804；Q1005 暂用：普通地图不加）。不走 BeginAction 的城市只读拦截（出发本身就是城市层的合法入口）。
+    /// </summary>
+    public async Task MapDepart(string targetId, string requestId)
     {
-        if (State == null) return;
-        var path = E.CityOverviewOf(S)?.Buildings.FirstOrDefault(b => b.NodeId == targetId)?.Path;
-        var res = E.StartMapDeparture(S, targetId, CityRequest);
+        if (State == null || Running) return;
+        if (FormationOpen) { Notice = FormationOpenText; Notify(); return; }
+        var fromCity = CityBrowsing;
+        var res = E.StartMapDeparture(S, targetId, requestId);
         if (res.Duplicate) return;
         if (!res.Ok) { Notice = res.Reason; Notify(); return; }
-        CityTarget = path != null && path.Count > 1 ? targetId : null;
-        var firstTo = path != null && path.Count > 0 ? path[0].To : null;
         Notice = null;
         Toast = null;
         Pop = null;
         ClearHoverNow();
+        ReconcileSelection();
+        if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
         CloseAllPanels();   // BM4a（Q590）：真实出发，返回链作废
         Drain();
         Commit();
         Notify();
         await RunLoop();
-        if (State == null) return;
-        if (CityTarget != null && (S.CurrentLocation == CityTarget || E.CityOf(S.CurrentLocation) != E.CityOf(CityTarget))) CityTarget = null;
-        // B26（Q223）：到终点写“已到达”，半路写还剩几段，路线失效写真实原因；单段路线也提示到达
+        if (State == null || !fromCity) return;
         if (E.CityArrivalNote(S, targetId) is string note)
         {
             Notice = note;

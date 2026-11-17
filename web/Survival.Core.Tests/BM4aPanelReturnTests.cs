@@ -122,8 +122,9 @@ public class BM4aPanelReturnTests : TestBase
         var notify = Slice(session, "public void Notify()", "Changed?.Invoke();");
         Assert.That(notify.IndexOf("ReconcilePanelChain();", StringComparison.Ordinal), Is.LessThan(notify.IndexOf("ReconcileFireMenu();", StringComparison.Ordinal)));
         Assert.That(Slice(session, "private void ResetUi()", "FireMenu = null;"), Does.Contain("ClearPanelChain();"));
-        Assert.That(Slice(session, "public async Task CityGo(", "await RunLoop();"), Does.Contain("CloseAllPanels();"));
-        Assert.That(Web("Components", "ActionPops.razor"), Does.Contain("G.CloseAllPanels();"), "从地图真实出发");
+        // B35c（S14 B35 节 Q591／Q595）：地图与城市层统一由路线区“出发”（MapDepart）真实出发，原鸟瞰 CityGo 与地图节点旁浮窗的收图并入这里
+        Assert.That(Slice(session, "public async Task MapDepart(", "await RunLoop();"), Does.Contain("CloseAllPanels();"), "从地图真实出发");
+        Assert.That(Web("Components", "MapRouteArea.razor"), Does.Contain("await G.MapDepart(to, _req);"));
         Assert.That(Web("Components", "RestOverlay.razor"), Does.Contain("G.Panel == \"rest\") G.CloseAllPanels();"));
         Assert.That(Web("Services", "GameSession.EnemyCardsV2.cs"), Does.Contain("if (Panel == \"growth\") CloseAllPanels();"));
         var fac = Web("Services", "GameSession.FacMenu.cs");

@@ -1,0 +1,125 @@
+@inherits GameComponent
+
+@* 区域地图面板内的路线区（批次 B35c；S14 2026-11-13 B35 节 Q591、2026-11-16 B35 节 Q793／Q803，2026-11-17 B35 次要节 Q915；逐字稿 §2 P07a）。
+   顺序按 P07a 区名「当前位置」「所选目的地」「下一路段」「已知路线」；点地图上的地点只选中（不移动），在这里点「出发」才提交一次相邻移动，成功收起地图。
+   没选目的地显示 Q803 默认句；远处只看已知路线，「出发」灰并在旁边只写「先选相邻地点。」（Q915），「选中下一段」改选真实相邻首站（Q793 B）；
+   其他真实原因（路线未开通、无已开通路线、移动校验原因）照原句。远征进入与未通关离开保留原「确认开始远征并前往」「终止本次远征…」与原要点（Q591）。
+   预计耗时、到达时刻、负重、倍率、入夜与警示与原节点旁浮窗同源（G.Preview 同一请求）；全局右栏仍只读。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var here = s.CurrentLocation;
+    var route = e.MapRouteOf(s, G.MapPicked);
+    if (route.TargetId != _reqFor) { _reqFor = route.TargetId; _req = NewReq(); _tried = false; }
+    var moveBusy = (e.IsBusy(s) && !e.PausedTravelOpen(s)) || G.Running || G.BattleBusy || G.DialogueLocked || _go;
+}
+<aside class="map-route" aria-label="路线区" aria-live="polite">
+    <div class="mr-sec"><div class="mr-k">@MapCopy.Here</div><div class="mr-v mr-here">@e.LocName(here)</div></div>
+    @if (route.TargetId is not string to)
+    {
+        <div class="mr-hint">@MapCopy.DefaultHint</div>
+    }
+    else
+    {
+        var known = s.Locations[to].Discovered;
+        var tl = e.Location(to);
+        <div class="mr-sec"><div class="mr-k">@MapCopy.Target</div><div class="mr-v">@(known ? tl.Name : MapCopy.Unknown)@(known && tl.Danger is int dg ? $" · 危险{dg}" : "")</div></div>
+        @if (route.NextLeg is MapPathStep leg)
+        {
+            <div class="mr-sec"><div class="mr-k">@MapCopy.NextLegTitle</div><div class="mr-v">@MapCopy.NextLeg(e.LocName(leg.From), e.LocName(leg.To), leg.Minutes)</div></div>
+        }
+        @if (!route.Adjacent && route.Path is { Count: > 0 } path)
+        {
+            <div class="mr-sec">
+                <div class="mr-k">@MapCopy.RoutesTitle</div>
+                <div class="lines mr-lines">
+                    @foreach (var st in path)
+                    {
+                        <div><span>@e.LocName(st.From) → @e.LocName(st.To)</span><b>@(st.Minutes)分钟</b></div>
+                    }
+                </div>
+            </div>
+            @if (route.SelectNext is string nx)
+            {
+                <button type="button" class="secondary small-btn mr-next" @onclick="() => OnPickNext.InvokeAsync(nx)">@MapCopy.SelectNext(e.LocName(nx))</button>
+            }
+        }
+        @if (route.Adjacent)
+        {
+            // B21（R03 D3）：01→危险房间要确认开始远征（同一预告 +“确认开始远征并前往”）；父地点→01 只是预告，正常移动
+            var needExp = e.NeedsExpeditionConfirm(s, to);
+            var p = G.Preview(ActionRequest.Travel(to, needExp));
+            var dTo = e.DungeonAt(to);
+            var expPv = needExp ? e.ExpeditionPreview(s, dTo!)
+                : dTo != null && e.ExpeditionEnabled(dTo) && e.BufferNodeOf(dTo) == to && e.DungeonAt(here) != dTo ? e.ExpeditionPreview(s, dTo) : null;
+            // 未通关想原路离开：内核拒绝并写明惩罚；这里给“终止本次远征…”入口
+            var leaveBlocked = !p.Ok && s.Expedition != null && !s.Expedition.IsExtracting && e.DungeonAt(to) != s.Expedition.DungeonId && e.CanAbortExpedition(s) == null;
+            var grams = e.CarriedGrams(s);
+            var over = grams > e.Config.Carry.SoftGrams;
+            var night = p.Ok && !p.PlanFailed && !e.IsDaylight(p.EstimatedEndMinute);
+            @if (p.Ok)
+            {
+                <div class="apop-facts mr-facts">
+                    <span title="预计耗时（含当前倍率）"><i class="pf-ico">⏱</i>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.Duration(p.EstimatedMinutes))</span>
+                    <span title="预计到达时刻"><i class="pf-ico">◷</i>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.HHmm(p.EstimatedEndMinute) + "到达")</span>
+                    <span class="@(over ? "warn" : "")" title="当前携带重量（超过@(Ui.T(e.Config.Carry.SoftGrams / 1000.0))公斤减速）"><i class="pf-ico">⚖</i>@Ui.KgText(grams) · @(over ? "超重" : "轻装")</span>
+                    @if (Math.Abs(p.FactorAtStart - 1) > 1e-9)
+                    {
+                        <span class="warn" title="工作倍率（夜间、超重、低体力相乘）"><i class="pf-ico">×</i>@p.FactorAtStart.ToString("0.##")@(p.FactorReasons.Count > 0 ? $"（{string.Join("，", p.FactorReasons)}）" : "")</span>
+                    }
+                </div>
+                @if (night) { <div class="apop-risk night">☾ 到达时已入夜</div> }
+                @foreach (var w in p.Warnings) { <div class="apop-risk">@w</div> }
+            }
+            @if (expPv != null)
+            {
+                var warnCount = expPv.Members.Count(m => m.Warnings.Count > 0);
+                <div class="apop-risk exp-brief">@expPv.Name · @expPv.StatusName · 第@(expPv.Generation)代@(expPv.Continuation ? "（续探）" : "")</div>
+                <div class="apop-risk exp-brief">未通关离开要终止远征：扣属性＋惊魂未定，撤出至少@(expPv.ExtractMinMinutes)分钟</div>
+                @if (warnCount > 0) { <div class="apop-risk">⚠ @(warnCount)名同行状态偏低</div> }
+                <div class="apop-risk exp-brief muted">完整进入预告（全员状态、物资、已知敌人、时间）见右栏</div>
+            }
+            <div class="mr-go">
+                @if (leaveBlocked)
+                {
+                    <button type="button" class="secondary danger mr-depart" disabled="@moveBusy" @onclick="G.OpenAbort">终止本次远征…</button>
+                }
+                else
+                {
+                    <button type="button" class="primary mr-depart" disabled="@(!p.Ok || moveBusy)" @onclick="() => Depart(to)">@(needExp ? "确认开始远征并前往" : MapCopy.Depart)</button>
+                }
+                @if (!p.Ok) { <span class="mr-why">@p.Reason</span> }
+            </div>
+            @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
+        }
+        else
+        {
+            <div class="mr-go">
+                <button type="button" class="primary mr-depart" disabled>@MapCopy.Depart</button>
+                @if (route.Blocked is string why) { <span class="mr-why">@why</span> }
+            </div>
+        }
+    }
+</aside>
+
+@code {
+    /// <summary>远处目的地“选中下一段”：由地图切到下一段所在层并选中它（不移动）。</summary>
+    [Parameter] public EventCallback<string> OnPickNext { get; set; }
+
+    private bool _go;
+    private bool _tried;
+    private string? _reqFor;
+    private string _req = NewReq();
+
+    private static string NewReq() => "map:" + Guid.NewGuid().ToString("N");
+
+    /// <summary>“出发”：交内核按真实相邻关系与移动规则重验后提交一段（同一目的地同一请求号，双击不重复走路）；执行中锁按钮。</summary>
+    private async Task Depart(string to)
+    {
+        if (_go) return;
+        _go = true;
+        _tried = true;
+        try { await G.MapDepart(to, _req); }
+        finally { _go = false; }
+    }
+}
