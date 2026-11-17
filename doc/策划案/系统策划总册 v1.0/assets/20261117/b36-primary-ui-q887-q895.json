@@ -1,0 +1,159 @@
+{
+  "date": "2026-11-17",
+  "status": "whole_original_batch_planning_not_runtime_verified",
+  "originalBatch": "2026-11-17 来自1b50a095 B36 提前核对主要",
+  "questions": [
+    887,
+    888,
+    889,
+    890,
+    891,
+    892,
+    893,
+    894,
+    895
+  ],
+  "choices": {
+    "887": "B",
+    "888": "A",
+    "889": "A",
+    "890": "B",
+    "891": "A",
+    "892": "B",
+    "893": "A",
+    "894": "A",
+    "895": "A"
+  },
+  "answers": {
+    "887": "选B。真正新打开休息页不预选方式时长，开始灰显“先选时长”；悬停／聚焦仅右栏预估不启开始，明确选档后仍另次开始并原资格重验。子页返回同一窗口保留合法草稿，关页重开未选；原小时档／数值不变，见S13／S14本批。",
+    "888": "选A。所有任务详情都保留上方真实主目标下一步／最多两建议与下方原有效快捷按钮，默认主目标原任务；原条件／资格不变，无真实目标不造假块，定位营地仅地图不移动／返程。见S15／S14本批。",
+    "889": "选A。顶栏正常新开帮助不选主题，右栏列9主题原摘要；选主题展开条目、条目正文仍原规则。直接定位进入仍打开对应条目，不被本题强制先总览，见S14本批。",
+    "890": "选B。食饮盘／详情／战斗菜单等直接定位到条目后，返回语义或ESC先退所属主题摘要，再一次回真实原入口；不沿原_helpDirect一跳直返，也不额外插9摘要首页多一层。逐次消费输入、恢复有效父页草稿焦点，战斗阅读暂停和失效安全回退保持；控件个数Q899未代答，见S14本批。",
+    "891": "选A。三类本地遗物／认领／远征回收箱统一默认收起，有任一合法箱才“查看认领箱”，展开当地全部原合法箱，同位“返回”只折箱区。各箱原归属／权限／领物／丢弃保持，子窗返回保展开、换区重验，不扩远程存取，见S14／A10本批。",
+    "892": "选B。本次运行按每稳定门类ID记上次主动选卡，切回来或关页重开恢复，未查看／卡无效才原默认。切人沿Q823门类记忆、更新本人资格不串已学状态；意志只等级抵抗率／达到点亮，不新增学习，非本机长期保存。见A06／S14本批。",
+    "893": "选A。名册正式未齐前职业模板＋职业示意；Q835本人固定组合图到位后名册显示同人实际服设配色，去职业示意及旧解释，入队不重抽。Q884 B入队本人图问号只是阶段过渡，固定补员例外保持；正式／过渡读屏随资源，见A11／S14本批。",
+    "894": "选A。新版本正常初始标题阶段尚未进入开场首句，关闭再继续仍先“序章 · 醒来”，只继续，点后原开场一次。已入对白／后续按真进度不重播，原时间／任务／奖励不提前，不为本题新增旧档迁移，见S01／S15／N02附录／S14本批。",
+    "895": "选A。主角／旁白说话时，右侧保留本组最近已真实发言的右侧人并沿原idle弱化；本组此前无人则空，新组重置，后续右侧换成当前实际发言人。保留人不冒充当句发言／发言中，回看按本组既有逐句身份查最近人，不存另一份身份／读未来句，见N02附录／S14本批。"
+  },
+  "rest": {
+    "initialSelection": null,
+    "startDisabledText": "先选时长",
+    "hoverFocusReadOnly": true,
+    "explicitChoiceRequired": true,
+    "parentWindowDraftPreservedOnChildReturn": true,
+    "closeAndReopenResets": true
+  },
+  "goals": {
+    "sharedMainObjectiveBlockAcrossTaskSelection": true,
+    "originalEligibilityAndTaskFacts": true,
+    "locateCampNoMovement": true
+  },
+  "help": {
+    "initialAllThemeSummaries": true,
+    "initialSelectedTheme": null,
+    "directReturnChain": [
+      "entry",
+      "own_theme_summary",
+      "actual_parent"
+    ],
+    "noDirectReturnShortcut": true,
+    "noExtraAllThemesLayerForDirectEntry": true,
+    "exitControlCountQ899NotPreAnswered": true
+  },
+  "boxes": {
+    "allThreeLocalFamiliesTogether": true,
+    "defaultCollapsed": true,
+    "openText": "查看认领箱",
+    "collapseText": "返回",
+    "originalSeparateInventoryAndPermissions": true
+  },
+  "growth": {
+    "rememberLastCardPerFamilyForThisRun": true,
+    "stableCardIDs": true,
+    "noPersistentPreferenceTask": true,
+    "willRemainsPassive": true
+  },
+  "roster": {
+    "interimProfessionIllustration": true,
+    "formalActualPersonOutfit": true,
+    "removeIllustrationTagWhenFormal": true,
+    "noAppearanceReroll": true,
+    "Q884PostRecruitQuestionMarkIsInterim": true
+  },
+  "opening": {
+    "normalNewVersionContinuation": true,
+    "titleUntilOpeningActuallyEntered": true,
+    "noReplayAfterProgress": true,
+    "notOldSaveMigration": true
+  },
+  "dialogue": {
+    "keepLatestRightSpeakerWithinGroup": true,
+    "emptyBeforeFirstRightSpeaker": true,
+    "resetBetweenGroups": true,
+    "weakening": "existing_idle_opacity_0.5_grayscale_0.6_brightness_0.85",
+    "actualCurrentSpeakerUnchanged": true,
+    "historyDerivedFromPriorLinesInSameGroup": true
+  },
+  "acceptance": [
+    {
+      "id": "B36P-Q887-01",
+      "rule": "真正新开休息页两行无已选，开始灰显先选时长，困倦夜间也不自动选8小时。"
+    },
+    {
+      "id": "B36P-Q887-02",
+      "rule": "悬停／聚焦仅右栏预估、不启开始；明确选档后另次开始，子页返回保留同一合法草稿，关页重开未选。"
+    },
+    {
+      "id": "B36P-Q888-01",
+      "rule": "看支线仍有主目标及最多两建议／原有效快捷键，条件和去向保持，定位营地不移动。"
+    },
+    {
+      "id": "B36P-Q889-01",
+      "rule": "顶栏新开帮助无主题选中、右栏9摘要；主题展开条目及正文按原，直接定位入口不被改先总览。"
+    },
+    {
+      "id": "B36P-Q890-01",
+      "rule": "食饮／详情／战斗菜单直接进条目后，第一次返回所属主题摘要，第二次真实原入口，不一步直返或多插9摘要层。"
+    },
+    {
+      "id": "B36P-Q890-02",
+      "rule": "每次ESC只退一层且不穿透执行，原入口有效恢复草稿焦点；战斗系统阅读暂停保持，失效安全回退。"
+    },
+    {
+      "id": "B36P-Q891-01",
+      "rule": "任一合法本地三类箱给统一查看认领箱，默认收起，展开全列、返回只折箱区，无箱不造入口。"
+    },
+    {
+      "id": "B36P-Q891-02",
+      "rule": "实际箱仍分归属／权限／原领物或丢弃，确认子窗返回保展开，换区旧选中不串新箱，不扩远程权限。"
+    },
+    {
+      "id": "B36P-Q892-01",
+      "rule": "各门类本次运行手选卡切走回来／关页重开可恢复，未看过才默认，卡按稳定ID不行号。"
+    },
+    {
+      "id": "B36P-Q892-02",
+      "rule": "切人物更新本人资格而记卡不学技；意志仅被动等级抵抗与达到点亮，无学习／解锁文字。"
+    },
+    {
+      "id": "B36P-Q893-01",
+      "rule": "名册过渡职业示意，正式用同人固定组合并去示意标与旧解释；入队问号过渡／固定补员例外不误覆盖。"
+    },
+    {
+      "id": "B36P-Q894-01",
+      "rule": "正常新局标题未继续即关闭再进入仍标题，点击继续才原首句一次，时间／奖励／任务不提前。"
+    },
+    {
+      "id": "B36P-Q894-02",
+      "rule": "已入对白或后续真实进度不重播标题／首句，原正常续玩准确且不新增旧档迁移议题。"
+    },
+    {
+      "id": "B36P-Q895-01",
+      "rule": "主角／旁白时保留本组最近右侧人弱化，之前无人则空，新组重置，别组／未来人不混入。"
+    },
+    {
+      "id": "B36P-Q895-02",
+      "rule": "弱化沿原idle、无发言中假标；回看按本组既有句查最近人，台词真实身份、图和剧情不变。"
+    }
+  ]
+}
