@@ -1,0 +1,9 @@
+{ "desc": "造 fixture：新局 + B53a 丢弃试用组（地面野果3＋5、锅水1000＋生肉；随身壶水750、待腐野果3）", "sizes": ["1280x720"], "fixture": "new-game",
+  "steps": [
+    { "use": "continue" },
+    { "key": "Escape" }, { "click": "text=B53a 丢弃试用组", "label": "开发入口：B53a 丢弃试用组" },
+    { "click": "pt=shelf-ground >> pt=card-berry", "label": "点一下食物卡，触发一次性的食物对白" }, { "use": "dlg" },
+    { "key": "Escape" },
+    { "use": "save-to-title" },
+    { "saveFixture": "discard-kit", "note": "新局＋B53a 丢弃试用组：地面野果两批（3份2小时后到期＋5份）、金属锅（净水1000毫升＋生肉1）；随身分量水壶净水750、野果3（1分钟后到期）" }
+  ] }

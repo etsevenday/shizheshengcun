@@ -1,0 +1,2 @@
+{ "desc": "造 fixture：新局，开场对白读完，在临时营地", "sizes": ["1280x720"],
+  "steps": [ { "use": "new-game" }, { "use": "save-to-title" }, { "saveFixture": "new-game", "note": "新局：开场对白读完，人在临时营地（地面初始物资、随身金属锅与打火器）" } ] }

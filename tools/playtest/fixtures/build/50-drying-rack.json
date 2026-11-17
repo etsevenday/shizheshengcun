@@ -1,0 +1,21 @@
+{ "desc": "造 fixture：临时营地建晾制架，投一位果干（投入后原料保质暂停），再走一趟农野荒地来回（30 分钟）让随身那份 10 分钟后到期的生肉转成腐败物。注意：晾制中原料保质暂停，靠等时间造不出「停止位」，停止位只来自缺料或旧档，见 doc/开发记录/试玩场景库试点.md", "sizes": ["1280x720"], "fixture": "new-game",
+  "steps": [
+    { "use": "continue" },
+    { "key": "Escape" }, { "click": "text=晾制架材料＋八批原料", "label": "开发入口：晾制架材料＋八批原料" },
+    { "key": "c" }, { "click": "[data-tab=build]" }, { "click": "[data-recipe=build_drying_rack]" }, { "click": "pt=craft-start" },
+    { "waitGone": "text=行动进行中", "timeout": 90000 }, { "key": "Escape" },
+    { "key": "Escape" }, { "click": "text=腐败测试物资（10分钟后到期）", "label": "开发入口：腐败测试物资（野果早批2份10分钟后到期）" },
+    { "click": "#drying-rack" }, { "click": "text==查看配方" },
+    { "click": "text=投料…", "label": "第一个可用食谱（果干）投料…" },
+    { "click": "[title^=确认：0分钟把上面列出的原料放进晾制位]", "label": "确认投料" },
+    { "expectText": "晾制中" },
+    { "key": "Escape" },
+    { "key": "m" }, { "click": "#mn-field" }, { "click": "pt=map-depart" }, { "waitGone": "text=行动进行中", "timeout": 60000 },
+    { "key": "m" }, { "click": "#mn-camp" }, { "click": "pt=map-depart" }, { "waitGone": "text=行动进行中", "timeout": 60000 },
+    { "key": "Escape", "until": "#drying-rack", "max": 3 },
+    { "click": "#drying-rack" },
+    { "expectText": "晾制中" },
+    { "expect": "pt=shelf-carried >> pt=card-spoiled_matter", "label": "随身生肉已转腐败物" },
+    { "use": "save-to-title" },
+    { "saveFixture": "drying-rack", "note": "临时营地有晾制架：工位1 晾制果干中（原料保质暂停），其余 7 位空；地面有晾制原料余量与 10 分钟到期批已过期的野果；随身一份腐败物（原生肉）" }
+  ] }

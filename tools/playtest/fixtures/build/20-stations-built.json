@@ -1,0 +1,12 @@
+{ "desc": "造 fixture：临时营地建好陶窑与固定净水台（制造3级、学会陶工），设施空闲", "sizes": ["1280x720"], "fixture": "new-game",
+  "steps": [
+    { "use": "continue" },
+    { "key": "Escape" }, { "click": "text=陶窑/净水台材料（制造3级、学会陶工）", "label": "开发入口：陶窑/净水台材料" },
+    { "key": "c" }, { "click": "[data-tab=build]" },
+    { "click": "[data-recipe=build_kiln]" }, { "click": "pt=craft-start" }, { "waitGone": "text=行动进行中", "timeout": 90000 },
+    { "click": "[data-recipe=build_water_station]" }, { "click": "pt=craft-start" }, { "waitGone": "text=行动进行中", "timeout": 90000 },
+    { "key": "Escape" }, { "use": "dlg" },
+    { "expect": "[id^=fac-]", "count": 2 },
+    { "use": "save-to-title" },
+    { "saveFixture": "stations-built", "note": "临时营地已建陶窑与固定净水台（空闲），制造3级、学会基础陶工；地面剩少量建造余料" }
+  ] }

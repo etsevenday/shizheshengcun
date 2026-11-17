@@ -1,0 +1,50 @@
+{
+  "desc": "B51c2a1 陶窑／净水台原料入设施、每批「取出」与「全部取出」。来源：doc/开发记录/B51c2a1 被动设施取出1 陶窑净水台.md（B51c2a1.4）",
+  "batch": "B51c2a1",
+  "fixture": "stations-built",
+  "watch": ["[data-station-take]", "[data-station-take-all]", "pt=station-load"],
+  "steps": [
+    { "use": "continue" },
+    { "key": "Escape" }, { "click": "text=陶窑1批＋净水台2批原料", "label": "开发入口：陶窑1批＋净水台2批原料" },
+
+    { "note": "陶窑：空设施时「全部取出」置灰；投料后原料进设施、出现一批「取出」" },
+    { "click": "#fac-kiln" },
+    { "expect": "[data-station-take-all]", "disabled": true },
+    { "click": "pt=station-load", "label": "投料（1批）" },
+    { "expect": "[data-station-batch]", "count": 1 },
+    { "expect": "[data-station-inputs]", "text": "黏土", "label": "批内原料只读行列出黏土" },
+    { "expectText": "加工中1批" },
+    { "shot": "kiln-1batch", "settle": 1000, "label": "投料后按钮有短暂防连点锁，等它解开再截" },
+
+    { "note": "每批「取出」：原料回地面，日志写清单，燃料不进清单" },
+    { "click": "[data-station-take]" },
+    { "expectText": "已取出至临时营地地面：黏土×2。" },
+    { "expect": "[data-station-batch]", "absent": true },
+    { "expect": "[data-station-take-all]", "disabled": true },
+    { "expect": "pt=shelf-ground >> pt=card-clay", "label": "黏土回到地面" },
+
+    { "note": "净水台：投 2 批 →「全部取出」一次结束两批" },
+    { "key": "Escape" },
+    { "click": "#fac-water_station" },
+    { "click": "[aria-label=增加批数]" },
+    { "click": "pt=station-load", "label": "投料（2批）" },
+    { "expect": "[data-station-batch]", "count": 2 },
+    { "expect": "[data-station-take-all]", "disabled": false },
+    { "shot": "water-2batch", "settle": 1000 },
+    { "click": "[data-station-take-all]" },
+    { "expectText": "已取出至临时营地地面：" },
+    { "expect": "[data-station-batch]", "absent": true },
+
+    { "note": "存档往返：投料后保存回标题再读档，批与批内原料还在" },
+    { "click": "[aria-label=增加批数]" },
+    { "click": "pt=station-load", "label": "再投 2 批" },
+    { "expect": "[data-station-batch]", "count": 2 },
+    { "key": "Escape" },
+    { "use": "save-to-title" },
+    { "use": "continue" },
+    { "click": "#fac-water_station" },
+    { "expect": "[data-station-batch]", "count": 2 },
+    { "expect": "[data-station-inputs]", "text": "脏水" },
+    { "key": "Escape" }
+  ]
+}

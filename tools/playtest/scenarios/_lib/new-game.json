@@ -1,0 +1,6 @@
+{ "desc": "标题页点新游戏，空格读完开场对白，停在临时营地",
+  "steps": [
+    { "click": "text==新游戏" },
+    { "key": "Space", "while": "[data-dlg-next]", "max": 80, "label": "读完开场对白" },
+    { "expectText": "临时营地" }
+  ] }

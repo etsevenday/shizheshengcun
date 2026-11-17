@@ -1,0 +1,9 @@
+{ "desc": "造 fixture：记营区登记后传送营区广场（按实际到达处理，首次到城），读完到城对白、关掉自动打开的城市层", "sizes": ["1280x720"], "fixture": "new-game",
+  "steps": [
+    { "use": "continue" },
+    { "key": "Escape" }, { "click": "text==记下营区登记（C2）", "label": "开发入口：记下营区登记" },
+    { "key": "Escape" }, { "select": "select[aria-label=传送目标]", "value": "h02_square" }, { "click": "text==传送（按实际到达处理）" },
+    { "expect": ".city-layer" },
+    { "use": "save-to-title" },
+    { "saveFixture": "city-square", "note": "营区登记已记，人在营区广场（首次到城已处理、城市层已看过）；地图城市层与城内楼栋可直接试" }
+  ] }

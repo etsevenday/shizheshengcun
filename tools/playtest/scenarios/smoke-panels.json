@@ -1,0 +1,238 @@
+{
+ "desc": "冒烟：新局读档后逐个用快捷键打开顶栏 11 个面板再 Esc 关掉，每一步自动查控制台错误、横向溢出、字号；每个面板截图对比基线。不对应某一批，适合每批回归都跑。",
+ "batch": "通用",
+ "fixture": "new-game",
+ "steps": [
+  {
+   "use": "continue"
+  },
+  {
+   "shot": "main"
+  },
+  {
+   "key": "m",
+   "label": "区域地图（M）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "区域地图面板打开"
+  },
+  {
+   "shot": "panel-m"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关区域地图"
+  },
+  {
+   "key": "c",
+   "label": "手工制作（C）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "手工制作面板打开"
+  },
+  {
+   "shot": "panel-c"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关手工制作"
+  },
+  {
+   "key": "r",
+   "label": "休息（R）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "休息面板打开"
+  },
+  {
+   "shot": "panel-r"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关休息"
+  },
+  {
+   "key": "l",
+   "label": "行动日志（L）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "行动日志面板打开"
+  },
+  {
+   "shot": "panel-l"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关行动日志"
+  },
+  {
+   "key": "p",
+   "label": "编队（P）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "编队面板打开"
+  },
+  {
+   "shot": "panel-p"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关编队"
+  },
+  {
+   "key": "g",
+   "label": "整备（G）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "整备面板打开"
+  },
+  {
+   "shot": "panel-g"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关整备"
+  },
+  {
+   "key": "k",
+   "label": "成长（K）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "成长面板打开"
+  },
+  {
+   "shot": "panel-k"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关成长"
+  },
+  {
+   "key": "j",
+   "label": "生存目标（J）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "生存目标面板打开"
+  },
+  {
+   "shot": "panel-j"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关生存目标"
+  },
+  {
+   "key": "t",
+   "label": "生存提示（T）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "生存提示面板打开"
+  },
+  {
+   "shot": "panel-t"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关生存提示"
+  },
+  {
+   "key": "d",
+   "label": "对话记录（D）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "对话记录面板打开"
+  },
+  {
+   "shot": "panel-d"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关对话记录"
+  },
+  {
+   "key": "h",
+   "label": "系统说明（H）"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "label": "系统说明面板打开"
+  },
+  {
+   "shot": "panel-h"
+  },
+  {
+   "key": "Escape"
+  },
+  {
+   "expect": ".panel-host[data-panel]",
+   "absent": true,
+   "label": "Esc 关系统说明"
+  },
+  {
+   "key": "Escape",
+   "label": "游戏菜单"
+  },
+  {
+   "expectText": "游戏菜单"
+  },
+  {
+   "shot": "menu",
+   "mask": [
+    ".dev-box"
+   ]
+  },
+  {
+   "key": "Escape"
+  }
+ ]
+}

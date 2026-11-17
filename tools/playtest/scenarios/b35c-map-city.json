@@ -1,0 +1,42 @@
+{
+  "desc": "B35c 地图出发与城市层：普通层选目的地→路线区底部「出发」不用滚动可见；Esc 先取消所选再关地图；首次到城自动开城市层、城市层出发。来源：doc/开发记录/B35c 地图出发与城市层并入.md（B35c.9／B35c.10）",
+  "batch": "B35c",
+  "fixture": "new-game",
+  "watch": ["pt=map-depart", "pt=map-next", "pt=city-depart"],
+  "steps": [
+    { "use": "continue" },
+    { "key": "m", "label": "打开地图" },
+    { "expect": ".map-route" },
+    { "click": "#mn-field", "label": "选农野荒地" },
+    { "expect": "pt=map-depart", "disabled": false, "inView": true, "label": "试玩修复1：出发按钮不用滚动可见" },
+    { "expectText": "农野荒地", "in": ".map-route" },
+    { "shot": "map-picked" },
+    { "key": "Escape", "label": "Esc 先取消所选目的地" },
+    { "expect": "pt=map-depart", "absent": true },
+    { "expect": ".map-route" },
+    { "key": "Escape", "label": "再按 Esc 关地图" },
+    { "expect": ".map-route", "absent": true },
+
+    { "note": "地图出发：选农野荒地→出发→到达" },
+    { "key": "m" }, { "click": "#mn-field" }, { "click": "pt=map-depart" },
+    { "waitGone": "text=行动进行中", "timeout": 60000 },
+    { "expectText": "农野荒地", "in": ".hud, header, .top-bar, body" },
+
+    { "note": "城市层：记营区登记后传送营区广场（按实际到达处理），首次到城自动打开城市层" },
+    { "key": "Escape" }, { "click": "text==记下营区登记（C2）" },
+    { "key": "Escape" }, { "select": "select[aria-label=传送目标]", "value": "h02_square" }, { "click": "text==传送（按实际到达处理）" },
+    { "use": "dlg" },
+    { "expect": ".city-layer", "label": "首次到城自动打开城市层" },
+    { "expect": ".city-title" },
+    { "shot": "city-layer" },
+    { "click": ".city-bldg[data-node=h03_workshop]", "label": "城市层选营区工坊" },
+    { "expect": "pt=city-depart", "disabled": false, "inView": true },
+    { "shot": "city-picked" },
+    { "note": "试玩修复2：切到主世界层，看不见的所选目的地被取消" },
+    { "select": ".map-layer", "value": "world" },
+    { "expect": ".city-layer", "absent": true },
+    { "expect": "pt=map-depart", "absent": true },
+    { "key": "Escape" }, { "key": "Escape" },
+    { "expect": ".map-route", "absent": true }
+  ]
+}

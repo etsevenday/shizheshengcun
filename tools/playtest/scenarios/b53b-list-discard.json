@@ -1,0 +1,53 @@
+{
+  "desc": "B53b 无右栏清单的行末丢弃：右栏人物页「成员」里当地箱行与同伴随身行的「丢弃」／「丢弃水」，子区画在行下、ESC 逐层退、打开别的窗口先收起子区、箱删空即移除。来源：doc/开发记录/B53b 永久丢弃行末入口.md（B53b.3／B53b.8）",
+  "batch": "B53b",
+  "fixture": "discard-list",
+  "watch": ["pt=discard-confirm", "pt=discard-all"],
+  "steps": [
+    { "use": "continue" },
+    { "click": "text==人物", "label": "右栏人物页" },
+    { "click": "[aria-label=展开成员]", "label": "展开「成员」组" },
+    { "expect": "[data-remains-item] >> pt=row-discard" },
+    { "expect": "[data-remains]", "count": 4, "label": "四种箱" },
+
+    { "note": "远征回收箱只有生肉2：行末丢弃 → 全部丢弃 → 确认，箱删空即移除" },
+    { "click": "[data-remains^=dev_b53b_recovery] >> pt=row-discard", "label": "回收箱（开发试用组键名 dev_b53b_recovery@地点）" },
+    { "shot": "row-sub-open" },
+    { "expect": "pt=discard-sub", "inView": true, "label": "试玩修复 B3：子区展开即滚到可见" },
+    { "click": "pt=discard-all" },
+    { "expect": "pt=discard-confirm", "inView": true },
+    { "click": "pt=discard-confirm" },
+    { "expectText": "已永久丢弃：生肉×2" },
+    { "expect": "[data-remains]", "count": 3, "label": "回收箱删空后移除" },
+
+    { "note": "子区开着时打开行动日志，子区先收起（试玩修复 B1）" },
+    { "click": "[data-remains-item] >> pt=row-discard" },
+    { "expect": "pt=discard-sub" },
+    { "key": "l", "label": "打开行动日志" },
+    { "key": "Escape" },
+    { "expect": "pt=discard-sub", "absent": true },
+
+    { "note": "同伴随身：展开林昭的随身物品，第一行「丢弃水」是锅里的水（1000毫升）" },
+    { "click": "text==随身物品 3/5" },
+    { "click": "pt=row-discard-water" },
+    { "expect": "pt=discard-sub", "text": "总数1000毫升，可丢弃1000毫升" },
+    { "key": "Space" }, { "key": "Enter" },
+    { "expect": "pt=discard-sub", "label": "空格／回车不删、不关子区" },
+    { "click": "pt=discard-all" },
+    { "click": "pt=discard-confirm" },
+    { "expectText": "已永久丢弃" },
+
+    { "note": "ESC 逐层退：子区 → 数量层，Esc 两次收起" },
+    { "click": "[data-remains-item] >> pt=row-discard" },
+    { "click": "pt=discard-qty" },
+    { "key": "Escape" }, { "expect": "pt=discard-qty" },
+    { "key": "Escape" }, { "expect": "pt=discard-sub", "absent": true },
+
+    { "note": "存档往返：箱仍 3 个" },
+    { "use": "save-to-title" },
+    { "use": "continue" },
+    { "click": "text==人物" },
+    { "click": "[aria-label=展开成员]", "optional": true, "timeout": 1000, "label": "折叠状态会记住，已展开就跳过" },
+    { "expect": "[data-remains]", "count": 3 }
+  ]
+}

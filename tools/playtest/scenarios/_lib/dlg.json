@@ -1,0 +1,2 @@
+{ "desc": "有对白就按空格读完（没有对白时什么也不做）",
+  "steps": [ { "key": "Space", "while": "[data-dlg-next]", "max": 40, "label": "读完对白" } ] }
