@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "b933e7fca812857dfcdbeb05e2fe1f568e03e2b4",
+  "originalBatch": "2026-11-17 来自 b571cab2、68885f37 B36b（提前核对，次要）",
+  "questionIds": [
+    956,
+    957,
+    958,
+    959,
+    960
+  ],
+  "answers": {
+    "Q956": "A",
+    "Q957": "A",
+    "Q958": "A",
+    "Q959": "A",
+    "Q960": "A"
+  },
+  "locationCardArt": {
+    "slot": [
+      80,
+      80
+    ],
+    "crop": "full_body_not_portrait",
+    "identityBinding": {
+      "onDuty": "actor_actual_person",
+      "replacement": "duty_actual_post",
+      "visitorAndFixedCompanion": "actor_actual_person"
+    },
+    "targetWindows": [
+      [
+        1280,
+        720
+      ],
+      [
+        1366,
+        768
+      ],
+      [
+        1600,
+        900
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "alsoOriginalNonIntegerWindow": true,
+    "hideWholeWhenHeightInsufficient": true,
+    "noThinStripOrCoveringTextAndButtons": true,
+    "nearestNeighbor": true,
+    "supersedeQ920LocationCardHideOnly": true,
+    "preserveOtherPortraitCropsAndInterimIdentityRules": true,
+    "noMissingArtCompletionClaim": true
+  },
+  "dutyPanel": {
+    "leftTitle": "当班人员",
+    "leftImage": "actual_actor_or_duty_full_body",
+    "name": "{当班人名} · {岗位名}",
+    "faction": "{势力名}",
+    "badges": [
+      "在岗",
+      "代班"
+    ],
+    "replacementHover": "{原人名}已不在岗",
+    "rightTitle": "岗位事项",
+    "removeOldIdentitySubtitle": true,
+    "rightTopLine": "{当班人名}：{短句}",
+    "preserveOriginalPostLineAndBusinessRules": true,
+    "revalidateActualIdentityBeforeBusiness": true
+  },
+  "roster": {
+    "heading": "同行者名册",
+    "quotaHeading": "可登记名额",
+    "quotaValue": "existing_used_over_K_with_capacity_copy",
+    "showRemainingInstead": false,
+    "refreshHeading": "下次更新",
+    "preserveOriginalFullBatchLine": true,
+    "candidateHeading": "候选资料",
+    "destinationLabel": "登记去向",
+    "destinationRemainsPerCandidate": true,
+    "preserveOpenTimeCapacityPendingPlacementRetirement": true,
+    "noQuotaOrRegistrationCostChanges": true
+  },
+  "template": {
+    "interimBadge": "职业示意",
+    "addVisibleExplanation": false,
+    "interimAlt": "{职业模板名}（职业示意）",
+    "preserveActualCandidateData": true,
+    "formalUsesExistingPersonAppearance": true,
+    "removeBadgeAndDemonstrationAltOnFormalArt": true,
+    "preserveJoinedUnknownAndFixedEscortException": true,
+    "noAppearanceReroll": true
+  },
+  "visitorCards": {
+    "keepExistingNamesBadgesIdentityAndAffiliation": true,
+    "applyPostNamingToVisitors": false,
+    "visitorNameExample": "程望",
+    "visitorBadges": [
+      "来客",
+      "可交谈"
+    ],
+    "fixedCompanionBadge": "固定同行者",
+    "fixedCompanionSecondLine": "固定同行者 · {所属}",
+    "stillRestoreArtPerQ956": true,
+    "preserveDialogueInvitationPermissions": true
+  },
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "B36B-Q956-01",
+      "expected": "地点人物卡恢复80×80全身裁窗，在岗actor、代班duty、来客／固定同行者各自actor，不换头脸肖像或错绑离岗原人。"
+    },
+    {
+      "id": "B36B-Q956-02",
+      "expected": "四档目标窗口及非整倍统一图位；卡高不够整块隐藏、不压细条或遮文字按钮，保持最近邻与正确图集裁窗。"
+    },
+    {
+      "id": "B36B-Q956-03",
+      "expected": "只取代地点卡阶段隐藏，不改主角其他小头像裁头、问号／正式过渡／固定补员及缺图交付责任。"
+    },
+    {
+      "id": "B36B-Q957-01",
+      "expected": "当班人员左栏全身图、人名·岗位、势力及在岗／代班准确，代班悬停原人已不在岗，不编离岗原因。"
+    },
+    {
+      "id": "B36B-Q957-02",
+      "expected": "右标题岗位事项，无旧重复身份副标；原人物岗位短句在右侧最上，费用时间及服务任务分区保持。"
+    },
+    {
+      "id": "B36B-Q957-03",
+      "expected": "岗位变更按真实当班重验，导航不重复问候／办理，名册鉴定盘内段落与交谈返回原规则保持。"
+    },
+    {
+      "id": "B36B-Q958-01",
+      "expected": "可登记名额加在原已用/K行前，原随机／保底与容量说明保留；已用1上限3仍1/3而非2。"
+    },
+    {
+      "id": "B36B-Q958-02",
+      "expected": "下次更新／候选资料对应原批次行与候选区；卡内标签登记去向，开放耗时待安置退役等原内容保留。"
+    },
+    {
+      "id": "B36B-Q959-01",
+      "expected": "过渡名册职业图只短标职业示意、不加解释句；图读屏{职业模板名}（职业示意），真实候选资料保持。"
+    },
+    {
+      "id": "B36B-Q959-02",
+      "expected": "正式本人图到位撤示意标与对应读屏括注，使用已定本人服设；不改入队问号／固定补员或重抽外观。"
+    },
+    {
+      "id": "B36B-Q960-01",
+      "expected": "来客卡只姓名、原来客／可交谈标和身份行；固定同行者只姓名、原角标与所属行，不套岗位名。"
+    },
+    {
+      "id": "B36B-Q960-02",
+      "expected": "岗位卡与事项左栏格式保持；非岗位卡恢复全身图仍遵Q956，原交谈邀约资格／状态不改。"
+    }
+  ]
+}
