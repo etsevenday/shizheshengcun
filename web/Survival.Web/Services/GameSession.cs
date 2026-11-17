@@ -1010,6 +1010,22 @@ public sealed partial class GameSession
         Notify();
     }
 
+    /// <summary>
+    /// 切层后（主世界、势力鸟瞰、回到当前位置、面包屑、下拉、路口标签、分区定位）所选目的地不在新层上可见就取消
+    /// （B35c 试玩修复：右栏预估与 Esc 都只跟当前可见层的选择走，不保留另一层看不见的选择）。城市层可见＝本城父节点与全部楼栋（含未发现轮廓）。
+    /// </summary>
+    public void DropHiddenMapPick()
+    {
+        if (State == null || MapPicked is not string id) return;
+        var layer = E.ResolveMapLayer(S, MapLayer);
+        var visible = layer.StartsWith("city:")
+            ? E.CityMembers(layer.Substring(5)).Contains(id)
+            : E.BuildMapView(S, MapLayer).Nodes.Any(n => n.Id == id);
+        if (visible) return;
+        PeekClear();
+        MapPicked = null;
+    }
+
     /// <summary>地图上点选／取消所选目的地（城市层建筑、普通层地点同一状态；只选中，不移动、不办服务）。</summary>
     public void PickMapNode(string? nodeId)
     {

@@ -69,7 +69,8 @@ public class B35cShellTests
         Assert.That(map, Does.Contain("<MapRouteArea OnPickNext=\"PickNext\" />"));
         var route = Web("Components/MapRouteArea.razor");
         Assert.That(route, Does.Contain("@MapCopy.Here").And.Contain("@MapCopy.Target").And.Contain("@MapCopy.NextLegTitle").And.Contain("@MapCopy.RoutesTitle"));
-        Assert.That(route, Does.Contain("var p = G.Preview(ActionRequest.Travel(to, needExp));"), "与原节点旁浮窗同一预估请求");
+        // B35c 试玩修复改写法（动作条移到路线区底部，预估在开头算一次）：仍是与原节点旁浮窗同一移动请求的预估
+        Assert.That(route, Does.Contain("var p = to != null && route.Adjacent ? G.Preview(ActionRequest.Travel(to, needExp)) : null;"), "与原节点旁浮窗同一预估请求");
         Assert.That(route, Does.Contain("@(needExp ? \"确认开始远征并前往\" : MapCopy.Depart)"), "Q591-A02：远征进入保留原确认文字");
         Assert.That(route, Does.Contain(">终止本次远征…</button>"), "Q591-A02：未通关离开保留原入口");
         Assert.That(route, Does.Not.Contain("前往下一站"));
@@ -84,11 +85,11 @@ public class B35cShellTests
     public void Q793_RemoteDisabled_SelectNextInRouteArea()
     {
         var route = Code(Web("Components/MapRouteArea.razor"));
-        var remote = Slice(route, "@if (!route.Adjacent && route.Path is { Count: > 0 } path)", "@if (route.Adjacent)");
+        // B35c 试玩修复改写法：远处的灰“出发”、原因与“选中下一段”同在底部动作条的非相邻分支（期望内容不变，只换所在位置）
+        var remote = Slice(route, "<button type=\"button\" class=\"primary mr-depart\" disabled>@MapCopy.Depart</button>", "</aside>");
+        Assert.That(remote, Does.Contain("@if (route.Blocked is string why) { <span class=\"mr-why\">@why</span> }"));
         Assert.That(remote, Does.Contain("@MapCopy.SelectNext(e.LocName(nx))"));
-        var tail = route[route.LastIndexOf("else", StringComparison.Ordinal)..];
-        Assert.That(tail, Does.Contain("<button type=\"button\" class=\"primary mr-depart\" disabled>@MapCopy.Depart</button>"));
-        Assert.That(tail, Does.Contain("@if (route.Blocked is string why) { <span class=\"mr-why\">@why</span> }"));
+        Assert.That(Slice(route, "<div class=\"mr-actions\">", "</aside>"), Does.Contain("@MapCopy.SelectNext(e.LocName(nx))"));
     }
 
     /// <summary>B35-Q803-01、B35S-Q915-01：右栏默认句与脚注换短稿；旧浮窗句、副标与两条“不提供自动寻路”句删除；右栏不再给“选中下一段”（Q591 右栏只读）。</summary>
@@ -280,5 +281,58 @@ public class B35cShellTests
         foreach (var old in new[] { "在旁边的浮窗里确认移动", "区域地图上的相邻地点或“前往”", "但一次只能确认下一段相邻路线" })
             Assert.That(help, Does.Not.Contain(old), old);
         Assert.That(Web("Components/ActionPops.razor"), Does.Contain("case \"travel\":"), "地点卡浮窗入口照旧（句子前半所指）");
+    }
+
+    // ───────────── 试玩修复（B35c 本地 Release 包试玩） ─────────────
+
+    /// <summary>试玩修复 1（1280×720 路线区约 200px）：信息区单独滚动，“出发”、原因、“选中下一段”在底部固定动作条，不用滚动即可见。</summary>
+    [Test]
+    public void PlayFix1_RouteActionsPinned()
+    {
+        var route = Code(Web("Components/MapRouteArea.razor"));
+        var info = route.IndexOf("<div class=\"mr-info\">", StringComparison.Ordinal);
+        var actions = route.IndexOf("<div class=\"mr-actions\">", StringComparison.Ordinal);
+        Assert.That(info, Is.GreaterThan(0));
+        Assert.That(actions, Is.GreaterThan(info));
+        var bar = Slice(route, "<div class=\"mr-actions\">", "</aside>");
+        Assert.That(bar, Does.Contain("@(needExp ? \"确认开始远征并前往\" : MapCopy.Depart)").And.Contain(">终止本次远征…</button>").And.Contain("@MapCopy.SelectNext(e.LocName(nx))"));
+        Assert.That(route[info..actions], Does.Not.Contain("mr-depart").And.Not.Contain("SelectNext"), "按钮不在可滚动的信息区里");
+        var css = Web("wwwroot/css/fourrows.css");
+        Assert.That(css, Does.Contain(".map-route .mr-info { flex: 1 1 auto; min-height: 0; overflow-y: auto;"));
+        Assert.That(css, Does.Contain(".map-route .mr-actions { flex: 0 0 auto;"));
+        Assert.That(Regex.Match(css, @"(?m)^\.map-route \{[^}]*\}").Value, Does.Contain("overflow: hidden;").And.Not.Contain("overflow-y: auto"));
+    }
+
+    /// <summary>试玩修复 2：切层（主世界、势力鸟瞰、回到当前位置、面包屑、下拉、路口标签、分区定位）后，所选目的地在新层看不见就取消，右栏与 Esc 跟可见层一致。</summary>
+    [Test]
+    public void PlayFix2_LayerSwitchDropsHiddenPick()
+    {
+        var session = Web("Services/GameSession.cs");
+        var drop = Slice(session, "public void DropHiddenMapPick()", "/// <summary>地图上点选／取消所选目的地");
+        Assert.That(drop, Does.Contain("? E.CityMembers(layer.Substring(5)).Contains(id)").And.Contain(": E.BuildMapView(S, MapLayer).Nodes.Any(n => n.Id == id);"));
+        Assert.That(drop, Does.Contain("if (visible) return;").And.Contain("MapPicked = null;"));
+        var map = Web("Components/MapOverlay.razor");
+        foreach (var m in new[] { ("private void SwitchLayer(", "private async Task Zoom("), ("private void GoRegion(", "/// <summary>切换查看的层"), ("private void BackToHere()", "private void ToggleLegend()") })
+            Assert.That(Slice(map, m.Item1, m.Item2), Does.Contain("G.DropHiddenMapPick();"), m.Item1);
+    }
+
+    /// <summary>试玩修复 3（Q807／Q913）：城市层只读卡片浮窗按内容高度显示；右栏物品详情不显示“转移目标与数量…”操作提示（不另加文字）。</summary>
+    [Test]
+    public void PlayFix3_ReadOnlyCardPopFits()
+    {
+        Assert.That(Web("Components/CardPop.razor"), Does.Contain("+ (G.CityBrowsing ? \" city-ro\" : \"\") +"));
+        Assert.That(Web("wwwroot/css/cityoverview.css"), Does.Contain(".wasteland .apop.card-pop.apop-c.city-ro { height: fit-content;"));
+        Assert.That(Web("Components/ItemDetail.razor"), Does.Contain("@if (G.Panel != GameSession.FireMenuPanel && G.InFireCrumbs(sel) == null && !G.CityBrowsing)"));
+    }
+
+    /// <summary>试玩修复 4：城市层楼栋、道路与路标排在标题下方的绘图区里，左上楼栋选中框不压在标题下。</summary>
+    [Test]
+    public void PlayFix4_CityPlotBelowTitle()
+    {
+        var city = Web("Components/CityOverview.razor");
+        var plot = Slice(city, "<div class=\"city-plot\">", "<aside class=\"city-side\"");
+        Assert.That(plot, Does.Contain("<svg class=\"city-roads\"").And.Contain("class=\"road-tag").And.Contain("class=\"city-bldg"));
+        Assert.That(city.IndexOf("<h2 class=\"city-title\">", StringComparison.Ordinal), Is.LessThan(city.IndexOf("<div class=\"city-plot\">", StringComparison.Ordinal)));
+        Assert.That(Web("wwwroot/css/cityoverview.css"), Does.Contain(".city-plot { position: absolute; left: 0; right: 0; top: 34px; bottom: 0; }"));
     }
 }

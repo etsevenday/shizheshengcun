@@ -1230,7 +1230,11 @@
 }
 
 /* ───── B35c 地图路线区（Q591／Q793 B／Q803／Q915；逐字稿 P07a）：面板内右列，当前位置／所选目的地／下一路段／已知路线／出发 ───── */
-.map-route { flex: 0 0 clamp(220px, 28%, 330px); min-height: 0; overflow-y: auto; border-left: 1px solid var(--line); background: #121a1df2; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-aux); line-height: 1.4; }
+.map-route { flex: 0 0 clamp(220px, 28%, 330px); min-height: 0; overflow: hidden; border-left: 1px solid var(--line); background: #121a1df2; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-aux); line-height: 1.4; }
+/* B35c 试玩修复（1280×720 路线区约 200px）：信息区自己滚动，动作条固定在底部，出发与“选中下一段”不用滚动即可见 */
+.map-route .mr-info { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+.map-route .mr-actions { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; padding-top: 4px; border-top: 1px solid var(--line); }
+.map-route .mr-actions .mr-go { margin-top: 0; }
 .map-route .mr-sec { display: grid; gap: 1px; }
 .map-route .mr-k { color: var(--muted); font-size: var(--fs-aux); }
 .map-route .mr-v { color: var(--text); font-size: var(--fs-body); overflow-wrap: anywhere; }

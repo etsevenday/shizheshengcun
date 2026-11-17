@@ -10,6 +10,8 @@
   background: radial-gradient(ellipse at 50% 55%, #2b3326 0%, #1d241d 60%, #151b18 100%); }
 .city-church .city-map { background: radial-gradient(ellipse at 50% 55%, #2e2a2a 0%, #211d1f 60%, #171416 100%); }
 .city-academy .city-map { background: radial-gradient(ellipse at 50% 55%, #24303a 0%, #1a232b 60%, #131a20 100%); }
+/* B35c 试玩修复：绘图区让出标题高度，左上楼栋的选中框不压在标题下 */
+.city-plot { position: absolute; left: 0; right: 0; top: 34px; bottom: 0; }
 .city-roads { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .city-roads .road { stroke: #8f8466; stroke-width: 7; stroke-linecap: round; opacity: .85; }
 .city-roads .road.locked { stroke: #c46b5a; stroke-width: 4; stroke-dasharray: 10 8; opacity: .9; }
@@ -92,6 +94,8 @@
 /* 第四行只读提示（鸟瞰期间仅查看） */
 .card-pop .city-readonly { display: flex; flex-direction: column; gap: 2px; padding: 10px 56px 10px 10px; min-height: 52px; max-width: 340px; font-size: var(--fs-aux); color: var(--warn); }
 .card-pop .city-readonly b { color: var(--text); font-size: var(--fs-aux); }
+/* B35c 试玩修复：城市层只读浮窗按内容高度显示，不按普通操作盘的固定高度留整块空白 */
+.wasteland .apop.card-pop.apop-c.city-ro { height: fit-content; max-height: calc(100vh - 16px); }
 @media (max-height: 800px) {
   .city-body { padding: 4px 10px 6px; }
   .city-bldg .bldg-name { font-size: var(--fs-aux); }

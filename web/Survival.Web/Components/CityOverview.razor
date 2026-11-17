@@ -44,6 +44,8 @@
         <div class="city-main">
         <div class="city-map" style="--cols:@cols;--rows:@rows">
             <h2 class="city-title">@e.MapLayerName("city:" + v.CityId)</h2>
+            @* B35c 试玩修复（1280 档左上楼栋选中框压在标题下）：楼栋、道路与路标排在标题下方的绘图区里 *@
+            <div class="city-plot">
             <svg class="city-roads" viewBox="@($"0 0 {cols * 100} {rows * 100}")" preserveAspectRatio="none" aria-hidden="true">
                 @foreach (var r in v.Roads)
                 {
@@ -83,6 +85,7 @@
                     @if (b.CanTurnIn > 0) { <span class="bldg-mark turnin" title="有可交的委托">✓</span> }
                 </button>
             }
+            </div>
         </div>
         @* Q808 A：城市层右列（不加标题）——所选建筑／当前位置／下一路段，后接完整路线与公开人物、服务、任务；出发与原因放在下一路段下方 *@
         <aside class="city-side" aria-live="polite">

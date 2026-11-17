@@ -17,7 +17,7 @@
     var pot = PotOf();
     @* BM4a（Q590）：顶栏面板覆盖打开时原物品操作盘同菜单一样只隐藏、不卸载（盘内数量、去向保留），整条链按返回关完后原样恢复 *@
     var menuHide = G.MenuOpen || G.BattleMenuOpen || G.CardPopHeldUnderPanel ? " menu-hidden" : "";
-    <AnchorPop AnchorId="card-sel" Title="" Place="below,above,right,left" Bound=".center" CssClass="@((pot != null ? "card-pop pot" : "card-pop") + menuHide)" OnClose="G.ClearSelection" OnCovered="G.CoverCardPop">
+    <AnchorPop AnchorId="card-sel" Title="" Place="below,above,right,left" Bound=".center" CssClass="@((pot != null ? "card-pop pot" : "card-pop") + (G.CityBrowsing ? " city-ro" : "") + menuHide)" OnClose="G.ClearSelection" OnCovered="G.CoverCardPop">
         @* 锅（或锅里的水/食材）：先放所选对象的操作（主按钮固定在浮窗上部可见，M78），再展开锅的完整内容（内容多时在自己的区内滚动；M77-B2） *@
         @if (G.CityBrowsing)
         {

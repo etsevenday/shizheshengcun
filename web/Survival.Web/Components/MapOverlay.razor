@@ -429,6 +429,7 @@ else
         if (r == null) { G.Notify(); return; }
         G.MapLayer = GameEngine.WorldLayer;
         G.MapAnchor = G.S.CurrentLocation;
+        G.DropHiddenMapPick();
         G.ClosePop();
         _centerWorld = (r.CenterX, r.CenterY);
         _needCenter = true;
@@ -440,6 +441,7 @@ else
     {
         G.MapLayer = layer;
         G.MapAnchor = G.S.CurrentLocation;
+        G.DropHiddenMapPick();   // B35c 试玩修复：不保留另一层看不见的选择
         G.ClosePop();
         _centerWorld = null;
         _needCenter = true;
@@ -467,6 +469,7 @@ else
     private void BackToHere()
     {
         if (_view?.HereNode == null) G.MapLayer = null;
+        G.DropHiddenMapPick();
         _centerWorld = null;
         _needCenter = true;
         G.Notify();
