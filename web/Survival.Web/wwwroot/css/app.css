@@ -1300,6 +1300,24 @@ button.cp-name-note { background: none; border: 0; padding: 0; margin: 0; width:
 .sq-inputs:empty { display: none; }
 .sq-inputs > .irow.sq-input { flex: 0 1 auto; min-width: 0; padding: 0; }
 .craft-go .cg-act > .cg-start[data-station-take-all] { padding: 4px 12px; }
+/* B51c2a1 试玩修复 M1077：1280×720 批次区只剩约 47px，一批（主行＋两行小字＋批内原料）放不下、第三行被投料栏压住。
+   ① 批内原料行压成一行高：图标 20px、名称／数量／状态同一行，去掉物品行的 42px 最小高、边框与相邻行上边距；主行与原料行之间只留 2px。
+   ② 矮屏（≤960 高，含 1280×720、1600×900）投料栏操作列改两行：「投料批数」步进器一行，「投料」「全部取出」并排一行，投料栏少一行按钮高。
+   ③ 批次滚动区保底一批高（约 80px），多的批在区内滚动；仍超高时沿原兜底整张配方卡滚动，不重叠。 */
+.sq-row { row-gap: 2px; }
+.sq-inputs > .irow.sq-input { min-height: 0; margin-top: 0; border: 0; gap: 4px; align-items: center; }
+.sq-inputs > .irow.sq-input .ir-icon { width: 20px; height: 20px; border-radius: 3px; }
+.sq-inputs > .irow.sq-input .ir-icon svg { width: 18px; height: 18px; }
+.sq-inputs > .irow.sq-input .ir-text { flex-direction: row; align-items: baseline; gap: 6px; line-height: 1.25; }
+.sq-inputs > .irow.sq-input .ir-name { font-size: var(--fs-aux); flex-wrap: nowrap; white-space: nowrap; }
+.sq-inputs > .irow.sq-input .ir-status { white-space: nowrap; }
+.sq-rows { min-height: 80px; }
+.craft-side > .craft-mats.station-mats > .station-queue { min-height: 112px; }
+@media (max-height: 960px) {
+  .craft-go[data-station-go] .cg-act { display: grid; grid-template-columns: auto auto; gap: 4px; align-items: stretch; }
+  .craft-go[data-station-go] .cg-act > .batch-row { grid-column: 1 / -1; }
+  .craft-go[data-station-go] .cg-act > .cg-start[data-station-take-all] { min-width: 0; }
+}
 
 /* 休息面板底部开始条（紧挨时长卡） */
 .rest-go { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; padding: 8px 14px 10px; border-top: 1px solid var(--line); background: #1f2721; }
