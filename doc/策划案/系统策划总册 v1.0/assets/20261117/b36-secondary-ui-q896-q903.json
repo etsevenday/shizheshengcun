@@ -1,0 +1,146 @@
+{
+  "date": "2026-11-17",
+  "status": "whole_original_batch_planning_not_runtime_verified",
+  "originalBatch": "2026-11-17 来自1b50a095 B36 提前核对次要",
+  "questions": [
+    896,
+    897,
+    898,
+    899,
+    900,
+    901,
+    902,
+    903
+  ],
+  "choices": {
+    "896": "A",
+    "897": "A",
+    "898": "B",
+    "899": "A",
+    "900": "A",
+    "901": "B",
+    "902": "B",
+    "903": "C"
+  },
+  "answers": {
+    "896": "选A（已以露天／精神低的具体界面对照补答）。中间两行小时档下留“休息条件”和真实“风险”，无风险不出，不用中部“可用方式／预计恢复”；右栏完整数值／结束时刻预测，开始条及Q887未选规则保持，见S13／S14本批。",
+    "897": "选A。仅休息页时长格、开始键／已选时长及本页右栏计划时长用小时，如0.5小时；中央行动条与日志仍原30分钟格式，真实分钟值／结束时刻HH:mm不改，见S13／S14本批。",
+    "898": "选B（完整备选已由用户确认）。不加“当前目标／已完成”文字标签，完成仍✓；主线委托在前、序章按原阶段在后，左各任务独立无阶段标题，阶段放右详情。Q888共享主目标区保留，任务规则不变，见S15／S14本批。",
+    "899": "选A。正文有内部“‹ 返回”退所属主题，另留按Q821真实来路命名的退出控件；主题摘要／总览不出内部正文返回。Q890 B返回／ESC先主题再原入口不变，明确退出仍退出说明，不穿透执行，见S14／A10本批。",
+    "900": "选A。原委托行“下一步：{真实进度}”直接改“当前进度：{真实进度}”，原“结果：{真实结果}”保留，不再叠标题；只改对应原行，业务不变，见A11／S14本批。",
+    "901": "选B（用户确认精简稿）：“先选去向”。不留“上方”或同行候补长解释，卡内选择与登记真实条件／耗时不变，见A11／S14本批。",
+    "902": "选B。栏名仅“当前地面”，原真实节点名悬停／聚焦／触屏／读屏可查。顶部：“仅本次地牢已领奖励可封存；不占随身卡位，暂不可用。成功撤出／通关离开后，送至{地点}回收箱。外带、自制物不可封存。”原权限／取回和箱落点不变，见A10／S14本批。",
+    "903": "选新增C（已明确选择）。日志按天目录后每条仅HH:mm；生存提示去“求生建议，不消耗时间”副标且不另加“当前建议”副标。原页面标题、两目录、实际建议／时序500条保持，见S01／S14本批。"
+  },
+  "rest": {
+    "conditionsAndRealRisks": "center",
+    "numericForecast": "right",
+    "middleLabels": [
+      "休息条件",
+      "风险"
+    ],
+    "omitMiddleLabels": [
+      "可用方式",
+      "预计恢复"
+    ],
+    "hideRiskSectionWhenNone": true,
+    "noPreselectionUnchanged": true,
+    "hourDurationScope": "rest_page_only",
+    "actionBarAndLogDuration": "original_minutes",
+    "worldClock": "HH:mm",
+    "exampleIsNotConfig": true
+  },
+  "tasks": {
+    "order": "original_main_and_commissions_then_prologue_original_six_stage_order",
+    "oneTaskPerDirectoryItem": true,
+    "stageTitleInRightDetailOnly": true,
+    "addedTextStatusTags": [],
+    "completedMarker": "✓",
+    "sharedMainObjectiveBlockUnchanged": true,
+    "commissionProgressPrefix": "当前进度：",
+    "commissionResultPrefix": "结果："
+  },
+  "help": {
+    "twoControls": true,
+    "internalBackVisibleOnlyForEntryBody": true,
+    "internalBackLabel": "‹ 返回",
+    "separateExitLabel": "actual_parent_return_or_main_close_Q821",
+    "escapeChain": [
+      "entry",
+      "own_theme_summary",
+      "actual_parent"
+    ],
+    "explicitExitRetainsOriginalExitAction": true
+  },
+  "recruit": {
+    "noDestinationReason": "先选去向",
+    "originalEligibilityAndCost": true
+  },
+  "expedition": {
+    "groundHeading": "当前地面",
+    "nodeName": "actual_name_hover_focus_touch_screenreader",
+    "intro": "仅本次地牢已领奖励可封存；不占随身卡位，暂不可用。成功撤出／通关离开后，送至{地点}回收箱。外带、自制物不可封存。",
+    "originalOwnerPermissionsUnsealAndDestination": true
+  },
+  "logAndTips": {
+    "logEntryTime": "HH:mm",
+    "dayStillInLeftDirectory": true,
+    "original500LimitAndActualTimestamp": true,
+    "removeTipsSubtitle": true,
+    "tipDirectories": [
+      "当前状况",
+      "当前建议"
+    ],
+    "adviceContentsUnchanged": true
+  },
+  "acceptance": [
+    {
+      "id": "B36S-Q896-01",
+      "rule": "精神低且露天时，中间休息条件／风险显示真实事实，恢复数值／预计时刻在右栏，不加可用方式／预计恢复中部标题。"
+    },
+    {
+      "id": "B36S-Q896-02",
+      "rule": "无风险不显示风险段；濒死／野营布等原真实状态准确，新开未选与悬停只读不启开始保持。"
+    },
+    {
+      "id": "B36S-Q897-01",
+      "rule": "休息页半小时格、开始键及本页右栏计划时长为0.5小时；行动条及日志仍30分钟，结束时刻仍HH:mm。"
+    },
+    {
+      "id": "B36S-Q898-01",
+      "rule": "主线委托在前、序章按原阶段在后；每任务独立，左无阶段标题、右有真实阶段，完成仍✓且无两种新增文字标签。"
+    },
+    {
+      "id": "B36S-Q898-02",
+      "rule": "支线详情仍Q888主目标块及原合法快捷按钮，条件奖励不变，不把正文所有状态词一起删掉。"
+    },
+    {
+      "id": "B36S-Q899-01",
+      "rule": "正文有内部‹ 返回和独立退出，主题摘要／总览无内部正文返回；退出按实际来路关闭／返回。"
+    },
+    {
+      "id": "B36S-Q899-02",
+      "rule": "内返回／ESC正文→所属主题→原入口，不穿透；明确退出按钮仍可退出说明，父页状态与战斗暂停准确。"
+    },
+    {
+      "id": "B36S-Q900-01",
+      "rule": "原委托未结算行改当前进度：真实进度，结果原行保留，不加标题或新结果。"
+    },
+    {
+      "id": "B36S-Q901-01",
+      "rule": "候选未选登记去向显示先选去向，卡内选择后真实资格重验，无失实上方或自动登记。"
+    },
+    {
+      "id": "B36S-Q902-01",
+      "rule": "当前地面无常驻节点括注，原节点名悬停／键盘／触屏／读屏可查，物权与实例不变。"
+    },
+    {
+      "id": "B36S-Q902-02",
+      "rule": "封存头部采用已定短稿，仍通关离开后送真实回收箱而非背包；原取回／容量／权限保持。"
+    },
+    {
+      "id": "B36S-Q903-01",
+      "rule": "日志当天行只HH:mm，左日分组和真实排序500条保持；生存提示无重复副标，原标题两目录内容保持。"
+    }
+  ]
+}
