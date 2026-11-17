@@ -258,8 +258,8 @@
         }
         </div>
         @* B35c（逐字稿 P07b、Q595）：底部三键。「势力鸟瞰」进主世界上所选的城，没选城时进人所在的城（Q1004 暂用 A）；城市层里不显示 *@
-        <div class="map-foot" role="group" aria-label="地图层">
-            <button type="button" class="secondary @(v.LayerKey == GameEngine.WorldLayer ? "on" : "")" aria-pressed="@(v.LayerKey == GameEngine.WorldLayer)" title="切到主世界查看（只切换查看，不移动）" @onclick="() => SwitchLayer(GameEngine.WorldLayer)">@MapCopy.World</button>
+        <div class="map-foot">
+            <button type="button" class="secondary @(v.LayerKey == GameEngine.WorldLayer ? "on" : "")" aria-pressed="@(v.LayerKey == GameEngine.WorldLayer)" title="返回主世界（只切换查看，不移动）" @onclick="() => SwitchLayer(GameEngine.WorldLayer)">@MapCopy.World</button>
             @if (factionLayer != null)
             {
                 <button type="button" class="secondary" data-faction-layer="@factionLayer" title="@($"查看{e.MapLayerName(factionLayer)}（只切换查看，不移动）")" @onclick="() => SwitchLayer(factionLayer)">@MapCopy.FactionView</button>
