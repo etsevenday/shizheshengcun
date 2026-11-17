@@ -258,4 +258,27 @@ public class B35cShellTests
         var far = Slice(side, "<button type=\"button\" class=\"primary\" disabled>@MapCopy.Depart</button>", "@if (G.Notice != null && _tried)");
         Assert.That(far, Does.Contain("@if (route.Blocked is string why)").And.Contain("@onclick=\"() => Pick(nx)\">@MapCopy.SelectNext(e.LocName(nx))</button>"));
     }
+
+    // ───────────── 系统说明（B35S-Q916-01） ─────────────
+
+    /// <summary>
+    /// B35S-Q916-01：系统说明三处移动帮助（就近执行、移动、分层地图）同用 Q916 批准句，分别指地点栏卡浮窗与区域地图路线区“出发”；
+    /// 旧“在旁边的浮窗里确认移动”等句删除；句子只出现在这三处（不到处追加）。就近执行段是分号串列，句末句号随列表改分号；分层地图“右栏会列出”改“路线区会列出”（Q1001 暂用 A）。
+    /// </summary>
+    [Test]
+    public void Q916_HelpThreePlaces()
+    {
+        const string q916 = "点相邻地图卡在浮窗里确认移动；在区域地图上，先选相邻地点，在路线区点“出发”。";   // S14 2026-11-17 B35 次要节 Q916 A 原句
+        Assert.That(MapCopy.Help, Is.EqualTo(q916));
+        var body = q916.TrimEnd('。');
+        var help = Web("Services/HelpCatalog.cs");
+        string Entry(string id) => Slice(help, $"Id = \"{id}\"", "new HelpEntry");
+        Assert.That(Entry("nearby"), Does.Contain("按钮就在对象卡上或卡旁的小浮窗里：" + body + "；点击敌踪卡打开操作盘"));
+        Assert.That(Entry("travel"), Does.Contain("\"一次只能沿一条已知路线走到相邻地点，没有自动寻路。" + q916 + "\","));
+        Assert.That(Entry("maplayers"), Does.Contain("\"点远处的已知地点，路线区会列出实际能走的路线和每段时间。" + q916 + "浏览、缩放、切层都不推进游戏时间。\","));
+        Assert.That(Regex.Matches(help, Regex.Escape(body)).Count, Is.EqualTo(3), "只在原三处");
+        foreach (var old in new[] { "在旁边的浮窗里确认移动", "区域地图上的相邻地点或“前往”", "但一次只能确认下一段相邻路线" })
+            Assert.That(help, Does.Not.Contain(old), old);
+        Assert.That(Web("Components/ActionPops.razor"), Does.Contain("case \"travel\":"), "地点卡浮窗入口照旧（句子前半所指）");
+    }
 }
