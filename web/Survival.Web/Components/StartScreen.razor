@@ -10,7 +10,7 @@
         <div class="title-card">
             <h1>@ShellText.Brand</h1>
             <div class="actions">
-                <button class="primary" @onclick="OnNew">@ShellText.NewGame</button>
+                <button class="primary" data-pt="start-new" @onclick="OnNew">@ShellText.NewGame</button>
                 <button class="secondary" @onclick="OpenPicker">@ShellText.ContinueGame</button>
                 <button class="secondary @(showHelp ? "on" : "")" aria-expanded="@(showHelp ? "true" : "false")" @onclick="() => showHelp = !showHelp">@ShellText.HowToPlay</button>
             </div>
@@ -20,7 +20,7 @@
                 <div class="confirm-box">
                     @SaveSlots.NewGameConfirmText
                     <div class="row">
-                        <button class="secondary danger" @onclick="StartNew">@SaveSlots.NewGameConfirmButton</button>
+                        <button class="secondary danger" data-pt="start-new-confirm" @onclick="StartNew">@SaveSlots.NewGameConfirmButton</button>
                         <button class="secondary" @onclick="() => confirmNew = false">@SaveSlots.BackButton</button>
                     </div>
                 </div>

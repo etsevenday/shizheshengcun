@@ -382,7 +382,7 @@
                                         <b>@batch</b>
                                         <button type="button" class="tbar-step" aria-label="增加批数" disabled="@(batch >= stMax)" @onclick="() => SetBatch(batch + 1)">+</button>
                                     </div>
-                                    <button type="button" class="primary cg-start" disabled="@(sbWhy != null || StationHeld)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
+                                    <button type="button" data-pt="station-load" class="primary cg-start" disabled="@(sbWhy != null || StationHeld)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
                                             data-enter @onclick="(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)">投料（@(batch)批）<EnterCap On="@(sbWhy == null && !StationHeld)" /></button>
                                 </div>
                             </div>
@@ -410,7 +410,7 @@
                                         <small class="warn-text">@p.Reason</small>
                                     }
                                 </span>
-                                <button type="button" class="primary cg-start" disabled="@(!p.Ok || startBusy)" title="@(p.Ok ? "确认后才预留材料并推进游戏时间" : p.Reason)"
+                                <button type="button" data-pt="craft-start" class="primary cg-start" disabled="@(!p.Ok || startBusy)" title="@(p.Ok ? "确认后才预留材料并推进游戏时间" : p.Reason)"
                                         data-enter @onclick="() => Start(request)">@(p.Ok ? p.ConfirmText : StartLabel(rc))<EnterCap On="@(p.Ok && !startBusy)" /></button>
                             </div>
                         }

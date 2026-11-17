@@ -90,11 +90,11 @@
             <div class="mr-go">
                 @if (leaveBlocked)
                 {
-                    <button type="button" class="secondary danger mr-depart" disabled="@moveBusy" @onclick="G.OpenAbort">终止本次远征…</button>
+                    <button type="button" data-pt="map-abort" class="secondary danger mr-depart" disabled="@moveBusy" @onclick="G.OpenAbort">终止本次远征…</button>
                 }
                 else
                 {
-                    <button type="button" class="primary mr-depart" disabled="@(!p.Ok || moveBusy)" @onclick="() => Depart(to!)">@(needExp ? "确认开始远征并前往" : MapCopy.Depart)</button>
+                    <button type="button" data-pt="map-depart" class="primary mr-depart" disabled="@(!p.Ok || moveBusy)" @onclick="() => Depart(to!)">@(needExp ? "确认开始远征并前往" : MapCopy.Depart)</button>
                 }
                 @if (!p.Ok) { <span class="mr-why">@p.Reason</span> }
             </div>
@@ -108,7 +108,7 @@
             </div>
             @if (route.SelectNext is string nx)
             {
-                <button type="button" class="secondary small-btn mr-next" @onclick="() => OnPickNext.InvokeAsync(nx)">@MapCopy.SelectNext(e.LocName(nx))</button>
+                <button type="button" data-pt="map-next" class="secondary small-btn mr-next" @onclick="() => OnPickNext.InvokeAsync(nx)">@MapCopy.SelectNext(e.LocName(nx))</button>
             }
         }
         </div>

@@ -164,7 +164,7 @@ else
             @if (canteen)
             {
                 @* B53a（S14 B53 §Q859）：水壶详情的「水量」行，行末「丢弃水」；水量沿原卡下操作窗同源写法 *@
-                <div class="row-act"><span>水量</span><b>@e.CanteenLabel(inst)</b>@if (waterTarget != null && !G.DiscardOpenFor(waterTarget)) {<button type="button" class="discard-btn inline" @onclick="() => G.OpenDiscard(waterTarget)">@DiscardCopy.DiscardWater</button>}</div>
+                <div class="row-act"><span>水量</span><b>@e.CanteenLabel(inst)</b>@if (waterTarget != null && !G.DiscardOpenFor(waterTarget)) {<button type="button" class="discard-btn inline" data-pt="discard-water" @onclick="() => G.OpenDiscard(waterTarget)">@DiscardCopy.DiscardWater</button>}</div>
             }
             @if (total > 1) { <div><span>单件重量</span><b>@Ui.UnitKg(e, list)公斤</b></div> }
             @if (rot && e.OriginEntries(list) is { Count: > 0 } origins)

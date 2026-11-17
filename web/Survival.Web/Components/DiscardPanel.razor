@@ -18,7 +18,7 @@
     @if (!HideButton)
     {
         <div class="discard-entry">
-            <button type="button" class="discard-btn" @onclick="Open">@(Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>
+            <button type="button" class="discard-btn" data-pt="@(Target.IsWater ? "discard-water" : "discard")" @onclick="Open">@(Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>
         </div>
     }
 }
@@ -27,7 +27,7 @@ else
     var v = G.DiscardViewOf(Target);
     var title = Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Title(v.Name);
     var totals = Target.IsWater ? DiscardCopy.WaterTotals(v.Total, v.Available) : DiscardCopy.Totals(v.Total, v.Available);
-    <section @ref="_sub" class="discard-sub @(Host != null ? "in-list" : "")" role="group" aria-label="@title" data-discard-host="@Host">
+    <section @ref="_sub" class="discard-sub @(Host != null ? "in-list" : "")" data-pt="discard-sub" role="group" aria-label="@title" data-discard-host="@Host">
         <h4 class="discard-title">@title</h4>
         @switch (open.Stage)
         {
@@ -39,28 +39,28 @@ else
                     <div class="blocked">@why</div>
                 }
                 <div class="discard-row">
-                    <button type="button" class="discard-opt" disabled="@(v.MaxUnits < 1)" @onclick="G.DiscardChooseQuantity">@DiscardCopy.ChooseQuantity</button>
-                    <button type="button" class="discard-opt danger" disabled="@(v.Available < 1)" @onclick="G.DiscardAll">@DiscardCopy.DiscardAll</button>
+                    <button type="button" class="discard-opt" data-pt="discard-qty" disabled="@(v.MaxUnits < 1)" @onclick="G.DiscardChooseQuantity">@DiscardCopy.ChooseQuantity</button>
+                    <button type="button" class="discard-opt danger" data-pt="discard-all" disabled="@(v.Available < 1)" @onclick="G.DiscardAll">@DiscardCopy.DiscardAll</button>
                 </div>
                 <div class="discard-row">
-                    <button type="button" class="discard-back" @onclick="G.CancelDiscard">@DiscardCopy.Cancel<EscCap On="@escHere" /></button>
+                    <button type="button" class="discard-back" data-pt="discard-cancel" @onclick="G.CancelDiscard">@DiscardCopy.Cancel<EscCap On="@escHere" /></button>
                 </div>
                 break;
             case DiscardStage.Quantity:
                 <div class="discard-avail">@totals</div>
                 <div class="discard-qlabel">@(Target.IsWater ? DiscardCopy.WaterQuantity(v.UnitMl) : DiscardCopy.Quantity)</div>
                 <div class="tbar-row discard-qty">
-                    <button type="button" class="tbar-step" aria-label="减少" @onclick="() => G.DiscardStep(-1)">−</button>
+                    <button type="button" class="tbar-step" data-pt="discard-minus" aria-label="减少" @onclick="() => G.DiscardStep(-1)">−</button>
                     <input type="text" inputmode="numeric" value="@open.QuantityText" @oninput="e => G.DiscardSetQuantity(e.Value?.ToString() ?? string.Empty)" aria-label="@DiscardCopy.Quantity" />
-                    <button type="button" class="tbar-step" aria-label="增加" @onclick="() => G.DiscardStep(1)">+</button>
+                    <button type="button" class="tbar-step" data-pt="discard-plus" aria-label="增加" @onclick="() => G.DiscardStep(1)">+</button>
                 </div>
                 @if (open.Error is string qe)
                 {
                     <div class="blocked">@qe</div>
                 }
                 <div class="discard-row">
-                    <button type="button" class="discard-opt" @onclick="G.DiscardNext">@DiscardCopy.Next</button>
-                    <button type="button" class="discard-back" @onclick="G.DiscardBack">@DiscardCopy.Back<EscCap On="@escHere" /></button>
+                    <button type="button" class="discard-opt" data-pt="discard-next" @onclick="G.DiscardNext">@DiscardCopy.Next</button>
+                    <button type="button" class="discard-back" data-pt="discard-back" @onclick="G.DiscardBack">@DiscardCopy.Back<EscCap On="@escHere" /></button>
                 </div>
                 break;
             case DiscardStage.Confirm when open.Plan != null:
@@ -70,8 +70,8 @@ else
                     <p class="discard-line">@line</p>
                 }
                 <div class="discard-row">
-                    <button type="button" class="discard-opt danger" @onclick="Confirm">@DiscardCopy.Confirm</button>
-                    <button type="button" class="discard-back" @onclick="G.DiscardBack">@DiscardCopy.Back<EscCap On="@escHere" /></button>
+                    <button type="button" class="discard-opt danger" data-pt="discard-confirm" @onclick="Confirm">@DiscardCopy.Confirm</button>
+                    <button type="button" class="discard-back" data-pt="discard-back" @onclick="G.DiscardBack">@DiscardCopy.Back<EscCap On="@escHere" /></button>
                 </div>
                 break;
         }

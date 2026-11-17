@@ -110,7 +110,7 @@
     {
         if (!G.DiscardOpenFor(t, DiscardHost.Party))
         {
-            <button type="button" class="eq-btn discard-row-btn" data-discard-row @onclick="() => G.OpenListDiscard(t, DiscardHost.Party)">@(t.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>
+            <button type="button" class="eq-btn discard-row-btn" data-discard-row data-pt="@(t.IsWater ? "row-discard-water" : "row-discard")" @onclick="() => G.OpenListDiscard(t, DiscardHost.Party)">@(t.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>
         }
     };
 

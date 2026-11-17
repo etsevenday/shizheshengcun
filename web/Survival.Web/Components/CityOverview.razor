@@ -122,7 +122,7 @@
                     {
                         var est = G.Preview(ActionRequest.Travel(to, e.NeedsExpeditionConfirm(s, to)));
                         var busy = (e.IsBusy(s) && !e.PausedTravelOpen(s)) || G.Running || G.BattleBusy || G.DialogueLocked || _go;
-                        <button type="button" class="primary" disabled="@(!est.Ok || busy)" title="@(est.Ok == false ? est.Reason : est?.NoExit == true ? GameEngine.LockedTravelHover : "按真实路线移动，中途可退出")"
+                        <button type="button" data-pt="city-depart" class="primary" disabled="@(!est.Ok || busy)" title="@(est.Ok == false ? est.Reason : est?.NoExit == true ? GameEngine.LockedTravelHover : "按真实路线移动，中途可退出")"
                                 @onclick="() => Go(to)">@MapCopy.Depart</button>
                         @if (est!.Ok) { <div class="ci-line ci-est">预计@(est.PlanFailed ? GameEngine.UnknownText(est) : $"{est.EstimatedMinutes}分钟")</div> }
                         else { <div class="ci-line warn">@est.Reason</div> }
@@ -133,7 +133,7 @@
                         @if (route.Blocked is string why) { <div class="ci-line warn">@why</div> }
                         @if (route.SelectNext is string nx)
                         {
-                            <button type="button" class="secondary" @onclick="() => Pick(nx)">@MapCopy.SelectNext(e.LocName(nx))</button>
+                            <button type="button" data-pt="city-next" class="secondary" @onclick="() => Pick(nx)">@MapCopy.SelectNext(e.LocName(nx))</button>
                         }
                     }
                     @if (G.Notice != null && _tried) { <div class="ci-line warn">@G.Notice</div> }

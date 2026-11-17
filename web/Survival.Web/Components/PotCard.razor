@@ -46,7 +46,7 @@
     var potTip = $"{name} · {Ui.Kg(e.ItemGrams(s, Pot))}公斤{(foods.Count > 0 || units > 0 ? "（含锅内）" : "")} · {where}{(potSlot is int ps ? $"／加工位{ps}" : "")}";
     @* B42：锅卡各区是悬停热区，按指针所在最内层显示锅、锅里的水或食材 *@
     <div data-peek="@PotPeek" class="pot-card compact @(Pot.InFacility ? "in-fire" : "in-shelf") @(potSelected || childSel ? "selected" : "") @(locked ? "reserved" : "")"
-         data-card="@key" data-drop="@(act ? $"card:{key}" : null)" data-drop-level="@(act ? "card" : null)" @onclick:stopPropagation="true">
+         data-pt="card-pot" data-card="@key" data-drop="@(act ? $"card:{key}" : null)" data-drop-level="@(act ? "card" : null)" @onclick:stopPropagation="true">
         <div class="pc-head" data-peek="@PotPeek" id="@(selId && (potSelected || childSel) ? "card-sel" : null)" role="button" tabindex="0" data-drag="@(act ? $"card:{key}" : null)" data-drag-title="@name" data-drag-from="@where"
              title="@(act ? $"{potTip}：点击展开锅里的水与食材并操作；按住标题拖动整锅（水与食材随行）" : $"{potTip}：点击查看这口锅（只读）")" data-tip="@potTip"
              @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, SelectPot)" @onkeydown:stopPropagation="true">
