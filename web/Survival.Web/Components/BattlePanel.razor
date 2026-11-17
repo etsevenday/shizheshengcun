@@ -186,7 +186,7 @@ else if (b != null)
             @* B34（S14 Q574）：不显示敌人尚未执行的计划（锁定的动作、计划伤害、预定目标、前移／迫近分支），只留公开属性与已生效状态 *@
         </div>
         @* B49（Q740—Q745）：静态途径或「无感染源。」（取代人类／动物／非咬旧长句）；条件预估参考当前查看／控制的我方角色（真实 FocusId），切人即按本人 I／V 更新 *@
-        <ExposureLines Info="@e.EnemyExposureInfoFor(s, ec, e.EnemyName(t), e.InBattleExposureReference(s))" />
+        <ExposureLines Info="@e.EnemyExposureInfoFor(s, ec, e.EnemyName(t), e.InBattleExposureReference(s, G.BattleExposureRef))" />
         @if (B7Status(b, t) is string est) { <div class="risk none">@est</div> }
         @* B41e2（R05 Q537）：敌方先手时，真实未消耗伤害资格的敌人显示「先手伤害加成可用。」 *@
         @if (e.FirstStrikeReady(b, GameEngine.FirstStrikeKeyOf(t))) { <div class="risk none fs-ready">@GameEngine.FirstStrikeReadyText</div> }

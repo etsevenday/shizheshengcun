@@ -198,10 +198,17 @@ namespace Survival.Core.Engine
             return !IsDead(s, s.Actors[GameState.PlayerId]) ? GameState.PlayerId : null;
         }
 
-        /// <summary>Q742 A：战中敌人详情的参考者＝当前查看／控制的我方角色（真实 FocusId），无效或已死为 null。</summary>
-        public string? InBattleExposureReference(GameState s)
+        /// <summary>
+        /// Q742 A：战中敌人详情的参考者。BM11（R04 Q845 B）：有明确查看的我方角色（<paramref name="viewedAllyId"/>）时跟该人——须仍在本场我方名单且未死，
+        /// 失效为 null（只列静态途径，不借别人概率）；没有明确查看时默认当前合法行动者（真实 FocusId）。只读，不改 FocusId／AP／指令。
+        /// </summary>
+        public string? InBattleExposureReference(GameState s, string? viewedAllyId = null)
         {
-            var id = s.Battle?.FocusId;
+            var b = s.Battle;
+            if (b == null) return null;
+            if (viewedAllyId != null)
+                return AllyInBattle(b, viewedAllyId) && s.Actors.TryGetValue(viewedAllyId, out var v) && !IsDead(s, v) ? viewedAllyId : null;
+            var id = b.FocusId;
             return id != null && s.Actors.TryGetValue(id, out var a) && !IsDead(s, a) ? id : null;
         }
 
@@ -234,12 +241,19 @@ namespace Survival.Core.Engine
             {
                 "外部暴露分五类，概率和病毒量各异；仅主角有饱饱输入。同伴病毒不自然增长，新暴露仍可加量。",
                 $"主角有饱饱时：免疫低于{Fmt.T(bi.FullSuppressImmunityAtLeast)}，每小时输入最多{Fmt.T(bi.MaxPerHour)}病毒；免疫越高越少，净输入为正即感染（病毒至少{Fmt.T(bi.FirstInfectionMinLoad)}）。",
-                $"自然变化：主角感染后每小时{bands}；同伴仅保留其中下降，正增长为0。未治愈时病毒最低{Fmt.T(f.NaturalLoadMinimumWhileInfected)}。",
+                // BM11（R04 Q846 A）：natural 句首去重复“每小时”，各区间仍带“/小时”
+                $"自然变化：主角感染后{bands}；同伴仅保留其中下降，正增长为0。未治愈时病毒最低{Fmt.T(f.NaturalLoadMinimumWhileInfected)}。",
                 $"病毒达{Fmt.T(f.ZombificationAtLoad)}即尸变；主角尸变结束本局。",
                 $"绷带、抗生素可降病毒，最低{Fmt.T(f.AllSuppressantsMinLoad)}；不能清除感染。",
                 $"治愈：免疫≥{Fmt.T(f.NaturalCure.ConsecutiveImmunityAtLeast)}持续{Clock.Duration(f.NaturalCure.Minutes)}且病毒≤{Fmt.T(f.NaturalCure.LoadAtMost)}，或使用病毒特效药。",
             };
         }
+
+        /// <summary>
+        /// BM11（R04 Q847 A）：病毒页“自然治愈还需 病毒≤{阈值}”整行只在已感染且本人真实（未舍入）病毒＞naturalCure.loadAtMost 时列出；
+        /// 已≤阈值隐藏。连续高免疫行与真实治愈判定不变。
+        /// </summary>
+        public bool ShowNaturalCureLoadRow(BodyState b) => b.Infected && b.VirusLoad > Inf.NaturalCure.LoadAtMost;
 
         /// <summary>Q748 A：companion 短句只给稳定 actorId 为非主角的已感染同伴（详情病毒行下一次）；主角、未感染为 null。</summary>
         public string? CompanionVirusNoteFor(ActorState actor) => !actor.IsPlayer && actor.Body.Infected ? CompanionVirusNote : null;

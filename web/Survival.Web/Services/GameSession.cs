@@ -2646,9 +2646,16 @@ public sealed partial class GameSession
     /// <summary>全屏战斗里点我方锚点/队列头像：右侧只查看这名我方的状态（A10 §4.1：不跳过队列、不替换当前行动者）。</summary>
     public string? BattleAllyView { get; private set; }
 
+    /// <summary>
+    /// BM11（R04 Q845 B）：敌人详情感染预估的我方参考——最近一次明确点“查看”的我方角色；再点敌人／悬停／瞄准不换人，
+    /// Esc 清空查看与换场／离场重置；null 时内核默认当前合法行动者。只读显示，不改行动者。
+    /// </summary>
+    public string? BattleExposureRef { get; private set; }
+
     public void ViewBattleAlly(string? actorId)
     {
         if (State == null || S.Battle == null) return;
+        if (actorId != null) BattleExposureRef = actorId;   // BM11（Q845 B）：明确查看即换感染参考
         // B47b（Q618）：没有选指令时点击是“展开并显示该人”，再点同一人不收回查看
         BattleAllyView = BattleAllyView == actorId && BattleAction != null ? null : actorId;
         if (actorId != null) RevealBattleInfo("ally:" + actorId);
@@ -2813,6 +2820,7 @@ public sealed partial class GameSession
         {
             BattleTarget = null;
             BattleAllyView = null;
+            BattleExposureRef = null;   // BM11（Q845 B）：原 UI 清空查看时一并回默认行动者
             BattleHover = null;
             Notice = null;
             ClearSelectionSilently();
@@ -2998,6 +3006,7 @@ public sealed partial class GameSession
         BattleDrawer = null;
         MedTrayOpen = false;
         BattleAllyView = null;
+        BattleExposureRef = null;   // BM11（Q845 B）：换场／离场重置感染参考
         ClearPairDraft();
         ClearAmmoHold();   // BM11（Q919）：换场／离场清旧装填显示等待
         BattleShownActor = null;

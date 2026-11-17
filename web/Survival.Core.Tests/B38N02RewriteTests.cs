@@ -73,10 +73,10 @@ public class B38N02RewriteTests : TestBase
             JToken t = Section(section, id);
             foreach (var part in field.Split('.'))
                 t = t is JArray a ? a[int.Parse(part)] : t[part]!;
-            // B49（R04 Q746 ②）：原咬伤生存提示的咬伤句换成逐字稿 risk，饱饱两句保留（取代 N02 本条 replacement）
+            // B49（R04 Q746 ②）：原咬伤生存提示的咬伤句换成逐字稿 risk；BM11 改断言出处：R04 文首 2026-11-17 §Q843 A——饱饱两句合为“饱饱使主角病毒累积；免疫≥{阈值}时停止。”
             if (section == "progress" && field == "tips.13")
             {
-                Assert.That((string)t!, Is.EqualTo(GameEngine.ExposureRiskTipText + "饱饱也会让体内的病毒缓慢累积。免疫≥{baobaoSuppressImmunity}时，饱饱带来的病毒累积会停止。"));
+                Assert.That((string)t!, Is.EqualTo(GameEngine.ExposureRiskTipText + "饱饱使主角病毒累积；免疫≥{baobaoSuppressImmunity}时停止。"));
                 continue;
             }
             Assert.That((string)t!, Is.EqualTo((string)e["replacement"]!), $"{section}/{id}/{field}");

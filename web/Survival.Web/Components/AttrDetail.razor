@@ -77,7 +77,8 @@
             {
                 <div><span>按当前免疫每小时</span><b class="@(vr > 0 ? "warn-text" : "good-text")">@Ui.SignedT(vr)</b></div>
                 <div><span>连续高免疫</span><b>@Clock.Duration(b.HighImmunityMinutes)/@Clock.Duration(cfg.Infection.NaturalCure.Minutes)</b></div>
-                <div><span>自然治愈还需</span><b>病毒≤@Ui.T(cfg.Infection.NaturalCure.LoadAtMost)</b></div>
+                @* BM11（R04 Q847 A）：真实病毒已≤阈值时整行隐藏 *@
+                @if (e.ShowNaturalCureLoadRow(b)) { <div><span>自然治愈还需</span><b>病毒≤@Ui.T(cfg.Infection.NaturalCure.LoadAtMost)</b></div> }
             }
         </div>
         @* B49（Q746 ④）：病毒说明六段，各一段 *@

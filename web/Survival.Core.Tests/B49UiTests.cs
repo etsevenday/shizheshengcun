@@ -119,7 +119,8 @@ public class B49UiTests : B41cTestBase
         }
         Assert.That((s.Rng.State, s.Body.Infected), Is.EqualTo((r0, false)), "只读");
         var src = Web("Components", "BattlePanel.razor");
-        Assert.That(src, Does.Contain("<ExposureLines Info=\"@e.EnemyExposureInfoFor(s, ec, e.EnemyName(t), e.InBattleExposureReference(s))\" />"));
+        // BM11 改断言出处：R04 文首 2026-11-17 §Q845 B（参考跟明确查看的我方角色，网页传 G.BattleExposureRef）
+        Assert.That(src, Does.Contain("<ExposureLines Info=\"@e.EnemyExposureInfoFor(s, ec, e.EnemyName(t), e.InBattleExposureReference(s, G.BattleExposureRef))\" />"));
     }
 
     // ───────────── Q743 ─────────────
@@ -211,7 +212,8 @@ public class B49UiTests : B41cTestBase
         {
             "外部暴露分五类，概率和病毒量各异；仅主角有饱饱输入。同伴病毒不自然增长，新暴露仍可加量。",
             "主角有饱饱时：免疫低于80，每小时输入最多0.05病毒；免疫越高越少，净输入为正即感染（病毒至少1）。",
-            "自然变化：主角感染后每小时0≤免疫<40：+4/小时、40≤免疫<70：+2/小时、70≤免疫<80：+0.5/小时、80≤免疫≤100：−1.5/小时；同伴仅保留其中下降，正增长为0。未治愈时病毒最低1。",
+            // BM11 改断言出处：R04 文首 2026-11-17 §Q846 A（句首去重复“每小时”）
+            "自然变化：主角感染后0≤免疫<40：+4/小时、40≤免疫<70：+2/小时、70≤免疫<80：+0.5/小时、80≤免疫≤100：−1.5/小时；同伴仅保留其中下降，正增长为0。未治愈时病毒最低1。",
             "病毒达100即尸变；主角尸变结束本局。",
             "绷带、抗生素可降病毒，最低1；不能清除感染。",
             "治愈：免疫≥80持续12小时且病毒≤10，或使用病毒特效药。",
