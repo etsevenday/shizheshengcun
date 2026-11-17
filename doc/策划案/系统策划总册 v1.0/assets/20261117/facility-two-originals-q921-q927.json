@@ -1,0 +1,162 @@
+{
+  "date": "2026-11-17",
+  "status": "two_complete_originals_planning_not_runtime_verified",
+  "questions": [
+    921,
+    922,
+    923,
+    924,
+    925,
+    926,
+    927
+  ],
+  "originals": [
+    {
+      "batch": "B51c2a",
+      "questions": [
+        921,
+        922,
+        923
+      ]
+    },
+    {
+      "batch": "B51c2b",
+      "questions": [
+        924,
+        925,
+        926,
+        927
+      ]
+    }
+  ],
+  "choices": {
+    "921": "carry_user_Q906_B_not_original_A_or_B",
+    "922": "carry_user_Q877_Q878_no_visible_stop_count",
+    "923": "B",
+    "924": "B",
+    "925": "B",
+    "926": "A",
+    "927": "B"
+  },
+  "answers": {
+    "921": "沿用户已答Q906 B，不选旧A／B过渡。按本座独立燃料库存且不可取回交付：单项／全取不含燃料，未耗仅解锁留设施、已耗不退；不以旧可返燃料或地面预留版宣称完成。内部开发衔接自行安排，原料真实入设施与火堆分钟规则保持，见S11／S14本批。",
+    "922": "沿用户Q877／Q878：不向玩家显示中止批数或中止／时间燃料不退尾句，原A／B计数问题已取消，不再补选。实际取物后准确收束原加工／预留，不出未完产物XP、不重复退款，清单和地点真实，见S11／S14本批。",
+    "923": "选B。先完成B35a1独立设施卡／真实次级界面，再接B51c2a单项取出和全部取出，取代Q881 A在本范围的先旧制作页过渡方案。按钮直接在对应设施内各位／批及操作区，不做旧聚合页迁移版，见S11／S14本批。",
+    "924": "选B。余料可继续投料，本位对应配方合法余料先用，再按原合格／授权来源补足；确认齐料才原子开新批，复用原位、8位／10批实际占位不超，进度0不继承旧经验／时长。部分取料结束旧批，余料解锁留原位正常计时，新投仅暂停真实剩余保质；见S11／S14本批。",
+    "925": "选B。新设施卡点本体看右栏详情并可选数量／随身地面取出，也能拖到合法目标区；标题取出、目的地取到随身／取到地面、按钮确认{数量}，原S07数量规则保持。箭头／单项／全取保留，忙碌含暂停全禁、容量不偷改地面、来源稳定幂等，见S07／S11／S14本批。",
+    "926": "选A。晾架本批先做拖空位定位对应合法食谱预览，仍原投料／确认投料才迁入开工；正常占用拒已满，Q924 B可补投余料位为例外，可进对应补投预览。陶窑净水拖入仍独立工作区后接续，不扩本批验收；923 B独立界面前置保持，见S07／S11／S14本批。",
+    "927": "选B。火堆食物箭头也加长按，沿原单击1份／件取随身、现有同卡长按节奏和停止规则；取完／容量不足／不合法／松手即停，不串邻卡／新卡，不拆锅，不绕忙碌锁或产生双移。原火堆加工后果及实际清单反馈保持，见S09／S11／S14本批。"
+  },
+  "order": {
+    "independentFacilityUIBeforeTakeout": true,
+    "noLegacyCraftPanelTransition": true,
+    "supersedesQ881StagingOnly": true,
+    "fuel": "independent_nonwithdrawable_inventory_Q906_B",
+    "noVisibleStoppedBatchCount": true
+  },
+  "residual": {
+    "partialMoveStopsOldBatchAtomically": true,
+    "remainingUnlocksInOriginalFacilityPosition": true,
+    "allowsRefill": true,
+    "sourcePriority": [
+      "legal_residual_at_this_target_position_for_corresponding_recipe",
+      "original_qualified_authorized_sources_for_deficit"
+    ],
+    "retainsRealCapacity": true,
+    "reusePositionBeforeCountingNewBatch": true,
+    "dryingSlots": 8,
+    "kilnWaterOriginalBatchLimit": 10,
+    "newProgress": 0,
+    "noOldXpOrProgressCarry": true,
+    "onlyActualRemainingShelfLifePausedOnNewStart": true,
+    "previewAndAtomicRevalidation": true
+  },
+  "transfer": {
+    "cardSelectsDetailAndQuantity": true,
+    "quantityTitle": "取出",
+    "destinations": [
+      "取到随身",
+      "取到地面"
+    ],
+    "confirm": "确认{数量}",
+    "dragOut": true,
+    "originalS07DefaultOneAndShiftQuantity": true,
+    "arrowAndSingleAndAllPreserved": true,
+    "noSilentFallbackGround": true,
+    "allFourBusyIncludingPausedBlocked": true,
+    "noStaleIdentityOrDoubleCommit": true
+  },
+  "dragIn": {
+    "dryingThisStage": "target_original_legal_recipe_preview_then_original_feed_confirm",
+    "occupiedReason": "已满",
+    "residualRefillExceptionQ924": true,
+    "kilnWaterDragIn": "subsequent_after_independent_workspace_not_claimed_complete_this_stage"
+  },
+  "hold": {
+    "fireFoodArrowLongPress": true,
+    "sameCardOnly": true,
+    "existingCadenceAndStopRules": true,
+    "noWholePotSplit": true,
+    "noEnterGameplayHints": true
+  },
+  "otherOriginalB50a": {
+    "Q769": "needs_developer_normal_trigger_example_not_answered",
+    "Q770": "already_explicit_Q867_B_but_hold_for_whole_original",
+    "both02AnswersUnchanged": true,
+    "reviewDoc": "00 总则/09 B50a尾项正常触发复核交接 2026-11-17.md"
+  },
+  "acceptance": [
+    {
+      "id": "FACF-Q921-01",
+      "rule": "按份燃料先本座独立库存，全部取出不含燃料；未耗只解锁留设施、已耗不返，不沿原可返燃料／地面预留旧过渡报完成。"
+    },
+    {
+      "id": "FACF-Q922-01",
+      "rule": "实际取出后加工准确停止而反馈无中止批数／时间燃料不退尾句，不发未完成产物或经验。"
+    },
+    {
+      "id": "FACF-Q923-01",
+      "rule": "先交独立设施卡和次级页，再把单项／全部取出放本座界面，无旧聚合制作页临时迁移版本。"
+    },
+    {
+      "id": "FACF-Q924-01",
+      "rule": "取走部分原料旧批停止，余料留原位解锁计时且占位；余料可补投，新批先用合法本位余料再补原来源，不碰别位。"
+    },
+    {
+      "id": "FACF-Q924-02",
+      "rule": "黏土取1剩1再补1可新开陶壳批，原位复用但晾架8位／设施10受限条目不超上限。"
+    },
+    {
+      "id": "FACF-Q924-03",
+      "rule": "补投仅齐料确认后原子迁入／预留，失败无部分扣料；进度0、真实剩余保质暂停、旧批经验不重复。"
+    },
+    {
+      "id": "FACF-Q925-01",
+      "rule": "新设施卡点击看详情并有动作专属数量取出，随身／地面可选，箭头与单项／全取同时存在。"
+    },
+    {
+      "id": "FACF-Q925-02",
+      "rule": "可拖出到合法随身／地面，S07默认1份与Shift数量保持；松手不二次点击，目标变化不串卡，容量不足不偷落地。"
+    },
+    {
+      "id": "FACF-Q925-03",
+      "rule": "角色进行／暂停主子行动四类各移动路径均禁取，真实处置／容量和整锅内容保持；部分取料无幽灵加工。"
+    },
+    {
+      "id": "FACF-Q926-01",
+      "rule": "晾架拖空位只定位合法食谱预览，仍原投料确认才开；在制／成品占用拒已满，余料位按924可补投例外。"
+    },
+    {
+      "id": "FACF-Q926-02",
+      "rule": "陶窑净水拖入仍接续阶段，不把未实现拖入当本批通过；已独立界面不扩成三类本批都做。"
+    },
+    {
+      "id": "FACF-Q927-01",
+      "rule": "火堆食物箭头单击和长按同卡取随身，取完／容量不足／权限变化／松手即停，不拿邻卡／新卡。"
+    },
+    {
+      "id": "FACF-Q927-02",
+      "rule": "长按逐次唯一事务，无双扣或卡点击冒泡，原锅整体／原火堆进度与忙碌锁不变，不新增Enter或中止批数解释。"
+    }
+  ]
+}
