@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-17",
+  "status": "planning_target_not_runtime_verified",
+  "sourceCommit": "c246ab59a7091e661bd68a3327f8f8a4033ae188",
+  "originalBatch": "2026-11-17 来自 bc0b32ad B35a2（提前核对，次要）",
+  "questionIds": [
+    940,
+    941,
+    942,
+    943,
+    944,
+    945
+  ],
+  "answers": {
+    "Q940": "A",
+    "Q941": "A",
+    "Q942": "B_short_offered_copy",
+    "Q943": "C_short_offered_copy",
+    "Q944": "A",
+    "Q945": "A"
+  },
+  "companionConsent": {
+    "visibilityChecksRawInputsOnly": true,
+    "fuelShortageDoesNotHide": true,
+    "requiresPositiveRawShortfallAndLegalCompanionCoverage": true,
+    "noCheckboxForFuelOnlyShortfall": true,
+    "displayDoesNotAutoCheckOrDebit": true,
+    "fuelIndependentlyBlocksStart": true,
+    "noAutoFuelFromBackpackOrCompanion": true
+  },
+  "fuelQuantity": {
+    "buttonOpensPicker": true,
+    "dragOpensPicker": true,
+    "noQuickOneUnitCommit": true,
+    "shiftDoesNotSkipPicker": true,
+    "title": "添加燃料 · {燃料名}",
+    "confirm": "确认{数量}",
+    "min": 1,
+    "default": 1,
+    "integerOnly": true,
+    "maxFromLegalSourceAndExistingCapacity": true,
+    "cancelHasNoEffect": true,
+    "revalidateSourceFacilityLocationOwnershipReservationsCapacityAndIdle": true,
+    "noSilentSourceSwitchOrQuantityShrink": true,
+    "minutes": 0,
+    "ap": 0,
+    "xp": 0,
+    "requiresFullyIdle": true,
+    "commitOnce": true,
+    "preserveFireQuickWoodAndOtherDragRules": true
+  },
+  "copy": {
+    "noFuel": "无{燃料名}。",
+    "insufficientSourceFuel": "{燃料名}不足。",
+    "invalidSource": "来源不可用。",
+    "changed": "物品已变，请重选。",
+    "insufficientStationFuel": "燃料不足，先添加{燃料名}。",
+    "fuelHelp": "锻炉每份、陶窑每批耗木炭1。燃料须先投入本设施，不能取回。",
+    "workspaceFuel": "燃料：{燃料名}×{数量}（预留{n}）"
+  },
+  "sourceView": {
+    "includeOnlyRecipeRawInputsInMaterialCounts": true,
+    "separateStaticStationFuelNeed": true,
+    "staticNeed": "{设施名}每份配方另需{燃料名}{数量}",
+    "kilnUnit": "每批",
+    "deficitFromThisStationAvailableInventoryOnly": true,
+    "noDeficitOutsideCorrespondingStationWorkspace": true,
+    "keepOtherToolAndRawStatuses": true,
+    "mainCraftMaterialTableStillExcludesFuel": true
+  },
+  "inventoryDisplay": {
+    "extraFuelLineOnSceneCard": false,
+    "showLeftWorkspaceFuelAndReservations": true,
+    "totalIncludesReservedUnconsumed": true,
+    "availableFormula": "total - reserved",
+    "reservationInvariant": "0 <= reserved <= total",
+    "readActualStationIdentity": true,
+    "preserveFireMinuteCard": true,
+    "unfinishedSiteHasNoFuelInventoryBusiness": true
+  },
+  "sharedWithQ946": {
+    "inheritOnlyHelpTextWithoutReasking": true,
+    "doNotWriteQuestionAnswerBeforeWholeQ946OriginalComplete": true,
+    "rightRailSubitemStillNeedsThatOriginalDecision": true
+  },
+  "oldSaveQuestionsDeferred": true,
+  "acceptance": [
+    {
+      "id": "B35A2S-Q940-01",
+      "expected": "燃料0但同伴能补齐全部真实原料缺口时，仍显示供料勾选，燃料不足单独阻止开工。"
+    },
+    {
+      "id": "B35A2S-Q940-02",
+      "expected": "仅缺燃料不新增材料勾选；显示或勾选仅预览，不自动授权／扣同伴，也不先搬料后报缺燃料。"
+    },
+    {
+      "id": "B35A2S-Q941-01",
+      "expected": "按钮与普通拖燃料均先弹专属数量窗，默认1、确认N；不是快投1，Shift不跳过确认。"
+    },
+    {
+      "id": "B35A2S-Q941-02",
+      "expected": "N正整数且不超本路径合法可投余量／原容量，关窗不扣；确认重验变化则整次失败，不换源／缩量或重复提交。"
+    },
+    {
+      "id": "B35A2S-Q941-03",
+      "expected": "主子行动进行／暂停、移动途中与原战斗对白等均不能确认添燃料，空闲成功仍0分钟／0AP／0经验。"
+    },
+    {
+      "id": "B35A2S-Q942-01",
+      "expected": "无燃料、数量不足、来源非法分别用无燃料名／燃料名不足／来源不可用三句精简稿，不改实际资格。"
+    },
+    {
+      "id": "B35A2S-Q942-02",
+      "expected": "确认期间物品变化仍物品已变，请重选。其他忙碌与专门原因保留，不重复叠旧长句。"
+    },
+    {
+      "id": "B35A2S-Q943-01",
+      "expected": "系统说明逐字采用用户C两句，原混算／返燃料旧说法撤下；每份／批计一次原成本，库存不可取回保持。"
+    },
+    {
+      "id": "B35A2S-Q943-02",
+      "expected": "后续Q946只继承本帮助句，不在本次改其未齐原批的02答复或自动决定另一右栏子项。"
+    },
+    {
+      "id": "B35A2S-Q944-01",
+      "expected": "钢材来源原料铁矿3木炭1，另注本设施每份燃料1，不再原料炭2；实际成本／产物和制作材料表口径不改。"
+    },
+    {
+      "id": "B35A2S-Q944-02",
+      "expected": "本设施燃料不足按本座可用库存短句提示，不拿包地数量；非本设施工作区不列缺口行，工具等真实状态保留。"
+    },
+    {
+      "id": "B35A2S-Q945-01",
+      "expected": "场景锻炉陶窑卡不加库存行，工作区左侧以本座总库存含预留＋真实预留同源显示，不混另一座或重复扣算。"
+    },
+    {
+      "id": "B35A2S-Q945-02",
+      "expected": "灰工地不出现已建设施燃料业务，原火堆分钟条／投木及工地退建材规则保持，不能套用库存取回。"
+    }
+  ],
+  "originalDraftSourceCommit": "9a1c88e4830ff8c1cf8242ec8ddade704f492d84"
+}
