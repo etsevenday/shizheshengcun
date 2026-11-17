@@ -883,7 +883,7 @@ public class B53aTests : TestBase
         Assert.That(s.Items.Single(i => i.ItemId == "berry" && i.Owner == ItemInstance.Carried).Count, Is.EqualTo(3));
     }
 
-    // ───────────── 变异测试补测（Stryker 89a8295e..1b4fcc8e，开发记录 B53a.8） ─────────────
+    // ───────────── 变异测试补测（Stryker 89a8295e..717aa20b，开发记录 B53a.8） ─────────────
 
     private FacilityState GroundFac(GameState s) => s.Locations[s.Ground].Facility;
 
