@@ -126,7 +126,7 @@
                         title="@($"{qName}：回合初有效速度{qSpeed}{qSrc}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
                         aria-label="@($"{(chase ? "追击 " : "")}{qName}{(now ? "，行动中" : done ? "，已行动" : "")}")"
                         @onclick="() => QueueClick(qIdx)">
-                    <span class="q-art" aria-hidden="true">@if (qi <= 0) {<img src="@ArtAssets.ActorPortrait(s, qAlly!)" alt="" />} else { @Icons.Markup("enemy_" + be!.EnemyId) }</span>
+                    <span class="q-art" aria-hidden="true">@if (qi <= 0) {@ArtAssets.ActorFace(s, qAlly!)} else { @Icons.Markup("enemy_" + be!.EnemyId) }</span>
                     <span class="q-name">@qName</span>
                     @if (chase) { <span class="q-chase bdg" aria-hidden="true">追</span> }
                 </button>
@@ -179,7 +179,7 @@
             <div class="bc-who" aria-label="@BattleInfoCopy.WhoPanel">
                 <h3 class="bc-title">@BattleInfoCopy.WhoPanel</h3>
                 <div class="bc-who-head">
-                    <span class="bc-face" aria-hidden="true"><img src="@ArtAssets.ActorPortrait(s, whoId)" alt="" /></span>
+                    <span class="bc-face" aria-hidden="true">@ArtAssets.ActorFace(s, whoId)</span>
                     <span class="bc-who-name"><b>@meName · @(Math.Max(1, GameEngine.AllyPos(b, whoId)))号位</b><small class="@(actorWait ? "" : "now")">@(actorWait ? (GameEngine.AlliesOnField(b).Count > 1 ? "等待轮到我方" : "等待轮到你") : dlg ? "读完对话再行动" : $"{(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}")</small></span>
                 </div>
                 @* B34a（P05a）：当前行动者四行——行动点、体力、恐慌、当前武器 *@
@@ -1016,7 +1016,7 @@
             "retreat" => ("cmd_retreat", null, null),
             "end_turn" => ("cmd_end_turn", null, null),
             "bandage" or "use_antibiotics" or "use_antiviral_cure" => (ItemArt(o.Action), null, Qty(o.Action)),
-            _ => ("placeholder", null, null),
+            _ => ("glyph:unknown", null, null),   // BM11（Q883 暂用对应）：战斗未知指令兜底
         };
     }
 

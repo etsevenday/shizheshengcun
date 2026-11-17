@@ -436,6 +436,8 @@ div.card { cursor: pointer; }
 
 /* 结算 */
 .end-back { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: #050806d0; }
+/* BM11（S14／美术16 Q918 A）：死亡结算底图用 PXl 教堂 scene-d01_07 确切原图（art/q918，SHA 同 assets/20261117/q918-selected-scenes），原压暗层盖在图上；死亡记录浮层不加图 */
+.end-back.end-death { background: linear-gradient(#050806d0, #050806d0), url('../art/q918/scene-d01_07.webp') center / cover; }
 .end-card { width: 560px; padding: 30px 34px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; gap: 14px; }
 .end-card h2 { margin: 0; font-size: var(--fs-title); font-weight: 500; }
 .checklist { list-style: none; padding: 0; margin: 0; line-height: 2; }
@@ -1122,7 +1124,7 @@ kbd { font-size: var(--fs-aux); }
 .dlog-item.on { border-color: var(--accent); background: #2c3427; }
 .dlog-read { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
 .dlog-read-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: var(--fs-aux); color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
-.dlog-read-head img { width: 44px; height: 55px; object-fit: contain; border-radius: 6px; }
+.dlog-read-head img, .dlog-read-head svg { width: 44px; height: 55px; object-fit: contain; border-radius: 6px; flex: 0 0 auto; }   /* BM11（Q920）：主角头脸裁窗为内联 svg */
 .dlg-stream.static { overflow: visible; flex: 0 0 auto; }
 .dlog-empty { min-height: 160px; }
 
@@ -1808,3 +1810,6 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 /* ───── B37a2（P03a）：人物肖像与全身图按清单原比例显示，不拉伸（Q840 B 最近邻由根上 image-rendering 继承） ───── */
 .g3-face { object-fit: contain; }
 .g3-figure > .g3-fig { height: clamp(64px, 15vh, 240px); width: auto; max-width: 100%; }
+
+/* ───── BM11（S14／美术16 Q920 A）：地点人物卡细插画区各分辨率统一暂藏（名称、岗位、状态与按钮保持；B36b 排版另定） ───── */
+.npc-card .oc-art { display: none; }

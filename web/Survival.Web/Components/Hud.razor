@@ -87,7 +87,7 @@
     @* 负重块（§2 左栏「负重」「随身物品」，常用实值「{重量}公斤」「{已占卡位}/{卡位上限}」）：总重含穿戴，卡位只数随身物资根卡；
        轻装／超重照旧显示；减速与上限阈值收进悬停提示（窄栏放不下整句） *@
     <div class="sl-weight" title="@($"{weightTip}；超过{cfg.Carry.SoftGrams / 1000}公斤减速 · 上限{cfg.Carry.HardGrams / 1000}公斤")" aria-label="@($"{ShellText.Weight}{Ui.KgText(grams)}{(worn > 0 ? $"（含穿戴{Ui.KgText(worn)}）" : "")}，{(over ? "超重" : "轻装")}，{ShellText.Carried}{cardsUsed}/{e.MaxRootCards}")">
-        <span class="weight-icon" aria-hidden="true">@Icons.Markup("backpack")</span>
+        <span class="weight-icon" aria-hidden="true">@* BM11（Q883 暂用对应）：负重 glyph:storage *@@Icons.Markup("glyph:storage")</span>
         <div class="slw-row"><span>@ShellText.Weight</span><strong class="@(over ? "warn-text" : "")">@Ui.KgText(grams)</strong></div>
         <div class="slw-row"><span>@ShellText.Carried</span><b class="@(cardsUsed > e.MaxRootCards ? "warn-text" : "")">@cardsUsed/@(e.MaxRootCards)</b></div>
         <div class="slw-state @(over ? "warn-text" : "")">@(over ? "超重" : "轻装")</div>

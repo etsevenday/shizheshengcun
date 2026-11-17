@@ -42,12 +42,13 @@
             {
                 <div class="dlog-read" data-wheel="y" tabindex="0" aria-label="对话内容">
                     <div class="dlog-read-head">
-                        <img src="@ArtAssets.Portrait(ActorArt.Protagonist)" alt="主角（临时形象）" />
+                        @* BM11（Q920 A）：表头 44×55 主角用头脸裁窗；（Q886 A）正式肖像读屏只写名 *@
+                        @ArtAssets.Face(ActorArt.Protagonist, null, ActorArt.AltText(ActorArt.Protagonist, "主角"))
                         <span><b>@EventName(pick)</b> · @WhenWhere(pick)</span>
                         @* B37a2（Q811 A）：回看按记录里每句的 LineId 查发言身份；这组已结束，右侧取最后一句对方人物对白（代班用岗位 duty，不借原人图），整组无对方发言时省略 *@
                         @if (ActorArt.RightSpeakerLine(pick.Lines, int.MaxValue) is DialogueLine pickRight && pickRight.Speaker.Length > 0)
                         {
-                            <img src="@ArtAssets.LinePortrait(G.E.Config, pickRight)" alt="@($"{pickRight.Speaker}（临时形象）")" />
+                            <img src="@ArtAssets.LinePortrait(G.E.Config, pickRight)" alt="@ActorArt.AltText(ActorArt.ForLine(ArtAssets.Catalog, G.E.Config, pickRight) ?? ActorArt.Unknown, pickRight.Speaker)" />
                         }
                     </div>
                     <div class="dlg-stream static">

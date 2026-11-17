@@ -270,17 +270,26 @@ public class B37aArtTests
         foreach (var (_, key) in ArtCatalog.MissingObjects) Assert.That(Cat.HasSprite(key), Is.False, key);
     }
 
-    /// <summary>Q883（待答，B37a1 不做）：负重、昼夜、帮助四题与战斗兜底、空加工位、修理五个图位保持现有图，不按同义 glyph 接。</summary>
+    /// <summary>
+    /// BM11 改断言出处：S14／美术14／16 文首 2026-11-17 §Q883 用户新裁定（原 B37a1“保持现有图”取代）：9 处按同义 glyph 暂用接入，
+    /// 负重 storage／昼夜 watch／空位 add／维修 crafting／按键 help／Esc return／推进 progress／保存 save／未知 unknown；backpack／slot_empty／repair 旧图撤下。
+    /// </summary>
     [Test]
-    public void Q883_SlotsKeepCurrentArt()
+    public void Q883_SlotsUseInterimGlyphs()
     {
-        var slots = new[] { "backpack", "outdoor", "placeholder", "slot_empty", "repair" };
-        foreach (var k in slots) Assert.That(Cat.Plan(k), Is.EqualTo((ArtKind.Legacy, k)), k);
-        Assert.That(WebText("Components", "Hud.razor"), Does.Contain("Icons.Markup(\"backpack\")"));
-        Assert.That(ArtCatalog.RecipeKey(null, true, "x"), Is.EqualTo("repair"));
+        Assert.That(ArtCatalog.Q883Interim, Has.Count.EqualTo(9));
+        foreach (var (_, key) in ArtCatalog.Q883Interim) Assert.That(Cat.Plan(key), Is.EqualTo((ArtKind.Sprite, key)), key);
+        foreach (var k in new[] { "backpack", "slot_empty", "repair" }) Assert.That(Cat.Plan(k).Kind, Is.EqualTo(ArtKind.Missing), k);
+        Assert.That(Cat.Plan("outdoor"), Is.EqualTo((ArtKind.Legacy, "outdoor")), "探索帮助不在本题，仍原图");
+        Assert.That(WebText("Components", "Hud.razor"), Does.Contain("@Icons.Markup(\"glyph:storage\")").And.Not.Contain("\"backpack\""));
+        Assert.That(ArtCatalog.RecipeKey(null, true, "x"), Is.EqualTo("skillFamily:crafting"));
         var help = WebText("Services", "HelpCatalog.cs");
-        Assert.That(Regex.Matches(help, "Icon = \"placeholder\"").Count, Is.EqualTo(4), "按键／Esc／中央推进条／保存与继续");
-        Assert.That(help, Does.Contain("Id = \"clock\", Title = \"世界时钟与昼夜\", Icon = \"outdoor\""));
+        Assert.That(Regex.Matches(help, "Icon = \"placeholder\"").Count, Is.EqualTo(0));
+        foreach (var (id, icon) in new[] { ("keys", "glyph:help"), ("esc", "glyph:return"), ("progress", "glyph:progress"), ("save", "glyph:save") })
+            Assert.That(help, Does.Match($"Id = \"{id}\", Title = [^,]+, Icon = \"{Regex.Escape(icon)}\""), id);
+        Assert.That(help, Does.Contain("Id = \"clock\", Title = \"世界时钟与昼夜\", Icon = \"glyph:watch\""));
+        Assert.That(WebText("Components", "CraftOverlay.razor"), Does.Contain("(\"glyph:add\", \"空加工位\","));
+        Assert.That(WebText("Components", "BattleScreen.razor"), Does.Contain("_ => (\"glyph:unknown\", null, null),"));
     }
 
     // ───── M3：场景 ─────
@@ -347,7 +356,8 @@ public class B37aArtTests
         Assert.That(sources.Count, Is.GreaterThan(50));
         var all = string.Join("\n", sources.Select(File.ReadAllText));
         foreach (var g in gone) Assert.That(all, Does.Not.Contain(g), g);
-        Assert.That(Regex.Matches(all, "art/v08/creatures\\.png").Count, Is.EqualTo(2), "负重图位（Icons）与旧 .weight 样式，Q883 待答");
+        // BM11 改断言出处：S14 文首 2026-11-17 §Q883 用户新裁定——负重改 glyph:storage，代码里只剩旧 .weight 死样式一处
+        Assert.That(Regex.Matches(all, "art/v08/creatures\\.png").Count, Is.EqualTo(1), "仅旧 .weight 样式（无元素使用）");
         Assert.That(all, Does.Not.Contain("EnemyArtAlias").And.Not.Contain("RegisterCategories").And.Not.Contain("\"ph_"));
         foreach (var f in new[] { "Icons.Extracted.cs", "Icons.Combat.cs", "Icons.Status.cs" }) Assert.That(File.Exists(Web("Services", f)), Is.False, f);
     }

@@ -24,27 +24,38 @@ public static class ArtAssets
     }
 
     /// <summary>
-    /// Q883 待答：顶栏负重图标沿用 v08 creatures 图集第 14 格（原 B2 实测主体范围 12,0,79,88），等答复后再换；B37a1 只保留这一张旧图集。
-    /// </summary>
-    internal static string LegacyBackpack() =>
-        "<svg class=\"ink-sprite\" data-art=\"backpack\" viewBox=\"0 0 79 88\" aria-hidden=\"true\" focusable=\"false\"><svg width=\"79\" height=\"88\" viewBox=\"12 0 79 88\" style=\"overflow:hidden;width:79px;height:88px;max-width:none;max-height:none\"><image href=\"art/v08/creatures.png\" x=\"-200\" y=\"-300\" width=\"400\" height=\"400\" /></svg></svg>";
-
-    /// <summary>
     /// B37a2：人物肖像图地址（对白、对话记录、整备队员列表、战斗队列与操作台、人物详情缩略图）。身份由 <see cref="ActorArt"/> 决定；
-    /// 清单没有该肖像的落到 glyph:unknown 肖像；随机招募同伴保持现有临时形象（Q884 待答）。
+    /// 清单没有该肖像的落到 glyph:unknown 肖像（BM11 Q884 B：随机招募同伴也走这里）。
     /// </summary>
     public static string Portrait(string key) =>
-        key == ActorArt.RandomRecruitLegacy ? ActorArt.RandomRecruitLegacyFile
-        : ArtCatalog.Root + (Catalog.Portraits.TryGetValue(key, out var f) ? f : Catalog.Portraits[ActorArt.Unknown]);
+        ArtCatalog.Root + (Catalog.Portraits.TryGetValue(key, out var f) ? f : Catalog.Portraits[ActorArt.Unknown]);
 
     /// <summary>
-    /// B37a2：人物全身图（整备立绘、战斗站位、战斗特写、地点人物卡），清单裁窗原样显示；随机招募同伴保持现有临时形象 &lt;img&gt;（Q884 待答）。
+    /// B37a2：人物全身图（整备立绘、战斗站位、战斗特写、地点人物卡），清单裁窗原样显示。
     /// label 非空时整张图带读屏名（沿原 &lt;img alt&gt;），否则是装饰图。
     /// </summary>
-    public static Microsoft.AspNetCore.Components.MarkupString Figure(string key, string? cls = null, string? label = null) => new(
-        key == ActorArt.RandomRecruitLegacy
-            ? $"<img{(cls == null ? "" : $" class=\"{cls}\"")} src=\"{ActorArt.RandomRecruitLegacyFile}\" alt=\"{System.Net.WebUtility.HtmlEncode(label ?? "")}\" draggable=\"false\" />"
-            : Sprite(key, cls, label) ?? Sprite(ActorArt.Unknown, cls, label)!);
+    public static Microsoft.AspNetCore.Components.MarkupString Figure(string key, string? cls = null, string? label = null) =>
+        new(Sprite(key, cls, label) ?? Sprite(ActorArt.Unknown, cls, label)!);
+
+    /// <summary>
+    /// BM11（S14／美术16 Q920 A）：小头像图位（整备 34px、战斗顺序 26px、操作台 28px、对话记录表头 44×55、右栏人物缩略图）。
+    /// 主角 actor:p0 用原肖像图的头脸裁窗 <see cref="ActorArt.ProtagonistFaceCrop"/>（内联 SVG，按图位铺满居中裁切，全局最近邻）；其他人物沿原 &lt;img&gt; 整张肖像。
+    /// label 为 null 时是装饰图（aria-hidden），否则带读屏名。
+    /// </summary>
+    public static Microsoft.AspNetCore.Components.MarkupString Face(string key, string? cls = null, string? label = null)
+    {
+        var src = Portrait(key);
+        var c = cls == null ? "" : $" class=\"{cls}\"";
+        if (key != ActorArt.Protagonist)
+            return new($"<img{c} src=\"{src}\" alt=\"{System.Net.WebUtility.HtmlEncode(label ?? "")}\" draggable=\"false\" />");
+        var a11y = label == null ? "aria-hidden=\"true\"" : $"role=\"img\" aria-label=\"{System.Net.WebUtility.HtmlEncode(label)}\"";
+        var (w, h) = ActorArt.ProtagonistPortraitSize;
+        return new($"<svg{c} data-art=\"{key}#face\" viewBox=\"{ActorArt.ProtagonistFaceCrop}\" preserveAspectRatio=\"xMidYMid slice\" {a11y} focusable=\"false\"><image href=\"{src}\" width=\"{w}\" height=\"{h}\" /></svg>");
+    }
+
+    /// <summary>队伍角色的小头像（<see cref="Face"/>，身份同 <see cref="ActorArt.ForActor"/>）。</summary>
+    public static Microsoft.AspNetCore.Components.MarkupString ActorFace(Survival.Core.State.GameState s, string actorId, string? cls = null, string? label = null) =>
+        Face(ActorArt.ForActor(Catalog, s, actorId), cls, label);
 
     /// <summary>队伍角色的肖像地址（<see cref="ActorArt.ForActor"/>）。</summary>
     public static string ActorPortrait(Survival.Core.State.GameState s, string actorId) => Portrait(ActorArt.ForActor(Catalog, s, actorId));

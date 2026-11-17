@@ -31,7 +31,7 @@
                 {
                     var aid = id;
                     <button type="button" role="tab" aria-selected="@(aid == me)" class="g3-member @(aid == me ? "on" : "")" data-actor="@aid" data-gear-member="@aid" @onclick="() => G.GearPickActor(aid)">
-                        <img class="g3-face" src="@ArtAssets.ActorPortrait(s, aid)" alt="" draggable="false" />
+                        @ArtAssets.ActorFace(s, aid, "g3-face")
                         <span class="g3-mtext"><b>@e.ActorDisplayName(s, aid)</b><small>@GearPanelCopy.MemberLine(e.CarriedGramsOf(s, aid), e.RootCardCountOf(s, aid), e.MaxRootCards)</small></span>
                     </button>
                 }

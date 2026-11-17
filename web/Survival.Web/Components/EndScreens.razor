@@ -27,7 +27,7 @@
     var d = s.Progress.Death;
     var alive = d.Minute - e.Config.Time.StartAbsoluteMinute;
     @* B31d（Q333）：结算菜单开着时结算层不可操作、不取得键盘焦点（菜单盖在上面，关闭后回到同一结算） *@
-    <div class="end-back" role="alertdialog" aria-label="@(d.Zombified ? "尸变结算" : "死亡结算")" inert="@(G.MenuOpen || G.DeathLogOpen)">
+    <div class="end-back end-death" role="alertdialog" aria-label="@(d.Zombified ? "尸变结算" : "死亡结算")" inert="@(G.MenuOpen || G.DeathLogOpen)">
         <div class="end-card @(d.Zombified ? "zombified" : "")">
             <div class="eyebrow">第@(Clock.Day(d.Minute))日 @Clock.HHmm(d.Minute) · @e.LocName(d.LocationId)</div>
             <h2>@(d.Zombified ? "你已尸变" : "你没能活下来")</h2>

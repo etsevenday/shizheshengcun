@@ -538,7 +538,7 @@ else
             return new()
             {
                 (p.InputId, e.ItemName(p.InputId), $"1. 随身或当前地面备好{e.ItemName(p.InputId)}×{p.InputCount}（拖到火堆是加燃料）"),
-                ("slot_empty", "空加工位", $"2. 点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」，确认投料（占1位，不耗时）"),
+                ("glyph:add", "空加工位", $"2. 点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」，确认投料（占1位，不耗时）"),
                 ("fire_lit", "燃烧的火堆", $"3. 点火并保持燃料，{p.HeatMinutes}有效受热分钟；燃料另计，熄火保留进度"),
                 (p.OutputId, e.ItemName(p.OutputId), $"4. 原位变成{e.ItemName(p.OutputId)}×{p.OutputCount}，取出才进包；不给经验"),
             };

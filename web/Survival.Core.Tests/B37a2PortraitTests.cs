@@ -50,10 +50,9 @@ public class B37a2PortraitTests
         Assert.That(ActorArt.ForActor(Cat, s, GameState.PlayerId), Is.EqualTo("actor:p0"), "Q839 A");
         Assert.That(ActorArt.ForActor(Cat, s, "npc_lin_zhao"), Is.EqualTo("actor:npc_lin_zhao"), "命名人物 actor");
         Assert.That(ActorArt.ForActor(Cat, s, "escort_1"), Is.EqualTo("recruitTemplate:legacy_neutral"), "Q835 补问 B");
-        Assert.That(ActorArt.ForActor(Cat, s, "rc_3_1"), Is.EqualTo("legacy:random_recruit"), "Q884 待答：保持现有临时形象");
+        // BM11 改断言出处：A11／S14 文首 2026-11-17 §Q884 B（随机有职业招募同伴统一 glyph:unknown 问号占位）
+        Assert.That(ActorArt.ForActor(Cat, s, "rc_3_1"), Is.EqualTo("glyph:unknown"), "Q884 B：不用职业模板图冒充本人");
         Assert.That(ActorArt.ForActor(Cat, s, "ghost_actor"), Is.EqualTo("glyph:unknown"), "查不到不猜");
-        // 随机招募同伴的现有临时形象就是原 unknown.svg（02 Q884 游戏现状）
-        Assert.That(ActorArt.RandomRecruitLegacyFile, Is.EqualTo("img/portraits/unknown.svg"));
     }
 
     /// <summary>
@@ -191,14 +190,15 @@ public class B37a2PortraitTests
     {
         Assert.That(File.Exists(Web("wwwroot", "img", "portraits", "protagonist.svg")), Is.False);
         Assert.That(File.Exists(Web("wwwroot", "img", "portraits", "baobao.svg")), Is.False);
-        Assert.That(File.Exists(Web("wwwroot", "img", "portraits", "unknown.svg")), Is.True, "Q884 待答保留");
+        // BM11 改断言出处：§Q884 B——随机招募同伴改 glyph:unknown，原临时 unknown.svg 删除
+        Assert.That(File.Exists(Web("wwwroot", "img", "portraits", "unknown.svg")), Is.False, "Q884 B 后删除");
         var files = Directory.GetFiles(Web(), "*.*", SearchOption.AllDirectories)
             .Where(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) && !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
             .Where(f => new[] { ".razor", ".cs", ".css", ".js", ".html" }.Contains(Path.GetExtension(f)))
             .ToList();
         Assert.That(files.Count, Is.GreaterThan(50));
         var hits = files.Where(f => File.ReadAllText(f).Contains("img/portraits/")).Select(Path.GetFileName).ToList();
-        Assert.That(hits, Is.EqualTo(new[] { "ActorArt.cs" }));
+        Assert.That(hits, Is.Empty, "BM11（Q884 B）：已无任何引用");
     }
 
     /// <summary>七个组件按身份取图（接线）：对白层右侧跟当前句、对话记录按 LineId、战斗队列／操作台／站位／特写、整备、人物详情、地点人物卡。</summary>
@@ -211,10 +211,13 @@ public class B37a2PortraitTests
         var log = WebText("Components", "DialogueLogOverlay.razor");
         Assert.That(log, Does.Contain("ActorArt.RightSpeakerLine(pick.Lines, int.MaxValue)").And.Contain("@ArtAssets.LinePortrait(G.E.Config, pickRight)"));
         var bs = WebText("Components", "BattleScreen.razor");
-        Assert.That(bs, Does.Contain("<img src=\"@ArtAssets.ActorPortrait(s, qAlly!)\"").And.Contain("<img src=\"@ArtAssets.ActorPortrait(s, whoId)\"").And.Contain("@ArtAssets.ActorFigure(s, id, \"anc-fig\")"));
+        // BM11 改断言出处：S14／美术16 文首 2026-11-17 §Q920 A（小头像图位改 ArtAssets.ActorFace：主角头脸裁窗）
+        Assert.That(bs, Does.Contain("@ArtAssets.ActorFace(s, qAlly!)").And.Contain("@ArtAssets.ActorFace(s, whoId)").And.Contain("@ArtAssets.ActorFigure(s, id, \"anc-fig\")"));
         Assert.That(WebText("Components", "BattleFxLayer.razor"), Does.Contain("@if (u.IsAlly) { @ArtAssets.ActorFigure(G.VS, u.Id) }"));
-        Assert.That(WebText("Components", "MemberPeekDetail.razor"), Does.Contain("<Thumb><img src=\"@ArtAssets.ActorPortrait(s, id)\""));
-        Assert.That(WebText("Components", "PrologueCards.razor"), Does.Contain("@ArtAssets.Figure(ActorArt.ForNpc(ArtAssets.Catalog, n.NpcId, n.Substitute), \"npc-portrait\", $\"{n.Name}（临时形象）\")"));
+        Assert.That(WebText("Components", "MemberPeekDetail.razor"), Does.Contain("<Thumb>@ArtAssets.ActorFace(s, id)</Thumb>"));
+        // BM11 改断言出处：N02 附录／S14 文首 2026-11-17 §Q886 A（正式肖像读屏只写名，问号占位才加“（临时形象）”）
+        var pc = WebText("Components", "PrologueCards.razor");
+        Assert.That(pc, Does.Contain("var npcArt = ActorArt.ForNpc(ArtAssets.Catalog, n.NpcId, n.Substitute);").And.Contain("@ArtAssets.Figure(npcArt, \"npc-portrait\", ActorArt.AltText(npcArt, n.Name))"));
     }
 
     // ───── M7：顶栏键面图标、整备人物图、战斗特写 ─────
@@ -241,7 +244,8 @@ public class B37a2PortraitTests
     public void M7_GearAndBattleSlots()
     {
         var g = WebText("Components", "GearOverlay.razor");
-        Assert.That(g, Does.Contain("<img class=\"g3-face\" src=\"@ArtAssets.ActorPortrait(s, aid)\"").And.Contain("@ArtAssets.ActorFigure(s, me, \"g3-fig\")"));
+        // BM11 改断言出处：S14／美术16 文首 2026-11-17 §Q920 A（小头像图位改 ArtAssets.ActorFace：主角头脸裁窗）
+        Assert.That(g, Does.Contain("@ArtAssets.ActorFace(s, aid, \"g3-face\")").And.Contain("@ArtAssets.ActorFigure(s, me, \"g3-fig\")"));
         Assert.That(WebText("wwwroot", "css", "app.css"), Does.Contain(".g3-figure > .g3-fig {"));
         Assert.That(WebText("wwwroot", "css", "battle.css"), Does.Contain(".anc.ally.dying .anc-art > .anc-fig {"), "濒死黯淡跪姿沿用到全身图");
         // 清单全身裁窗：主角取 atlas-actor-survivor-sample.webp 原裁窗（Q839 A）

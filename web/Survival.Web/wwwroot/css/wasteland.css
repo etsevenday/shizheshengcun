@@ -163,7 +163,7 @@ button:is(:disabled, .gate-off) { cursor: not-allowed; }
 .footer .event b { color: var(--ink2-gold); }
 * { scrollbar-color: var(--ink2-paper-top) var(--ink2-black); scrollbar-width: thin; }
 ::-webkit-scrollbar-thumb, .row-scroll::-webkit-scrollbar-thumb, .fac-scroll::-webkit-scrollbar-thumb, .map-adjacent::-webkit-scrollbar-thumb { background: var(--ink2-iron); border: 1px solid var(--ink2-dark); border-radius: 2px; }
-.title-screen { background: linear-gradient(90deg, color-mix(in srgb, var(--ink2-black) 85%, transparent), color-mix(in srgb, var(--ink2-dark) 44%, transparent)), url('../art/v08/village.png') center / cover; }
+.title-screen { background: linear-gradient(90deg, color-mix(in srgb, var(--ink2-black) 85%, transparent), color-mix(in srgb, var(--ink2-dark) 44%, transparent)), url('../art/ink-v2/scene-01-幸存者营区.webp') center / cover; }   /* BM11（S14／美术16 Q918 A）：标题页用 PXa 营区 scene-01 原图 */
 .title-card { background: var(--iron-texture), color-mix(in srgb, var(--ink2-dark) 92%, transparent); border: 2px solid var(--ink2-meter-gold); border-radius: 4px; box-shadow: 0 16px 80px color-mix(in srgb, var(--ink2-black) 67%, transparent); }
 .title-card h1 { color: var(--ink2-gold); font-family: var(--title-font); font-weight: 700; }
 

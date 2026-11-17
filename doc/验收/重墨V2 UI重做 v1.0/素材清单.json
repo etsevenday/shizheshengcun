@@ -2348,8 +2348,8 @@
     "object": "spoiled_matter",
     "name": "腐败物",
     "key": "item:spoiled_matter",
-    "status": "现有占位（Q838 缺项）",
-    "shownAs": "原“材料”分类占位矢量图"
+    "status": "暂用，待开发替换（Q885 A）",
+    "shownAs": "B50a Q766 专用腐败物 SVG（Icons spoiled_matter）"
    }
   ],
   "敌人 enemy": [
@@ -7015,36 +7015,123 @@
     ]
    }
   ],
-  "Q883 待答图位": [
+  "Q883 暂用同义图位": [
    {
     "object": "backpack",
     "name": "顶栏负重",
-    "status": "现有图（Q883 待答）",
-    "shownAs": "art/v08/creatures.png 第 14 格"
+    "key": "glyph:storage",
+    "status": "暂用，待开发替换（Q883 用户新裁定）",
+    "file": "art/ink-v2/atlas-ui-icons-03.webp",
+    "crop": [
+     757,
+     280,
+     233,
+     207
+    ]
    },
    {
     "object": "outdoor",
     "name": "帮助“世界时钟与昼夜”",
-    "status": "现有图（Q883 待答）",
-    "shownAs": "现有矢量图"
-   },
-   {
-    "object": "placeholder",
-    "name": "帮助“按键／Esc／中央推进条／保存与继续”四题、战斗未知指令兜底",
-    "status": "现有图（Q883 待答）",
-    "shownAs": "统一占位矢量图"
+    "key": "glyph:watch",
+    "status": "暂用，待开发替换（Q883 用户新裁定）",
+    "file": "art/ink-v2/atlas-ui-icons-03.webp",
+    "crop": [
+     1032,
+     752,
+     190,
+     233
+    ]
    },
    {
     "object": "slot_empty",
     "name": "制作帮助“空加工位”",
-    "status": "现有图（Q883 待答）",
-    "shownAs": "现有矢量图"
+    "key": "glyph:add",
+    "status": "暂用，待开发替换（Q883 用户新裁定）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     764,
+     541,
+     201,
+     205
+    ]
    },
    {
     "object": "repair",
     "name": "修理配方",
-    "status": "现有图（Q883 待答）",
-    "shownAs": "现有矢量图"
+    "key": "skillFamily:crafting",
+    "status": "暂用，待开发替换（Q883 用户新裁定）",
+    "file": "art/ink-v2/atlas-skills-01.webp",
+    "crop": [
+     643,
+     645,
+     277,
+     270
+    ]
+   },
+   {
+    "object": "placeholder#keys",
+    "name": "帮助“按键”",
+    "key": "glyph:help",
+    "status": "暂用，待开发替换（Q883 用户新裁定）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     997,
+     789,
+     229,
+     180
+    ]
+   },
+   {
+    "object": "placeholder#esc",
+    "name": "帮助“Esc”",
+    "key": "glyph:return",
+    "status": "暂用，待开发替换（Q883 用户新裁定）",
+    "file": "art/ink-v2/atlas-ui-icons-03.webp",
+    "crop": [
+     277,
+     289,
+     207,
+     198
+    ]
+   },
+   {
+    "object": "placeholder#progress",
+    "name": "帮助“中央推进条、暂停与退出”",
+    "key": "glyph:progress",
+    "status": "暂用，待开发替换（Q883 用户新裁定）",
+    "file": "art/ink-v2/atlas-ui-icons-02.webp",
+    "crop": [
+     513,
+     360,
+     230,
+     86
+    ]
+   },
+   {
+    "object": "placeholder#save",
+    "name": "帮助“保存与继续”",
+    "key": "glyph:save",
+    "status": "暂用，待开发替换（Q883 用户新裁定）",
+    "file": "art/ink-v2/atlas-ui-icons-03.webp",
+    "crop": [
+     33,
+     292,
+     199,
+     196
+    ]
+   },
+   {
+    "object": "placeholder#battle",
+    "name": "战斗未知指令兜底",
+    "key": "glyph:unknown",
+    "status": "暂用，待开发替换（Q883 用户新裁定）",
+    "file": "art/ink-v2/atlas-ui-icons-03.webp",
+    "crop": [
+     515,
+     518,
+     217,
+     212
+    ]
    }
   ],
   "人物 portrait": [
@@ -7694,66 +7781,74 @@
     ]
    },
    {
+    "object": "random_recruit",
+    "name": "随机有职业招募同伴",
+    "key": "glyph:unknown",
+    "status": "暂用，待开发替换（Q884 B）",
+    "use": "编队、整备、战斗、特写、队列、人物卡、对白（正式个人图齐后同人统一替换）",
+    "portrait": "art/ink-v2/portrait-glyph-unknown.webp"
+   },
+   {
     "object": "blade_hand",
     "name": "名册职业模板",
     "key": "recruitTemplate:blade_hand",
-    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "status": "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）",
     "portrait": "art/ink-v2/portrait-recruitTemplate-blade_hand.webp"
    },
    {
     "object": "breaker",
     "name": "名册职业模板",
     "key": "recruitTemplate:breaker",
-    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "status": "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）",
     "portrait": "art/ink-v2/portrait-recruitTemplate-breaker.webp"
    },
    {
     "object": "camp_nurse",
     "name": "名册职业模板",
     "key": "recruitTemplate:camp_nurse",
-    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "status": "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）",
     "portrait": "art/ink-v2/portrait-recruitTemplate-camp_nurse.webp"
    },
    {
     "object": "coordinator",
     "name": "名册职业模板",
     "key": "recruitTemplate:coordinator",
-    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "status": "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）",
     "portrait": "art/ink-v2/portrait-recruitTemplate-coordinator.webp"
    },
    {
     "object": "front_guard",
     "name": "名册职业模板",
     "key": "recruitTemplate:front_guard",
-    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "status": "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）",
     "portrait": "art/ink-v2/portrait-recruitTemplate-front_guard.webp"
    },
    {
     "object": "hunter",
     "name": "名册职业模板",
     "key": "recruitTemplate:hunter",
-    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "status": "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）",
     "portrait": "art/ink-v2/portrait-recruitTemplate-hunter.webp"
    },
    {
     "object": "old_service",
     "name": "名册职业模板",
     "key": "recruitTemplate:old_service",
-    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "status": "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）",
     "portrait": "art/ink-v2/portrait-recruitTemplate-old_service.webp"
    },
    {
     "object": "salvager",
     "name": "名册职业模板",
     "key": "recruitTemplate:salvager",
-    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "status": "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）",
     "portrait": "art/ink-v2/portrait-recruitTemplate-salvager.webp"
    },
    {
     "object": "spear_walker",
     "name": "名册职业模板",
     "key": "recruitTemplate:spear_walker",
-    "status": "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）",
+    "status": "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）",
     "portrait": "art/ink-v2/portrait-recruitTemplate-spear_walker.webp"
    }
   ],
@@ -8779,7 +8874,7 @@
  "summary": {
   "物品 item": {
    "正式（ink-v2）": 180,
-   "现有占位（Q838 缺项）": 1
+   "暂用，待开发替换（Q885 A）": 1
   },
   "敌人 enemy": {
    "正式（ink-v2）": 42
@@ -8814,12 +8909,13 @@
   "徒手 fists": {
    "正式（ink-v2）": 1
   },
-  "Q883 待答图位": {
-   "现有图（Q883 待答）": 5
+  "Q883 暂用同义图位": {
+   "暂用，待开发替换（Q883 用户新裁定）": 9
   },
   "人物 portrait": {
    "正式（ink-v2）": 43,
-   "已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）": 9
+   "暂用，待开发替换（Q884 B）": 1,
+   "已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）": 9
   },
   "顶栏键面 glyph": {
    "正式（ink-v2）": 12

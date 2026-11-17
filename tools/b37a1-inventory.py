@@ -2,6 +2,7 @@
 # 《doc/验收/重墨V2 UI重做 v1.0/素材清单.json》：每个游戏对象用哪个稳定 ID、取到哪张图、属于哪一类（正式／批准旧图／占位缺项／现有图待答）。
 # 规则与 web/Survival.Web/Services/ArtCatalog.cs 一致（同义、缺项、批准旧地景、Q837 占位、Q883 现有图）；只读，不改游戏文件。
 # B37a2 起加「人物 portrait」「顶栏键面 glyph」两组。
+# BM11（2026-11-17）：Q883 用户新裁定 9 处同义 glyph、Q884 B 随机招募同伴 glyph:unknown、Q885 A 腐败物 SVG 暂接，均记“暂用，待开发替换”。
 # 用法：python tools/b37a1-inventory.py
 import json, re
 from pathlib import Path
@@ -18,7 +19,8 @@ Q837 = {'a01', 'a02', 'a03', 'b02', 'b03', 'o03'} | {f'w{i:02d}' for i in range(
 MISSING = {'item:spoiled_matter': '腐败物', 'status:dying': '濒死', 'skillFamily:stealth': '潜行', 'skillFamily:willpower': '意志',
            'document:relief_page_village': '公开救助残页'}
 
-S_FORMAL, S_OLD, S_HOLD, S_MISSING, S_Q883 = '正式（ink-v2）', '批准沿用旧地景（16号稿）', '统一占位（Q837 缺项）', '现有占位（Q838 缺项）', '现有图（Q883 待答）'
+S_FORMAL, S_OLD, S_HOLD, S_MISSING = '正式（ink-v2）', '批准沿用旧地景（16号稿）', '统一占位（Q837 缺项）', '现有占位（Q838 缺项）'
+S_INTERIM = '暂用，待开发替换'
 
 
 def sprite_row(obj, name, key, shown_as=None):
@@ -32,6 +34,9 @@ out = {'source': 'a9b93f0 ' + MAN['source'], 'sourceSha256': MAN['sourceSha256']
 G = out['groups']
 
 G['物品 item'] = [sprite_row(it['id'], it['name'], 'item:' + it['id'], '原“材料”分类占位矢量图') for it in CFG['items']]
+for r in G['物品 item']:
+    if r['object'] == 'spoiled_matter':   # Q885 A：B53 专用腐败物 SVG 暂接，不算缺项清零
+        r.update({'status': S_INTERIM + '（Q885 A）', 'shownAs': 'B50a Q766 专用腐败物 SVG（Icons spoiled_matter）'})
 G['敌人 enemy'] = [sprite_row(e['id'], e['name'], 'enemy:' + e['id']) for e in CFG['enemies']]
 G['技能 skill'] = [sprite_row(n['id'], n['name'], 'skill:' + n['id']) for n in CFG['skillNodes']]
 G['熟练度门类 skillFamily'] = [sprite_row(s['id'], s['name'], 'skillFamily:' + s['id'], '无图位（门类页属 B36）') for s in CFG['skills']]
@@ -57,17 +62,16 @@ G['序章文书 document'] = [
     {'object': 'relief_page_village', 'name': '公开救助残页', 'key': 'document:relief_page_village', 'status': S_MISSING, 'shownAs': '统一占位矢量图 placeholder'},
 ]
 G['徒手 fists'] = [{'object': 'fists', 'name': '徒手（Q838 同义）', 'key': 'skillFamily:unarmed', 'status': S_FORMAL, 'file': 'art/ink-v2/' + SPRITES['skillFamily:unarmed']['file'], 'crop': SPRITES['skillFamily:unarmed']['crop']}]
-G['Q883 待答图位'] = [
-    {'object': 'backpack', 'name': '顶栏负重', 'status': S_Q883, 'shownAs': 'art/v08/creatures.png 第 14 格'},
-    {'object': 'outdoor', 'name': '帮助“世界时钟与昼夜”', 'status': S_Q883, 'shownAs': '现有矢量图'},
-    {'object': 'placeholder', 'name': '帮助“按键／Esc／中央推进条／保存与继续”四题、战斗未知指令兜底', 'status': S_Q883, 'shownAs': '统一占位矢量图'},
-    {'object': 'slot_empty', 'name': '制作帮助“空加工位”', 'status': S_Q883, 'shownAs': '现有矢量图'},
-    {'object': 'repair', 'name': '修理配方', 'status': S_Q883, 'shownAs': '现有矢量图'},
-]
+Q883 = [('backpack', '顶栏负重', 'glyph:storage'), ('outdoor', '帮助“世界时钟与昼夜”', 'glyph:watch'), ('slot_empty', '制作帮助“空加工位”', 'glyph:add'),
+        ('repair', '修理配方', 'skillFamily:crafting'), ('placeholder#keys', '帮助“按键”', 'glyph:help'), ('placeholder#esc', '帮助“Esc”', 'glyph:return'),
+        ('placeholder#progress', '帮助“中央推进条、暂停与退出”', 'glyph:progress'), ('placeholder#save', '帮助“保存与继续”', 'glyph:save'),
+        ('placeholder#battle', '战斗未知指令兜底', 'glyph:unknown')]
+G['Q883 暂用同义图位'] = [{'object': o, 'name': n, 'key': k, 'status': S_INTERIM + '（Q883 用户新裁定）', 'file': 'art/ink-v2/' + SPRITES[k]['file'], 'crop': SPRITES[k]['crop']}
+                     for o, n, k in Q883]
 
 # B37a2：人物肖像（portraits 单张 webp）与全身图（sprites 同键裁窗）按身份接线，规则同 web/Survival.Web/Services/ActorArt.cs
 PORTRAITS = MAN['portraits']
-S_Q884 = '已随发未接（Q884 待答，随机招募同伴仍用原 img/portraits/unknown.svg）'
+S_Q884 = '已随发未接（Q884 B：随机招募同伴正式个人图未齐前统一 glyph:unknown，不用职业模板图冒充本人）'
 
 
 def person_row(obj, name, key, use):
@@ -88,6 +92,8 @@ for c in CFG['party']['namedCompanions']:
     people.append(person_row(c['actorId'], c['name'], 'actor:' + c['actorId'], '固定同行者：邀约卡、对白、整备、战斗、人物详情'))
 people.append(person_row('escort', '无职业保底护送员', 'recruitTemplate:legacy_neutral', '整备、战斗、人物详情（Q835 补问 B）'))
 people.append(person_row('unknown', '查不到身份', 'glyph:unknown', '中性标记（Q811 A 不猜）'))
+people.append({'object': 'random_recruit', 'name': '随机有职业招募同伴', 'key': 'glyph:unknown', 'status': S_INTERIM + '（Q884 B）',
+               'use': '编队、整备、战斗、特写、队列、人物卡、对白（正式个人图齐后同人统一替换）', 'portrait': 'art/ink-v2/' + PORTRAITS['glyph:unknown']})
 for k in sorted(x for x in PORTRAITS if x.startswith('recruitTemplate:') and x != 'recruitTemplate:legacy_neutral'):
     people.append({'object': k.split(':', 1)[1], 'name': '名册职业模板', 'key': k, 'status': S_Q884, 'portrait': 'art/ink-v2/' + PORTRAITS[k]})
 G['人物 portrait'] = people

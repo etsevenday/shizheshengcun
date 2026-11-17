@@ -7,7 +7,7 @@ namespace Survival.Web.Services;
 /// <summary>
 /// B37a2（Q806 A、Q811 A、Q835 补问 B、Q839 A）：人物肖像／全身图按身份取 ink-v2 清单图。只决定“用哪个稳定 ID”，不读不写存档字段。
 /// 查询顺序：在岗人物 actor:{id} → 代班岗位 duty:{岗位 npcId} → 主角 actor:p0 → 无职业保底护送员 recruitTemplate:legacy_neutral → 查不到 glyph:unknown。
-/// 随机招募同伴（名册 Kind=random）过渡图 Q884 待答，保持现有临时形象（<see cref="RandomRecruitLegacy"/>）。
+/// BM11（A11／S14 Q884 B）：随机有职业招募同伴正式个人图未齐前统一 glyph:unknown 问号占位，不用职业模板图冒充本人。
 /// 纯规则，不依赖界面；测试项目直接编译本文件（见 Survival.Core.Tests.csproj）。
 /// </summary>
 public static class ActorArt
@@ -20,17 +20,23 @@ public static class ActorArt
     public const string EscortFallback = "recruitTemplate:legacy_neutral";
     /// <summary>查不到具体身份时的中性标记（Q811 A“不猜另一名人物”；16 号稿“没有专属肖像的角色使用新版中性标记”）。</summary>
     public const string Unknown = "glyph:unknown";
-    /// <summary>Q884 待答：随机招募同伴在 Q835 正式图到位前的过渡图未定，保持现有临时形象（不是清单键）。</summary>
-    public const string RandomRecruitLegacy = "legacy:random_recruit";
-    /// <summary><see cref="RandomRecruitLegacy"/> 对应的现有文件（B37a2 后 img/portraits 只剩这一张）。</summary>
-    public const string RandomRecruitLegacyFile = "img/portraits/unknown.svg";
+    /// <summary>BM11（Q920 A）：主角小头像图位的头脸裁窗（portrait-actor-p0.webp 160×240 内的 viewBox：x y 宽 高），开发按原图头脸范围（约 x59—105、y2—56）取。</summary>
+    public const string ProtagonistFaceCrop = "54 0 60 60";
+    /// <summary>主角肖像图（清单 portraits actor:p0）像素尺寸。</summary>
+    public static readonly (int W, int H) ProtagonistPortraitSize = (160, 240);
 
-    /// <summary>队伍里的一个角色（整备、战斗站位／队列／操作台、特写、人物详情）：主角 → 随机招募（Q884 待答，现状）→ 保底护送员 → 命名人物 actor → 查不到。</summary>
+    /// <summary>
+    /// BM11（N02 附录／S14 Q886 A）：头像读屏替代文字——正式肖像只写实际显示名；仍是过渡问号 glyph:unknown 时写“{显示名}（临时形象）”。
+    /// 已批准的固定通用补员图（recruitTemplate:legacy_neutral）是正式图，不算临时。
+    /// </summary>
+    public static string AltText(string key, string name) => key == Unknown ? $"{name}（临时形象）" : name;
+
+    /// <summary>队伍里的一个角色（整备、战斗站位／队列／操作台、特写、人物详情）：主角 → 随机招募（Q884 B 问号占位）→ 保底护送员 → 命名人物 actor → 查不到。</summary>
     public static string ForActor(ArtCatalog cat, GameState s, string actorId)
     {
         if (actorId == GameState.PlayerId) return Protagonist;
         var r = s.Roster.FirstOrDefault(x => x.ActorId == actorId);
-        if (r != null && r.IsRandom) return RandomRecruitLegacy;
+        if (r != null && r.IsRandom) return Unknown;
         if (r != null && r.IsEscort) return Known(cat, EscortFallback);
         return Known(cat, "actor:" + actorId);
     }

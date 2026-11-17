@@ -128,7 +128,7 @@ public static class HelpCatalog
                 // BM2（Q495）：「界面分区」之后的「键盘快捷键」——导语、四个区与表旁三句逐字取自 ShellKeyHelp，键位与按钮同源（ShellKeys）
                 new HelpEntry
                 {
-                    Id = "keys", Title = ShellKeyHelp.Title, Icon = "placeholder",
+                    Id = "keys", Title = ShellKeyHelp.Title, Icon = "glyph:help",   // BM11（Q883 暂用对应）
                     Paragraphs = (e, s) => new[] { ShellKeyHelp.Lead },
                     KeyGroups = ShellKeyHelp.Groups,
                     After = ShellKeyHelp.Notes,
@@ -167,7 +167,7 @@ public static class HelpCatalog
                 new HelpEntry
                 {
                     // BM2（Q501）：标题改「ESC 与界面层级」，正文换成六段定稿（原位置、原入口）
-                    Id = "esc", Title = ShellKeyHelp.EscTitle, Icon = "placeholder",
+                    Id = "esc", Title = ShellKeyHelp.EscTitle, Icon = "glyph:return",   // BM11（Q883 暂用对应）
                     Paragraphs = (e, s) => ShellKeyHelp.EscParagraphs,
                 },
                 new HelpEntry
@@ -202,7 +202,7 @@ public static class HelpCatalog
             {
                 new HelpEntry
                 {
-                    Id = "clock", Title = "世界时钟与昼夜", Icon = "outdoor",
+                    Id = "clock", Title = "世界时钟与昼夜", Icon = "glyph:watch",   // BM11（Q883 暂用对应）
                     Paragraphs = (e, s) => new[]
                     {
                         $"游戏时间只在你开始行动后流逝，按{e.Config.Time.TickMinutes}分钟一段推进；浏览、整理物品、看说明都不推进时间。关闭页面后时间不会自己走。",
@@ -225,7 +225,7 @@ public static class HelpCatalog
                 },
                 new HelpEntry
                 {
-                    Id = "progress", Title = "中央推进条、暂停与退出", Icon = "placeholder",
+                    Id = "progress", Title = "中央推进条、暂停与退出", Icon = "glyph:progress",   // BM11（Q883 暂用对应）
                     Paragraphs = (e, s) => new[]
                     {
                         "行动开始后，屏幕中央出现推进条：行动名、进度、剩余游戏时间；允许退出的行动另有“退出行动”。固定时长写“剩余”，会受倍率或燃料影响的写“预计剩余”。",
@@ -255,7 +255,7 @@ public static class HelpCatalog
                 },
                 new HelpEntry
                 {
-                    Id = "save", Title = "保存与继续", Icon = "placeholder",
+                    Id = "save", Title = "保存与继续", Icon = "glyph:save",   // BM11（Q883 暂用对应）
                     // B40（S01 Q388）：三段正式说明，逐字取 SaveSlots.HelpParagraphs
                     Paragraphs = (e, s) => Survival.Core.Save.SaveSlots.HelpParagraphs,
                 },

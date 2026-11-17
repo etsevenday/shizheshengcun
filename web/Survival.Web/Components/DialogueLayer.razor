@@ -43,7 +43,7 @@
     <div class="dlg-layer @(ghost ? "dlg-ghost" : still ? "dlg-static" : "")" role="@(ghost ? null : "dialog")" aria-modal="@(ghost ? null : "true")" aria-hidden="@(ghost ? "true" : null)" aria-label="@v.AriaName" inert="@(G.MenuOpen || G.BattleMenuOpen)">
         <div class="dlg-side left @(leftSpeaking ? "speaking" : "idle")" inert="@ghost">
             <div class="dlg-face">
-                <img class="dlg-portrait" src="@ArtAssets.Portrait(ActorArt.Protagonist)" alt="主角（临时形象）" draggable="false" />
+                <img class="dlg-portrait" src="@ArtAssets.Portrait(ActorArt.Protagonist)" alt="@ActorArt.AltText(ActorArt.Protagonist, "主角")" draggable="false" />
                 <div class="dlg-name"><b>你</b>@if (leftSpeaking) {<em>发言中</em>}</div>
             </div>
         </div>
@@ -83,7 +83,7 @@
             @if (rightLine != null && other.Length > 0)
             {
                 <div class="dlg-face">
-                    <img class="dlg-portrait" src="@ArtAssets.LinePortrait(G.E.Config, rightLine)" alt="@($"{other}（临时形象）")" draggable="false" />
+                    <img class="dlg-portrait" src="@ArtAssets.LinePortrait(G.E.Config, rightLine)" alt="@ActorArt.AltText(ActorArt.ForLine(ArtAssets.Catalog, G.E.Config, rightLine) ?? ActorArt.Unknown, other)" draggable="false" />
                     <div class="dlg-name"><b>@other</b>@if (rightSpeaking) {<em>发言中</em>}</div>
                 </div>
             }

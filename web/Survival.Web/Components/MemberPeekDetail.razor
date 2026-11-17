@@ -29,7 +29,7 @@
     @* BM4b（Q589「人物」）：紧凑表头——名称（类别·所属）＋号位／候补作来源行；背景句沿原写法在表头下 *@
     @* M835：表头小缩略图沿整备页做法；B37a2：与整备队员列表同一肖像（ArtAssets.ActorPortrait，ActorArt 身份顺序） *@
     <RailHead Source="@where">
-        <Thumb><img src="@ArtAssets.ActorPortrait(s, id)" alt="" draggable="false" /></Thumb>
+        <Thumb>@ArtAssets.ActorFace(s, id)</Thumb>
         <Name>@name@if (kind != "") { <small class="muted"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</small> }</Name>
         <Sub>@if (named != null && named.Background != "") { <p class="rail-note muted">@kindTip</p> }</Sub>
     </RailHead>

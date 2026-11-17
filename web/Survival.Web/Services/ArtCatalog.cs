@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace Survival.Web.Services;
 
-/// <summary>取图方式：清单位图、保留的旧图（Q883 待答图位与登记缺图对象的现有占位）、或统一缺图占位。</summary>
+/// <summary>取图方式：清单位图、保留的旧图（登记缺图对象的现有占位）、或统一缺图占位。</summary>
 public enum ArtKind { Sprite, Legacy, Missing }
 
 /// <summary>
@@ -39,12 +39,27 @@ public sealed class ArtCatalog
     };
 
     /// <summary>
-    /// 保留现有图的旧键：Q883（待答）的负重 backpack、昼夜 outdoor、帮助四题与战斗兜底 placeholder、空加工位 slot_empty、修理 repair；
-    /// Q838 登记缺图对象的现有占位：腐败物 spoiled_matter（原分类占位图）。公开救助残页用 placeholder，濒死用 status_unknown（清单内统一状态占位）。
+    /// 保留现有图的旧键：探索帮助 outdoor、统一缺图占位 placeholder（公开救助残页、其他缺图兜底）；腐败物 spoiled_matter（B53 专用 SVG，Q885 A 暂接、待开发替换）。
+    /// BM11（Q883 用户新裁定）：负重、昼夜、帮助四题、空加工位、修理、战斗未知指令 9 处改接同义 glyph（暂用，待开发替换），backpack／slot_empty／repair 旧图撤下。
+    /// 濒死用 status_unknown（清单内统一状态占位）。
     /// </summary>
     public static readonly IReadOnlySet<string> LegacyKept = new HashSet<string>(StringComparer.Ordinal)
     {
-        "backpack", "outdoor", "placeholder", "slot_empty", "repair", "spoiled_matter",
+        "outdoor", "placeholder", "spoiled_matter",
+    };
+
+    /// <summary>BM11（Q883 用户新裁定）：9 处暂用同义 glyph（图位 → 稳定 ID），素材清单记“暂用，待开发替换”。</summary>
+    public static readonly IReadOnlyList<(string Slot, string Key)> Q883Interim = new[]
+    {
+        ("顶栏负重", "glyph:storage"),
+        ("帮助“世界时钟与昼夜”", "glyph:watch"),
+        ("制作帮助“空加工位”", "glyph:add"),
+        ("修理配方", "skillFamily:crafting"),
+        ("帮助“按键”", "glyph:help"),
+        ("帮助“Esc”", "glyph:return"),
+        ("帮助“中央推进条、暂停与退出”", "glyph:progress"),
+        ("帮助“保存与继续”", "glyph:save"),
+        ("战斗未知指令兜底", "glyph:unknown"),
     };
 
     /// <summary>Q838：继续占位、登记缺项的五个对象（对象名 → 应有的稳定 ID）。</summary>
@@ -125,7 +140,7 @@ public sealed class ArtCatalog
     /// <summary>文档卡：南口路标用 glyph:route（Q838 A）；公开救助残页无图，保持统一占位（登记缺项）。</summary>
     public static string DocumentKey(string docId) => docId == "village_south_sign" ? "glyph:route" : "placeholder";
 
-    /// <summary>制作目录配方图：建造类按设施键；修理沿现有图（Q883）；其余用首个产物。</summary>
+    /// <summary>制作目录配方图：建造类按设施键；修理暂用 skillFamily:crafting（BM11 Q883 用户新裁定，待开发替换）；其余用首个产物。</summary>
     public static string RecipeKey(string? facilityResult, bool isRepair, string? firstOutput) => facilityResult switch
     {
         "shelterBuilt" => "facility:shelter",
@@ -133,7 +148,7 @@ public sealed class ArtCatalog
         "safehouse" => "facility:safehouse",
         "fireBuilt" => "facility:fire_out",
         string r when r.StartsWith("workshop:", StringComparison.Ordinal) => "facility:" + r[9..],
-        _ => isRepair ? "repair" : firstOutput ?? "stone",
+        _ => isRepair ? "skillFamily:crafting" : firstOutput ?? "stone",
     };
 
     /// <summary>资源点卡：resource:&lt;地点&gt;:&lt;节点&gt;。</summary>
