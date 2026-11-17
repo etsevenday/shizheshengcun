@@ -211,8 +211,8 @@ public class B51bMutationGapTests : TestBase
     public void S08_Complete_OneInputNotInPlace_FailsAsMissing()
     {
         var (s, t0) = WaterBatch();
-        var filter = s.Items.Single(i => i.ItemId == "filter_media" && i.ReservedBy != null);
-        filter.Owner = ItemInstance.Carried;   // 起点：本批一份输入已离开设施所在区，仍挂本批预留
+        var filter = s.Items.Single(i => i.ItemId == "filter_media" && i.InStation);   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
+        filter.Owner = ItemInstance.Carried;   // 起点：本批一份输入已离开设施
         AdvanceTo(s, t0 + 35);
         var log = s.Log.Where(l => l.Text.Contains("原料不全")).ToList();
         Assert.That(log.Count, Is.EqualTo(1));
@@ -254,19 +254,20 @@ public class B51bMutationGapTests : TestBase
         foreach (var i in E.CreateItems(s, "dirty_water", 2, s.Ground)) i.ExpiresAt = t0 + 100;   // 未投入余料
         foreach (var i in E.CreateItems(s, "herb", 1, ItemInstance.Carried)) i.ExpiresAt = t0 + 300;   // 随身无关物
         AdvanceTo(s, t0 + 20);
+        E.DebugLegacyStation56(s);   // B51c2a1：造旧档起点——57 前原料在地面按批预留
         foreach (var i in s.Items.Where(i => i.ReservedBy != null)) i.ShelfPausedMinutes = null;   // 54 旧档设施批输入没有暂停保质（原截止 E 保留）
         Assert.That(s.Items.Count(i => i.ShelfPausedMinutes != null), Is.EqualTo(0));
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         obj["SchemaVersion"] = "54";
         var old = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(old.SchemaVersion, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
+        Assert.That(old.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
         Assert.That(old.GameMinute, Is.EqualTo(t0 + 20));
 
         var b = Batches(old, "water_station").Single();
-        var bound = old.Items.Where(i => i.ReservedBy == b.BatchId && i.ItemId == "dirty_water").ToList();
+        var bound = BatchBound(old, b.BatchId).Where(i => i.ItemId == "dirty_water").ToList();   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
         Assert.That(bound.Sum(i => i.Count), Is.EqualTo(4));
         Assert.That(bound.All(i => i.ShelfPausedMinutes == 80), Is.True, "R＝旧E−U＝100−20");
-        var spare = old.Items.Where(i => i.ReservedBy == null && i.ItemId == "dirty_water").ToList();
+        var spare = old.Items.Where(i => !InAnyBatch(i) && i.ItemId == "dirty_water").ToList();   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
         Assert.That(spare.Sum(i => i.Count), Is.EqualTo(2));
         Assert.That(spare.All(i => i.ShelfPausedMinutes == null && i.ExpiresAt == t0 + 100), Is.True, "未投入余料不保护、原截止不变");
         var herb = old.Items.Where(i => i.ItemId == "herb" && i.Owner == ItemInstance.Carried && i.ExpiresAt == t0 + 300).ToList();
@@ -299,7 +300,7 @@ public class B51bMutationGapTests : TestBase
         Assert.That(r.Reason, Is.EqualTo("加工批次已变化，请重新选择。"));
         var b = Batches(s, "water_station");
         Assert.That(b.Count, Is.EqualTo(1));
-        Assert.That(s.Items.Where(i => i.ReservedBy == b[0].BatchId).Sum(i => i.Count), Is.EqualTo(5), "脏水 4＋滤材 1 仍归本批");
+        Assert.That(BatchBound(s, b[0].BatchId).Sum(i => i.Count), Is.EqualTo(5), "脏水 4＋滤材 1 仍归本批");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
     }
 
     // ───────────── 附：在办旧批（经验快照 0）的经验说明 ─────────────

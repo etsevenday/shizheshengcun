@@ -72,7 +72,7 @@ namespace Survival.Core.Engine
             t is ActionType.Craft or ActionType.Build or ActionType.Repair or ActionType.Salvage or ActionType.Butcher;
 
         /// <summary>
-        /// 孤立保护收束（Q701.1「已失去工作归属的孤立保护不得永久保鲜」）：不在晾制位、也不是在办行动（主行动、子行动、暂存原工作）仍绑定的预留，
+        /// 孤立保护收束（Q701.1「已失去工作归属的孤立保护不得永久保鲜」）：不在晾制位、不在在办设施批内、也不是在办行动（主行动、子行动、暂存原工作）仍绑定的预留，
         /// 却带暂停 R 的物品，按现在 C＋R 恢复后释放保护；不凭空创建工作、不改归属与预留标记。设施批次（陶窑／净水台）与锅受热保护不在此列。
         /// 读档时调用（幂等）；返回收束了几份。
         /// </summary>
@@ -91,6 +91,8 @@ namespace Survival.Core.Engine
             foreach (var i in s.Items)
             {
                 if (i.ShelfPausedMinutes == null || i.Owner.StartsWith(ItemInstance.DryingPrefix)) continue;
+                // B51c2a1：设施批内原料（无预留标记，归属即绑定）随在办批保护
+                if (ItemInstance.TryStation(i.Owner, out _, out var sb) && batches.Contains(sb)) continue;
                 if (i.ReservedBy is int rb && (live.Contains((rb, i.InstanceId)) || batches.Contains(rb))) continue;
                 ResumeShelf(s, i);
                 n++;

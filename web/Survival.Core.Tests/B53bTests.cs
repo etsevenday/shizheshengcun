@@ -371,9 +371,10 @@ public class B53bTests : BattleTestBase
         E.CreateItems(s, "clay", 2, ItemInstance.Carried);
         E.CreateItems(s, "charcoal", 1, s.Ground);
         Assert.That(E.StartStationBatch(s, "ex_ceramic_shell").Ok, Is.True);
-        var held = Give(s, "clay", s.Ground, 1);
+        // B51c2a1 改起点（S11 Q872 选 B：黏土移进陶窑；Q921：木炭仍在地面按本批预留）：原用地面黏土组，改用地面木炭组
+        var held = Give(s, "charcoal", s.Ground, 1);
         held.ReservedBy = 5303;
-        var v = E.DiscardViewOf(s, DiscardTarget.Group(s.Ground, "clay", null));
+        var v = E.DiscardViewOf(s, DiscardTarget.Group(s.Ground, "charcoal", null));
         Assert.That((v.Available, v.Reasons), Is.EqualTo((0, new List<string> { Processing, Busy })));
         Assert.That(v.Blocked, Is.EqualTo(Processing));
 

@@ -291,10 +291,11 @@ namespace Survival.Core.Engine
             return owner.StartsWith(prefix) ? owner.Substring(prefix.Length) : null;
         }
 
-        /// <summary>在办工作的输入：行动预留，或晾制中（含已腐败停止待清理）那一位里的原料。</summary>
+        /// <summary>在办工作的输入：行动预留，或晾制中（含已腐败停止待清理）那一位里的原料，或陶窑／净水台在办批内的原料（B51c2a1）。</summary>
         private bool WorkOwned(GameState s, ItemInstance i)
         {
             if (i.ReservedBy != null) return true;
+            if (ItemInstance.TryStation(i.Owner, out var splace, out var sbid)) return StationBatchAt(s, splace, sbid) != null;
             if (!ItemInstance.TryDrying(i.Owner, out var place, out var slot)) return false;
             var b = DryingSlotAt(s, place, slot);
             return b != null && b.Status != DryingSlot.Done;
@@ -311,7 +312,7 @@ namespace Survival.Core.Engine
             return null;
         }
 
-        /// <summary>物品所在的区（place），用于判定是否在玩家身边：锅取锅所在；随身／穿戴取持有者所在；设施、晾制位取其区；屋柜取屋内；遗物箱等为 null。</summary>
+        /// <summary>物品所在的区（place），用于判定是否在玩家身边：锅取锅所在；随身／穿戴取持有者所在；设施、晾制位、陶窑／净水台批取其区；屋柜取屋内；遗物箱等为 null。</summary>
         private string? NearPlaceOf(GameState s, string owner)
         {
             for (var depth = 0; depth < 4; depth++)
@@ -327,6 +328,7 @@ namespace Survival.Core.Engine
                 if (ItemInstance.TryEquip(owner, out var wearer, out _)) return ActorPlaceOf(s, wearer);
                 if (ItemInstance.TryFacilityId(owner, out var fid)) return FacilityLocation(fid);
                 if (ItemInstance.TryDrying(owner, out var dplace, out _)) return dplace;
+                if (ItemInstance.TryStation(owner, out var splace, out _)) return splace;
                 if (ItemInstance.TrySafehouseStorage(owner, out var shid)) return ItemInstance.SafehouseFloorOwner(shid);
                 return IsGroundOwner(owner) ? owner : null;
             }

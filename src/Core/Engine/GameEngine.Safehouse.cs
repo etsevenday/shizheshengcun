@@ -361,10 +361,41 @@ namespace Survival.Core.Engine
                     b.DoneMinutes = 0;
                     queued++;
                 }
+            LegacyStationInputsToGround(s, s.Ground, fac);   // B51c2a1：57 前原料在该区地面按批预留
             var ids = fac.StationBatches.Select(b => b.BatchId).ToHashSet();
             foreach (var it in s.Items.Where(i => i.ReservedBy is int rb && ids.Contains(rb) && i.ShelfPausedMinutes != null)) it.ShelfPausedMinutes = null;   // 54 前设施批输入没有暂停保质（原截止 E 保留）
             s.SchemaVersion = Survival.Core.Save.SaveMigrator.Schema54;
             return $"开发：已改成旧档（存档54）排队状态：{queued}批排队，各座第一批保持加工中；请立刻保存并重新读档，读档时按 54→55 迁移为并行";
+        }
+
+        /// <summary>
+        /// 开发（B51c2a1 试存档 56→57 迁移）：把当前区陶窑／净水台在办批在设施内的原料放回该区地面、按本批预留（57 前的旧模型），暂停保质不动，存档版本记为 56。
+        /// 只供试读档迁移：之后请立刻保存并重新读档（读档时按 56→57 把原料移回设施）。
+        /// </summary>
+        public string DebugLegacyStation56(GameState s)
+        {
+            var fac = FacOf(s, s.Ground);
+            if (fac == null || fac.StationBatches.Count == 0) return "开发：当前区的陶窑／净水台没有在办批次，先投料";
+            var n = LegacyStationInputsToGround(s, s.Ground, fac);
+            s.SchemaVersion = "56";
+            return $"开发：已改成旧档（存档56）地面预留：{fac.StationBatches.Count}批、{n}堆原料回到{ZoneName(s, s.Ground)}地面并锁定；请立刻保存并重新读档，读档时按 56→57 移回设施";
+        }
+
+        /// <summary>把这一区设施各批在设施内的原料放回该区地面、以批次 ID 预留（57 前旧模型；只供开发造旧档）。返回改了几堆。</summary>
+        private static int LegacyStationInputsToGround(GameState s, string place, FacilityState fac)
+        {
+            var n = 0;
+            foreach (var b in fac.StationBatches)
+            {
+                var owner = ItemInstance.StationOwner(place, b.BatchId);
+                foreach (var it in s.Items.Where(i => i.Owner == owner))
+                {
+                    it.Owner = place;
+                    it.ReservedBy = b.BatchId;
+                    n++;
+                }
+            }
+            return n;
         }
 
         /// <summary>开发：野营遮雨布、折叠柴炉各一（当前地面）与木材2。</summary>

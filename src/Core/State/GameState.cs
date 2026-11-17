@@ -78,8 +78,10 @@ namespace Survival.Core.State
         /// 批次输入带暂停保质 R；54→55 旧等候批在升级时刻转为在办、从未来第一个世界段起各自推进（不补等候进度），在办批保留已耗进度，
         /// 各批真实预留且在升级时刻未到期的有期限输入从升级时剩余保护（静默）。
         /// "56" 起已停止晾制位不再有 legacy 原因（B53a，S11 文首 2026-11-15 Q764 选 A）：55→56 一次把缺可信原因的旧停止位按当前可证明实物分为缺料／腐败／未知（静默）。
+        /// "57" 起陶窑与固定净水台在办批的原料（配方 Inputs）真实归属本设施该批（B51c2a1，S11 Q872 选 B）：owner 为 ItemInstance.StationOwner(区, 批次ID)，不再留地面预留；
+        /// 燃料（配方 Fuel）仍在该区地面以批次 ID 预留（Q921 燃料库存待 B35a2a）。56→57 把在办批仍在该区地面、按本批预留的原料移进设施（暂停保质剩余 R 不变，燃料不动，静默）。
         /// </summary>
-        public const string CurrentSchema = "56";
+        public const string CurrentSchema = "57";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -1074,6 +1076,27 @@ namespace Survival.Core.State
             var rest = owner.Substring(DryingPrefix.Length);
             var k = rest.LastIndexOf('#');
             if (k <= 0 || !int.TryParse(rest.Substring(k + 1), out slot)) return false;
+            place = rest.Substring(0, k);
+            return true;
+        }
+
+        /// <summary>
+        /// 陶窑／固定净水台在办批原料的 owner 前缀（B51c2a1，S11 Q872 选 B，存档 57）："station:&lt;place&gt;#&lt;批次ID&gt;"（place 为外部区地点 ID 或屋内地面 owner）。
+        /// 只放配方 Inputs；燃料仍在该区地面预留（Q921，待 B35a2a 燃料库存）。
+        /// </summary>
+        public const string StationPrefix = "station:";
+        public static string StationOwner(string place, int batchId) => StationPrefix + place + "#" + batchId;
+        public bool InStation => Owner.StartsWith(StationPrefix);
+
+        /// <summary>拆设施批 owner；不是或格式不对返回 false。</summary>
+        public static bool TryStation(string owner, out string place, out int batchId)
+        {
+            place = "";
+            batchId = -1;
+            if (!owner.StartsWith(StationPrefix)) return false;
+            var rest = owner.Substring(StationPrefix.Length);
+            var k = rest.LastIndexOf('#');
+            if (k <= 0 || !int.TryParse(rest.Substring(k + 1), out batchId)) return false;
             place = rest.Substring(0, k);
             return true;
         }

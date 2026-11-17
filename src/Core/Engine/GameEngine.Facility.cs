@@ -159,6 +159,8 @@ namespace Survival.Core.Engine
                 return loc == null ? "设施里" : $"{ZoneName(s, loc)}／火堆";
             }
             if (ItemInstance.TryDrying(i.Owner, out var dplace, out var dslot)) return $"{ZoneName(s, dplace)}／晾制架工位{dslot + 1}";
+            // B51c2a1（S11 Q872 选 B）：陶窑／净水台批内原料；Q1007 暂用 A「{区域}／{设施名}」，不带批次序号
+            if (ItemInstance.TryStation(i.Owner, out var splace, out var sbid)) return $"{ZoneName(s, splace)}／{StationName(StationBatchAt(s, splace, sbid)?.StationId ?? "")}";
             return IsGroundOwner(i.Owner) ? $"{ZoneName(s, i.Owner)}地面" : i.Owner;
         }
 

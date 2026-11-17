@@ -149,4 +149,14 @@ public abstract class TestBase
         s.Main!.LootItemId = itemId;
         s.Main.LootCount = itemId == null ? 0 : 1;
     }
+
+    /// <summary>
+    /// B51c2a1（S11 Q872 选 B、Q921）：陶窑／净水台批的原料在设施内（owner station:{区}#{批次ID}、无预留标记），燃料仍在地面以批次 ID 预留；
+    /// 这里取「归这一批」的全部实例（设施内原料＋地面预留燃料），供原按 ReservedBy 认批的旧测试改用。
+    /// </summary>
+    protected static List<ItemInstance> BatchBound(GameState s, int batchId) =>
+        s.Items.Where(i => i.ReservedBy == batchId || (ItemInstance.TryStation(i.Owner, out _, out var b) && b == batchId)).ToList();
+
+    /// <summary>B51c2a1：这份物品归某个陶窑／净水台批（设施内原料或地面预留燃料）。</summary>
+    protected static bool InAnyBatch(ItemInstance i) => i.ReservedBy != null || i.InStation;
 }

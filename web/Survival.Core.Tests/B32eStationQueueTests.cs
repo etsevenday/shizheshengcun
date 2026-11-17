@@ -22,7 +22,8 @@ public class B32eStationQueueTests : TestBase
     private static int Sum(GameState s, string itemId, string? owner = null) =>
         s.Items.Where(i => i.ItemId == itemId && (owner == null || i.Owner == owner)).Sum(i => i.Count);
 
-    private static int Reserved(GameState s, string itemId) => s.Items.Where(i => i.ItemId == itemId && i.ReservedBy != null).Sum(i => i.Count);
+    /// <summary>归各批的份数。B51c2a1（S11 Q872 选 B）起原料在设施内、燃料在地面预留，两处合计（原只数地面预留）。</summary>
+    private static int Reserved(GameState s, string itemId) => s.Items.Where(i => i.ItemId == itemId && InAnyBatch(i)).Sum(i => i.Count);
 
     private static int StationXpOn(GameState s, int day) =>
         s.Player.DailyCounts.TryGetValue($"{day}|stationXp|crafting", out var n) ? n : 0;
@@ -88,12 +89,13 @@ public class B32eStationQueueTests : TestBase
         Assert.That(s.GameMinute, Is.EqualTo(t0), "0 分钟");
         Assert.That(s.Main, Is.Null, "不占主行动");
         Assert.That((Reserved(s, "dirty_water"), Reserved(s, "filter_media")), Is.EqualTo((12, 3)));
-        Assert.That(s.Items.Where(i => i.ReservedBy != null).All(i => i.Owner == s.Ground), Is.True, "预留移到设施所在区地面");
+        // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原断言「预留移到设施所在区地面」
+        Assert.That(s.Items.Where(i => i.ItemId is "dirty_water" or "filter_media" && i.InStation && ItemInstance.TryStation(i.Owner, out var pl, out _) && pl == s.Ground).Sum(i => i.Count), Is.EqualTo(15), "原料移进设施所在区的设施内");
         var q = Queue(s, "water_station");
         Assert.That(q.All(b => !b.Queued && b.StartMinute == t0 && b.DoneMinutes == 0), Is.True, "全部加工中，没有等候批");
         foreach (var b in q)
-            Assert.That((s.Items.Where(i => i.ReservedBy == b.BatchId && i.ItemId == "dirty_water").Sum(i => i.Count),
-                         s.Items.Where(i => i.ReservedBy == b.BatchId && i.ItemId == "filter_media").Sum(i => i.Count)), Is.EqualTo((4, 1)), "每份只归一批");
+            Assert.That((BatchBound(s, b.BatchId).Where(i => i.ItemId == "dirty_water").Sum(i => i.Count),
+                         BatchBound(s, b.BatchId).Where(i => i.ItemId == "filter_media").Sum(i => i.Count)), Is.EqualTo((4, 1)), "每份只归一批");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy 认批
         Assert.That(s.Log.Last().Text, Does.Contain("投料（3批）").And.Contain("；各批同时开始加工；"));
 
         AdvanceTo(s, t0 + 5);
@@ -206,7 +208,7 @@ public class B32eStationQueueTests : TestBase
         var reservedBefore = Reserved(s, "dirty_water");
         Ok(E.CancelStationBatch(s, "water_station", b.BatchId, "c-b", 2));
         Assert.That(Reserved(s, "dirty_water"), Is.EqualTo(reservedBefore - 4), "只释放该批预留");
-        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && i.ReservedBy == null).All(i => i.Owner == "camp"), Is.True, "退到本区地面");
+        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && !InAnyBatch(i)).All(i => i.Owner == "camp"), Is.True, "退到本区地面");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy == null 认未投入
         var zone = E.ZoneName(s, s.Ground);
         Assert.That(s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionCancelled)).Text,
             Is.EqualTo($"已取消{zone}固定净水台的批次2 · {Cfg.Recipes.Single(r => r.Id == Water).Name}（已进行15分钟）。未消耗原料已退回{zone}地面。没有产物和经验。已耗时间保留。"));
@@ -236,11 +238,11 @@ public class B32eStationQueueTests : TestBase
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, Water, "lost", 2));
         var first = Queue(s, "water_station")[0];
-        s.Items.Remove(s.Items.First(i => i.ReservedBy == first.BatchId && i.ItemId == "filter_media"));
+        s.Items.Remove(BatchBound(s, first.BatchId).First(i => i.ItemId == "filter_media"));   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy 认批
         AdvanceTo(s, t0 + 30);
         Assert.That(Sum(s, "clean_water"), Is.EqualTo(4), "只有失效批没有产物，另一批照常完成");
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(3), "失效批没有经验");
-        Assert.That(s.Items.Any(i => i.ReservedBy == first.BatchId), Is.False, "剩余预留已释放");
+        Assert.That(BatchBound(s, first.BatchId), Is.Empty, "剩余预留已释放");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy 认批
         Assert.That(Sum(s, "dirty_water"), Is.EqualTo(8), "失效批的脏水退回地面，只核销自己绑定的预留，不补取余料");
     }
 
@@ -255,6 +257,7 @@ public class B32eStationQueueTests : TestBase
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, Kiln));
         AdvanceTo(s, t0 + 25);
+        E.DebugLegacyStation56(s);   // B51c2a1：造旧档起点——57 前原料在地面按批预留（S11 Q872 选 B 之前的模型）
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         obj["SchemaVersion"] = "44";
         foreach (var b in obj.SelectTokens("$..StationBatches[*]").OfType<JObject>()) b.Remove("Queued");
@@ -262,7 +265,8 @@ public class B32eStationQueueTests : TestBase
         Assert.That(old.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         var legacy = E.StationBatchesHere(old, "kiln").Single();
         Assert.That((legacy.Queued, legacy.DoneMinutes, legacy.XpSnapshot), Is.EqualTo((false, 25, 6)), "原进度、经验快照原样接入");
-        Assert.That(old.Items.Where(i => i.ReservedBy == legacy.BatchId).Sum(i => i.Count), Is.EqualTo(3), "原料与燃料预留原样");
+        Assert.That(BatchBound(old, legacy.BatchId).Sum(i => i.Count), Is.EqualTo(3), "原料与燃料仍归本批");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy 认批
+        Assert.That(old.Items.Where(i => i.Owner == ItemInstance.StationOwner(old.Ground, legacy.BatchId)).Sum(i => i.Count), Is.EqualTo(2), "56→57：黏土2移进陶窑该批（S11 Q872 选 B）");
         AdvanceTo(old, t0 + 55);
         Assert.That(Sum(old, "ceramic_shell"), Is.EqualTo(0));
         AdvanceTo(old, t0 + 60);
@@ -274,10 +278,11 @@ public class B32eStationQueueTests : TestBase
         Ok(E.StartStationBatch(n, Water, "rt", 3));
         AdvanceTo(n, n.GameMinute + 10);
         var ids = Queue(n, "water_station").Select(b => (b.BatchId, b.Queued, b.DoneMinutes)).ToList();
-        var owners = n.Items.Where(i => i.ReservedBy != null).Select(i => (i.InstanceId, i.ReservedBy, i.Count)).OrderBy(x => x.InstanceId).ToList();
+        var owners = n.Items.Where(InAnyBatch).Select(i => (i.InstanceId, i.ReservedBy, i.Owner, i.Count)).OrderBy(x => x.InstanceId).ToList();   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：归属一并比对
         var back = SaveSerializer.Deserialize(SaveSerializer.Serialize(n), Cfg);
         Assert.That(Queue(back, "water_station").Select(b => (b.BatchId, b.Queued, b.DoneMinutes)), Is.EqualTo(ids));
-        Assert.That(back.Items.Where(i => i.ReservedBy != null).Select(i => (i.InstanceId, i.ReservedBy, i.Count)).OrderBy(x => x.InstanceId), Is.EqualTo(owners));
+        Assert.That(owners.Count, Is.GreaterThan(0));
+        Assert.That(back.Items.Where(InAnyBatch).Select(i => (i.InstanceId, i.ReservedBy, i.Owner, i.Count)).OrderBy(x => x.InstanceId), Is.EqualTo(owners));
         Assert.That(back.GameMinute, Is.EqualTo(n.GameMinute), "读档不补时间与进度");
         AdvanceTo(back, back.GameMinute + 20);
         Assert.That(Sum(back, "clean_water"), Is.EqualTo(12));

@@ -235,7 +235,7 @@ public class MigrationTests : TestBase
         Assert.That(SaveSerializer.NeedsMigration(json), Is.True);
         Assert.Throws<SaveVersionException>(() => SaveSerializer.Deserialize(json));
         var bogus = JObject.Parse(json);
-        bogus["SchemaVersion"] = "57";   // B53a 起 56 是当前版本（S11 §Q764 迁移），未知版本改用 57
+        bogus["SchemaVersion"] = "58";   // B51c2a1 起 57 是当前版本（S11 Q872 选 B 迁移），未知版本改用 58
         Assert.Throws<SaveVersionException>(() => SaveSerializer.Deserialize(bogus.ToString(), Cfg));
     }
 

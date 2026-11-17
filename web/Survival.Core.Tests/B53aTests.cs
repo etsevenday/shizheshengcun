@@ -202,7 +202,7 @@ public class B53aTests : TestBase
     public void Schema56_Current()
     {
         // 开发假设：B53a 把存档升到 56（Q764 迁移）；字面量对照，防止版本号被别处挪动
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("56"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
     }
 
     /// <summary>
@@ -241,7 +241,7 @@ public class B53aTests : TestBase
         var logs = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema(s, "55"), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("56"));
+        Assert.That(t.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
         var reasons = DrySlots(t).OrderBy(b => b.Slot).Select(b => b.StopReason).ToList();
         Assert.That(reasons, Is.EqualTo(new[] { "missing", "spoiled", "unknown", "unknown", "missing", "missing" }));
         Assert.That(t.Items.Select(i => (i.InstanceId, i.ItemId, i.Count, i.Owner)), Is.EquivalentTo(items), "只补原因，不改实物");
@@ -1025,14 +1025,16 @@ public class B53aTests : TestBase
         E.CreateItems(s, "charcoal", 1, s.Ground);
         Assert.That(E.DiscardViewOf(s, DiscardTarget.Group(ItemInstance.Carried, "clay", null)).Available, Is.EqualTo(2), "对照：投料前可丢");
         Assert.That(E.StartStationBatch(s, "ex_ceramic_shell").Ok, Is.True);
-        var t = DiscardTarget.Group(s.Ground, "clay", null);
+        // B51c2a1 改起点（S11 Q872 选 B：黏土移进陶窑、不再留在地面；Q921：燃料木炭仍在地面按本批预留）：原用地面上的黏土组，改用仍在地面、绑定本批的木炭组；期望份数 2→1、3→2
+        Assert.That(s.Items.Where(i => i.ItemId == "clay" && i.Owner == s.Ground).Sum(i => i.Count), Is.EqualTo(0), "黏土已不在地面");
+        var t = DiscardTarget.Group(s.Ground, "charcoal", null);
         var v = E.DiscardViewOf(s, t);
-        Assert.That((v.Total, v.Available, v.Blocked), Is.EqualTo((2, 0, Processing)));
-        var held = Give(s, "clay", s.Ground, 1);
+        Assert.That((v.Total, v.Available, v.Blocked), Is.EqualTo((1, 0, Processing)));
+        var held = Give(s, "charcoal", s.Ground, 1);
         held.ReservedBy = 783;   // 起点：同组另一份被行动预留
         Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(held.InstanceId)).Blocked, Is.EqualTo(Busy), "前提：这份单看是占用");
         v = E.DiscardViewOf(s, t);
-        Assert.That((v.Total, v.Available, v.Blocked), Is.EqualTo((3, 0, Processing)));
+        Assert.That((v.Total, v.Available, v.Blocked), Is.EqualTo((2, 0, Processing)));
     }
 
     /// <summary>锅内某份食材被行动预留时，整口锅拒「物品被占用，不能丢弃。」（锅连内部任一子物）；对照：未预留时整锅可丢。</summary>

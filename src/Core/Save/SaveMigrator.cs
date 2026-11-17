@@ -92,6 +92,7 @@ namespace Survival.Core.Save
         public const string Schema53 = "53";
         public const string Schema54 = "54";
         public const string Schema55 = "55";
+        public const string Schema56 = "56";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -162,6 +163,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema53) From53To54(s, config);
             if (s.SchemaVersion == Schema54) From54To55(s);
             if (s.SchemaVersion == Schema55) From55To56(s, config);
+            if (s.SchemaVersion == Schema56) From56To57(s, config);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
@@ -1580,13 +1582,36 @@ namespace Survival.Core.Save
         /// </summary>
         private static void From55To56(GameState s, GameConfig config)
         {
-            s.SchemaVersion = GameState.CurrentSchema;
+            s.SchemaVersion = Schema56;
             foreach (var (place, fac) in DryingFacilities(s))
                 foreach (var b in fac.DryingSlots ?? new List<DryingSlot>())
                 {
                     if (b.Status != DryingSlot.Spoiled) continue;
                     if (b.StopReason != null && b.StopReason != DryingSlot.StopLegacy) continue;
                     b.StopReason = LegacyStopReason(s, config, place, b);
+                }
+        }
+
+        /// <summary>
+        /// 56 → 57（B51c2a1，S11 Q872 选 B、Q921）：陶窑／固定净水台在办批的原料从该区地面预留移进设施该批（owner ItemInstance.StationOwner(区, 批次ID)、清预留标记）；
+        /// 只移本批配方 Inputs 里的物品，且只移仍在该批所在区地面、按本批预留的份；燃料（配方 Fuel）不动、仍地面预留。暂停保质剩余 R、原截止、份数、批 ID、进度、经验快照都不变。
+        /// 配方已不存在的批不动（完工核验时按原料不全释放）。旧档原料不全的批不在这里判，留到完工时按原句失败、剩余原料放回所在区地面。静默。
+        /// </summary>
+        private static void From56To57(GameState s, GameConfig config)
+        {
+            s.SchemaVersion = GameState.CurrentSchema;
+            foreach (var (place, fac) in DryingFacilities(s))
+                foreach (var b in fac.StationBatches)
+                {
+                    var rc = config.Recipes.FirstOrDefault(r => r.Id == b.RecipeId);
+                    if (rc == null) continue;
+                    var owner = ItemInstance.StationOwner(place, b.BatchId);
+                    foreach (var it in s.Items.Where(i => i.ReservedBy == b.BatchId && i.Owner == place && rc.Inputs.ContainsKey(i.ItemId)))
+                    {
+                        it.Owner = owner;
+                        it.ReservedBy = null;
+                        it.PlacedOrder = null;
+                    }
                 }
         }
 

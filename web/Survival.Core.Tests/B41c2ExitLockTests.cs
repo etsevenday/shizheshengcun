@@ -128,7 +128,7 @@ public class B41c2ExitLockTests : TestBase
         var s = Camping(E);
         Start(s, GameEngine.Deploy(E.CreateItems(s, "folding_stove", 1, ItemInstance.Carried).Single()));
         var t = SaveSerializer.Deserialize(AsSchema48(s), Cfg);
-        Assert.That((t.SchemaVersion, t.Main!.NoExit), Is.EqualTo(("56", true)));   // B53a 改期望：存档升 56（S11 §Q764）
+        Assert.That((t.SchemaVersion, t.Main!.NoExit), Is.EqualTo(("57", true)));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
 
         // 10 分钟部署：不锁
         var s2 = Camping(E);

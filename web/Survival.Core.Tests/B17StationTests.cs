@@ -56,7 +56,10 @@ public class B17StationTests : TestBase
         Ok(E.StartStationBatch(s, "ex_ceramic_shell"));
         Assert.That(s.GameMinute, Is.EqualTo(t0), "投料 0 分钟");
         Assert.That(s.Main, Is.Null, "不占行动");
-        Assert.That(s.Items.Where(i => i.ItemId is "clay" or "charcoal").All(i => i.Owner == "camp" && i.ReservedBy != null), Is.True);
+        // B51c2a1 改期望（S11 Q872 选 B：原料真实归属本设施该批；Q921：燃料库存未做前仍地面预留）：原为黏土与木炭都在营地地面且预留
+        var kb = s.Locations["camp"].Facility.StationBatches.Single().BatchId;
+        Assert.That((s.Items.Where(i => i.ItemId == "clay" && i.Owner == ItemInstance.StationOwner("camp", kb) && i.ReservedBy == null).Sum(i => i.Count), Sum(s, "clay")), Is.EqualTo((2, 2)), "黏土2全在陶窑该批内");
+        Assert.That((s.Items.Where(i => i.ItemId == "charcoal" && i.Owner == "camp" && i.ReservedBy == kb).Sum(i => i.Count), Sum(s, "charcoal")), Is.EqualTo((1, 1)), "木炭1仍在营地地面按本批预留");
         // B32e（Q380）：取代「每次只能一批」——工位忙时可加入队尾，这里只因原料已全部预留而拒绝
         Assert.That(E.StartStationBatch(s, "ex_ceramic_shell").Reason, Does.Contain("缺少黏土"));
 

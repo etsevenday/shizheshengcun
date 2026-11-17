@@ -9,8 +9,9 @@ namespace Survival.Core.Engine
     /// <summary>
     /// 陶窑与固定净水台（A07 X1.4、S11 X4、expansion-supply.json facilities/operationalRules.water；开发计划 v0.9 B17 R56）：
     /// 只建在临时营地外部或已完工安全屋屋内（Q107 每区每类一座）。被动批次：在当前区的工坊投料（0 分钟、不占行动），原料从随身/当前地面取、
-    /// 移到该区地面并锁定；按世界时间推进（陶窑 60 分钟、净水台 30 分钟，不吃熟练/装备/夜间倍率），离开也继续、不能远程投取；
-    /// 完成一次核销原料与燃料（陶窑每批另耗木炭1），产物落该区地面、不自动入包；取消释放原料、时间不退、没有产物。
+    /// B51c2a1（S11 Q872 选 B，存档 57）起原料（配方 Inputs）移进设施该批（owner <see cref="ItemInstance.StationOwner"/>），燃料（配方 Fuel）仍移到该区地面按批预留（Q921，待 B35a2a 燃料库存）；
+    /// 按世界时间推进（陶窑 60 分钟、净水台 30 分钟，不吃熟练/装备/夜间倍率），离开也继续、不能远程投取；
+    /// 完成一次核销原料与燃料（陶窑每批另耗木炭1），产物落该区地面、不自动入包；取消把原料放回该区地面、燃料只解锁，时间不退、没有产物。
     /// B22d（Q174 选 B，passiveCraftXp）：每成功整批给首次投料且完成时仍存活的角色制造经验（陶窑 6、净水台 3，投料时快照），
     /// 两类共享每角色每世界日 12（按完成日，剩余不足给剩余，满级 0），与主动制造/建造经验独立，不另给烹饪；取消/原料不全/读档/领取都不给。
     /// B32e（Q380 选 B，S08「2026-11-10 Q380」）原为每座一个加工位＋等待队列；B51b（S08 文首 Q701.2、B51 Q721／Q727，存档 55）起改为每座最多 10 批全部并行：
@@ -37,6 +38,10 @@ namespace Survival.Core.Engine
         /// <summary>某区这座工坊的全部未完成批次，按原创建顺序（列表先后＝创建先后）。</summary>
         private static List<StationBatch> StationList(FacilityState? fac, string stationId) =>
             fac?.StationBatches.Where(b => b.StationId == stationId).ToList() ?? new List<StationBatch>();
+
+        /// <summary>B51c2a1：某区（place）设施里批次 ID 为 batchId 的在办批；没有为 null。</summary>
+        public StationBatch? StationBatchAt(GameState s, string place, int batchId) =>
+            FacOf(s, place)?.StationBatches.FirstOrDefault(b => b.BatchId == batchId);
 
         /// <summary>当前区这座工坊在办的全部批次（都在加工中），按原创建顺序；显示序号＝在本列表中的位置＋1，只作显示、不作提交身份。</summary>
         public List<StationBatch> StationBatchesHere(GameState s, string stationId) => StationList(FacOf(s, s.Ground), stationId);
@@ -247,8 +252,8 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 在当前区的陶窑/净水台投 batches 批（0 分钟、不占主行动；S08 Q380、Q701.2）：所有新批的材料与燃料一次校验，逐批分配并移到该区地面预留（每份只归一批），
-        /// 全部成功或全部拒绝。新批都立即从现在开始加工（不等旧批、不补旧进度）；本批实际绑定的有期限输入在同一事务暂停保质（Q701.1）。同一 requestId 只生效一次。
+        /// 在当前区的陶窑/净水台投 batches 批（0 分钟、不占主行动；S08 Q380、Q701.2）：所有新批的材料与燃料一次校验，逐批分配（每份只归一批），
+        /// 原料移进设施该批（B51c2a1，Q872 B），燃料移到该区地面按批预留（<see cref="ReserveStationFuel"/>，Q921 待 B35a2a），全部成功或全部拒绝。新批都立即从现在开始加工（不等旧批、不补旧进度）；本批实际绑定的有期限输入在同一事务暂停保质（Q701.1）。同一 requestId 只生效一次。
         /// </summary>
         public ActionResult StartStationBatch(GameState s, string recipeId, string? requestId = null, int batches = 1)
         {
@@ -264,24 +269,19 @@ namespace Survival.Core.Engine
                 var id = s.NextActionId++;
                 first ??= id;
                 var locked = new List<int>();
-                foreach (var kv in rc.AllInputs)
+                foreach (var kv in rc.Inputs)
                 {
-                    var need = kv.Value;
-                    foreach (var b in UsableBatches(s, kv.Key, true).Where(i => !IsLocked(s, i)).ToList())
+                    // B51c2a1（S11 Q872 选 B）：原料真实归属本设施该批，不留地面预留、不算地面来源
+                    foreach (var moved in TakeStationSources(s, kv.Key, kv.Value))
                     {
-                        if (need <= 0) break;
-                        var take = Math.Min(need, b.Count);
-                        ItemInstance moved;
-                        if (take < b.Count) moved = SplitOff(s, b, take);
-                        else moved = b;
-                        moved.Owner = place;
+                        moved.Owner = ItemInstance.StationOwner(place, id);
                         moved.PlacedOrder = null;
-                        moved.ReservedBy = id;
+                        moved.ReservedBy = null;
                         PauseShelf(s, moved);   // Q701.1：成功投料的本批输入暂停保质（无期限不造 R）
                         locked.Add(moved.InstanceId);
-                        need -= take;
                     }
                 }
+                ReserveStationFuel(s, rc, place, id, locked);
                 fac.StationBatches.Add(new StationBatch
                 {
                     BatchId = id, StationId = rc.Station, RecipeId = rc.Id, InputInstanceIds = locked,
@@ -296,14 +296,73 @@ namespace Survival.Core.Engine
             return ActionResult.Success(first);
         }
 
-        /// <summary>取消或失败时把这一批的预留全部释放在设施所在区地面，暂停保质的恢复 C＋R（Q701.1）。</summary>
-        private void ReleaseStationBatch(GameState s, StationBatch b)
+        /// <summary>从随身与当前区地面按 UsableBatches 顺序取够 need 份这种物品（未锁），不足整份时拆堆；返回实际取出的实例（调用方改归属）。</summary>
+        private List<ItemInstance> TakeStationSources(GameState s, string itemId, int need)
         {
-            foreach (var it in s.Items.Where(i => i.ReservedBy == b.BatchId).ToList())
+            var list = new List<ItemInstance>();
+            foreach (var b in UsableBatches(s, itemId, true).Where(i => !IsLocked(s, i)).ToList())
+            {
+                if (need <= 0) break;
+                var take = Math.Min(need, b.Count);
+                list.Add(take < b.Count ? SplitOff(s, b, take) : b);
+                need -= take;
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// 燃料预留（集中一处，B35a2a 改为本座燃料库存时只换这里与 <see cref="ReleaseStationFuel"/>／<see cref="StationFuelOf"/>）：
+        /// Q921 燃料库存未做前，本批燃料（配方 Fuel）沿原样移到设施所在区地面、以批次 ID 预留，暂停保质（无期限不造 R）。
+        /// </summary>
+        private void ReserveStationFuel(GameState s, RecipeConfig rc, string place, int batchId, List<int> bound)
+        {
+            foreach (var kv in rc.Fuel)
+                foreach (var moved in TakeStationSources(s, kv.Key, kv.Value))
+                {
+                    moved.Owner = place;
+                    moved.PlacedOrder = null;
+                    moved.ReservedBy = batchId;
+                    PauseShelf(s, moved);
+                    bound.Add(moved.InstanceId);
+                }
+        }
+
+        /// <summary>这一批在地面预留的燃料（及旧档里仍按本批预留的任何物品）。</summary>
+        private List<ItemInstance> StationFuelOf(GameState s, StationBatch b) => s.Items.Where(i => i.ReservedBy == b.BatchId).ToList();
+
+        /// <summary>燃料释放（集中一处）：只解除本批预留、原地不动，暂停保质的恢复 C＋R（Q921：取出不含燃料、未耗只解锁）。</summary>
+        private void ReleaseStationFuel(GameState s, StationBatch b)
+        {
+            foreach (var it in StationFuelOf(s, b))
             {
                 it.ReservedBy = null;
                 ResumeReleased(s, it);
             }
+        }
+
+        /// <summary>B51c2a1：这一批在设施内的原料（owner 为 station:{place}#{批次ID}），按实例号。</summary>
+        public List<ItemInstance> StationBatchInputs(GameState s, string place, StationBatch b)
+        {
+            var owner = ItemInstance.StationOwner(place, b.BatchId);
+            return s.Items.Where(i => i.Owner == owner).OrderBy(i => i.InstanceId).ToList();
+        }
+
+        /// <summary>
+        /// 取出或失败时释放这一批：设施内原料放回设施所在区地面（Q870 B／Q872 B），燃料只解锁（<see cref="ReleaseStationFuel"/>），暂停保质的恢复 C＋R（Q701.1）。
+        /// 返回放回地面的原料（调用方合堆、列清单）。
+        /// </summary>
+        private List<ItemInstance> ReleaseStationBatch(GameState s, string place, StationBatch b)
+        {
+            var back = StationBatchInputs(s, place, b);
+            foreach (var it in back)
+            {
+                it.Owner = place;
+                it.PlacedOrder = null;
+                it.ReservedBy = null;
+                ResumeReleased(s, it);
+            }
+            ReleaseStationFuel(s, b);
+            return back;
         }
 
         /// <summary>BM5a（02 Q563 选 A，照 Q446⑦ 最小删词）：工坊「取消本批」战斗中的拒绝句；普通敌踪卡在场不挡。</summary>
@@ -328,9 +387,9 @@ namespace Survival.Core.Engine
             if (fac == null || idx < 0) return ActionResult.Fail(StationBatchChanged);
             var b = list[idx];
             var seq = seenSeq ?? idx + 1;
-            var hasReturn = s.Items.Any(i => i.ReservedBy == b.BatchId);
+            var hasReturn = StationBatchInputs(s, place, b).Count > 0 || s.Items.Any(i => i.ReservedBy == b.BatchId);
             fac.StationBatches.Remove(b);
-            ReleaseStationBatch(s, b);
+            ReleaseStationBatch(s, place, b);
             Normalize(s, place);
             RememberRequest(s, requestId);
             var zone = ZoneName(s, place);
@@ -344,8 +403,8 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 每个世界 5 分钟段（Q701.2）：每区每座工坊段首在办的每一批各 +5 分钟（世界只推进一次），达标即重验该批预留、一次核销原料与燃料、产物落该区地面；
-        /// 预留缺失只终止该批、释放剩余预留（暂停保质的恢复 C＋R），没有产物与经验，不影响其他批。同段完成按 StationSettleOrder 逐批结账。读档按存档进度续算，不重复出。
+        /// 每个世界 5 分钟段（Q701.2）：每区每座工坊段首在办的每一批各 +5 分钟（世界只推进一次），达标即重验该批原料（设施内 owner，B51c2a1）与燃料（地面预留）、
+        /// 一次核销、产物落该区地面；原料或燃料不全只终止该批、原料放回该区地面、燃料解锁（暂停保质的恢复 C＋R），没有产物与经验，不影响其他批。同段完成按 StationSettleOrder 逐批结账。读档按存档进度续算，不重复出。
         /// </summary>
         private void AdvanceStationBatches(GameState s)
         {
@@ -355,17 +414,21 @@ namespace Survival.Core.Engine
                 if (b.DoneMinutes < b.RequiredMinutes) continue;
                 fac.StationBatches.Remove(b);
                 var rc = _recipes[b.RecipeId];
-                var inputs = s.Items.Where(i => i.ReservedBy == b.BatchId).ToList();
-                var ok = inputs.All(i => i.Owner == place) && rc.AllInputs.All(kv => inputs.Where(i => i.ItemId == kv.Key).Sum(i => i.Count) >= kv.Value);
+                var inputs = StationBatchInputs(s, place, b);
+                var fuel = StationFuelOf(s, b);
+                var ok = fuel.All(i => i.Owner == place)
+                         && rc.Inputs.All(kv => inputs.Where(i => i.ItemId == kv.Key).Sum(i => i.Count) >= kv.Value)
+                         && rc.Fuel.All(kv => fuel.Where(i => i.ItemId == kv.Key).Sum(i => i.Count) >= kv.Value);
                 if (!ok)
                 {
-                    // BM11（S08 Q882 用户新裁定）：撤 B54（Q791）失败句后的恢复保质短句，原失败句与真实返料不变
-                    ReleaseStationBatch(s, b);
+                    // BM11（S08 Q882 用户新裁定）：撤 B54（Q791）失败句后的恢复保质短句，原失败句与真实返料不变；
+                    // B51c2a1：设施内剩余原料放回所在区地面（沿原句「剩下的原料已解锁」），燃料解锁
+                    ReleaseStationBatch(s, place, b);
                     Normalize(s, place);
                     Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}{StationName(b.StationId)}：原料不全，这一批没有产物，剩下的原料已解锁。");
                     continue;
                 }
-                foreach (var it in inputs) s.Items.Remove(it);   // 受保护原料直接核销，不返 R
+                foreach (var it in inputs.Concat(fuel)) s.Items.Remove(it);   // 受保护原料直接核销，不返 R
                 var made = new List<string>();
                 foreach (var kv in rc.Outputs)
                 {

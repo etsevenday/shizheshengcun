@@ -44,6 +44,8 @@ namespace Survival.Core.Engine
                     continue;
                 }
                 if (ItemInstance.TryFacilityId(owner, out var fid)) return FacilityLocation(fid) ?? "";
+                // B51c2a1（Q872 B）：陶窑／净水台批内原料的根位置为设施所在区（不是地面 owner，不算地面来源）
+                if (ItemInstance.TryStation(owner, out var splace, out _)) return splace;
                 // 穿戴物在本人身上：根位置同该角色的随身（不占五卡，B3 H3）
                 if (ItemInstance.TryEquip(owner, out var actorId, out _)) return ItemInstance.CarriedOwner(actorId);
                 return owner;

@@ -63,19 +63,19 @@ public class B51bTests : TestBase
         foreach (var i in s.Items.Where(i => i.ItemId == "dirty_water")) i.ExpiresAt = s.GameMinute + 20;
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, Water, "p1"));
-        var bound = s.Items.Where(i => i.ReservedBy != null && i.ItemId == "dirty_water").ToList();
+        var bound = s.Items.Where(i => InAnyBatch(i) && i.ItemId == "dirty_water").ToList();   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
         Assert.That(bound.Sum(i => i.Count), Is.EqualTo(4));
         Assert.That(bound.All(i => i.ShelfPausedMinutes == 20), Is.True, "本批输入 R＝E−S");
-        var free = s.Items.Single(i => i.ItemId == "dirty_water" && i.ReservedBy == null);
+        var free = s.Items.Single(i => i.ItemId == "dirty_water" && !InAnyBatch(i));   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
         Assert.That(free.ShelfPausedMinutes, Is.Null, "未投入余料不保护");
         AdvanceTo(s, t0 + 25);
-        Assert.That(s.Items.Where(i => i.ReservedBy != null && i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(4), "在制越过原截止不转腐败物");
-        Assert.That(s.Items.Any(i => i.ItemId == "dirty_water" && i.ReservedBy == null), Is.False, "余料照常到期");
+        Assert.That(s.Items.Where(i => InAnyBatch(i) && i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(4), "在制越过原截止不转腐败物");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
+        Assert.That(s.Items.Any(i => i.ItemId == "dirty_water" && !InAnyBatch(i)), Is.False, "余料照常到期");
         var b = Batches(s, "water_station").Single();
         Ok(E.CancelStationBatch(s, "water_station", b.BatchId, "p1c", 1));
         var back = s.Items.Where(i => i.ItemId == "dirty_water").ToList();
         Assert.That(back.Sum(i => i.Count), Is.EqualTo(4));
-        Assert.That(back.All(i => i.ShelfPausedMinutes == null && i.ExpiresAt == s.GameMinute + 20 && i.ReservedBy == null), Is.True, "恢复 C＋R");
+        Assert.That(back.All(i => i.ShelfPausedMinutes == null && i.ExpiresAt == s.GameMinute + 20 && i.ReservedBy == null && i.Owner == s.Ground), Is.True, "恢复 C＋R，回到本区地面");
         var zone = E.ZoneName(s, s.Ground);
         Assert.That(s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionCancelled)).Text,
             // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
@@ -104,7 +104,8 @@ public class B51bTests : TestBase
         WaterInputs(s, 1);
         Ok(E.StartStationBatch(s, Water, "nr"));
         var b = Batches(s, "water_station").Single();
-        s.Items.RemoveAll(i => i.ReservedBy == b.BatchId);
+        var gone = BatchBound(s, b.BatchId);
+        s.Items.RemoveAll(gone.Contains);   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
         Ok(E.CancelStationBatch(s, "water_station", b.BatchId, "nrc"));
         var zone = E.ZoneName(s, s.Ground);
         Assert.That(s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionCancelled)).Text,
@@ -152,6 +153,7 @@ public class B51bTests : TestBase
         var q = Batches(s, "water_station");
         q[1].Queued = true; q[1].DoneMinutes = 0;
         q[2].Queued = true; q[2].DoneMinutes = 0;
+        E.DebugLegacyStation56(s);   // B51c2a1：造旧档起点——57 前原料在地面按批预留
         foreach (var i in s.Items.Where(i => i.ReservedBy != null)) i.ShelfPausedMinutes = null;   // 原截止 E 一直保留（t0+100）
         var late = s.Items.First(i => i.ReservedBy == q[2].BatchId && i.ItemId == "dirty_water");
         late.ExpiresAt = s.GameMinute;
@@ -159,16 +161,17 @@ public class B51bTests : TestBase
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         obj["SchemaVersion"] = "54";
         var old = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(old.SchemaVersion, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
+        Assert.That(old.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
         var u = old.GameMinute;
         var nq = Batches(old, "water_station");
         Assert.That(nq.Select(b => (b.BatchId, b.XpSnapshot)), Is.EqualTo(ids), "批次 ID 与经验快照不变");
         Assert.That(nq.All(b => !b.Queued), Is.True, "没有等候批");
         Assert.That(nq.Select(b => b.DoneMinutes), Is.EqualTo(new[] { 20, 0, 0 }), "在办批保留进度、旧等候批不补进度");
         Assert.That((nq[1].StartMinute, nq[2].StartMinute), Is.EqualTo((u, u)));
-        var bound = old.Items.Where(i => i.ReservedBy == nq[0].BatchId && i.ItemId == "dirty_water").ToList();
-        Assert.That(bound.All(i => i.ShelfPausedMinutes == 80), Is.True, "R＝旧E−U，不补偿已耗");
-        Assert.That(old.Items.Where(i => i.ReservedBy == nq[2].BatchId && i.ExpiresAt == u).All(i => i.ShelfPausedMinutes == null), Is.True, "U 时已到期的不保护");
+        var bound = BatchBound(old, nq[0].BatchId).Where(i => i.ItemId == "dirty_water").ToList();   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
+        Assert.That(bound.Sum(i => i.Count), Is.EqualTo(4));
+        Assert.That(bound.All(i => i.ShelfPausedMinutes == 80 && i.Owner == ItemInstance.StationOwner(old.Ground, nq[0].BatchId)), Is.True, "R＝旧E−U，不补偿已耗；56→57 移进设施");
+        Assert.That(BatchBound(old, nq[2].BatchId).Where(i => i.ExpiresAt == u).All(i => i.ShelfPausedMinutes == null), Is.True, "U 时已到期的不保护");
 
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(old), Cfg);
         Assert.That(Batches(again, "water_station").Select(b => (b.BatchId, b.DoneMinutes, b.StartMinute)), Is.EqualTo(Batches(old, "water_station").Select(b => (b.BatchId, b.DoneMinutes, b.StartMinute))), "重复读档不变");
@@ -194,7 +197,7 @@ public class B51bTests : TestBase
         Assert.That(s.SchemaVersion, Is.EqualTo("54"));
         Assert.That(Batches(s, "water_station").Select(b => (b.Queued, b.DoneMinutes)), Is.EqualTo(new[] { (false, 10), (true, 0) }));
         var back = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(back.SchemaVersion, Is.EqualTo("56"));   // B53a 改期望：存档升 56（55→56 晾制旧停止位判因，S11 文首 2026-11-15 §Q764 选 A）
+        Assert.That(back.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
         Assert.That(Batches(back, "water_station").Select(b => (b.Queued, b.DoneMinutes, b.StartMinute)),
             Is.EqualTo(new[] { (false, 10, Batches(s, "water_station")[0].StartMinute), (false, 0, back.GameMinute) }));
     }
