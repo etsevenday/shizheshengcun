@@ -61,9 +61,11 @@ public class B51c1Tests : TestBase
         s.GameMinute += 30;   // 期间世界时间流逝，受保护份 R 不变（R＝120，开工时余量）
         var zone = E.ZoneName(s, s.Ground);
         var at = Clock.DayTime(s.GameMinute + 120);
-        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将取消制作。材料将退回{zone}地面。草药×1退回后恢复剩余保质，预计保质到{at}。已耗时间不退。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
+        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将取消制作。材料将退回{zone}地面。已耗时间不退。"));
         Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消制作。材料已退回{zone}地面。草药×1保质至{at}。已耗时间不退。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消制作。材料已退回{zone}地面。已耗时间不退。"));
+        Assert.That(Clock.DayTime(s.Items.Single(i => i.ItemId == "herb").ExpiresAt!.Value), Is.EqualTo(at), "详情仍真实 C＋R");
         var herb = s.Items.Single(i => i.ItemId == "herb");
         Assert.That((herb.ExpiresAt, herb.ShelfPausedMinutes), Is.EqualTo(((int?)(s.GameMinute + 120), (int?)null)), "C＋R 恢复一次");
     }
@@ -83,9 +85,10 @@ public class B51c1Tests : TestBase
         Assert.That(s.Main!.Type, Is.EqualTo(ActionType.Repair));
         Steps(s, 1);
         var zone = E.ZoneName(s, s.Ground);
-        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将取消维修。材料将退回{zone}地面。不会完成本次维护。已耗时间不退。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882（后果词同步“维修”；Q874 A）
+        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将取消维修。材料将退回{zone}地面。不会完成本次维修。已耗时间不退。"));
         Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消维修。材料已退回{zone}地面。未完成本次维护。已耗时间不退。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消维修。材料已退回{zone}地面。未完成本次维修。已耗时间不退。"));
         Assert.That(mach.Owner, Is.EqualTo(ItemInstance.Carried), "维修目标只解锁，不当返还材料");
     }
 
@@ -119,7 +122,8 @@ public class B51c1Tests : TestBase
         Steps(s, 2);
         var zone = E.ZoneName(s, s.Ground);
         var at = Clock.DayTime(s.GameMinute + r);
-        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将放弃本次处理。尸体将返还{zone}地面。野犬尸体×1退回后恢复剩余保质，预计保质到{at}。不会获得产物。已耗时间不退。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
+        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将放弃本次处理。尸体将返还{zone}地面。不会获得产物。已耗时间不退。"));
         Assert.That((carcass.ReservedBy, carcass.ShelfPausedMinutes), Is.EqualTo(((int?)s.Main!.ActionId, (int?)r)), "预告只读");
     }
 
@@ -305,7 +309,7 @@ public class B51c1Tests : TestBase
         E.CreateItems(s, "salt", 1, s.Ground);
         var o = E.DryingPreview(s, "dry_meat");
         Assert.That(o.PausesShelf, Is.True);
-        const string own = "开始制作后暂停原料保质计时，取消后恢复剩余时长";   // S11 Q666 原句（取出动词随 Q778）
+        const string own = "开始制作后暂停原料保质计时";   // S11 Q666 原句（取出动词随 Q778）；BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）：删“，取消后恢复剩余时长”
         Assert.That(o.Note.Split(own).Length - 1, Is.EqualTo(1), "Q666 自身说明一次");
         Assert.That(o.Note, Does.Not.Contain("所选原料暂停保质").And.Not.Contain("退料恢复剩余保质"), "不叠通用说明");
         Assert.That(E.StartDrying(s, "dry_meat").Ok, Is.True);

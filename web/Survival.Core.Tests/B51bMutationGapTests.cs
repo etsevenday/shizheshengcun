@@ -217,7 +217,8 @@ public class B51bMutationGapTests : TestBase
         var log = s.Log.Where(l => l.Text.Contains("原料不全")).ToList();
         Assert.That(log.Count, Is.EqualTo(1));
         var zone = E.ZoneName(s, s.Ground);
-        Assert.That(log[0].Text, Is.EqualTo($"{zone}固定净水台：原料不全，这一批没有产物，剩下的原料已解锁。{E.ItemName("dirty_water")}×4保质至{Clock.DayTime(log[0].Minute + 20)}。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
+        Assert.That(log[0].Text, Is.EqualTo($"{zone}固定净水台：原料不全，这一批没有产物，剩下的原料已解锁。"));
         Assert.That(Sum(s, "clean_water"), Is.EqualTo(0), "无产物");
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(0), "无经验");
         Assert.That(s.Items.Where(i => i.ItemId is "dirty_water" or "filter_media").All(i => i.ReservedBy == null), Is.True, "预留解开");

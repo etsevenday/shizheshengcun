@@ -538,7 +538,7 @@ namespace Survival.Core.Engine
                     plan.FixedWait = rc.IsFixedWait;
                     if (rc.IsFixedWait) { plan.Label = $"{rc.Name}（固定等待{Clock.Duration(rc.BaseMinutes)}）"; return null; }
                     plan.Label = rc.IsBuild ? rc.Name : plan.Patch != null ? $"{rc.Name}{ItemName(plan.Tool!.ItemId)}"
-                        : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}"
+                        : rc.IsRepair ? $"维修{ItemName(plan.Tool!.ItemId)}"   // BM11（Q874 A／Q882）：普通维修行动名与暂停标题统一“维修{物名}”，配方名工具维护不动
                         : rc.IsSalvage ? $"拆解{ItemName(plan.Tool!.ItemId)}"
                         : batch > 1 ? $"制作{rc.Name}×{batch}份" : $"制作{rc.Name}";
                     return null;
@@ -1066,16 +1066,15 @@ namespace Survival.Core.Engine
             var keptExit = KeptExitApplies(s, a);
             var keptSrc = keptExit ? KeptSources(s, a) : default;
             var hadReserved = a.ReservedItemIds.Any(id => FindItem(s, id) is ItemInstance ri && ri.ReservedBy == a.ActionId);
-            var restored = _restoreSink = new List<ShelfRestore>();   // B51a（Q722／Q723）：本次实际恢复的保质
             var keptParts = _keptReturnSink = new List<KeptReturnPart>();   // B54（Q787）：本次按来源返还的实际去向
             try { Release(s, a, s.Ground); }
-            finally { _stagedCancelNote = null; _restoreSink = null; _keptReturnSink = null; }
-            var restoreText = RestoreText(s, restored, false);   // B54（Q789）：多个真实恢复目的地时逐组标去向
+            finally { _stagedCancelNote = null; _keptReturnSink = null; }
+            // BM11（S08 Q882 用户新裁定）：返料保质变化不另说明——撤 Q722／Q723／Q789 恢复分句，保留实际去向与后果
             if (a.IsSub) s.Sub = null; else s.Main = null;
             // B41b（R05 Q472 第 5 条）：退出暂存期间的当前移动只取消移动；原工作随后放回主行动位、仍暂停，预留不被移动取消释放
             var keptWork = a.IsSub ? null : RestoreStashedWork(s);
 
-            string text = keptExit ? KeptExitText(s, a, keptSrc, true, restoreText, keptParts) : a.Type switch
+            string text = keptExit ? KeptExitText(s, a, keptSrc, true, keptParts) : a.Type switch
             {
                 ActionType.Travel => $"已取消移动，留在{LocName(a.SourceLocation)}；已经流逝的时间与身体消耗保留。",
                 ActionType.Explore => "已取消探索，探索度不变，未获得物资；已消耗的时间保留。",
@@ -1083,7 +1082,7 @@ namespace Survival.Core.Engine
                 ActionType.Gather => $"已取消{GatherVerbOf(a.TargetId)}，未获得产物，预留库存已释放。",
                 // B51c1（S08 B51 Q771）：制作／建造／维修／现场修补／拆解普通取消按实际动作分句；处理尸体沿 Q722 引句与返还分支
                 ActionType.Craft or ActionType.Build or ActionType.Repair or ActionType.Salvage or ActionType.Butcher =>
-                    PlainExitText(s, a, true, hadReserved, a.Type == ActionType.Butcher ? restoreText : FailureRestoreClauses(restored)),
+                    PlainExitText(s, a, true, hadReserved),
                 ActionType.Sleep => "已提前醒来。",
                 ActionType.Survey => "已取消遗迹勘整，未获得经验，不占今日勘整次数；已消耗的时间保留。",
                 ActionType.WaitCook => $"已退出等待加工（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",

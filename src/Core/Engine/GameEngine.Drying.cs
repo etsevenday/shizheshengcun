@@ -131,16 +131,19 @@ namespace Survival.Core.Engine
         /// <summary>确认投料时实时重算与玩家看过的预览不一致（Q214）。</summary>
         public const string DryingPreviewChanged = "原料或晾制位有变化，预览已按现在的情况更新：请看新的来源与保质后再确认投料（不会自动换成另一份）";
 
-        public const string DryingShelfPauseText = "开始制作后暂停原料保质计时，取消后恢复剩余时长";
+        /// <summary>BM11（S08／S11 Q882 用户新裁定）：撤原“，取消后恢复剩余时长”，只留暂停句（最小删改，暂用待文案确认）。</summary>
+        public const string DryingShelfPauseText = "开始制作后暂停原料保质计时";
 
         /// <summary>晾制取消说明（逐字稿 Q666「晾制取消说明」）。</summary>
-        public const string DryingCancelHintText = "取消后恢复投料时剩余的保质时长；已过制作时间不退，没有成品，不给经验。";
+        // BM11（Q882：取消ⓘ重复退料恢复剩余时长也删该操作解释）：只删首分句，其余原样。
+        public const string DryingCancelHintText = "已过制作时间不退，没有成品，不给经验。";
 
         /// <summary>晾制保质帮助（逐字稿 Q666「晾制保质帮助」；放置位置 Q768 待定，暂无界面引用）。</summary>
         /// <summary>
         /// 晾制保质帮助短全文（B53a，S11 文首 2026-11-15 §Q768 选 A、逐字稿 dryShelf）：晾制架面板 ⓘ 与系统说明「保质与腐败」各一次。
         /// </summary>
-        public const string DryingShelfHelpText = "晾制时原料暂停保质，退料恢复剩余时长；成品从完成起计时，留在架上也会到期。";
+        // BM11（S08／S11 Q882 用户新裁定）：晾制既有短说明换“晾制时原料暂停保质；成品正常计时。”。
+        public const string DryingShelfHelpText = "晾制时原料暂停保质；成品正常计时。";
 
         /// <summary>晾制架面板 ⓘ 的被动工作信息（B53a，S11 §Q768、逐字稿 dryPassive）。</summary>
         public const string DryingPassiveText = "按世界时间推进，不占行动；离开继续，暂停不推进。";
@@ -438,13 +441,11 @@ namespace Survival.Core.Engine
             var b = DryingSlotAt(s, place, slot)!;
             var items = DryingContents(s, place, slot);
             var what = ItemsText(this, items);
-            var paused = items.Where(i => i.ShelfPausedMinutes != null).ToList();
             fac.DryingSlots.Remove(b);
             MoveDryingOut(s, items, toCarried ? ItemInstance.Carried : place);
             RememberRequest(s, requestId);
-            var resume = paused.Count > 0
-                ? $"{what}退回{DestName(s, toCarried)}，" + string.Join("、", paused.Select(i => $"{ItemName(i.ItemId)}恢复投料时的剩余保质（保质到{Clock.DayTime(i.ExpiresAt ?? s.GameMinute)}）"))
-                : $"{what}按原保质退回{DestName(s, toCarried)}";
+            // BM11（S08／S11 Q882 用户新裁定）：取消返料不再附恢复保质说明（原“恢复投料时的剩余保质（保质到…）”“按原保质”），只报实际物品与去向
+            var resume = $"{what}退回{DestName(s, toCarried)}";
             Emit(s, GameEventKind.ActionCancelled, $"已取消{ZoneName(s, place)}晾制架工位{slot + 1}的{_recipes[b.RecipeId].Name}（已晾{b.DoneMinutes}分钟，不退时间）："
                                                    + $"{resume}，没有成品，不给经验。");
             UpdateFlags(s);

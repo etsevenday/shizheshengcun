@@ -345,10 +345,9 @@ namespace Survival.Core.Engine
             // BM5b2（Q610）：预留里到期的输入先静默转为腐败物，再按原规则释放；结果句在原因后接停工分句
             var turned = hadMaterials && SpoilWorkInputs(s, a.ReservedItemIds.ToList());
             var staged = _stagedCancelNote = new List<string>();
-            var restored = _restoreSink = new List<ShelfRestore>();   // B51a（Q722／Q723）：本次实际恢复的保质
             var keptParts = _keptReturnSink = new List<KeptReturnPart>();   // B54（Q787）：本次按来源返还的实际去向
             try { Release(s, a, s.Ground); }
-            finally { _stagedCancelNote = null; _restoreSink = null; _keptReturnSink = null; }
+            finally { _stagedCancelNote = null; _keptReturnSink = null; }
             if (a.IsSub) s.Sub = null; else s.Main = null;
             var keptWork = a.IsSub ? null : RestoreStashedWork(s);
 
@@ -359,13 +358,13 @@ namespace Survival.Core.Engine
             {
                 if (kept) text += KeptReturnSegment(s, a, src, true, keptParts);   // B54（Q787）：有溢出时按实际去向
                 else text += a.Type == ActionType.Butcher ? $"尸体已返还{groundName}地面。" : $"预留材料已返还{groundName}地面。";
-                text += RestoreText(s, restored, false);   // B54（Q789）多去向标真实去向；B51a（Q722）：真实返还后接实际恢复保质，再原后果与已耗时间
+                // BM11（S08 Q882 用户新裁定）：自动停止返料不再接恢复保质分句（原 Q722／Q789），直接接原后果
             }
             text += a.Type switch
             {
                 ActionType.Craft => "",   // B51c1（Q771、Q874 A 暂用）：只删「未生成半成品」分句
                 ActionType.Build => "本次建造进度已清除，没有建成。",
-                ActionType.Repair => "未完成本次维护。",
+                ActionType.Repair => "未完成本次维修。",   // BM11（S08 Q882／Q874 A）：后果词同步维修
                 ActionType.Salvage => "未获得拆解产物。",
                 ActionType.Butcher => ButcherResultAfter,   // B51a（逐字稿 B51 表）：撤旧「保质期未刷新」
                 ActionType.Explore => "探索度不变，未获得物资。",

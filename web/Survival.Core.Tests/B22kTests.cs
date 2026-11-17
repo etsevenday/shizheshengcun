@@ -243,7 +243,8 @@ public class B22kTests : TestBase
         Assert.That(Count(s, "salt"), Is.EqualTo(1), "盐不复制");
         Assert.That(Slots(s), Is.Empty, "清本批进度");
         Assert.That(CookXp(s), Is.EqualTo(x0), "取消不给经验");
-        Assert.That(s.Log.Last().Text, Does.Contain("恢复投料时的剩余保质"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消{E.ZoneName(s, s.Ground)}晾制架工位1的晾制肉干（已晾60分钟，不退时间）：生肉×1、盐×1退回随身，没有成品，不给经验。"));
 
         // 再投再取消：R 仍是 30，不刷新成完整保质
         var t1 = s.GameMinute;

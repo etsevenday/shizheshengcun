@@ -167,53 +167,14 @@ namespace Survival.Core.Engine
         private string CarryLabel(GameState s, string owner) =>
             TryCarriedActor(owner, out var actor) && actor != GameState.PlayerId ? $"{ActorDisplayName(s, actor)}随身" : "随身";
 
-        /// <summary>恢复分句的去向前缀（Q789）：随身「随身」／其他物主「{人物名}随身」／地面「{地点}地面」（实际公开地点名）。</summary>
-        private string RestoreDestLabel(GameState s, string owner) =>
-            TryCarriedActor(owner, out _) ? CarryLabel(s, owner) : $"{ZoneName(s, owner)}地面";
-
         /// <summary>
-        /// 恢复保质分句（Q722／Q723＋Q789）：本次实际恢复只有一个目的地时沿原 Q723 句（<see cref="RestoreClauses"/>）；
-        /// 有多个真实目的地（随身＋地面、Q787 溢出等）时逐组前缀真实去向：结果「{去向}：{原料名}×{数量}，保质至{日期时刻}。」，
-        /// 预告「{去向}：{原料名}×{数量}，预计保质至{日期时刻}。」。仍同目的地／物主／卡侧内同物同精确截止合计，组间沿清单首次出现次序。
+        /// 建造完工时地点失效（逐字稿 buildSiteFailure，Q788）：「{配方名}未完成：{原因}。材料已退回{地点}地面。无经验。」；
+        /// {地点}为原失败规则实际返还的当前地面，原因句末已有标点不重复追加。BM11（S08 Q882 用户新裁定）：撤原恢复保质分句。
         /// </summary>
-        internal string RestoreText(GameState s, IEnumerable<ShelfRestore> list, bool preview)
-        {
-            var items = list.ToList();
-            if (items.Select(x => x.Owner).Distinct().Count() <= 1) return RestoreClauses(items, preview);
-            return string.Concat(RestoreGroups(items).Select(g => preview
-                ? $"{RestoreDestLabel(s, g.owner)}：{g.name}×{g.n}，预计保质至{Clock.DayTime(g.at)}。"
-                : $"{RestoreDestLabel(s, g.owner)}：{g.name}×{g.n}，保质至{Clock.DayTime(g.at)}。"));
-        }
-
-        /// <summary>
-        /// 失败返料的短恢复分句（逐字稿 buildFailureRestore／stationFailureShelfRestore，Q788、Q791）：「{原料名}×{数量}保质至{日期时刻}。」，
-        /// 同目的地／物主／卡侧内同物同精确截止合计；没有恢复为空串。
-        /// </summary>
-        internal string FailureRestoreClauses(IEnumerable<ShelfRestore> list) =>
-            string.Concat(RestoreGroups(list).Select(g => $"{g.name}×{g.n}保质至{Clock.DayTime(g.at)}。"));
-
-        /// <summary>
-        /// 建造完工时地点失效（逐字稿 buildSiteFailure，Q788）：「{配方名}未完成：{原因}。材料已退回{地点}地面。{恢复保质分句}无经验。」；
-        /// {地点}为原失败规则实际返还的当前地面，原因句末已有标点不重复追加，恢复分句可为空。
-        /// </summary>
-        internal string BuildSiteFailureText(GameState s, string recipeName, string reason, string restore)
+        internal string BuildSiteFailureText(GameState s, string recipeName, string reason)
         {
             var why = reason.EndsWith("。") || reason.EndsWith("！") || reason.EndsWith("？") ? reason : reason + "。";
-            return $"{recipeName}未完成：{why}材料已退回{ZoneName(s, s.Ground)}地面。{restore}无经验。";
-        }
-
-        /// <summary>Q723 分组：同返还目的地／物主／卡侧内同原料名＋同一精确截止合计份数，组间沿清单首次出现次序。</summary>
-        private List<(string owner, string? side, string name, int at, int n)> RestoreGroups(IEnumerable<ShelfRestore> list)
-        {
-            var groups = new List<(string owner, string? side, string name, int at, int n)>();
-            foreach (var x in list)
-            {
-                var name = ItemName(x.ItemId);
-                var k = groups.FindIndex(g => g.owner == x.Owner && g.side == x.Side && g.name == name && g.at == x.ExpiresAt);
-                if (k < 0) groups.Add((x.Owner, x.Side, name, x.ExpiresAt, x.Count));
-                else groups[k] = (groups[k].owner, groups[k].side, name, groups[k].at, groups[k].n + x.Count);
-            }
-            return groups;
+            return $"{recipeName}未完成：{why}材料已退回{ZoneName(s, s.Ground)}地面。无经验。";
         }
     }
 }

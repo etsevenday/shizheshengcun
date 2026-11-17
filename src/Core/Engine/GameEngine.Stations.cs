@@ -330,16 +330,14 @@ namespace Survival.Core.Engine
             var seq = seenSeq ?? idx + 1;
             var hasReturn = s.Items.Any(i => i.ReservedBy == b.BatchId);
             fac.StationBatches.Remove(b);
-            var restored = _restoreSink = new List<ShelfRestore>();
-            try { ReleaseStationBatch(s, b); }
-            finally { _restoreSink = null; }
+            ReleaseStationBatch(s, b);
             Normalize(s, place);
             RememberRequest(s, requestId);
             var zone = ZoneName(s, place);
             var head = $"已取消{zone}{StationName(stationId)}的批次{seq} · {RecipeNameOf(b.RecipeId)}（已进行{Clock.Duration(b.DoneMinutes)}）。";
             // Q727（逐字稿 B51 表 batchCancelResult／batchCancelNoReturn）：返料→恢复保质分句（可为空）→后果→已耗时间
             Emit(s, GameEventKind.ActionCancelled, hasReturn
-                ? $"{head}未消耗原料已退回{zone}地面。{RestoreClauses(restored, false)}没有产物和经验。已耗时间保留。"
+                ? $"{head}未消耗原料已退回{zone}地面。没有产物和经验。已耗时间保留。"   // BM11（S08 Q882 用户新裁定）：撤恢复保质分句
                 : $"{head}没有可返还的剩余原料，没有产物和经验。已耗时间保留。");
             UpdateFlags(s);
             return ActionResult.Success();
@@ -361,13 +359,10 @@ namespace Survival.Core.Engine
                 var ok = inputs.All(i => i.Owner == place) && rc.AllInputs.All(kv => inputs.Where(i => i.ItemId == kv.Key).Sum(i => i.Count) >= kv.Value);
                 if (!ok)
                 {
-                    // B54（S08 Q791）：原失败句后只对本次实际释放、有可信 R 的原料接「{原料名}×{数量}保质至{日期时刻}。」（C＋R；同目的地／物主／卡侧同物同截止合计）
-                    var outer = _restoreSink;
-                    var restored = _restoreSink = new List<ShelfRestore>();
-                    try { ReleaseStationBatch(s, b); }
-                    finally { _restoreSink = outer; }
+                    // BM11（S08 Q882 用户新裁定）：撤 B54（Q791）失败句后的恢复保质短句，原失败句与真实返料不变
+                    ReleaseStationBatch(s, b);
                     Normalize(s, place);
-                    Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}{StationName(b.StationId)}：原料不全，这一批没有产物，剩下的原料已解锁。" + FailureRestoreClauses(restored));
+                    Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}{StationName(b.StationId)}：原料不全，这一批没有产物，剩下的原料已解锁。");
                     continue;
                 }
                 foreach (var it in inputs) s.Items.Remove(it);   // 受保护原料直接核销，不返 R

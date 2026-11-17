@@ -78,8 +78,9 @@ public class B51bTests : TestBase
         Assert.That(back.All(i => i.ShelfPausedMinutes == null && i.ExpiresAt == s.GameMinute + 20 && i.ReservedBy == null), Is.True, "恢复 C＋R");
         var zone = E.ZoneName(s, s.Ground);
         Assert.That(s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionCancelled)).Text,
+            // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
             Is.EqualTo($"已取消{zone}固定净水台的批次1 · {Cfg.Recipes.Single(r => r.Id == Water).Name}（已进行25分钟）。未消耗原料已退回{zone}地面。" +
-                       $"{E.ItemName("dirty_water")}×4恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + 20)}。没有产物和经验。已耗时间保留。"));
+                       "没有产物和经验。已耗时间保留。"));
     }
 
     /// <summary>Q701-A03：受保护输入超过原截止仍按时完成核销；完成产物正常出、无残留 R。</summary>

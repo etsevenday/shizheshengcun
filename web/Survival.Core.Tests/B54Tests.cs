@@ -42,12 +42,13 @@ public class B54KeptTests : B41bTestBase
         var at = Clock.DayTime(s.GameMinute + r);
         // 只读预告：同源容量与原工作地，不挪物
         var before = SaveSerializer.Serialize(s);
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
         Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo(
-            $"退出将取消制作。{Cloth}×2将退回{FieldName}地面。随身放不下，{Herb}×2将留在{FieldName}地面。{Herb}×2退回后恢复剩余保质，预计保质到{at}。已耗时间不退。"));
+            $"退出将取消制作。{Cloth}×2将退回{FieldName}地面。随身放不下，{Herb}×2将留在{FieldName}地面。已耗时间不退。"));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "预告只读");
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(s.Log.Last().Text, Is.EqualTo(
-            $"已取消制作。{Cloth}×2已退回{FieldName}地面。随身已满，{Herb}×2留在{FieldName}地面。{Herb}×2恢复剩余保质，保质到{at}。已耗时间不退。"));
+            $"已取消制作。{Cloth}×2已退回{FieldName}地面。随身已满，{Herb}×2留在{FieldName}地面。已耗时间不退。"));
         Assert.That(E.RootCardCount(s), Is.EqualTo(5), "不新增第六张根卡");
         var dropped = s.Items.Single(i => i.ItemId == "herb" && i.Owner == "field");
         Assert.That((dropped.Count, dropped.ExpiresAt, dropped.ShelfPausedMinutes, dropped.ReservedBy), Is.EqualTo((2, (int?)(s.GameMinute + r), (int?)null, (int?)null)));
@@ -68,8 +69,10 @@ public class B54KeptTests : B41bTestBase
         var r = Reserved(s, "herb", id).ShelfPausedMinutes!.Value;
         Assert.That(E.ActionProgress(s)!.ExitNote, Does.StartWith($"退出将取消制作。随身预留材料解除预留后留在随身，地面预留材料会返还{FieldName}地面。"));
         Assert.That(E.Cancel(s).Ok, Is.True);
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
         Assert.That(s.Log.Last().Text, Is.EqualTo(
-            $"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。{Herb}×2恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r)}。已耗时间不退。"));
+            $"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。已耗时间不退。"));
+        Assert.That(s.Items.Where(i => i.ItemId == "herb" && i.ExpiresAt == s.GameMinute + r).Sum(i => i.Count), Is.EqualTo(2), "真实 C＋R");
         Assert.That(E.RootCardCount(s), Is.EqualTo(5));
         Assert.That(s.Items.Where(i => i.ItemId == "herb" && i.Owner == ItemInstance.Carried).Sum(i => i.Count), Is.EqualTo(3));
     }
@@ -167,12 +170,14 @@ public class B54KeptTests : B41bTestBase
         });
         var r = s.Items.Where(i => i.ItemId == "herb" && i.ReservedBy == id).Select(i => i.ShelfPausedMinutes!.Value).Distinct().Single();
         var at = Clock.DayTime(s.GameMinute + r);
-        Assert.That(E.ActionProgress(s)!.ExitNote, Does.Contain($"随身：{Herb}×1，预计保质至{at}。{FieldName}地面：{Herb}×1，预计保质至{at}。已耗时间不退。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）：多去向只保留 Q471 返还去向句（随身／地面仍可查），不再逐组附期限
+        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将取消制作。随身预留材料解除预留后留在随身，地面预留材料会返还{FieldName}地面。已耗时间不退。"));
 
         Assert.That(E.Cancel(s).Ok, Is.True);
         var text = s.Log.Last().Text;
-        Assert.That(text, Does.Contain($"随身：{Herb}×1，保质至{at}。{FieldName}地面：{Herb}×1，保质至{at}。已耗时间不退。"));
-        Assert.That(text, Does.Not.Contain("恢复剩余保质"), "多去向不再用原单去向句");
+        Assert.That(text, Is.EqualTo($"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。已耗时间不退。"));
+        Assert.That(text, Does.Not.Contain("保质"));
+        Assert.That(at, Is.EqualTo(Clock.DayTime(s.Items.First(i => i.ItemId == "herb" && i.Owner == "field").ExpiresAt!.Value)), "详情仍真实 C＋R");
     }
 
     /// <summary>Q789-A01：Q787 溢出份标原工作地面，不按开工来源误标随身；同目的地同截止合计。</summary>
@@ -181,10 +186,14 @@ public class B54KeptTests : B41bTestBase
     {
         var (s, at) = PartialFit();
         var t = Clock.DayTime(at);
-        Assert.That(E.ActionProgress(s)!.ExitNote, Does.Contain($"随身：{Herb}×2，预计保质至{t}。{FieldName}地面：{Herb}×1，预计保质至{t}。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）：溢出去向仍由 Q787 返还段写明
+        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将取消制作。{Cloth}×3将退回{FieldName}地面。{Herb}×2将退回随身。随身放不下，{Herb}×1将留在{FieldName}地面。已耗时间不退。"));
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(s.Log.Last().Text, Is.EqualTo(
-            $"已取消制作。{Cloth}×3已退回{FieldName}地面。{Herb}×2已退回随身。随身已满，{Herb}×1留在{FieldName}地面。随身：{Herb}×2，保质至{t}。{FieldName}地面：{Herb}×1，保质至{t}。已耗时间不退。"));
+            $"已取消制作。{Cloth}×3已退回{FieldName}地面。{Herb}×2已退回随身。随身已满，{Herb}×1留在{FieldName}地面。已耗时间不退。"));
+        var fieldHerb = s.Items.Where(i => i.ItemId == "herb" && i.Owner == "field").ToList();
+        Assert.That(fieldHerb, Has.Count.EqualTo(1));
+        Assert.That((fieldHerb[0].Count, fieldHerb[0].ExpiresAt), Is.EqualTo((1, (int?)at)), "溢出份真实 C＋R");
     }
 
     /// <summary>Q789-A02：只有一个实际恢复目的地时沿原 Q723 单去向句（溢出全部落地也是单目的地）。</summary>
@@ -196,8 +205,9 @@ public class B54KeptTests : B41bTestBase
         var r = Reserved(s, "herb", id).ShelfPausedMinutes!.Value;
         Assert.That(E.Cancel(s).Ok, Is.True);
         var text = s.Log.Last().Text;
-        Assert.That(text, Does.Contain($"{Herb}×2恢复剩余保质，保质到{Clock.DayTime(s.GameMinute + r)}。"));
-        Assert.That(text, Does.Not.Contain("地面：").And.Not.Contain("随身："));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
+        Assert.That(text, Is.EqualTo($"已取消制作。{Cloth}×2已退回{FieldName}地面。随身已满，{Herb}×2留在{FieldName}地面。已耗时间不退。"));
+        Assert.That(s.Items.Single(i => i.ItemId == "herb" && i.Owner == "field").ExpiresAt, Is.EqualTo(s.GameMinute + r), "真实 C＋R");
     }
 }
 
@@ -243,7 +253,8 @@ public class B54Tests : TestBase
         Assert.That((stone.Owner, stone.Count, stone.ShelfPausedMinutes, stone.ReservedBy), Is.EqualTo(("field", 4, (int?)null, (int?)null)));
         var log = s.Log.Last(l => l.Kind == nameof(GameEventKind.ActionAborted));
         var why = E.WildFireSiteReasons(s).Single();
-        Assert.That(log.Text, Is.EqualTo($"{rc.Name}未完成：{why}。材料已退回{E.ZoneName(s, "field")}地面。{E.ItemName("stone")}×4保质至{Clock.DayTime(stone.ExpiresAt!.Value)}。无经验。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
+        Assert.That(log.Text, Is.EqualTo($"{rc.Name}未完成：{why}。材料已退回{E.ZoneName(s, "field")}地面。无经验。"));
         Assert.That(stone.ExpiresAt!.Value - 100, Is.InRange(log.Minute - 5, log.Minute), "截止＝实际释放 C＋R");
         Assert.That(s.Log.Count(l => l.Kind == nameof(GameEventKind.ActionAborted)), Is.EqualTo(1), "仍一条日志");
     }
@@ -299,7 +310,8 @@ public class B54Tests : TestBase
         Assert.That(dirty.Sum(i => i.Count), Is.EqualTo(4));
         var at = dirty.Select(i => i.ExpiresAt!.Value).Distinct().Single();
         Assert.That(dirty.All(i => i.ShelfPausedMinutes == null && i.ReservedBy == null), Is.True);
-        Assert.That(log.Text, Does.EndWith($"：原料不全，这一批没有产物，剩下的原料已解锁。{E.ItemName("dirty_water")}×4保质至{Clock.DayTime(at)}。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
+        Assert.That(log.Text, Does.EndWith("：原料不全，这一批没有产物，剩下的原料已解锁。"));
         Assert.That(at - 20, Is.EqualTo(log.Minute), "截止＝实际释放 C＋R");
         Assert.That(s.Log.Count(l => l.Text.Contains("原料不全")), Is.EqualTo(1));
         Assert.That(s.Items.Any(i => i.ItemId == "clean_water"), Is.False, "无产物");

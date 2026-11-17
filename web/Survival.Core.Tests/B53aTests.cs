@@ -316,7 +316,8 @@ public class B53aTests : TestBase
     public void Q768_A01_HelpTexts()
     {
         // 逐字稿 2026-11-15 B50a 表 dryShelf／dryPassive
-        Assert.That(GameEngine.DryingShelfHelpText, Is.EqualTo("晾制时原料暂停保质，退料恢复剩余时长；成品从完成起计时，留在架上也会到期。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）：晾制既有短说明
+        Assert.That(GameEngine.DryingShelfHelpText, Is.EqualTo("晾制时原料暂停保质；成品正常计时。"));
         Assert.That(GameEngine.DryingPassiveText, Is.EqualTo("按世界时间推进，不占行动；离开继续，暂停不推进。"));
         var overlay = Web("Components", "DryingOverlay.razor");
         Assert.That(overlay, Does.Contain("title=\"@(GameEngine.DryingPassiveText + GameEngine.DryingShelfHelpText)\""));

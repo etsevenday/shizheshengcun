@@ -177,8 +177,9 @@ public class B41c2ExitLockTests : TestBase
         var r = e.Resume(s);
         Assert.That((r.Ok, r.Aborted), Is.EqualTo((true, true)));
         Assert.That((s.Main, s.GameMinute), Is.EqualTo(((ActionState?)null, t0)));
-        // B51a（Q722）：返还后接实际恢复保质，后果改「没有产物。」
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"{label}已中止。原因：{why}尸体已返还{e.ZoneName(s, s.Ground)}地面。野犬尸体×1恢复剩余保质，保质到{Clock.DayTime(carcass.ExpiresAt!.Value)}。没有产物。已耗时间保留。"));
+        // B51a（Q722）：后果改「没有产物。」；BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"{label}已中止。原因：{why}尸体已返还{e.ZoneName(s, s.Ground)}地面。没有产物。已耗时间保留。"));
+        Assert.That(carcass.ExpiresAt, Is.Not.Null, "真实 C＋R 照常恢复");
         Assert.That((carcass.Owner, carcass.ReservedBy), Is.EqualTo((s.Ground, (int?)null)));
         Assert.That(s.Items.Count(i => i.ItemId == "raw_meat"), Is.Zero);
         Assert.That(e.Resume(s).Ok, Is.False, "只收束一次");
@@ -293,7 +294,8 @@ public class B41c2ExitLockTests : TestBase
         var why = $"{name}耐久已满，无法继续维护。";
         Assert.That(E.ActionProgress(s)!.ResumeNote, Is.EqualTo(why));
         Assert.That(E.Resume(s).Aborted, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"{label}已中止。原因：{why}预留材料已返还{E.ZoneName(s, s.Ground)}地面。未完成本次维护。已耗时间保留。"));
+        // BM11 改断言出处：S08 文首 2026-11-17 §Q882（后果词同步“维修”；Q874 A）
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"{label}已中止。原因：{why}预留材料已返还{E.ZoneName(s, s.Ground)}地面。未完成本次维修。已耗时间保留。"));
         Assert.That(s.Items.Any(i => i.ReservedBy != null), Is.False);
     }
 

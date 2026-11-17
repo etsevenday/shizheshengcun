@@ -279,7 +279,7 @@ namespace Survival.Core.Engine
         private static string CancelAfter(ActionState a, bool result) => a.Type switch
         {
             ActionType.Build => result ? "本次建造进度已清除，没有建成。" : "本次建造进度会清除，不会建成。",
-            ActionType.Repair => result ? "未完成本次维护。" : "不会完成本次维护。",
+            ActionType.Repair => result ? "未完成本次维修。" : "不会完成本次维修。",   // BM11（S08 Q882／Q874 A）：后果词同步维修
             ActionType.Salvage => result ? "未获得拆解产物。" : "不会获得拆解产物。",
             ActionType.Butcher => result ? ButcherResultAfter : ButcherPreviewAfter,
             _ => "",
@@ -291,17 +291,16 @@ namespace Survival.Core.Engine
             : result ? $"已取消{CancelVerb(a)}。" : $"退出将取消{CancelVerb(a)}。";
 
         /// <summary>
-        /// 普通（非撤退离地保留）取消结果／退出预告（S08 B51 Q771）：引句→实际返还当前地面（有本行动实际预留物才写）→实际有保质返料的到期句→原后果→「已耗时间不退。」。
-        /// 结果 restore 为本次实际恢复分句（制作类「{原料名}×{数量}保质至{日期时刻}。」，处理尸体沿 Q722 拼接合同）；预告按现在立即退出只读算（逐字稿 B51 表「立即取消的只读返料预告」）。
+        /// 普通（非撤退离地保留）取消结果／退出预告（S08 B51 Q771）：引句→实际返还当前地面（有本行动实际预留物才写）→原后果→「已耗时间不退。」。
+        /// BM11（S08 Q882 用户新裁定）：撤原“实际有保质返料的到期句”与只读返料预告恢复句。
         /// </summary>
-        private string PlainExitText(GameState s, ActionState a, bool result, bool hasReturn, string? restore = null)
+        private string PlainExitText(GameState s, ActionState a, bool result, bool hasReturn)
         {
             var zone = ZoneName(s, s.Ground);
             var back = !hasReturn ? ""
                 : a.Type == ActionType.Butcher ? (result ? $"尸体已返还{zone}地面。" : $"尸体将返还{zone}地面。")
                 : result ? $"材料已退回{zone}地面。" : $"材料将退回{zone}地面。";
-            restore ??= result ? "" : RestorePreview(s, a, false);
-            return CancelLead(a, result) + back + restore + CancelAfter(a, result) + ElapsedNotRefunded;
+            return CancelLead(a, result) + back + CancelAfter(a, result) + ElapsedNotRefunded;
         }
 
         /// <summary>
@@ -309,11 +308,11 @@ namespace Survival.Core.Engine
         /// 结果的 restore 为本次真实恢复分句；预告不传，按现在立即退出的 C＋R 只读算（restorePreview）。
         /// </summary>
         /// <param name="parts">B54（Q787）：结果为本次实际按来源返还的去向（ReleaseToSources 记下的）；预告不传，按现在立即退出只读预演。有溢出时返还段按实际去向生成。</param>
-        private string KeptExitText(GameState s, ActionState a, (bool carried, string? ground) src, bool result, string? restore = null, IReadOnlyList<KeptReturnPart>? parts = null)
+        private string KeptExitText(GameState s, ActionState a, (bool carried, string? ground) src, bool result, IReadOnlyList<KeptReturnPart>? parts = null)
         {
-            restore ??= result ? "" : RestorePreview(s, a, true);
             parts ??= result ? null : KeptReturnPlan(s, a);
-            return CancelLead(a, result) + KeptReturnSegment(s, a, src, result, parts) + restore + CancelAfter(a, result) + ElapsedNotRefunded;
+            // BM11（S08 Q882 用户新裁定）：撤恢复保质分句（结果与预告），返还段保留实际去向
+            return CancelLead(a, result) + KeptReturnSegment(s, a, src, result, parts) + CancelAfter(a, result) + ElapsedNotRefunded;
         }
 
         /// <summary>
