@@ -441,15 +441,15 @@ namespace Survival.Core.Engine
                     var calmed = false;
                     using (FocusOn(s, target))
                     {
+                        // BM11（Q784 A）：鼓舞与武器特性「预判」都是真实命中能力增益——按本次提交前后合并比较，同人只一份「命中强化」
+                        double ib0 = b.InspireBonus; var iu0 = b.InspireUntilRound;
                         if (x.InspireAccuracy > 0)
                         {
-                            double ib0 = b.InspireBonus; var iu0 = b.InspireUntilRound;
                             b.InspireBonus = x.InspireAccuracy;
                             b.InspireUntilRound = b.Round + x.BuffRounds + (int)w.Trait("commandRounds");
                             if (!b.PendingCommandXp.Contains(key)) b.PendingCommandXp.Add(key);
                             parts.Add($"下一次攻击命中能力+{Fmt.T(b.InspireBonus)}（到第{b.InspireUntilRound}回合末）");
                             gains.Add(target);
-                            if (BuffGained(ib0, iu0, b.InspireBonus, b.InspireUntilRound, b.Round)) changes.Add((target, GainAccuracy));   // B52b（R03 Q729）
                             effective = true;
                         }
                         if (x.PanicReduce > 0)
@@ -481,6 +481,12 @@ namespace Survival.Core.Engine
                             b.InspireBonus += first;
                             b.InspireUntilRound = Math.Max(b.InspireUntilRound, b.Round + Math.Max(1, x.BuffRounds));
                             parts.Add($"预判：下一击命中能力再+{Fmt.T(first)}");
+                        }
+                        // B52b（R03 Q729）／BM11（Q784 A）：真实正增益才写；只预判生效时受益者也有这一段
+                        if (BuffGained(ib0, iu0, b.InspireBonus, b.InspireUntilRound, b.Round))
+                        {
+                            if (!gains.Contains(target)) gains.Add(target);
+                            changes.Add((target, GainAccuracy));
                         }
                     }
                     if (calmed)

@@ -457,16 +457,16 @@
 
     /// <summary>
     /// 等待中的顶条/底栏文字（B9a 试玩修复 2）：有敌人在出手写“敌方行动中：N号 名字”；队列游标停在我方下一名（激活马上开始）写“轮到××”；
-    /// 本轮队列走完、正在推进轮末 5 分钟写“轮末结算”。不再出现光秃的“敌方行动中”。
+    /// 本轮队列走完写“回合末结算”（BM11 Q781 A：战斗世界时间冻结，删旧括注的每回合计时说明）。不再出现光秃的“敌方行动中”。
     /// </summary>
     private string WaitText(BattleEnemy? turnFoe, string turnName)
     {
         var b = G.VS.Battle!;
         if (turnFoe != null) return $"敌方行动中：{turnName}";
-        if (b.Cursor >= b.Queue.Count) return "回合末结算（本回合推进5分钟）";
+        if (b.Cursor >= b.Queue.Count) return BattleInfoCopy.RoundEndWait;
         var q = b.Queue[b.Cursor];
         if (q <= 0 && GameEngine.QueueActor(b, q) is string next) return $"轮到{(next == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.VS, next))}";
-        return "回合末结算（本回合推进5分钟）";
+        return BattleInfoCopy.RoundEndWait;
     }
 
     /// <summary>B34b（R03 §Q571）：短反馈——锚点上亮一下（两套同样的动画交替，连续两次也能重播）。</summary>

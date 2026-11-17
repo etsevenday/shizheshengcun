@@ -30,6 +30,9 @@ namespace Survival.Core.Engine
         // Q528.2 战报与全记录
         public const string LogEmpty = "还没有战斗记录。";
 
+        /// <summary>BM11（Q781 A，逐字稿 2026-11-17 B52 节逐字值）：本回合队列走完的等待文字（删旧括注的每回合计时说明）。</summary>
+        public const string RoundEndWait = "回合末结算";
+
         /// <summary>B47b（R03 §Q618、逐字稿 B34 表）：点击查看的对象已确死／离场且原无详情时，阅读区显示这句，不悄悄改看另一对象。</summary>
         public const string Departed = "该对象已离场。";
         public const string BackToLatest = "回到最新";

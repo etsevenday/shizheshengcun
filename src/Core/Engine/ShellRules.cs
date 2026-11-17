@@ -182,6 +182,12 @@ namespace Survival.Core.Engine
         /// </summary>
         public const string BattleNoSkipHelp = "敌我出手表现均不可跳过。播放期间可按ESC打开菜单，关闭菜单后从原处继续。";
 
+        /// <summary>BM11（Q782 A，逐字稿 2026-11-17 B52 节 lifeHelp）：系统说明「中央推进条、暂停与退出」原“跳过动画只是加快显示……”段后接一遍。</summary>
+        public const string LifeCloseUpHelp = "生命特写不可跳过；播完恢复快进。";
+
+        /// <summary>BM11（Q783，逐字稿 2026-11-17 B52 节精简 readingHelp）：战斗帮助「敌我出手表现均不可跳过……」段后另起一条。</summary>
+        public const string PlaybackNoInputHelp = "特写播放时无法操作；镜头间隙可查看战斗信息。";
+
         /// <summary>BM2（Q496）：顶栏、战斗区、结算页「菜单 ESC」按钮的悬停正式句。</summary>
         public const string MenuHover = "点击打开或关闭菜单。按 ESC 时先处理当前可关闭层；没有可关闭层时打开菜单。";
     }

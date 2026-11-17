@@ -619,7 +619,7 @@ namespace Survival.Core.Engine
                     else who = DrawEnemyTarget(s, b, e, EnemyTargetCandidates(b, new HashSet<int> { 1, 2, 3, 4 }), st.Verb);
                     if (who == null) { BattleLog(s, $"{EnemyName(e)}{st.Verb}落空（没有可标记的人）。"); return; }
                     e.MarkedActor = who;
-                    FxShort(s, EnemyMarkShort, FxFoe(e));   // B52b（R03 Q731）：真实执行后行动敌人旁短反馈“标记”（落空不出，见 Q785 待答）
+                    FxShort(s, EnemyMarkShort, FxFoe(e));   // B52b（R03 Q731）：真实执行后行动敌人旁短反馈“标记”；BM11（Q785 A）：落空（上面已返回）不出、只留原战报
                     BattleLog(s, $"{EnemyName(e)}{st.Verb}了{ActorDisplayName(s, who)}（{PosName(b.Allies.IndexOf(who) + 1)}）：它接下来的指定攻击优先打这个人。");
                     return;
                 }

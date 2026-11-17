@@ -1115,10 +1115,11 @@ namespace Survival.Core.Engine
                         p.EnergyCost = energy;
                         p.EnergyAfter = s.Stats.Energy - energy;
                         // B21（R03 D4）：地牢远征里撤退成功退到来路上第一个没有敌人的房间（仍在远征里，不算离开地牢）
+                        // BM11（Q781 A，R03／S14 文首 2026-11-17 B52 节）：战斗世界时间已冻结，删“本回合推进5分钟后”，保留“成功：脱战，”及原真实后半句
                         var retreatTo = DungeonRetreatTarget(s, s.CurrentLocation);
                         p.Notes.Add(retreatTo != null
-                            ? $"成功：本回合推进5分钟后脱战，全队退到{LocName(retreatTo)}（来路上第一个没有敌人的房间，仍在本次远征里、不扣终止惩罚），存活敌人保留血量；失败：本回合行动点用尽"
-                            : $"成功：本回合推进5分钟后脱战，{WorldRetreatPreview(s, b)}，存活敌人保留血量与位置；失败：本回合行动点用尽");
+                            ? $"成功：脱战，全队退到{LocName(retreatTo)}（来路上第一个没有敌人的房间，仍在本次远征里、不扣终止惩罚），存活敌人保留血量；失败：本回合行动点用尽"
+                            : $"成功：脱战，{WorldRetreatPreview(s, b)}，存活敌人保留血量与位置；失败：本回合行动点用尽");
                         if (low) p.Notes.Add($"体力不足{Fmt.N(a.Energy ?? 0)}：强行撤退不耗体力，成功率×{Fmt.T(a.LowEnergyChanceFactor)}");
                         break;
                     }

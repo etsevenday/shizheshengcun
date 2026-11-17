@@ -31,7 +31,7 @@
         @* Q329、P01f：左栏属性点开的说明子页标题「身体状态」，下面是所选属性及实际值 *@
         <div class="op-head">
             <h2>@ShellText.BodyTitle</h2>
-            <div class="attr-name">@ShellText.LeftStatName(id) <small class="muted">@Ui.N(v)/@Ui.T(s.Stats.Max(id))</small></div>
+            <div class="attr-name">@ShellText.LeftStatName(id) <small class="muted">@(id == StatId.Health ? e.HealthFractionText(s, s.Player, Ui.N, Ui.T) : $"{Ui.N(v)}/{Ui.T(s.Stats.Max(id))}")</small></div>
         </div>
         <div class="track big"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div>
         <div class="lines">

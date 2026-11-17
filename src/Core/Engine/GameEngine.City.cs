@@ -460,7 +460,7 @@ namespace Survival.Core.Engine
                 case "clinic_consult":
                     v.NeedsTarget = true;
                     v.EffectText = "查看所选对象当前的健康、免疫、病毒、出血和用药冷却。此项只读。";
-                    v.Targets = PresentTargets(s, a => null, ConsultText);
+                    v.Targets = PresentTargets(s, a => null, a => ConsultText(s, a));
                     break;
                 case "clinic_dressing":
                 {
@@ -594,10 +594,11 @@ namespace Survival.Core.Engine
                 }).ToList();
 
         /// <summary>医疗咨询的内容：本人现有 H/I/V、出血与两种冷却（只读）。</summary>
-        public string ConsultText(ActorState a)
+        public string ConsultText(GameState s, ActorState a)
         {
             var b = a.Body;
-            var parts = new List<string> { $"健康{Fmt.N(a.Stats.Health)}/{Fmt.N(a.Stats.HealthMax)}", $"免疫{Fmt.N(b.Immunity)}" };
+            // BM11（Q786）：真濒死写“0/{上限} · 濒死”
+            var parts = new List<string> { $"健康{HealthFractionText(s, a, Fmt.N, Fmt.N)}", $"免疫{Fmt.N(b.Immunity)}" };
             // B38b（N02 附录 Q286 咨询感染状态）
             parts.Add(b.Infected ? $"已感染（病毒{Fmt.N(b.VirusLoad)}）" : $"未感染（病毒{Fmt.N(b.VirusLoad)}）");
             parts.Add(b.BleedTriggers > 0 ? "正在出血" : "没有出血");
@@ -753,7 +754,7 @@ namespace Survival.Core.Engine
                     RememberRequest(s, requestId);
                     var a = s.Actors[t!.ActorId];
                     // B38b（N02 附录 Q286）：“{人物}的现有记录：……。{冷却说明}本次只查看记录。”
-                    Emit(s, GameEventKind.Info, $"{t.Name}的现有记录：{ConsultText(a)}。{CooldownSentences(s, a)}本次只查看记录。");
+                    Emit(s, GameEventKind.Info, $"{t.Name}的现有记录：{ConsultText(s, a)}。{CooldownSentences(s, a)}本次只查看记录。");
                     return ActionResult.Success();
                 }
                 case "hub_workshop_access":

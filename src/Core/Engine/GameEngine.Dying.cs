@@ -63,6 +63,13 @@ namespace Survival.Core.Engine
         /// <summary>Q696：仍活着的濒死者常驻健康“0/{上限} · 濒死”（上限按原整数显示）。</summary>
         public static string DyingHealthText(double max) => $"0/{Fmt.T(max)} · {DyingWord}";
 
+        /// <summary>
+        /// BM11（R09／S14 Q786：沿 Q738 A 所有真实当前健康分数）：真濒死写“0/{上限} · 濒死”，否则按各处原格式“{当前}/{上限}”。
+        /// 只给原本就有分数的当前健康行用；未来预估、差值、历史不走这里。
+        /// </summary>
+        public string HealthFractionText(GameState s, ActorState a, Func<double, string> cur, Func<double, string> max) =>
+            IsDying(s, a) ? DyingHealthText(a.Stats.HealthMax) : $"{cur(a.Stats.Health)}/{max(a.Stats.HealthMax)}";
+
         // ───────────── B47b（R09 Q690、A06 文首）：成长页「意志」的日额与五个被动参考格 ─────────────
 
         /// <summary>Q690：五个固定参考等级（被动成长轨的说明格，不是技能节点）。</summary>

@@ -497,7 +497,8 @@ namespace Survival.Core.Engine
                     var list = s.Roster.Where(r => r.Present && s.Actors.ContainsKey(r.ActorId)).Select(r =>
                     {
                         var a = s.Actors[r.ActorId];
-                        return $"{r.Name}：健康{Fmt.N(a.Stats.Health)}/{Fmt.N(a.Stats.HealthMax)}、病毒{Fmt.N(a.Body.VirusLoad)}{(a.Body.Infected ? "（已感染）" : "")}、{(a.Body.BleedTriggers > 0 ? "正在出血" : "没有出血")}";
+                        // BM11（Q786）：留守风险预览的真实当前健康真濒死写“0/{上限} · 濒死”
+                        return $"{r.Name}：健康{HealthFractionText(s, a, Fmt.N, Fmt.N)}、病毒{Fmt.N(a.Body.VirusLoad)}{(a.Body.Infected ? "（已感染）" : "")}、{(a.Body.BleedTriggers > 0 ? "正在出血" : "没有出血")}";
                     }).ToList();
                     return list.Count == 0 ? null : "留守前的风险预览——" + string.Join("；", list) + "（公共照护不治伤病、不清感染）";
                 }

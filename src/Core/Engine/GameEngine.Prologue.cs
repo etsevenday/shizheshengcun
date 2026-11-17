@@ -740,7 +740,8 @@ namespace Survival.Core.Engine
             foreach (var a in s.PartyActors)
             {
                 var st = a.Stats;
-                pv.PartyLines.Add($"{ActorDisplayName(s, a.Id)}：健康{Fmt.N(st.Health)}/{Fmt.N(st.HealthMax)} 饱食{Fmt.N(st.Satiety)} 水分{Fmt.N(st.Hydration)} 体力{Fmt.N(st.Energy)}/{Fmt.N(st.EnergyMax)} 清醒{Fmt.N(st.Wakefulness)} 精神{Fmt.N(st.Morale)} 免疫{Fmt.N(a.Body.Immunity)} 病毒{(a.Body.Infected ? Fmt.N(a.Body.VirusLoad) : "未感染")}");
+                // BM11（Q786）：远行确认预览全员状态行的真实当前健康真濒死写“0/{上限} · 濒死”
+                pv.PartyLines.Add($"{ActorDisplayName(s, a.Id)}：健康{HealthFractionText(s, a, Fmt.N, Fmt.N)} 饱食{Fmt.N(st.Satiety)} 水分{Fmt.N(st.Hydration)} 体力{Fmt.N(st.Energy)}/{Fmt.N(st.EnergyMax)} 清醒{Fmt.N(st.Wakefulness)} 精神{Fmt.N(st.Morale)} 免疫{Fmt.N(a.Body.Immunity)} 病毒{(a.Body.Infected ? Fmt.N(a.Body.VirusLoad) : "未感染")}");
                 foreach (StatId id in Enum.GetValues(typeof(StatId)))
                     if (Config.Thresholds.TryGetValue(StatKey(id), out var th) && th.IsBelow(st.Get(id)))
                         pv.Warnings.Add($"{ActorDisplayName(s, a.Id)}的{StatName(id)}偏低，建议先恢复");

@@ -49,7 +49,7 @@ namespace Survival.Core.Engine
             return (snap.From, null);
         }
 
-        /// <summary>撤退预览“成功：本轮推进5分钟后脱战，……”中间这一段。</summary>
+        /// <summary>撤退预览“成功：脱战，……”中间这一段（BM11 Q781 A 删旧“本回合推进5分钟后”）。</summary>
         public string WorldRetreatPreview(GameState s, BattleState b)
         {
             if (b.WorldRetreat == null || DungeonAt(b.LocationId) != null) return $"留在{LocName(b.LocationId)}（不传回营地）";
