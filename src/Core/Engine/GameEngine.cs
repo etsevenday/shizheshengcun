@@ -432,6 +432,8 @@ namespace Survival.Core.Engine
                 case ActionType.Build:
                 {
                     if (!_recipes.TryGetValue(r.TargetId, out var rc)) return "配方不存在";
+                    // B35a1（Q600）：未显现的秘密配方直接请求统一拒绝，不回显名称、材料或门槛
+                    if (!RecipeVisible(s, rc)) return RecipeNotFoundText;
                     plan.Recipe = rc;
                     plan.Type = rc.IsBuild ? ActionType.Build : rc.IsRepair ? ActionType.Repair : rc.IsSalvage ? ActionType.Salvage : ActionType.Craft;
                     // Q112（S08 本轮章）：N 是合法正整数配方份数，N≤0 拒绝，不静默改成 1；上限沿原规则（材料够几份）

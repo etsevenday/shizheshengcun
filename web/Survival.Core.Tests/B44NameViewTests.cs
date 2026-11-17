@@ -139,19 +139,18 @@ public class B44NameViewTests : TestBase
 
     // ───────────── Q493 未建设施悬停脚注 ─────────────
 
-    /// <summary>Q493-A01：未建设施悬停版底部脚注逐字「时间为预计值」；点击进入制作后的右栏原脚注（含「在中间配方卡下方点…」）不变。</summary>
+    /// <summary>
+    /// Q493-A01 原为未建设施卡悬停版脚注「时间为预计值」。B35a1（S14 Q594／Q805「未建设施不摆场景占位卡」「删掉设施行里虚线框的未建造卡说明」）撤掉未建占位卡，
+    /// 悬停版随之撤除；制作面板右栏原脚注（含「在中间配方卡下方点…」）不变。
+    /// </summary>
     [Test]
     public void Q493_UnbuiltHoverFootNote()
     {
-        Assert.That(PeekText.UnbuiltBuildFootNote, Is.EqualTo("时间为预计值"));
         var co = Web("Components/CraftOverlay.razor");
-        Assert.That(co, Does.Contain("FootNote=\"@(UnbuiltPeek ? PeekText.UnbuiltBuildFootNote : rc.IsDrying ?"));
+        Assert.That(co, Does.Not.Contain("UnbuiltPeek"), "没有未建卡悬停版");
         Assert.That(co, Does.Contain("$\"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值\""), "点击进入制作后原脚注保持");
-        Assert.That(co, Does.Contain("[Parameter] public bool UnbuiltPeek { get; set; }"));
-        var fc = Web("Components/FacilityCard.razor");
-        Assert.That(fc, Does.Contain("=> @<CraftOverlay Part=\"detail\" PeekRecipe=\"@recipeId\" UnbuiltPeek=\"true\" />;"), "只有未建设施悬停版传入");
+        Assert.That(Web("Components/FacilityCard.razor"), Does.Not.Contain("<CraftOverlay"), "设施卡不再带配方预估悬停");
         Assert.That(Web("Components/PeekDetail.razor"), Does.Contain("<CraftOverlay Part=\"detail\" PeekRecipe=\"@first\" />"), "制作面板里悬停配方仍是原脚注");
-        Assert.That(fc, Does.Contain("\"点击查看建造条件\"").And.Contain("\"需先建成遮蔽棚\""), "卡面／顶部原说明保留");
     }
 
     // ───────────── Q494 严格去重（维持 Q486） ─────────────

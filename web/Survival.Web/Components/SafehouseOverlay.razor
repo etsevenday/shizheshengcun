@@ -2,7 +2,9 @@
 
 @* 安全屋面板（S09 X2.5、X2.6、X2.9；开发计划 v0.9 B17 R54/R55）：
    ① 在某屋屋内时：这间屋的柜子（容量条、柜内每堆“取到随身/取到屋内地面”，随身与屋内地面每堆“放进柜子”；0 分钟，超容量/五卡/30kg 整次拒绝）；
-   ② 全部已建安全屋：改名、设为常用（只是收藏）、返程路线文字（只定位，不传送）、远处柜子的“上次记录”（只读，不能取放）。 *@
+   ② 全部已建安全屋：改名、设为常用（只是收藏）。
+   B35a1（S14 2026-11-17 Q931 B、Q910 A、Q937 B）：面板只在人物当前地点已建安全屋时能开（GameEngine.SafehousePanelBlocked，所有打开／恢复路径共用，离开当地即关）；
+   删路线段落；外地柜子的“上次记录”不再显示（数据保留），只在当地屋外显示本屋记录；删重复副标（Q971 暂用 A：屋内、屋外两行都删）与原无屋长空态。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -14,7 +16,7 @@
 
 <div class="sub-panel safehouse-panel" role="dialog" aria-label="安全屋">
     <div class="sub-head">
-        <div><h2>安全屋</h2><span class="sub">@(inside ? $"{e.SafehouseName(s, here)}屋内 · 柜子存取0分钟" : "收藏、改名与返程路线 · 柜子只能在屋内存取")</span></div>
+        <div><h2>安全屋</h2></div>
         <button class="secondary" @onclick="Close">返回<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
     <div class="sub-body sh-body" data-wheel="y">
@@ -91,14 +93,12 @@
                         <input class="sh-name" maxlength="12" placeholder="改名（最多12字）" value="@(_names.TryGetValue(l, out var v) ? v : "")" @onchange="ev => SetName(l, ev)" />
                         <button type="button" class="linkish" @onclick="() => Rename(l)">改名</button>
                     </div>
-                    <div class="tiny">@e.SafehouseRouteText(s, l)</div>
-                    @if (!(inside && l == here))
+                    @if (l == here && !inside)
                     {
                         <div class="tiny muted">柜子上次记录@(minute is int m ? $"（{Clock.DayTime(m)}）" : "（还没进过屋）")：@(lines.Count == 0 ? "空" : string.Join("、", lines.Select(x => $"{x.Name}×{x.Count}")))（只读，不能远程取放）</div>
                     }
                 </div>
             }
-            @if (houses.Count == 0) { <div class="risk none">还没有建成的安全屋。在可建地点的设施栏“安全屋”卡或制作面板“营地建造”里建。</div> }
         </section>
     </div>
 </div>

@@ -187,13 +187,14 @@ public class B32fTests : TestBase
         var help = Web("Services", "HelpCatalog.cs");
         var build = help.Substring(help.IndexOf("Id = \"build\", Title = \"营地设施\""));
         build = build.Substring(0, build.IndexOf("new HelpEntry"));
-        Assert.That(build, Does.Contain("\"在已建成的安全屋里，打开「手工制作」的「营地建造」，选择「建屋内火堆」。在允许建造的野外营地，选择「建野外火堆」。两种火堆都需要石块×4和木材×2。火堆点燃后，可以放锅烧水或烹饪，也可以直接烤制适合的食材。\""));
+        // B35a1（S14 Q805：“营地建造”统一改“设施建造”，其余逐字不变）
+        Assert.That(build, Does.Contain("\"在已建成的安全屋里，打开「手工制作」的「设施建造」，选择「建屋内火堆」。在允许建造的野外营地，选择「建野外火堆」。两种火堆都需要石块×4和木材×2。火堆点燃后，可以放锅烧水或烹饪，也可以直接烤制适合的食材。\""));
 
         foreach (var (id, name) in new[] { ("safehouse_fire", "建屋内火堆"), ("wild_fixed_fire", "建野外火堆") })
         {
             var r = Cfg.Recipes.Single(x => x.Id == id);
             Assert.That(r.Name, Is.EqualTo(name));
-            Assert.That(r.IsBuild, Is.True, "IsBuild 归「营地建造」分类");
+            Assert.That(r.IsBuild, Is.True, "IsBuild 归「设施建造」分类");
             Assert.That(r.Inputs, Is.EquivalentTo(new Dictionary<string, int> { ["stone"] = 4, ["wood"] = 2 }));
             Assert.That(r.BaseMinutes, Is.EqualTo(30));
             Assert.That(r.MinSkills, Is.EquivalentTo(new Dictionary<string, int> { ["crafting"] = 1 }));

@@ -576,10 +576,12 @@ public sealed partial class GameSession
     }
     /// <summary>从设施卡打开加工面板时要预选的配方；面板读取一次后清空。</summary>
     public string? CraftRecipe { get; set; }
-    /// <summary>手工制作当前分类标签（B10：工坊/营地建造/自动加工）；null 时按所选配方的工坊。</summary>
+    /// <summary>
+    /// 制作面板当前分类（B35a1：顶栏 all／hand／build／repair，设施工作区 all 或原配方分组 Id）；新开面板时按本机记忆恢复（Q797／Q908）。
+    /// </summary>
     public string? CraftTab { get; set; }
-    /// <summary>从材料拖拽打开加工面板时的候选配方（配置顺序）；为空表示列出全部配方。</summary>
-    public List<string>? CraftCandidates { get; set; }
+    /// <summary>从材料拖拽打开加工面板时的候选配方（配置顺序，B35a1 起带所去设施工作区，Q904）；为空表示按分类列出。</summary>
+    public List<RecipeCandidate>? CraftCandidates { get; set; }
     /// <summary>材料槽里手工指定的批次与指定的锅，随确认一起传给 Craft 请求。</summary>
     public int? CraftPot { get; set; }
     /// <summary>批量制作件数（v0.6 §03）；换配方时回到 1。</summary>
@@ -834,8 +836,8 @@ public sealed partial class GameSession
         bool KeepState(string p) => _chain.Contains(p) || (restore && next == p);
         // B45：离开火堆加工菜单（关闭或换面板）丢未提交草稿，关闭时焦点回原火堆卡（BM4a：盖在下层时保留）
         if (from == FireMenuPanel && !InChainAfter(FireMenuPanel)) LeaveFireMenu(next == null);
-        // 经「选择设施」进入的返回来源随制作页真正关闭或重新打开结束（Q560；BM4a：制作页盖在下层或恢复时保留父链）
-        if (!KeepState("craft")) { CraftFromChooser = false; ChooserReturnStation = null; }
+        // B35a1（Q931 B）：安全屋面板只在当前地点已建安全屋时能开（屋外、屋内都行），其余入口一律不开
+        if (next == "safehouse" && State != null && E.SafehousePanelBlocked(S) != null) return;
         // B23：查来源的地图真正关闭即结束这次查询（BM4a：关地图回制作由返回链恢复，不再另存快照）
         if (!InChainAfter("map")) SourceItem = null;
         // B32g（逐字稿 §1.5 Q401 选 C）：打开新的一级浏览／工具面板时收起原物品操作盘，保留选中与右栏；焦点随后交给新面板。
@@ -867,21 +869,16 @@ public sealed partial class GameSession
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入（BM4a：制作页盖在下层或恢复时保留）
         if (!KeepState("craft"))
         {
+            // B35a1：工作区上下文与候选返回随制作页真正关闭或重新打开结束（盖在下层或恢复时保留）
+            if (next != "craft") { CraftSite = null; _candidateReturn = null; }
             CraftCandidates = null;
             CraftPot = null;
             CraftBatch = 1;
             CraftTarget = null;
             CraftPatch = null;
         }
-        if (next == "craft" && !restore && State != null)
-        {
-            CraftTab = null;
-            var main = S.Main;
-            if (main != null && (main.Type == ActionType.Craft || main.Type == ActionType.Build)) CraftRecipe = main.TargetId;
-            else if (recipe != null) CraftRecipe = recipe;
-            else if (CraftRecipe == null || E.Config.Recipes.All(r => r.Id != CraftRecipe))
-                CraftRecipe = "knife";
-        }
+        // B35a1（Q594／Q797／Q908）：新开时按上下文（顶栏或某座设施工作区）恢复本机记忆的合法分类并选配方
+        if (next == "craft" && !restore && State != null) InitCraftContext(recipe);
         if (next == "rest" && !restore && State != null)
         {
             var sleepy = S.Stats.Wakefulness < 50 || !E.IsDaylight(S.GameMinute);
@@ -1088,21 +1085,6 @@ public sealed partial class GameSession
 
     // ───────────── 城市岗位事项（B14，A11 Q33 服务表） ─────────────
 
-    /// <summary>
-    /// 打开制作面板并切到某工坊分类（B14b，Q141：点公共工坊站卡、或在营区工坊/试制工坊办“使用营区工坊/使用试制工坊”）。
-    /// 选中该分类里门槛最少的第一条配方；只是浏览，0 分钟。
-    /// </summary>
-    public void OpenCraftStation(string stationId)
-    {
-        if (State == null) return;
-        var first = E.Config.Recipes.Where(r => !r.IsSalvage && !r.IsBuild && r.Station == stationId)
-            .OrderBy(r => E.RecipeLocks(S, r).Count > 0 ? 1 : 0).FirstOrDefault();
-        OpenPanel("craft", first?.Id);
-        if (Panel != "craft") return;
-        CraftTab = stationId;
-        Notify();
-    }
-
     /// <summary>城市事项面板当前对应的岗位 npcId。</summary>
     public string? CityNpcId { get; set; }
 
@@ -1189,13 +1171,11 @@ public sealed partial class GameSession
 
     /// <summary>
     /// 办理一项城市事项：0 分钟的当场提交（登记、咨询、工坊入口等）；有工时的开工为主行动后收起面板照常推进（换药、施济、休息）。
-    /// 公共工坊入口成功后打开制作面板。
     /// </summary>
     public async Task<ActionResult> StartCityService(string serviceId, string? targetActorId, string? choiceId)
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
         if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
-        var opensCraft = E.CityServicePreview(S, serviceId)?.OpensCraft == true;
         var res = E.StartCityService(S, serviceId, targetActorId, choiceId, Guid.NewGuid().ToString("N"));
         Notice = res.Ok ? null : res.Reason;
         if (res.Ok)
@@ -1203,13 +1183,7 @@ public sealed partial class GameSession
             if (S.Main != null || E.DialogueLocked(S)) { Panel = null; Pop = null; }
             Drain();
             Commit();
-            if (opensCraft)
-            {
-                // Q141：打开工坊入口时切到当地第一个已开放的公共站分类；没有已开放的就留在手工
-                var st = E.PublicStationsHere(S).FirstOrDefault(p => p.Blocked == null)?.StationId;
-                OpenCraftStation(st ?? "hand");
-                return res;
-            }
+            // B35a1（Q930 B）：两项工坊服务办完不自动打开制作页，玩家从各真实公共设施卡进入
         }
         Notify();
         if (res.Ok && !res.Duplicate && S.Main != null) await RunLoop();
@@ -1405,6 +1379,7 @@ public sealed partial class GameSession
         OnBattleOnset();   // BM5c（Q605）：真实入战关闭当前最高顶栏页与整条战前返回链，战后不恢复
         ReconcilePanelChain();   // BM4a（Q590）：换场、战斗、终局或原规则直接收盘时返回链作废
         ReconcileFireMenu();
+        ReconcileCraftAndSafehouse();   // B35a1（Q594、Q931）：工作区设施失效、离开安全屋所在地即关页
         ReconcileFeed();
         ReconcileGear();
         OnDialogueOnset();
@@ -1581,9 +1556,10 @@ public sealed partial class GameSession
         ClearPanelChain();   // BM4a（Q590）：读档、新开、回标题清窗口返回链（不重放上次按键或未提交请求）
         _cardPopBase = null;
         PanelRestorePending = null;
-        FireMenu = null;   // B45：读档、新开、回标题清加工菜单与选择设施返回来源
-        CraftFromChooser = false;
-        ChooserReturnStation = null;
+        FireMenu = null;   // B45：读档、新开、回标题清加工菜单
+        CraftSite = null;   // B35a1：清制作工作区上下文与候选返回
+        _pendingSite = null;
+        _candidateReturn = null;
         FocusIdPending = null;
         MenuOpen = false;
         ManualPageOpen = false;   // BM2（Q500）
@@ -2056,12 +2032,26 @@ public sealed partial class GameSession
         Notify();
     }
 
-    /// <summary>从材料、锅或营地地点卡拖拽打开配方候选：只预选，不扣物、不预留。</summary>
-    public void ShowRecipes(List<string> recipes, ActionRequest? request)
+    /// <summary>
+    /// 从材料或营地地点卡拖拽打开配方候选（B35a1 Q904：顶栏三类候选与当前区真实设施的相关配方同列）：只预选，不扣物、不预留。
+    /// 预选第一条顶栏配方；设施配方要点一下才进对应工作区（Q934）。材料槽等单配方预览（无明细）照原只选该配方。
+    /// </summary>
+    public void ShowRecipes(DropIntent intent)
     {
-        OpenPanel("craft", recipes.FirstOrDefault());
-        CraftCandidates = recipes;
-        CraftPot = request?.PotInstanceId;
+        var list = intent.Candidates;
+        if (list.Count == 0)
+        {
+            // 材料槽落点（单配方）：制作页里本上下文的配方就地选中，不换上下文
+            var id = intent.Recipes.FirstOrDefault();
+            if (id == null || E.Config.Recipes.FirstOrDefault(r => r.Id == id) is not { } rc) return;
+            if (Panel == "craft" && InCraftScope(rc)) { SelectCraftRecipe(id); return; }
+            list = new List<RecipeCandidate> { new() { RecipeId = id, Workspace = E.IsWorkspaceRecipe(rc) ? E.WorkspaceForStationHere(S, rc.Station) : null } };
+        }
+        OpenHandCraft(list.FirstOrDefault(c => c.Workspace == null)?.RecipeId);
+        if (Panel != "craft") return;
+        CraftCandidates = list;
+        CraftRecipe = list.FirstOrDefault(c => c.Workspace == null)?.RecipeId;
+        CraftPot = intent.Action?.PotInstanceId;
         Notify();
     }
 
@@ -2101,7 +2091,7 @@ public sealed partial class GameSession
         }
         if (intent.IsPreview)
         {
-            if (intent.Verb == DropVerb.PreviewRecipe) ShowRecipes(intent.Recipes, intent.Action);
+            if (intent.Verb == DropVerb.PreviewRecipe) ShowRecipes(intent);
             else if (intent.Action != null) ShowAction(intent.Action, intent.Label.Replace("查看", ""));
             return ActionResult.Success();
         }

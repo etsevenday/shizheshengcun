@@ -28,8 +28,6 @@ namespace Survival.Core.Engine
         public bool NeedsTarget { get; set; }
         public List<CityTargetView> Targets { get; set; } = new List<CityTargetView>();
         public List<CityChoiceView> Choices { get; set; } = new List<CityChoiceView>();
-        /// <summary>办理后界面打开制作面板（公共工坊入口）。</summary>
-        public bool OpensCraft { get; set; }
         /// <summary>办理按钮上的字（为空时界面写“{服务名}（{工时}）”，B38b Q285）。</summary>
         public string? StartLabel { get; set; }
         /// <summary>完成结果之后另列的行（B38b：施济日额、工坊工位、任务工作进度）。</summary>
@@ -453,7 +451,7 @@ namespace Survival.Core.Engine
                     break;
                 case "hub_workshop_access":
                 case "academy_workshop_access":
-                    v.OpensCraft = true;
+                    // B35a1（Q930 B）：办完不自动打开任何制作页，只保留预览的真实开放／未开放清单
                     v.EffectText = WorkshopAccessHead;
                     v.Lines.AddRange(WorkshopAccessLines(s, svc));
                     break;
@@ -565,8 +563,10 @@ namespace Survival.Core.Engine
         /// 随身手工配方照常；实际制作按原配方材料、工时、知识、熟练与锻炉燃料（每份配方另需木炭1）。
         /// </summary>
         /// <remarks>B38b（N02 附录 §2、Q291-3）：主句 + “已开放 {工位列表}”“{工位列表}未开放（{真实原因}）”分行（无对象的行省略），科学院另加告示行；
-        /// 锻炉木炭数量从实际配方条件显示，不再写在这里。</remarks>
-        public const string WorkshopAccessHead = "打开当地制作面板。随身手工配方也可以在这里查看。";
+        /// 锻炉木炭数量从实际配方条件显示，不再写在这里。
+        /// B35a1（S08／S14 2026-11-17 Q930 B，合同 b35a1-primary-q930-q931.json workshop.previewHead）：首句改“从设施卡进入。”，
+        /// 办完不打开制作页、不代选工作台、不回退手工制作；玩家从各真实公共设施卡进入。</remarks>
+        public const string WorkshopAccessHead = "从设施卡进入。";
 
         private List<string> WorkshopAccessLines(GameState s, CityServiceConfig svc)
         {

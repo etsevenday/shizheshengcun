@@ -34,7 +34,7 @@ public class B39aQ317Tests : TestBase
         var accept = E.CityPanelQuests(s, Luo).First(q => q.AcceptHere);
         var svcs = E.CityServicesOf(s, Luo);
         return (accept.AcceptBlocked,
-                svcs.Single(v => v.OpensCraft).Blocked,
+                svcs.Single(v => v.Id == "hub_workshop_access").Blocked,   // B35a1（Q930 B）：工坊服务不再打开制作页（OpensCraft 撤），按服务 Id 取同一按钮
                 svcs.Single(v => v.Title == "查抄公开资料").Blocked,
                 svcs.Single(v => v.StartLabel == "开始训练").Blocked);
     }

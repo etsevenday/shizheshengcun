@@ -107,7 +107,7 @@ public class BM4aPanelReturnTests : TestBase
             Assert.That(Web("Components", f + ".razor"), Does.Contain("@G.PanelCloseLabel<EscCap On=\"@(G.EscOwner == EscOwner.Panel)\" />"), f);
         Assert.That(Web("Components", "HelpOverlay.razor"), Does.Contain("@G.PanelCloseLabel<EscCap On=\"@G.EscOnHelpClose\" />"));
         Assert.That(Web("Components", "GearOverlay.razor"), Does.Contain("G.PanelHasUnder ? PanelReturnChain.ReturnLabel : GearPanelCopy.Close"));
-        Assert.That(Web("Components", "CraftOverlay.razor"), Does.Contain("G.CraftFromChooser && !G.PanelHasUnder ? \"返回\" : G.PanelCloseLabel"));
+        Assert.That(Web("Components", "CraftOverlay.razor"), Does.Contain("G.CraftFromCandidates && !G.PanelHasUnder ? \"返回\" : G.PanelCloseLabel"), "B35a1（Q934）：选择层撤后改为从候选进入的工作区写「返回」");
         Assert.That(Web("Components", "FormationOverlay.razor"), Does.Contain(">取消<EscCap"), "编队原是「取消」，不改");
     }
 
@@ -142,7 +142,7 @@ public class BM4aPanelReturnTests : TestBase
         Assert.That(open, Does.Contain("SwitchPanel(\"map\", null, true);"));
         Assert.That(session, Does.Not.Contain("_craftReturn"), "不恢复库存快照，恢复时重读");
         var fac = Web("Services", "GameSession.FacMenu.cs");
-        Assert.That(Slice(fac, "public void PanelEscape()", "OpenPop(StationsPop"), Does.Contain("&& _chain.Count == 0"), "制作页在最底层时返回仍先回选择层");
+        Assert.That(Slice(fac, "public void PanelEscape()", "OpenPanel(null);"), Does.Contain("&& _chain.Count == 0"), "B35a1（Q934）：制作页在最底层时返回先回候选列表（原回选择层，Q795 B 撤）");
     }
 
     /// <summary>Q586-A02：恢复时设施已无法操作→不恢复执行页、显示定稿句并回当前合法画面；来源／内容变化→清掉并显示「内容已变化，请重新选择。」，数量文本不动。</summary>
@@ -152,7 +152,7 @@ public class BM4aPanelReturnTests : TestBase
         var stack = Web("Services", "GameSession.PanelStack.cs");
         var block = Slice(stack, "private string? PanelRestoreBlock(string p)", "private void RestorePanel(");
         Assert.That(block, Does.Contain("!E.HasFireAt(S, m.Ground)").And.Contain("return GameEngine.FacReturnGoneText;"));
-        Assert.That(block, Does.Contain("E.ProcessingStationChoices(S).All(c => c.StationId != st)"));
+        Assert.That(block, Does.Contain("E.WorkspaceHere(S, w.Key) == null) return GameEngine.WorkspaceGoneText;"), "B35a1（Q594）：工作区按稳定身份重验，失效写「该设施已不可用，请重新选择。」");
         var restore = Slice(stack, "private void RestorePanel(string p)", "private void DropPanelState(");
         Assert.That(restore, Does.Contain("m.Minute = int.MinValue;"), "下层期间被别处用掉的来源按变化处理");
         Assert.That(restore, Does.Contain("Notice = GameEngine.ContentChangedText;"));

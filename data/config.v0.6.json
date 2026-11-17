@@ -17231,7 +17231,17 @@
       },
       "potCatalyst": "explicit_empty_detached_pot",
       "autoFillPot": false,
-      "station": "hand"
+      "station": "hand",
+      "reveal": {
+        "skillsAll": {
+          "medicine": 10,
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": [
+          "AC02"
+        ]
+      }
     },
     {
       "id": "make_metal_spear",
@@ -17450,7 +17460,14 @@
       },
       "station": "hand",
       "group": "workshop",
-      "knowledge": "blueprint_armory_station"
+      "knowledge": "blueprint_armory_station",
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
+      }
     },
     {
       "id": "make_machete",
@@ -17499,6 +17516,13 @@
       },
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17526,6 +17550,13 @@
       },
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17552,6 +17583,13 @@
       },
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17578,6 +17616,13 @@
       },
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17604,6 +17649,13 @@
       },
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17652,6 +17704,13 @@
       },
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17675,6 +17734,13 @@
       "knowledge": "blueprint_shock_baton",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17722,6 +17788,13 @@
       "knowledge": "blueprint_hunter_bow",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17746,6 +17819,13 @@
       "knowledge": "blueprint_repeater_crossbow",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17816,6 +17896,13 @@
       "knowledge": "blueprint_rescue_shield",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17885,6 +17972,13 @@
       "knowledge": "blueprint_field_radio",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17909,6 +18003,13 @@
       "knowledge": "blueprint_command_terminal",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17932,6 +18033,15 @@
       "knowledge": "blueprint_field_medkit",
       "minSkills": {
         "crafting": 1
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 3
+        },
+        "anyAcceptedQuest": [
+          "EXQ07"
+        ],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -17979,6 +18089,13 @@
       "knowledge": "blueprint_rescue_medkit",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18003,6 +18120,13 @@
       "knowledge": "blueprint_triage_kit",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18094,6 +18218,13 @@
       "knowledge": "blueprint_scout_armor",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18118,6 +18249,13 @@
       "knowledge": "blueprint_heavy_armor",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18141,6 +18279,13 @@
       "knowledge": "blueprint_medic_armor",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18164,6 +18309,13 @@
       "knowledge": "blueprint_balanced_armor",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18274,6 +18426,13 @@
       "knowledge": "blueprint_focus_lens",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18296,6 +18455,13 @@
       "knowledge": "blueprint_aid_badge",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18318,6 +18484,13 @@
       "knowledge": "blueprint_resolve_medal",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18340,6 +18513,13 @@
       "knowledge": "blueprint_tactics_watch",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18385,6 +18565,15 @@
       "knowledge": "blueprint_forage_jacket",
       "minSkills": {
         "crafting": 3
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 3
+        },
+        "anyAcceptedQuest": [
+          "EXQ07"
+        ],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18431,6 +18620,13 @@
       "knowledge": "blueprint_craft_coat",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18453,6 +18649,13 @@
       "knowledge": "blueprint_rest_coat",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18476,6 +18679,13 @@
       "knowledge": "blueprint_expedition_coat",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18543,6 +18753,15 @@
       "knowledge": "blueprint_utility_trousers",
       "minSkills": {
         "crafting": 3
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 3
+        },
+        "anyAcceptedQuest": [
+          "EXQ06"
+        ],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18566,6 +18785,13 @@
       "knowledge": "blueprint_reinforced_trousers",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18588,6 +18814,13 @@
       "knowledge": "blueprint_recovery_trousers",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18611,6 +18844,13 @@
       "knowledge": "blueprint_expedition_trousers",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18633,6 +18873,15 @@
       "knowledge": "blueprint_gather_gloves",
       "minSkills": {
         "crafting": 1
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 3
+        },
+        "anyAcceptedQuest": [
+          "EXQ06"
+        ],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18677,6 +18926,15 @@
       "knowledge": "blueprint_filter_token",
       "minSkills": {
         "crafting": 3
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 3
+        },
+        "anyAcceptedQuest": [
+          "EXQ05"
+        ],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18699,6 +18957,15 @@
       "knowledge": "blueprint_repair_manual",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [
+          "EXQ05"
+        ],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18721,6 +18988,13 @@
       "knowledge": "blueprint_medical_notes",
       "minSkills": {
         "crafting": 7
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 7
+        },
+        "anyAcceptedQuest": [],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -18743,6 +19017,15 @@
       "knowledge": "blueprint_ration_pouch",
       "minSkills": {
         "crafting": 10
+      },
+      "reveal": {
+        "skillsAll": {
+          "crafting": 10
+        },
+        "anyAcceptedQuest": [
+          "EXQ08"
+        ],
+        "anyCompletedQuest": []
       }
     },
     {
@@ -35321,10 +35604,10 @@
         "stage": "D3",
         "completionRule": "建棚完成；有合格旧棚也算",
         "goal": "在营地建成遮蔽棚。",
-        "guidance": "在营地建设中查看遮蔽棚的材料和耗时；建成后改善恢复条件，仍要留意危险。",
+        "guidance": "在设施建造中查看遮蔽棚的材料和耗时；建成后改善恢复条件，仍要留意危险。",
         "exitGate": false,
         "exitGateText": "否，材料不足仍可露天休息",
-        "hint": "在营地建设中查看遮蔽棚的材料和耗时；建成后改善恢复条件，仍要留意危险。",
+        "hint": "在设施建造中查看遮蔽棚的材料和耗时；建成后改善恢复条件，仍要留意危险。",
         "reactionSet": "PRO13_reaction",
         "done": "已有可用遮蔽棚。"
       },

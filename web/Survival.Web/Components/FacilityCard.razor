@@ -1,47 +1,57 @@
 @inherits GameComponent
 
-@* 固定设施卡：遮蔽棚、床垫（01 案第 1、7 节）。未建造用同一建筑插画 + 虚线框 + “未建造”角标，点击打开手工制作并选中对应配方；
-   不可拖动、不计为已建成，插画显示不开启设施收益。 *@
+@* B35a1（S14／S09 Q795 B、Q594、Q796、Q909、Q936）：设施栏独立设施卡——遮蔽棚、床垫、每座已建自建工坊、每座公共设施各一张（GameEngine.FacilityCardsHere）。
+   撤工坊聚合卡与「选择设施」层；未建设施不出占位卡（未建条目在手工制作「设施建造」里）。
+   遮蔽棚、床垫施工中照原样保留带忙碌样式的虚线卡（判断集中在 GameEngine.BuildStageHere，B57 持续工地替换）。
+   工坊状态「{设施名} · 制作中／空闲」（Q796），陶窑、固定净水台沿 Q727 被动批次汇总句；公共卡角标「公共」、状态只写「制作中／空闲」、悬停「公共设施。」（Q936），
+   未开放保留原真实原因。点卡进入该座真实设施的工作区（只列本座配方）。 *@
 @{
     var s = G.S;
     var e = G.E;
+    var v = View;
+    var shelterLike = v.Kind is "shelter" or "bed";
+    var built = v.Stage == FacilityStage.Built;
     var fac = e.FacOf(s, s.Ground) ?? s.Locations[s.CurrentLocation].Facility;
-    var stations = e.Config.Workshops.Stations.Where(x => x.BuildRecipe != null).ToList();
-    var builtWs = stations.Where(x => fac.Workshops.Contains(x.Id)).Select(x => x.Name).ToList();
-    var built = Kind == "workshops" ? builtWs.Count > 0 : Kind == "bed" ? fac.BedBuilt : fac.ShelterBuilt;
-    var title = Kind == "workshops" ? "工坊" : Kind == "bed" ? "床垫" : "遮蔽棚";
-    // B17 试玩修复 B1：陶窑/净水台不再单独占卡，加工进度写在工坊卡上（点卡进制作面板投料/取消）
-    // B51b（Q727，逐字稿 B51 表 workshopSummary）：有加工批的每座写工坊汇总「{设施名} · 加工中{批数}批 · 最近{日期时刻}完成」（汇总自带「加工中」，不再加原「加工中：」前缀）；
-    // 两座同时有批时沿原「、」连接（Q777 待定），空闲的不列；都没有批时沿原「已建…」
-    var batches = Kind == "workshops" ? stations.Where(x => fac.StationBatches.Any(b => b.StationId == x.Id)).Select(x => e.StationSummary(s, s.Ground, x.Id)).ToList() : new List<string>();
-    var effect = Kind == "workshops" ? (batches.Count > 0 ? string.Join("、", batches) : builtWs.Count == 0 ? $"{e.ZoneName(s, s.Ground)}还没有工坊" : $"已建{string.Join("、", builtWs)}") : Kind == "bed" ? "营地睡眠体力每小时额外+5" : "营地可遮蔽睡眠，休息额外恢复精神";
-    var need = Kind == "workshops" ? "点击在“营地建造”里建" : Kind == "bed" && !fac.ShelterBuilt ? "需先建成遮蔽棚" : "点击查看建造条件";
-    var badge = Kind == "workshops" ? $"已建{builtWs.Count}/{stations.Count}" : built ? "已建成" : "未建造";
-    // BM1（Q487 选 A）：未建时悬停在右栏直接显示与点击进入后同一份建造条件与当前缺项——按本卡原点击对应的设施配方
-    // （遮蔽棚、床垫各自配方，一座工坊都没有时为「营地建造」里的工作台）读当前地点／区域条件；只读，不打开制作、不改所选配方与材料、无开工键
-    var buildRecipe = built ? null : Kind == "workshops" ? "build_workbench" : Kind;
+    string sub, tip, badge;
+    var blocked = v.Kind == "public" && v.Blocked != null;
+    if (shelterLike)
+    {
+        var effect = v.Kind == "bed" ? "营地睡眠体力每小时额外+5" : "营地可遮蔽睡眠，休息额外恢复精神";
+        var need = v.Kind == "bed" && !fac.ShelterBuilt ? "需先建成遮蔽棚" : "点击查看建造条件";
+        sub = built ? effect : need;
+        tip = built ? effect : $"{v.Name}未建造：{need}";
+        badge = built ? GameEngine.BuiltBadge : "未建造";
+    }
+    else if (v.Kind == "public")
+    {
+        sub = v.State;
+        tip = blocked ? $"{v.Name}未开放：{v.Blocked}" : GameEngine.PublicTooltip;
+        badge = blocked ? "未开放" : GameEngine.PublicBadge;
+    }
+    else
+    {
+        sub = v.State;
+        tip = v.State;
+        badge = GameEngine.BuiltBadge;
+    }
+    var title = shelterLike ? (v.Kind == "bed" ? "床垫" : "遮蔽棚") : v.Name;
+    var busy = shelterLike ? !built : v.Crafting || (v.Kind == "station" && fac.StationBatches.Any(b => b.StationId == v.StationId));
+    var id = v.Kind == "public" ? $"ps-{v.Workspace!.PublicId}" : $"fac-{v.StationId}";
+    var art = shelterLike ? ArtCatalog.FacilityCardKey(v.Kind) : "facility:" + v.StationId;
 }
-@* B32a（Q340、Q345）：重墨 V2 卡模板，副标一行写效果或建造条件；正在建这张卡的设施时为加工中 *@
-<ObjectCard Ink2="true" Id="@(Kind == "workshops" ? "fac-workshops" : null)" PeekId="@Peek.Card("fac-" + Kind)" CssClass="k2-fac" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
-            Busy="@(Kind != "workshops" && CardStates.BusyBuild(s, Kind))"
-            Sub="@(built ? effect : need)" Tooltip="@(built ? effect : $"{title}未建造：{need}")" OnClick="Open"
-            PeekExtra="@(buildRecipe == null ? null : BuildConditions(buildRecipe))">
-    <Art>@Icons.Markup(ArtCatalog.FacilityCardKey(Kind))</Art>
+<ObjectCard Ink2="true" Id="@id" PeekId="@Peek.Card(id)" CssClass="@($"k2-fac{(v.Kind == "public" ? " public-station" : "")}")" Title="@title" Badge="@badge"
+            BadgeClass="@(built && !blocked ? "built" : "unbuilt")" Dashed="@(!built || blocked)" Blocked="@blocked"
+            Busy="@busy" Sub="@sub" SubClass="@(blocked ? "warn-line" : "")" Tooltip="@tip" OnClick="Open">
+    <Art>@Icons.Markup(art)</Art>
 </ObjectCard>
 
 @code {
-    /// <summary>shelter、bed 或 workshops（B10：本地已建工坊汇总）。</summary>
-    [Parameter, EditorRequired] public string Kind { get; set; } = "shelter";
+    [Parameter, EditorRequired] public FacilityCardView View { get; set; } = null!;
 
-    /// <summary>BM1（Q487）：与点击后右栏同一份制作详细预估（CraftOverlay 右栏部分，悬停只读：不改所选配方、份数与材料槽）。</summary>
-    private static RenderFragment BuildConditions(string recipeId) => @<CraftOverlay Part="detail" PeekRecipe="@recipeId" UnbuiltPeek="true" />;
-
-    /// <summary>
-    /// B45（S14 Q542）：工坊汇总卡——当前区陶窑、固定净水台都已建先开「选择设施」，只建一座直进它的原制作分类，都没建照原「营地建造」工作台入口。
-    /// </summary>
+    /// <summary>遮蔽棚、床垫打开手工制作「设施建造」里的对应条目；工坊与公共设施进入该座真实设施的工作区。</summary>
     private void Open()
     {
-        if (Kind != "workshops") { G.OpenPanel("craft", Kind); return; }
-        G.OpenWorkshops();
+        if (View.Workspace is { } w) { G.OpenWorkspace(w); return; }
+        G.OpenHandCraft(View.StationId);
     }
 }

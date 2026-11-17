@@ -164,7 +164,7 @@ public class B38bN02TemplateTests : TestBase
     {
         var s = Registered("h03_workshop");
         var v = E.CityServicePreview(s, "hub_workshop_access")!;
-        Assert.That(v.EffectText, Is.EqualTo("打开当地制作面板。随身手工配方也可以在这里查看。"));
+        Assert.That(v.EffectText, Is.EqualTo("从设施卡进入。"), "B35a1（Q930 B，b35a1-primary-q930-q931.json workshop.previewHead；原“打开当地制作面板。随身手工配方也可以在这里查看。”）");
         Assert.That(v.Lines, Has.Some.StartWith("已开放 "));
         Assert.That(v.Lines, Has.None.Contain("木炭"), "Q291-3：锻炉木炭数量从配方条件显示");
         var logs = s.Log.Count;

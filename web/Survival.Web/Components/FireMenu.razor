@@ -142,6 +142,28 @@
                         </div>
                     </div>
 
+                    @if (level == 0)
+                    {
+                        @* B35a1（S09／S11／S14 Q932 A）：主层只读「处理说明」折叠区，默认收起；迁入原手工制作“自动加工”的四类说明（烧水、烤制、水煮、煅烧木炭），
+                           标题、步骤与现行规则同源（ProcessGuide 读配置），不带“查看火堆”按钮，不投料、不开工、不推进时间 *@
+                        <details class="fm-guide" data-process-guide>
+                            <summary>处理说明</summary>
+                            @foreach (var p in e.Config.Processes)
+                            {
+                                <div class="fm-guide-item" data-process="@p.Id">
+                                    <div class="fm-guide-title"><b>@ProcessGuide.Title(e, p)</b><small class="muted">受热@(p.HeatMinutes)分钟</small></div>
+                                    <div class="tiny muted">@ProcessGuide.Hint(e, p)</div>
+                                    <div class="steps">
+                                        @foreach (var (icon, sname, note) in ProcessGuide.Steps(e, p))
+                                        {
+                                            <ItemRow Icon="@icon" Name="@sname" Status="@note" CssClass="step" />
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </details>
+                    }
+
                     @if (k is int sk && entered)
                     {
                         @* 内容层（直烤食材／煅烧批、锅里的水或食材）与锅这一层：原选卡操作（取出、取下、食用／饮用……），锚点 fm-obj *@

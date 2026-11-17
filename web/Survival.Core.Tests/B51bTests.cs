@@ -127,11 +127,11 @@ public class B51bTests : TestBase
         var q = Batches(s, "water_station");
         Assert.That(E.StationBatchRow(s, q[1], 2), Is.EqualTo($"批次2 · {Cfg.Recipes.Single(r => r.Id == Water).Name} · 0/30分 · 预计{Clock.DayTime(t0 + 40)}完成"));
         Assert.That(E.StationOutputGround(s, s.Ground), Is.EqualTo($"完成后放在{E.ZoneName(s, s.Ground)}地面。"));
-        var dir = TestContext.CurrentContext.TestDirectory;
-        while (dir != null && !File.Exists(Path.Combine(dir, "Survival.sln"))) dir = Path.GetDirectoryName(dir);
-        var card = File.ReadAllText(Path.Combine(dir!, "Survival.Web", "Components", "FacilityCard.razor"));
-        Assert.That(card, Does.Contain("e.StationSummary(s, s.Ground, x.Id)"));
-        Assert.That(card, Does.Not.Contain("\"加工中：\""));
+        // B35a1（Q795 B）：工坊汇总卡拆成每座一张，陶窑／固定净水台的独立卡状态行沿用同一汇总（原断言为汇总卡源码含 StationSummary）
+        var cards = E.FacilityCardsHere(s).Where(c => c.StationId == "water_station").ToList();
+        Assert.That(cards, Has.Count.EqualTo(1));
+        Assert.That(cards[0].State, Is.EqualTo($"{E.StationName("water_station")} · 加工中3批 · 最近{Clock.DayTime(t0 + 30)}完成"));
+        Assert.That(cards[0].State, Does.Not.Contain("加工中："));
     }
 
     // ───────────── 存档 54→55（Q701-A09） ─────────────

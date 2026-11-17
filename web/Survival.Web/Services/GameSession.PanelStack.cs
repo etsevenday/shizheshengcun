@@ -85,10 +85,12 @@ public sealed partial class GameSession
                     return GameEngine.FacReturnGoneText;
                 return null;
             case "craft":
-                // 经「选择设施」进入的加工站已不在当前区可操作列表里：同上
-                if (CraftFromChooser && ChooserReturnStation is string st && E.ProcessingStationChoices(S).All(c => c.StationId != st))
-                    return GameEngine.FacReturnGoneText;
+                // B35a1（Q594）：工作区绑定的真实设施已不在当前区——不恢复，提示“该设施已不可用，请重新选择。”
+                if (CraftSite is { } w && E.WorkspaceHere(S, w.Key) == null) return GameEngine.WorkspaceGoneText;
                 return null;
+            case "safehouse":
+                // B35a1（Q931 B）：恢复路径同样校验当前地点已建安全屋，不远程恢复
+                return E.SafehousePanelBlocked(S) != null ? "" : null;
             case "formation":
                 return FormationDraft == null || E.FormationEditBlocked(S) != null ? "" : null;
             case "citymap":
@@ -132,7 +134,7 @@ public sealed partial class GameSession
         switch (p)
         {
             case FireMenuPanel: FireMenu = null; break;
-            case "craft": CraftFromChooser = false; ChooserReturnStation = null; break;
+            case "craft": CraftSite = null; _candidateReturn = null; CraftCandidates = null; break;
             case "map": SourceItem = null; break;
             case "formation": FormationDraft = null; FormationPick = null; FormationLeader = null; break;
             case "growth": ClosePracticeDraft(); break;

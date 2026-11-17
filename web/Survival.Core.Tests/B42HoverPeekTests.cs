@@ -209,7 +209,8 @@ public class B42HoverPeekTests
         var pot = Web("Components/PotCard.razor");
         Assert.That(pot, Does.Contain("data-peek=\"@LiquidPeek(w.ItemId)\"").And.Contain("data-peek=\"@FoodPeek(f)\"").And.Contain("class=\"pc-head\" data-peek=\"@PotPeek\""));
         Assert.That(Web("Components/FoodCard.razor"), Does.Contain("data-peek=\"@Peek.Sel(SelectionKind.Tool, Item.ItemId, Item.Owner, Item.InstanceId)\""));
-        Assert.That(Web("Components/FacilityCard.razor"), Does.Contain("PeekId=\"@Peek.Card(\"fac-\" + Kind)\""));
+        // B35a1（Q795 B）：每座真实设施一张卡，键按真实身份（自建 fac-{设施类别}、公共 ps-{公共站 Id}），不再是聚合卡的 fac-{Kind}
+        Assert.That(Web("Components/FacilityCard.razor"), Does.Contain("PeekId=\"@Peek.Card(id)\"").And.Contain("$\"ps-{v.Workspace!.PublicId}\" : $\"fac-{v.StationId}\""));
         Assert.That(Web("Components/SafehouseCard.razor"), Does.Contain("PeekId=\"@Peek.Card(\"safehouse\")\""));
     }
 
@@ -220,7 +221,8 @@ public class B42HoverPeekTests
         var map = Web("Components/MapOverlay.razor");
         Assert.That(map, Does.Contain("data-peek=\"@Peek.Node(id)\"").And.Contain("var target = PeekNode ?? picked ?? here;").And.Contain("@if (PeekNode == null)"));
         var craft = Web("Components/CraftOverlay.razor");
-        Assert.That(craft, Does.Contain("data-peek=\"@Peek.Recipe(id)\"").And.Contain("data-peek=\"@Peek.Recipe(ProcPrefix + pid)\""));
+        // B35a1（Q932 A）：处理说明条目撤出制作页（迁火堆加工菜单只读折叠区），只剩配方行热区
+        Assert.That(craft, Does.Contain("data-peek=\"@Peek.Recipe(id)\"").And.Not.Contain("ProcPrefix"));
         Assert.That(craft, Does.Contain("var cur = peekOn ? PeekRecipe : G.CraftRecipe;").And.Contain("var batch = batchable && !other ? Math.Max(1, G.CraftBatch) : 1;"));
         var gear = Web("Components/GearOverlay.razor");
         Assert.That(gear, Does.Contain("data-peek=\"@Peek.Gear(inst.InstanceId)\"").And.Contain("data-peek=\"@(it != null ? Peek.Gear(it.InstanceId) : null)\""));
@@ -244,7 +246,8 @@ public class B42HoverPeekTests
         Assert.That(pd, Does.Contain("<GearPeekDetail Item=\"git\" />").And.Contain("<MapOverlay Part=\"detail\" PeekNode=\"@first\" />")
             .And.Contain("<CraftOverlay Part=\"detail\" PeekRecipe=\"@first\" />").And.Contain("<GrowthOverlay Part=\"detail\" PeekSkill=\"@first\" />")
             .And.Contain("StatusView.RemainingText(chip)"));
-        Assert.That(Web("Components/CraftOverlay.razor"), Does.Contain("@if (!peekOn) { <button type=\"button\"").Or.Contain("@if (!peekOn) { <button class=\"primary\""));
+        // B35a1（Q932 A）：右栏处理说明与其「查看火堆」按钮随“自动加工”分类一并撤掉，右栏配方预估本来就不给确认键
+        Assert.That(Web("Components/CraftOverlay.razor"), Does.Not.Contain("查看火堆 ▸").And.Contain("Confirmable=\"false\""));
         foreach (var f in new[] { "MapOverlay", "CraftOverlay", "GrowthOverlay" })
             Assert.That(Web($"Components/{f}.razor"), Does.Contain("G.PeekClear();"), f + " 明确点选要结束悬停查看");
     }

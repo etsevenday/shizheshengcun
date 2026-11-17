@@ -500,6 +500,14 @@
 .fire-menu .fm-foot:focus { outline: none; }
 .fire-menu .fm-foot .ca-note { margin: 0; }
 .fire-menu .fm-foot > .fm-go { width: 100%; }
-/* B45（Q542／Q559／Q560）：工坊汇总卡「选择设施」盘的设施行 */
-.apop.stations .st-pick { display: flex; justify-content: space-between; width: 100%; min-height: 40px; padding: 4px 10px; text-align: left; }
-.apop.stations .st-list { display: flex; flex-direction: column; gap: 6px; }
+
+/* B35a1（Q932 A）：火堆／柴炉加工菜单主层只读「处理说明」折叠区，默认收起 */
+.fire-menu .fm-guide { margin-top: 10px; border: 1px dashed var(--line, #444); border-radius: 6px; padding: 6px 10px; }
+.fire-menu .fm-guide > summary { cursor: pointer; font-weight: 600; }
+.fire-menu .fm-guide-item { margin-top: 8px; }
+.fire-menu .fm-guide-title { display: flex; align-items: baseline; gap: 8px; }
+/* B35a1（Q907）：设施工作区左列设施块（图标、名称、状态） */
+.craft-tabs .craft-site { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin-bottom: 6px; border-bottom: 1px solid var(--line, #444); }
+.craft-tabs .craft-site svg, .craft-tabs .craft-site img { width: 28px; height: 28px; flex: none; }
+.craft-tabs .craft-site span { display: flex; flex-direction: column; min-width: 0; }
+.craft-tabs .craft-site small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

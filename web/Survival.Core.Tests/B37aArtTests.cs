@@ -209,7 +209,8 @@ public class B37aArtTests
         Assert.That(ArtCatalog.FacilityCardKey("bed"), Is.EqualTo("facility:bed"));
         Assert.That(ArtCatalog.FireKey(true, false), Is.EqualTo("facility:fire_lit"));
         Assert.That(ArtCatalog.FireKey(false, false), Is.EqualTo("facility:fire_out"));
-        Assert.That(WebText("Components", "PublicStationCard.razor"), Does.Contain("Icons.Markup(\"facility:\" + Station.StationId)"));
+        // B35a1（Q795 B）：公共设施与自建工坊并入独立设施卡 FacilityCard（PublicStationCard 撤），图仍按设施类别取 facility:{StationId}
+        Assert.That(WebText("Components", "FacilityCard.razor"), Does.Contain(": \"facility:\" + v.StationId;").And.Contain("@Icons.Markup(art)"));
         Assert.That(WebText("Components", "SafehouseCard.razor"), Does.Contain("Icons.Markup(\"facility:safehouse\")"));
         Assert.That(WebText("Components", "DryingRackCard.razor"), Does.Contain("Icons.Markup(\"facility:drying_rack\")"));
     }
@@ -250,7 +251,7 @@ public class B37aArtTests
         Assert.That(ArtCatalog.DocumentKey("village_south_sign"), Is.EqualTo("glyph:route"));
         foreach (var k in new[] { "skillFamily:unarmed", "facility:workbench", "item:folding_stove", "glyph:route" })
             Assert.That(Cat.Plan(k), Is.EqualTo((ArtKind.Sprite, k)), k);
-        Assert.That(WebText("Components", "FacilityCard.razor"), Does.Contain("ArtCatalog.FacilityCardKey(Kind)"));
+        Assert.That(WebText("Components", "FacilityCard.razor"), Does.Contain("ArtCatalog.FacilityCardKey(v.Kind)"), "B35a1：卡改按 FacilityCardView 渲染（Kind → v.Kind）");
         Assert.That(WebText("Components", "FireCard.razor"), Does.Contain("ArtCatalog.FireKey(fac.FireLit, fac.StoveInstanceId.HasValue)"));
         Assert.That(WebText("Components", "PrologueCards.razor"), Does.Contain("ArtCatalog.DocumentKey(id)"));
     }
@@ -288,7 +289,8 @@ public class B37aArtTests
         foreach (var (id, icon) in new[] { ("keys", "glyph:help"), ("esc", "glyph:return"), ("progress", "glyph:progress"), ("save", "glyph:save") })
             Assert.That(help, Does.Match($"Id = \"{id}\", Title = [^,]+, Icon = \"{Regex.Escape(icon)}\""), id);
         Assert.That(help, Does.Contain("Id = \"clock\", Title = \"世界时钟与昼夜\", Icon = \"glyph:watch\""));
-        Assert.That(WebText("Components", "CraftOverlay.razor"), Does.Contain("(\"glyph:add\", \"空加工位\","));
+        // B35a1（Q932 A）：处理说明从手工制作“自动加工”迁到火堆加工菜单主层，步骤图示移到共用的 ProcessGuide
+        Assert.That(WebText("Services", "ProcessGuide.cs"), Does.Contain("(\"glyph:add\", \"空加工位\","));
         Assert.That(WebText("Components", "BattleScreen.razor"), Does.Contain("_ => (\"glyph:unknown\", null, null),"));
     }
 

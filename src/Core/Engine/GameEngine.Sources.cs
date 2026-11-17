@@ -44,7 +44,8 @@ namespace Survival.Core.Engine
             }
             // 能拿到的排前面，其余按配置顺序
             list = list.OrderBy(v => v.Usable ? 0 : 1).ToList();
-            foreach (var rc in Config.Recipes.Where(rc => !rc.IsSalvage && rc.Outputs.ContainsKey(itemId) && RecipeKnown(s, rc)))
+            // B35a1（Q600）：秘密配方未显现不列为来源
+            foreach (var rc in Config.Recipes.Where(rc => !rc.IsSalvage && rc.Outputs.ContainsKey(itemId) && RecipeKnown(s, rc) && RecipeVisible(s, rc)))
             {
                 var locks = RecipeLocks(s, rc);
                 list.Add(new ItemSourceView

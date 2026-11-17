@@ -25,45 +25,28 @@ public class B45FacMenuShellTests : TestBase
         Assert.That(E.FacMenuPlaceLine(s), Is.EqualTo($"当前位置：{E.LocName("camp")} · 屋内"));
     }
 
-    // ───────────── Q542／Q559／Q560 选择设施 ─────────────
+    // ───────────── Q542／Q559／Q560 选择设施（B35a1 Q795 B 撤） ─────────────
 
-    /// <summary>Q542／Q559：只列已建的陶窑、固定净水台（原工坊顺序），摘要为工坊汇总（B51b Q727 起批数＋最近完成），无批写「空闲」；工作台等不列。</summary>
+    /// <summary>
+    /// 原 Q542／Q559／Q560「选择设施」中间层与工坊汇总卡：B35a1（S14 2026-11-16 Q795 B「不保留‘工坊’聚合卡或‘选择设施’中间层」）撤掉，
+    /// 每座真实设施一张卡直接进入（新断言见 B35a1CraftScopeTests）。这里只核撤除：选择层的函数、弹层与旧句都不在了。
+    /// </summary>
     [Test]
-    public void Q559_StationChoices()
-    {
-        var s = New();
-        Assert.That(E.ProcessingStationChoices(s), Is.Empty, "都没建");
-        Fac(s).Workshops.AddRange(new[] { "workbench", "water_station" });
-        var one = E.ProcessingStationChoices(s);
-        Assert.That(one.Select(c => c.StationId), Is.EqualTo(new[] { "water_station" }), "工作台不列");
-        Assert.That(one[0].Line, Is.EqualTo($"{E.StationName("water_station")} · 空闲"));
-
-        Fac(s).Workshops.Add("kiln");
-        Fac(s).StationBatches.Add(new StationBatch { BatchId = 1, StationId = "kiln", RecipeId = "x", DoneMinutes = 12, RequiredMinutes = 60 });
-        var two = E.ProcessingStationChoices(s);
-        Assert.That(two.Select(c => c.StationId), Is.EqualTo(new[] { "kiln", "water_station" }), "原工坊设施顺序");
-        // B51b（Q727）：摘要改为工坊汇总「{设施名} · 加工中{批数}批 · 最近{日期时刻}完成」，取最早完成
-        Fac(s).StationBatches.Add(new StationBatch { BatchId = 2, StationId = "kiln", RecipeId = "x", DoneMinutes = 50, RequiredMinutes = 60 });
-        Assert.That(E.ProcessingStationChoices(s)[0].Line, Is.EqualTo($"{E.StationName("kiln")} · 加工中2批 · 最近{Clock.DayTime(s.GameMinute + 10)}完成"));
-        Assert.That(GameEngine.ChooserTitle, Is.EqualTo("选择设施"));
-        Assert.That(GameEngine.ChooserEmpty, Is.EqualTo("当前区域没有可操作的加工设施。"));
-    }
-
-    /// <summary>Q542／Q560：工坊卡点击走 OpenWorkshops；两座弹选择设施、一座直开、没有去建工作台；从选择设施进的制作界面「返回」回选择层并聚焦原行。</summary>
-    [Test]
-    public void Q560_ChooserWiring()
+    public void Q795_ChooserRemoved()
     {
         var fac = Web("Services", "GameSession.FacMenu.cs");
-        Assert.That(fac, Does.Contain("public void OpenWorkshops()"));
-        Assert.That(fac, Does.Contain("OpenPanel(\"craft\", \"build_workbench\");"));
-        Assert.That(fac, Does.Contain("st-pick-"), "返回后聚焦原行");
+        Assert.That(fac, Does.Not.Contain("public void OpenWorkshops()"));
+        Assert.That(fac, Does.Not.Contain("st-pick-"));
         var pops = Web("Components", "ActionPops.razor");
-        Assert.That(pops, Does.Contain("case GameSession.StationsPop"));
-        Assert.That(pops, Does.Contain("GameEngine.ChooserEmpty"));
+        Assert.That(pops, Does.Not.Contain("StationsPop"));
+        Assert.That(pops, Does.Not.Contain("ChooserEmpty"));
         var craft = Web("Components", "CraftOverlay.razor");
-        Assert.That(craft, Does.Contain("G.CraftFromChooser && !G.PanelHasUnder ? \"返回\" : G.PanelCloseLabel"), "BM4a（Q590）：下面另有窗口时按返回链写「返回」");
+        Assert.That(craft, Does.Not.Contain("CraftFromChooser"));
+        Assert.That(craft, Does.Contain("G.CraftFromCandidates && !G.PanelHasUnder ? \"返回\" : G.PanelCloseLabel"), "Q934：从候选进入的工作区写「返回」");
         Assert.That(craft, Does.Contain("G.PanelEscape()"));
-        Assert.That(Web("Components", "FacilityCard.razor"), Does.Contain("G.OpenWorkshops();"));
+        Assert.That(Web("Components", "FacilityCard.razor"), Does.Contain("G.OpenWorkspace(w)"), "Q795 B：点卡直接进入该座真实设施工作区");
+        Assert.That(typeof(GameEngine).GetMethod("ProcessingStationChoices"), Is.Null);
+        Assert.That(typeof(GameEngine).GetField("ChooserTitle"), Is.Null);
     }
 
     // ───────────── FACPROC 中央菜单 ─────────────
@@ -170,16 +153,6 @@ public class B45FacMenuShellTests : TestBase
         var fac = Web("Services", "GameSession.FacMenu.cs");
         Assert.That(fac, Does.Contain("m.Inner != null ? 3 : m.Slot == null ? 0 : m.Open && m.SlotItem != null ? 2 : 1"));
         Assert.That(fac, Does.Contain("else if (level == 1) { m.Open = false; m.Inner = null; }"));
-    }
-
-    /// <summary>FACPROC 第 4 条、Q560：选择设施打开时焦点进第一座设施行；返回时焦点回明确点过的那一座（换过分类也不丢）。</summary>
-    [Test]
-    public void Q560_ChooserFocus()
-    {
-        var fac = Web("Services", "GameSession.FacMenu.cs");
-        Assert.That(fac, Does.Contain("FocusIdPending = $\"st-pick-{first.StationId}\""));
-        Assert.That(fac, Does.Contain("CraftFromChooser = true; ChooserReturnStation = stationId;"));
-        Assert.That(fac, Does.Contain("var station = ChooserReturnStation ?? CraftTab;"));
     }
 
     private static string Root()

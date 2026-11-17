@@ -150,7 +150,7 @@ public sealed partial class GameSession
         S.CurrentLocation,
         S.CurrentZone ?? "",
         S.Battle != null ? "battle" : "",
-        Panel == "map" ? MapLayer : Panel == "craft" ? $"{CraftTab}/{(CraftCandidates == null ? "" : string.Join(",", CraftCandidates))}" : null);
+        Panel == "map" ? MapLayer : Panel == "craft" ? $"{CraftSite?.Key}/{CraftTab}/{(CraftCandidates == null ? "" : string.Join(",", CraftCandidates.ConvertAll(c => c.RecipeId + "@" + c.Workspace?.Key)))}" : null);
 
     /// <summary>Notify 前校验：上下文变了、对象失效或整局输入锁定时立即清掉（不按同一位置改指别物）。</summary>
     private void ReconcilePeek()
@@ -202,9 +202,9 @@ public sealed partial class GameSession
             case PeekKey.Node:
                 return Panel == "map" && S.Locations.TryGetValue(first, out var nl) && nl.Discovered;
             case PeekKey.Recipe:
-                return Panel == "craft" && (first.StartsWith(CraftProcPrefix)
-                    ? E.Config.Processes.Any(x => x.Id == first.Substring(CraftProcPrefix.Length))
-                    : E.Config.Recipes.Any(r => r.Id == first && !r.IsSalvage));
+                // B35a1：只认当前上下文列着的配方（本分类／本座设施／候选），秘密配方未显现即失效（Q600）
+                return Panel == "craft" && E.Config.Recipes.FirstOrDefault(r => r.Id == first && !r.IsSalvage) is { } prc
+                    && (CraftCandidates != null ? CraftCandidates.Any(c => c.RecipeId == first) && E.RecipeVisible(S, prc) : InCraftScope(prc));
             case PeekKey.Skill:
                 return Panel == "growth" && E.SkillViews(S.Actors.TryGetValue(GearActorId, out var ga) ? ga : S.Player).Any(v => v.Id == first);
             case PeekKey.Status:
@@ -229,9 +229,6 @@ public sealed partial class GameSession
     /// <summary>BM1（Q483）：该成员仍在右栏人物页的队伍里（同行或存活候补）；已故、退役或离队即失效。</summary>
     private bool MemberShown(string actorId) =>
         S.Party.Contains(actorId) || E.Reserves(S).Any(r => r.ActorId == actorId);
-
-    /// <summary>手工制作「自动加工说明」条目的配方键前缀（与 CraftOverlay.ProcPrefix 同值）。</summary>
-    public const string CraftProcPrefix = "proc:";
 
     /// <summary>主界面对象仍在当前地点／当前区可见（与右栏点击详情的同地有效性一致）。</summary>
     private bool SelectionAlive(Selection sel)

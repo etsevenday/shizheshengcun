@@ -821,6 +821,24 @@ namespace Survival.Core.Config
         public bool IsSalvage => Kind == "salvage";
         public bool NeedsExplicitPot => PotCatalyst == "explicit_empty_detached_pot";
         public bool NeedsFire => Requirement != null && Requirement.Facility == "fire";
+
+        /// <summary>
+        /// B35a1（S08／S14 2026-11-14 Q600，assets/20261114/recipe-visibility-q600.json）：秘密配方的显现条件；null 为公开配方。
+        /// 显现＝已掌握对应知识，或主角满足 <see cref="RecipeRevealConfig.SkillsAll"/> 全部门槛，或接取／完成任一指定任务，或完成任一指定任务。
+        /// 只是显示过滤，不改原知识／技能／设施等制作条件。
+        /// </summary>
+        public RecipeRevealConfig? Reveal { get; set; }
+    }
+
+    /// <summary>Q600 秘密配方的显现条件（各分支 OR，技能分支内部 AND；空表不算满足）。</summary>
+    public sealed class RecipeRevealConfig
+    {
+        /// <summary>revealSkillsAll：主角（p0）各门熟练度都不低于此值。</summary>
+        public Dictionary<string, int> SkillsAll { get; set; } = new Dictionary<string, int>();
+        /// <summary>revealAnyAcceptedQuest：任一任务已接取或已完成（quest:{id}:accepted／completed）。</summary>
+        public List<string> AnyAcceptedQuest { get; set; } = new List<string>();
+        /// <summary>revealAnyCompletedQuest：任一任务已完成（quest:{id}:completed）。</summary>
+        public List<string> AnyCompletedQuest { get; set; } = new List<string>();
     }
 
     /// <summary>一条做法知识：存档 Progress.Flags 有 grantedByFacts 里任一事实（或直接记下 knowledge:id）即已知。</summary>

@@ -16,15 +16,16 @@
     // B11（S03、EXP30-01）：已揭示但门槛未满足的路线显示为“未开通”卡并写明原因，不能前往
     var locked = e.AdjacentLocked(s);
     var busy = e.IsBusy(s) || G.Running;
-    // B14b（Q141）：营区工坊、试制工坊、营区广场、医务室的公共工坊站卡与火堆/棚/床同在“设施”组
-    var publicStations = e.PublicStationsHere(s);
+    // B35a1（Q795 B）：独立设施卡——遮蔽棚、床垫（已建或施工中）、每座已建工坊、每座公共设施（B14b 公共工坊站）各一张
+    var facCards = e.FacilityCardsHere(s);
     // B17（S09 X2）：当前所在区（外部区 / 安全屋屋内）的设施；屋内不显示外部的棚/床/公共站/资源/敌踪
     var inside = s.CurrentZone == GameState.SafehouseZone;
     var place = s.Ground;
     var zfac = e.FacOf(s, place) ?? s.Locations[here].Facility;
-    var showSafehouse = e.SafehousePermissionBlocked(here) == null || e.SafehouseBuilt(s, here);
+    // B35a1（Q594、Q931）：未建安全屋不出占位卡（未建条目在手工制作「设施建造」里）；已建成或施工中才显示
+    var showSafehouse = e.SafehouseStatus(s, here) != GameEngine.SafehouseNotStarted;
     var tarp = !inside && zfac.TarpInstanceId is int tarpId ? e.FindItem(s, tarpId) : null;
-    var hasFacilities = e.HasFireAt(s, place) || (!inside && lc.CanBuildShelter) || (!inside && publicStations.Count > 0) || showSafehouse || tarp != null || e.DryingRackHere(s);
+    var hasFacilities = e.HasFireAt(s, place) || facCards.Count > 0 || showSafehouse || tarp != null || e.DryingRackHere(s);
     // B41e1：单卡、随机组卡、固定战、可选强敌并成一个「敌踪」分组，读内核 EnemyCardsHere（B41e3 删旧三组）
     var cards = !inside ? e.EnemyCardsHere(s) : new List<EnemyCardView>();
     if (inside) resources = new List<ResourceConfig>();
@@ -97,14 +98,16 @@
                 <div class="dg-title">设施</div>
                 <div class="dg-cards">
                     @if (e.HasFireAt(s, place)) { <FireCard /> }
-                    @if (!inside && lc.CanBuildShelter)
+                    @foreach (var fc in facCards.Where(c => c.Kind is "shelter" or "bed"))
                     {
-                        <FacilityCard Kind="shelter" />
-                        <FacilityCard Kind="bed" />
+                        <FacilityCard @key="@("fac-" + fc.StationId)" View="fc" />
                     }
                     @if (showSafehouse) { <SafehouseCard /> }
-                    @* B10 试玩修复 9：营地设施栏显示已建工坊（只在可建工坊的地点；B17 起含已完工安全屋屋内） *@
-                    @if (G.E.CanBuildWorkshopsHere(G.S)) { <FacilityCard Kind="workshops" /> }
+                    @* B35a1（Q795 B）：每座已建自建工坊一张卡（营地外部或已完工安全屋屋内），直接进入该座工作区 *@
+                    @foreach (var fc in facCards.Where(c => c.Kind == "station"))
+                    {
+                        <FacilityCard @key="@("fac-" + fc.StationId)" View="fc" />
+                    }
                     @* B22c（Q170）：当前区建成晾制架时单独一张卡（8 个晾制位在面板里操作） *@
                     @if (G.E.DryingRackHere(G.S)) { <DryingRackCard /> }
                     @if (tarp != null)
@@ -118,12 +121,9 @@
                             </Footer>
                         </ObjectCard>
                     }
-                    @if (!inside)
+                    @foreach (var fc in facCards.Where(c => c.Kind == "public"))
                     {
-                        foreach (var ps in publicStations)
-                        {
-                            <PublicStationCard @key="@("ps-" + ps.Id)" Station="ps" />
-                        }
+                        <FacilityCard @key="@("ps-" + fc.Workspace!.PublicId)" View="fc" />
                     }
                 </div>
             </div>

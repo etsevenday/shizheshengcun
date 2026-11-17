@@ -4,15 +4,6 @@ using Survival.Core.State;
 
 namespace Survival.Core.Engine
 {
-    /// <summary>B45（S14 Q542／Q559）：工坊汇总卡「选择设施」里的一行（当前区已建的陶窑或固定净水台）。</summary>
-    public sealed class StationChoice
-    {
-        public string StationId { get; set; } = "";
-        public string Name { get; set; } = "";
-        /// <summary>行文字：「{设施名} · {已}/{需}分」或「{设施名} · 空闲」（Q559 省一次站名）。</summary>
-        public string Line { get; set; } = "";
-    }
-
     /// <summary>
     /// B45「设施加工移至中央次级菜单、右栏只读」的内核只读规则（S14「2026-11-12 用户直接裁定：设施加工改在中央次级菜单操作」、
     /// 「2026-11-12 B45 Q542—Q548」与「2026-11-13 B45 Q558—Q562」；正式句见《重墨 V2 开工裁定与界面逐字稿》同名节）。
@@ -20,12 +11,7 @@ namespace Survival.Core.Engine
     /// </summary>
     public sealed partial class GameEngine
     {
-        /// <summary>Q542：选择设施只列这两类现有加工设施（按原工坊设施顺序）；工作台、锻炉等制作工坊与晾制架不列。</summary>
-        public static readonly IReadOnlyList<string> ChooserStationIds = new[] { "kiln", "water_station" };
-
-        public const string ChooserTitle = "选择设施";
-        /// <summary>Q560：回到选择层时本区已无可操作的两类设施。</summary>
-        public const string ChooserEmpty = "当前区域没有可操作的加工设施。";
+        // B35a1（Q795 B）：工坊汇总卡与「选择设施」层撤掉（每座真实设施一张卡直接进入，见 GameEngine.CraftScope.cs）
         /// <summary>FACPROC 第 5 条：菜单开启期间设施真实消失。</summary>
         public const string FacGoneText = "这处设施已无法操作，请关闭后重新选择。";
         /// <summary>BM4a（Q586；逐字稿 Q586 行）：关上层窗口返回时原设施已无法操作、不再恢复加工窗口（原仍开着菜单时的关闭提示仍用 <see cref="FacGoneText"/>）。</summary>
@@ -52,29 +38,6 @@ namespace Survival.Core.Engine
             var head = $"当前位置：{LocName(loc)}";
             if (s.CurrentZone == GameState.SafehouseZone) return head + " · 屋内";
             return SafehouseBuilt(s, loc) ? head + " · 屋外" : head;
-        }
-
-        /// <summary>
-        /// Q542／Q559：当前地点当前区已建的陶窑、固定净水台（原工坊设施顺序）。B51b（Q727，逐字稿 B51 表）：行摘要为工坊汇总
-        /// 「{设施名} · 加工中{批数}批 · 最近{日期时刻}完成」，没有加工批「{设施名} · 空闲」。
-        /// </summary>
-        public List<StationChoice> ProcessingStationChoices(GameState s)
-        {
-            var place = s.Ground;
-            var fac = FacOf(s, place);
-            var list = new List<StationChoice>();
-            if (fac == null) return list;
-            foreach (var st in Config.Workshops.Stations)
-            {
-                if (!ChooserStationIds.Contains(st.Id) || !WorkshopBuilt(s, place, st.Id)) continue;
-                list.Add(new StationChoice
-                {
-                    StationId = st.Id,
-                    Name = StationName(st.Id),
-                    Line = StationSummary(s, place, st.Id),
-                });
-            }
-            return list;
         }
     }
 }

@@ -129,7 +129,8 @@
                 }
                 @SvcFacts(v)
                 <div class="btn-row">
-                    @{ var startLabel = v.StartLabel ?? (v.OpensCraft ? "打开制作" : $"{v.Title}（{v.TimeText}）"); }
+                    @* B35a1（Q930 B、Q968 暂用 A）：工坊服务办完不再打开制作页，提交按钮改用通用格式「{服务名}（{工时}）」 *@
+                    @{ var startLabel = v.StartLabel ?? $"{v.Title}（{v.TimeText}）"; }
                     <GateButton Class="primary" Name="@startLabel" Blocked="@why" Title="@($"办理：{v.Title}")" OnClick="() => Do(id, pickTarget, pickChoice)">
                         @startLabel
                     </GateButton>

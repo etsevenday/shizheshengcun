@@ -1,33 +1,35 @@
 @inherits GameComponent
 
-@* 手工制作。Part="center"：中部的配方列表、材料与配方卡内唯一的“开始制作/开始建造”（S08 §5、S14 §14.1）；Part="detail"：右栏的详细预估（只读）。
-   v0.4（统一卡片案第 6 节）：材料、产物、催化工具都是 图标+名称+数量/状态 的行，缺料整行标出；
-   烧水、烤制、水煮改为火堆自动加工，这里只保留三条“处理说明”（图示步骤 + 查看火堆），不再有占用角色时间的开始按钮。
-   火堆的投料、点火在地块栏第二行的火堆卡上（v0.7 起锅与食材直接嵌在火堆卡内）。 *@
+@* 制作面板。Part="center"：中部的配方列表、材料与配方卡内唯一的“开始制作/开始建造”（S08 §5、S14 §14.1）；Part="detail"：右栏的详细预估（只读）。
+   v0.4（统一卡片案第 6 节）：材料、产物、催化工具都是 图标+名称+数量/状态 的行，缺料整行标出。
+   B35a1（S14／S08 Q594、Q797、Q907、Q908、Q930、Q932、Q933、Q934）：两种上下文——顶栏“手工制作”四类分流（全部配方／徒手制造／设施建造／维护与修补），
+   与某座真实设施的工作区（标题写设施名，左列设施块＋“全部配方”与原配方分组，只列本座配方）。分类按上下文记在本机。
+   撤原“自动加工”分类和“查看火堆”按钮：四类处理说明迁到火堆／柴炉加工菜单主层的只读“处理说明”折叠区（ProcessGuide）。
+   拖拽候选里的设施配方行小字前加“{设施名} · ”，点了进该设施工作区；返回／ESC 先回保留的候选列表。 *@
 @{
     var s = G.S;
     var e = G.E;
     var here = s.CurrentLocation;
     var lc = e.Location(here);
     var fac = e.FacOf(s, s.Ground) ?? s.Locations[here].Facility;
-    // B42：右栏悬停查看别的配方／处理说明时只换右栏读的条目（只读）；与当前所选不同时按点选新配方时的初值（1份、未指定锅／目标／修补包）预估，
+    var site = G.CraftSite;
+    // B42：右栏悬停查看别的配方时只换右栏读的条目（只读）；与当前所选不同时按点选新配方时的初值（1份、未指定锅／目标／修补包）预估，
     // 不改所选配方、份数与材料槽
     var peekOn = Part != "center" && PeekRecipe != null;
     var cur = peekOn ? PeekRecipe : G.CraftRecipe;
     var other = peekOn && PeekRecipe != G.CraftRecipe;
-    var procId = cur != null && cur.StartsWith(ProcPrefix) ? cur.Substring(ProcPrefix.Length) : null;
-    var proc = procId == null ? null : e.Config.Processes.FirstOrDefault(p => p.Id == procId);
-    // B10（A10 §9.1）：未掌握的做法也列出、写“未掌握”与来源（取代 Q64 时“不列出”的做法），开工校验仍拒绝
-    var recipeId = cur != null && e.Config.Recipes.Any(r => r.Id == cur && !r.IsSalvage) ? cur : "knife";
-    var rc = e.Recipe(recipeId);
-    var tab = procId != null ? AutoTab : G.CraftTab ?? TabOf(rc);
+    // B35a1（Q600）：所选为空（当前分类没有可显示的配方）时不出配方卡；秘密配方未显现时也不出
+    var picked = cur != null ? e.Config.Recipes.FirstOrDefault(r => r.Id == cur && !r.IsSalvage && e.RecipeVisible(s, r)) : null;
+    var rc = picked ?? e.Recipe("knife");
+    var recipeId = rc.Id;
+    var tabs = G.CraftTabList();
+    var tab = G.CraftTab ?? tabs.FirstOrDefault().Id ?? GameEngine.TabAll;
     var main = s.Main;
-    var craftPaused = main != null && main.Status == ActionStatus.Paused && (main.Type == ActionType.Craft || main.Type == ActionType.Build);
     var busy = G.Running || s.Sub != null;
     var candidates = G.CraftCandidates;
-    // 拆解（B4）走配方流程但只在选中装备的卡下开始，不进手工制作列表
-    var recipes = (candidates == null ? e.Config.Recipes.Where(r => TabOf(r) == tab) : e.Config.Recipes.Where(r => candidates.Contains(r.Id) && e.RecipeKnown(s, r)))
-        .Where(r => !r.IsSalvage).OrderBy(r => e.RecipeLocks(s, r).Count > 0 ? 1 : 0).ToList();
+    // 拆解（B4）走配方流程但只在选中装备的卡下开始，不进制作列表；候选列表的筛选（已掌握、可显示、本地真实设施）在内核 DropRecipeCandidates 里
+    var recipes = candidates == null ? G.CraftTabRecipes(tab).Select(r => (r, (CraftWorkspace?)null)).ToList()
+        : candidates.Select(c => (e.Recipe(c.RecipeId), c.Workspace)).ToList();
     var locks = e.RecipeLocks(s, rc);
     var batchable = !rc.IsBuild && !rc.IsRepair && !rc.IsFixedWait && !rc.IsDrying;   // B16：固定等待每次只做1批；B22c 试玩修复 M470：晾制每位一批
     var batch = batchable && !other ? Math.Max(1, G.CraftBatch) : 1;
@@ -40,78 +42,71 @@
 
 @if (Part == "center")
 {
-    <div class="sub-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="手工制作与营地设施">
+    var siteTitle = site?.Name ?? "手工制作";
+    <div class="sub-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="@siteTitle" data-craft-site="@(site?.Key ?? "")">
         <div class="sub-head">
-            @* 试玩修复 M77-B7（Q21）：材料来源等教学短文移进悬浮说明 *@
-            <div><h2>手工制作</h2><span class="sub" title="@($"材料来自随身与{lc.Name}地面（火堆与锅里的物资要先取出）；按工坊分类；未掌握的做法也列出并写来源；在配方卡下方开始，详细预估在右栏对象信息。")">配方 · 详细预估在右栏 ⓘ</span></div>
-            @* B45（Q560）：经「选择设施」明确点一座进入时为「返回 ESC」（回实时选择层），其余入口照原「关闭 ESC」 *@
-            <button class="secondary" @onclick="Close">@(G.CraftFromChooser && !G.PanelHasUnder ? "返回" : G.PanelCloseLabel)<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+            @* 试玩修复 M77-B7（Q21）：材料来源等教学短文移进悬浮说明。B35a1：工作区标题写该座真实设施名 *@
+            <div><h2>@siteTitle</h2><span class="sub" title="@($"材料来自随身与{lc.Name}地面（火堆与锅里的物资要先取出）；未掌握的做法也列出并写来源；在配方卡下方开始，详细预估在右栏对象信息。")">@(site != null ? (site.Public ? "公共设施" : "工坊作业") : "配方") · 详细预估在右栏 ⓘ</span></div>
+            @* B35a1（Q934）：从拖拽候选进入设施工作区时为「返回 ESC」（回保留的候选列表），其余入口照原 *@
+            <button class="secondary" data-craft-close @onclick="Close">@(G.CraftFromCandidates && !G.PanelHasUnder ? "返回" : G.PanelCloseLabel)<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
         </div>
         <div class="sub-body craft-grid @(candidates == null ? "tabbed" : "")">
             @if (candidates == null)
             {
-                    @* B10（A10 §9.1）：一级按工坊分类控制数量，长列表只在二级局部滚动；标签写本地工坊是否建成 *@
-                    <div class="craft-tabs" role="tablist" aria-label="工坊分类">
-                        @foreach (var (tid, tname) in Tabs())
+                    @* B10（A10 §9.1）：一级分类控制数量，长列表只在二级局部滚动。
+                       B35a1（Q594／Q797／Q907／Q908）：顶栏四类分流；工作区左列先设施块（图标、名称、状态），再“全部配方”与原配方分组 *@
+                    <div class="craft-tabs" role="tablist" aria-label="@(site != null ? "配方分组" : "制作分类")">
+                        @if (site != null)
+                        {
+                            // 与设施栏该座卡同一状态行（Q796／Q936；未开放写原真实原因）
+                            var siteCard = e.FacilityCardsHere(s).FirstOrDefault(c => c.Workspace?.Key == site.Key);
+                            var siteBlock = siteCard?.Blocked;
+                            var siteState = siteCard?.State ?? (e.CraftingAt(s, site) ? GameEngine.CraftingText : GameEngine.IdleText);
+                            <div class="craft-site" data-craft-site-block title="@siteState">
+                                @Icons.Markup("facility:" + site.StationId)
+                                <span><b>@site.Name</b><small class="@(siteBlock != null ? "warn-text" : "muted")">@siteState</small></span>
+                            </div>
+                        }
+                        @foreach (var (tid, tname) in tabs)
                         {
                             var t = tid;
-                            var st = e.Config.Workshops.Stations.FirstOrDefault(x => x.Id == t && x.BuildRecipe != null);
-                            // B14b（Q141）：本地公共工坊站已开放也算可用（标签写“公共”）
-                            var builtSt = st == null || e.StationUsableHere(s, t);
-                            var pubSt = st != null && !e.WorkshopBuilt(s, s.Ground, t) && s.CurrentZone == GameState.ExteriorZone && e.PublicStationOpenHere(s, t);
-                            <button type="button" role="tab" aria-selected="@(tab == t)" class="craft-tab @(tab == t ? "on" : "") @(builtSt ? "" : "unbuilt")" data-tab="@t"
-                                    title="@(st == null ? tname : pubSt ? $"{tname}：{lc.Name}的公共{tname}已开放（0额外费用）" : builtSt ? $"{tname}：{lc.Name}已建成" : $"{tname}：{lc.Name}{TabSuffix(t).TrimStart('·')}（可浏览配方与门槛）")" @onclick="() => PickTab(t)">@tname@(pubSt ? "·公共" : builtSt ? "" : TabSuffix(t))</button>
+                            <button type="button" role="tab" aria-selected="@(tab == t)" class="craft-tab @(tab == t ? "on" : "")" data-tab="@t" title="@tname" @onclick="() => G.PickCraftTab(t)">@tname</button>
                         }
                     </div>
             }
             <div class="recipe-list">
                 @if (candidates != null)
                 {
-                    <div class="tiny muted candidates-head">拖拽找到的候选配方 · 缺料的不能开始 <button class="linkish" @onclick="ShowAll">显示全部</button></div>
+                    <div class="tiny muted candidates-head">拖拽找到的候选配方 · 缺料的不能开始 <button class="linkish" data-candidates-all @onclick="G.CandidatesShowAll">显示全部</button></div>
                 }
-                @foreach (var r in recipes)
+                @foreach (var (r, ws) in recipes)
                 {
                     var id = r.Id;
+                    var cand = candidates?.FirstOrDefault(c => c.RecipeId == id && c.Workspace?.Key == ws?.Key);
                     var built = e.FacilityBuiltHere(s, r);
                     var icon = RecipeIcon(r);
                     var rl = e.RecipeLocks(s, r);
-                    var why = candidates != null ? e.CanStart(s, ActionRequest.Craft(id)) : rl.FirstOrDefault();
-                    <button class="recipe @(id == recipeId && proc == null ? "on" : "") @(why != null && !built ? "missing" : "")" @onclick="() => Pick(id)" title="@(why ?? RecipeMeta(r))" data-recipe="@id" data-peek="@Peek.Recipe(id)">
+                    var why = candidates != null && ws == null ? e.CanStart(s, ActionRequest.Craft(id)) : rl.FirstOrDefault();
+                    // B35a1（Q904 B／Q933 A）：候选里的设施配方行小字前加“{设施名} · ”，点了进该设施工作区
+                    var prefix = ws != null ? $"{ws.Name} · " : "";
+                    var small = built ? "已建成" : why != null ? e.RecipeLockShort(r, why) : RecipeMeta(r);
+                    <button class="recipe @(id == recipeId && picked != null && ws == null ? "on" : "") @(why != null && !built ? "missing" : "")" data-recipe="@id" data-workspace="@(ws?.Key ?? "")"
+                            @onclick="() => PickRow(id, cand)" title="@(prefix + (why ?? RecipeMeta(r)))" data-peek="@Peek.Recipe(id)">
                         @Icons.Markup(icon)
-                        <span>@r.Name<small>@(built ? "已建成" : why != null ? e.RecipeLockShort(r, why) : RecipeMeta(r))</small></span>
+                        <span>@r.Name<small>@prefix@small</small></span>
                     </button>
                 }
-                @if (candidates == null && tab == AutoTab)
+                @if (recipes.Count == 0)
                 {
-                    <div class="tiny muted candidates-head">火堆自动加工 · 处理说明</div>
-                    @foreach (var p in e.Config.Processes)
-                    {
-                        var pid = p.Id;
-                        <button class="recipe proc @(procId == pid ? "on" : "")" @onclick="() => Pick(ProcPrefix + pid)" data-peek="@Peek.Recipe(ProcPrefix + pid)">
-                            @Icons.Markup(p.OutputId)
-                            <span>@ProcTitle(p)<small>自动加工 · 受热@(p.HeatMinutes)分钟</small></span>
-                        </button>
-                    }
+                    @* Q600 逐字稿：当前分类没有可显示的配方（不显示锁定占位） *@
+                    <div class="risk none" data-craft-empty>@GameEngine.NoVisibleRecipeText</div>
                 }
             </div>
 
             <div class="craft-side">
-                @if (proc != null)
+                @if (picked == null)
                 {
-                    <div class="panel craft-mats">
-                        @* Q21：处理说明与“不占角色时间”教学短文移进悬浮说明 *@
-                        <div class="eyebrow" title="@($"{ProcHint(proc)} 不额外占角色主行动，仍需世界时间推进：放进去后角色可以去探索、清理、休息或睡眠，世界时间推进时火堆自动加工；浏览与离线不推进。")">处理说明 · 自动加工 ⓘ</div>
-                        <div class="steps">
-                            @foreach (var (icon, name, note) in Steps(proc))
-                            {
-                                <ItemRow Icon="@icon" Name="@name" Status="@note" CssClass="step" />
-                            }
-                        </div>
-                        <div class="btn-row" style="margin-top:10px">
-                            <button class="secondary" disabled="@(!e.HasFireAt(s, s.Ground))" title="@(e.HasFireAt(s, s.Ground) ? ViewFireTip : $"{lc.Name}没有火堆，回到营地才能加工")"
-                                    @onclick="G.OpenFireMenu">查看火堆 ▸</button>
-                        </div>
-                    </div>
+                    @* 没有所选配方（分类为空）：不出配方卡 *@
                 }
                 else
                 {
@@ -119,7 +114,7 @@
                         @* B51b 试玩修复 M972：配方说明到产物包一层 .cm-body——一般配方 display:contents 照旧；
                            陶窑／净水台这一层自成滚动区，逐批列表移到它下面单独滚动，投料批数移进卡底投料栏 *@
                         <div class="cm-body" data-wheel="y">
-                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? (GameEngine.IsWildFireRecipe(rc) ? "野外建造" : "营地建造") : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
+                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? (GameEngine.IsWildFireRecipe(rc) ? "野外建造" : "设施建造") : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
                         @* B10（A10 §9.1）：来源、工坊与门槛一次写全；不满足的标出原因（不是缺料） *@
                         <div class="craft-source" data-craft-source>
                             <span>@RecipeMeta(rc)</span>
@@ -354,7 +349,7 @@
                                     <b>被动@(Clock.Duration(rc.BaseMinutes))</b><small class="cg-xp">@e.DryingXpPreview(s, rc)</small>
                                     <small class="cg-sum" title="@e.RecipeModeText(rc)">@(dryWhy ?? $"在晾制架面板选空位投料：{e.DryingSummary(s)}")</small>
                                 </span>
-                                <button type="button" class="primary cg-start" disabled="@(!dryHere)" title="@(dryHere ? "打开晾制架面板，选食谱与空位，预览后确认投料" : $"{e.ZoneName(s, s.Ground)}没有晾制架（在“营地建造”里建）")"
+                                <button type="button" class="primary cg-start" disabled="@(!dryHere)" title="@(dryHere ? "打开晾制架面板，选食谱与空位，预览后确认投料" : $"{e.ZoneName(s, s.Ground)}没有晾制架（在“设施建造”里建）")"
                                         @onclick='() => G.OpenPanel("drying")'>打开晾制架</button>
                             </div>
                         }
@@ -421,69 +416,24 @@
                         }
                     </div>
                 }
-                @* B10 试玩修复 7：火堆摘要只在“自动加工”里显示，让出配方卡的原料区 *@
-                @if (e.HasFireAt(s, s.Ground) && proc != null)
-                {
-                    var used = e.FireContents(s, s.Ground).Count;
-                    <div class="panel fire-box">
-                        <ItemRow Icon="@(fac.FireLit ? "fire_lit" : "fire_out")" Name="营地火堆" Qty="@(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃")"
-                                 Status="@($"燃料{fac.FuelMinutes}/{e.FuelCapOf(fac)}分钟 · 内容物{used}/{e.Config.Fire.ProcessingSlots}")">
-                            <button class="secondary" title="@ViewFireTip" @onclick="G.OpenFireMenu">查看火堆 ▸</button>
-                        </ItemRow>
-                    </div>
-                }
             </div>
         </div>
     </div>
 }
-else if (proc != null)
+else if (picked == null)
 {
-    <div class="detail-scroll">
-        <div class="op-head"><div class="eyebrow">处理说明 · 自动加工</div><h2>@ProcTitle(proc)</h2><p>@ProcHint(proc)</p></div>
-        <div class="lines">
-            <div><span>有效受热</span><b>@(proc.HeatMinutes)分钟</b></div>
-            <div><span>占用角色</span><b>不占用</b></div>
-            @if (proc.WaterCostMl > 0) { <div><span>耗水</span><b>每份@(e.ItemName(proc.RequiredLiquid ?? ""))@(proc.WaterCostMl)毫升</b></div> }
-            <div><span>成品留在</span><b>@(proc.IsPotBatch ? "原锅" : proc.InPot ? "原锅食材位" : proc.IsSlotBatch ? "原火堆加工位（取出才进包）" : "原火堆加工位")</b></div>
-            @if (proc.IsSlotBatch)
-            {
-                <div><span>每批</span><b>@(e.ItemName(proc.InputId))×@(proc.InputCount) → @(e.ItemName(proc.OutputId))×@(proc.OutputCount)，占1个加工位</b></div>
-                <div><span>燃料</span><b>火堆燃料另计，两批并行不倍扣</b></div>
-                <div><span>经验</span><b>不给经验</b></div>
-            }
-        </div>
-        @if (!proc.IsPotBatch)
-        {
-            // B10b 试玩修复：木炭等没有使用效果、不会腐败的产物不再按食物写（原来对 Use 为空的产物会崩）
-            var o = e.Item(proc.OutputId);
-            var use = o.Use != null ? GameEngine.UseEffectText(o.Use) : o.Kind == "material" ? "材料" : o.Name;
-            var shelf = o.ShelfLifeMinutes is int sl ? $"保质{sl / 60}小时" : "不会腐败";
-            <ItemRow Icon="@o.Id" Name="@o.Name" Qty="@($"×{proc.OutputCount}")" Status="@($"{use} · {shelf}")" />
-        }
-    </div>
-    <div class="detail-foot">
-        @if (!peekOn) { <button class="primary" disabled="@(!G.E.HasFireAt(G.S, G.S.Ground))" title="@(G.E.HasFireAt(G.S, G.S.Ground) ? ViewFireTip : null)" @onclick="G.OpenFireMenu">查看火堆 ▸</button> }
-        <div class="under">@(proc.IsSlotBatch ? "没有开始按钮：点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」投料" : "没有开始按钮：放进燃烧的火堆即自动加工")</div>
-    </div>
+    @* B35a1：没有所选配方（分类为空，或悬停的配方已不可显示）时右栏不出预估 *@
 }
 else
 {
-    <PreviewView Request="request" Eyebrow="@($"手工制作 · {(rc.IsBuild ? "营地设施" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)"
-                 Confirmable="false" FootNote="@(UnbuiltPeek ? PeekText.UnbuiltBuildFootNote : rc.IsDrying ? "晾制在设施栏“晾制架”卡的面板里选空位投料；0分钟投料、不占行动，离开也继续" : e.IsStationBatchRecipe(rc) ? $"在中间配方卡下方点“投料（{batch}批）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
+    <PreviewView Request="request" Eyebrow="@($"{(site?.Name ?? "手工制作")} · {(rc.IsBuild ? "设施建造" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)"
+                 Confirmable="false" FootNote="@(rc.IsDrying ? "晾制在设施栏“晾制架”卡的面板里选空位投料；0分钟投料、不占行动，离开也继续" : e.IsStationBatchRecipe(rc) ? $"在中间配方卡下方点“投料（{batch}批）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
 }
 
 @code {
     [Parameter] public string Part { get; set; } = "center";
-    /// <summary>B42：右栏悬停查看的配方或处理说明（"proc:" 前缀），只读；null 读当前所选。</summary>
+    /// <summary>B42：右栏悬停查看的配方，只读；null 读当前所选。</summary>
     [Parameter] public string? PeekRecipe { get; set; }
-    /// <summary>
-    /// B44（S14 Q493 选 A）：主桌面悬停未建设施时的只读建造条件（FacilityCard.BuildConditions）——此时中间没有配方卡，
-    /// 底部脚注只留「时间为预计值」；点击进入制作面板后的右栏仍是原完整脚注。
-    /// </summary>
-    [Parameter] public bool UnbuiltPeek { get; set; }
-
-    /// <summary>处理说明条目在 CraftRecipe 里的前缀，避免与配方 ID 混淆。</summary>
-    public const string ProcPrefix = "proc:";
 
     private string RecipeHint(RecipeConfig r)
     {
@@ -512,96 +462,7 @@ else
         };
     }
 
-    private string ProcTitle(ProcessConfig p) => p.IsPotBatch ? "烧水" : p.IsSlotBatch ? $"{p.Name}{G.E.ItemName(p.OutputId)}" : $"{p.Name}{G.E.ItemName(p.InputId).Replace("生", "")}";
-
-    private string ProcHint(ProcessConfig p)
-    {
-        var e = G.E;
-        if (p.IsSlotBatch)
-            return $"点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」投料：每批{e.ItemName(p.InputId)}×{p.InputCount}占1个加工位，{p.HeatMinutes}有效受热分钟后原位变成{e.ItemName(p.OutputId)}×{p.OutputCount}。"
-                   + $"火堆燃料另计（两批并行不倍扣，点火那5分钟不计热）；把{e.ItemName(p.InputId)}拖到火堆是添加燃料，不是煅烧。不给经验。";
-        return (p.IsPotBatch ? "boil_water" : p.InPot ? "boil_root" : "roast_root") switch
-        {
-            "boil_water" => $"装了{e.ItemName(p.InputId)}的金属锅放进燃烧的火堆，0.5升或1升都是{p.HeatMinutes}分钟原地烧成{e.ItemName(p.OutputId)}；不自动补水。",
-            "roast_root" => $"{e.ItemName(p.InputId)}直接放进燃烧火堆的空加工位，每份{p.HeatMinutes}分钟烤成{e.ItemName(p.OutputId)}，不需要锅和水。",
-            "boil_root" => $"{e.ItemName(p.InputId)}放进有{e.ItemName(p.RequiredLiquid ?? "")}的锅、锅放进燃烧的火堆，每份{p.HeatMinutes}分钟煮成{e.ItemName(p.OutputId)}，完成时扣{p.WaterCostMl}毫升；空锅只存放不加工。",
-            _ => "",
-        };
-    }
-
-    /// <summary>图示步骤：每步一行“图标+名称+说明”。</summary>
-    private List<(string icon, string name, string note)> Steps(ProcessConfig p)
-    {
-        var e = G.E;
-        var heat = $"受热{p.HeatMinutes}分钟";
-        if (p.IsSlotBatch)
-            return new()
-            {
-                (p.InputId, e.ItemName(p.InputId), $"1. 随身或当前地面备好{e.ItemName(p.InputId)}×{p.InputCount}（拖到火堆是加燃料）"),
-                ("glyph:add", "空加工位", $"2. 点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」，确认投料（占1位，不耗时）"),
-                ("fire_lit", "燃烧的火堆", $"3. 点火并保持燃料，{p.HeatMinutes}有效受热分钟；燃料另计，熄火保留进度"),
-                (p.OutputId, e.ItemName(p.OutputId), $"4. 原位变成{e.ItemName(p.OutputId)}×{p.OutputCount}，取出才进包；不给经验"),
-            };
-        return (p.IsPotBatch ? "boil_water" : p.InPot ? "boil_root" : "roast_root") switch
-        {
-            "boil_water" => new()
-            {
-                (p.InputId, e.ItemName(p.InputId), "1. 把水卡拖到锅的水量条，每份500毫升"),
-                ("pot", "金属锅", "2. 把锅拖到火堆的空加工位"),
-                ("fire_lit", "燃烧的火堆", $"3. 点火并保持燃料，{heat}"),
-                (p.OutputId, e.ItemName(p.OutputId), "4. 留在原锅，可饮用或倒出"),
-            },
-            "roast_root" => new()
-            {
-                (p.InputId, e.ItemName(p.InputId), "1. 拖到火堆的空加工位（每份占1位）"),
-                ("fire_lit", "燃烧的火堆", $"2. {heat}，熄火保留进度"),
-                (p.OutputId, e.ItemName(p.OutputId), "3. 留在加工位，取出后食用"),
-            },
-            _ => new()
-            {
-                (p.RequiredLiquid ?? "clean_water", e.ItemName(p.RequiredLiquid ?? "clean_water"), $"1. 锅里装净水，每份食材预留{p.WaterCostMl}毫升"),
-                (p.InputId, e.ItemName(p.InputId), "2. 拖到锅的食材区（最多2份）"),
-                ("pot", "金属锅", "3. 锅放进火堆的空加工位"),
-                ("fire_lit", "燃烧的火堆", $"4. {heat}，完成时扣水"),
-                (p.OutputId, e.ItemName(p.OutputId), "5. 留在原锅食材位"),
-            },
-        };
-    }
-
     private bool _starting;
-
-    private const string AutoTab = "auto";
-    private const string CampTab = "camp";
-
-    /// <summary>分类标签：六类工坊（含手工）、营地建造（棚/床/五类工坊）、火堆自动加工。</summary>
-    private IEnumerable<(string id, string name)> Tabs()
-    {
-        foreach (var st in G.E.Config.Workshops.Stations) yield return (st.Id, st.Name);
-        yield return (CampTab, "营地建造");
-        yield return (AutoTab, "自动加工");
-    }
-
-    private static string TabOf(RecipeConfig r) => r.IsBuild ? CampTab : r.Station;
-
-    /// <summary>工坊标签后缀：本地可建写“·未建”；本地有公共站但没开放写“·未开放”（B14b，Q141）；不能建的地点写“·营地已建”或“·本地无”（B10 试玩修复 9）。</summary>
-    private string TabSuffix(string station)
-    {
-        var e = G.E;
-        var here = G.S.CurrentLocation;
-        if (e.CanBuildWorkshopsHere(G.S)) return "·未建";
-        if (e.PublicStationsAt(here).Any(p => p.StationId == station)) return "·未开放";
-        var camp = e.Config.Workshops.BuildLocations.FirstOrDefault();
-        return camp != null && e.WorkshopBuilt(G.S, camp, station) ? "·营地已建" : "·本地无";
-    }
-
-    private void PickTab(string t)
-    {
-        G.CraftTab = t;
-        if (t == AutoTab) { Pick(ProcPrefix + G.E.Config.Processes[0].Id, true); return; }
-        var first = G.E.Config.Recipes.Where(r => !r.IsSalvage && TabOf(r) == t).OrderBy(r => G.E.RecipeLocks(G.S, r).Count > 0 ? 1 : 0).FirstOrDefault();
-        if (first != null) Pick(first.Id, true);
-        G.Notify();
-    }
 
     private static string RecipeIcon(RecipeConfig r) => ArtCatalog.RecipeKey(r.FacilityResult, r.IsRepair, r.Outputs.Keys.FirstOrDefault());
 
@@ -671,23 +532,14 @@ else
         finally { _starting = false; }
     }
 
-    private void Pick(string id) => Pick(id, false);
-
-    private void Pick(string id, bool keepTab)
+    /// <summary>
+    /// 点一行：候选里的设施配方进该真实设施工作区（Q904 B，候选保留在下面，Q934）；其余在本窗口选中（不自动开工）。
+    /// </summary>
+    private void PickRow(string id, RecipeCandidate? cand)
     {
         G.PeekClear();   // B42：明确点选结束悬停查看
-        if (!keepTab && !id.StartsWith(ProcPrefix)) G.CraftTab = null;
-        if (G.CraftRecipe != id)
-        {
-            G.CraftBatch = 1;
-            G.CraftTarget = null;
-            G.CraftPot = null;
-        }
-        G.CraftRecipe = id;
-        // B13d（Q128）：选中一件配方/自动加工的预览即操作前引导的上下文（制作提交前）
-        if (id.StartsWith(ProcPrefix)) G.Guide("process", id.Substring(ProcPrefix.Length));
-        else G.Guide("recipe", id);
-        G.Notify();
+        if (cand != null) { G.PickCandidate(cand); return; }
+        G.SelectCraftRecipe(id);
     }
 
     private void PickPot(int id)
@@ -714,12 +566,6 @@ else
         G.Notify();
     }
 
-    private void ShowAll()
-    {
-        G.CraftCandidates = null;
-        G.Notify();
-    }
-
     private string BatchText(ItemInstance b, int n)
     {
         var where = b.IsCarried ? "随身" : "地面";
@@ -742,9 +588,6 @@ else
         return res;
     }
 
-    /// <summary>B45（Q560）：经选择层进入时回选择层，其余照原关闭（与 ESC 同一入口）。</summary>
+    /// <summary>B35a1（Q934）：从拖拽候选进入的工作区先回候选，其余照原关闭（与 ESC 同一入口）。</summary>
     private void Close() => G.PanelEscape();
-
-    /// <summary>B45（逐字稿 Q546／Q547）：「查看火堆 ▸」悬停新句——关闭制作、打开当前区火源加工菜单主层。</summary>
-    private const string ViewFireTip = "关闭手工制作，打开火堆加工菜单";
 }

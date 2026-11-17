@@ -122,34 +122,24 @@ public class BM1B42HoverTests : TestBase
 
     // ───────────── Q487 未建设施建造条件 ─────────────
 
-    /// <summary>Q487-A01：未建遮蔽棚、床垫（及一座工坊都没有时的工坊卡）悬停直接带与原点击同源的建造条件详情；原说明句保留；建成后不再带。</summary>
+    /// <summary>
+    /// Q487-A01 原为未建遮蔽棚、床垫与工坊汇总卡悬停带建造条件。B35a1（S14 Q594「未建设施不摆场景占位卡」、Q795 B 撤工坊聚合卡、Q805 删虚线未建卡说明）：
+    /// 未建设施不再出卡，建造条件在手工制作「设施建造」里看；这里核撤除与右栏同源预估仍只读。出卡行为见 B35a1CraftScopeTests。
+    /// </summary>
     [Test]
     public void Q487_UnbuiltFacilityShowsBuildConditions()
     {
-        foreach (var id in new[] { "shelter", "bed", "build_workbench" })
-            Assert.That(E.Recipe(id).IsBuild, Is.True, id);
         var fc = Web("Components/FacilityCard.razor");
-        Assert.That(fc, Does.Contain("var buildRecipe = built ? null : Kind == \"workshops\" ? \"build_workbench\" : Kind;"), "按原点击对应的设施配方");
-        Assert.That(fc, Does.Contain("if (Kind != \"workshops\") { G.OpenPanel(\"craft\", Kind); return; }"), "原点击照旧打开对应配方");
-        // B45（Q542）：工坊汇总卡点击改走 OpenWorkshops，一座加工设施都没有时仍是原「营地建造」工作台入口
-        Assert.That(fc, Does.Contain("G.OpenWorkshops();"));
-        Assert.That(Web("Services/GameSession.FacMenu.cs"), Does.Contain("OpenPanel(\"craft\", \"build_workbench\");"));
-        Assert.That(fc, Does.Contain("PeekExtra=\"@(buildRecipe == null ? null : BuildConditions(buildRecipe))\""));
-        Assert.That(fc, Does.Contain("=> @<CraftOverlay Part=\"detail\" PeekRecipe=\"@recipeId\" UnbuiltPeek=\"true\" />;"), "与点击后右栏同一份详细预估（B44 Q493：只换底部脚注）");
-        Assert.That(fc, Does.Contain("Tooltip=\"@(built ? effect : $\"{title}未建造：{need}\")\""), "原说明句保留");
-        Assert.That(fc, Does.Contain("\"点击查看建造条件\"").And.Contain("\"需先建成遮蔽棚\"").And.Contain("\"点击在“营地建造”里建\""));
-        var oc = Web("Components/ObjectCard.razor");
-        Assert.That(oc, Does.Contain("Extra = PeekExtra,"));
-        var pd = Web("Components/PeekDetail.razor");
-        Assert.That(pd, Does.Contain("if (G.PeekFactsOf(Key) is PeekFacts fx && fx.Extra != null)"));
-        Assert.That(pd, Does.Contain("@if (!string.IsNullOrEmpty(fx.Desc)) { <p>@fx.Desc</p> }"), "原说明句在上");
-        Assert.That(pd, Does.Contain("@fx.Extra"));
+        Assert.That(fc, Does.Not.Contain("BuildConditions").And.Not.Contain("PeekExtra").And.Not.Contain("G.OpenWorkshops();"));
+        Assert.That(fc, Does.Contain("\"点击查看建造条件\"").And.Contain("\"需先建成遮蔽棚\""), "施工中的遮蔽棚／床垫卡原说明句保留");
         // 同源详细预估本身只读：不给开工键，悬停的别的配方按点选初值、不改所选配方／份数／材料槽
         var co = Web("Components/CraftOverlay.razor");
         Assert.That(co, Does.Contain("var peekOn = Part != \"center\" && PeekRecipe != null;"));
-        Assert.That(co, Does.Contain("Confirmable=\"false\" FootNote=\"@(UnbuiltPeek ? PeekText.UnbuiltBuildFootNote : rc.IsDrying"), "配方详情不给确认键");
+        Assert.That(co, Does.Contain("Confirmable=\"false\" FootNote=\"@(rc.IsDrying"), "配方详情不给确认键");
         var at = co.IndexOf("@code {", StringComparison.Ordinal);
-        var detailPart = co.Substring(co.IndexOf("else if (proc != null)", StringComparison.Ordinal), at - co.IndexOf("else if (proc != null)", StringComparison.Ordinal));
+        var from = co.IndexOf("else if (picked == null)", StringComparison.Ordinal);
+        Assert.That(from, Is.GreaterThan(0));
+        var detailPart = co.Substring(from, at - from);
         Assert.That(detailPart, Does.Not.Contain("G.CraftRecipe =").And.Not.Contain("G.CraftBatch =").And.Not.Contain("StartAction"), "右栏部分不改制作选择、不开工");
     }
 }

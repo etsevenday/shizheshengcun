@@ -107,6 +107,9 @@ public class B5SkillTests : BattleTestBase
         var u = New();
         foreach (var kv in rc.Inputs) E.DebugGive(u, kv.Key, kv.Value, "camp");
         var req = ActionRequest.Craft("make_antiviral_cure");
+        // B35a1（Q600，recipe-visibility-q600.json：抗病毒药剂 skillsAll 医疗10＋制造10 或完成 AC02）：未显现时直接请求先回“尚未发现这项配方。”
+        Assert.That(E.CanStart(u, req), Is.EqualTo("尚未发现这项配方。"));
+        u.Progress.Flags.Add(GameEngine.QuestFact("AC02", "completed"));   // 起始状态：完成 AC02 使其显现，下面照原核熟练门槛
         Assert.That(E.CanStart(u, req), Does.Contain("需要医疗10级"));
         E.GainXp(u, "medicine", 2700);
         E.GainXp(u, "crafting", 2700);

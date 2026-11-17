@@ -503,6 +503,9 @@ public class CombatV06Tests : BattleTestBase
         var u = New();
         foreach (var kv in Cfg.Recipes.Single(r => r.Id == "make_antiviral_cure").Inputs) E.DebugGive(u, kv.Key, kv.Value, "camp");
         var req = ActionRequest.Craft("make_antiviral_cure");
+        // B35a1（Q600，recipe-visibility-q600.json）：未显现先回“尚未发现这项配方。”；完成 AC02 显现后照原核熟练门槛
+        Assert.That(E.CanStart(u, req), Is.EqualTo("尚未发现这项配方。"));
+        u.Progress.Flags.Add(GameEngine.QuestFact("AC02", "completed"));
         Assert.That(E.CanStart(u, req), Does.Contain("需要医疗10级"), "B5：旧医疗15/制造12门槛改为医疗10/制造10（A06 §4）");
         u.Skills["medicine"].Level = 10;
         u.Skills["crafting"].Level = 10;

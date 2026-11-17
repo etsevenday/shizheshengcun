@@ -157,8 +157,9 @@ namespace Survival.Core.Engine
                 return $"需要{name}：{pub.Name}还没开放（{why}）";
             }
             // Q107（B17）：自建工坊在临时营地外部或已完工安全屋屋内，每区每类一座；别处的工坊不远程可用
+            // B35a1（Q805）：分类名“营地建造”改“设施建造”
             return CanBuildWorkshopsHere(s)
-                ? $"需要{name}：{ZoneName(s, s.Ground)}还没有建成{name}（在“营地建造”里建）"
+                ? $"需要{name}：{ZoneName(s, s.Ground)}还没有建成{name}（在“设施建造”里建）"
                 : $"需要{name}：{ZoneName(s, s.Ground)}没有{name}，工坊只能建在{string.Join("、", Config.Workshops.BuildLocations.Select(LocName))}或已建成的安全屋屋内";
         }
 

@@ -6,14 +6,12 @@ namespace Survival.Web.Services;
 /// <summary>
 /// B45「设施加工移至中央次级菜单、右栏只读」（S14「2026-11-12 用户直接裁定：设施加工改在中央次级菜单操作」、Q542—Q548、Q556—Q562）：
 /// 火堆／柴炉卡点击打开中央加工菜单（一级面板 "fire"，盖住中部四轨），菜单自己记住设施地点／区域／身份、工位、锅与内容、来源与数量草稿，
-/// 不从右栏当前显示对象取执行目标；右栏只做只读同步（<see cref="SyncRight"/>）。工坊汇总卡多座加工设施时先开「选择设施」盘（Pop "stations"）。
+/// 不从右栏当前显示对象取执行目标；右栏只做只读同步（<see cref="SyncRight"/>）。B35a1（Q795 B）起工坊汇总卡与「选择设施」盘撤掉，每座设施一张卡直接进入。
 /// 全部只是界面状态，不进存档；关闭、换区、战斗、读档等清空。
 /// </summary>
 public sealed partial class GameSession
 {
     public const string FireMenuPanel = "fire";
-    /// <summary>Q542：工坊汇总卡的「选择设施」盘（就近盘种类）。</summary>
-    public const string StationsPop = "stations";
 
     /// <summary>中央火堆加工菜单的上下文（只在会话内）。</summary>
     public sealed class FireMenuContext
@@ -90,9 +88,6 @@ public sealed partial class GameSession
 
     /// <summary>关闭菜单后待恢复焦点的元素 id（GameScreen 渲染后读一次即清）。</summary>
     public string? FocusIdPending { get; set; }
-
-    /// <summary>Q560：本次手工制作是经「选择设施」明确点一座进入的（返回／ESC 回选择层）；换别的面板即结束。</summary>
-    public bool CraftFromChooser { get; private set; }
 
     /// <summary>
     /// 点火堆／柴炉卡主体（或手工制作「查看火堆 ▸」，Q547）：重验当前区真实火源，打开中央加工菜单两加工位主层，不预选锅或空位、不投料。
@@ -563,61 +558,13 @@ public sealed partial class GameSession
         return FireMaintBlocked ? "行动进行中，暂不能维护火堆" : room < 1 ? $"至少需要{E.Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{E.FuelCapOf(fac)}分钟）" : wood < 1 ? "随身和当前地面没有木材" : null;
     }
 
-    // ───────────── Q542／Q559／Q560 工坊汇总卡「选择设施」 ─────────────
-
     /// <summary>
-    /// 工坊汇总卡点击：当前区陶窑、固定净水台都已建 → 居中「选择设施」；只建一座 → 直接进入它的原制作面板分类；都没建 → 原「营地建造」工作台入口。
-    /// 只读、0 分钟。
+    /// 一级面板的 Esc／关闭按钮：B35a1（Q934）从拖拽候选进入的设施工作区先回保留的候选列表（重验），再按一次才关；其余照原关闭。
     /// </summary>
-    public void OpenWorkshops()
-    {
-        if (State == null) return;
-        var choices = E.ProcessingStationChoices(S);
-        if (choices.Count >= 2) { OpenStationChooser(); return; }
-        if (choices.Count == 1) { OpenCraftStation(choices[0].StationId); return; }
-        OpenPanel("craft", "build_workbench");
-        if (Panel != "craft") return;
-        CraftTab = "camp";
-        Notify();
-    }
-
-    private void OpenStationChooser()
-    {
-        if (InBattleUi || DialogueLocked) return;
-        CollapseCardPopForPanel(CardPopShown);
-        OpenPop(StationsPop, S.Ground, "fac-workshops");
-        // FACPROC 第 4 条：焦点进首个操作（第一座设施行）
-        if (Pop is { Kind: StationsPop } && E.ProcessingStationChoices(S).FirstOrDefault() is { } first) FocusIdPending = $"st-pick-{first.StationId}";
-    }
-
-    /// <summary>选择层明确点一座：提交前重验真实身份／位置／状态，再进入该座原制作面板分类，并记住返回来源（Q560）。</summary>
-    public void PickStation(string stationId)
-    {
-        if (State == null || Pop is not { Kind: StationsPop } p || p.Id != S.Ground) return;
-        if (E.ProcessingStationChoices(S).All(c => c.StationId != stationId)) { Notify(); return; }
-        Pop = null;
-        OpenCraftStation(stationId);
-        // Q560：记住这次明确点的那一座（之后在制作面板换分类／配方也不丢），返回时焦点回它的行
-        if (Panel == "craft") { CraftFromChooser = true; ChooserReturnStation = stationId; Notify(); }
-    }
-
-    /// <summary>经选择层进入时明确点的那一座；回到选择层后焦点要回它的行（Q560）。</summary>
-    public string? ChooserReturnStation { get; private set; }
-
-    /// <summary>一级面板的 Esc／关闭按钮：经选择层进入的制作面板回到实时选择列表（不自动跳），其余照原关闭。</summary>
     public void PanelEscape()
     {
-        // BM4a（Q590）：制作页下面另有被盖住的窗口时（经「选择设施」进入后又被顶栏页叠过、再提到最上层），返回先回紧挨着的下层
-        if (Panel == "craft" && CraftFromChooser && State != null && _chain.Count == 0)
-        {
-            var station = ChooserReturnStation ?? CraftTab;
-            OpenPanel(null);
-            ChooserReturnStation = station;
-            OpenPop(StationsPop, S.Ground, "fac-workshops");
-            // Q560：焦点回仍有效的原设施行；该行已不在时留在选择层（安全焦点）
-            if (station != null && E.ProcessingStationChoices(S).Any(c => c.StationId == station)) FocusIdPending = $"st-pick-{station}";
-            return;
-        }
+        // BM4a（Q590）：制作页下面另有被盖住的窗口时返回先回紧挨着的下层
+        if (CraftFromCandidates && State != null && _chain.Count == 0) { ReturnToCandidates(); return; }
         OpenPanel(null);
     }
 }

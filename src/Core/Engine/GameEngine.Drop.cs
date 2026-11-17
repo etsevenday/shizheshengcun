@@ -109,6 +109,8 @@ namespace Survival.Core.Engine
         public ActionRequest? Action { get; set; }
         /// <summary>预览配方候选（配置顺序）。</summary>
         public List<string> Recipes { get; set; } = new List<string>();
+        /// <summary>B35a1（Q904／Q934）：材料／营地地点卡拖拽候选的明细，需设施的配方带所去的真实设施工作区；材料槽等其他预览为空。</summary>
+        public List<RecipeCandidate> Candidates { get; set; } = new List<RecipeCandidate>();
         /// <summary>按住 Shift 松手可选数量；MaxQuantity 已综合可用量、容量、燃料空位与 30 公斤。</summary>
         public bool Quantifiable { get; set; }
         public int MaxQuantity { get; set; }
@@ -133,9 +135,9 @@ namespace Survival.Core.Engine
         /// <summary>某物品是否是任一配方的材料。</summary>
         public bool IsRecipeMaterial(string itemId) => Config.Recipes.Any(r => r.Inputs.ContainsKey(itemId));
 
-        /// <summary>同时用到这些物品的配方（配置顺序）。</summary>
-        public List<string> RecipeCandidates(params string[] itemIds) =>
-            Config.Recipes.Where(r => r.Group != "safehouse" && itemIds.All(r.Inputs.ContainsKey)).Select(r => r.Id).ToList();   // 安全屋三项走“建设”入口（B17）
+        /// <summary>候选预览：明细与配方 Id 一起给壳（没有候选为 null）。</summary>
+        private static DropIntent? CandidatePreview(List<RecipeCandidate> list, string label) => list.Count == 0 ? null
+            : new DropIntent { Ok = true, Verb = DropVerb.PreviewRecipe, Label = label, Recipes = list.Select(c => c.RecipeId).ToList(), Candidates = list };
 
         /// <summary>卡片代表的实例：工具/锅就是该实例；堆叠组取最早到期、未预留的一堆（与点击转移同一顺序）。</summary>
         public ItemInstance? CardHead(GameState s, DropSource src)
@@ -296,9 +298,8 @@ namespace Survival.Core.Engine
             if (src.Kind == DropSourceKind.Card && targetItem != head.ItemId
                 && IsRecipeMaterial(head.ItemId) && IsRecipeMaterial(targetItem))
             {
-                var rec = RecipeCandidates(head.ItemId, targetItem);
-                if (rec.Count > 0)
-                    return new DropIntent { Ok = true, Verb = DropVerb.PreviewRecipe, Label = "查看可制作的配方", Recipes = rec };
+                // B35a1（Q904 B、Q933②）：原手工制作／设施建造／维护与修补，另加当前同地同区真实已有设施的相关配方；锅食谱与晾制不列（安全屋三项走“建设”入口，B17）
+                if (CandidatePreview(DropRecipeCandidates(s, new[] { head.ItemId, targetItem }, false), "查看可制作的配方") is DropIntent pv) return pv;
             }
             // 同类卡：跨区即合堆（先转移再合堆）
             if (src.Kind == DropSourceKind.Card && targetItem == head.ItemId && zone != head.Owner)
@@ -449,11 +450,10 @@ namespace Survival.Core.Engine
         {
             if (loc != s.CurrentLocation) return DropIntent.No("只能对当前地点操作");
             if (src.Kind != DropSourceKind.Card || !_locs[loc].CanBuildShelter) return DropIntent.No(Unsupported);
-            // 原料拖至营地地点卡：列出营地设施配方（遮蔽棚、床垫）
-            // B22e：野外固定火堆（group wild）在手工制作“营地建造”里选，营地本身已有火堆，不列在这里
-            var rec = Config.Recipes.Where(r => r.FacilityResult != null && r.Group != "safehouse" && r.Group != WildBuildGroup && r.Inputs.ContainsKey(head.ItemId)).Select(r => r.Id).ToList();
-            if (rec.Count == 0) return DropIntent.No(Unsupported);
-            return new DropIntent { Ok = true, Verb = DropVerb.PreviewRecipe, Label = "查看营地设施", Recipes = rec };
+            // 原料拖至营地地点卡：列出营地设施配方（遮蔽棚、床垫、工坊）
+            // B22e：野外固定火堆（group wild）在手工制作“设施建造”里选，营地本身已有火堆，不列在这里
+            // B35a1（Q933①）：另加当前同地同区真实已有设施的相关配方，不另加徒手制造；提示句 Q969 暂用 A「查看可制作的配方」（原「查看营地设施」）
+            return CandidatePreview(DropRecipeCandidates(s, new[] { head.ItemId }, true), "查看可制作的配方") ?? DropIntent.No(Unsupported);
         }
 
         private DropIntent DropOnSlot(GameState s, DropSource src, ItemInstance head, string recipeId, string itemId)
