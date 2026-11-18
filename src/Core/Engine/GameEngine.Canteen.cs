@@ -8,9 +8,9 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// 分量水壶（开发计划 v0.9 B16，R49；S10「X4 分量水壶、水处理与当前zone容器」、A07 X1.5）：容量 2000 毫升、空重 400 克、一根物资卡、无嵌套子物；
-    /// 只装同一种脏/净水，不装食材、不受热、不放火堆。从 500 毫升水卡装入须整份；倒出成水卡也按 500 毫升整份；壶内每次可直接喝 250 毫升
-    /// （5 分钟、水分+15；脏水同样必定腹泻 12 小时；战斗中不能喝）。水量按真实毫升等量转移，重量按 1 克/毫升计入，不凭空增减。
-    /// 水量存在实例 LiquidId/LiquidMl 上（存档 28）。
+    /// 只装同一种脏/净水，不装食材、不受热、不放火堆。B56（S10 文首 B53a Q929）起装入／倒出按水卡每份 100 毫升整份、可选多份；
+    /// 壶内饮用走自选饮水（GameEngine.Drink：N×100 毫升一次 5 分钟、补水 6N；脏水同样必定腹泻 12 小时；战斗中不能喝），不再有固定一口 250 毫升。
+    /// 水量按真实毫升等量转移，重量按 1 克/毫升计入，不凭空增减。水量存在实例 LiquidId/LiquidMl 上（存档 28）。
     /// </summary>
     public sealed partial class GameEngine
     {
@@ -38,7 +38,7 @@ namespace Survival.Core.Engine
             return null;
         }
 
-        /// <summary>这份水卡最多能装几份（500 毫升）进这个水壶；不能装时给原因。</summary>
+        /// <summary>这份水卡最多能装几份（每份 100 毫升）进这个水壶；不能装时给原因。</summary>
         public int MaxFillCanteen(GameState s, ItemInstance water, ItemInstance canteen, out string? reason)
         {
             var cfg = CanteenOf(canteen);
@@ -65,7 +65,7 @@ namespace Survival.Core.Engine
             return max;
         }
 
-        /// <summary>装水：count 份 500 毫升水卡 → 水壶（0 分钟）。整份等量转移，不改水种、不改重量总和。</summary>
+        /// <summary>装水：count 份水卡（每份 100 毫升）→ 水壶（0 分钟）。整份等量转移，不改水种、不改重量总和。</summary>
         private ActionResult FillCanteen(GameState s, InstantRequest r)
         {
             var water = FindItem(s, r.InstanceId);
@@ -88,7 +88,7 @@ namespace Survival.Core.Engine
             return ActionResult.Success();
         }
 
-        /// <summary>最多能倒出几份 500 毫升水卡到 zone（随身/当前地面）；不能倒时给原因。不足 500 毫升的剩余只能直接喝。</summary>
+        /// <summary>最多能倒出几份水卡（每份 100 毫升）到 zone（随身/当前地面）；不能倒时给原因。不足 100 毫升的尾水为「水分不足。」（B56 Q929）。</summary>
         public int MaxPourCanteen(GameState s, ItemInstance canteen, string zone, out string? reason)
         {
             var cfg = CanteenOf(canteen);
@@ -98,7 +98,7 @@ namespace Survival.Core.Engine
             if (canteen.LiquidId == null || canteen.LiquidMl <= 0) { reason = "水壶是空的"; return 0; }
             var unit = _items[canteen.LiquidId].UnitVolumeMl ?? cfg!.TransferMl;
             var n = canteen.LiquidMl / unit;
-            if (n < 1) { reason = $"壶里只剩{canteen.LiquidMl}毫升，不够倒成一份{unit}毫升水卡（可以直接喝）"; return 0; }
+            if (n < 1) { reason = DrinkCopy.Short; return 0; }
             if (zone == ItemInstance.Carried)
             {
                 // 进随身成为水卡：重量不变时（壶在随身）只看卡位；壶在地面时还要看重量
@@ -117,7 +117,7 @@ namespace Survival.Core.Engine
             return n;
         }
 
-        /// <summary>倒出：水壶 → count 份 500 毫升水卡到随身/当前地面（0 分钟）。</summary>
+        /// <summary>倒出：水壶 → count 份水卡（每份 100 毫升）到随身/当前地面（0 分钟）。</summary>
         private ActionResult PourCanteen(GameState s, InstantRequest r)
         {
             var canteen = FindItem(s, r.InstanceId);
@@ -142,40 +142,5 @@ namespace Survival.Core.Engine
             UpdateFlags(s);
             return ActionResult.Success();
         }
-
-        /// <summary>直接从水壶喝一口能否开始；能为 null（Use 校验里调用）。</summary>
-        private string? CanteenSipBlocked(ItemInstance c)
-        {
-            var cfg = CanteenOf(c)!;
-            if (c.LiquidId == null || c.LiquidMl <= 0) return "水壶是空的";
-            if (c.LiquidMl < cfg.SipMl) return $"壶里不足{cfg.SipMl}毫升";
-            return null;
-        }
-
-        /// <summary>水壶一口的效果（Use 开始时一次结清）：扣 250 毫升，水分+15；脏水必定腹泻 12 小时（不按半份免风险）。</summary>
-        private void ApplyCanteenSip(GameState s, ItemInstance c, List<string> parts)
-        {
-            ApplyCanteenEffect(s, c, s.Player, parts, false);
-            parts.Add($"壶里剩{CanteenLabel(c)}");
-        }
-
-        /// <summary>水壶一口落到指定角色（B28 R12）：扣 250 毫升，水分与腹泻写到 actor。actualDelta 见 ApplyUseEffect。</summary>
-        private void ApplyCanteenEffect(GameState s, ItemInstance c, ActorState actor, List<string> parts, bool actualDelta)
-        {
-            var cfg = CanteenOf(c)!;
-            var liquid = c.LiquidId!;
-            c.LiquidMl -= cfg.SipMl;
-            if (c.LiquidMl <= 0) { c.LiquidMl = 0; c.LiquidId = null; }
-            AddUseStat(actor, StatId.Hydration, "水分", cfg.SipHydration, parts, actualDelta);
-            if (_items[liquid].Use?.CausesDiarrhea == true)
-            {
-                actor.DiarrheaUntil = s.GameMinute + Config.ItemActions.DiarrheaMinutes;
-                parts.Add($"出现腹泻（{Clock.Duration(Config.ItemActions.DiarrheaMinutes)}）");
-            }
-        }
-
-        /// <summary>界面用：从水壶喝一口的按钮文字“喝一口（净水250毫升）”。</summary>
-        public string CanteenSipText(ItemInstance c) =>
-            c.LiquidId == null ? "喝一口（壶空）" : $"喝一口（{ItemName(c.LiquidId)}{CanteenOf(c)!.SipMl}毫升）";
     }
 }

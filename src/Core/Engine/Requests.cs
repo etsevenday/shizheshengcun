@@ -24,7 +24,7 @@ namespace Survival.Core.Engine
         /// B13b 试玩修复：原键漏了 BareHands，“改用徒手开始”按钮读到带工具的缓存预估，显示了用工具后的工时。
         /// </summary>
         public string PreviewKey =>
-            $"{Type}|{TargetId}|{InstanceId}|{Minutes}|{ToolInstanceId}|{PotInstanceId}|{BatchCount}|{string.Join(",", PreferredInstanceIds)}|{(BareHands ? "bare" : "")}|{(ConfirmExpedition ? "exp" : "")}|{PatchInstanceId}|{Feeding?.Key}";
+            $"{Type}|{TargetId}|{InstanceId}|{Minutes}|{ToolInstanceId}|{PotInstanceId}|{BatchCount}|{string.Join(",", PreferredInstanceIds)}|{(BareHands ? "bare" : "")}|{(ConfirmExpedition ? "exp" : "")}|{PatchInstanceId}|{Feeding?.Key}|{WaterUnits}";
         /// <summary>
         /// 移动时确认开始地牢远征（R03 D3，B21）：在入口缓冲 01 第一次走向危险房间必须带它，移动开始时原子提交远征；其他移动忽略。
         /// </summary>
@@ -37,6 +37,8 @@ namespace Survival.Core.Engine
         public string? RequestId { get; set; }
         /// <summary>给同行者吃喝（B28，Q232）：非空时这次 Use 的效果落到目标本人，校验与文字走 FeedRequest 一路。</summary>
         public FeedRequest? Feeding { get; set; }
+        /// <summary>B56（S10／S12 文首 B53a Q929）：饮水选的整数单位 N（每单位 100 毫升）；默认 1。非饮水的 Use 忽略。</summary>
+        public int WaterUnits { get; set; } = 1;
 
         public static ActionRequest Travel(string locationId, bool confirmExpedition = false) => new ActionRequest { Type = ActionType.Travel, TargetId = locationId, ConfirmExpedition = confirmExpedition };
         public static ActionRequest Explore() => new ActionRequest { Type = ActionType.Explore };
@@ -55,8 +57,8 @@ namespace Survival.Core.Engine
         public static ActionRequest Wait(int minutes) => new ActionRequest { Type = ActionType.Wait, Minutes = minutes };
         public static ActionRequest Rest(int minutes) => new ActionRequest { Type = ActionType.Rest, Minutes = minutes };
         public static ActionRequest Sleep(int minutes) => new ActionRequest { Type = ActionType.Sleep, Minutes = minutes };
-        public static ActionRequest UseInstance(int instanceId) => new ActionRequest { Type = ActionType.Use, InstanceId = instanceId };
-        public static ActionRequest UseItem(string itemId) => new ActionRequest { Type = ActionType.Use, TargetId = itemId };
+        public static ActionRequest UseInstance(int instanceId, int waterUnits = 1) => new ActionRequest { Type = ActionType.Use, InstanceId = instanceId, WaterUnits = waterUnits };
+        public static ActionRequest UseItem(string itemId, int waterUnits = 1) => new ActionRequest { Type = ActionType.Use, TargetId = itemId, WaterUnits = waterUnits };
         /// <summary>给同行者吃喝一份（B28）：与主角食饮同一 5 分钟事务，开始时原子扣一份并给效果。</summary>
         public static ActionRequest FeedCompanion(FeedRequest f) => new ActionRequest { Type = ActionType.Use, Feeding = f, RequestId = f.RequestId };
         /// <summary>饱饱吞噬融合指定的活性物质实例（R07 §4）。</summary>
@@ -96,8 +98,10 @@ namespace Survival.Core.Engine
         public string? ConfirmStamp { get; set; }
         /// <summary>幂等请求号：连点、读档只结算一次。</summary>
         public string? RequestId { get; set; }
+        /// <summary>B56（S12 文首 B53a Q929）：饮水选的整数单位 N（每单位 100 毫升，与主角自饮同一选择量）；默认 1，食物忽略。</summary>
+        public int WaterUnits { get; set; } = 1;
 
-        internal string Key => $"{TargetActorId}|{SourceActorId}|{InstanceId}|{PotInstanceId}|{WaterItemId}|{ConfirmStamp}";
+        internal string Key => $"{TargetActorId}|{SourceActorId}|{InstanceId}|{PotInstanceId}|{WaterItemId}|{ConfirmStamp}|{WaterUnits}";
     }
 
     public enum FeedSourceKind { Food, Water, Canteen, PotFood, PotWater }
@@ -115,9 +119,9 @@ namespace Survival.Core.Engine
         public FeedSourceKind Kind { get; set; }
         /// <summary>出物的随身锅实例号；不在锅里为 null。</summary>
         public int? PotInstanceId { get; set; }
-        /// <summary>可用份数：食物与水卡为堆叠数，锅水为未预留的 500 毫升份数，水壶为可喝的 250 毫升次数。</summary>
+        /// <summary>可用份数：食物为堆叠数；水卡、锅水、水壶为 floor(合法未锁未预留水量／100) 的可饮份数（B56 Q929）。</summary>
         public int Portions { get; set; }
-        /// <summary>这一份消耗的毫升（水卡与锅水 500、水壶 250）；食物为 0。</summary>
+        /// <summary>每份毫升（水卡、锅水、水壶都按水种每份 100，B56 Q929）；食物为 0。</summary>
         public int PortionMl { get; set; }
         /// <summary>现有水量毫升（水卡为这一堆的总量，锅水为未预留水量，水壶为壶内水量）；食物为 0。</summary>
         public int LiquidMl { get; set; }
@@ -224,10 +228,10 @@ namespace Survival.Core.Engine
         /// <summary>Q113：plan 为浮窗展示的明细（<see cref="CharcoalLoadInfo.Plan"/>），确认时内核逐堆重验。</summary>
         public static InstantRequest LoadCharcoal(CharcoalPlan? plan = null) =>
             new InstantRequest { Kind = InstantKind.LoadCharcoal, CharcoalPlan = plan?.Clone() };
-        /// <summary>B16 分量水壶：count 份 500 毫升水卡装进水壶。</summary>
+        /// <summary>B16 分量水壶：count 份水卡（每份 100 毫升，B56）装进水壶。</summary>
         public static InstantRequest FillCanteen(int waterInstanceId, int canteenInstanceId, int count = 1) =>
             new InstantRequest { Kind = InstantKind.FillCanteen, InstanceId = waterInstanceId, TargetInstanceId = canteenInstanceId, Count = count };
-        /// <summary>B16 分量水壶：倒出 count 份 500 毫升水卡到随身或当前地面。</summary>
+        /// <summary>B16 分量水壶：倒出 count 份水卡（每份 100 毫升，B56）到随身或当前地面。</summary>
         public static InstantRequest PourCanteen(int canteenInstanceId, string zone, int count = 1) =>
             new InstantRequest { Kind = InstantKind.PourCanteen, InstanceId = canteenInstanceId, Zone = zone, Count = count };
         /// <summary>B16 复合锅食谱：在当前火堆里的锅中投料开做（ProcessId 为锅食谱进程，如 pot_hardtack；TargetInstanceId 为锅）。</summary>
@@ -415,6 +419,8 @@ namespace Survival.Core.Engine
         public List<string> Overflow { get; set; } = new List<string>();
         /// <summary>给同行者吃喝（B28）的结构化预览；其他行动与不能开始时为 null。Overflow 此时按目标本人算。</summary>
         public FeedPreviewInfo? Feed { get; set; }
+        /// <summary>B56 自选饮水（主角自饮）：所选毫升、理论补水、耗时三行；不是饮水或不能开始时为 null。</summary>
+        public DrinkPreviewInfo? Drink { get; set; }
         /// <summary>“接近上限：饱食溢出12，溢出部分浪费。”；没有溢出为 null。</summary>
         public string? OverflowText => Overflow.Count > 0 ? $"接近上限：{string.Join("，", Overflow)}，溢出部分浪费。" : null;
     }

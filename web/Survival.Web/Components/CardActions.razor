@@ -63,6 +63,11 @@
                 <div class="ca-note">战斗中不能进食饮水，脱战后再补给</div>
             }
         }
+        else if (m.UseId.HasValue && e.Item(m.ItemId).Kind == "water")
+        {
+            @* B56（S10／S12 文首 B53a Q929）：水卡与锅里的水走自选饮水窗（选整数份、每份100毫升、一次5分钟） *@
+            <DrinkBox InstanceId="@m.UseId.Value" />
+        }
         else if (m.UseId.HasValue)
         {
             var cfg = e.Item(m.ItemId);
@@ -103,19 +108,12 @@
 
         @if (m.Instance is ItemInstance cInst && e.IsCanteen(cInst))
         {
-            @* B16（R49，S10 X4、A07 X1.5）：分量水壶——壶内直接喝 250 毫升；装入/倒出按 500 毫升整份水卡；只装同一种水 *@
+            @* B16（R49，S10 X4、A07 X1.5）：分量水壶只装同一种水。B56（S10 文首 B53a Q929）：壶内饮用走自选饮水窗（N×100毫升、一次5分钟），不再固定一口250；
+               装入／倒出按 02 Q978 A 暂用数量窗（标题「装水」「倒出」，默认1份、旁写「{毫升}毫升」、按钮「确认{数量}」）；说明句按 Q976 A 暂用新稿 *@
             var cid = cInst.InstanceId;
             var cc = e.Item(cInst.ItemId).Canteen!;
-            var sipReq = ActionRequest.UseInstance(cid);
-            var sipWhy = G.Running ? "行动进行中" : e.CanStart(s, sipReq);
-            <div class="ca-note" data-canteen title="只装同一种水，不混装；装入/倒出按500毫升整份；壶里不足500毫升时只能直接喝；不能放进火堆或锅里">@e.CanteenLabel(cInst) · 只装同种水，按500毫升装倒</div>
-            <div class="ca-use-row">
-                <button type="button" class="ca-use @(cInst.LiquidId == "dirty_water" ? "risky" : "")" disabled="@(sipWhy != null || using_)"
-                        title="@(sipWhy ?? $"喝{cc.SipMl}毫升：5分钟，水分+{cc.SipHydration}{(cInst.LiquidId == "dirty_water" ? "；脏水必定腹泻12小时" : "")}")"
-                        @onclick="() => Use(cid)">@e.CanteenSipText(cInst)</button>
-                <span class="ca-use-note">水分+@cc.SipHydration · @(e.Config.ItemActions.UseMinutes)分钟@(cInst.LiquidId == "dirty_water" ? " · ⚠ 脏水必定腹泻12小时" : "")</span>
-            </div>
-            @if (sipWhy != null && cInst.LiquidMl > 0) { <div class="ca-note bad">喝一口：@sipWhy</div> }
+            <div class="ca-note" data-canteen title="只装同一种水，不混装；@(CanteenRuleNote)不能放进火堆或锅里">@e.CanteenLabel(cInst) · 只装同种水；@CanteenRuleNote</div>
+            @if (cInst.LiquidId != null && cInst.LiquidMl > 0) { <DrinkBox InstanceId="@cid" /> }
             <div class="tbar-row keep-row canteen-ops">
                 @foreach (var wid in cc.Accepts)
                 {
@@ -124,17 +122,44 @@
                     if (src == null) continue;
                     var fmax = e.MaxFillCanteen(s, src, cInst, out var fwhy);
                     var srcId = src.InstanceId;
-                    <button type="button" class="tbar-go alt" disabled="@(fwhy != null || moveBusy)" title="@(fwhy ?? $"从{(src.IsCarried ? "随身" : "地面")}{e.ItemName(wid)}装入1份（500毫升），不耗时")"
-                            @onclick="() => G.Instant(InstantRequest.FillCanteen(srcId, cid, 1))">装入@(e.ItemName(wid))500</button>
+                    var fkey = $"fill:{srcId}";
+                    <button type="button" class="tbar-go alt" disabled="@(fwhy != null || moveBusy)" aria-expanded="@(_cOp == fkey ? "true" : "false")" title="@(fwhy ?? CanteenFillTitle)"
+                            @onclick="() => OpenCanteenOp(fkey)">装入@(e.ItemName(wid))</button>
                 }
                 @foreach (var zone in new[] { ItemInstance.Carried, s.Ground })
                 {
                     var z = zone;
                     var pmax = e.MaxPourCanteen(s, cInst, z, out var pwhy);
-                    <button type="button" class="tbar-go alt" disabled="@(pwhy != null || moveBusy)" title="@(pwhy ?? "倒出1份500毫升水卡，不耗时")"
-                            @onclick="() => G.Instant(InstantRequest.PourCanteen(cid, z, 1))">倒出到@(z == ItemInstance.Carried ? "随身" : "地面")</button>
+                    var pkey = $"pour:{z}";
+                    <button type="button" class="tbar-go alt" disabled="@(pwhy != null || moveBusy)" aria-expanded="@(_cOp == pkey ? "true" : "false")" title="@(pwhy ?? CanteenPourTitle)"
+                            @onclick="() => OpenCanteenOp(pkey)">倒出到@(z == ItemInstance.Carried ? "随身" : "地面")</button>
                 }
             </div>
+            @if (_cOp != null)
+            {
+                var fill = _cOp.StartsWith("fill:");
+                var fsrc = fill && int.TryParse(_cOp.Substring(5), out var fsid) ? e.FindItem(s, fsid) : null;
+                var pzone = fill ? null : _cOp.Substring(5);
+                string? owhy = null;
+                var omax = fill ? (fsrc == null ? 0 : e.MaxFillCanteen(s, fsrc, cInst, out owhy)) : e.MaxPourCanteen(s, cInst, pzone!, out owhy);
+                if (fill && fsrc == null) owhy = DiscardCopy.Changed;
+                var unitMl = e.Item(fill ? (fsrc?.ItemId ?? "clean_water") : (cInst.LiquidId ?? "clean_water")).UnitVolumeMl ?? cc.TransferMl;
+                var on = CParse();
+                var oinvalid = owhy == null && (on < 1 || on > omax);
+                <div class="ca-drink" role="group" aria-label="@(fill ? CanteenFillTitle : CanteenPourTitle)" data-canteen-op="@(fill ? "fill" : "pour")">
+                    <div class="ca-drink-head"><b>@(fill ? CanteenFillTitle : CanteenPourTitle)</b></div>
+                    <div class="tbar-row">
+                        <button type="button" class="tbar-step" aria-label="减少" @onclick="() => CStep(-1, omax)">−</button>
+                        <input type="text" inputmode="numeric" value="@_cText" @oninput="COnInput" aria-label="@(fill ? CanteenFillTitle : CanteenPourTitle)" />
+                        <button type="button" class="tbar-step" aria-label="增加" @onclick="() => CStep(1, omax)">+</button>
+                        <span class="tbar-qlabel">@DrinkCopy.AmountText(Math.Max(0, on) * unitMl)</span>
+                        <button type="button" class="tbar-go" data-enter disabled="@(owhy != null || oinvalid || moveBusy)"
+                                @onclick="() => CanteenGo(cid, fill, fsrc?.InstanceId, pzone, on)">确认@(on)</button>
+                    </div>
+                    @if (owhy != null) { <div class="ca-note bad">@owhy</div> }
+                    else if (oinvalid) { <div class="ca-note bad">@FacilityQty(omax)</div> }
+                </div>
+            }
         }
 
         @if ((m.UseId ?? (m.Instance is ItemInstance fi && e.IsCanteen(fi) ? fi.InstanceId : null)) is int feedId && e.FeedEntry(s, feedId) is FeedEntryInfo fe)
@@ -445,6 +470,36 @@
 
     private string BatchTitle(ItemBatch b) =>
         $"这一批×{b.Count}：{BatchFresh(b)}{(string.IsNullOrEmpty(b.GrantEventId) ? "" : " · 来源单独成批")}{(b.Reserved ? " · 正被当前行动预留" : "")}";
+
+    // B56（Q976 A 暂用）：水壶说明里含 500／250 的分句换成 Q929 系统说明新稿
+    private const string CanteenRuleNote = "水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。";
+    // B56（Q978 A 暂用）：水壶装入／倒出数量窗标题沿原专窗动作名
+    private const string CanteenFillTitle = "装水";
+    private const string CanteenPourTitle = "倒出";
+    private string? _cOp;
+    private string _cText = "1";
+
+    private static string FacilityQty(int max) => GameEngine.QtyRangeText(max);
+
+    private void OpenCanteenOp(string key)
+    {
+        _cOp = _cOp == key ? null : key;
+        _cText = "1";
+    }
+
+    private int CParse() => int.TryParse(_cText.Trim(), out var v) ? v : 0;
+
+    private void COnInput(ChangeEventArgs ev) => _cText = new string((ev.Value?.ToString() ?? "").Where(char.IsDigit).ToArray());
+
+    private void CStep(int d, int max) => _cText = Math.Clamp(CParse() + d, 1, Math.Max(1, max)).ToString();
+
+    private void CanteenGo(int canteenId, bool fill, int? srcId, string? zone, int n)
+    {
+        if (G.E.IsBusy(G.S) || G.Running) return;
+        var res = fill && srcId is int sid ? G.Instant(InstantRequest.FillCanteen(sid, canteenId, n))
+            : !fill && zone != null ? G.Instant(InstantRequest.PourCanteen(canteenId, zone, n)) : null;
+        if (res != null && res.Ok) { _cOp = null; _cText = "1"; }
+    }
 
     private ElementReference input;
     private string text = "1";

@@ -305,8 +305,8 @@ namespace Survival.Core.Config
     }
 
     /// <summary>
-    /// 分量水壶（S10 X4、A07 X1.5，B16 R49）：一根物资卡、无嵌套子物；只装同种脏/净水，装入/倒出按 500 毫升整份水卡，
-    /// 壶内按 250 毫升一口直接饮用；不受热、不放火堆、不装食材。水量存在实例 LiquidId/LiquidMl 上。
+    /// 分量水壶（S10 X4、A07 X1.5，B16 R49）：一根物资卡、无嵌套子物；只装同种脏/净水，装入/倒出按水卡每份体积整份（B56 起 100 毫升），
+    /// 壶内按自选 N×100 毫升饮用（B56 Q929，取代固定一口 250 毫升）；不受热、不放火堆、不装食材。水量存在实例 LiquidId/LiquidMl 上。
     /// </summary>
     /// <summary>野外修补包品阶（B22b，Q168）：rank 0 白 / 1 绿 / 2 蓝；maxDurability 每包整数耐久上限。</summary>
     public sealed class FieldPatchConfig
@@ -318,12 +318,12 @@ namespace Survival.Core.Config
     public sealed class CanteenConfig
     {
         public int CapacityMl { get; set; } = 2000;
-        /// <summary>直接饮用一口的分量（250 毫升）。</summary>
+        /// <summary>旧固定一口的分量。B56（Q929）起停用：饮水按水种每份 100 毫升自选 N 单位，引擎不再读它（配置里留作合同 sipMl=100 对照）。</summary>
         public int SipMl { get; set; } = 250;
-        /// <summary>装入/倒出水卡的整份（500 毫升）。</summary>
+        /// <summary>装入/倒出水卡的整份（B56 起 100 毫升，须等于可装水种的每份体积）。</summary>
         public int TransferMl { get; set; } = 500;
         public List<string> Accepts { get; set; } = new List<string>();
-        /// <summary>一口的水分（W+15）。</summary>
+        /// <summary>旧一口的水分。B56 起停用：饮水补水按水种 use.hydration×N（每 100 毫升 6）。</summary>
         public double SipHydration { get; set; } = 15;
         /// <summary>每毫升克重（水 1g/ml，满壶 2.40kg）。</summary>
         public double GramsPerMl { get; set; } = 1;
@@ -548,7 +548,7 @@ namespace Survival.Core.Config
         public string OutputId { get; set; } = "";
         public List<int> AllowedBatchMl { get; set; } = new List<int>();
         public int HeatMinutes { get; set; }
-        /// <summary>每份完成时消耗的净水（水煮 500 毫升）。</summary>
+        /// <summary>每份完成时消耗的净水（B56 起水煮／复煮 1000 毫升，烘制硬饼 500，炖食 1000）。</summary>
         public int WaterCostMl { get; set; }
         public string RequiredOwner { get; set; } = "";
         public string? RequiredLiquid { get; set; }

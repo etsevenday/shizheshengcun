@@ -12,19 +12,21 @@ namespace Survival.Core.Engine
     public static class FeedCopy
     {
         public const string ConfirmFood = "给{目标}食用：{物品}×1 · 5分钟";
-        public const string ConfirmWater = "给{目标}饮用：{水种}×1 · 5分钟";
-        public const string ConfirmCanteen = "给{目标}饮用：{水壶}内{水种}250毫升 · 5分钟";
+        // B56（S12 文首 B53a Q929 本批逐字稿「食饮确认的单次水量摘要 {水种}{所选毫升}毫升」）：只把旧固定 500／250 水量换成所选毫升，人物与来源模板不变
+        public const string ConfirmWater = "给{目标}饮用：{水种}{所选毫升}毫升 · 5分钟";
+        public const string ConfirmCanteen = "给{目标}饮用：{水壶}内{水种}{所选毫升}毫升 · 5分钟";
         public const string ResultFood = "{目标}食用了{物品}×1（取自{出物人}的随身物品）：{变化}。";
         public const string ResultPotFood = "{目标}食用了{物品}×1（取自{出物人}的随身锅#{锅号}）：{变化}。";
-        public const string ResultWater = "{目标}饮用了{水种}×1（取自{出物人}的随身物品）：{变化}。";
-        public const string ResultPotWater = "{目标}饮用了{水种}×1（取自{出物人}的随身锅#{锅号}）：{变化}。";
-        public const string ResultCanteen = "{目标}饮用了{水壶}内的{水种}250毫升（取自{出物人}的随身物品）：{变化}；壶内剩余{壶内水量}。";
+        public const string ResultWater = "{目标}饮用了{水种}{所选毫升}毫升（取自{出物人}的随身物品）：{变化}。";
+        public const string ResultPotWater = "{目标}饮用了{水种}{所选毫升}毫升（取自{出物人}的随身锅#{锅号}）：{变化}。";
+        public const string ResultCanteen = "{目标}饮用了{水壶}内的{水种}{所选毫升}毫升（取自{出物人}的随身物品）：{变化}；壶内剩余{壶内水量}。";
         public const string NoTarget = "请先选择一名同行者。";
         public const string InvalidTarget = "当前无法给{目标}吃喝：目标不在同地点、同区域的同行队伍中。";
         public const string DeadTarget = "无法给{目标}吃喝：目标已死亡。";
         public const string InvalidOwner = "只能使用你或{目标}随身的食物和饮水。";
         public const string InvalidItem = "这件物品不能用于给同行者食用或饮用。";
-        public const string InsufficientPotWater = "锅内{水种}不足500毫升，无法饮用1份。";
+        /// <summary>B56（Q929）：水量不足沿「水分不足。」（取代旧「锅内{水种}不足500毫升，无法饮用1份。」）。</summary>
+        public const string InsufficientPotWater = DrinkCopy.Short;
         public const string Battle = "战斗中无法给同行者吃喝。";
         public const string Extracting = "正在撤出，无法给同行者吃喝。";
         public const string Changed = "当前情况已变化，请重新选择后再操作。";
@@ -77,6 +79,8 @@ namespace Survival.Core.Engine
             public ItemInstance Item = null!;
             public ItemInstance? Pot;
             public FeedSourceKind Kind;
+            /// <summary>B56：饮水所选单位 N（食物为 1）。</summary>
+            public int Units = 1;
         }
 
         // ───────────── 结算 ─────────────
@@ -114,7 +118,7 @@ namespace Survival.Core.Engine
         {
             var actor = s.Actors[f.TargetId];
             var parts = new List<string>();
-            if (f.Kind == FeedSourceKind.Canteen) ApplyCanteenEffect(s, f.Item, actor, parts, true);
+            if (IsWaterKind(f.Kind)) ApplyDrink(s, f.Item, actor, f.Units, parts, true);
             else
             {
                 var use = _items[f.Item.ItemId].Use!;
@@ -125,29 +129,36 @@ namespace Survival.Core.Engine
             return string.Join("，", parts);
         }
 
+        private static bool IsWaterKind(FeedSourceKind k) => k == FeedSourceKind.Water || k == FeedSourceKind.PotWater || k == FeedSourceKind.Canteen;
+
+        /// <summary>本次所选毫升 N×每份（水种每份体积）。</summary>
+        private int FeedMl(FeedPlan f) => f.Units * (_items[DrinkLiquidOf(f.Item) ?? f.Item.ItemId].UnitVolumeMl ?? 0);
+
         private string FeedConfirmText(GameState s, FeedPlan f)
         {
             var target = ("目标", ActorDisplayName(s, f.TargetId));
+            var ml = ("所选毫升", IsWaterKind(f.Kind) ? FeedMl(f).ToString() : "");
             return f.Kind switch
             {
-                FeedSourceKind.Canteen => FeedCopy.Fill(FeedCopy.ConfirmCanteen, target, ("水壶", ItemName(f.Item.ItemId)), ("水种", ItemName(f.Item.LiquidId!))),
-                FeedSourceKind.Water or FeedSourceKind.PotWater => FeedCopy.Fill(FeedCopy.ConfirmWater, target, ("水种", ItemName(f.Item.ItemId))),
+                FeedSourceKind.Canteen => FeedCopy.Fill(FeedCopy.ConfirmCanteen, target, ("水壶", ItemName(f.Item.ItemId)), ("水种", ItemName(f.Item.LiquidId!)), ml),
+                FeedSourceKind.Water or FeedSourceKind.PotWater => FeedCopy.Fill(FeedCopy.ConfirmWater, target, ("水种", ItemName(f.Item.ItemId)), ml),
                 _ => FeedCopy.Fill(FeedCopy.ConfirmFood, target, ("物品", ItemName(f.Item.ItemId))),
             };
         }
 
         /// <summary>结果句。f.Item 已结算：物名与水壶水种用结算前取的（喝空后实例上已清空）。</summary>
-        private string FeedResultText(GameState s, FeedPlan f, string itemName, string? canteenLiquid, string change)
+        private string FeedResultText(GameState s, FeedPlan f, string itemName, string? canteenLiquid, string change, int ml)
         {
             var target = ("目标", ActorDisplayName(s, f.TargetId));
+            var chosen = ("所选毫升", ml.ToString());
             var source = ("出物人", ActorDisplayName(s, f.SourceId));
             var delta = ("变化", change);
             var pot = ("锅号", f.Pot?.InstanceId.ToString() ?? "");
             return f.Kind switch
             {
-                FeedSourceKind.Canteen => FeedCopy.Fill(FeedCopy.ResultCanteen, target, ("水壶", itemName), ("水种", ItemName(canteenLiquid!)), source, delta, ("壶内水量", CanteenLabel(f.Item))),
-                FeedSourceKind.Water => FeedCopy.Fill(FeedCopy.ResultWater, target, ("水种", itemName), source, delta),
-                FeedSourceKind.PotWater => FeedCopy.Fill(FeedCopy.ResultPotWater, target, ("水种", itemName), source, pot, delta),
+                FeedSourceKind.Canteen => FeedCopy.Fill(FeedCopy.ResultCanteen, target, ("水壶", itemName), ("水种", ItemName(canteenLiquid!)), chosen, source, delta, ("壶内水量", CanteenLabel(f.Item))),
+                FeedSourceKind.Water => FeedCopy.Fill(FeedCopy.ResultWater, target, ("水种", itemName), chosen, source, delta),
+                FeedSourceKind.PotWater => FeedCopy.Fill(FeedCopy.ResultPotWater, target, ("水种", itemName), chosen, source, pot, delta),
                 FeedSourceKind.PotFood => FeedCopy.Fill(FeedCopy.ResultPotFood, target, ("物品", itemName), source, pot, delta),
                 _ => FeedCopy.Fill(FeedCopy.ResultFood, target, ("物品", itemName), source, delta),
             };
@@ -158,8 +169,9 @@ namespace Survival.Core.Engine
         {
             var name = ItemName(f.Item.ItemId);
             var liquid = f.Item.LiquidId;
+            var ml = IsWaterKind(f.Kind) ? FeedMl(f) : 0;
             var change = ConsumeFeed(s, f);
-            Emit(s, GameEventKind.ActionCompleted, FeedResultText(s, f, name, liquid, change));
+            Emit(s, GameEventKind.ActionCompleted, FeedResultText(s, f, name, liquid, change, ml));
         }
 
         // ───────────── 校验 ─────────────
@@ -213,7 +225,9 @@ namespace Survival.Core.Engine
             FeedSourceKind kind;
             if (cfg.Canteen != null)
             {
-                if (CanteenSipBlocked(inst) is string sipWhy) return sipWhy;
+                if (inst.LiquidId == null || inst.LiquidMl <= 0) return "水壶是空的";
+                // B56（Q929）：不足一单位（100 毫升）或所选超过可饮量为「水分不足。」
+                if (DrinkUnitsBlocked(s, inst, f.WaterUnits) is string cWhy) return cWhy;
                 kind = FeedSourceKind.Canteen;
             }
             else
@@ -227,9 +241,10 @@ namespace Survival.Core.Engine
                 if (!IsFeedableUse(cfg)) return FeedCopy.InvalidItem;
                 kind = pot != null ? (IsLiquid(inst) ? FeedSourceKind.PotWater : FeedSourceKind.PotFood)
                     : cfg.Kind == "water" ? FeedSourceKind.Water : FeedSourceKind.Food;
+                if (IsWaterKind(kind) && DrinkUnitsBlocked(s, inst, f.WaterUnits) is string wWhy) return wWhy;
             }
 
-            var p = new FeedPlan { TargetId = f.TargetActorId, SourceId = f.SourceActorId, Item = inst, Pot = pot, Kind = kind };
+            var p = new FeedPlan { TargetId = f.TargetActorId, SourceId = f.SourceActorId, Item = inst, Pot = pot, Kind = kind, Units = IsWaterKind(kind) ? f.WaterUnits : 1 };
             if (stamped && f.ConfirmStamp != FeedStamp(s, p)) return FeedCopy.Changed;
             plan = p;
             return null;
@@ -313,14 +328,12 @@ namespace Survival.Core.Engine
             var i = f.Item;
             switch (f.Kind)
             {
+                // B56（Q929）：可饮份数＝floor(该来源合法自由水量／100)；毫升是物理量（锅水为未预留水量）
                 case FeedSourceKind.Canteen:
-                    var sip = CanteenOf(i)!.SipMl;
-                    return (i.LiquidMl / sip, sip, i.LiquidMl);
                 case FeedSourceKind.PotWater:
-                    return (PotFreeWaterUnits(s, i), PotConfig(f.Pot!).UnitMl, PotFreeMl(s, f.Pot!));
                 case FeedSourceKind.Water:
-                    var ml = _items[i.ItemId].UnitVolumeMl ?? 0;
-                    return (i.Count, ml, i.Count * ml);
+                    var src = DrinkSource(s, i)!;
+                    return (src.MaxUnits, src.UnitMl, f.Kind == FeedSourceKind.PotWater ? PotFreeMl(s, f.Pot!) : src.FreeMl);
                 default:
                     return (i.Count, 0, 0);
             }
@@ -328,8 +341,7 @@ namespace Survival.Core.Engine
 
         private ItemUseConfig FeedUse(FeedPlan f)
         {
-            var cfg = _items[f.Item.ItemId];
-            return cfg.Canteen != null ? new ItemUseConfig { Hydration = cfg.Canteen.SipHydration } : cfg.Use!;
+            return IsWaterKind(f.Kind) ? DrinkUse(DrinkLiquidOf(f.Item)!, f.Units) : _items[f.Item.ItemId].Use!;
         }
 
         /// <summary>FillStatic 的 Use 分支：结构化预览。效果在副本上走真实结算函数，与确认时同一路径。</summary>
@@ -345,8 +357,9 @@ namespace Survival.Core.Engine
             var sim = new FeedPlan
             {
                 TargetId = f.TargetId, SourceId = f.SourceId, Kind = f.Kind, Item = FindItem(c, f.Item.InstanceId)!,
-                Pot = f.Pot == null ? null : FindItem(c, f.Pot.InstanceId),
+                Pot = f.Pot == null ? null : FindItem(c, f.Pot.InstanceId), Units = f.Units,
             };
+            var ml = IsWaterKind(f.Kind) ? FeedMl(f) : 0;
             var change = ConsumeFeed(c, sim);
             var after = c.Actors[f.TargetId].Stats;
             p.Feed = new FeedPreviewInfo
@@ -356,12 +369,12 @@ namespace Survival.Core.Engine
                 {
                     FeedSourceKind.Canteen => sim.Item.LiquidMl,
                     FeedSourceKind.PotWater => PotFreeMl(c, sim.Pot!),
-                    FeedSourceKind.Water => (f.Item.Count - 1) * (cfg.UnitVolumeMl ?? 0),
+                    FeedSourceKind.Water => (f.Item.Count - f.Units) * (cfg.UnitVolumeMl ?? 0),
                     _ => 0,
                 },
                 TargetBefore = actor.Stats.Clone(), TargetAfterImmediate = after.Clone(), TargetAfter = after.Clone(),
                 ChangeText = change,
-                ResultText = FeedResultText(c, sim, ItemName(f.Item.ItemId), f.Item.LiquidId, change),
+                ResultText = FeedResultText(c, sim, ItemName(f.Item.ItemId), f.Item.LiquidId, change, ml),
             };
         }
     }

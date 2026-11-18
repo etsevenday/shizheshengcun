@@ -1,0 +1,126 @@
+@inherits GameComponent
+
+@* B56（S10／S12／S14 文首 2026-11-17 B53a §饮水自选量，一次固定5分钟；验收 W100-Q929-04—06、W56-Q974-03）：
+   原饮用入口（水卡、锅水、水壶；卡下与暂停层同一处）点开后先选水量：窗口标题「饮水」，默认 1 份（100 毫升），整数步进，旁写「{毫升}毫升」，
+   开始按钮「饮用{毫升}毫升（5分钟）」；右栏（悬停预测）显示「饮水：{水种}{毫升}毫升」「补水：{补水值}」「耗时：5分钟」与同源身体预测。
+   只预览不扣水、不推进时间；开始时内核重验来源与所选量，失败整次不扣。入口文字按 02 Q975 A 暂用「饮用」「饮用（风险）」。 *@
+@{
+    var e = G.E;
+    var s = G.S;
+    var it = e.FindItem(s, InstanceId);
+    var src = it == null ? null : e.DrinkSource(s, it);
+}
+@if (it != null && src != null)
+{
+    var liquidCfg = e.Item(src.LiquidId);
+    var risky = GameEngine.UseRisky(liquidCfg);
+    SyncKey(src);
+    var n = Parse();
+    var req = ActionRequest.UseInstance(InstanceId, n);
+    var p = G.Preview(req);
+    var entryReq = ActionRequest.UseInstance(InstanceId, 1);
+    var entryPreview = G.Preview(entryReq);
+    var entryWhy = G.Running ? "行动进行中" : entryPreview.Ok ? null : entryPreview.Reason;
+    var why = G.Running ? "行动进行中" : p.Ok ? null : p.Reason;
+    var ml = n * src.UnitMl;
+    if (!_open)
+    {
+        <div class="ca-use-row">
+            <button type="button" class="ca-use @(risky ? "risky" : "")" data-drink-entry aria-expanded="false" disabled="@(entryWhy != null)"
+                    title="@(entryWhy ?? DrinkCopy.Title)" @onclick="() => Open(src)">@(EntryText ?? GameEngine.DrinkEntryText(liquidCfg))</button>
+            @if (Note != null) { <span class="ca-use-note">@Note</span> }
+        </div>
+        @if (entryWhy != null) { <div class="ca-note bad">@(EntryText ?? GameEngine.DrinkEntryText(liquidCfg))：@entryWhy</div> }
+    }
+    else
+    {
+        <div class="ca-drink" role="group" aria-label="@DrinkCopy.Title" data-drink>
+            <div class="ca-drink-head"><b>@DrinkCopy.Title</b></div>
+            <div class="tbar-row">
+                <button type="button" class="tbar-step" aria-label="减少" disabled="@(n <= 1)" @onclick="() => Step(-1, src)">−</button>
+                <input type="text" inputmode="numeric" value="@_text" @oninput="ev => OnInput(ev, src)" aria-label="@DrinkCopy.Title" />
+                <button type="button" class="tbar-step" aria-label="增加" disabled="@(n >= src.MaxUnits)" @onclick="() => Step(1, src)">+</button>
+                <span class="tbar-qlabel" data-drink-ml>@DrinkCopy.AmountText(Math.Max(0, ml))</span>
+            </div>
+            <div class="tbar-row">
+                <button type="button" class="tbar-go @(risky ? "risky" : "")" data-enter disabled="@(why != null || _busy)"
+                        @onmouseenter="() => G.Hover(req, DrinkCopy.Title)" @onfocus="() => G.Hover(req, DrinkCopy.Title)"
+                        @onclick="() => Drink(req)">@DrinkCopy.ActionText(Math.Max(0, ml))</button>
+            </div>
+            @if (p.Ok && p.Drink is DrinkPreviewInfo d)
+            {
+                <div class="ca-use-note" data-drink-lines>@string.Join(" · ", d.Lines)</div>
+                @if (p.StatsAfterImmediate != null)
+                {
+                    var before = p.StatsBefore.Get(StatId.Hydration);
+                    var raw = before + d.Hydration;
+                    var max = p.StatsBefore.Max(StatId.Hydration);
+                    var over = raw > max + 1e-9 ? raw - max : 0;
+                    <div class="ca-use-note"><em>@GameEngine.StatName(StatId.Hydration)@Ui.N(before)→@Ui.N(p.StatsAfterImmediate.Get(StatId.Hydration))@(over > 0 ? $"（溢出{Ui.N(over)}）" : "")</em></div>
+                }
+            }
+            @if (e.UseRiskText(liquidCfg) is string risk) { <div class="ca-note risk-line">⚠ @risk</div> }
+            @if (p.OverflowText is string ov) { <div class="ca-note warn">@ov</div> }
+            @if (why != null) { <div class="ca-note bad">@DrinkCopy.ActionText(Math.Max(0, ml))：@why</div> }
+        </div>
+    }
+}
+
+@code {
+    /// <summary>饮水来源实例：水卡一堆、锅里的水、水壶。</summary>
+    [Parameter] public int InstanceId { get; set; }
+    /// <summary>入口按钮文字（暂停层用「饮用{水种}·5分钟」等）；null 为卡下「饮用」／「饮用（风险）」。</summary>
+    [Parameter] public string? EntryText { get; set; }
+    /// <summary>入口旁的效果说明（卡下原效果短注）；null 不显示。</summary>
+    [Parameter] public string? Note { get; set; }
+
+    private bool _open;
+    private bool _busy;
+    private string _text = "1";
+    private string _key = "";
+
+    /// <summary>换了来源（实例或水种）就收起窗口、数量回默认 1（Q929「默认100毫升」）。</summary>
+    private void SyncKey(DrinkSourceInfo src)
+    {
+        var key = $"{InstanceId}|{src.LiquidId}";
+        if (key == _key) return;
+        _key = key;
+        _open = false;
+        _text = "1";
+    }
+
+    private int Parse() => int.TryParse(_text.Trim(), out var v) ? v : 0;
+
+    private void Open(DrinkSourceInfo src)
+    {
+        _open = true;
+        _text = "1";
+        G.Hover(ActionRequest.UseInstance(InstanceId, 1), DrinkCopy.Title);
+    }
+
+    private void OnInput(ChangeEventArgs ev, DrinkSourceInfo src)
+    {
+        _text = new string((ev.Value?.ToString() ?? "").Where(char.IsDigit).ToArray());
+        G.Hover(ActionRequest.UseInstance(InstanceId, Parse()), DrinkCopy.Title);
+    }
+
+    private void Step(int d, DrinkSourceInfo src)
+    {
+        _text = Math.Clamp(Parse() + d, 1, Math.Max(1, src.MaxUnits)).ToString();
+        G.Hover(ActionRequest.UseInstance(InstanceId, Parse()), DrinkCopy.Title);
+    }
+
+    private async Task Drink(ActionRequest r)
+    {
+        if (_busy) return;
+        _busy = true;
+        G.Hover(null);
+        try
+        {
+            await G.StartAction(r);
+            _open = false;
+            _text = "1";
+        }
+        finally { _busy = false; }
+    }
+}

@@ -314,6 +314,8 @@ namespace Survival.Core.Engine
             public RecipeConfig? Recipe;
             public List<ItemInstance> Catalysts = new List<ItemInstance>();
             public ItemInstance? UseItem;
+            /// <summary>B56：本次饮水所选单位 N（每单位 100 毫升）；非饮水为 0。</summary>
+            public int WaterUnits;
             public bool IgniteConsumesWood;
             public ItemInstance? Lighter;
             public List<OutputLine> Outputs = new List<OutputLine>();
@@ -624,14 +626,16 @@ namespace Survival.Core.Engine
                     var cfg = _items[inst.ItemId];
                     if (IsSpoiledMatter(inst)) return SpoiledNotEdibleText;   // BM5b2（Q610）：腐败物不能食用、治疗；B53a（S12 文首 Q767）：食饮拒绝用「腐败物不可食用。」
                     if (inst.ReservedBy != null) return "该物品已被预留";
-                    // B16 分量水壶：壶内直接喝 250 毫升（5 分钟，W+15；脏水同样腹泻）
+                    // B16 分量水壶；B56（S10／S12 文首 B53a Q929）：壶内按所选 N×100 毫升饮用（一次 5 分钟、补水 6N；脏水同样腹泻），不再固定一口 250
                     if (cfg.Canteen != null)
                     {
-                        if (CanteenSipBlocked(inst) is string sipWhy) return sipWhy;
+                        if (inst.LiquidId == null || inst.LiquidMl <= 0) return "水壶是空的";
+                        if (DrinkUnitsBlocked(s, inst, r.WaterUnits) is string cWhy) return cWhy;
                         plan.UseItem = inst;
+                        plan.WaterUnits = r.WaterUnits;
                         plan.TargetId = inst.ItemId;
                         plan.Planned = Config.ItemActions.UseMinutes;
-                        plan.Label = $"从{cfg.Name}喝{cfg.Canteen.SipMl}毫升{ItemName(inst.LiquidId!)}";
+                        plan.Label = DrinkCopy.LogLabelText(ItemName(inst.LiquidId!), r.WaterUnits * DrinkSource(s, inst)!.UnitMl);
                         return null;
                     }
                     if (inst.InContainer && IsLiquid(inst) && PotFreeWaterUnits(s, inst) < 1) return ReservedWaterText(s, inst);
@@ -643,6 +647,17 @@ namespace Survival.Core.Engine
                     if (cfg.Use.IsMedicine && MedicineBlocked(s, cfg.Use) is string medWhy) return medWhy;
                     // B16 护理品（止泻药粉、口服补液、应急恢复剂）：无收益或冷却中拒绝
                     if (cfg.Use.IsCare && CareBlocked(s, cfg.Use) is string careWhy) return careWhy;
+                    // B56：水卡与锅水按所选 N 单位（每单位 100 毫升）一次饮用；超过这一来源可饮量为「水分不足。」，不改饮别的来源
+                    if (IsDrinkSource(inst))
+                    {
+                        if (DrinkUnitsBlocked(s, inst, r.WaterUnits) is string wWhy) return wWhy;
+                        plan.UseItem = inst;
+                        plan.WaterUnits = r.WaterUnits;
+                        plan.TargetId = inst.ItemId;
+                        plan.Planned = Config.ItemActions.UseMinutes;
+                        plan.Label = DrinkCopy.LogLabelText(cfg.Name, r.WaterUnits * DrinkSource(s, inst)!.UnitMl);
+                        return null;
+                    }
                     plan.UseItem = inst;
                     plan.TargetId = inst.ItemId;
                     plan.Planned = Config.ItemActions.UseMinutes;
@@ -802,8 +817,9 @@ namespace Survival.Core.Engine
         /// <summary>是否在玩法白名单内可对自身使用（配置 use 不为空）；材料、工具、空锅、生块根为否。</summary>
         public static bool CanSelfUse(ItemConfig cfg) => cfg.Use != null;
 
-        /// <summary>卡下自用按钮文案：“食用1份”“饮用1份”“饮用1份（风险）”“使用1份”。</summary>
-        public static string UseButtonText(ItemConfig cfg) => UseVerb(cfg) + "1份" + (UseRisky(cfg) ? "（风险）" : "");
+        /// <summary>卡下自用按钮文案：“食用1份”“使用1份”；B56（Q975 A 暂用）水卡／锅水为“饮用”“饮用（风险）”（水量在饮水窗里选）。</summary>
+        public static string UseButtonText(ItemConfig cfg) =>
+            cfg.Kind == "water" ? DrinkEntryText(cfg) : UseVerb(cfg) + "1份" + (UseRisky(cfg) ? "（风险）" : "");
 
         /// <summary>风险后果，写在按钮旁：“必定腹泻12小时：期间每小时额外失水3”；无风险为 null。</summary>
         public string? UseRiskText(ItemConfig cfg)
@@ -967,13 +983,16 @@ namespace Survival.Core.Engine
                     if (p.Feed != null) { StartFeed(s, p.Feed); break; }
                     var inst = p.UseItem!;
                     var cfg = _items[inst.ItemId];
-                    if (cfg.Canteen != null)
+                    if (p.WaterUnits > 0)
                     {
+                        // B56：自选饮水一次结清 N 单位（补水 6N、脏水腹泻一次），整次只这一个 5 分钟动作
                         var sip = new List<string>();
+                        var sb = s.Stats.Satiety;
                         var hb = s.Stats.Hydration;
-                        ApplyCanteenSip(s, inst, sip);
+                        ApplyDrink(s, inst, s.Player, p.WaterUnits, sip, false);
+                        if (cfg.Canteen != null) sip.Add($"壶里剩{CanteenLabel(inst)}");
                         Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", sip)}。");
-                        NoteUse(s, a, s.Stats.Satiety, hb);
+                        NoteUse(s, a, sb, hb);
                         break;
                     }
                     var u = cfg.Use!;

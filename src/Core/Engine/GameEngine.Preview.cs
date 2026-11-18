@@ -404,6 +404,16 @@ namespace Survival.Core.Engine
                     p.ConfirmText = plan != null ? $"{plan.Label}·{Config.ItemActions.UseMinutes}分钟" : "使用";
                     // 临近上限的溢出（原在网页 ItemDetail 里算，v0.7 起放进内核，卡下按钮与右栏共用）
                     var cfg = plan?.UseItem != null ? _items[plan.UseItem.ItemId] : _items.TryGetValue(r.TargetId, out var tc) ? tc : null;
+                    if (plan?.UseItem != null && plan.WaterUnits > 0)
+                    {
+                        // B56：自选饮水按所选 N 单位的同源效果算溢出，并给右栏「饮水／补水／耗时」三行；开始文字沿 Q929「饮用{毫升}毫升（5分钟）」
+                        var liquid = DrinkLiquidOf(plan.UseItem)!;
+                        var du = DrinkUse(liquid, plan.WaterUnits);
+                        p.Overflow = OverflowLines(s.Stats, du, du.Health);
+                        p.Drink = DrinkPreview(s, plan.UseItem, plan.WaterUnits);
+                        p.ConfirmText = DrinkCopy.ActionText(p.Drink.Ml);
+                        break;
+                    }
                     if (cfg?.Use != null) p.Overflow = OverflowLines(s.Stats, cfg.Use, UseHealthAmount(s, cfg.Use));
                     // Q23：吃掉正在加工的食材，提前写明终止加工与预留释放
                     if (plan?.UseItem != null && UseCookNote(s, plan.UseItem) is string cookNote) p.Notes.Add(cookNote);
