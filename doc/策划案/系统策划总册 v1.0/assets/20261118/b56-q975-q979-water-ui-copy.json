@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target",
+  "sourceCommit": "1601526144b9fe6fa9f010c7d5a4f57bb5c174b7",
+  "originalBatch": "2026-11-17 来自 b7d1d44a B56（提前核对，次要）",
+  "questionIds": [
+    975,
+    976,
+    977,
+    978,
+    979
+  ],
+  "answers": {
+    "Q975": "A",
+    "Q976": "B_offered_context_short_copy",
+    "Q977": "B",
+    "Q978": "A",
+    "Q979": "B_offered_disabled_reason_only"
+  },
+  "drinkCopy": {
+    "clean": "饮用",
+    "dirty": "饮用（风险）",
+    "pausedClean": "饮用净水·5分钟",
+    "pausedDirty": "仍然饮用脏水",
+    "selfResult": "饮用{水种}{毫升}毫升：{变化}。",
+    "companionKeepsPersonAndSource": true
+  },
+  "contextualCopy": {
+    "containerUnitSentence": "每份100毫升。",
+    "companionDrinkSentence": "每份100毫升，可选数量，一次5分钟。",
+    "boilSentence": "100毫升起，时长不变。",
+    "dirtyWaterRisk": "脏水每100毫升补水6；必定腹泻12小时，每小时额外失水3。",
+    "preserveOtherOriginalCapacityAndRules": true,
+    "doNotChangeOverallApprovedHelp": true
+  },
+  "companionWaterSource": {
+    "showInstanceNumber": false,
+    "retainPerInstanceSelection": true
+  },
+  "jugQuantity": {
+    "titles": [
+      "装水",
+      "倒出"
+    ],
+    "defaultUnits": 1,
+    "unitMl": 100,
+    "amountLabel": "{毫升}毫升",
+    "confirmLabel": "确认{数量}",
+    "transferOnValidConfirmOnly": true
+  },
+  "discardWater": {
+    "unitLabel": "数量（每份100毫升）",
+    "keepOriginalUnitLabel": true,
+    "showSelectedMlBesideInput": true,
+    "insufficientReasonOnlyAtDisabledControl": true,
+    "reason": "水分不足。",
+    "accessibleKeyboardTouchScreenReader": true,
+    "noPermanentDuplicateReasonLine": true,
+    "allDiscardStillUsesActualTailMlAndFinalConfirmation": true
+  },
+  "acceptance": [
+    {
+      "id": "W56-Q975-01",
+      "expected": "净水和脏水入口及暂停补给采用定稿文字。本人喝300毫升时日志按实际水种、300毫升和变化生成。同伴日志保留人物与来源。"
+    },
+    {
+      "id": "W56-Q976-01",
+      "expected": "水壶单位句、同伴饮水、烧水和暂停脏水风险分别用各自短稿。系统说明完整规则和水壶容量保留。"
+    },
+    {
+      "id": "W56-Q977-01",
+      "expected": "同一同伴的两件同名容器各自可选，来源行无实例编号。选中第二件时只从第二件扣实际水量。"
+    },
+    {
+      "id": "W56-Q978-01",
+      "expected": "装水和倒出各打开对应数量窗，默认1份。选10份显示1000毫升，确认10才转移。确认前关闭无转移，若来源或数量失效按原校验处理。"
+    },
+    {
+      "id": "W56-Q979-01",
+      "expected": "数量框保留每份100毫升字样，输入2旁显示200毫升。不足一份时只在查看禁用原因时显示水分不足，兼顾键盘、触屏与读屏。最终确认可全部丢弃实际40毫升。"
+    }
+  ]
+}
