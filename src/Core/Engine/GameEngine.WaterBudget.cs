@@ -22,7 +22,7 @@ namespace Survival.Core.Engine
         public const string Insufficient = "饮水预算不足，建议补充净水或先处理脏水。";
         public const string Disclaimer = "未计战斗拖延、额外停留、未来病情变化与拾取，不保证全程安全。";
 
-        public const string TreatMain = "处理后才可饮用：随身脏水{D}毫升；按现有净水片/滤芯，最多可处理{V}毫升（每批2000毫升，需完整4份脏水）。";
+        public const string TreatMain = "处理后才可饮用：随身脏水{D}毫升；按现有净水片/滤芯，最多可处理{V}毫升（每批2000毫升，需完整20份脏水）。";
         public const string TreatNoMaterials = "随身没有可用的净水片或滤芯，暂不能按耗材处理脏水。";
         public const string TreatSmallBatch = "随身可用脏水不足2000毫升，未凑足一批。";
         public const string TreatNoFilter = "滤芯{C}份暂不计入：需要可用滤水器";

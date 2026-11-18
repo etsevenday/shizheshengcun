@@ -428,14 +428,15 @@ namespace Survival.Core.Engine
             canteen.LiquidId = "clean_water";
             canteen.LiquidMl = 750;
             var pot = CreateItems(s, "pot", 1, first).Single();
-            CreateItems(s, "clean_water", 2, ItemInstance.ContainerOwner(pot.InstanceId));
+            // B56：水每份 100 毫升，开发组水量×5 保持原毫升（锅 1000、脏水 500；地面净水 1000、脏水 1500）
+            CreateItems(s, "clean_water", 10, ItemInstance.ContainerOwner(pot.InstanceId));
             CreateItems(s, "berry", 1, ItemInstance.ContainerOwner(pot.InstanceId));
             CreateItems(s, "canned_food", 1, second);
-            CreateItems(s, "dirty_water", 1, second);
+            CreateItems(s, "dirty_water", 5, second);
             CreateItems(s, "berry", 2, second);
-            foreach (var (id, n) in new (string id, int n)[] { ("clean_water", 2), ("dirty_water", 3), ("canned_food", 1), ("pot", 1), ("purification_tablet", 1), ("filter_cartridge", 2), ("water_filter", 1) })
+            foreach (var (id, n) in new (string id, int n)[] { ("clean_water", 10), ("dirty_water", 15), ("canned_food", 1), ("pot", 1), ("purification_tablet", 1), ("filter_cartridge", 2), ("water_filter", 1) })
                 CreateItems(s, id, n, s.Ground);
-            var text = "开发：同行者已编入，两人随身放了食物、腐败野果、新鲜野果、水壶与带水和一份野果的锅；净水2、脏水3、罐头、锅、净水片、滤芯2、滤水器放在当前地面";
+            var text = "开发：同行者已编入，两人随身放了食物、腐败野果、新鲜野果、水壶与带水和一份野果的锅；净水10、脏水15、罐头、锅、净水片、滤芯2、滤水器放在当前地面";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }

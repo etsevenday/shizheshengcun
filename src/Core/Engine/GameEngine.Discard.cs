@@ -89,6 +89,11 @@ namespace Survival.Core.Engine
         public int UnitMl { get; set; }
         /// <summary>「选择数量」的上限 N：物品＝可丢弃份数；水＝floor(可丢弃毫升／每份)，为 0 时数量路径禁用。</summary>
         public int MaxUnits { get; set; }
+        /// <summary>
+        /// B56（S10 文首 B53a Q929；Q979 A 暂用）：水有可丢弃的真实尾水但不足一份（100 毫升）时「选择数量」禁用的原因「水分不足。」；
+        /// 数量路径可用或本身无可丢弃（看 <see cref="Blocked"/>）时为 null。「全部丢弃」仍按实际毫升可删尾水。
+        /// </summary>
+        public string? QuantityBlocked { get; set; }
         /// <summary>无可丢弃时的第一条真实原因（有可丢弃时为 null）；等于 <see cref="Reasons"/> 的第一条。</summary>
         public string? Blocked { get; set; }
         /// <summary>
@@ -317,6 +322,7 @@ namespace Survival.Core.Engine
             if (DiscardInputLock(s) is string lockWhy) v.Reasons.Add(lockWhy);
             else v.Available = free;
             v.MaxUnits = unit > 0 ? v.Available / unit : 0;
+            if (v.Available > 0 && v.MaxUnits < 1) v.QuantityBlocked = DrinkCopy.Short;
             if (free <= 0) v.Reasons.AddRange(whys);   // 本容器本身没有可丢的水时才列水的原因（whys 为空即有水可丢）
             v.Reasons = v.Reasons.Distinct().ToList();
             v.Blocked = v.Reasons.FirstOrDefault();
@@ -414,6 +420,7 @@ namespace Survival.Core.Engine
             waterContainer = null;
             var v = DiscardViewOf(s, t);
             if (v.Blocked != null) { reason = v.Blocked; return null; }
+            if (!all && v.QuantityBlocked != null) { reason = v.QuantityBlocked; return null; }
             if (!all && (count < 1 || count > v.MaxUnits)) { reason = DiscardCopy.InvalidQuantity(v.MaxUnits); return null; }
             reason = null;
             if (t.IsWater)
@@ -520,7 +527,8 @@ namespace Survival.Core.Engine
             var soon = SplitOff(s, berries, 3);   // 同组拆成两批（不经合堆）
             soon.ExpiresAt = s.GameMinute + 120;
             var pot = CreateItems(s, "pot", 1, s.Ground).Single();
-            CreateItems(s, "clean_water", 2, ItemInstance.ContainerOwner(pot.InstanceId));
+            // B56：锅每份 100 毫升，净水 1000 毫升＝10 份（原 2 份×500）
+            CreateItems(s, "clean_water", 10, ItemInstance.ContainerOwner(pot.InstanceId));
             CreateItems(s, "raw_meat", 1, ItemInstance.ContainerOwner(pot.InstanceId));
             var canteen = CreateItems(s, "ration_canteen", 1, ItemInstance.Carried).Single();
             canteen.LiquidId = "clean_water";
@@ -533,8 +541,8 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 开发：B53b 清单行末丢弃试用组（只造起点）：第一名固定队友编入同行，随身放野果3、金属锅（净水2份＋野果1）、分量水壶（净水750毫升）；
-        /// 当前地点（当前区）放四个箱：遗物（野果2、木材3）、认领箱（罐头1、借用木矛1）、远征回收箱（生肉2）、旧实例遗物认领箱（金属锅连脏水1份）；
+        /// 开发：B53b 清单行末丢弃试用组（只造起点）：第一名固定队友编入同行，随身放野果3、金属锅（净水10份＋野果1）、分量水壶（净水750毫升）；
+        /// 当前地点（当前区）放四个箱：遗物（野果2、木材3）、认领箱（罐头1、借用木矛1）、远征回收箱（生肉2）、旧实例遗物认领箱（金属锅连脏水5份）；
         /// 人在已建安全屋屋内时柜子里放野果2、木材2；人在本次远征地牢里时封存账放罐头1。
         /// </summary>
         public string DebugDiscardListKit(GameState s)
@@ -550,12 +558,13 @@ namespace Survival.Core.Engine
                 var bag = ItemInstance.CarriedOwner(mate);
                 CreateItems(s, "berry", 3, bag);
                 var pot = CreateItems(s, "pot", 1, bag).Single();
-                CreateItems(s, "clean_water", 2, ItemInstance.ContainerOwner(pot.InstanceId));
+                // B56：锅每份 100 毫升，×5 保持原 1000 毫升
+                CreateItems(s, "clean_water", 10, ItemInstance.ContainerOwner(pot.InstanceId));
                 CreateItems(s, "berry", 1, ItemInstance.ContainerOwner(pot.InstanceId));
                 var canteen = CreateItems(s, "ration_canteen", 1, bag).Single();
                 canteen.LiquidId = "clean_water";
                 canteen.LiquidMl = 750;
-                parts.Add($"{ActorDisplayName(s, mate)}随身：野果3、金属锅（净水{2 * PotConfig(pot).UnitMl}毫升、野果1）、分量水壶（净水750毫升）");
+                parts.Add($"{ActorDisplayName(s, mate)}随身：野果3、金属锅（净水{10 * PotConfig(pot).UnitMl}毫升、野果1）、分量水壶（净水750毫升）");
             }
             // B53b 试玩修复 B7：箱按「当前地点＋区」分开，只复用当前地点（屋内／屋外）已有的同名试用箱；换地点再点就在新地点另放，日志与实际一致
             var zone = s.CurrentZone == SafehouseZone ? SafehouseZone : null;
@@ -575,8 +584,8 @@ namespace Survival.Core.Engine
             CreateItems(s, "wooden_spear", 1, claim).Single().LoanSlot = "loan_1";
             CreateItems(s, "raw_meat", 2, Box("dev_b53b_recovery", "试用远征回收箱", RemainsState.RecoveryKind));
             var relicPot = CreateItems(s, "pot", 1, Box("dev_b53b_relic", "试用旧实例遗物认领箱", RemainsState.RelicKind)).Single();
-            CreateItems(s, "dirty_water", 1, ItemInstance.ContainerOwner(relicPot.InstanceId));
-            parts.Add($"{LocName(s.CurrentLocation)}遗物（野果2、木材3）、认领箱（罐头1、借用木矛1）、试用远征回收箱（生肉2）、试用旧实例遗物认领箱（金属锅连脏水{PotConfig(relicPot).UnitMl}毫升）");
+            CreateItems(s, "dirty_water", 5, ItemInstance.ContainerOwner(relicPot.InstanceId));
+            parts.Add($"{LocName(s.CurrentLocation)}遗物（野果2、木材3）、认领箱（罐头1、借用木矛1）、试用远征回收箱（生肉2）、试用旧实例遗物认领箱（金属锅连脏水{5 * PotConfig(relicPot).UnitMl}毫升）");
             if (s.CurrentZone == SafehouseZone && CabinetOwnerOf(s, s.CurrentLocation) is string cab)
             {
                 CreateItems(s, "berry", 2, cab);

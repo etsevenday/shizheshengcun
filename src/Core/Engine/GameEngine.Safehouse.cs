@@ -320,29 +320,29 @@ namespace Survival.Core.Engine
         {
             if (s.Skills.TryGetValue(Crafting, out var cr) && cr.Level < 3) cr.Level = 3;
             s.Progress.Flags.Add("h03_ceramic_notice_read");
-            var kit = new[] { ("stone", 8), ("clay", 8), ("iron_plate", 2), ("charcoal", 1), ("ceramic_shell", 4), ("plank", 2), ("cloth", 2), ("dirty_water", 4), ("filter_media", 1) };
+            var kit = new[] { ("stone", 8), ("clay", 8), ("iron_plate", 2), ("charcoal", 1), ("ceramic_shell", 4), ("plank", 2), ("cloth", 2), ("dirty_water", 20), ("filter_media", 1) };
             foreach (var (id, n) in kit) CreateItems(s, id, n, s.Ground);
             Normalize(s, s.Ground);
             UpdateFlags(s);
             return $"开发：制造3级、学会基础陶工做法；陶窑与净水台建造及各一批材料放在{ZoneName(s, s.Ground)}地面";
         }
 
-        /// <summary>开发（B22d Q174 试被动批次经验日额）：陶窑一批（黏土2、木炭1）与净水台两批（脏水8、过滤材料2）原料放当前地面。</summary>
+        /// <summary>开发（B22d Q174 试被动批次经验日额）：陶窑一批（黏土2、木炭1）与净水台两批（脏水40、过滤材料2）原料放当前地面。</summary>
         public string DebugStationInputs(GameState s)
         {
-            foreach (var (id, n) in new[] { ("clay", 2), ("charcoal", 1), ("dirty_water", 8), ("filter_media", 2) }) CreateItems(s, id, n, s.Ground);
+            foreach (var (id, n) in new[] { ("clay", 2), ("charcoal", 1), ("dirty_water", 40), ("filter_media", 2) }) CreateItems(s, id, n, s.Ground);
             Normalize(s, s.Ground);
             UpdateFlags(s);
-            return $"开发：陶窑一批（黏土2、木炭1）与净水台两批（脏水8、过滤材料2）原料放在{ZoneName(s, s.Ground)}地面";
+            return $"开发：陶窑一批（黏土2、木炭1）与净水台两批（脏水40、过滤材料2）原料放在{ZoneName(s, s.Ground)}地面";
         }
 
         /// <summary>开发（B32e Q380 试多批排队与 10 批上限）：陶窑与净水台各 11 批原料放当前地面。</summary>
         public string DebugStationQueueInputs(GameState s)
         {
-            foreach (var (id, n) in new[] { ("clay", 22), ("charcoal", 11), ("dirty_water", 44), ("filter_media", 11) }) CreateItems(s, id, n, s.Ground);
+            foreach (var (id, n) in new[] { ("clay", 22), ("charcoal", 11), ("dirty_water", 220), ("filter_media", 11) }) CreateItems(s, id, n, s.Ground);
             Normalize(s, s.Ground);
             UpdateFlags(s);
-            return $"开发：陶窑11批（黏土22、木炭11）与净水台11批（脏水44、过滤材料11）原料放在{ZoneName(s, s.Ground)}地面";
+            return $"开发：陶窑11批（黏土22、木炭11）与净水台11批（脏水220、过滤材料11）原料放在{ZoneName(s, s.Ground)}地面";
         }
 
         /// <summary>

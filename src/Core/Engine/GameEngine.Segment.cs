@@ -912,7 +912,8 @@ namespace Survival.Core.Engine
                 .Where(i => { var p = PlaceOf(s, i); return p == ItemInstance.Carried || p == camp; })
                 .GroupBy(i => i.InstanceId).Sum(g => g.First().Count);
             // “熟制块根”按烤熟与水煮合计
-            if (Count("clean_water") >= 3 && Count(CookedFoodIds) >= 2) f.Add("supplyReady");
+            // B56（Q929 数量换算×5）：净水 3 份×500 毫升＝15 份×100 毫升，与目标文字「净水15」一致
+            if (Count("clean_water") >= 15 && Count(CookedFoodIds) >= 2) f.Add("supplyReady");
             SyncLayout(s);
             // B15 任务安全边界：核心记录到手的主线完成、营区广场的公开说明与备份回报（幂等，不推进时间）
             QuestBoundary(s);

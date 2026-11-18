@@ -118,6 +118,8 @@ namespace Survival.Core.Engine
             var first = (int)PassiveAdd(actor, "yield.gatherFirstDaily");
             if (first > 0 && !rules.IndustrialItems.Contains(itemId) && DailyCount(s, actor, DailyGather, res.NodeId) == 0)
             {
+                // B56（S05／S10／A06 文首 Q973 沿 Q929）：对水原 +1 旧份＝500 毫升，按新单位折成 +5 份仍 500 毫升；其他物品仍 +1，不重复乘
+                if (IsLiquidItem(itemId)) first *= rules.GatherFirstDailyLiquidUnits;
                 bonus += first;
                 notes?.Add($"{PassiveSource(actor, "yield.gatherFirstDaily", false)}：此处今日首次采集额外+{first}（仍扣库存）");
             }
