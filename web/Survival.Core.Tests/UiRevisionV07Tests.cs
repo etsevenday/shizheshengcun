@@ -54,11 +54,11 @@ public class UiRevisionV07Tests : TestBase
 
     private static void RemoveAll(GameState s, string itemId) => s.Items.RemoveAll(i => i.ItemId == itemId);
 
-    /// <summary>燃烧的火堆里放一口锅：2 份净水 + 2 份生块根，水煮 10 分钟。</summary>
+    /// <summary>燃烧的火堆里放一口锅：满锅净水（B56 起 10 份×100＝1000 毫升）+ 2 份生块根，水煮 10 分钟（B56：1 升只够先投放的一份预留，另一份等待）。</summary>
     private ItemInstance BoilingPot(GameState s)
     {
         var pot = Pot(s);
-        FillWater(s, pot, "clean_water", 2);
+        FillWater(s, pot, "clean_water", 10);   // B56：锅每份100毫升，×5 保持原 1000 毫升（满锅）
         Ok(s, InstantRequest.PutInFire(pot.InstanceId));
         PutRootsInPot(s, pot, 2);
         LightFire(s, 240);
@@ -74,11 +74,13 @@ public class UiRevisionV07Tests : TestBase
         var children = E.PotContents(s, pot.InstanceId).Select(i => i.InstanceId).ToList();
         Assert.That(children, Has.Count.EqualTo(3), "1堆净水与2份生块根");
         var heat = E.AllProcesses(s).Where(p => p.PotInstanceId == pot.InstanceId).ToDictionary(p => p.ProcessId, p => p.HeatDoneMinutes);
-        Assert.That(heat.Values.All(h => h == 10), Is.True, "两份水煮各受热10分钟");
+        // B56（b53a-q928-q929-water-100ml.json foodProcesses boil_root waterCostMl 1000、W100-Q929-08／09）：水煮每份耗水 1000，1 升锅两份生块根只有先投放的一份获得预留并受热，另一份不免费熟成（原两份各受热 10 分钟）
+        Assert.That(heat.Values.OrderBy(h => h), Is.EqualTo(new[] { 0, 10 }), "只有获得水预留的一份受热10分钟");
 
         // 事先显示后果：会清零的加工与拾取后重量
         var c = E.TakeOutConsequenceOf(s, pot);
-        Assert.That(c.Resets, Has.Count.EqualTo(2));
+        // B56（b53a-q928-q929-water-100ml.json foodProcesses boil_root waterCostMl 1000、W100-Q929-08／09）：只有受过热的那一份会清零（原 2 份）
+        Assert.That(c.Resets, Has.Count.EqualTo(1));
         Assert.That(c.Text, Does.StartWith("取出后生块根水煮").And.Contain("水煮受热10分钟").And.EndWith("清零"));
         Assert.That(c.Grams, Is.EqualTo(1000 + 1000 + 600));
 
@@ -90,7 +92,7 @@ public class UiRevisionV07Tests : TestBase
         Assert.That(res.Ok, Is.False);
         Assert.That(res.Reason, Does.Contain("整次拒绝"));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "失败不改任何状态");
-        Assert.That(E.AllProcesses(s).Where(p => p.PotInstanceId == pot.InstanceId).All(p => p.HeatDoneMinutes == 10), Is.True);
+        Assert.That(E.AllProcesses(s).Where(p => p.PotInstanceId == pot.InstanceId).ToDictionary(p => p.ProcessId, p => p.HeatDoneMinutes), Is.EqualTo(heat), "B56：失败不改进度（受热 10／0 原样）");
 
         // 取下到地面：全部后代跟随，进度按 v0.4 清零
         Ok(s, InstantRequest.TakeOut(pot.InstanceId, "camp"));
@@ -106,7 +108,7 @@ public class UiRevisionV07Tests : TestBase
         var pot = Pot(s);
         Ok(s, InstantRequest.PutInFire(pot.InstanceId));
         Assert.That(E.FireFreeSlots(s, "camp"), Is.EqualTo(1), "还有一个直烤位空着");
-        E.DebugGive(s, "clean_water", 3, "camp");
+        E.DebugGive(s, "clean_water", 15, "camp");   // B56：每份100毫升，×5 保持原 1500 毫升
         E.DebugGive(s, "raw_root", 3, "camp");
         var water = DropSource.Parse("card:camp|clean_water")!;
         var root = DropSource.Parse("card:camp|raw_root")!;
@@ -116,7 +118,7 @@ public class UiRevisionV07Tests : TestBase
         Assert.That(food.Ok && food.Verb == DropVerb.PutFood, Is.True, food.Reason);
         Assert.That(food.Label, Does.Contain("金属锅"));
 
-        Ok(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2));
+        Ok(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10));   // B56：满锅 10 份×100（原 2 份×500）
         Ok(s, InstantRequest.PutFoodInPot(First(s, "raw_root", "camp").InstanceId, pot.InstanceId, 2));
         var potKey = $"card:{Fire}|pot|{pot.InstanceId}";
         foreach (var (src, target) in new[] { (water, $"potfill:{pot.InstanceId}"), (water, potKey), (root, $"potfood:{pot.InstanceId}"), (root, potKey) })
@@ -134,14 +136,15 @@ public class UiRevisionV07Tests : TestBase
     {
         var s = New();
         var pot = Pot(s);
-        FillWater(s, pot, "clean_water", 1);
+        FillWater(s, pot, "clean_water", 10);   // B56：水煮每次耗水 1000（W100-Q929-08），装满 10 份才够唯一一份预留（原 1 份×500）
         Ok(s, InstantRequest.PutInFire(pot.InstanceId));
         PutRootsInPot(s, pot, 1);
         LightFire(s);
         var w = E.PotLiquids(s, pot.InstanceId).Single();
-        Assert.That(E.PotFreeWaterUnits(s, w), Is.EqualTo(0), "唯一一份净水被水煮预留");
+        Assert.That(E.PotFreeWaterUnits(s, w), Is.EqualTo(0), "锅里全部净水被水煮预留");
         var why = E.CanStart(s, ActionRequest.UseInstance(w.InstanceId));
-        Assert.That(why, Does.StartWith("500毫升供生块根加工").And.EndWith("先取出该食材以停止加工"));
+        // B56（b53a-q928-q929-water-100ml.json foodProcesses boil_root waterCostMl 1000、W100-Q929-08／09）：预留 1000 毫升（原 500）
+        Assert.That(why, Does.StartWith("1000毫升供生块根加工").And.EndWith("先取出该食材以停止加工"));
         Assert.That(E.DoInstant(s, InstantRequest.Decant(w.InstanceId, ItemInstance.Carried)).Ok, Is.False, "预留的水不能转移");
         WaitMinutes(s, 10);
         Assert.That(E.TakeOutBlocked(s, pot, ItemInstance.Carried), Is.Null, "空闲时可以取下加工中的锅");

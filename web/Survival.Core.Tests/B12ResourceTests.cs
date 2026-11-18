@@ -13,6 +13,14 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B12ResourceTests : TestBase
 {
+    // B56 契约覆盖旧资产（M1079；b53a-q928-q929-water-100ml.json preserveOtherActualMlAcrossRecipesResourcesLootTradeTasksBudget，S10 文首 B53a Q929）：
+    // 水每份 500→100 毫升，资源点水产出份数×5；按件计库存（renewable／finite）且只出水的点 cap 与日补也×5，保持原真实毫升。其他字段与其他点仍对照旧资产。
+    private static bool B56IsWater(string id) => id is "dirty_water" or "clean_water";
+    private static Dictionary<string, int> B56Outputs(JObject items) =>
+        items.Properties().ToDictionary(p => p.Name, p => (int)p.Value * (B56IsWater(p.Name) ? 5 : 1));
+    private static int B56Stock(Survival.Core.Config.ResourceConfig r, int n) =>
+        r.IsUnits && r.Outputs.Keys.All(B56IsWater) ? n * 5 : n;
+
     /// <summary>与敌踪无关的旧系统用例：冻结到期敌踪主动开战（见 TestBase.NoEnemyApproach）。</summary>
     protected override bool NoEnemyApproach => true;
 
@@ -38,13 +46,13 @@ public class B12ResourceTests : TestBase
             Assert.That(r.LocationId, Is.EqualTo((string)j["nodeId"]!));
             Assert.That(E.Location(r.LocationId), Is.Not.Null);
             Assert.That(r.BaseMinutes, Is.EqualTo((int)j["workMinutes"]!), r.NodeId);
-            Assert.That(r.Outputs, Is.EquivalentTo(((JObject)j["items"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.NodeId);
+            Assert.That(r.Outputs, Is.EquivalentTo(B56Outputs((JObject)j["items"]!)), r.NodeId);   // B56 改期望：水产出×5（见 B56Outputs）
             Assert.That(r.Scope, Is.EqualTo((string)j["scope"]!), r.NodeId);
             Assert.That(r.Kind, Is.EqualTo((string)j["kind"]!), r.NodeId);
             var cap = int.Parse(j["cap"]!.ToString());
             if (cap < 0) Assert.That(r.IsUnlimited, Is.True, $"{r.NodeId} flowing −1 不限量");
-            else Assert.That(r.Cap, Is.EqualTo(cap), r.NodeId);
-            Assert.That(r.DailyRefill, Is.EqualTo((int)j["dailyRefill"]!), r.NodeId);
+            else Assert.That(r.Cap, Is.EqualTo(B56Stock(r, cap)), r.NodeId);   // B56 改期望：只出水的按件库存 cap×5
+            Assert.That(r.DailyRefill, Is.EqualTo(B56Stock(r, (int)j["dailyRefill"]!)), r.NodeId);   // B56 改期望：只出水的按件库存日补×5
             var reveal = (int)j["reveal"]!;
             Assert.That(reveal == 0 ? r.RevealOnVisit : r.RevealAt == reveal, Is.True, r.NodeId);
             // B13b（Q121）取代 H2：96 行逐行有/无合格工具，见 B13bResourceTests.TOOL_Q121_01
@@ -130,7 +138,7 @@ public class B12ResourceTests : TestBase
         var s = New();
         E.DebugMapTeleport(s, "w34_depot");
         E.DebugExploreHere100(s);
-        s.Resources["w34_depot_bottles"].Available = 2;
+        s.Resources["w34_depot_bottles"].Available = 10;   // B56：每份100毫升，×5 保持原 1000 毫升（一次采满）
         Gather(s, "w34_depot_bottles");
         Assert.That(s.Resources["w34_depot_bottles"].Available, Is.EqualTo(0));
         Assert.That(E.CanStart(s, ActionRequest.Gather("w34_depot_bottles")), Is.EqualTo("已采尽，不再补充"));
@@ -141,7 +149,7 @@ public class B12ResourceTests : TestBase
         Assert.That(s.Resources["w12_canal_water"].Discovered, Is.True, "reveal 0 到访即见");
         var before = Count(s, "dirty_water", "w12_canal");
         Gather(s, "w12_canal_water");
-        Assert.That(Count(s, "dirty_water", "w12_canal"), Is.EqualTo(before + 4));
+        Assert.That(Count(s, "dirty_water", "w12_canal"), Is.EqualTo(before + 20));   // B56 改期望：w12_canal_water 产出脏水 4→20 份（M1079，保持原 2000 毫升）
         Assert.That(s.Resources["w12_canal_water"].Available, Is.Null, "不限量");
     }
 

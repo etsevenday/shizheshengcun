@@ -42,9 +42,14 @@ public class B18AppraisalTests : TestBase
         Assert.That(a.SampleItemId, Is.EqualTo(Sub));
         Assert.That(a.ScopeVersion, Is.EqualTo("r07_white_v1"));
         var offers = (JArray)c["offers"]!;
+        // B56 改期望：净水档份数界 1—2 → 5—10（每份 500→100 毫升，克数 500—1000 不变；M1079 配置 white_for_water，b53a-q928-q929-water-100ml.json
+        // preserveOtherActualMlAcrossRecipesResourcesLootTradeTasksBudget）——B56 契约覆盖旧资产的份数界，其他档与克数仍对照旧契约
+        int B56Qty(JToken o, int n) => (string)o["itemId"]! == "clean_water" ? n * 5 : n;
         Assert.That(a.Offers.Select(o => (o.Id, o.ItemId, o.Min, o.Max, o.MinGrams, o.MaxGrams)),
-            Is.EqualTo(offers.Select(o => ((string)o["id"]!, (string)o["itemId"]!, (int)o["inclusiveQuantityBounds"]![0]!, (int)o["inclusiveQuantityBounds"]![1]!,
+            Is.EqualTo(offers.Select(o => ((string)o["id"]!, (string)o["itemId"]!, B56Qty(o, (int)o["inclusiveQuantityBounds"]![0]!), B56Qty(o, (int)o["inclusiveQuantityBounds"]![1]!),
                 (int)o["inclusiveWeightGrams"]![0]!, (int)o["inclusiveWeightGrams"]![1]!))));
+        // B56（W100-Q929-12 保原概率）：净水档档距 5（只出 5 或 10 份＝500 或 1000 毫升），其他档档距 1
+        Assert.That(a.Offers.Select(o => (o.Id, o.Step)), Is.EqualTo(new[] { ("white_for_cloth", 1), ("white_for_scrap", 1), ("white_for_water", 5) }));
         // 重量区间 = 份数区间 × 物品单份重量（AT13 “重量闭区间”与物品定义一致）
         foreach (var o in a.Offers)
         {
@@ -263,8 +268,9 @@ public class B18AppraisalTests : TestBase
                 counts[n] = counts.TryGetValue(n, out var c) ? c + 1 : 1;
                 Assert.That(GameEngine.QuoteQuantity("12345", Cfg.Appraisal.ServiceId, d, o, Cfg.Appraisal.QuoteVersion), Is.EqualTo(n), "同种子同结果");
             }
-            var k = o.Max - o.Min + 1;
-            Assert.That(counts.Keys.OrderBy(x => x), Is.EqualTo(Enumerable.Range(o.Min, k)), o.Id);
+            // B56 改期望（W100-Q929-12 保原概率）：按档距取档——净水档 step 5 只出 5、10 两档各约一半；其他档 step 1 不变
+            var k = (o.Max - o.Min) / o.Step + 1;
+            Assert.That(counts.Keys.OrderBy(x => x), Is.EqualTo(Enumerable.Range(0, k).Select(i => o.Min + i * o.Step)), o.Id);
             foreach (var kv in counts) Assert.That(kv.Value, Is.InRange(days / k * 0.85, days / k * 1.15), $"{o.Id} 数量{kv.Key}");
         }
     }
@@ -307,7 +313,8 @@ public class B18AppraisalTests : TestBase
         var next = E.EnsureAppraisalQuotes(m)!;
         Assert.That(next.Day, Is.EqualTo(day + 1));
         Assert.That(m.City.Quotes.Single(q => q.Day == day).Offers["white_for_cloth"], Is.EqualTo(99), "新日表不改旧表");
-        Assert.That(next.Offers.Values.All(n => n is >= 1 and <= 3), Is.True);
+        // B56 改期望：净水档份数 5—10（M1079 white_for_water，原 1—2），布料／废金属仍 1—3 以内
+        Assert.That(next.Offers.All(kv => kv.Key == "white_for_water" ? kv.Value is >= 5 and <= 10 : kv.Value is >= 1 and <= 3), Is.True);
         // 不在鉴定所时不生成
         var far = New();
         Assert.That(E.EnsureAppraisalQuotes(far), Is.Null);
@@ -540,7 +547,10 @@ public class B18AppraisalTests : TestBase
                 var sc = GameEngine.QuoteQuantity(seed, a.ServiceId, d, scrap, a.QuoteVersion);
                 var w = GameEngine.QuoteQuantity(seed, a.ServiceId, d, water, a.QuoteVersion);
                 total++;
-                if (sc != w) diff++;
+                // B56（W100-Q929-12「交易包保原毫升、价值与概率」）：净水档改 5 或 10 份（step 5），按档位（第1／第2档）与废金属 1—2 份比较
+                Assert.That(w == 5 || w == 10, Is.True, $"净水档只出5或10份，实际{w}");
+                var wTier = (w - water.Min) / water.Step + 1;
+                if (sc != wTier) diff++;
                 if (sc == 1 && d % 2 == 1) scrapOdd++;
                 joint[(c, sc)] = joint.TryGetValue((c, sc), out var k) ? k + 1 : 1;
             }

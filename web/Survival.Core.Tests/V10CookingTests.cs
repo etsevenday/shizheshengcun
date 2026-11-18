@@ -28,7 +28,7 @@ public class V10CookingTests : TestBase
     [Test]
     public void Reboil_CookedMeat_15Minutes_500ml_Fresh24HoursFromCompletion()
     {
-        var (s, pot) = PotOnFire(2);
+        var (s, pot) = PotOnFire(10);   // B56：复煮每次耗水 1000 毫升（W100-Q929-08），装满 10 份×100
         var meat = E.CreateItems(s, "cooked_meat", 1, "camp").Single();
         var expires = s.GameMinute + 180;
         meat.ExpiresAt = expires;
@@ -41,7 +41,8 @@ public class V10CookingTests : TestBase
         var food = E.PotFood(s, pot.InstanceId).Single();
         Assert.That(food.ItemId, Is.EqualTo("boiled_meat"), "复煮后为水煮肉，留在原锅");
         Assert.That(food.ExpiresAt, Is.Not.EqualTo(expires));
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1), "扣净水500ml（1份）");
+        // B56（S11 文首 B53a Q929 / W100-Q929-08）：复煮扣 1000 毫升，满锅 10 份扣完剩 0（原剩 1 份、扣 500）
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0), "扣净水1000ml（10份）");
         var log = s.Log.Last(l => l.Text.Contains("已煮成水煮肉")).Minute;
         Assert.That(log - start, Is.EqualTo(15), "15有效分钟");
         Assert.That(food.ExpiresAt, Is.EqualTo(log + 1440), "Q16：合法复煮成品从完成起保质24小时，不再继承原烤肉期限");
@@ -50,7 +51,7 @@ public class V10CookingTests : TestBase
     [Test]
     public void Reboil_ProtectedCooks_WhenCompletingExactlyAtExpiry()
     {
-        var (s, pot) = PotOnFire(2);
+        var (s, pot) = PotOnFire(10);   // B56：复煮每次耗水 1000 毫升（W100-Q929-08），装满 10 份×100
         var meat = E.CreateItems(s, "cooked_meat", 1, "camp").Single();
         meat.ExpiresAt = s.GameMinute + 15;   // 恰好在完成那一刻到期：Q16 受热保护，照常复煮
         E.DoInstant(s, InstantRequest.PutFoodInPot(meat.InstanceId, pot.InstanceId, 1));
@@ -59,7 +60,8 @@ public class V10CookingTests : TestBase
         var food = E.PotFood(s, pot.InstanceId).Single();
         Assert.That(food.ItemId, Is.EqualTo("boiled_meat"));
         Assert.That(E.IsSpoiled(s, food), Is.False);
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1), "完成扣水500ml");
+        // B56（W100-Q929-08）：完成扣 1000 毫升，剩 0（原剩 1 份）
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0), "完成扣水1000ml");
     }
 
     [Test]

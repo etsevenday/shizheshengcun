@@ -38,7 +38,7 @@ namespace Survival.Core.Engine
         public static string AmountText(int ml) => Amount.Replace("{毫升}", ml.ToString());
         public static string ActionText(int ml) => Action.Replace("{毫升}", ml.ToString());
         public static string RightAmountText(string water, int ml) => RightAmount.Replace("{水种}", water).Replace("{毫升}", ml.ToString());
-        public static string RightHydrationText(double w) => RightHydration.Replace("{补水值}", Fmt.N(w));
+        public static string RightHydrationText(double w) => RightHydration.Replace("{补水值}", Fmt.T(w));
         public static string SummaryText(string water, int ml) => Summary.Replace("{水种}", water).Replace("{所选毫升}", ml.ToString());
         public static string LogLabelText(string water, int ml) => LogLabel.Replace("{水种}", water).Replace("{毫升}", ml.ToString());
 

@@ -984,7 +984,8 @@ public class B26aSubstituteTalkTests : TestBase
         var s = Registered("h02_square");
         E.DebugToggleCityPostAbsent(s);
         TalkRead(s, "npc_xu_an");
-        var snap = (Ledger(s), s.Progress.Flags.Count, s.Story.DialogueLog.Count, s.GameMinute, s.City.Greeted.Count);
+        var l0 = Ledger(s);
+        var snap = ((s.Items.Sum(i => i.Count * (i.ItemId is "clean_water" or "dirty_water" ? 5 : 1)), l0.Item2, l0.Item3, l0.Item4, l0.Item5, l0.Item6), s.Progress.Flags.Count, s.Story.DialogueLog.Count, s.GameMinute, s.City.Greeted.Count);   // B56 改期望（M1083 SaveMigrator.From57To58；S10 文首 B53a Q929 每份100毫升）：按新配置造的旧档读入时链尾 57→58 把脏水／净水份数×5（真实毫升不变），非水原样
         var logs = s.Log.Select(l => l.Text).ToList();
 
         var m = Upgrade41(s);

@@ -222,7 +222,7 @@ public class BM9Tests : B41cTestBase
 
     private void WaterBatch(GameState s)
     {
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：ex_station_water 脏水 4→20（W100-Q929-11），×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
         var r = E.StartStationBatch(s, "ex_station_water", $"q842-{++_seq}", 1);
         Assert.That(r.Ok, Is.True, r.Reason);
@@ -238,7 +238,7 @@ public class BM9Tests : B41cTestBase
         for (var i = 0; i < 4; i++) { WaterBatch(s); AdvanceTo(s, s.GameMinute + 30); }   // 净水台每批 3，四批完成用满 12
         Assume.That(Clock.Day(s.GameMinute), Is.EqualTo(day), "布场：仍在同一日");
         Assert.That(s.Player.DailyCounts[$"{day}|stationXp|crafting"], Is.EqualTo(12));
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：ex_station_water 脏水 4→20（W100-Q929-11），×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
         Assert.That(E.StationBatchXpPreview(s, rc, 1), Is.EqualTo(GameEngine.StationXpDailyFullText), "新批");
         Assert.That(GameEngine.StationXpDailyFullText, Is.EqualTo("今日可获得生产制造经验已满"));
@@ -259,11 +259,11 @@ public class BM9Tests : B41cTestBase
     {
         var s = Workshop();
         var rc = Cfg.Recipes.Single(r => r.Id == "ex_station_water");
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：ex_station_water 脏水 4→20（W100-Q929-11），×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
         Assert.That(E.StationBatchXpPreview(s, rc, 1), Does.Contain("制造经验+3"), "未满：原句");
         for (var i = 0; i < 4; i++) WaterBatch(s);   // 四批在途、同刻完成，预计占满 12
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：ex_station_water 脏水 4→20（W100-Q929-11），×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
         var preview = E.StationBatchXpPreview(s, rc, 1);
         Assert.That(preview, Does.Contain("预计已满12").And.Contain("先完成的在途批次预计占12"), "在途占额：原句");

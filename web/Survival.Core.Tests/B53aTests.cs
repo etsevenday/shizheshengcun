@@ -202,7 +202,7 @@ public class B53aTests : TestBase
     public void Schema56_Current()
     {
         // 开发假设：B53a 把存档升到 56（Q764 迁移）；字面量对照，防止版本号被别处挪动
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
     }
 
     /// <summary>
@@ -241,7 +241,7 @@ public class B53aTests : TestBase
         var logs = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema(s, "55"), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
         var reasons = DrySlots(t).OrderBy(b => b.Slot).Select(b => b.StopReason).ToList();
         Assert.That(reasons, Is.EqualTo(new[] { "missing", "spoiled", "unknown", "unknown", "missing", "missing" }));
         Assert.That(t.Items.Select(i => (i.InstanceId, i.ItemId, i.Count, i.Owner)), Is.EquivalentTo(items), "只补原因，不改实物");
@@ -556,7 +556,7 @@ public class B53aTests : TestBase
     {
         var s = New();
         var pot = Give(s, "pot", ItemInstance.Carried);
-        Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId), 1);
+        Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId), 5);   // B56：每份100毫升，×5 保持原 500 毫升
         Give(s, "raw_meat", ItemInstance.ContainerOwner(pot.InstanceId));
         var grams = E.CarriedGrams(s);
         var potGrams = E.ItemGrams(s, pot);
@@ -617,8 +617,8 @@ public class B53aTests : TestBase
     {
         var s = New();
         var pot = s.Items.First(i => i.ItemId == "pot");
-        E.DebugGive(s, "clean_water", 2, s.Ground);
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "clean_water" && i.Owner == s.Ground).InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        E.DebugGive(s, "clean_water", 10, s.Ground);   // B56：每份100毫升，×5 保持原 1000 毫升
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "clean_water" && i.Owner == s.Ground).InstanceId, pot.InstanceId, 10)).Ok, Is.True);
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
         var fac = s.Locations[s.Ground].Facility;
         fac.FireLit = true;
@@ -630,30 +630,30 @@ public class B53aTests : TestBase
         Assert.That(E.ProcessOf(s, inPot), Is.Not.Null, "前提：在水煮");
         Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(inPot.InstanceId)).Blocked, Is.EqualTo(Processing));
         Assert.That(E.DiscardViewOf(s, DiscardTarget.Instance(pot.InstanceId)).Blocked, Is.EqualTo(Processing));
-        // 被水煮预留的 500 毫升不可丢，另一份可丢
+        // 被水煮预留的毫升不可丢：B56 起一次水煮预留 1000 毫升，满锅 1000 全被预留，没有另一份可丢
         var w = E.DiscardViewOf(s, DiscardTarget.PotWater(pot.InstanceId, "clean_water"));
-        Assert.That((w.Available, w.MaxUnits), Is.EqualTo((500, 1)));
+        Assert.That((w.Available, w.MaxUnits, w.Blocked), Is.EqualTo((0, 0, Processing)));   // B56 改期望（配置 boil_root waterCostMl 1000，M1079；S11 文首 B53a Q929「水煮料理每次耗水1000毫升」，W100-Q929-08）：原 (500, 1)（旧每次耗水 500）
     }
 
-    /// <summary>B53-Q859-02／03：锅水每份 500 毫升选 N＝1，只删 500，锅与另一份水保留；确认列水种和毫升；只扣内容重量一次；不发水卡、不加水分。</summary>
+    /// <summary>B53-Q859-02／03（B56 起锅水每份 100 毫升，选 N＝5）：只删 500，锅与其余水保留；确认列水种和毫升；只扣内容重量一次；不发水卡、不加水分。</summary>
     [Test]
     public void Q859_02_PotWater_ChooseOne_Deletes500_KeepsPot()
     {
         var s = New();
         var pot = Give(s, "pot", ItemInstance.Carried);
         var inside = ItemInstance.ContainerOwner(pot.InstanceId);
-        Give(s, "clean_water", inside, 2);
+        Give(s, "clean_water", inside, 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var meat = Give(s, "raw_meat", inside);
         var t = DiscardTarget.PotWater(pot.InstanceId, "clean_water");
         var v = E.DiscardViewOf(s, t);
-        Assert.That((v.IsWater, v.Available, v.UnitMl, v.MaxUnits, v.WaterName), Is.EqualTo((true, 1000, 500, 2, "净水")));
+        Assert.That((v.IsWater, v.Available, v.UnitMl, v.MaxUnits, v.WaterName), Is.EqualTo((true, 1000, 100, 10, "净水")));   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：原 (…, 500, 2, …)
         var grams = E.CarriedGrams(s);
         var hyd = s.Player.Stats.Hydration;
         var cards = s.Items.Count(i => i.ItemId == "clean_water" && !i.InContainer);
-        var p = E.DiscardPreview(s, t, 1, false, out _)!;
+        var p = E.DiscardPreview(s, t, 5, false, out _)!;   // B56：选 5 份×100 毫升（原选 1 份×500）
         Assert.That(p.Lines, Is.EqualTo(new[] { "永久丢弃：净水500毫升。", "丢弃后无法找回。" }), "只删水不写包含");
-        Assert.That(E.Discard(s, new DiscardRequest { Target = t, Count = 1, Stamp = p.Stamp }).Ok, Is.True);
-        Assert.That(s.Items.Where(i => i.Owner == inside && i.ItemId == "clean_water").Sum(i => i.Count), Is.EqualTo(1));
+        Assert.That(E.Discard(s, new DiscardRequest { Target = t, Count = 5, Stamp = p.Stamp }).Ok, Is.True);
+        Assert.That(s.Items.Where(i => i.Owner == inside && i.ItemId == "clean_water").Sum(i => i.Count), Is.EqualTo(5));   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：剩 500 毫升＝5 份，原 1
         Assert.That(s.Items.Contains(pot) && s.Items.Contains(meat), Is.True, "锅与食材保留");
         Assert.That(E.CarriedGrams(s), Is.EqualTo(grams - 500), "净水 1 克／毫升，扣 500 克一次");
         Assert.That(s.Player.Stats.Hydration, Is.EqualTo(hyd), "无饮水收益");
@@ -661,7 +661,10 @@ public class B53aTests : TestBase
         Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：净水500毫升。"));
     }
 
-    /// <summary>B53-Q859-02：壶剩 750 选 1 份删 500 → 剩 250；剩 250 时数量路径上限 0，全部丢弃删实际 250，壶保留、空水状态。</summary>
+    /// <summary>
+    /// B53-Q859-02（B56 改：S10 文首 B53a Q929 每份 100 毫升，W100-Q929-03）：壶剩 750 选 7 份删 700 → 剩 50；剩 50 不足一份时数量路径上限 0、禁用原因「水分不足。」，
+    /// 全部丢弃删实际 50，壶保留、空水状态。原为「选 1 份删 500 → 剩 250」。
+    /// </summary>
     [Test]
     public void Q859_02_Canteen_TailWater250_OnlyAll()
     {
@@ -670,20 +673,23 @@ public class B53aTests : TestBase
         c.LiquidId = "clean_water";
         c.LiquidMl = 750;
         var t = DiscardTarget.CanteenWater(c.InstanceId);
-        Assert.That(E.DiscardViewOf(s, t).MaxUnits, Is.EqualTo(1));
-        Assert.That(Confirm(s, t, 1, false).Ok, Is.True);
-        Assert.That((c.LiquidId, c.LiquidMl), Is.EqualTo(("clean_water", 250)));
+        Assert.That(E.DiscardViewOf(s, t).MaxUnits, Is.EqualTo(7));   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：floor(750／100)＝7，原 1
+        Assert.That(E.DiscardViewOf(s, t).QuantityBlocked, Is.Null, "够一份时数量路径可用");
+        Assert.That(Confirm(s, t, 7, false).Ok, Is.True);
+        Assert.That((c.LiquidId, c.LiquidMl), Is.EqualTo(("clean_water", 50)));   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：750−700，原 250
         var v = E.DiscardViewOf(s, t);
-        Assert.That((v.Available, v.UnitMl, v.MaxUnits), Is.EqualTo((250, 500, 0)), "不足一份：数量路径禁用");
-        Assert.That(E.DiscardPreview(s, t, 1, false, out _), Is.Null, "不造半份、不向上凑 500");
+        Assert.That((v.Available, v.UnitMl, v.MaxUnits), Is.EqualTo((50, 100, 0)), "不足一份：数量路径禁用");   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：原 (250, 500, 0)
+        Assert.That(v.QuantityBlocked, Is.EqualTo("水分不足。"));   // B56 新增（W100-Q929-03「不足100时数量禁用原因水分不足。」）
+        Assert.That(E.DiscardPreview(s, t, 1, false, out var qWhy), Is.Null, "不造半份、不向上凑 100");
+        Assert.That(qWhy, Is.EqualTo("水分不足。"));   // B56 新增：同上
         var p = E.DiscardPreview(s, t, 0, true, out _)!;
-        Assert.That(p.Lines[0], Is.EqualTo("永久丢弃：净水250毫升。"));
+        Assert.That(p.Lines[0], Is.EqualTo("永久丢弃：净水50毫升。"));   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）「全部丢弃最终确认仍可删真实尾水」：原 250
         var grams = E.CarriedGrams(s);
         Assert.That(E.Discard(s, new DiscardRequest { Target = t, All = true, Stamp = p.Stamp }).Ok, Is.True);
         Assert.That((c.LiquidId, c.LiquidMl), Is.EqualTo(((string?)null, 0)));
         Assert.That(s.Items.Contains(c), Is.True, "壶保留");
-        Assert.That(E.CarriedGrams(s), Is.EqualTo(grams - 250));
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：净水250毫升。"));
+        Assert.That(E.CarriedGrams(s), Is.EqualTo(grams - 50));   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：原 250
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已永久丢弃：净水50毫升。"));   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：原 250
     }
 
     /// <summary>B53-Q859-03：确认后壶里水量变了（喝了一口）整次拒绝「物品已变，请重选。」，不从别的容器补。</summary>
@@ -719,8 +725,8 @@ public class B53aTests : TestBase
 
         var pot = s.Items.First(i => i.ItemId == "pot");
         Assert.That(E.DiscardViewOf(s, DiscardTarget.PotWater(pot.InstanceId, "dirty_water")).Blocked, Is.EqualTo(NoWater));
-        E.DebugGive(s, "dirty_water", 2, s.Ground);
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "dirty_water" && i.Owner == s.Ground).InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        E.DebugGive(s, "dirty_water", 10, s.Ground);   // B56：每份100毫升，×5 保持原 1000 毫升
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "dirty_water" && i.Owner == s.Ground).InstanceId, pot.InstanceId, 10)).Ok, Is.True);
         var tp = DiscardTarget.PotWater(pot.InstanceId, "dirty_water");
         Assert.That(E.DiscardViewOf(s, tp).Available, Is.EqualTo(1000), "对照：锅不在火上时脏水可丢");
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
@@ -975,7 +981,7 @@ public class B53aTests : TestBase
     public void MT_UnrelatedItem_NotBlockedByOtherProcess()
     {
         var s = New();
-        Boiling(s, 2);
+        Boiling(s, 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         s.Items.RemoveAll(i => i.ItemId == "wood");
         Give(s, "wood", ItemInstance.Carried, 3);
         var v = E.DiscardViewOf(s, DiscardTarget.Group(ItemInstance.Carried, "wood", null));
@@ -1123,7 +1129,7 @@ public class B53aTests : TestBase
     {
         var s = New();
         var pot = Give(s, "pot", ItemInstance.Carried);
-        var w = Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId), 2);
+        var w = Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId), 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var t = DiscardTarget.PotWater(pot.InstanceId, "clean_water");
         Assert.That(E.DiscardViewOf(s, t).Available, Is.EqualTo(1000), "对照");
         pot.ReservedBy = 786;
@@ -1136,14 +1142,14 @@ public class B53aTests : TestBase
         Assert.That((E.DiscardViewOf(s, t).Blocked, E.DiscardViewOf(s, t).Available), Is.EqualTo((NoPermission, 0)));
     }
 
-    /// <summary>B53-Q859 锅水「水煮食材预留的毫升不可丢」：锅里只有 1 份水且全被水煮预留时，拒「加工中：先停止加工。」，不是「无可丢弃的水。」。</summary>
+    /// <summary>B53-Q859 锅水「水煮食材预留的毫升不可丢」：锅里的水全被水煮预留时（B56 起一次水煮 1000 毫升＝满锅 10 份；原 1 份 500），拒「加工中：先停止加工。」，不是「无可丢弃的水。」。</summary>
     [Test]
     public void MT_PotWater_AllReservedByBoiling_Processing()
     {
         var s = New();
-        var (pot, _) = Boiling(s, 1);
+        var (pot, _) = Boiling(s, 10);   // B56：一次水煮耗水 1000 毫升＝10 份（原 1 份 500 毫升）
         var v = E.DiscardViewOf(s, DiscardTarget.PotWater(pot.InstanceId, "clean_water"));
-        Assert.That((v.Total, v.Available, v.MaxUnits, v.Blocked), Is.EqualTo((500, 0, 0, Processing)));
+        Assert.That((v.Total, v.Available, v.MaxUnits, v.Blocked), Is.EqualTo((1000, 0, 0, Processing)));   // B56 改期望（配置 boil_root waterCostMl 1000，M1079；S11 文首 B53a Q929「水煮料理每次耗水1000毫升」，W100-Q929-08）：原 Total 500
     }
 
     /// <summary>子区打开后容器已不在（或不是锅）：「物品已变，请重选。」，数量上限 0。</summary>
@@ -1195,7 +1201,7 @@ public class B53aTests : TestBase
 
     /// <summary>
     /// 锅里同水种分两堆（另一份是带奖励来源、不与普通水合堆的净水）与两份生肉：包含行按水种合计毫升、食材合计份数；水可丢 1000；
-    /// 选 1 份只删 500（按稳定实例 ID 先删前一堆，S06 组内顺序），全部丢弃后锅里不留空水堆。
+    /// 选 5 份只删 500（B56 每份 100 毫升；按稳定实例 ID 先删前一堆，S06 组内顺序），全部丢弃后锅里不留空水堆。
     /// </summary>
     [Test]
     public void MT_PotTwoWaterHeaps_SumsAndExactRemoval()
@@ -1203,8 +1209,8 @@ public class B53aTests : TestBase
         var s = New();
         var pot = Give(s, "pot", ItemInstance.Carried);
         var inside = ItemInstance.ContainerOwner(pot.InstanceId);
-        var w1 = Give(s, "clean_water", inside, 1);
-        var w2 = E.CreateItems(s, "clean_water", 1, inside, false, new ItemSource { GrantEventId = "mt-reward-water" }).Single();
+        var w1 = Give(s, "clean_water", inside, 5);   // B56：每份100毫升，×5 保持原 500 毫升
+        var w2 = E.CreateItems(s, "clean_water", 5, inside, false, new ItemSource { GrantEventId = "mt-reward-water" }).Single();   // B56：每份100毫升，×5 保持原 500 毫升
         Assert.That(E.PotLiquids(s, pot.InstanceId).Count, Is.EqualTo(2), "前提：两堆不合堆");
         Give(s, "raw_meat", inside);
         Give(s, "raw_meat", inside);
@@ -1212,10 +1218,10 @@ public class B53aTests : TestBase
         Assert.That(E.DiscardPreview(s, DiscardTarget.Instance(pot.InstanceId), 1, false, out _)!.Lines[1], Is.EqualTo("包含：净水1000毫升、生肉×2（保质至第1日 20:00）。"));
         var t = DiscardTarget.PotWater(pot.InstanceId, "clean_water");
         var v = E.DiscardViewOf(s, t);
-        Assert.That((v.Total, v.Available, v.MaxUnits), Is.EqualTo((1000, 1000, 2)));
-        Assert.That(Confirm(s, t, 1, false).Ok, Is.True);
+        Assert.That((v.Total, v.Available, v.MaxUnits), Is.EqualTo((1000, 1000, 10)));   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：原 MaxUnits 2
+        Assert.That(Confirm(s, t, 5, false).Ok, Is.True);   // B56：选 5 份×100（原选 1 份×500）
         var left = E.PotLiquids(s, pot.InstanceId);
-        Assert.That(left.Select(i => (i.InstanceId, i.Count)), Is.EqualTo(new[] { (w2.InstanceId, 1) }), "只删 500：先删实例号小的一堆，另一堆不动");
+        Assert.That(left.Select(i => (i.InstanceId, i.Count)), Is.EqualTo(new[] { (w2.InstanceId, 5) }), "只删 500：先删实例号小的一堆，另一堆不动");   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：另一堆 5 份，原 1
         Assert.That(s.Items.Contains(w1), Is.False);
         Assert.That(Confirm(s, t, 0, true).Ok, Is.True);
         Assert.That(s.Items.Count(i => i.Owner == inside && i.ItemId == "clean_water"), Is.EqualTo(0), "不留 0 份水堆");
@@ -1229,7 +1235,7 @@ public class B53aTests : TestBase
         var s = New();
         var pot = Give(s, "pot", ItemInstance.Carried);
         var inside = ItemInstance.ContainerOwner(pot.InstanceId);
-        Give(s, "clean_water", inside, 1);
+        Give(s, "clean_water", inside, 5);   // B56：每份100毫升，×5 保持原 500 毫升
         var t = DiscardTarget.Instance(pot.InstanceId);
         var p = E.DiscardPreview(s, t, 1, false, out _)!;
         Give(s, "raw_meat", inside);
@@ -1239,17 +1245,17 @@ public class B53aTests : TestBase
         Assert.That(s.Items.Count(i => i.Owner == inside), Is.EqualTo(2));
     }
 
-    /// <summary>B53-Q859-03：选 1 份（500）确认后壶里 1000 变 750——仍够 1 份，但确认时的水量已变，整次拒绝「物品已变，请重选。」。</summary>
+    /// <summary>B53-Q859-03：选 5 份（500；B56 每份 100 毫升，原选 1 份）确认后壶里 1000 变 750——仍够 5 份，但确认时的水量已变，整次拒绝「物品已变，请重选。」。</summary>
     [Test]
     public void MT_CanteenWater_StillEnoughButChanged_Rejected()
     {
         var s = New();
         var c = Canteen(s, 1000);
         var t = DiscardTarget.CanteenWater(c.InstanceId);
-        var p = E.DiscardPreview(s, t, 1, false, out _)!;
-        Assert.That((p.Count, p.WaterMl), Is.EqualTo((1, 500)));
+        var p = E.DiscardPreview(s, t, 5, false, out _)!;
+        Assert.That((p.Count, p.WaterMl), Is.EqualTo((5, 500)));   // B56 改期望（S10 文首 B53a Q929：水卡与锅水每份100毫升；b53a-q928-q929-water-100ml.json W100-Q929-03）：选 5 份×100，原 (1, 500)
         c.LiquidMl = 750;
-        var res = E.Discard(s, new DiscardRequest { Target = t, Count = 1, Stamp = p.Stamp });
+        var res = E.Discard(s, new DiscardRequest { Target = t, Count = 5, Stamp = p.Stamp });
         Assert.That((res.Ok, res.Reason), Is.EqualTo((false, Changed)));
         Assert.That(c.LiquidMl, Is.EqualTo(750));
     }

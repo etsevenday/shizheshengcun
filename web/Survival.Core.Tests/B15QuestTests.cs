@@ -271,7 +271,7 @@ public class B15QuestTests : TestBase
         s.Quests = null!;
         s.SchemaVersion = SaveMigrator.Schema26;
         var cap = E.BattleCapacity(s);
-        var items = s.Items.Sum(i => i.Count);
+        var items = s.Items.Sum(i => i.Count * (i.ItemId is "clean_water" or "dirty_water" ? 5 : 1));   // B56 改期望（M1083 SaveMigrator.From57To58；S10 文首 B53a Q929 每份100毫升）：按新配置造的旧档读入时链尾 57→58 把脏水／净水份数×5（真实毫升不变），非水原样
         var dialogues = s.Story.DialogueLog.Count;
         SaveMigrator.Migrate(s, Cfg);
         Assert.That(s.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));

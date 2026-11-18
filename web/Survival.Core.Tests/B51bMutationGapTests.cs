@@ -154,7 +154,7 @@ public class B51bMutationGapTests : TestBase
 
     /// <summary>
     /// Q380 处理结果（B32e）与 Q701.2：投料批数上限 = min(10 − 在办批数, 材料与燃料够的完整批数)；完整批数对每种原料／燃料取 可用份数 ÷ 每批用量 向下取整，再取各项最小。
-    /// 净水台每批脏水×4、滤材×1（A07 ex_station_water）；陶窑每批黏土×2＋燃料木炭×1（A07 ex_ceramic_shell）。
+    /// 净水台每批脏水×20、滤材×1（A07 ex_station_water；B56 起每份100毫升，原脏水×4）；陶窑每批黏土×2＋燃料木炭×1（A07 ex_ceramic_shell）。
     /// </summary>
     [Test]
     public void Q380_BatchMax_FloorPerInput_MinAcrossInputs()
@@ -163,14 +163,14 @@ public class B51bMutationGapTests : TestBase
         var water = Cfg.Recipes.Single(r => r.Id == Water);
         var kiln = Cfg.Recipes.Single(r => r.Id == Kiln);
 
-        E.CreateItems(s, "dirty_water", 9, s.Ground);
+        E.CreateItems(s, "dirty_water", 45, s.Ground);   // B56：每份100毫升，×5 保持原 4500 毫升
         E.CreateItems(s, "filter_media", 5, s.Ground);
-        Assert.That(E.StationBatchMaxNew(s, water), Is.EqualTo(2), "脏水 9÷4 向下取整 2，滤材 5，取 2");
+        Assert.That(E.StationBatchMaxNew(s, water), Is.EqualTo(2), "脏水 45÷20 向下取整 2，滤材 5，取 2");
 
-        E.CreateItems(s, "dirty_water", 11, s.Ground);   // 20 份
+        E.CreateItems(s, "dirty_water", 55, s.Ground);   // 100 份（B56：每份100毫升，×5 保持原 5500 毫升）
         s.Items.RemoveAll(i => i.ItemId == "filter_media");
         E.CreateItems(s, "filter_media", 3, s.Ground);
-        Assert.That(E.StationBatchMaxNew(s, water), Is.EqualTo(3), "脏水 20÷4＝5，滤材 3，取 3");
+        Assert.That(E.StationBatchMaxNew(s, water), Is.EqualTo(3), "脏水 100÷20＝5，滤材 3，取 3");
 
         E.CreateItems(s, "clay", 7, s.Ground);
         E.CreateItems(s, "charcoal", 2, s.Ground);
@@ -182,7 +182,7 @@ public class B51bMutationGapTests : TestBase
     public void Q380_BatchMax_NoInputs_OnlyRoomLimits()
     {
         var s = Workshop();
-        E.CreateItems(s, "dirty_water", 12, s.Ground);
+        E.CreateItems(s, "dirty_water", 60, s.Ground);   // B56：每份100毫升，×5 保持原 6000 毫升（3 批）
         E.CreateItems(s, "filter_media", 3, s.Ground);
         Ok(E.StartStationBatch(s, Water, "room", 3));
         var src = Cfg.Recipes.Single(r => r.Id == Water);
@@ -196,7 +196,7 @@ public class B51bMutationGapTests : TestBase
     private (GameState s, int t0) WaterBatch()
     {
         var s = Workshop();
-        foreach (var i in E.CreateItems(s, "dirty_water", 4, s.Ground)) i.ExpiresAt = s.GameMinute + 20;
+        foreach (var i in E.CreateItems(s, "dirty_water", 20, s.Ground)) i.ExpiresAt = s.GameMinute + 20;   // B56：每份100毫升，×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, s.Ground);
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, Water, "chk"));
@@ -225,13 +225,13 @@ public class B51bMutationGapTests : TestBase
         Assert.That(Batches(s, "water_station"), Is.Empty);
     }
 
-    /// <summary>配对：输入全部仍在原地时同一批按时完成，出净水×4（A07 ex_station_water）、不出原料不全句。</summary>
+    /// <summary>配对：输入全部仍在原地时同一批按时完成，出净水×20（A07 ex_station_water；B56 原×4）、不出原料不全句。</summary>
     [Test]
     public void S08_Complete_AllInputsInPlace_Succeeds()
     {
         var (s, t0) = WaterBatch();
         AdvanceTo(s, t0 + 35);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(4));
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(20));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         Assert.That(s.Log.Any(l => l.Text.Contains("原料不全")), Is.False);
     }
 
@@ -247,28 +247,29 @@ public class B51bMutationGapTests : TestBase
     public void Migrate54To55_OnlyBatchInputsPaused_UnrelatedUntouched()
     {
         var s = Workshop();
-        foreach (var i in E.CreateItems(s, "dirty_water", 4, s.Ground)) i.ExpiresAt = s.GameMinute + 100;
+        foreach (var i in E.CreateItems(s, "dirty_water", 20, s.Ground)) i.ExpiresAt = s.GameMinute + 100;   // B56：每份100毫升，×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, s.Ground);
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, Water, "mig"));
-        foreach (var i in E.CreateItems(s, "dirty_water", 2, s.Ground)) i.ExpiresAt = t0 + 100;   // 未投入余料
+        foreach (var i in E.CreateItems(s, "dirty_water", 10, s.Ground)) i.ExpiresAt = t0 + 100;   // 未投入余料（B56：每份100毫升，×5 保持原 1000 毫升）
         foreach (var i in E.CreateItems(s, "herb", 1, ItemInstance.Carried)) i.ExpiresAt = t0 + 300;   // 随身无关物
         AdvanceTo(s, t0 + 20);
         E.DebugLegacyStation56(s);   // B51c2a1：造旧档起点——57 前原料在地面按批预留
         foreach (var i in s.Items.Where(i => i.ReservedBy != null)) i.ShelfPausedMinutes = null;   // 54 旧档设施批输入没有暂停保质（原截止 E 保留）
         Assert.That(s.Items.Count(i => i.ShelfPausedMinutes != null), Is.EqualTo(0));
+        // B56 起点：DebugLegacyStation56 已把水按旧每份500毫升还原（SaveMigrator.DebugToLegacyWaterUnits），读档链 57→58 再×5
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         obj["SchemaVersion"] = "54";
         var old = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(old.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(old.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
         Assert.That(old.GameMinute, Is.EqualTo(t0 + 20));
 
         var b = Batches(old, "water_station").Single();
         var bound = BatchBound(old, b.BatchId).Where(i => i.ItemId == "dirty_water").ToList();   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
-        Assert.That(bound.Sum(i => i.Count), Is.EqualTo(4));
+        Assert.That(bound.Sum(i => i.Count), Is.EqualTo(20));   // B56 改期望：旧4份经 57→58 水份数×5（SaveMigrator.From57To58）：原 4
         Assert.That(bound.All(i => i.ShelfPausedMinutes == 80), Is.True, "R＝旧E−U＝100−20");
         var spare = old.Items.Where(i => !InAnyBatch(i) && i.ItemId == "dirty_water").ToList();   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
-        Assert.That(spare.Sum(i => i.Count), Is.EqualTo(2));
+        Assert.That(spare.Sum(i => i.Count), Is.EqualTo(10));   // B56 改期望：旧2份经 57→58 水份数×5（SaveMigrator.From57To58）：原 2
         Assert.That(spare.All(i => i.ShelfPausedMinutes == null && i.ExpiresAt == t0 + 100), Is.True, "未投入余料不保护、原截止不变");
         var herb = old.Items.Where(i => i.ItemId == "herb" && i.Owner == ItemInstance.Carried && i.ExpiresAt == t0 + 300).ToList();
         Assert.That(herb.Count, Is.EqualTo(1));
@@ -300,7 +301,7 @@ public class B51bMutationGapTests : TestBase
     {
         var s = Workshop();
         var emptyStamp = E.StationTakeStamp(s, s.Ground, "water_station");
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：每份100毫升，×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, s.Ground);
         Ok(E.StartStationBatch(s, Water, "one"));
         var r = E.TakeAll(s, s.Ground, "water_station", emptyStamp, "nil");
@@ -308,7 +309,7 @@ public class B51bMutationGapTests : TestBase
         Assert.That(r.Reason, Is.EqualTo("物品已变，请重选。"));
         var b = Batches(s, "water_station");
         Assert.That(b.Count, Is.EqualTo(1));
-        Assert.That(BatchBound(s, b[0].BatchId).Sum(i => i.Count), Is.EqualTo(5), "脏水 4＋滤材 1 仍归本批");
+        Assert.That(BatchBound(s, b[0].BatchId).Sum(i => i.Count), Is.EqualTo(21), "脏水 20＋滤材 1 仍归本批");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 5
     }
 
     // ───────────── 附：在办旧批（经验快照 0）的经验说明 ─────────────
@@ -322,7 +323,7 @@ public class B51bMutationGapTests : TestBase
     public void Q174_InFlightZeroSnapshot_XpNote()
     {
         var s = Workshop();
-        E.CreateItems(s, "dirty_water", 8, s.Ground);
+        E.CreateItems(s, "dirty_water", 40, s.Ground);   // B56：每份100毫升，×5 保持原 4000 毫升（2 批）
         E.CreateItems(s, "filter_media", 2, s.Ground);
         Ok(E.StartStationBatch(s, Water, "xp", 2));
         var q = Batches(s, "water_station");

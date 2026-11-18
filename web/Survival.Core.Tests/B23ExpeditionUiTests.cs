@@ -46,9 +46,10 @@ public class B23ExpeditionUiTests : BattleTestBase
     {
         var s = New();
         s.Items.RemoveAll(i => i.IsCarried && Cfg.Items.Single(c => c.Id == i.ItemId).Kind == "water");
-        E.CreateItems(s, "clean_water", 2, ItemInstance.Carried);
-        E.CreateItems(s, "dirty_water", 1, ItemInstance.Carried);
-        E.CreateItems(s, "clean_water", 3, s.Ground);
+        // B56：每份100毫升，×5 保持原 1000／500／1500 毫升
+        E.CreateItems(s, "clean_water", 10, ItemInstance.Carried);
+        E.CreateItems(s, "dirty_water", 5, ItemInstance.Carried);
+        E.CreateItems(s, "clean_water", 15, s.Ground);
         E.CreateItems(s, "purification_tablet", 1, ItemInstance.Carried);
         var lines = E.ExpeditionPreview(s, "d01").WaterLines;
         Assert.That(lines.Any(l => l.StartsWith("全队随身净水1000毫升")), Is.True);

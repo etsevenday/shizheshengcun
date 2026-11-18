@@ -28,7 +28,7 @@ public class B41bMigrationTests : B41aTestBase
     [Test]
     public void Schema47_ConfigValuesFromR05()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水每份100毫升份数×5，SaveMigrator.From57To58，M1083；S10 文首 B53a Q929）
         Assert.That(Cfg.Encounters.ApproachMinutes, Is.EqualTo(new[] { 20, 25, 30, 35, 40 }), "R05 Q416 五档");
         Assert.That(Cfg.Encounters.CardRetreatGuardMinutes, Is.EqualTo(60), "R05 Q416 同卡撤退保护 60 世界分钟");
     }
@@ -45,7 +45,7 @@ public class B41bMigrationTests : B41aTestBase
         var rng = RngOf(s);
         var log = s.Log.Count;
         var t = SaveSerializer.Deserialize(AsSchema46(s), CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水每份100毫升份数×5，SaveMigrator.From57To58，M1083；S10 文首 B53a Q929）
         Assert.That(t.EnemyCards.Timers, Is.Empty);
         Assert.That(t.StashedWork, Is.Null, "旧档无暂存记录即按无暂存处理");
         Assert.That(t.Main!.Type, Is.EqualTo(ActionType.Clear));

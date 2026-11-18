@@ -63,7 +63,7 @@ public class V10ConfigTests : TestBase
         Assert.That(p.InputId, Is.EqualTo("cooked_meat"));
         Assert.That(p.OutputId, Is.EqualTo("boiled_meat"));
         Assert.That(p.HeatMinutes, Is.EqualTo(15));
-        Assert.That(p.WaterCostMl, Is.EqualTo(500));
+        Assert.That(p.WaterCostMl, Is.EqualTo(1000));   // B56 改期望：复煮每次耗水 1000 毫升（b53a-q928-q929-water-100ml.json foodProcesses reboil_cooked_meat，M1079）
         Assert.That(p.RequiredLiquid, Is.EqualTo("clean_water"));
         Assert.That(p.InPot, Is.True);
         // Q16（S11 §10）取代 T03 继承原期限：配置不再有 keepInputExpiry，成品统一完成起 24 小时（V11CookProtectTests）

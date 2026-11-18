@@ -521,7 +521,7 @@ public class CombatV06Tests : BattleTestBase
         Start(u, req);
         Run(u);
         Assert.That(Count(u, "antiviral_cure"), Is.EqualTo(1));
-        Assert.That(Count(u, "clean_water"), Is.EqualTo(water - 2), "净水作为原料消耗");
+        Assert.That(Count(u, "clean_water"), Is.EqualTo(water - 10), "净水作为原料消耗");   // B56 改期望：特效药净水 2→10 份（b53a-q928-q929-water-100ml.json recipeWaterConversions make_antiviral_cure，1000 毫升不变）
         Assert.That(E.PotContents(u, pot.InstanceId), Is.Empty, "不自动装锅");
         Assert.That(u.Items.Any(i => i.InstanceId == pot.InstanceId), Is.True, "锅不消耗");
     }

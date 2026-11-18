@@ -284,14 +284,14 @@ public class B41bResumeReturnTests : B41bTestBase
         E.DebugBuildAllWorkshops(w);
         foreach (var k in new[] { "crafting", "medicine", "cooking" }) w.Skills[k].Level = 5;
         w.Items.RemoveAll(i => i.ItemId is "dirty_water" or "clean_water" or "purification_tablet");
-        E.CreateItems(w, "dirty_water", 4, w.CurrentLocation);
+        E.CreateItems(w, "dirty_water", 20, w.CurrentLocation);   // B56：每份100毫升，×5 保持原 2000 毫升（一批）
         E.CreateItems(w, "purification_tablet", 2, w.CurrentLocation);
         Start(w, ActionRequest.Craft("ex_tablet_water"));
         Assert.That(w.Main!.FixedWait, Is.True);
         MarkKept(w);
         Assert.That(E.Cancel(w).Ok, Is.True);
         Assert.That(w.Log.Last().Text, Is.EqualTo($"已取消制作。地面预留材料已返还{E.ZoneName(w, w.Ground)}地面。已耗时间不退。"));
-        Assert.That(w.Items.Where(i => i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(4));
+        Assert.That(w.Items.Where(i => i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(20));   // B56 改期望：取消全数返还造数 20 份（×5 保持原 2000 毫升）
         Assert.That(w.Items.Any(i => i.ReservedBy != null), Is.False);
 
         // 野营布／柴炉部署：保留「已结束{行动名}。」，只解锁原物（B41c2：柴炉部署开工 5 分钟不可退出，改用 10 分钟的铺开野营布）

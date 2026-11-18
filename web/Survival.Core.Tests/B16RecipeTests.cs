@@ -52,16 +52,16 @@ public class B16RecipeTests : TestBase
     {
         var s = New();
         s.Items.RemoveAll(i => i.ItemId is "dirty_water" or "purification_tablet");
-        E.CreateItems(s, "dirty_water", 4, s.CurrentLocation);
+        E.CreateItems(s, "dirty_water", 20, s.CurrentLocation);   // B56：每份100毫升，×5 保持原 2000 毫升（ex_tablet_water／ex_cartridge_water 脏水 4→20，W100-Q929-11）
         E.CreateItems(s, "purification_tablet", 1, s.CurrentLocation);
         Assert.That(E.CanStart(s, ActionRequest.Craft("ex_tablet_water")), Does.Contain("远行基础做法"));
         s.Progress.Flags.Add("h03_notice_read");
         Assert.That(E.CanStart(s, ActionRequest.Craft("ex_tablet_water")), Is.Null);
 
-        var t = Camp(("dirty_water", 4), ("filter_cartridge", 1));
+        var t = Camp(("dirty_water", 20), ("filter_cartridge", 1));   // B56：每份100毫升，×5 保持原 2000 毫升（ex_tablet_water／ex_cartridge_water 脏水 4→20，W100-Q929-11）
         t.Items.RemoveAll(i => i.ItemId == "water_filter");
         Assert.That(E.CanStart(t, ActionRequest.Craft("ex_cartridge_water")), Does.Contain("便携滤水器"));
-        var u = Camp(("dirty_water", 3), ("purification_tablet", 1));
+        var u = Camp(("dirty_water", 15), ("purification_tablet", 1));   // B56：×5 保持原 1500 毫升（差一批）
         var before = u.Items.Sum(i => i.Count);
         Assert.That(E.Start(u, ActionRequest.Craft("ex_tablet_water")).Ok, Is.False);
         Assert.That(u.Items.Sum(i => i.Count), Is.EqualTo(before));
@@ -75,7 +75,7 @@ public class B16RecipeTests : TestBase
     [Test]
     public void SUP03_TabletWater_FixedWait20_NoSpeed_CookXp4()
     {
-        var s = Camp(("dirty_water", 4), ("purification_tablet", 2));
+        var s = Camp(("dirty_water", 20), ("purification_tablet", 2));   // B56：每份100毫升，×5 保持原 2000 毫升（ex_tablet_water／ex_cartridge_water 脏水 4→20，W100-Q929-11）
         s.Skills["crafting"].Level = 10;
         var xp = s.Skills.ToDictionary(k => k.Key, k => k.Value.Xp + k.Value.Level * 100000L);
         var pv = E.Preview(s, ActionRequest.Craft("ex_tablet_water"));
@@ -85,11 +85,12 @@ public class B16RecipeTests : TestBase
         Start(s, ActionRequest.Craft("ex_tablet_water"));
         Assert.That(s.Main!.FixedWait, Is.True);
         Assert.That(s.Main.ReservedItemIds, Has.Count.GreaterThanOrEqualTo(2));
-        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && i.ReservedBy != null).Sum(i => i.Count), Is.EqualTo(4));
+        // B56（W100-Q929-11）：原 2 升进出变 20 新水份进出（原 4／4）
+        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && i.ReservedBy != null).Sum(i => i.Count), Is.EqualTo(20));
         Run(s);
         Assert.That(s.GameMinute - t0, Is.EqualTo(20));
         Assert.That(Count(s, "dirty_water"), Is.EqualTo(0));
-        Assert.That(Count(s, "clean_water", s.CurrentLocation), Is.EqualTo(4));
+        Assert.That(Count(s, "clean_water", s.CurrentLocation), Is.EqualTo(20));
         Assert.That(Count(s, "purification_tablet"), Is.EqualTo(1));
         xp["cooking"] += 4;   // B22a Q166：只加烹饪 4
         Assert.That(s.Skills.ToDictionary(k => k.Key, k => k.Value.Xp + k.Value.Level * 100000L), Is.EqualTo(xp));
@@ -100,16 +101,17 @@ public class B16RecipeTests : TestBase
     [Test]
     public void SUP06_CartridgeWater_CancelReturns_ToolNotConsumed()
     {
-        var s = Camp(("dirty_water", 4), ("filter_cartridge", 1), ("water_filter", 1));
+        var s = Camp(("dirty_water", 20), ("filter_cartridge", 1), ("water_filter", 1));   // B56：每份100毫升，×5 保持原 2000 毫升（ex_tablet_water／ex_cartridge_water 脏水 4→20，W100-Q929-11）
         Start(s, ActionRequest.Craft("ex_cartridge_water"));
         Steps(s, 2);
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(Count(s, "clean_water"), Is.EqualTo(0));
-        Assert.That(Count(s, "dirty_water"), Is.EqualTo(4));
+        // B56（W100-Q929-11）：原 2 升进出变 20 新水份进出（原 4／4）
+        Assert.That(Count(s, "dirty_water"), Is.EqualTo(20));
         Assert.That(Count(s, "filter_cartridge"), Is.EqualTo(1));
         Start(s, ActionRequest.Craft("ex_cartridge_water"));
         Run(s);
-        Assert.That(Count(s, "clean_water"), Is.EqualTo(4));
+        Assert.That(Count(s, "clean_water"), Is.EqualTo(20));
         Assert.That(Count(s, "filter_cartridge"), Is.EqualTo(0));
         Assert.That(Count(s, "water_filter"), Is.EqualTo(1));
     }

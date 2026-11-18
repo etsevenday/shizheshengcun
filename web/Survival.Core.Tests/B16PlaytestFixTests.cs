@@ -15,8 +15,8 @@ public class B16PlaytestFixTests : TestBase
         s.Skills["cooking"].Level = 5;
         s.Items.RemoveAll(i => i.ItemId is "grain" or "salt" or "clean_water");
         var pot = s.Items.First(i => i.ItemId == "pot");
-        E.DebugGive(s, "clean_water", 2, "camp");
-        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2)));
+        E.DebugGive(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
+        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10)));
         if (pot.IsCarried) Ok(E.DoInstant(s, InstantRequest.Drop(pot.InstanceId, 1)));
         Ok(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)));
         E.CreateItems(s, "grain", 2, "camp");
@@ -67,7 +67,7 @@ public class B16PlaytestFixTests : TestBase
     {
         var s = New();
         E.DebugLearnAllKnowledge(s);
-        E.CreateItems(s, "dirty_water", 4, s.CurrentLocation);
+        E.CreateItems(s, "dirty_water", 20, s.CurrentLocation);   // B56：ex_tablet_water 脏水 4→20（W100-Q929-11），保持 2000 毫升
         E.CreateItems(s, "purification_tablet", 1, s.CurrentLocation);
         var p = E.Preview(s, ActionRequest.Craft("ex_tablet_water"));
         Assert.That(p.Notes, Has.None.Contains("基础工作量"));

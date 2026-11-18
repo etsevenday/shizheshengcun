@@ -24,6 +24,36 @@ public class ConfigTests : TestBase
     private static HashSet<string> ChangedByV04() =>
         new(V04()["foodChanges"]!.Where(f => (string)f["operation"]! == "update_existing").Select(f => (string)f["id"]!));
 
+    // ───────────── B56 契约覆盖旧资产（M1079；b53a-q928-q929-water-100ml.json，S10 文首 B53a Q929）：水每份 100 毫升、100 克、补水 6、堆 100，
+    // 锅每份 100；水煮／复煮耗水 1000；配方与资源点水份数×5 保持原真实毫升（preserveOtherActualMlAcrossRecipesResourcesLootTradeTasksBudget）。
+    // 旧资产（v0.2—v0.6）其他字段照旧逐项比对，只有下列水量字段改对照 B56 字面量。
+    private static bool IsWater(string id) => id is "dirty_water" or "clean_water";
+
+    /// <summary>B56 契约 unit：{ ml 100, grams 100, baseHydration 6, waterStackMax 100 }。</summary>
+    private const int B56WaterMl = 100, B56WaterGrams = 100, B56WaterStack = 100;
+    private const double B56WaterHydration = 6;
+
+    /// <summary>B56 契约 foodProcesses：水煮／复煮每次耗水 1000 毫升。</summary>
+    private static readonly Dictionary<string, int> B56WaterCostMl = new() { ["boil_root"] = 1000, ["boil_meat"] = 1000, ["reboil_cooked_meat"] = 1000 };
+
+    /// <summary>B56 契约 recipeWaterConversions：配方水份数新值（inputNew／outputNew）。</summary>
+    private static readonly Dictionary<string, int> B56RecipeWater = new()
+    {
+        ["make_antiviral_cure"] = 10, ["make_disinfectant"] = 5, ["make_saline"] = 5, ["make_herb_extract"] = 5,
+        ["ex_tablet_water"] = 20, ["ex_cartridge_water"] = 20, ["ex_hardtack"] = 5, ["ex_stew_portion"] = 10, ["ex_emergency_tonic"] = 5, ["ex_station_water"] = 20,
+    };
+
+    /// <summary>B56（M1079 资源点水产出×5，保持原真实毫升）：v0.2 资源里出水的两个点的新产出。</summary>
+    private static readonly Dictionary<string, Dictionary<string, int>> B56ResourceOutputs = new()
+    {
+        ["water"] = new() { ["dirty_water"] = 10 },                        // 原脏水2份（1000毫升）
+        ["supply_box"] = new() { ["canned_food"] = 2, ["clean_water"] = 5 }, // 原净水1份（500毫升）
+    };
+
+    /// <summary>旧资产里的水份数换成 B56 新值（配方按契约表，其他字段原样）。</summary>
+    private static Dictionary<string, int> B56Recipe(string recipeId, Dictionary<string, int> old) =>
+        old.ToDictionary(kv => kv.Key, kv => IsWater(kv.Key) && B56RecipeWater.TryGetValue(recipeId, out var n) ? n : kv.Value);
+
     private static GameConfig Fresh() =>
         ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")), validate: false);
 
@@ -52,8 +82,9 @@ public class ConfigTests : TestBase
             var it = Cfg.Items.Single(i => i.Id == (string)j["id"]!);
             if (changed.Contains(it.Id)) continue;
             Assert.That(it.Name, Is.EqualTo((string)j["name"]!), it.Id);
-            Assert.That(it.WeightGrams, Is.EqualTo((int)j["weightGrams"]!), it.Id);
-            Assert.That(it.StackMax, Is.EqualTo((int)j["stackMax"]!), it.Id);
+            // B56 改期望：水 100 克、堆 100（B56 契约覆盖 v0.2 的 500 克、堆 20）
+            Assert.That(it.WeightGrams, Is.EqualTo(IsWater(it.Id) ? B56WaterGrams : (int)j["weightGrams"]!), it.Id);
+            Assert.That(it.StackMax, Is.EqualTo(IsWater(it.Id) ? B56WaterStack : (int)j["stackMax"]!), it.Id);
             Assert.That(it.ShelfLifeMinutes, Is.EqualTo((int?)j["shelfLifeMinutes"]), it.Id);
         }
     }
@@ -64,8 +95,10 @@ public class ConfigTests : TestBase
     {
         var a = V02()["itemActions"]!;
         double Use(string id, Func<ItemUseConfig, double> f) => f(Cfg.Items.Single(i => i.Id == id).Use!);
-        Assert.That(Use("clean_water", u => u.Hydration), Is.EqualTo((double)a["cleanWaterHydration"]!));
-        Assert.That(Use("dirty_water", u => u.Hydration), Is.EqualTo((double)a["dirtyWaterHydration"]!));
+        // B56 改期望：每份 100 毫升补水 6（B56 契约 unit.baseHydration，覆盖 v0.2 每份 500 毫升补水 30；30×100／500＝6）
+        Assert.That((double)a["cleanWaterHydration"]! * B56WaterMl / 500, Is.EqualTo(B56WaterHydration), "旧资产 500 毫升 30 按毫升折算即 6");
+        Assert.That(Use("clean_water", u => u.Hydration), Is.EqualTo(B56WaterHydration));
+        Assert.That(Use("dirty_water", u => u.Hydration), Is.EqualTo(B56WaterHydration));
         Assert.That(Use("canned_food", u => u.Satiety), Is.EqualTo((double)a["cannedFoodSatiety"]!));
         Assert.That(Use("berry", u => u.Satiety), Is.EqualTo((double)a["berrySatiety"]!));
         Assert.That(Use("berry", u => u.Hydration), Is.EqualTo((double)a["berryHydration"]!));
@@ -105,6 +138,8 @@ public class ConfigTests : TestBase
             if (reveal < 0) Assert.That(r.RevealOnVisit, Is.True, r.NodeId);
             else Assert.That(r.RevealAt, Is.EqualTo(reveal), r.NodeId);
             var outs = ((JObject)j["outputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value);
+            // B56 改期望：出水点水份数×5（M1079，保持原真实毫升），其他点仍对照 v0.2
+            if (B56ResourceOutputs.TryGetValue(r.NodeId, out var b56)) outs = b56;
             Assert.That(r.Outputs, Is.EquivalentTo(outs), r.NodeId);
             Assert.That(r.Hazard?.Probability ?? 0, Is.EqualTo((double)j["hazardProbability"]!), r.NodeId + " 概率不变");
             var old = (double)j["hazardHealthLoss"]!;
@@ -226,7 +261,10 @@ public class ConfigTests : TestBase
     {
         var v = V02();
         Assert.That(Cfg.StartingCarried, Is.EquivalentTo(((JObject)v["starting_inventory"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)));
-        Assert.That(Cfg.StartingCampGround, Is.EquivalentTo(((JObject)v["starting_camp_ground"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)));
+        // B56 改期望：开局营地净水 2 份（1000 毫升）→ 10 份（M1079 startingCampGround，保持原真实毫升）；其他开局物资仍对照 v0.2
+        var ground = ((JObject)v["starting_camp_ground"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value);
+        ground["clean_water"] = 10;
+        Assert.That(Cfg.StartingCampGround, Is.EquivalentTo(ground));
         var s = New();
         Assert.That(s.GameMinute, Is.EqualTo(480));
         Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
@@ -286,12 +324,12 @@ public class ConfigTests : TestBase
         var d = v["containerDefinitions"]!["pot"]!;
         var pot = Cfg.Containers["pot"];
         Assert.That(pot.CapacityMl, Is.EqualTo((int)d["capacityMl"]!));
-        Assert.That(pot.UnitMl, Is.EqualTo((int)d["transferQuantumMl"]!));
+        Assert.That(pot.UnitMl, Is.EqualTo(B56WaterMl));   // B56 改期望：锅每份 100 毫升（B56 契约 containers.pot 10 份／1000 毫升，覆盖 v0.3 transferQuantumMl 500）
         Assert.That(pot.Accepts, Is.EquivalentTo(d["accepts"]!.Select(x => (string)x!)));
         Assert.That(Cfg.Items.Single(i => i.Id == "pot").ContainerId, Is.EqualTo("pot"));
         Assert.That(Cfg.Items.Single(i => i.Id == "pot").WeightGrams, Is.EqualTo(1000));
         foreach (var id in new[] { "dirty_water", "clean_water" })
-            Assert.That(Cfg.Items.Single(i => i.Id == id).UnitVolumeMl, Is.EqualTo(500), id);
+            Assert.That(Cfg.Items.Single(i => i.Id == id).UnitVolumeMl, Is.EqualTo(B56WaterMl), id);   // B56 改期望：水每份 100 毫升（B56 契约 unit.ml，原 500）
         var boil = Cfg.Processes.Single(x => x.Id == "boil_water");
         Assert.That(boil.InputId, Is.EqualTo((string)d["boilInputType"]!));
         Assert.That(boil.OutputId, Is.EqualTo((string)d["boilResultType"]!));
@@ -339,7 +377,7 @@ public class ConfigTests : TestBase
         var pot = v["pot"]!;
         var ct = Cfg.Containers[Cfg.Items.Single(i => i.Id == (string)pot["itemId"]!).ContainerId!];
         Assert.That(ct.CapacityMl, Is.EqualTo((int)pot["liquidCapacityMl"]!));
-        Assert.That(ct.UnitMl, Is.EqualTo((int)pot["transferQuantumMl"]!));
+        Assert.That(ct.UnitMl, Is.EqualTo(B56WaterMl));   // B56 改期望：锅每份 100 毫升（B56 契约 containers.pot，覆盖 v0.4 transferQuantumMl 500）
         Assert.That(ct.FoodSlots, Is.EqualTo((int)pot["foodSlots"]!), "新增肉类不改变2个食材位");
         Assert.That(ct.Accepts, Is.EquivalentTo(pot["acceptedLiquids"]!.Select(x => (string)x!)));
         Assert.That(ct.StoredFoodIds, Is.EquivalentTo(pot["storedFoodIds"]!.Select(x => (string)x!).Concat(new[] { "raw_meat", "cooked_meat", "boiled_meat" })));
@@ -360,7 +398,8 @@ public class ConfigTests : TestBase
             Assert.That(p.InputId, Is.EqualTo((string)j["inputId"]!), p.Id);
             Assert.That(p.OutputId, Is.EqualTo((string)j["outputId"]!), p.Id);
             Assert.That(p.HeatMinutes, Is.EqualTo((int)j["heatMinutes"]!), p.Id);
-            Assert.That(p.WaterCostMl, Is.EqualTo((int?)j["waterCostMl"] ?? 0), p.Id);
+            // B56 改期望：水煮耗水 1000（B56 契约 foodProcesses，覆盖 v0.4 的 500）；烧水仍对照 v0.4
+            Assert.That(p.WaterCostMl, Is.EqualTo(B56WaterCostMl.TryGetValue(p.Id, out var b56Cost) ? b56Cost : (int?)j["waterCostMl"] ?? 0), p.Id);
             Assert.That(p.RequiredLiquid, Is.EqualTo((string?)j["requiredLiquid"]), p.Id);
         }
         foreach (var j in meat)
@@ -369,7 +408,8 @@ public class ConfigTests : TestBase
             Assert.That(p.InputId, Is.EqualTo((string)j["inputId"]!), p.Id);
             Assert.That(p.OutputId, Is.EqualTo((string)j["outputId"]!), p.Id);
             Assert.That(p.HeatMinutes, Is.EqualTo((int)j["heatMinutes"]!), p.Id);
-            Assert.That(p.WaterCostMl, Is.EqualTo((int)j["waterCostMl"]!), p.Id);
+            // B56 改期望：生肉水煮耗水 1000（B56 契约 foodProcesses，覆盖 v0.6 的 500）
+            Assert.That(p.WaterCostMl, Is.EqualTo(B56WaterCostMl.TryGetValue(p.Id, out var b56Cost) ? b56Cost : (int)j["waterCostMl"]!), p.Id);
             Assert.That(p.RequiredLiquid, Is.EqualTo((string?)j["requiredLiquid"]), p.Id);
             Assert.That(p.InPot, Is.EqualTo((string)j["outputOwner"]! == "same_pot"), p.Id);
         }
@@ -530,8 +570,9 @@ public class ConfigTests : TestBase
         {
             var r = Cfg.Recipes.Single(x => x.Id == (string)j["id"]!);
             Assert.That(r.BaseMinutes, Is.EqualTo((int)j["baseMinutes"]!), r.Id);
-            Assert.That(r.Inputs, Is.EquivalentTo(((JObject)j["inputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
-            Assert.That(r.Outputs, Is.EquivalentTo(((JObject)j["outputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
+            // B56 改期望：配方水份数按 B56 契约 recipeWaterConversions（如特效药净水 2→10），其他原料与产出仍对照 v0.6
+            Assert.That(r.Inputs, Is.EquivalentTo(B56Recipe(r.Id, ((JObject)j["inputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value))), r.Id);
+            Assert.That(r.Outputs, Is.EquivalentTo(B56Recipe(r.Id, ((JObject)j["outputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value))), r.Id);
             // B5（A06 §4）：特效药旧门槛 医疗15/制造12 改 医疗10/制造10，新值由 B5SkillTests 核对
             if (j["minSkills"] is JObject ms && r.Id != "make_antiviral_cure") Assert.That(r.MinSkills, Is.EquivalentTo(ms.Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
             if (j["requirement"] != null) Assert.That(r.Requirement?.Facility, Is.EqualTo((string)j["requirement"]!), r.Id);
@@ -646,7 +687,7 @@ public class ConfigTests : TestBase
     [Test]
     public void Validate_RejectsBrokenContainer()
     {
-        AssertInvalid(c => c.Containers["pot"].CapacityMl = 1200, "整数倍");
+        AssertInvalid(c => c.Containers["pot"].CapacityMl = 1250, "整数倍");   // B56：锅每份 100 毫升后 1200 已是整数倍，改坏值换 1250
         AssertInvalid(c => c.Containers["pot"].Accepts.Add("wood"), "每份体积");
         AssertInvalid(c => c.Items.Single(i => i.Id == "pot").ContainerId = "kettle", "容器定义 kettle 不存在");
     }

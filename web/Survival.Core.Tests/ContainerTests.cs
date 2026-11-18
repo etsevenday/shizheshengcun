@@ -70,13 +70,14 @@ public class ContainerTests : TestBase
     public void D06_DirtyWaterIntoEmptyPotTwice_50Then100_TwoKg()
     {
         var s = New();
-        E.DebugGive(s, "dirty_water", 2, "camp");
+        E.DebugGive(s, "dirty_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
         var pot = Pot(s);
         var water = First(s, "dirty_water", "camp");
-        Ok(s, InstantRequest.FillPot(water.InstanceId, pot.InstanceId));
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1));
+        Ok(s, InstantRequest.FillPot(water.InstanceId, pot.InstanceId, 5));   // B56：装 5 份＝500 毫升（原 1 份）
+        // B56（S10 文首 B53a Q929：锅每份100毫升、1000 毫升＝10 份）：半锅为 5 份（原 1 份）
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(5));
         Assert.That(E.PotLabel(s, pot), Is.EqualTo("脏水50%·500/1000毫升"));
-        Ok(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId));
+        Ok(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 5));
         Assert.That(E.PotLabel(s, pot), Is.EqualTo("脏水100%·1000/1000毫升"));
         Assert.That(Count(s, "dirty_water", "camp"), Is.EqualTo(0), "散卡扣2");
         Assert.That(E.ItemGrams(s, pot), Is.EqualTo(2000), "满锅总重2公斤");
@@ -90,15 +91,16 @@ public class ContainerTests : TestBase
     public void D07_CleanWaterIntoHalfDirtyPot_MixForbidden()
     {
         var s = New();
-        E.DebugGive(s, "dirty_water", 1, "camp");
+        E.DebugGive(s, "dirty_water", 5, "camp");   // B56：每份100毫升，×5 保持原 500 毫升
         var pot = Pot(s);
-        Ok(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId));
+        Ok(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 5));
         var clean = First(s, "clean_water", "camp");
         var r = E.DoInstant(s, InstantRequest.FillPot(clean.InstanceId, pot.InstanceId));
         Assert.That(r.Ok, Is.False);
         Assert.That(r.Reason, Does.Contain("混装禁止"));
-        Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2));
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1));
+        // B56 配置（M1079；b53a json containers.pot、W100-Q929-01）：开局营地地面净水 10 份×100（原 2 份×500）；半锅 5 份（原 1 份）
+        Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(10));
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(5));
     }
 
     [Test]
@@ -119,12 +121,13 @@ public class ContainerTests : TestBase
         var s = New();
         var before = E.CarriedGrams(s);
         var pot = Pot(s);
-        Ok(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId));
+        Ok(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 5));   // B56：装 5 份＝500 毫升（原 1 份）
         Assert.That(E.CarriedGrams(s), Is.EqualTo(before + 500));
         var child = E.PotContents(s, pot.InstanceId).Single();
-        Ok(s, InstantRequest.Decant(child.InstanceId, "camp"));
+        Ok(s, InstantRequest.Decant(child.InstanceId, "camp", 5));   // B56：倒回 5 份＝500 毫升（原 1 份）
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0));
-        Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2));
+        // B56 配置（M1079；b53a json containers.pot、W100-Q929-01）：开局营地地面净水 10 份×100（原 2 份×500）
+        Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(10));
         Assert.That(s.Items.Count(i => i.ItemId == "clean_water" && i.Owner == "camp"), Is.EqualTo(1), "倒出后与地面同类合堆");
     }
 
@@ -197,9 +200,9 @@ public class ContainerTests : TestBase
     public void D16_FullPotInFireTakenToCarried_Weighs2Kg()
     {
         var s = New();
-        E.DebugGive(s, "dirty_water", 2, "camp");
+        E.DebugGive(s, "dirty_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
         var pot = Pot(s);
-        Ok(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2));
+        Ok(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 10));
         Ok(s, InstantRequest.PutInFire(pot.InstanceId));
         var before = E.CarriedGrams(s);
         Assert.That(E.DoInstant(s, InstantRequest.Pickup(pot.InstanceId, 1)).Ok, Is.False, "火堆里的锅不是地面物品，要用取出");
@@ -210,7 +213,8 @@ public class ContainerTests : TestBase
         Run(s);
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Reason, Is.EqualTo("这里没有火堆"));
         Assert.That(E.DoInstant(s, InstantRequest.AddFuel()).Ok, Is.False, "异地不可操纵原火堆");
-        Assert.That(Count(s, "dirty_water", PotOwner(pot)), Is.EqualTo(2), "水随锅走");
+        // B56（Q929：锅 1000 毫升＝10 份）：满锅 10 份（原 2 份）
+        Assert.That(Count(s, "dirty_water", PotOwner(pot)), Is.EqualTo(10), "水随锅走");
     }
 
     [Test]
@@ -221,16 +225,19 @@ public class ContainerTests : TestBase
         foreach (var w in s.Items.Where(i => i.ItemId == "clean_water").ToList())
             Ok(s, InstantRequest.FillPot(w.InstanceId, pot.InstanceId, w.Count));
         Assert.That(E.AvailableCount(s, "clean_water", true), Is.EqualTo(0), "配方与投料不取锅内物品");
-        Assert.That(E.AvailableCount(s, "clean_water", true, includeContainers: true), Is.EqualTo(2));
+        // B56 配置（M1079；b53a json containers.pot、W100-Q929-01）：开局营地地面净水 10 份×100（原 2 份×500），全装进锅
+        Assert.That(E.AvailableCount(s, "clean_water", true, includeContainers: true), Is.EqualTo(10));
         s.Stats.Hydration = 50;
-        Start(s, ActionRequest.UseItem("clean_water"));
+        Start(s, ActionRequest.UseItem("clean_water", 5));   // B56（Q929 自选饮水）：选 5 份＝500 毫升、W+30，对上原一份
         Run(s);
         Assert.That(s.Stats.Hydration, Is.GreaterThan(70));
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1));
+        // B56（Q929）：锅剩 5 份×100（原 1 份×500）
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(5));
 
-        E.DebugGive(s, "clean_water", 2, "camp");
+        E.DebugGive(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
         E.DebugGive(s, "cooked_root", 2, "camp");
         E.UpdateFlags(s);
-        Assert.That(s.Progress.Flags, Does.Contain("supplyReady"), "锅内水计入净水3");
+        // B56（M1082 补给目标净水15份＝原 3 份×500）：锅内 5 份＋地面 10 份
+        Assert.That(s.Progress.Flags, Does.Contain("supplyReady"), "锅内水计入净水15");
     }
 }

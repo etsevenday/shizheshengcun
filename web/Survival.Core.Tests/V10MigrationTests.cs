@@ -30,7 +30,7 @@ public class V10MigrationTests : TestBase
         var firePot = pots.Single(p => p.Owner == "facility:camp:fire");
         Assert.That(firePot.InstanceId, Is.EqualTo(1), "保留锅 ID 与归属");
         Assert.That(E.PotLiquid(s, firePot.InstanceId), Is.EqualTo("dirty_water"), "保留内容");
-        Assert.That(E.PotUnits(s, firePot.InstanceId), Is.EqualTo(2));
+        Assert.That(E.PotUnits(s, firePot.InstanceId), Is.EqualTo(10));   // B56 改期望：旧档锅里 2 份×500 毫升经 57→58 迁移成 10 份×100 毫升（M1083 SaveMigrator.From57To58，真实 1000 毫升不变）
         var proc = E.ProcessOf(s, firePot)!;
         Assert.That(proc.HeatDoneMinutes, Is.EqualTo(10), "保留受热进度");
         Assert.That(s.Items.Select(i => i.InstanceId), Is.EquivalentTo(old["Items"]!.Select(i => (int)i["InstanceId"]!)));

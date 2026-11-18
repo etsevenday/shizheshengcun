@@ -67,7 +67,7 @@ public class B50aTests : TestBase
     [Test]
     public void M946_Schema53_CloneDeepCopiesLedger_StopReasonField()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
         var i = new ItemInstance { ItemId = Rot, Count = 3, SpoiledOrigins = new Dictionary<string, int> { ["raw_meat"] = 1, ["cooked_meat"] = 2 } };
         var c = i.Clone();
         c.SpoiledOrigins!["raw_meat"] = 9;
@@ -89,7 +89,7 @@ public class B50aTests : TestBase
             foreach (var it in o["Items"]!) ((JObject)it).Remove("SpoiledOrigins");
         });
         var t = SaveSerializer.Deserialize(json, Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
         var r = t.Items.Single(i => i.InstanceId == rot.InstanceId);
         Assert.That((r.SpoiledFrom, r.SpoiledOrigins, r.Count, r.SpoiledUnitGrams), Is.EqualTo(("raw_meat", (Dictionary<string, int>?)null, 2, rot.SpoiledUnitGrams)));
         Assert.That(t.Log.Count, Is.EqualTo(s.Log.Count), "静默迁移，不写说明（Q714）");
@@ -210,8 +210,8 @@ public class B50aTests : TestBase
     {
         var s = New();
         var pot = s.Items.First(i => i.ItemId == "pot");
-        E.DebugGive(s, "clean_water", 2, "camp");
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "clean_water" && i.Owner == "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        E.DebugGive(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "clean_water" && i.Owner == "camp").InstanceId, pot.InstanceId, 10)).Ok, Is.True);
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
         var root = Make(s, "raw_root", 1, "camp").Single();
         Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(root.InstanceId, pot.InstanceId, 1)).Ok, Is.True);
@@ -460,7 +460,7 @@ public class B50aTests : TestBase
         var logs = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema(s, "52"), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
         Assert.That(t.Log.Count, Is.EqualTo(logs), "52→53 静默，不写说明");
         var ts = DrySlots(t);
         var f0 = t.Items.Where(i => i.Owner == ItemInstance.DryingOwner(place, 0)).ToList();
@@ -612,8 +612,8 @@ public class B50aTests : TestBase
     {
         var s = New();
         var pot = s.Items.First(i => i.ItemId == "pot");
-        Make(s, "clean_water", 2, "camp");
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "clean_water" && i.Owner == "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        Make(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升（满锅）
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "clean_water" && i.Owner == "camp").InstanceId, pot.InstanceId, 10)).Ok, Is.True);
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
         var fac = s.Locations["camp"].Facility;
         fac.FireLit = true;
@@ -627,10 +627,29 @@ public class B50aTests : TestBase
         return (s, pot);
     }
 
+    /// <summary>
+    /// B56：水煮每份耗水改 1000 毫升（S11 文首 B53a Q929；W100-Q929-08），1 升锅里新档同锅两份食材只第一份能预留受热，第二份等水、不受热保护。
+    /// 同锅两份都在受热保护只出现在 57 旧档（每份 500 毫升时代）：57→58 清掉低于新耗水的旧预留、保护标记不动（SaveMigrator.From57To58）。
+    /// 这里按该旧档起点造：投料后受热 5 分钟，把各份记成旧档当时的状态（预留 500 毫升、已受热保护），锅水按每份 500 毫升记份，再按 57 读档迁移。
+    /// </summary>
+    private (GameState s, ItemInstance pot) OldPotWith(params string[] foods)
+    {
+        var (s0, pot0) = PotWith(foods);
+        WaitUntil(s0, s0.GameMinute + 5);
+        var procs = E.AllProcesses(s0).Where(p => p.PotInstanceId == pot0.InstanceId && p.TargetInstanceId != pot0.InstanceId).ToList();
+        Assert.That(procs, Has.Count.EqualTo(foods.Length), "起点：每份食材一条水煮记录");
+        foreach (var p in procs) { p.ReservedWaterMl = 500; p.HeatProtected = true; }   // 57 旧档：每份水煮预留 500 毫升、都已受热保护
+        foreach (var w in s0.Items.Where(i => i.Owner == ItemInstance.ContainerOwner(pot0.InstanceId) && i.ItemId == "clean_water")) w.Count /= 5;   // 57 旧档：锅水每份 500 毫升（1000 毫升＝2 份）
+        var s = SaveSerializer.Deserialize(AsSchema(s0, "57"), Cfg);
+        Assert.That(s.SchemaVersion, Is.EqualTo("58"));
+        return (s, s.Items.Single(i => i.InstanceId == pot0.InstanceId));
+    }
+
     [Test]
     public void Q712_A01_PastExpiryListAggregated_RiskOnce_UnexpiredNotListed()
     {
-        var (s, pot) = PotWith("raw_root", "raw_root");
+        // B56 改起点（S11 文首 B53a Q929：1 升锅新档两份水煮只能一份受热）：原 PotWith 新档同锅两份都受热保护，改为 57 旧档升级后的同锅两份受保护
+        var (s, pot) = OldPotWith("raw_root", "raw_root");
         var c0 = E.TakeOutConsequenceOf(s, pot);
         Assert.That(c0.Spoils, Is.Empty);
         Assert.That(c0.Text, Does.Not.Contain("已过原保质期").And.Not.Contain(GameEngine.TakeOutSpoilRiskText), "无过期项不生成");
@@ -643,7 +662,7 @@ public class B50aTests : TestBase
         Assert.That(c.Text.Split(GameEngine.TakeOutSpoilRiskText).Length - 1, Is.EqualTo(1), "风险句一次");
 
         // 多种：生块根过期、生肉未过期 → 只列生块根；都过期 → 按首次出现顺序顿号连接
-        var (m, mp) = PotWith("raw_root", "raw_meat");
+        var (m, mp) = OldPotWith("raw_root", "raw_meat");   // B56 改起点：同上
         foreach (var f in E.PotFood(m, mp.InstanceId).Where(f => f.ItemId == "raw_root")) f.ExpiresAt = m.GameMinute + 5;
         WaitUntil(m, m.GameMinute + 5);
         Assert.That(E.TakeOutConsequenceOf(m, mp).Spoils, Is.EqualTo(new[] { $"{E.ItemName("raw_root")}×1" }), "未过期生肉不误列");

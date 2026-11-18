@@ -255,7 +255,7 @@ public class B46Tests : TestBase
         Assert.That(E.SingleSegmentShowPending(s3), Is.True, "救助配给");
         var t3 = s3.GameMinute;
         E.Advance(s3);
-        Assert.That((s3.Main, s3.GameMinute - t3, Count(s3, "clean_water", "c04_alms")), Is.EqualTo(((ActionState?)null, 5, 1)));
+        Assert.That((s3.Main, s3.GameMinute - t3, Count(s3, "clean_water", "c04_alms")), Is.EqualTo(((ActionState?)null, 5, 5)));   // B56 改期望（配置 church_relief_ration relief_water 净水5份＝500毫升，M1079；S10 文首 B53a Q929 数量×5）：原 1
     }
 
     [Test]
@@ -321,7 +321,7 @@ public class B46Tests : TestBase
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
         Assert.That((t.Main!.ActionId, t.Main.ElapsedMinutes, E.SingleSegmentShowPending(t)), Is.EqualTo((s.Main!.ActionId, 0, true)));
         E.Advance(t);
-        Assert.That((t.Main, Count(t, "clean_water", "c04_alms")), Is.EqualTo(((ActionState?)null, 1)), "唯一结果一次");
+        Assert.That((t.Main, Count(t, "clean_water", "c04_alms")), Is.EqualTo(((ActionState?)null, 5)), "唯一结果一次");   // B56 改期望（配置 church_relief_ration relief_water 净水5份＝500毫升，M1079；S10 文首 B53a Q929 数量×5）：原 1
         var done = SaveSerializer.Deserialize(SaveSerializer.Serialize(t), Cfg);
         Assert.That((done.Main, E.SingleSegmentShowPending(done)), Is.EqualTo(((ActionState?)null, false)), "已完成不复活、不重演");
 

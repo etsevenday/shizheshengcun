@@ -251,7 +251,7 @@ public class B38cOnlineFixTests : TestBase
         Assert.That(E.ItemName("cooked_root"), Is.EqualTo("烤熟块根"));
         var s = Registered("c04_alms");
         var v = E.CityServicePreview(s, "church_relief_ration")!;
-        Assert.That(v.Choices.Select(c => c.Label), Is.EqualTo(new[] { "烤熟块根1份（饱食低于40）", "净水1份（水分低于40）" }));
+        Assert.That(v.Choices.Select(c => c.Label), Is.EqualTo(new[] { "烤熟块根1份（饱食低于40）", "净水5份（水分低于40）" }));   // B56 改期望（M1079 配置 church_relief_ration relief_water：净水×5 保持原 500 毫升；b53a-q928-q929-water-100ml.json Q929 数量换算×5）
         s.Player.Stats.Hydration = 15;
         Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_food").Reason,
             Is.EqualTo("你当前不符合「烤熟块根1份（饱食低于40）」的领取条件。"));

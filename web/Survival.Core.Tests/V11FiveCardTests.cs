@@ -78,8 +78,8 @@ public class V11FiveCardTests : TestBase
         // 火堆里受热中的食材：随身满5张时取到随身整次拒绝，热进度与保护不变
         var t = New();
         var tpot = First(t, "pot");
-        E.DebugGive(t, "clean_water", 2, "camp");
-        Assert.That(E.DoInstant(t, InstantRequest.FillPot(First(t, "clean_water", "camp").InstanceId, tpot.InstanceId, 2)).Ok, Is.True);
+        E.DebugGive(t, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升（够一份水煮）
+        Assert.That(E.DoInstant(t, InstantRequest.FillPot(First(t, "clean_water", "camp").InstanceId, tpot.InstanceId, 10)).Ok, Is.True);
         Assert.That(E.DoInstant(t, InstantRequest.PutInFire(tpot.InstanceId)).Ok, Is.True);
         E.DebugGive(t, "raw_root", 1, "camp");
         Assert.That(E.DoInstant(t, InstantRequest.PutFoodInPot(First(t, "raw_root", "camp").InstanceId, tpot.InstanceId, 1)).Ok, Is.True);

@@ -52,7 +52,7 @@ public class B32eStationQueueTests : TestBase
 
     private void WaterInputs(GameState s, int batches)
     {
-        E.CreateItems(s, "dirty_water", 4 * batches, s.Ground);
+        E.CreateItems(s, "dirty_water", 20 * batches, s.Ground);   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）
         E.CreateItems(s, "filter_media", batches, ItemInstance.Carried);
     }
 
@@ -80,7 +80,7 @@ public class B32eStationQueueTests : TestBase
         var rc = Cfg.Recipes.Single(r => r.Id == Water);
         Assert.That(E.StationBatchMaxNew(s, rc), Is.EqualTo(3), "上限 = min(10−0, 材料够的 3 批)");
         var p = E.Preview(s, Craft(Water, 3));
-        Assert.That(p.Outputs.Single(o => o.ItemId == "clean_water").Count, Is.EqualTo(12), "显示预估净水×12");
+        Assert.That(p.Outputs.Single(o => o.ItemId == "clean_water").Count, Is.EqualTo(60), "显示预估净水×60");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 ×12）
         Assert.That(p.Reason, Does.Contain("投料（3批）"));
         var t0 = s.GameMinute;
         Assert.That(E.StationNewFinishes(s, rc, 3), Is.EqualTo(new[] { t0 + 30, t0 + 30, t0 + 30 }), "各批都从现在开始，30 分钟完成");
@@ -88,14 +88,14 @@ public class B32eStationQueueTests : TestBase
         Ok(E.StartStationBatch(s, Water, "a01", 3));
         Assert.That(s.GameMinute, Is.EqualTo(t0), "0 分钟");
         Assert.That(s.Main, Is.Null, "不占主行动");
-        Assert.That((Reserved(s, "dirty_water"), Reserved(s, "filter_media")), Is.EqualTo((12, 3)));
+        Assert.That((Reserved(s, "dirty_water"), Reserved(s, "filter_media")), Is.EqualTo((60, 3)));   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 12）
         // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原断言「预留移到设施所在区地面」
-        Assert.That(s.Items.Where(i => i.ItemId is "dirty_water" or "filter_media" && i.InStation && ItemInstance.TryStation(i.Owner, out var pl, out _) && pl == s.Ground).Sum(i => i.Count), Is.EqualTo(15), "原料移进设施所在区的设施内");
+        Assert.That(s.Items.Where(i => i.ItemId is "dirty_water" or "filter_media" && i.InStation && ItemInstance.TryStation(i.Owner, out var pl, out _) && pl == s.Ground).Sum(i => i.Count), Is.EqualTo(63), "原料移进设施所在区的设施内");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）：60＋3（原 15）
         var q = Queue(s, "water_station");
         Assert.That(q.All(b => !b.Queued && b.StartMinute == t0 && b.DoneMinutes == 0), Is.True, "全部加工中，没有等候批");
         foreach (var b in q)
             Assert.That((BatchBound(s, b.BatchId).Where(i => i.ItemId == "dirty_water").Sum(i => i.Count),
-                         BatchBound(s, b.BatchId).Where(i => i.ItemId == "filter_media").Sum(i => i.Count)), Is.EqualTo((4, 1)), "每份只归一批");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy 认批
+                         BatchBound(s, b.BatchId).Where(i => i.ItemId == "filter_media").Sum(i => i.Count)), Is.EqualTo((20, 1)), "每份只归一批");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 (4, 1)）   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy 认批
         Assert.That(s.Log.Last().Text, Does.Contain("投料（3批）").And.Contain("；各批同时开始加工；"));
 
         AdvanceTo(s, t0 + 5);
@@ -103,12 +103,12 @@ public class B32eStationQueueTests : TestBase
         AdvanceTo(s, t0 + 25);
         Assert.That(Sum(s, "clean_water", "camp"), Is.EqualTo(0));
         AdvanceTo(s, t0 + 30);
-        Assert.That(Sum(s, "clean_water", "camp"), Is.EqualTo(12), "3 批都在 30 分钟完成，而非 30／60／90");
+        Assert.That(Sum(s, "clean_water", "camp"), Is.EqualTo(60), "3 批都在 30 分钟完成，而非 30／60／90");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 12）
         Assert.That(Sum(s, "dirty_water") + Sum(s, "filter_media"), Is.EqualTo(0), "逐批核销");
         Assert.That(Queue(s, "water_station"), Is.Empty);
         var done = s.Log.Where(l => l.Kind == nameof(GameEventKind.FacilityDone) && l.Text.Contains("净水")).ToList();
         Assert.That(done.Count, Is.EqualTo(3), "落地 3 次");
-        Assert.That(done.All(l => l.Text.Contains("净水×4")), Is.True, "每次净水×4");
+        Assert.That(done.All(l => l.Text.Contains("净水×20")), Is.True, "每次净水×20");   // B56（W100-Q929-11）：一批 20 份（原「净水×4」）
     }
 
     /// <summary>Q701-A03：陶窑同时 3 批都在 60 分钟完成，各自核销原料与木炭（燃料 N 倍，不共用一份）。</summary>
@@ -147,9 +147,9 @@ public class B32eStationQueueTests : TestBase
         AdvanceTo(s, t0 + 15);
         Assert.That(q.Select(b => b.DoneMinutes), Is.EqualTo(new[] { 15, 5, 5 }), "同段各 +5");
         AdvanceTo(s, t0 + 30);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(4), "旧批按自己剩余先完成");
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(20), "旧批按自己剩余先完成");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 4）
         AdvanceTo(s, t0 + 40);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(12), "新批 30 分钟后同时完成");
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(60), "新批 30 分钟后同时完成");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 12）
     }
 
     /// <summary>Q380-A02／Q701.4：余位不足或总料不足时整次拒绝（不预留、不改批次）；满 10 批「加工批次已满（10批）。」。</summary>
@@ -159,7 +159,7 @@ public class B32eStationQueueTests : TestBase
         var s = Workshop();
         var rc = Cfg.Recipes.Single(r => r.Id == Water);
         WaterInputs(s, 3);
-        E.CreateItems(s, "dirty_water", 4, s.Ground);   // 脏水够 4 批（16），滤材只够 3 批
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // 脏水够 4 批（80），滤材只够 3 批；B56：每份100毫升，×5 保持原毫升
         var before = SaveSerializer.Serialize(s);
         var r4 = E.StartStationBatch(s, Water, "m4", 4);
         Assert.That(r4.Ok, Is.False);
@@ -210,11 +210,11 @@ public class B32eStationQueueTests : TestBase
         Ok(E.TakeStationBatch(s, s.Ground, "water_station", a.BatchId, Stamp(a), "c-a"));
         var reservedBefore = Reserved(s, "dirty_water");
         Ok(E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, bStamp, "c-b"));
-        Assert.That(Reserved(s, "dirty_water"), Is.EqualTo(reservedBefore - 4), "只释放该批");
-        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && !InAnyBatch(i)).Sum(i => i.Count), Is.EqualTo(8), "甲乙两批脏水退回");
+        Assert.That(Reserved(s, "dirty_water"), Is.EqualTo(reservedBefore - 20), "只释放该批");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 −4）
+        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && !InAnyBatch(i)).Sum(i => i.Count), Is.EqualTo(40), "甲乙两批脏水退回");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 8）
         Assert.That(s.Items.Where(i => i.ItemId == "dirty_water" && !InAnyBatch(i)).All(i => i.Owner == "camp"), Is.True, "退到本区地面");
         // Q876 B：「已取出至{地点}地面：{物品清单}。」名×数、顿号（A07 ex_station_water 每批脏水4、滤材1；地点为营地区名）
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×4、滤材×1。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×20、滤材×1。"));   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原「脏水×4」）
         Assert.That(Queue(s, "water_station"), Is.EqualTo(new[] { c, d }), "其他批不动");
         Assert.That((c.DoneMinutes, d.DoneMinutes), Is.EqualTo((0, 0)), "不重启、不串行");
         Assert.That(E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, bStamp, "c-b").Duplicate, Is.True, "同一请求重复只生效一次");
@@ -227,7 +227,7 @@ public class B32eStationQueueTests : TestBase
         AdvanceTo(s, t0 + 25);
         Assert.That(Stamp(c), Is.EqualTo(cStamp), "进度推进不改计划快照");
         AdvanceTo(s, t0 + 45);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(8), "丙、丁照原进度在 30 分钟完成");
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(40), "丙、丁照原进度在 30 分钟完成");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 8）
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(6L), "取出批没有经验，完成批照原记录");
         var gone = E.TakeStationBatch(s, s.Ground, "water_station", c.BatchId, cStamp, "c-c");
         Assert.That(gone.Reason, Is.EqualTo("物品已变，请重选。"), "已完成批报变化");
@@ -239,16 +239,16 @@ public class B32eStationQueueTests : TestBase
     {
         var s = Workshop();
         WaterInputs(s, 2);
-        E.CreateItems(s, "dirty_water", 4, s.Ground);   // 未预留的余料，不被补取
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // 未预留的余料，不被补取；B56：每份100毫升，×5 保持原毫升
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, Water, "lost", 2));
         var first = Queue(s, "water_station")[0];
         s.Items.Remove(BatchBound(s, first.BatchId).First(i => i.ItemId == "filter_media"));   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy 认批
         AdvanceTo(s, t0 + 30);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(4), "只有失效批没有产物，另一批照常完成");
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(20), "只有失效批没有产物，另一批照常完成");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 4）
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(3), "失效批没有经验");
         Assert.That(BatchBound(s, first.BatchId), Is.Empty, "剩余预留已释放");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批、燃料仍地面预留 Q921）：原按 ReservedBy 认批
-        Assert.That(Sum(s, "dirty_water"), Is.EqualTo(8), "失效批的脏水退回地面，只核销自己绑定的预留，不补取余料");
+        Assert.That(Sum(s, "dirty_water"), Is.EqualTo(40), "失效批的脏水退回地面，只核销自己绑定的预留，不补取余料");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 8）
     }
 
     // ───────────── Q380-A04 ─────────────
@@ -290,7 +290,7 @@ public class B32eStationQueueTests : TestBase
         Assert.That(back.Items.Where(InAnyBatch).Select(i => (i.InstanceId, i.ReservedBy, i.Owner, i.Count)).OrderBy(x => x.InstanceId), Is.EqualTo(owners));
         Assert.That(back.GameMinute, Is.EqualTo(n.GameMinute), "读档不补时间与进度");
         AdvanceTo(back, back.GameMinute + 20);
-        Assert.That(Sum(back, "clean_water"), Is.EqualTo(12));
+        Assert.That(Sum(back, "clean_water"), Is.EqualTo(60));   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 12）
     }
 
     /// <summary>Q380-A04：跨世界日按实际完成日核算经验；预览按预计完成日显示（新批同刻完成）。</summary>

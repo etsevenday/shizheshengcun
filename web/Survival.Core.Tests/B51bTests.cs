@@ -45,7 +45,7 @@ public class B51bTests : TestBase
     /// <summary>给当前地面放 batches 批净水原料；脏水带一个有限截止（现有配置的设施原料都无期限，用测试注入验证通用保质路径）。</summary>
     private void WaterInputs(GameState s, int batches, int? expiresIn = null)
     {
-        E.CreateItems(s, "dirty_water", 4 * batches, s.Ground);
+        E.CreateItems(s, "dirty_water", 20 * batches, s.Ground);   // B56：每份100毫升，×5 保持原 2000 毫升／批（配方 ex_station_water 脏水20）
         E.CreateItems(s, "filter_media", batches, s.Ground);
         if (expiresIn is int m)
             foreach (var i in s.Items.Where(i => i.ItemId == "dirty_water")) i.ExpiresAt = s.GameMinute + m;
@@ -59,25 +59,25 @@ public class B51bTests : TestBase
     {
         var s = Workshop();
         WaterInputs(s, 1, 20);
-        E.CreateItems(s, "dirty_water", 2, s.Ground);
+        E.CreateItems(s, "dirty_water", 10, s.Ground);   // B56：每份100毫升，×5 保持原 1000 毫升
         foreach (var i in s.Items.Where(i => i.ItemId == "dirty_water")) i.ExpiresAt = s.GameMinute + 20;
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, Water, "p1"));
         var bound = s.Items.Where(i => InAnyBatch(i) && i.ItemId == "dirty_water").ToList();   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
-        Assert.That(bound.Sum(i => i.Count), Is.EqualTo(4));
+        Assert.That(bound.Sum(i => i.Count), Is.EqualTo(20));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         Assert.That(bound.All(i => i.ShelfPausedMinutes == 20), Is.True, "本批输入 R＝E−S");
         var free = s.Items.Single(i => i.ItemId == "dirty_water" && !InAnyBatch(i));   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
         Assert.That(free.ShelfPausedMinutes, Is.Null, "未投入余料不保护");
         AdvanceTo(s, t0 + 25);
-        Assert.That(s.Items.Where(i => InAnyBatch(i) && i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(4), "在制越过原截止不转腐败物");   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
+        Assert.That(s.Items.Where(i => InAnyBatch(i) && i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(20), "在制越过原截止不转腐败物");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
         Assert.That(s.Items.Any(i => i.ItemId == "dirty_water" && !InAnyBatch(i)), Is.False, "余料照常到期");
         var b = Batches(s, "water_station").Single();
         Ok(E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, E.StationTakeStamp(s, s.Ground, "water_station", b.BatchId), "p1c"));   // B51c2a1：原 CancelStationBatch（S11 Q870 B）
         var back = s.Items.Where(i => i.ItemId == "dirty_water").ToList();
-        Assert.That(back.Sum(i => i.Count), Is.EqualTo(4));
+        Assert.That(back.Sum(i => i.Count), Is.EqualTo(20));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         Assert.That(back.All(i => i.ShelfPausedMinutes == null && i.ExpiresAt == s.GameMinute + 20 && i.ReservedBy == null && i.Owner == s.Ground), Is.True, "恢复 C＋R，回到本区地面");
         // B51c2a1 改期望（S11 Q876 B 清单、Q878 不接中止／成本尾句、Q882 不接保质恢复句）：原为取消日志全文
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×4、滤材×1。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×20、滤材×1。"));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原「脏水×4」
     }
 
     /// <summary>Q701-A03：受保护输入超过原截止仍按时完成核销；完成产物正常出、无残留 R。</summary>
@@ -89,7 +89,7 @@ public class B51bTests : TestBase
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, Water, "p2", 2));
         AdvanceTo(s, t0 + 30);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(8));
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(40));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 8
         Assert.That(Sum(s, "dirty_water") + Sum(s, GameEngine.SpoiledMatterId), Is.EqualTo(0), "受保护原料直接核销，不转腐败物");
     }
 
@@ -105,7 +105,7 @@ public class B51bTests : TestBase
         Ok(E.StartStationBatch(s, Water, "nr"));
         var b = Batches(s, "water_station").Single();
         var gone = BatchBound(s, b.BatchId);
-        Assert.That(gone.Sum(i => i.Count), Is.EqualTo(5));
+        Assert.That(gone.Sum(i => i.Count), Is.EqualTo(21));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 5（脏水4＋滤材1）
         s.Items.RemoveAll(gone.Contains);
         var logs = s.Log.Count;
         var r = E.TakeStationBatch(s, s.Ground, "water_station", b.BatchId, E.StationTakeStamp(s, s.Ground, "water_station", b.BatchId), "nrc");
@@ -160,10 +160,11 @@ public class B51bTests : TestBase
         var late = s.Items.First(i => i.ReservedBy == q[2].BatchId && i.ItemId == "dirty_water");
         late.ExpiresAt = s.GameMinute;
         var ids = q.Select(b => (b.BatchId, b.XpSnapshot)).ToList();
+        // B56 起点：DebugLegacyStation56 已把水按旧每份500毫升还原（SaveMigrator.DebugToLegacyWaterUnits），读档链 57→58 再×5
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         obj["SchemaVersion"] = "54";
         var old = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(old.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(old.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
         var u = old.GameMinute;
         var nq = Batches(old, "water_station");
         Assert.That(nq.Select(b => (b.BatchId, b.XpSnapshot)), Is.EqualTo(ids), "批次 ID 与经验快照不变");
@@ -171,7 +172,7 @@ public class B51bTests : TestBase
         Assert.That(nq.Select(b => b.DoneMinutes), Is.EqualTo(new[] { 20, 0, 0 }), "在办批保留进度、旧等候批不补进度");
         Assert.That((nq[1].StartMinute, nq[2].StartMinute), Is.EqualTo((u, u)));
         var bound = BatchBound(old, nq[0].BatchId).Where(i => i.ItemId == "dirty_water").ToList();   // B51c2a1 改期望（S11 Q872 选 B：原料移进设施该批，无地面预留标记）：原按 ReservedBy 认批
-        Assert.That(bound.Sum(i => i.Count), Is.EqualTo(4));
+        Assert.That(bound.Sum(i => i.Count), Is.EqualTo(20));   // B56 改期望：旧4份经 57→58 水份数×5（SaveMigrator.From57To58）：原 4
         Assert.That(bound.All(i => i.ShelfPausedMinutes == 80 && i.Owner == ItemInstance.StationOwner(old.Ground, nq[0].BatchId)), Is.True, "R＝旧E−U，不补偿已耗；56→57 移进设施");
         Assert.That(BatchBound(old, nq[2].BatchId).Where(i => i.ExpiresAt == u).All(i => i.ShelfPausedMinutes == null), Is.True, "U 时已到期的不保护");
 
@@ -181,9 +182,10 @@ public class B51bTests : TestBase
             Is.EqualTo(old.Items.Where(i => i.ShelfPausedMinutes != null).Select(i => (i.InstanceId, i.ShelfPausedMinutes))), "不重算 R");
 
         AdvanceTo(again, u + 10);
-        Assert.That(Sum(again, "clean_water"), Is.EqualTo(4), "在办批续原进度完成");
+        Assert.That(Sum(again, "clean_water"), Is.EqualTo(20), "在办批续原进度完成");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         AdvanceTo(again, u + 30);
-        Assert.That(Sum(again, "clean_water"), Is.EqualTo(8), "旧等候批从升级起各自 30 分钟完成；含升级前已到期输入的那批按原路径失败");
+        // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 8
+        Assert.That(Sum(again, "clean_water"), Is.EqualTo(40), "旧等候批从升级起各自 30 分钟完成；含升级前已到期输入的那批按原路径失败");
         Assert.That(again.Log.Any(l => l.Text.Contains("原料不全")), Is.True);
     }
     /// <summary>开发入口（?dev=1）：在办批改成旧档排队、版本记 54；保存后重新读档按 54→55 迁移为并行。</summary>
@@ -199,7 +201,7 @@ public class B51bTests : TestBase
         Assert.That(s.SchemaVersion, Is.EqualTo("54"));
         Assert.That(Batches(s, "water_station").Select(b => (b.Queued, b.DoneMinutes)), Is.EqualTo(new[] { (false, 10), (true, 0) }));
         var back = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(back.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(back.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
         Assert.That(Batches(back, "water_station").Select(b => (b.Queued, b.DoneMinutes, b.StartMinute)),
             Is.EqualTo(new[] { (false, 10, Batches(s, "water_station")[0].StartMinute), (false, 0, back.GameMinute) }));
     }

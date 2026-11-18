@@ -152,7 +152,7 @@ public class B12ClaimTests : TestBase
     {
         var s = New();
         Assert.That(E.ResourceStock(s, E.Resource("w11_orchard_a")).Badge, Is.EqualTo("12/12"));
-        Assert.That(E.ResourceStock(s, E.Resource("w34_depot_bottles")).Badge, Is.EqualTo("8/8·不补"));
+        Assert.That(E.ResourceStock(s, E.Resource("w34_depot_bottles")).Badge, Is.EqualTo("40/40·不补"));   // B56 改期望：w34_depot_bottles 净水库存 cap 8→40 份（M1079，保持原 4000 毫升）
         s.Resources["w34_depot_bottles"].Available = 0;
         Assert.That(E.ResourceStock(s, E.Resource("w34_depot_bottles")), Is.EqualTo(("搜空不补", true)));
         Assert.That(E.ResourceStock(s, E.Resource("w12_canal_water")).Badge, Is.EqualTo("无限"));

@@ -54,8 +54,9 @@ public class B28FeedTests : TestBase
         return (pot, Give(s, liquid, ItemInstance.ContainerOwner(pot.InstanceId), units));
     }
 
-    private static FeedRequest Req(string target, string source, ItemInstance item, string? id = null) =>
-        new FeedRequest { TargetActorId = target, SourceActorId = source, InstanceId = item.InstanceId, RequestId = id };
+    /// <summary>B56：units 为饮水所选份数（每份100毫升，默认1）；食物忽略。</summary>
+    private static FeedRequest Req(string target, string source, ItemInstance item, string? id = null, int units = 1) =>
+        new FeedRequest { TargetActorId = target, SourceActorId = source, InstanceId = item.InstanceId, RequestId = id, WaterUnits = units };
 
     private void Rejected(GameState s, FeedRequest f, string reason)
     {
@@ -89,8 +90,26 @@ public class B28FeedTests : TestBase
         var c = (JObject)JObject.Parse(File.ReadAllText(Doc("20261104", "content-feeding-adjudications.json")))["feeding"]!["copyQ257"]!;
         Assert.That(FeedCopy.All.Count, Is.EqualTo(17));
         Assert.That(q.Properties().Select(p => p.Name), Is.EquivalentTo(FeedCopy.All.Keys));
+        // B56（S12 文首 B53a Q929 本批逐字稿「原同行食饮确认／日志完整模板保留人物与实际来源，仅替换旧固定500／250水量为所选毫升」；
+        // 不足一份沿 b53a-q928-q929-water-100ml.json copy.shortage「水分不足。」）：这 6 句改对新稿字面量，其余 11 句仍逐字对两份旧契约
+        var b56 = new Dictionary<string, (string Old, string New)>
+        {
+            ["confirmWater"] = ("给{目标}饮用：{水种}×1 · 5分钟", "给{目标}饮用：{水种}{所选毫升}毫升 · 5分钟"),
+            ["confirmCanteen"] = ("给{目标}饮用：{水壶}内{水种}250毫升 · 5分钟", "给{目标}饮用：{水壶}内{水种}{所选毫升}毫升 · 5分钟"),
+            ["resultWater"] = ("{目标}饮用了{水种}×1（取自{出物人}的随身物品）：{变化}。", "{目标}饮用了{水种}{所选毫升}毫升（取自{出物人}的随身物品）：{变化}。"),
+            ["resultPotWater"] = ("{目标}饮用了{水种}×1（取自{出物人}的随身锅#{锅号}）：{变化}。", "{目标}饮用了{水种}{所选毫升}毫升（取自{出物人}的随身锅#{锅号}）：{变化}。"),
+            ["resultCanteen"] = ("{目标}饮用了{水壶}内的{水种}250毫升（取自{出物人}的随身物品）：{变化}；壶内剩余{壶内水量}。", "{目标}饮用了{水壶}内的{水种}{所选毫升}毫升（取自{出物人}的随身物品）：{变化}；壶内剩余{壶内水量}。"),
+            ["insufficientPotWater"] = ("锅内{水种}不足500毫升，无法饮用1份。", "水分不足。"),
+        };
         foreach (var kv in FeedCopy.All)
         {
+            if (b56.TryGetValue(kv.Key, out var pair))
+            {
+                Assert.That(q[kv.Key]!.Value<string>(), Is.EqualTo(pair.Old), "旧契约原句：" + kv.Key);
+                Assert.That(c[kv.Key]!.Value<string>(), Is.EqualTo(pair.Old), "旧契约原句：" + kv.Key);
+                Assert.That(kv.Value, Is.EqualTo(pair.New), kv.Key);
+                continue;
+            }
             Assert.That(kv.Value, Is.EqualTo(q[kv.Key]!.Value<string>()), kv.Key);
             Assert.That(kv.Value, Is.EqualTo(c[kv.Key]!.Value<string>()), kv.Key);
         }
@@ -141,15 +160,17 @@ public class B28FeedTests : TestBase
     public void PLAN02_CleanWaterCard_TargetDrinks_OneCard_FiveMinutesOnce()
     {
         var s = Party();
-        var w = Give(s, "clean_water", ItemInstance.Carried, 2);
+        var w = Give(s, "clean_water", ItemInstance.Carried, 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var (lin, tang, me) = (s.Actors[Lin], s.Actors[Tang], s.Actors[Me]);
         var minute = s.GameMinute;
-        Fed(s, Req(Lin, Me, w));
+        Fed(s, Req(Lin, Me, w, units: 5));   // B56：选 5 份＝500 毫升，对上原单次量
         Assert.That(lin.Stats.Hydration, Is.EqualTo(80), "效果确认时立即给目标");
         Assert.That(me.Stats.Hydration, Is.EqualTo(50), "主角不享效果");
-        Assert.That(w.Count, Is.EqualTo(1), "只扣所选来源一份 500 毫升");
+        // B56（S12 文首 B53a Q929；b53a-q928-q929-water-100ml.json drink、W100-Q929-04／05）：一次只扣所选 5 份（500 毫升），原 1→剩 1 份改 10→剩 5 份
+        Assert.That(w.Count, Is.EqualTo(5), "只扣所选来源 5 份 500 毫升");
         Assert.That(s.GameMinute, Is.EqualTo(minute), "确认那一刻还没走时间");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("林昭饮用了净水×1（取自你的随身物品）：水分+30。"));
+        // B56（S12 文首 B53a Q929；b53a-q928-q929-water-100ml.json drink、W100-Q929-04／05）：结果句「×1」换所选毫升
+        Assert.That(s.Log.Last().Text, Is.EqualTo("林昭饮用了净水500毫升（取自你的随身物品）：水分+30。"));
 
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
         Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "世界只推进一次 5 分钟");
@@ -166,10 +187,11 @@ public class B28FeedTests : TestBase
         var s = Party();
         var c = Canteen(s, Bag(Lin), "clean_water", 1000);
         var cards = Count(s, "clean_water");
-        Fed(s, Req(Lin, Lin, c));
-        Assert.That(s.Actors[Lin].Stats.Hydration, Is.EqualTo(65));
-        Assert.That((c.LiquidMl, c.Owner), Is.EqualTo((750, Bag(Lin))), "只喝 250，不清空整壶，不转移");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("林昭饮用了分量水壶内的净水250毫升（取自林昭的随身物品）：水分+15；壶内剩余净水 750/2000毫升。"));
+        Fed(s, Req(Lin, Lin, c, units: 2));
+        // B56（S12 文首 B53a Q929；b53a-q928-q929-water-100ml.json drink、W100-Q929-04／05）：水壶不再固定一口 250 毫升，选 2 份＝200 毫升、补水 12（原 250／+15／剩 750）
+        Assert.That(s.Actors[Lin].Stats.Hydration, Is.EqualTo(62));
+        Assert.That((c.LiquidMl, c.Owner), Is.EqualTo((800, Bag(Lin))), "只喝所选 200，不清空整壶，不转移");
+        Assert.That(s.Log.Last().Text, Is.EqualTo("林昭饮用了分量水壶内的净水200毫升（取自林昭的随身物品）：水分+12；壶内剩余净水 800/2000毫升。"));
         Assert.That(Count(s, "clean_water"), Is.EqualTo(cards), "不先造一份水卡");
     }
 
@@ -177,9 +199,11 @@ public class B28FeedTests : TestBase
     public void Canteen_LastSip_EmptyLabel_DirtyDiarrheaOnTarget()
     {
         var s = Party();
-        var c = Canteen(s, ItemInstance.Carried, "dirty_water", 250);
-        Fed(s, Req(Tang, Me, c));
-        Assert.That(s.Log.Last().Text, Is.EqualTo("唐梨饮用了分量水壶内的脏水250毫升（取自你的随身物品）：水分+15，出现腹泻（12小时）；壶内剩余空 0/2000毫升。"));
+        // B56：壶内 200 毫升（原 250，一口喝空）——每份 100 毫升下选 2 份喝空，保持「最后一口后标签为空」原意
+        var c = Canteen(s, ItemInstance.Carried, "dirty_water", 200);
+        Fed(s, Req(Tang, Me, c, units: 2));
+        // B56（S12 文首 B53a Q929；b53a-q928-q929-water-100ml.json drink、W100-Q929-04／05）：所选 200 毫升、补水 12，脏水腹泻不乘 N（原 250／+15）
+        Assert.That(s.Log.Last().Text, Is.EqualTo("唐梨饮用了分量水壶内的脏水200毫升（取自你的随身物品）：水分+12，出现腹泻（12小时）；壶内剩余空 0/2000毫升。"));
         Assert.That(s.Actors[Tang].DiarrheaUntil, Is.EqualTo(s.GameMinute + Cfg.ItemActions.DiarrheaMinutes));
         Assert.That(s.Actors[Me].DiarrheaUntil, Is.Null);
     }
@@ -189,15 +213,17 @@ public class B28FeedTests : TestBase
     {
         var s = Party();
         Rejected(s, Req(Lin, Me, Canteen(s, ItemInstance.Carried, null, 0)), "水壶是空的");
-        Rejected(s, Req(Lin, Me, Canteen(s, ItemInstance.Carried, "clean_water", 100)), "壶里不足250毫升");
+        // B56（S10／S12 文首 B53a Q929；b53a json copy.shortage）：不足一份（100 毫升）为「水分不足。」；100 毫升现已够一份，造数改 50（原 100／「壶里不足250毫升」）
+        Rejected(s, Req(Lin, Me, Canteen(s, ItemInstance.Carried, "clean_water", 50)), "水分不足。");
     }
 
     [Test]
     public void PLAN03_DirtyWaterCard_DiarrheaOnTarget_ExtraLossOnTargetOnly()
     {
         var s = Party();
-        Fed(s, Req(Lin, Me, Give(s, "dirty_water", ItemInstance.Carried)));
-        Assert.That(s.Log.Last().Text, Is.EqualTo("林昭饮用了脏水×1（取自你的随身物品）：水分+30，出现腹泻（12小时）。"));
+        Fed(s, Req(Lin, Me, Give(s, "dirty_water", ItemInstance.Carried, 5), units: 5));   // B56：每份100毫升，×5 保持原 500 毫升，选 5 份
+        // B56（S12 文首 B53a Q929；b53a-q928-q929-water-100ml.json drink、W100-Q929-04／05）：结果句「×1」换所选毫升
+        Assert.That(s.Log.Last().Text, Is.EqualTo("林昭饮用了脏水500毫升（取自你的随身物品）：水分+30，出现腹泻（12小时）。"));
         Assert.That(s.Actors[Lin].DiarrheaUntil, Is.Not.Null);
         Assert.That(s.Actors[Me].DiarrheaUntil, Is.Null);
         Run(s);
@@ -210,13 +236,14 @@ public class B28FeedTests : TestBase
     public void Q233_PotWater_PlayerPot_500Once_PotStays_NoCard()
     {
         var s = Party();
-        var (pot, water) = PotWater(s, ItemInstance.Carried, "clean_water", 2);
+        var (pot, water) = PotWater(s, ItemInstance.Carried, "clean_water", 10);   // B56：锅每份100毫升，×5 保持原 1000 毫升
         var minute = s.GameMinute;
         var cards = s.Items.Where(i => i.ItemId == "clean_water" && !i.InContainer).Sum(i => i.Count);
-        Fed(s, Req(Lin, Me, water));
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"林昭饮用了净水×1（取自你的随身锅）：水分+30。"));
+        Fed(s, Req(Lin, Me, water, units: 5));
+        // B56（S12 文首 B53a Q929；b53a-q928-q929-water-100ml.json drink、W100-Q929-04／05）：结果句「×1」换所选毫升；锅剩 5 份（原剩 1 份×500）
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"林昭饮用了净水500毫升（取自你的随身锅）：水分+30。"));
         Assert.That(s.Actors[Lin].Stats.Hydration, Is.EqualTo(80));
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1), "只扣这口锅 500 毫升");
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(5), "只扣这口锅 500 毫升");
         Assert.That(s.Items.Where(i => i.ItemId == "clean_water" && !i.InContainer).Sum(i => i.Count), Is.EqualTo(cards), "不生成临时水卡");
         Run(s);
         Assert.That(s.GameMinute, Is.EqualTo(minute + 5));
@@ -226,23 +253,27 @@ public class B28FeedTests : TestBase
     public void Q233_PotWater_TargetPot_ByPotAndKind_Empties_PotKeepsOwner()
     {
         var s = Party();
-        var (pot, _) = PotWater(s, Bag(Lin), "dirty_water", 1);
-        var f = new FeedRequest { TargetActorId = Lin, SourceActorId = Lin, PotInstanceId = pot.InstanceId, WaterItemId = "dirty_water" };
+        var (pot, _) = PotWater(s, Bag(Lin), "dirty_water", 5);   // B56：锅每份100毫升，×5 保持原 500 毫升
+        var f = new FeedRequest { TargetActorId = Lin, SourceActorId = Lin, PotInstanceId = pot.InstanceId, WaterItemId = "dirty_water", WaterUnits = 5 };
         Fed(s, f);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"林昭饮用了脏水×1（取自林昭的随身锅）：水分+30，出现腹泻（12小时）。"));
+        // B56（S12 文首 B53a Q929；b53a-q928-q929-water-100ml.json drink、W100-Q929-04／05）：结果句「×1」换所选毫升
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"林昭饮用了脏水500毫升（取自林昭的随身锅）：水分+30，出现腹泻（12小时）。"));
         Assert.That((E.FindItem(s, pot.InstanceId)?.Owner, E.PotUnits(s, pot.InstanceId)), Is.EqualTo((Bag(Lin), 0)), "空锅留原 owner");
         Assert.That(s.Actors[Lin].DiarrheaUntil, Is.Not.Null, "净水不因容器变种，脏水仍腹泻");
         Run(s);
-        Rejected(s, f, "锅内脏水不足500毫升，无法饮用1份。");
+        // B56（Q929；b53a json copy.shortage）：锅内不足一份沿「水分不足。」（原「锅内脏水不足500毫升，无法饮用1份。」）
+        Rejected(s, f, "水分不足。");
     }
 
     [Test]
     public void Q233_PotWater_PartlyReserved_BelowOnePortion_Insufficient()
     {
         var s = Party();
-        var (pot, water) = PotWater(s, ItemInstance.Carried, "clean_water", 1);
-        s.Locations["camp"].Facility.Processes.Add(new FacilityProcess { RecipeId = "boil_root", TargetInstanceId = 99999, PotInstanceId = pot.InstanceId, ReservedWaterMl = 250 });
-        Rejected(s, Req(Lin, Me, water), "锅内净水不足500毫升，无法饮用1份。");
+        // B56：锅每份100毫升，×5 保持原 500 毫升；预留 450（原 250）使未预留余量 50 毫升仍「不足一份」，保持原意
+        var (pot, water) = PotWater(s, ItemInstance.Carried, "clean_water", 5);
+        s.Locations["camp"].Facility.Processes.Add(new FacilityProcess { RecipeId = "boil_root", TargetInstanceId = 99999, PotInstanceId = pot.InstanceId, ReservedWaterMl = 450 });
+        // B56（Q929；b53a json copy.shortage）：不足一份为「水分不足。」（原「锅内净水不足500毫升，无法饮用1份。」）
+        Rejected(s, Req(Lin, Me, water), "水分不足。");
     }
 
     [Test]
@@ -468,17 +499,18 @@ public class B28FeedTests : TestBase
         var mine = Give(s, "canned_food", ItemInstance.Carried, 3);
         Give(s, "raw_root", ItemInstance.Carried);
         Give(s, "bandage", ItemInstance.Carried);
-        var (pot, water) = PotWater(s, ItemInstance.Carried, "clean_water", 2);
+        var (pot, water) = PotWater(s, ItemInstance.Carried, "clean_water", 10);   // B56：锅每份100毫升，×5 保持原 1000 毫升
         var can = Canteen(s, Bag(Lin), "dirty_water", 750);
-        Give(s, "clean_water", Bag(Tang));
+        Give(s, "clean_water", Bag(Tang), 5);   // B56：每份100毫升，×5 保持原 500 毫升
         Give(s, "canned_food", s.Ground);
 
         var rows = E.FeedSources(s, Lin);
+        // B56（S12 文首 B53a Q929：可饮份数＝floor(合法自由水量／100)、每份100毫升）：锅 2 份×500→10 份×100，壶 3 次×250→7 份×100
         Assert.That(rows.Select(r => (r.SourceName, r.InstanceId, r.Kind, r.Portions, r.PortionMl, r.LiquidMl)), Is.EqualTo(new[]
         {
             ("你", mine.InstanceId, FeedSourceKind.Food, 3, 0, 0),
-            ("你", water.InstanceId, FeedSourceKind.PotWater, 2, 500, 1000),
-            ("林昭", can.InstanceId, FeedSourceKind.Canteen, 3, 250, 750),
+            ("你", water.InstanceId, FeedSourceKind.PotWater, 10, 100, 1000),
+            ("林昭", can.InstanceId, FeedSourceKind.Canteen, 7, 100, 750),
         }));
         Assert.That(rows[1].PotInstanceId, Is.EqualTo(pot.InstanceId));
         Assert.That(rows[0].ExpiresAt, Is.EqualTo(mine.ExpiresAt));
@@ -588,14 +620,15 @@ public class B28FeedTests : TestBase
     public void Idempotent_AfterSaveLoad_NoReplay_NoNewFields()
     {
         var s = Party();
-        var (pot, water) = PotWater(s, ItemInstance.Carried, "clean_water", 2);
-        var f = Req(Lin, Me, water, "feed-2");
+        var (pot, water) = PotWater(s, ItemInstance.Carried, "clean_water", 10);   // B56：锅每份100毫升，×5 保持原 1000 毫升
+        var f = Req(Lin, Me, water, "feed-2", units: 5);
         Fed(s, f);
         var json = SaveSerializer.Serialize(s);
         Assert.That(json, Does.Not.Contain("Feeding"), "事务不写新存档字段");
         var back = SaveSerializer.Deserialize(json, Cfg);
         Assert.That(E.Feed(back, f).Duplicate, Is.True);
-        Assert.That((E.PotUnits(back, pot.InstanceId), back.Actors[Lin].Stats.Hydration), Is.EqualTo((1, 80.0)));
+        // B56（Q929）：锅剩 5 份×100（原 1 份×500），补水同为 +30
+        Assert.That((E.PotUnits(back, pot.InstanceId), back.Actors[Lin].Stats.Hydration), Is.EqualTo((5, 80.0)));
         Assert.That(Run(back), Is.EqualTo(SegmentStatus.Completed), "读档后继续走完这 5 分钟");
     }
 
@@ -663,17 +696,19 @@ public class B28FeedTests : TestBase
     public void Preview_ConfirmTexts_WaterAndCanteen_RemainingMl()
     {
         var s = Party();
-        var (pot, water) = PotWater(s, Bag(Lin), "clean_water", 3);
-        var p = E.FeedPreview(s, Req(Lin, Lin, water));
-        Assert.That(p.ConfirmText, Is.EqualTo("给林昭饮用：净水×1 · 5分钟"));
+        var (pot, water) = PotWater(s, Bag(Lin), "clean_water", 15);   // B56：锅每份100毫升，×5 保持原 1500 毫升
+        var p = E.FeedPreview(s, Req(Lin, Lin, water, units: 5));
+        // B56（S12 文首 B53a Q929；b53a-q928-q929-water-100ml.json drink、W100-Q929-04／05）：确认句「×1」换所选毫升
+        Assert.That(p.ConfirmText, Is.EqualTo("给林昭饮用：净水500毫升 · 5分钟"));
         Assert.That((p.Feed!.Source.SourceName, p.Feed.Source.PotInstanceId, p.Feed.Source.ItemName, p.Feed.Source.LiquidMl, p.Feed.LiquidMlAfter),
             Is.EqualTo(("林昭", pot.InstanceId, "净水", 1500, 1000)));
 
-        var c = E.FeedPreview(s, Req(Lin, Me, Canteen(s, ItemInstance.Carried, "dirty_water", 500)));
-        Assert.That(c.ConfirmText, Is.EqualTo("给林昭饮用：分量水壶内脏水250毫升 · 5分钟"));
-        Assert.That((c.Feed!.Source.Kind, c.Feed.Source.ItemName, c.Feed.LiquidMlAfter), Is.EqualTo((FeedSourceKind.Canteen, "脏水", 250)));
-        Assert.That(c.Feed.ChangeText, Is.EqualTo("水分+15，出现腹泻（12小时）"));
-        var card = E.FeedPreview(s, Req(Lin, Me, Give(s, "clean_water", ItemInstance.Carried, 2)));
+        var c = E.FeedPreview(s, Req(Lin, Me, Canteen(s, ItemInstance.Carried, "dirty_water", 500), units: 2));
+        // B56（S12 文首 B53a Q929；b53a-q928-q929-water-100ml.json drink、W100-Q929-04／05）：水壶不再固定 250，选 2 份＝200 毫升、补水 12、剩 300（原 250／+15／剩 250）
+        Assert.That(c.ConfirmText, Is.EqualTo("给林昭饮用：分量水壶内脏水200毫升 · 5分钟"));
+        Assert.That((c.Feed!.Source.Kind, c.Feed.Source.ItemName, c.Feed.LiquidMlAfter), Is.EqualTo((FeedSourceKind.Canteen, "脏水", 300)));
+        Assert.That(c.Feed.ChangeText, Is.EqualTo("水分+12，出现腹泻（12小时）"));
+        var card = E.FeedPreview(s, Req(Lin, Me, Give(s, "clean_water", ItemInstance.Carried, 10), units: 5));   // B56：每份100毫升，×5 保持原 1000 毫升，选 5 份
         Assert.That((card.Feed!.Source.LiquidMl, card.Feed.LiquidMlAfter), Is.EqualTo((1000, 500)));
     }
 
@@ -772,8 +807,9 @@ public class B28FeedTests : TestBase
         Run(s);
         s.Actors[Me].Stats.Hydration = 90;
         var c = Canteen(s, ItemInstance.Carried, "clean_water", 1000);
-        Start(s, ActionRequest.UseInstance(c.InstanceId));
-        Assert.That(s.Log.Last().Text, Is.EqualTo("从分量水壶喝250毫升净水：水分+15，壶里剩净水 750/2000毫升。"), "自用仍写配置量，不改裁上限口径");
+        Start(s, ActionRequest.UseInstance(c.InstanceId, 2));
+        // B56（S10 文首 B53a Q929；02 Q975 A 暂用日志「饮用{水种}{毫升}毫升」）：自用水壶选 2 份＝200 毫升、补水 12（原固定一口 250／+15）
+        Assert.That(s.Log.Last().Text, Is.EqualTo("饮用净水200毫升：水分+12，壶里剩净水 800/2000毫升。"), "自用仍写配置量，不改裁上限口径");
         Assert.That(s.Actors[Me].Stats.Hydration, Is.EqualTo(100));
     }
 }

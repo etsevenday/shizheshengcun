@@ -58,7 +58,7 @@ public class B22dTests : TestBase
 
     private void Water(GameState s)
     {
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：每份100毫升，×5 保持原 2000 毫升（W100-Q929-11 原 2 升进出变 20 份）
         E.CreateItems(s, "filter_media", 1, s.Ground);
         Ok(E.StartStationBatch(s, "ex_station_water"));
     }
@@ -92,7 +92,7 @@ public class B22dTests : TestBase
 
         Water(s);
         AdvanceTo(s, s.GameMinute + 30);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(4));
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(20));   // B56（W100-Q929-11）：一批 2 升＝20 份（原 4）
         Assert.That(CraftXp(s) - xp0, Is.EqualTo(9), "净水台整批 3（2L 共 3）");
         Water(s);
         Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "water_station").Single()), Does.Contain("+3"));
@@ -102,7 +102,7 @@ public class B22dTests : TestBase
         Water(s);
         Assert.That(E.StationBatchXpNote(s, E.StationBatchesHere(s, "water_station").Single()), Is.EqualTo("今日可获得生产制造经验已满"), "BM9（S08 Q842）：今日已完成批次用满日额时的在途说明");
         AdvanceTo(s, s.GameMinute + 30);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(12), "日额满了产物照出");
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(60), "日额满了产物照出");   // B56（W100-Q929-11）：三批×20 份（原 12）
         Assert.That(CraftXp(s) - xp0, Is.EqualTo(12), "日额满后再完成给 0");
         Assert.That(s.Log.Last(l => l.Text.Contains("净水")).Text, Does.Contain("已满12"));
         Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(cook0), "不另给烹饪净化经验");

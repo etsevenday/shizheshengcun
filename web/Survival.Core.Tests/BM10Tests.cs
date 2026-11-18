@@ -152,7 +152,7 @@ public class BM10Tests : BattleTestBase
 
     private ActionResult WaterBatch(GameState s)
     {
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：ex_station_water 脏水 4→20（W100-Q929-11），×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
         var r = E.StartStationBatch(s, "ex_station_water", $"q869-{++_seq}", 1);
         Assert.That(r.Ok, Is.True, r.Reason);
@@ -169,7 +169,7 @@ public class BM10Tests : BattleTestBase
         for (var i = 0; i < 4; i++) { WaterBatch(s); AdvanceTo(s, s.GameMinute + 30); }   // 净水台每批 3，四批完成用满 12
         Assume.That(Clock.Day(s.GameMinute), Is.EqualTo(day), "布场：仍在同一日");
         Assert.That(s.Player.DailyCounts[$"{day}|stationXp|crafting"], Is.EqualTo(12));
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：ex_station_water 脏水 4→20（W100-Q929-11），×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
         Assert.That(E.StationBatchXpPreview(s, rc, 1), Is.EqualTo(XpFull), "独立预估无句号");
         var r = E.StartStationBatch(s, "ex_station_water", $"q869-{++_seq}", 1);

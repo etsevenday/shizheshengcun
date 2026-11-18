@@ -13,6 +13,14 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B13bResourceTests : TestBase
 {
+    // B56 契约覆盖旧资产（M1079；b53a-q928-q929-water-100ml.json preserveOtherActualMlAcrossRecipesResourcesLootTradeTasksBudget，S10 文首 B53a Q929）：
+    // 水每份 500→100 毫升，资源点水产出份数×5；按件计库存（renewable／finite）且只出水的点 cap 与日补也×5，保持原真实毫升。其他字段与其他点仍对照旧资产。
+    private static bool B56IsWater(string id) => id is "dirty_water" or "clean_water";
+    private static Dictionary<string, int> B56Outputs(JObject items) =>
+        items.Properties().ToDictionary(p => p.Name, p => (int)p.Value * (B56IsWater(p.Name) ? 5 : 1));
+    private static int B56Stock(Survival.Core.Config.ResourceConfig r, int n) =>
+        r.IsUnits && r.Outputs.Keys.All(B56IsWater) ? n * 5 : n;
+
     private static JObject Adj() => JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.resource-adjudications.json")));
 
     private static void Lv(GameState s, string id, int lv) => s.Skills[id].Level = lv;
@@ -56,7 +64,7 @@ public class B13bResourceTests : TestBase
             var r = E.Resource(id);
             Assert.That(r.LocationId, Is.EqualTo((string)j["nodeId"]!), id);
             Assert.That(r.BaseMinutes, Is.EqualTo((int)j["workMinutes"]!), id);
-            Assert.That(r.DailyRefill, Is.EqualTo((int)j["dailyRefill"]!), id);
+            Assert.That(r.DailyRefill, Is.EqualTo(B56Stock(r, (int)j["dailyRefill"]!)), id);   // B56 改期望：只出水的按件库存日补×5
             var reveal = (int)j["reveal"]!;
             Assert.That(reveal == 0 ? r.RevealOnVisit : r.RevealAt == reveal, Is.True, id);
             Assert.That(r.XpAllowed, Is.EqualTo((bool)j["xpAllowed"]!), id);
@@ -64,21 +72,21 @@ public class B13bResourceTests : TestBase
             Assert.That(r.Scope, Is.EqualTo((string)j["scope"]!), id);
             var cap = (int)j["cap"]!;
             if (cap < 0) Assert.That(r.IsUnlimited, Is.True, id);
-            else Assert.That(r.Cap, Is.EqualTo(cap), id);
-            Assert.That(r.Outputs, Is.EquivalentTo(((JObject)j["items"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), id);
+            else Assert.That(r.Cap, Is.EqualTo(B56Stock(r, cap)), id);   // B56 改期望：只出水的按件库存 cap×5
+            Assert.That(r.Outputs, Is.EquivalentTo(B56Outputs((JObject)j["items"]!)), id);   // B56 改期望：水产出×5（见 B56Outputs）
             Assert.That(r.Hazard, Is.Null, "各源不新增划伤");
         }
         var water = E.Resource("h02_square_water");
-        Assert.That((water.Cap, water.DailyRefill, water.Outputs["clean_water"], water.RevealOnVisit, water.XpAllowed), Is.EqualTo((16, 12, 2, true, false)));
+        Assert.That((water.Cap, water.DailyRefill, water.Outputs["clean_water"], water.RevealOnVisit, water.XpAllowed), Is.EqualTo((80, 60, 10, true, false)));   // B56 改期望：h02_square_water 库存 16→80、日补 12→60、每次净水 2→10 份（M1079，×5 保持原真实毫升）
 
         // 到营区广场：净水配给处可见 16/16，领取一次净水+2、库存 14、无经验
         var s = AtNode("h02_square");
         Assert.That(s.Resources["h02_square_water"].Discovered, Is.True);
-        Assert.That(E.ResourceStock(s, water).Badge, Is.EqualTo("16/16"));
+        Assert.That(E.ResourceStock(s, water).Badge, Is.EqualTo("80/80"));   // B56 改期望：h02_square_water 库存 16→80、日补 12→60、每次净水 2→10 份（M1079，×5 保持原真实毫升）
         Start(s, ActionRequest.Gather("h02_square_water"));
         Run(s);
-        Assert.That(Count(s, "clean_water", "h02_square"), Is.EqualTo(2));
-        Assert.That(s.Resources["h02_square_water"].Available, Is.EqualTo(14));
+        Assert.That(Count(s, "clean_water", "h02_square"), Is.EqualTo(10));   // B56 改期望：h02_square_water 库存 16→80、日补 12→60、每次净水 2→10 份（M1079，×5 保持原真实毫升）
+        Assert.That(s.Resources["h02_square_water"].Available, Is.EqualTo(70));   // B56 改期望：h02_square_water 库存 16→80、日补 12→60、每次净水 2→10 份（M1079，×5 保持原真实毫升）
         Assert.That(s.Skills["gathering"].Xp + s.Skills["scavenging"].Xp, Is.EqualTo(0));
     }
 

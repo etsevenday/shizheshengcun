@@ -38,7 +38,8 @@ public class BM5b1FacMenuTests : TestBase
     }
 
     /// <summary>加工位1：一份生肉直烤；加工位2：锅（净水 n 份、生块根 roots 份）。</summary>
-    private (ItemInstance meat, ItemInstance pot) Setup(GameState s, int water = 2, int roots = 1)
+    // B56：默认锅水 10 份×100 毫升（原 2 份×500＝1000 毫升，水煮每次 1000，W100-Q929-08）
+    private (ItemInstance meat, ItemInstance pot) Setup(GameState s, int water = 10, int roots = 1)
     {
         var pot = Pot(s);
         foreach (var w in s.Items.Where(i => i.ItemId == "clean_water" && i.Owner == Here).ToList()) s.Items.Remove(w);

@@ -69,7 +69,7 @@ public class B38bN02TemplateTests : TestBase
 
         s.Player.Stats.Satiety = 15;
         Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId).Reason, Is.EqualTo("先选一项。"));
-        Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_water").Reason, Is.EqualTo("你当前不符合「净水1份（水分低于40）」的领取条件。"));
+        Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_water").Reason, Is.EqualTo("你当前不符合「净水5份（水分低于40）」的领取条件。"));   // B56 改期望（M1079 配置 church_relief_ration relief_water：净水×5 保持原 500 毫升；b53a-q928-q929-water-100ml.json Q929 数量换算×5）
         Ok(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_food"));
         Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Lines, Is.EqualTo(new[] { "本日全队已领1/1份（含在办预留）。" }));
         var logs = s.Log.Count;
@@ -89,7 +89,7 @@ public class B38bN02TemplateTests : TestBase
         logs = s.Log.Count;
         Run(s);
         Assert.That(s.Log.Skip(logs).Single(l => l.Kind == nameof(GameEventKind.ActionCompleted)).Text,
-            Is.EqualTo($"{Title("church_relief_ration")}未完成。你已不符合「净水1份（水分低于40）」的领取条件。材料和额度均未扣除。"));
+            Is.EqualTo($"{Title("church_relief_ration")}未完成。你已不符合「净水5份（水分低于40）」的领取条件。材料和额度均未扣除。"));   // B56 改期望（M1079 配置 church_relief_ration relief_water：净水×5 保持原 500 毫升；b53a-q928-q929-water-100ml.json Q929 数量换算×5）
         Assert.That(E.CityQuotaUsed(s, "church_relief_ration", 3), Is.Zero);
     }
 

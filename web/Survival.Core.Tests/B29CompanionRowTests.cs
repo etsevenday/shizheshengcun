@@ -84,10 +84,11 @@ public class B29CompanionRowTests : TestBase
         Assert.That(E.PotLabel(s, pot), Does.StartWith("空锅"), "空锅沿原空态文字");
 
         var inside = ItemInstance.ContainerOwner(pot.InstanceId);
-        var water = Give(s, "clean_water", inside, 2);
+        var water = Give(s, "clean_water", inside, 10);   // B56：锅每份100毫升，×5 保持原 1000 毫升
         var berry = Give(s, "berry", inside);
         var rows = E.CompanionCarried(s, Lin);
-        Assert.That(rows.Select(r => r.Text), Is.EqualTo(new[] { "金属锅（净水100%·1000/1000毫升，食材1/2）", "净水×2", "野果（保质到第2日 10:00）" }));
+        // B56（S10 文首 B53a Q929：锅 1000 毫升＝10 份×100）：锅内水卡子行份数随造数 ×5（原「净水×2」）
+        Assert.That(rows.Select(r => r.Text), Is.EqualTo(new[] { "金属锅（净水100%·1000/1000毫升，食材1/2）", "净水×10", "野果（保质到第2日 10:00）" }));
         Assert.That(rows.Select(r => r.InPot), Is.EqualTo(new[] { false, true, true }));
         Assert.That(rows.Select(r => r.InstanceId), Is.EqualTo(new[] { pot.InstanceId, water.InstanceId, berry.InstanceId }));
 

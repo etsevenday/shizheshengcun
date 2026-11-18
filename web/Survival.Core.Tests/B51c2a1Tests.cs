@@ -53,10 +53,10 @@ public class B51c2a1Tests : TestBase
         return s;
     }
 
-    /// <summary>给当前地面放 batches 批净水原料（配置 ex_station_water：脏水4＋滤材1）。</summary>
+    /// <summary>给当前地面放 batches 批净水原料（配置 ex_station_water：脏水20＋滤材1；B56 水每份100毫升，原脏水4份×500毫升＝20份×100毫升）。</summary>
     private void WaterInputs(GameState s, int batches)
     {
-        E.CreateItems(s, "dirty_water", 4 * batches, s.Ground);
+        E.CreateItems(s, "dirty_water", 20 * batches, s.Ground);   // B56：每份100毫升，×5 保持原 2000 毫升／批
         E.CreateItems(s, "filter_media", batches, s.Ground);
     }
 
@@ -138,15 +138,15 @@ public class B51c2a1Tests : TestBase
         var left = Batches(s, "water_station");
         Assert.That(left.Select(b => (b.BatchId, b.DoneMinutes)), Is.EqualTo(new[] { (keep[0], 10), (keep[1], 0) }), "其他批不动、进度保留");
         Assert.That(BatchBound(s, q[1].BatchId), Is.Empty, "该批原料已全部离开设施");
-        Assert.That((GroundSum(s, "dirty_water"), GroundSum(s, "filter_media")), Is.EqualTo((4, 1)), "配方脏水4＋滤材1回地面");
+        Assert.That((GroundSum(s, "dirty_water"), GroundSum(s, "filter_media")), Is.EqualTo((20, 1)), "配方脏水20＋滤材1回地面");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 (4, 1)
         Assert.That(s.Items.Where(i => i.Owner == s.Ground && i.ItemId is "dirty_water" or "filter_media").All(i => i.ReservedBy == null), Is.True, "回地面后解锁");
         Assert.That(Sum(s, "clean_water"), Is.EqualTo(0), "没有产物");
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(0), "没有经验");
         // S11 Q876 B：「已取出至{地点}地面：{物品清单}。」名×数、顿号；Q878 不接「已中止…」尾句；Q882 不接保质句
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×4、滤材×1。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×20、滤材×1。"));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原「脏水×4」
 
         AdvanceTo(s, t0 + 40);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(8), "其余两批照常完成（配方净水4×2）");
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(40), "其余两批照常完成（配方净水20×2）");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 8
     }
 
     /// <summary>
@@ -210,11 +210,11 @@ public class B51c2a1Tests : TestBase
         Assert.That(s.GameMinute, Is.EqualTo(now), "0 分钟");
         Assert.That(Batches(s, "water_station"), Is.Empty);
         Assert.That(Batches(s, "kiln").Select(b => b.DoneMinutes), Is.EqualTo(new[] { 20 }), "陶窑那批不动");
-        Assert.That((GroundSum(s, "dirty_water"), GroundSum(s, "filter_media")), Is.EqualTo((8, 2)));
+        Assert.That((GroundSum(s, "dirty_water"), GroundSum(s, "filter_media")), Is.EqualTo((40, 2)));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 (8, 2)
         Assert.That(s.Items.Where(i => i.Owner == s.Ground && i.ItemId == "dirty_water").ToList(), Has.Count.EqualTo(1), "回地面后合堆");
         Assert.That((Sum(s, "clean_water"), s.Skills["crafting"].Xp), Is.EqualTo((0, 0)));
         // S11 Q876 B：同名按真实移出量合为「名×数」，顿号连接
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×8、滤材×2。"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×40、滤材×2。"));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原「脏水×8」
         Assert.That(E.TakeAllBlocked(s, s.Ground, "water_station"), Is.EqualTo("没有可取出的物品。"), "取完后空了");
     }
 
@@ -247,7 +247,7 @@ public class B51c2a1Tests : TestBase
         Assert.That(Batches(s, "water_station"), Has.Count.EqualTo(2));
         Assert.That(GroundSum(s, "dirty_water"), Is.EqualTo(0), "一样不动");
         Ok(TakeAllNow(s, "water_station", "new"));
-        Assert.That(GroundSum(s, "dirty_water"), Is.EqualTo(8));
+        Assert.That(GroundSum(s, "dirty_water"), Is.EqualTo(40));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 8
     }
 
     /// <summary>B51-Q778-04：同一请求号只生效一次——重复提交返回重复、不再动别的批。</summary>
@@ -306,7 +306,7 @@ public class B51c2a1Tests : TestBase
         var r = TakeBatch(s, b);
         Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "行动进行中，暂不能整理物品")));
         Assert.That(E.TakeAllBlocked(s, s.Ground, "water_station"), Is.EqualTo("行动进行中，暂不能整理物品"));
-        Assert.That(BatchBound(s, b.BatchId).Sum(i => i.Count), Is.EqualTo(5), "被拒时原料留在设施");
+        Assert.That(BatchBound(s, b.BatchId).Sum(i => i.Count), Is.EqualTo(21), "被拒时原料留在设施");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 5（脏水4＋滤材1）
         s.Sub = null;
         Ok(TakeBatch(s, b));
     }
@@ -338,10 +338,10 @@ public class B51c2a1Tests : TestBase
         var q = Batches(s, "water_station");
         s.Items.RemoveAll(i => i.ItemId == "filter_media" && i.Owner == ItemInstance.StationOwner(s.Ground, q[1].BatchId));   // 起点：第二批丢了滤材
         AdvanceTo(s, t0 + 30);
-        Assert.That(Sum(s, "clean_water"), Is.EqualTo(4), "第一批照常完成");
+        Assert.That(Sum(s, "clean_water"), Is.EqualTo(20), "第一批照常完成");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         Assert.That(BatchBound(s, q[0].BatchId), Is.Empty, "完成批原料已核销");
         Assert.That(s.Items.Any(i => i.InStation), Is.False, "设施里不留原料");
-        Assert.That(GroundSum(s, "dirty_water"), Is.EqualTo(4), "失败批剩下的脏水回地面");
+        Assert.That(GroundSum(s, "dirty_water"), Is.EqualTo(20), "失败批剩下的脏水回地面");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         Assert.That(s.Items.Where(i => i.ItemId == "dirty_water").All(i => i.ReservedBy == null && i.Owner == s.Ground), Is.True);
         Assert.That(s.Log.Any(l => l.Text == "临时营地固定净水台：原料不全，这一批没有产物，剩下的原料已解锁。"), Is.True);   // B17 原失败句，{区}{设施}
     }
@@ -361,10 +361,10 @@ public class B51c2a1Tests : TestBase
         E.FacOf(s, s.Ground)!.StationBatches.Remove(q[1]);   // 起点：第二批的批记录丢了（孤立保护）
         var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
         var live = BatchBound(loaded, q[0].BatchId).Where(i => i.ItemId == "dirty_water").ToList();
-        Assert.That(live.Sum(i => i.Count), Is.EqualTo(4));
+        Assert.That(live.Sum(i => i.Count), Is.EqualTo(20));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         Assert.That(live.All(i => i.ShelfPausedMinutes == 50), Is.True, "在办批原料保持保护");
         var orphan = loaded.Items.Where(i => i.Owner == ItemInstance.StationOwner(loaded.Ground, q[1].BatchId) && i.ItemId == "dirty_water").ToList();
-        Assert.That(orphan.Sum(i => i.Count), Is.EqualTo(4));
+        Assert.That(orphan.Sum(i => i.Count), Is.EqualTo(20));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         Assert.That(orphan.All(i => i.ShelfPausedMinutes == null && i.ExpiresAt == loaded.GameMinute + 50), Is.True, "孤立的才按 C＋R 收束");
     }
 
@@ -404,13 +404,15 @@ public class B51c2a1Tests : TestBase
         var kb = Batches(s, "kiln").Single();
         Assert.That(E.DebugLegacyStation56(s), Does.Contain("存档56"));
         Assert.That(s.Items.Any(i => i.InStation), Is.False, "起点：56 旧模型原料都在地面");
+        // B56 起点：DebugLegacyStation56 已把水按旧每份500毫升还原（SaveMigrator.DebugToLegacyWaterUnits），读档链 57→58 再×5
+        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water").Sum(i => i.Count), Is.EqualTo(4), "起点：旧档脏水4份");
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         Assert.That((string?)obj["SchemaVersion"], Is.EqualTo("56"));
 
         var m = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(m.SchemaVersion, Is.EqualTo("57"));
+        Assert.That(m.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
         var wIn = m.Items.Where(i => i.Owner == ItemInstance.StationOwner(m.Ground, wb.BatchId)).OrderBy(i => i.ItemId).ToList();
-        Assert.That(wIn.Select(i => (i.ItemId, i.Count)), Is.EqualTo(new[] { ("dirty_water", 4), ("filter_media", 1) }));
+        Assert.That(wIn.Select(i => (i.ItemId, i.Count)), Is.EqualTo(new[] { ("dirty_water", 20), ("filter_media", 1) }));   // B56 改期望：旧4份经 57→58 水份数×5（SaveMigrator.From57To58）＝20：原 4
         Assert.That(wIn.All(i => i.ReservedBy == null && i.PlacedOrder == null), Is.True, "预留标记与地面排序清掉");
         Assert.That(wIn.Single(i => i.ItemId == "dirty_water").ShelfPausedMinutes, Is.EqualTo(100), "R 保留");
         var kIn = m.Items.Where(i => i.Owner == ItemInstance.StationOwner(m.Ground, kb.BatchId)).ToList();
@@ -424,7 +426,7 @@ public class B51c2a1Tests : TestBase
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg);
         Assert.That(again.Items.Select(i => (i.InstanceId, i.Owner, i.ReservedBy, i.Count)), Is.EqualTo(m.Items.Select(i => (i.InstanceId, i.Owner, i.ReservedBy, i.Count))), "重复读档不变");
         AdvanceTo(again, again.GameMinute + 60);
-        Assert.That((Sum(again, "clean_water"), Sum(again, "ceramic_shell")), Is.EqualTo((4, 2)), "迁移后两批照常完成（配方净水4、陶壳2）");
+        Assert.That((Sum(again, "clean_water"), Sum(again, "ceramic_shell")), Is.EqualTo((20, 2)), "迁移后两批照常完成（配方净水20、陶壳2）");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 (4, 2)
     }
 
     // ───────────── 网页壳接线（src/Core 以外，做改坏验证） ─────────────
@@ -512,12 +514,12 @@ public class B51c2a1Tests : TestBase
             i.ShelfPausedMinutes = null;   // 起点：无保护（如 54 档升级时已到期的输入）
             i.ExpiresAt = s.GameMinute + 5;
         }
-        E.StationBatchInputs(s, s.Ground, q[1]).Single(i => i.ItemId == "dirty_water").Count = 3;   // 起点：孤立那份 3 份，与在办批的 4 份区分
+        E.StationBatchInputs(s, s.Ground, q[1]).Single(i => i.ItemId == "dirty_water").Count = 3;   // 起点：孤立那份 3 份，与在办批的 20 份区分
         E.FacOf(s, s.Ground)!.StationBatches.Remove(q[1]);   // 起点：第二批孤立
         var logs = s.Log.Count;
         AdvanceTo(s, s.GameMinute + 10);
         var live = BatchBound(s, q[0].BatchId).Where(i => i.ItemId == GameEngine.SpoiledMatterId).ToList();
-        Assert.That(live.Sum(i => i.Count), Is.EqualTo(4), "在办批内的脏水原位变腐败物");
+        Assert.That(live.Sum(i => i.Count), Is.EqualTo(20), "在办批内的脏水原位变腐败物");   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         var lines = s.Log.Skip(logs).Select(l => l.Text).Where(t => t.Contains("已腐败，变为腐败物")).ToList();
         Assert.That(lines, Has.Count.EqualTo(1));
         Assert.That(lines[0], Is.EqualTo("脏水×3已腐败，变为腐败物×3。"), "只有孤立那份写普通腐败句，在办批那份不写");
@@ -528,19 +530,19 @@ public class B51c2a1Tests : TestBase
     public void MT_Start_TakesExactStacks_NoZeroSplit()
     {
         var s = Workshop();
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
-        foreach (var i in s.Items.Where(i => i.ItemId == "dirty_water")) i.ExpiresAt = s.GameMinute + 100;   // 起点：先到期的一堆 4
-        E.CreateItems(s, "dirty_water", 3, s.Ground);   // 无期限的一堆 3
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：每份100毫升，×5 保持原 2000 毫升（正好一批）
+        foreach (var i in s.Items.Where(i => i.ItemId == "dirty_water")) i.ExpiresAt = s.GameMinute + 100;   // 起点：先到期的一堆 20
+        E.CreateItems(s, "dirty_water", 15, s.Ground);   // 无期限的一堆 15（B56：每份100毫升，×5 保持原 1500 毫升）
         E.CreateItems(s, "filter_media", 1, s.Ground);
-        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water").Select(i => i.Count).OrderBy(n => n), Is.EqualTo(new[] { 3, 4 }), "起点：两堆");
+        Assert.That(s.Items.Where(i => i.ItemId == "dirty_water").Select(i => i.Count).OrderBy(n => n), Is.EqualTo(new[] { 15, 20 }), "起点：两堆");
         Ok(E.StartStationBatch(s, Water, "w"));
         var b = Batches(s, "water_station").Single();
         var ins = E.StationBatchInputs(s, s.Ground, b);
         Assert.That(ins, Has.Count.EqualTo(2));
-        Assert.That(ins.Select(i => (i.ItemId, i.Count)), Is.EquivalentTo(new[] { ("dirty_water", 4), ("filter_media", 1) }));
+        Assert.That(ins.Select(i => (i.ItemId, i.Count)), Is.EquivalentTo(new[] { ("dirty_water", 20), ("filter_media", 1) }));   // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         Assert.That(ins.Single(i => i.ItemId == "dirty_water").ShelfPausedMinutes, Is.EqualTo(100), "拿的是先到期那堆");
         var ground = s.Items.Where(i => i.ItemId == "dirty_water" && i.Owner == s.Ground).ToList();
-        Assert.That(ground.Select(i => (i.Count, i.ExpiresAt)), Is.EqualTo(new[] { (3, (int?)null) }), "无期限那堆原样留在地面");
+        Assert.That(ground.Select(i => (i.Count, i.ExpiresAt)), Is.EqualTo(new[] { (15, (int?)null) }), "无期限那堆原样留在地面");   // B56：随造数×5（原 3）
     }
 
     /// <summary>
@@ -568,8 +570,9 @@ public class B51c2a1Tests : TestBase
     [Test]
     public void MT_StationBatchSummary_Text()
     {
+        // B56 改期望（配置 ex_station_water 脏水20＋滤材1→净水20，M1079；b56-q973-q974 契约配方表×5）：原「脏水×4、滤材×1 → 净水×4」
         Assert.That(E.StationBatchSummary(Cfg.Recipes.Single(r => r.Id == Water)),
-            Is.EqualTo("脏水×4、滤材×1 → 净水×4，被动30世界分钟（不占行动，离开也继续），完成后放在本区地面；取出退回原料，时间不退"));
+            Is.EqualTo("脏水×20、滤材×1 → 净水×20，被动30世界分钟（不占行动，离开也继续），完成后放在本区地面；取出退回原料，时间不退"));
         Assert.That(E.StationBatchSummary(Cfg.Recipes.Single(r => r.Id == Kiln)),
             Is.EqualTo("黏土×2＋燃料木炭×1 → 陶壳×2，被动60世界分钟（不占行动，离开也继续），完成后放在本区地面；取出退回原料，时间不退"));
     }
@@ -641,7 +644,7 @@ public class B51c2a1Tests : TestBase
         var done = Batches(s, "water_station").Single(b => b.BatchId == empty.BatchId).DoneMinutes;
         Ok(TakeAllNow(s, "water_station", "a1"));
         Assert.That(Batches(s, "water_station").Select(b => (b.BatchId, b.DoneMinutes)), Is.EqualTo(new[] { (empty.BatchId, done) }), "空批留着、进度不变");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×4、滤材×1。"));   // S11 Q876 B
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：脏水×20、滤材×1。"));   // S11 Q876 B；B56 改期望（配置 ex_station_water 脏水20，M1079）：原「脏水×4」
     }
 
     /// <summary>存档 56→57：配方已不存在的批不迁（读档不出错），它的地面预留原料原样留在地面；配方在的批照常移进设施（配对）。</summary>
@@ -653,12 +656,13 @@ public class B51c2a1Tests : TestBase
         Ok(E.StartStationBatch(s, Water, "w", 2));
         var q = Batches(s, "water_station");
         E.DebugLegacyStation56(s);
+        // B56 起点：DebugLegacyStation56 已把水按旧每份500毫升还原（SaveMigrator.DebugToLegacyWaterUnits），读档链 57→58 再×5
         q[1].RecipeId = "no_such_recipe";   // 起点：旧档里这一批的配方已从配置删除
         var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(m.SchemaVersion, Is.EqualTo("57"));
-        Assert.That(m.Items.Where(i => i.Owner == ItemInstance.StationOwner(m.Ground, q[0].BatchId)).Sum(i => i.Count), Is.EqualTo(5), "配方在的批：脏水4＋滤材1移进设施");
+        Assert.That(m.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
+        Assert.That(m.Items.Where(i => i.Owner == ItemInstance.StationOwner(m.Ground, q[0].BatchId)).Sum(i => i.Count), Is.EqualTo(21), "配方在的批：脏水20＋滤材1移进设施");   // B56 改期望：旧4份经 57→58 ×5＝20（SaveMigrator.From57To58）：原 5
         var left = m.Items.Where(i => i.ReservedBy == q[1].BatchId).ToList();
-        Assert.That(left.Sum(i => i.Count), Is.EqualTo(5));
+        Assert.That(left.Sum(i => i.Count), Is.EqualTo(21));   // B56 改期望：同上，地面预留的旧4份×5＝20＋滤材1：原 5
         Assert.That(left.All(i => i.Owner == m.Ground), Is.True, "配方不在的批原样留在地面预留");
     }
 }

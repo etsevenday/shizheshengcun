@@ -102,7 +102,7 @@ public class B22aTests : TestBase
         var s = New();
         E.DebugLearnAllKnowledge(s);
         s.Items.RemoveAll(i => i.ItemId is "dirty_water" or "clean_water" or "purification_tablet");
-        E.CreateItems(s, "dirty_water", 4, s.CurrentLocation);
+        E.CreateItems(s, "dirty_water", 20, s.CurrentLocation);   // B56：ex_tablet_water／ex_cartridge_water 脏水 4→20（W100-Q929-11），×5 保持原 2000 毫升
         E.CreateItems(s, "purification_tablet", tablets, s.CurrentLocation);
         return s;
     }
@@ -120,9 +120,10 @@ public class B22aTests : TestBase
             var rc = Cfg.Recipes.Single(r => r.Id == id);
             Assert.That((rc.IsFixedWait, rc.XpSkill, rc.BaseMinutes), Is.EqualTo((true, "cooking", 20)), id);
             Assert.That(rc.Inputs.Keys.Intersect(targets).Count(), Is.EqualTo(1), id);
-            Assert.That(rc.Outputs, Is.EqualTo(new Dictionary<string, int> { ["clean_water"] = 4 }), id);
+            // B56（S10 文首 B53a Q929 / W100-Q929-01、11）：净水每份 100 毫升，2 升产出＝20 份（原 4 份×500）
+            Assert.That(rc.Outputs, Is.EqualTo(new Dictionary<string, int> { ["clean_water"] = 20 }), id);
         }
-        Assert.That(Cfg.Items.Single(i => i.Id == "clean_water").UnitVolumeMl, Is.EqualTo(500));
+        Assert.That(Cfg.Items.Single(i => i.Id == "clean_water").UnitVolumeMl, Is.EqualTo(100));
         Assert.That((Cfg.Progression.Cooking.WaterMlPerXp, Cfg.Progression.Cooking.WaterDailyCap), Is.EqualTo((500, 4)));
     }
 
@@ -144,7 +145,7 @@ public class B22aTests : TestBase
         Assert.That(s.Main!.XpSkill, Is.EqualTo("cooking"), "开工快照");
         Run(s);
         Assert.That(s.GameMinute - t0, Is.EqualTo(20));
-        Assert.That(Count(s, "clean_water", s.CurrentLocation), Is.EqualTo(4));
+        Assert.That(Count(s, "clean_water", s.CurrentLocation), Is.EqualTo(20));   // B56（W100-Q929-11）：2 升产出 20 份（原 4）
         Assert.That(s.Skills["cooking"].Xp - cook0, Is.EqualTo(4));
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(craft0), "不给制造");
         Assert.That(s.Log.Last(l => l.Kind == "ActionCompleted").Text, Does.Contain("烹饪经验+4"));
@@ -172,7 +173,7 @@ public class B22aTests : TestBase
         Assert.That(s.Skills["cooking"].Xp - cook0, Is.EqualTo(1));
         Assert.That(s.Player.DailyCounts[WaterKey(s, GameEngine.DailyWaterXp)], Is.EqualTo(4));
         // 日额已满：再做一批净水片净水给 0
-        E.CreateItems(s, "dirty_water", 4, s.CurrentLocation);
+        E.CreateItems(s, "dirty_water", 20, s.CurrentLocation);   // B56：ex_tablet_water／ex_cartridge_water 脏水 4→20（W100-Q929-11），×5 保持原 2000 毫升
         Assert.That(E.Preview(s, ActionRequest.Craft("ex_tablet_water")).XpGains, Has.Some.Contains("今日净化经验已满4"));
         Start(s, ActionRequest.Craft("ex_tablet_water"));
         Run(s);
@@ -189,8 +190,8 @@ public class B22aTests : TestBase
         s.Player.DailyCounts[key] = 2;
         s.Player.DailyCounts[WaterKey(s, GameEngine.DailyWaterFixedXp)] = 2;   // 已由固定等待给 2
         var pot = First(s, "pot");
-        E.DebugGive(s, "dirty_water", 2, "camp");
-        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2)));
+        E.DebugGive(s, "dirty_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
+        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 10)));
         Ok(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)));
         var fac = s.Locations["camp"].Facility;
         fac.FireLit = true; fac.FuelMinutes = 240;
@@ -234,7 +235,7 @@ public class B22aTests : TestBase
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
         var xp0 = t.Skills.Values.Sum(k => k.Xp);
         Run(t);
-        Assert.That(Count(t, "clean_water", t.CurrentLocation), Is.EqualTo(4));
+        Assert.That(Count(t, "clean_water", t.CurrentLocation), Is.EqualTo(20));   // B56（W100-Q929-11）：2 升产出 20 份（原 4）
         Assert.That(t.Skills.Values.Sum(k => k.Xp), Is.EqualTo(xp0));
         Assert.That(t.Log.Last(l => l.Kind == "ActionCompleted").Text, Does.Contain("固定等待不给经验"));
     }
@@ -246,7 +247,7 @@ public class B22aTests : TestBase
         var s = New();
         E.DebugLearnAllKnowledge(s);
         s.Items.RemoveAll(i => i.ItemId is "dirty_water" or "clean_water");
-        E.CreateItems(s, "dirty_water", 8, s.CurrentLocation);
+        E.CreateItems(s, "dirty_water", 40, s.CurrentLocation);   // B56：两批×20（W100-Q929-11），×5 保持原 4000 毫升
         E.CreateItems(s, "filter_cartridge", 2, s.CurrentLocation);
         E.CreateItems(s, "water_filter", 1, s.CurrentLocation);
         var c0 = s.Skills["cooking"].Xp;
@@ -334,8 +335,9 @@ public class B22aTests : TestBase
     }
 
     /// <summary>PLAN-Q169-01：硬饼一批（出 2 份）给投料人烹饪 6、炖食一批（出 2 份）给 5，每批一次、不按份数；计入每日 30。</summary>
-    [TestCase("pot_hardtack", "hardtack", 1, 6)]
-    [TestCase("pot_stew", "stew_portion", 2, 5)]
+    // B56：water 为锅水份数，每份100毫升，×5 保持原 500／1000 毫升
+    [TestCase("pot_hardtack", "hardtack", 5, 6)]
+    [TestCase("pot_stew", "stew_portion", 10, 5)]
     public void PLAN_Q169_01_PotRecipe_PerBatchXp(string process, string product, int water, int xp)
     {
         var (s, pot) = PotSetup(water, ("grain", 2), ("salt", 1), ("raw_meat", 1));
@@ -408,7 +410,7 @@ public class B22aTests : TestBase
     [Test]
     public void M412_PotRecipeXp_OncePerPot()
     {
-        var (s, pot) = PotSetup(1, ("grain", 2), ("salt", 1));
+        var (s, pot) = PotSetup(5, ("grain", 2), ("salt", 1));   // B56：每份100毫升，×5 保持原 500 毫升
         Ok(E.DoInstant(s, InstantRequest.LoadPotRecipe("pot_hardtack", pot.InstanceId)));
         var foods = E.PotFood(s, pot.InstanceId);
         Assert.That(foods, Has.Count.EqualTo(2));
@@ -418,7 +420,7 @@ public class B22aTests : TestBase
         s.Player.DailyCounts[WaterKey(s, GameEngine.DailyXp)] = 27;
         Assert.That(E.PotRecipeXpLine(s, pot), Does.Contain("烹饪经验+3").And.Contain("今日只剩3"));
         // 普通水煮食材仍逐份写（每份各给一次）
-        var (t, pot2) = PotSetup(2);
+        var (t, pot2) = PotSetup(10);   // B56：每份100毫升，×5 保持原 1000 毫升（水煮每次 1000）
         E.DebugGive(t, "raw_root", 1, "camp");
         Ok(E.DoInstant(t, InstantRequest.PutFoodInPot(First(t, "raw_root", "camp").InstanceId, pot2.InstanceId, 1)));
         Assert.That(E.CookXpLine(t, E.PotFood(t, pot2.InstanceId).Single()), Does.Contain("烹饪经验+3"));

@@ -82,7 +82,10 @@ public class B29WaterBudgetTests : TestBase
         foreach (var kv in WaterCopy.Water) Assert.That(kv.Value, Is.EqualTo(w[kv.Key]!.Value<string>()), kv.Key);
         var t = (JObject)c["treatment"]!["copy"]!;
         Assert.That(t.Properties().Select(p => p.Name), Is.EquivalentTo(WaterCopy.Treatment.Keys));
-        foreach (var kv in WaterCopy.Treatment) Assert.That(kv.Value, Is.EqualTo(t[kv.Key]!.Value<string>()), kv.Key);
+        // B56（S10 文首 B53a Q929 数量换算×5；M1082）：main 句「需完整4份脏水」随每份100毫升改「需完整20份脏水」（每批2000毫升不变），其余逐字对旧契约
+        foreach (var kv in WaterCopy.Treatment)
+            Assert.That(kv.Value, Is.EqualTo(kv.Key == "main" ? t[kv.Key]!.Value<string>().Replace("需完整4份脏水", "需完整20份脏水") : t[kv.Key]!.Value<string>()), kv.Key);
+        Assert.That(WaterCopy.Treatment["main"], Is.EqualTo("处理后才可饮用：随身脏水{D}毫升；按现有净水片/滤芯，最多可处理{V}毫升（每批2000毫升，需完整20份脏水）。"));
     }
 
     // ───────────── A04 回撤预算 R ─────────────
@@ -132,7 +135,7 @@ public class B29WaterBudgetTests : TestBase
     {
         var eng = EngineWith(c => c.Edges.RemoveAll(e => e.Bidirectional && (e.A == "d01_08" || e.B == "d01_08")));
         var s = Clean(eng);
-        eng.CreateItems(s, "clean_water", 2, ItemInstance.Carried);
+        eng.CreateItems(s, "clean_water", 10, ItemInstance.Carried);   // B56：每份100毫升，×5 保持原 1000 毫升
         var before = SaveSerializer.Serialize(s);
         var p = eng.ExpeditionPreview(s, "d01");
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "读预告 0 时间 0 抽样");
@@ -169,7 +172,7 @@ public class B29WaterBudgetTests : TestBase
         var s = Clean(null, Lin);
         s.Player.Stats.Hydration = 10;
         s.Actors[Lin].Stats.Hydration = 80;
-        E.CreateItems(s, "clean_water", 1, ItemInstance.Carried);
+        E.CreateItems(s, "clean_water", 5, ItemInstance.Carried);   // B56：每份100毫升，×5 保持原 500 毫升
         var (lo, hi) = E.ExploreEstimate(s, "d01");
         var b = E.ExpeditionWaterBudget(s, "d01");
         Assert.That(b.State, Is.EqualTo(WaterBudgetState.Normal));
@@ -202,7 +205,7 @@ public class B29WaterBudgetTests : TestBase
     {
         var s = Clean();
         s.Player.Stats.Hydration = 100;
-        E.CreateItems(s, "clean_water", 40, ItemInstance.Carried);
+        E.CreateItems(s, "clean_water", 200, ItemInstance.Carried);   // B56：每份100毫升，×5 保持原 20000 毫升
         Assert.That(E.ExpeditionWaterBudget(s, "d01").Enough, Is.True);
         var lines = E.ExpeditionPreview(s, "d01").WaterLines;
         Assert.That(lines, Does.Contain("与现有净水比较，缺口0毫升"));
@@ -224,7 +227,7 @@ public class B29WaterBudgetTests : TestBase
     public void A10_OldLinesGone_NamesUseYou()
     {
         var s = Clean();
-        E.CreateItems(s, "clean_water", 1, ItemInstance.Carried);
+        E.CreateItems(s, "clean_water", 5, ItemInstance.Carried);   // B56：每份100毫升，×5 保持原 500 毫升
         var lines = E.ExpeditionPreview(s, "d01").WaterLines;
         Assert.That(lines[0], Does.StartWith("你：按当前状态预计需另备净水"));
         Assert.That(lines.Any(l => l.StartsWith("随身净水（") || l.StartsWith("需处理的脏水")), Is.False);
@@ -239,7 +242,7 @@ public class B29WaterBudgetTests : TestBase
         // 腹泻额外失水调到分母≤0，只在主角身上生效
         var eng = EngineWith(c => c.ItemActions.DiarrheaExtraHydrationPerHour = -200);
         var s = Clean(eng, Lin);
-        eng.CreateItems(s, "clean_water", 2, ItemInstance.Carried);
+        eng.CreateItems(s, "clean_water", 10, ItemInstance.Carried);   // B56：每份100毫升，×5 保持原 1000 毫升
         s.Player.DiarrheaUntil = s.GameMinute + 60;
         Assert.That(eng.ExpeditionWaterBudget(s, "d01").State, Is.EqualTo(WaterBudgetState.Unreliable));
         var lines = eng.ExpeditionPreview(s, "d01").WaterLines;
@@ -256,9 +259,9 @@ public class B29WaterBudgetTests : TestBase
     public void Stock_CardCanteenPot_1750_NoDoubleCount()
     {
         var s = Clean(null, Lin);
-        Give(s, "clean_water", ItemInstance.Carried);
+        Give(s, "clean_water", ItemInstance.Carried, 5);   // B56：每份100毫升，×5 保持原 500 毫升
         Canteen(s, ItemInstance.CarriedOwner(Lin), "clean_water", 250);
-        PotWater(s, ItemInstance.Carried, "clean_water", 2);
+        PotWater(s, ItemInstance.Carried, "clean_water", 10);   // B56：锅每份100毫升，×5 保持原 1000 毫升
         Assert.That(E.ExpeditionWaterBudget(s, "d01").StockMl, Is.EqualTo(1750));
     }
 
@@ -266,11 +269,11 @@ public class B29WaterBudgetTests : TestBase
     public void Stock_ReservedAndElsewhere_NotCounted()
     {
         var s = Clean(null, Lin);
-        Give(s, "clean_water", ItemInstance.Carried, 2).ReservedBy = 4;
-        var (pot, _) = PotWater(s, ItemInstance.Carried, "clean_water", 2);
+        Give(s, "clean_water", ItemInstance.Carried, 10).ReservedBy = 4;   // B56：每份100毫升，×5 保持原 1000 毫升
+        var (pot, _) = PotWater(s, ItemInstance.Carried, "clean_water", 10);   // B56：锅每份100毫升，×5 保持原 1000 毫升
         s.Locations[s.CurrentLocation].Facility.Processes.Add(new FacilityProcess { RecipeId = "boil_root", TargetInstanceId = 99999, PotInstanceId = pot.InstanceId, ReservedWaterMl = 500 });
-        E.CreateItems(s, "clean_water", 5, s.Ground);
-        Give(s, "dirty_water", ItemInstance.Carried);
+        E.CreateItems(s, "clean_water", 25, s.Ground);   // B56：每份100毫升，×5 保持原 2500 毫升
+        Give(s, "dirty_water", ItemInstance.Carried, 5);   // B56：每份100毫升，×5 保持原 500 毫升
         Assert.That(E.ExpeditionWaterBudget(s, "d01").StockMl, Is.EqualTo(500), "预留水不计，地面不计，脏水不计");
 
         var t = Clean();
@@ -282,7 +285,7 @@ public class B29WaterBudgetTests : TestBase
     public void Stock_ReserveCompanion_NotCounted()
     {
         var s = Clean(null, Lin);
-        Give(s, "clean_water", ItemInstance.CarriedOwner(Lin), 2);
+        Give(s, "clean_water", ItemInstance.CarriedOwner(Lin), 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         Assert.That(E.ExpeditionWaterBudget(s, "d01").StockMl, Is.EqualTo(1000));
         s.Party.Remove(Lin);
         Assert.That(E.ExpeditionWaterBudget(s, "d01").StockMl, Is.EqualTo(0), "候补不计");
@@ -293,7 +296,7 @@ public class B29WaterBudgetTests : TestBase
     private GameState Treat(int dirtyMl, int tablets, int cartridges, bool filter)
     {
         var s = Clean();
-        if (dirtyMl > 0) Give(s, "dirty_water", ItemInstance.Carried, dirtyMl / 500);
+        if (dirtyMl > 0) Give(s, "dirty_water", ItemInstance.Carried, dirtyMl / 100);   // B56：每份100毫升（原 /500），按毫升造数不变
         if (tablets > 0) Give(s, "purification_tablet", ItemInstance.Carried, tablets);
         if (cartridges > 0) Give(s, "filter_cartridge", ItemInstance.Carried, cartridges);
         if (filter) Give(s, "water_filter", ItemInstance.Carried);
@@ -316,9 +319,9 @@ public class B29WaterBudgetTests : TestBase
     public void Q234_DirtyCountsCanteenAndPot_Once()
     {
         var s = Clean(null, Lin);
-        Give(s, "dirty_water", ItemInstance.Carried);
+        Give(s, "dirty_water", ItemInstance.Carried, 5);   // B56：每份100毫升，×5 保持原 500 毫升
         Canteen(s, ItemInstance.CarriedOwner(Lin), "dirty_water", 750);
-        PotWater(s, ItemInstance.Carried, "dirty_water", 2);
+        PotWater(s, ItemInstance.Carried, "dirty_water", 10);   // B56：锅每份100毫升，×5 保持原 1000 毫升
         Assert.That(E.ExpeditionWaterBudget(s, "d01").DirtyMl, Is.EqualTo(2250));
     }
 
@@ -346,7 +349,7 @@ public class B29WaterBudgetTests : TestBase
     public void A11_1500_NoMaterials_TwoRealGaps_InOrder()
     {
         var lines = E.ExpeditionPreview(Treat(1500, 0, 0, false), "d01").WaterLines;
-        var main = lines.IndexOf("处理后才可饮用：随身脏水1500毫升；按现有净水片/滤芯，最多可处理0毫升（每批2000毫升，需完整4份脏水）。");
+        var main = lines.IndexOf("处理后才可饮用：随身脏水1500毫升；按现有净水片/滤芯，最多可处理0毫升（每批2000毫升，需完整20份脏水）。");   // B56（Q929 数量换算×5；M1082）：原「需完整4份脏水」
         Assert.That(main, Is.GreaterThanOrEqualTo(0));
         Assert.That(lines[main + 1], Is.EqualTo(WaterCopy.TreatNoMaterials));
         Assert.That(lines[main + 2], Is.EqualTo(WaterCopy.TreatSmallBatch));

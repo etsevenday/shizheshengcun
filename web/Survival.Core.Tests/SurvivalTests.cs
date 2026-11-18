@@ -44,12 +44,13 @@ public class SurvivalTests : TestBase
     {
         var s = New();
         SetStats(s, 100, 80, 50, 90, 90, 60);
-        Start(s, ActionRequest.UseItem("clean_water"));
+        Start(s, ActionRequest.UseItem("clean_water", 5));   // B56（Q929 自选饮水）：选 5 份＝500 毫升、W+30，对上原一份
         Assert.That(s.Stats.Hydration, Is.EqualTo(80), "即时生效");
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
         Assert.That(s.Stats.Hydration, Is.EqualTo(79.80).Within(1e-9), "S12-A03：W50喝净水先+30再按新wait率推进5分钟");
         Assert.That(s.GameMinute, Is.EqualTo(485));
-        Assert.That(Count(s, "clean_water"), Is.EqualTo(1));
+        // B56 配置（M1079：开局净水 10 份×100）：喝 5 份剩 5 份（原 2 份喝 1 剩 1）
+        Assert.That(Count(s, "clean_water"), Is.EqualTo(5));
     }
 
     [Test]
@@ -160,8 +161,8 @@ public class SurvivalTests : TestBase
             var s = New();
             var f = s.Locations["camp"].Facility;
             var potItem = First(s, "pot");
-            E.DebugGive(s, "dirty_water", 2, "camp");
-            E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, potItem.InstanceId, 2));
+            E.DebugGive(s, "dirty_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
+            E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, potItem.InstanceId, 10));
             E.DoInstant(s, InstantRequest.PutInFire(potItem.InstanceId));
             E.ProcessOf(s, potItem)!.HeatDoneMinutes = 10;
             f.FireLit = true;
@@ -175,13 +176,14 @@ public class SurvivalTests : TestBase
             Assert.That(f.FuelMinutes, Is.EqualTo(0));
             if (expectDone)
             {
-                Assert.That(Count(s, "clean_water", pot), Is.EqualTo(2), "净水留在原锅");
-                Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2), "地面只有开局的净水");
+                // B56（Q929 锅 1000 毫升＝10 份；配置 M1079 开局地面净水 10 份）：原 2／2
+                Assert.That(Count(s, "clean_water", pot), Is.EqualTo(10), "净水留在原锅");
+                Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(10), "地面只有开局的净水");
                 Assert.That(s.Progress.Flags, Does.Contain("boiled"));
             }
             else
             {
-                Assert.That(Count(s, "dirty_water", pot), Is.EqualTo(2));
+                Assert.That(Count(s, "dirty_water", pot), Is.EqualTo(10));   // B56（Q929 锅 1000 毫升＝10 份）：原 2
                 Assert.That(E.ProcessOf(s, potItem)!.HeatDoneMinutes, Is.EqualTo(10), "段首不足5不给部分受热");
             }
         }

@@ -128,7 +128,7 @@ public class B14CityTests : TestBase
         s.Locations["c02_church"].Visited = true;
         s.City = null!;
         s.SchemaVersion = SaveMigrator.Schema25;
-        var items = s.Items.Sum(i => i.Count);
+        var items = s.Items.Sum(i => i.Count * (i.ItemId is "clean_water" or "dirty_water" ? 5 : 1));   // B56 改期望（M1083 SaveMigrator.From57To58；S10 文首 B53a Q929 每份100毫升）：按新配置造的旧档读入时链尾 57→58 把脏水／净水份数×5（真实毫升不变），非水原样
         var cap = E.BattleCapacity(s);
         SaveMigrator.Migrate(s, Cfg);
         Assert.That(s.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
@@ -415,7 +415,7 @@ public class B14CityTests : TestBase
         Ok(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_water"));
         E.Advance(s);
         Assert.That(s.Main, Is.Null, "5 分钟一段");
-        Assert.That(Count(s, "clean_water", "c04_alms"), Is.EqualTo(1));
+        Assert.That(Count(s, "clean_water", "c04_alms"), Is.EqualTo(5));   // B56 改期望（M1079 配置 church_relief_ration relief_water：净水×5 保持原 500 毫升；b53a-q928-q929-water-100ml.json Q929 数量换算×5）
         Assert.That(s.Stats.Hydration, Is.LessThan(31), "不自动喝");
         ReadDialogues(s);
         Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Blocked, Does.Contain("额度已用完"));

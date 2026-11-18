@@ -16,6 +16,7 @@ public class B16PotRecipeTests : TestBase
     private void Ok(ActionResult r) => Assert.That(r.Ok, Is.True, r.Reason);
 
     /// <summary>营地、火堆燃烧、锅放进火堆并装 water 份净水；学会全部知识、烹饪 5 级；谷物/盐/生肉按 give 放地面。</summary>
+    // B56：调用处 water 份数×5（每份100毫升），保持原 1000／500 毫升
     private (GameState s, ItemInstance pot) Setup(int water, params (string id, int n)[] give)
     {
         var s = New();
@@ -52,7 +53,7 @@ public class B16PotRecipeTests : TestBase
     [Test]
     public void ES06_Hardtack_TwoGrainTwoSlots_SaltAuxNoSlot_Water500Once()
     {
-        var (s, pot) = Setup(2, ("grain", 3), ("salt", 2));
+        var (s, pot) = Setup(10, ("grain", 3), ("salt", 2));
         var opt = E.PotRecipeOptions(s, pot).Single(o => o.ProcessId == "pot_hardtack");
         Assert.That(opt.Ok, Is.True, opt.Reason);
         Assert.That(opt.InputText, Does.Contain("占2个食材位").And.Contain("辅料，不占位").And.Contain("500毫升"));
@@ -65,7 +66,8 @@ public class B16PotRecipeTests : TestBase
         Assert.That(Count(s, "salt", Here), Is.EqualTo(1));
         var p = Recipe(s)!;
         Assert.That(p.ReservedWaterMl, Is.EqualTo(500));
-        Assert.That(E.PotFreeWaterUnits(s, pot), Is.EqualTo(1), "SUP04：只预留500，另500可用");
+        // B56（S10 文首 B53a Q929 / W100-Q929-01、08：硬饼仍 500）：另 500 毫升＝5 份×100（原 1 份×500）
+        Assert.That(E.PotFreeWaterUnits(s, pot), Is.EqualTo(5), "SUP04：只预留500，另500可用");
         // 第三食材不能放（食材位满）
         E.DebugGive(s, "raw_root", 1, Here);
         Assert.That(E.MaxPutFood(s, First(s, "raw_root", Here), pot, out _), Is.EqualTo(0));
@@ -75,7 +77,7 @@ public class B16PotRecipeTests : TestBase
         var foods = E.PotFood(s, pot.InstanceId);
         Assert.That(foods.Select(i => i.ItemId), Is.EqualTo(new[] { "hardtack", "hardtack" }));
         Assert.That(E.PotContents(s, pot.InstanceId).Any(i => i.ItemId is "grain" or "salt"), Is.False, "主食材与辅料一次核销");
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1), "POT03：锅水只扣一次 500");
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(5), "POT03：锅水只扣一次 500");   // B56：剩 500 毫升＝5 份（原 1 份）
         Assert.That(foods.All(f => f.ExpiresAt > s.GameMinute + 335 * 60 && f.ExpiresAt <= s.GameMinute + 336 * 60), Is.True, "完成起 336 小时");
         Assert.That(s.Skills["cooking"].Xp - xp0, Is.EqualTo(6), "Q60：clamp(ceil(60/10)) 给投料人一次");
         Assert.That(Recipe(s), Is.Null);
@@ -86,7 +88,7 @@ public class B16PotRecipeTests : TestBase
     [Test]
     public void POT_Stew_GrainMeat_1000ml_TwoPortions_ProtectionAndSpoil()
     {
-        var (s, pot) = Setup(2, ("grain", 1), ("raw_meat", 1));
+        var (s, pot) = Setup(10, ("grain", 1), ("raw_meat", 1));
         var meat = First(s, "raw_meat", Here);
         meat.ExpiresAt = s.GameMinute + 20;   // 投料后 20 分钟到原期限：实际受热后受保护
         Ok(E.DoInstant(s, InstantRequest.LoadPotRecipe("pot_stew", pot.InstanceId)));
@@ -99,7 +101,7 @@ public class B16PotRecipeTests : TestBase
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0), "完成水归 0");
 
         // 原料受热前就腐败：不加工
-        var (t, pot2) = Setup(2, ("grain", 1), ("raw_meat", 1));
+        var (t, pot2) = Setup(10, ("grain", 1), ("raw_meat", 1));
         t.Locations[Here].Facility.FireLit = false;
         First(t, "raw_meat", Here).ExpiresAt = t.GameMinute + 5;
         Ok(E.DoInstant(t, InstantRequest.LoadPotRecipe("pot_stew", pot2.InstanceId)));
@@ -116,10 +118,10 @@ public class B16PotRecipeTests : TestBase
         var (s, pot) = Setup(0, ("grain", 2), ("salt", 1));
         string Why(string pid) => E.PotRecipeOptions(s, pot).Single(o => o.ProcessId == pid).Reason ?? "";
         Assert.That(Why("pot_hardtack"), Does.Contain("锅里没有水"));
-        E.DebugGive(s, "dirty_water", 2, Here);
+        E.DebugGive(s, "dirty_water", 10, Here);   // B56：每份100毫升，×5 保持原 1000 毫升
         // 锅在火堆里不能直接装？用开发给水：先取下装水再放回
         Ok(E.DoInstant(s, InstantRequest.TakeOut(pot.InstanceId, Here)));
-        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", Here).InstanceId, pot.InstanceId, 1)));
+        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", Here).InstanceId, pot.InstanceId, 5)));   // B56：×5 保持原 500 毫升
         Ok(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)));
         Assert.That(Why("pot_hardtack"), Does.Contain("先在火堆上烧成"));
         Assert.That(Why("pot_stew"), Does.Contain("锅里是脏水"));
@@ -127,10 +129,10 @@ public class B16PotRecipeTests : TestBase
         Assert.That(E.DoInstant(s, InstantRequest.LoadPotRecipe("pot_hardtack", pot.InstanceId)).Ok, Is.False);
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "失败零改动");
 
-        var (u, pot3) = Setup(1, ("grain", 2), ("raw_meat", 1));
+        var (u, pot3) = Setup(5, ("grain", 2), ("raw_meat", 1));
         Assert.That(E.PotRecipeOptions(u, pot3).Single(o => o.ProcessId == "pot_stew").Reason, Does.Contain("可用净水500/1000"), "缺水拒绝，不从随身补");
         Assert.That(E.PotRecipeOptions(u, pot3).Single(o => o.ProcessId == "pot_hardtack").Reason, Does.Contain("缺少盐"));
-        var (v, pot4) = Setup(2, ("grain", 2), ("salt", 1));
+        var (v, pot4) = Setup(10, ("grain", 2), ("salt", 1));
         v.Skills["cooking"].Level = 2;
         Assert.That(E.PotRecipeOptions(v, pot4).Single(o => o.ProcessId == "pot_hardtack").Reason, Does.Contain("烹饪3级"));
         var w = New();
@@ -140,7 +142,7 @@ public class B16PotRecipeTests : TestBase
     [Test]
     public void CO_TakeOutCancels_ReturnsAux_FireOutKeepsProgress_SaveNoDup()
     {
-        var (s, pot) = Setup(2, ("grain", 2), ("salt", 1));
+        var (s, pot) = Setup(10, ("grain", 2), ("salt", 1));
         Ok(E.DoInstant(s, InstantRequest.LoadPotRecipe("pot_hardtack", pot.InstanceId)));
         WaitMinutes(s, 30);
         var p = Recipe(s)!;
@@ -167,10 +169,10 @@ public class B16PotRecipeTests : TestBase
         Assert.That(Recipe(s), Is.Null);
         Assert.That(Count(s, "salt", Here), Is.EqualTo(1));
         Assert.That(E.PotFood(s, pot.InstanceId).Select(i => i.ItemId), Is.EqualTo(new[] { "grain" }), "另一份谷物留在锅里");
-        Assert.That(E.PotFreeWaterUnits(s, pot), Is.EqualTo(2), "预留水释放");
+        Assert.That(E.PotFreeWaterUnits(s, pot), Is.EqualTo(10), "预留水释放");   // B56（W100-Q929-01）：1000 毫升＝10 份×100（原 2 份×500）
 
         // 取下整锅：作废、辅料退回火堆地面
-        var (u, pot2) = Setup(2, ("grain", 2), ("salt", 1));
+        var (u, pot2) = Setup(10, ("grain", 2), ("salt", 1));
         Ok(E.DoInstant(u, InstantRequest.LoadPotRecipe("pot_hardtack", pot2.InstanceId)));
         Ok(E.DoInstant(u, InstantRequest.TakeOut(pot2.InstanceId, Here)));
         Assert.That(Recipe(u), Is.Null);
@@ -183,7 +185,7 @@ public class B16PotRecipeTests : TestBase
     [Test]
     public void M428_PotRecipeHover_ShowsRemainingTotal()
     {
-        var (s, pot) = Setup(2, ("grain", 3), ("salt", 2));
+        var (s, pot) = Setup(10, ("grain", 3), ("salt", 2));
         string Note() => E.PotRecipeOptions(s, pot).Single(o => o.ProcessId == "pot_hardtack").Note;
         var key = $"{Clock.Day(s.GameMinute)}|xp|cooking";
         var wkey = $"{Clock.Day(s.GameMinute)}|waterXp|cooking";
@@ -196,7 +198,7 @@ public class B16PotRecipeTests : TestBase
         Ok(E.DoInstant(s, InstantRequest.LoadPotRecipe("pot_hardtack", pot.InstanceId)));
         Assert.That(E.PotRecipeXpLine(s, pot), Does.Contain("今日烹饪经验已满30（含净化）"), "与开做后的批次说明一致");
         // 跨午夜：23:50 看，完成在次日 → 按次日额度
-        var (t, pot2) = Setup(2, ("grain", 3), ("salt", 2));
+        var (t, pot2) = Setup(10, ("grain", 3), ("salt", 2));
         t.GameMinute = At(Clock.Day(t.GameMinute), 23, 50);
         t.Player.DailyCounts[$"{Clock.Day(t.GameMinute)}|xp|cooking"] = 30;
         Assert.That(E.PotRecipeOptions(t, pot2).Single(o => o.ProcessId == "pot_hardtack").Note, Does.Contain("按完成日第").And.Contain("+6"));

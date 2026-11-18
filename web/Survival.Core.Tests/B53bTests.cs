@@ -302,7 +302,7 @@ public class B53bTests : BattleTestBase
 
     /// <summary>
     /// B53-Q865-01：两口锅一起丢，父清单逐件，内容合计一条「包含：…」——同种水毫升相加、净水脏水分开；成功日志「同时丢弃：…」同源；重量只扣一次。
-    /// 每份水 500 毫升（S06 文首 2026-11-17 B53 主要原批 §Q859「目前锅与壶每份500毫升」）。
+    /// 每份水 100 毫升（B56：S10 文首 B53a Q929 取代 S06 B53 主要原批 §Q859「目前锅与壶每份500毫升」；造数×5 保持原毫升）。
     /// </summary>
     [Test]
     public void Q865_01_TwoPots_OneContentsLine()
@@ -311,10 +311,10 @@ public class B53bTests : BattleTestBase
         s.Items.RemoveAll(i => i.ItemId == "pot");
         var a = Give(s, "pot", s.Ground);
         var b = Give(s, "pot", s.Ground);
-        Give(s, "clean_water", ItemInstance.ContainerOwner(a.InstanceId), 1);
+        Give(s, "clean_water", ItemInstance.ContainerOwner(a.InstanceId), 5);   // B56：每份100毫升，×5 保持原 500 毫升
         Give(s, "raw_meat", ItemInstance.ContainerOwner(a.InstanceId)).ExpiresAt = At(1, 20, 0);
-        Give(s, "dirty_water", ItemInstance.ContainerOwner(b.InstanceId), 2);
-        Give(s, "clean_water", ItemInstance.ContainerOwner(b.InstanceId), 1);
+        Give(s, "dirty_water", ItemInstance.ContainerOwner(b.InstanceId), 10);   // B56：每份100毫升，×5 保持原 1000 毫升
+        Give(s, "clean_water", ItemInstance.ContainerOwner(b.InstanceId), 5);   // B56：每份100毫升，×5 保持原 500 毫升
         var grams = s.Items.Where(i => i.Owner == s.Ground).Sum(i => E.ItemGrams(s, i));
         var both = E.ItemGrams(s, a) + E.ItemGrams(s, b);
         var t = DiscardTarget.Group(s.Ground, "pot", null);
@@ -341,7 +341,7 @@ public class B53bTests : BattleTestBase
         Assert.That(p.Lines, Is.EqualTo(new[] { "永久丢弃：金属锅×1、金属锅×1。", Irreversible }));
         Assert.That(p.ResultText, Is.EqualTo("已永久丢弃：金属锅×1、金属锅×1。"));
         var full = s.Items.Where(i => i.Owner == s.Ground && i.ItemId == "pot").OrderBy(i => i.InstanceId).Last();
-        Give(s, "dirty_water", ItemInstance.ContainerOwner(full.InstanceId), 1);
+        Give(s, "dirty_water", ItemInstance.ContainerOwner(full.InstanceId), 5);   // B56：每份100毫升，×5 保持原 500 毫升
         p = E.DiscardPreview(s, t, 0, true, out _)!;
         Assert.That(p.Lines, Is.EqualTo(new[] { "永久丢弃：金属锅×1、金属锅×1。", "包含：脏水500毫升。", Irreversible }));
     }

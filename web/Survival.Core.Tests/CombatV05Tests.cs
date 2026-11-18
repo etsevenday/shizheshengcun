@@ -686,8 +686,8 @@ public class CombatV05Tests : BattleTestBase
         var fac = s.Locations["camp"].Facility;
         E.DoInstant(s, InstantRequest.PutInFire(First(s, "raw_meat", "camp").InstanceId, 1));
         var pot = First(s, "pot");
-        E.DebugGive(s, "clean_water", 2, "camp");
-        E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2));
+        E.DebugGive(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
+        E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10));
         Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(First(s, "raw_meat", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
         E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId));
         fac.FireLit = true;
@@ -695,7 +695,10 @@ public class CombatV05Tests : BattleTestBase
         Start(s, ActionRequest.Wait(60));
         Run(s);
         Assert.That(Count(s, "cooked_meat"), Is.EqualTo(1), "直烤30分钟→烤肉");
-        Assert.That(Count(s, "boiled_meat"), Is.EqualTo(2), "锅里30分钟→水煮肉，每份耗净水500毫升");
+        // B56 改期望（b53a-q928-q929-water-100ml.json foodProcesses boil_meat waterCostMl 1000，M1079）：每份水煮耗净水 1000 毫升，1 升锅只煮先投的一份，
+        // 另一份留生肉（原：两份各 500 毫升都煮成）
+        Assert.That(Count(s, "boiled_meat"), Is.EqualTo(1), "锅里30分钟→水煮肉，每份耗净水1000毫升");
+        Assert.That(Count(s, "raw_meat", "pot:" + pot.InstanceId), Is.EqualTo(1), "锅里水不够第二份 1000 毫升，不煮");
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0));
         var cooked = Cfg.Items.Single(i => i.Id == "cooked_meat").Use!;
         Assert.That((cooked.Satiety, cooked.Hydration, cooked.Morale), Is.EqualTo((35.0, -3.0, 2.0)));

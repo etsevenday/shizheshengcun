@@ -41,7 +41,7 @@ public class B51aTests : TestBase
     [Test]
     public void M956_Schema54_ActionFieldsCloneAndSave()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
         var a = new ActionState { ToolGuardId = 7, ToolGuardSpent = true };
         var c = a.Clone();
         Assert.That((c.ToolGuardId, c.ToolGuardSpent), Is.EqualTo(((int?)7, true)));
@@ -231,7 +231,7 @@ public class B51aTests : TestBase
         var bar = s.Items.Single(i => i.ItemId == "expedition_bar");
         Assert.That((bar.Count, bar.ExpiresAt, bar.ShelfPausedMinutes), Is.EqualTo((1, (int?)(s.GameMinute + 10080), (int?)null)));
 
-        var t = Supply(("herb_extract", 1, 10), ("clean_water", 1, null));
+        var t = Supply(("herb_extract", 1, 10), ("clean_water", 5, null));   // B56：每份100毫升，×5 保持原 500 毫升（配方 ex_emergency_tonic 净水5）
         Assert.That(E.Preview(t, ActionRequest.Craft("ex_emergency_tonic")).Notes, Has.Exactly(1).EqualTo("成品从完成起保质72小时。"));
         Start(t, ActionRequest.Craft("ex_emergency_tonic"));
         Assert.That(Run(t), Is.EqualTo(SegmentStatus.Completed));

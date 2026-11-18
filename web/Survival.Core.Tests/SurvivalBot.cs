@@ -226,14 +226,28 @@ public sealed class SurvivalBot
 
     // ───────────── 需求 ─────────────
 
+    /// <summary>B56：原 1 份 500 毫升＝现 5 份×100 毫升（S10 文首 B53a Q929）。</summary>
+    private const int WaterUnitsPerDrink = 5;
+
+    /// <summary>B56（S10／S12 文首 B53a Q929：饮水自选份数，一次 5 分钟）：脚本仍按原「一次喝 500 毫升」口径，能喝 5 份就喝 5 份，不够喝能喝的最多份数。</summary>
+    private ActionRequest Drink(string waterId)
+    {
+        for (var n = WaterUnitsPerDrink; n > 1; n--)
+        {
+            var r = ActionRequest.UseItem(waterId, n);
+            if (E.CanStart(S, r) == null) return r;
+        }
+        return ActionRequest.UseItem(waterId);
+    }
+
     private ActionRequest? NextNeed(bool sub)
     {
         var st = S.Stats;
         var allowGround = !(sub && S.Main?.Type == ActionType.Travel);
         bool Has(string id) => E.AvailableCount(S, id, allowGround, includeContainers: true) > 0;
 
-        if (st.Hydration < 60 && Has("clean_water")) return ActionRequest.UseItem("clean_water");
-        if (st.Hydration < 12 && Has("dirty_water")) return ActionRequest.UseItem("dirty_water");
+        if (st.Hydration < 60 && Has("clean_water")) return Drink("clean_water");
+        if (st.Hydration < 12 && Has("dirty_water")) return Drink("dirty_water");
 
         // 快要腐败的野果先吃
         var berry = E.UsableBatches(S, "berry", allowGround).FirstOrDefault();
@@ -312,9 +326,9 @@ public sealed class SurvivalBot
     {
         foreach (var inst in S.Items.Where(i => i.IsCarried && !Keep.Contains(i.ItemId)).ToList())
             E.DoInstant(S, InstantRequest.Drop(inst.InstanceId, inst.Count));
-        // 出行携带一份净水
+        // 出行携带一份净水（B56：原 1 份 500 毫升＝5 份×100，不足按实有）
         var w = S.Items.FirstOrDefault(i => i.Owner == Camp && i.ItemId == "clean_water" && i.ReservedBy == null);
-        if (w != null) E.DoInstant(S, InstantRequest.Pickup(w.InstanceId, 1));
+        if (w != null) E.DoInstant(S, InstantRequest.Pickup(w.InstanceId, Math.Min(WaterUnitsPerDrink, w.Count)));
     }
 
     private void ReturnToCamp()
@@ -456,7 +470,7 @@ public sealed class SurvivalBot
 
         if (field.Progress < 50) { GoTo("field"); Do(ActionRequest.Explore()); Do(ActionRequest.Explore()); ReturnToCamp(); return; }
 
-        if (water < 6 && GoTo("stream"))
+        if (water < 6 * WaterUnitsPerDrink && GoTo("stream"))   // B56：原 6 份×500＝30 份×100 毫升
         {
             for (var i = 0; i < 3; i++) Do(ActionRequest.Gather("water"));
             ReturnToCamp();

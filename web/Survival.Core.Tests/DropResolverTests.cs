@@ -166,11 +166,12 @@ public class DropResolverTests : TestBase
     public void Row6_WaterToPotFill()
     {
         var s = New();
-        E.DebugGive(s, "dirty_water", 2, "camp");
+        E.DebugGive(s, "dirty_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
         var i = R(s, Card("camp|dirty_water"), $"potfill:{Pot(s).InstanceId}");
         Assert.That(i.Ok && i.Verb == DropVerb.FillPot, Is.True, i.Reason);
-        Assert.That(i.Label, Is.EqualTo("装入1份脏水，水量0%→50%"));
-        Assert.That(i.MaxQuantity, Is.EqualTo(2));
+        // B56（S10 文首 B53a Q929；W100-Q929-02：装水以100毫升计，锅 1000 毫升＝10 份）：1 份占 10%（原 50%），最多 10 份（原 2 份）
+        Assert.That(i.Label, Is.EqualTo("装入1份脏水，水量0%→10%"));
+        Assert.That(i.MaxQuantity, Is.EqualTo(10));
         E.DoInstant(s, i.Instant!);
         Assert.That(R(s, Card("camp|clean_water"), $"potfill:{Pot(s).InstanceId}").Reason, Does.Contain("混装禁止"));
         Assert.That(R(s, Card("camp|dirty_water"), "card:" + PotCard(s)).Verb, Is.EqualTo(DropVerb.FillPot), "落到锅卡面等同装水区");
@@ -288,8 +289,9 @@ public class DropResolverTests : TestBase
         Assert.That(DropTarget.Parse("self"), Is.Null);
         var s = New();
         Assert.That(GameEngine.UseButtonText(E.Item("canned_food")), Is.EqualTo("食用1份"));
-        Assert.That(GameEngine.UseButtonText(E.Item("clean_water")), Is.EqualTo("饮用1份"));
-        Assert.That(GameEngine.UseButtonText(E.Item("dirty_water")), Is.EqualTo("饮用1份（风险）"));
+        // B56（S10 文首 B53a Q929 饮水自选量；02 Q975 A 暂用入口「饮用」「饮用（风险）」）：水的入口不再写固定「1份」
+        Assert.That(GameEngine.UseButtonText(E.Item("clean_water")), Is.EqualTo("饮用"));
+        Assert.That(GameEngine.UseButtonText(E.Item("dirty_water")), Is.EqualTo("饮用（风险）"));
         Assert.That(E.UseRiskText(E.Item("dirty_water")), Is.EqualTo("必定腹泻12小时：期间每小时额外失水3"));
         Assert.That(GameEngine.UseButtonText(E.Item("bandage")), Is.EqualTo("使用1份"));
         E.DebugGive(s, "raw_root", 1, "camp");
@@ -392,7 +394,7 @@ public class DropResolverTests : TestBase
     {
         var s = New();
         var pot = Pot(s);
-        E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2));
+        E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10));   // B56：满锅 10 份×100，×5 保持原 1000 毫升
         E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId));
         var down = R(s, DropSource.Parse(FirePotKey(s))!, "zone:camp");
         Assert.That(down.Ok && down.Verb == DropVerb.TakeOut, Is.True, down.Reason);

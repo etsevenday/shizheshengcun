@@ -90,7 +90,7 @@ public class B47a1DyingTests : BattleTestBase
         var o = JObject.Parse(json);
         ((JObject)o["Actors"]![alive]!["Skills"]!)["willpower"] = JObject.FromObject(new { Level = 4, Xp = 30 });
         var t = SaveSerializer.Deserialize(o.ToString(), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
         Assert.That((t.Actors[dead].Dead, t.Actors[dead].Skills.ContainsKey(GameEngine.Willpower)), Is.EqualTo((true, false)), "旧死者不复活、不补意志");
         Assert.That((E.LifeOf(t, t.Actors[alive]), t.Actors[alive].DyingNotified, t.Actors[alive].Skills[GameEngine.Willpower].Level, t.Actors[alive].Skills[GameEngine.Willpower].Xp),
             Is.EqualTo((LifeState.Dying, true, 4, 30L)), "旧 H0 活人归濒死（提醒锁置已提醒），已有意志不覆盖");

@@ -309,13 +309,18 @@ public class B7bProgressionTests : TestBase
     {
         Assert.That(new[] { "roast_root", "boil_root", "roast_meat", "boil_meat" }.Select(E.CookFoodXpFor), Is.All.EqualTo(3), "30 受热分钟 = 3");
         Assert.That(E.CookFoodXpFor("reboil_cooked_meat"), Is.Zero, "复煮 0");
-        var (s, pot) = PotOnFire("dirty_water", 2);
+        var (s, pot) = PotOnFire("dirty_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         E.DebugGive(s, "raw_root", 2, "camp");
         Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(First(s, "raw_root", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
         Assert.That(E.ProcessOf(s, E.PotFood(s, pot.InstanceId).First())!.InitiatorActorId, Is.EqualTo(GameState.PlayerId), "投料即锁发起者");
         Wait(s, 45);
-        Assert.That(E.PotFood(s, pot.InstanceId).Select(f => f.ItemId), Is.All.EqualTo("boiled_root"));
-        Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(2 + 3 + 3), "1L 净化 2 + 两份水煮各 3");
+        // B56 改期望（b53a-q928-q929-water-100ml.json foodProcesses boil_root waterCostMl 1000，M1079）：每份水煮耗水 1000 毫升，1 升锅只够先投的一份，
+        // 另一份留生块根待水（原：两份各 500 毫升都煮成、经验 2+3+3）
+        var foods = E.PotFood(s, pot.InstanceId).Select(f => f.ItemId).ToList();
+        Assert.That(foods, Has.Count.EqualTo(2));
+        Assert.That(foods.Count(f => f == "boiled_root"), Is.EqualTo(1), "先投的一份煮成");
+        Assert.That(foods.Count(f => f == "raw_root"), Is.EqualTo(1), "另一份锅里水不够 1000 毫升，不煮");
+        Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(2 + 3), "1L 净化 2 + 一份水煮 3");
         Assert.That(s.Log.Any(l => l.Text.Contains("已煮成") && l.Text.Contains("烹饪经验+3")), Is.True);
         // 日 30：已得 28，再烤一份只给 2
         var t = New();
@@ -331,18 +336,18 @@ public class B7bProgressionTests : TestBase
     [Test]
     public void PROG_Q60b_Water_500mlPerXp_DailyFour()
     {
-        var (s, pot) = PotOnFire("dirty_water", 1);
+        var (s, pot) = PotOnFire("dirty_water", 5);   // B56：每份100毫升，×5 保持原 500 毫升
         Wait(s, 15);
         Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(1), "500ml = 1");
         s.Player.DailyCounts[$"{Clock.Day(s.GameMinute)}|waterXp|cooking"] = 4;
         var u = E.PotUnits(s, pot.InstanceId);
-        E.DebugGive(s, "dirty_water", 1, "camp");
+        E.DebugGive(s, "dirty_water", 5, "camp");   // B56：每份100毫升，×5 保持原 500 毫升
         // 倒掉净水再装脏水另做一锅：日 4 已满，不再给
         foreach (var w in s.Items.Where(i => i.Owner == ItemInstance.ContainerOwner(pot.InstanceId)).ToList()) s.Items.Remove(w);
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 1)).Ok, Is.True);
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 5)).Ok, Is.True);   // B56：×5 保持原 500 毫升
         Wait(s, 15);
         Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(1), "净化每日最多 4");
-        Assert.That(u, Is.EqualTo(1));
+        Assert.That(u, Is.EqualTo(5));   // B56 改期望：锅里净水 500 毫升＝5 份×100（原 1 份×500）
     }
 
     [Test]

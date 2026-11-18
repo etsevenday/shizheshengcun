@@ -140,8 +140,30 @@ public class B29FeedTests : TestBase
         var c = (JObject)JObject.Parse(File.ReadAllText(Doc()))["feeding"]!["panelCopy"]!;
         var flat = Flat(c).ToList();
         Assert.That(flat.Select(x => x.path), Is.EquivalentTo(FeedPanelCopy.All.Keys));
-        foreach (var (path, text) in flat) Assert.That(FeedPanelCopy.All[path], Is.EqualTo(text), path);
-        Assert.That(FeedPanelCopy.HelpText, Is.EqualTo(c["helpText"]!.Values<string>()));
+        // B56（S12 文首 B53a Q929 本批逐字稿；Q977 A 暂用保留锅号／壶号／编号段）：三种水来源行括注换「（可用{可饮份数}份，每份100毫升）」，
+        // 单次用量摘要换「{水种}{所选毫升}毫升」；其余逐字对旧契约。说明第 4 段含 500／250 的分句按 02 Q976 A 暂用换 Q929 系统说明新稿
+        var b56 = new Dictionary<string, (string Old, string New)>
+        {
+            ["sourceRows.waterCard"] = ("{出物人}的随身物品 · {水种}{毫升}毫升（{可饮份数}份，每份500毫升） · 编号#{实例号}", "{出物人}的随身物品 · {水种}{毫升}毫升（可用{可饮份数}份，每份100毫升） · 编号#{实例号}"),
+            ["sourceRows.potWater"] = ("{出物人}的随身锅#{锅号} · {水种}{毫升}毫升（{可饮份数}份，每份500毫升）", "{出物人}的随身锅#{锅号} · {水种}{毫升}毫升（可用{可饮份数}份，每份100毫升）"),
+            ["sourceRows.canteen"] = ("{出物人}的随身{水壶}#{壶号} · {水种}{毫升}/{容量}毫升（{可饮次数}次，每次250毫升）", "{出物人}的随身{水壶}#{壶号} · {水种}{毫升}/{容量}毫升（可用{可饮份数}份，每份100毫升）"),
+            ["portion.water"] = ("{水种}500毫升", "{水种}{所选毫升}毫升"),
+            ["portion.canteen"] = ("{水种}250毫升", "{水种}{所选毫升}毫升"),
+        };
+        foreach (var (path, text) in flat)
+        {
+            if (b56.TryGetValue(path, out var pair))
+            {
+                Assert.That(text, Is.EqualTo(pair.Old), "旧契约原句：" + path);
+                Assert.That(FeedPanelCopy.All[path], Is.EqualTo(pair.New), path);
+                continue;
+            }
+            Assert.That(FeedPanelCopy.All[path], Is.EqualTo(text), path);
+        }
+        var help = c["helpText"]!.Values<string>().ToList();
+        Assert.That(help[3], Is.EqualTo("一次只给一人食用一份。水卡和随身锅水每份500毫升，水壶每次250毫升；食饮按原规则推进5分钟，不能中途取消，不会先转移再扣一份。"), "旧契约第 4 段原句");
+        help[3] = "一次只给一人食用一份。水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。食饮按原规则推进5分钟，不能中途取消，不会先转移再扣一份。";
+        Assert.That(FeedPanelCopy.HelpText, Is.EqualTo(help));
     }
 
     private FeedDraft Open(GameState s, ItemInstance i) => FeedDraft.From(E.FeedEntry(s, i.InstanceId)!);
@@ -176,20 +198,21 @@ public class B29FeedTests : TestBase
     public void A06_Water_CardCanteenPotTogether_CleanDirtySeparate_OwnPortion()
     {
         var s = Party();
-        var card = Give(s, "clean_water", ItemInstance.Carried, 2);
+        var card = Give(s, "clean_water", ItemInstance.Carried, 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var canteen = Give(s, "ration_canteen", Bag(Lin));
         canteen.LiquidId = "clean_water";
         canteen.LiquidMl = 750;
         var empty = Give(s, "ration_canteen", ItemInstance.Carried);
         var pot = Give(s, "pot", ItemInstance.Carried);
-        Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId), 2);
-        var dirty = Give(s, "dirty_water", ItemInstance.Carried);
+        Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId), 10);   // B56：锅每份100毫升，×5 保持原 1000 毫升
+        var dirty = Give(s, "dirty_water", ItemInstance.Carried, 5);   // B56：每份100毫升，×5 保持原 500 毫升
         var rows = E.FeedClassRows(s, Lin, "clean_water");
         Assert.That(rows.Select(r => r.Kind), Is.EqualTo(new[] { FeedSourceKind.Water, FeedSourceKind.PotWater, FeedSourceKind.Canteen }));
-        Assert.That(rows.Select(r => r.PortionText), Is.EqualTo(new[] { "净水500毫升", "净水500毫升", "净水250毫升" }));
-        Assert.That(rows[0].Text, Is.EqualTo($"你的随身物品 · 净水1000毫升（2份，每份500毫升）"));
-        Assert.That(rows[1].Text, Is.EqualTo($"你的随身锅 · 净水1000毫升（2份，每份500毫升）"));
-        Assert.That(rows[2].Text, Is.EqualTo($"{E.ActorDisplayName(s, Lin)}的随身{E.ItemName("ration_canteen")} · 净水750/2000毫升（3次，每次250毫升）"));
+        // B56（S12 文首 B53a Q929 本批逐字稿；Q977 A 暂用保留锅号／壶号／编号段）：用量摘要按所选毫升（默认 1 份＝100 毫升，水壶不再固定 250）；可饮份数＝floor(合法自由水量／100)
+        Assert.That(rows.Select(r => r.PortionText), Is.EqualTo(new[] { "净水100毫升", "净水100毫升", "净水100毫升" }));
+        Assert.That(rows[0].Text, Is.EqualTo($"你的随身物品 · 净水1000毫升（可用10份，每份100毫升）"));
+        Assert.That(rows[1].Text, Is.EqualTo($"你的随身锅 · 净水1000毫升（可用10份，每份100毫升）"));
+        Assert.That(rows[2].Text, Is.EqualTo($"{E.ActorDisplayName(s, Lin)}的随身{E.ItemName("ration_canteen")} · 净水750/2000毫升（可用7份，每份100毫升）"));
         Assert.That(rows.Any(r => r.InstanceId == empty.InstanceId || r.InstanceId == dirty.InstanceId), Is.False, "空壶不假定水种，脏水不混入");
         Assert.That(E.FeedClassRows(s, Lin, "dirty_water").Single().InstanceId, Is.EqualTo(dirty.InstanceId));
     }
@@ -220,11 +243,13 @@ public class B29FeedTests : TestBase
     {
         var s = Party();
         var pot = Give(s, "pot", ItemInstance.Carried);
-        Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId));
-        s.Locations["camp"].Facility.Processes.Add(new FacilityProcess { RecipeId = "boil_root", TargetInstanceId = 99999, PotInstanceId = pot.InstanceId, ReservedWaterMl = 250 });
+        // B56：锅每份100毫升，×5 保持原 500 毫升；预留 450（原 250）使未预留余量 50 毫升仍「不足一份」，保持原意
+        Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId), 5);
+        s.Locations["camp"].Facility.Processes.Add(new FacilityProcess { RecipeId = "boil_root", TargetInstanceId = 99999, PotInstanceId = pot.InstanceId, ReservedWaterMl = 450 });
         var row = E.FeedClassRows(s, Lin, "clean_water").Single();
-        Assert.That(row.Text, Is.EqualTo($"你的随身锅 · 净水500毫升（0份，每份500毫升）"));
-        Assert.That(row.Blocked, Is.EqualTo("锅内净水不足500毫升，无法饮用1份。"));
+        // B56（S12 文首 B53a Q929 本批逐字稿；Q977 A 暂用保留锅号／壶号／编号段）；不足一份沿 b53a json copy.shortage「水分不足。」
+        Assert.That(row.Text, Is.EqualTo($"你的随身锅 · 净水500毫升（可用0份，每份100毫升）"));
+        Assert.That(row.Blocked, Is.EqualTo("水分不足。"));
     }
 
     [Test]
@@ -369,7 +394,8 @@ public class B29FeedTests : TestBase
         c.LiquidId = "dirty_water";
         c.LiquidMl = 500;
         var v = Pick(s, Open(s, c), Lin);
-        Assert.That(v.EffectLines[2], Is.EqualTo("本次用量：脏水250毫升"));
+        // B56（S12 文首 B53a Q929：用量摘要按所选毫升，默认 1 份＝100 毫升；水壶不再固定一口 250）
+        Assert.That(v.EffectLines[2], Is.EqualTo("本次用量：脏水100毫升"));
         Assert.That(v.EffectLines[3], Is.EqualTo("当前余量：脏水500/2000毫升"));
         Assert.That(v.RiskText, Is.EqualTo(E.UseRiskText(E.Item("dirty_water"))));
     }

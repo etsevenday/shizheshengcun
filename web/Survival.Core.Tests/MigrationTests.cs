@@ -181,8 +181,8 @@ public class MigrationTests : TestBase
         var p = E.ProcessOf(s, pot)!;
         Assert.That(p.RecipeId, Is.EqualTo("boil_water"));
         Assert.That(p.HeatDoneMinutes, Is.EqualTo(5), "已完成工作分钟转为受热分钟");
-        Assert.That(Count(s, "dirty_water", "pot:" + pot.InstanceId), Is.EqualTo(2), "不补水、不生成净水");
-        Assert.That(Count(s, "clean_water"), Is.EqualTo(2), "只有开局的地面净水");
+        Assert.That(Count(s, "dirty_water", "pot:" + pot.InstanceId), Is.EqualTo(10), "不补水、不生成净水");   // B56 改期望：旧档 2 份×500 毫升经 57→58 迁移成 10 份×100 毫升（M1083 SaveMigrator.From57To58，真实 1000 毫升不变）
+        Assert.That(Count(s, "clean_water"), Is.EqualTo(10), "只有开局的地面净水");   // B56 改期望：旧档 2 份×500 毫升经 57→58 迁移成 10 份×100 毫升（M1083 SaveMigrator.From57To58，真实 1000 毫升不变）
         Assert.That(notes.Any(n => n.Contains("转为火堆自动加工")), Is.True);
         AssertIdempotent(s);
         Start(s, ActionRequest.Wait(30));
@@ -235,7 +235,7 @@ public class MigrationTests : TestBase
         Assert.That(SaveSerializer.NeedsMigration(json), Is.True);
         Assert.Throws<SaveVersionException>(() => SaveSerializer.Deserialize(json));
         var bogus = JObject.Parse(json);
-        bogus["SchemaVersion"] = "58";   // B51c2a1 起 57 是当前版本（S11 Q872 选 B 迁移），未知版本改用 58
+        bogus["SchemaVersion"] = "59";   // B56 起 58 是当前版本（M1083 57→58 水份数×5），未知版本改用 59
         Assert.Throws<SaveVersionException>(() => SaveSerializer.Deserialize(bogus.ToString(), Cfg));
     }
 
@@ -260,7 +260,7 @@ public class MigrationTests : TestBase
         Assert.That(s.Items.Count, Is.EqualTo(((JArray)old["Items"]!).Count), "已完成探索不补发随机物品");
         var pot = s.Items.Single(i => i.ItemId == "pot");
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0), "旧锅初始化为空锅");
-        Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2), "旧水卡原样保留，不自动倒入");
+        Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(10), "旧水卡原样保留，不自动倒入");   // B56 改期望：旧档 2 份×500 毫升经 57→58 迁移成 10 份×100 毫升（M1083 SaveMigrator.From57To58，真实 1000 毫升不变）
         Assert.That(s.Rng.State, Is.Not.EqualTo(0u), "随机状态沿用存档（4→5 迁移只在其上为旧装备抽一次最大耐久）");
         Assert.That(SaveSerializer.Deserialize(Fixture("idle"), Cfg).Rng.State, Is.EqualTo(s.Rng.State), "同一旧档迁移结果确定，不另起随机");
 
@@ -306,9 +306,9 @@ public class MigrationTests : TestBase
         var s = SaveSerializer.Deserialize(Fixture("boil"), Cfg);
         var pot = s.Items.Single(i => i.ItemId == "pot");
         Assert.That(s.Main, Is.Null, "释放角色主行动");
-        Assert.That(Count(s, "dirty_water", "camp"), Is.EqualTo(2), "原料一次返还当前地面");
-        Assert.That(Count(s, "dirty_water"), Is.EqualTo(2), "不重复返还");
-        Assert.That(Count(s, "clean_water"), Is.EqualTo(2), "不补发净水");
+        Assert.That(Count(s, "dirty_water", "camp"), Is.EqualTo(10), "原料一次返还当前地面");   // B56 改期望：旧档 2 份×500 毫升经 57→58 迁移成 10 份×100 毫升（M1083 SaveMigrator.From57To58，真实 1000 毫升不变）
+        Assert.That(Count(s, "dirty_water"), Is.EqualTo(10), "不重复返还");   // B56 改期望：旧档 2 份×500 毫升经 57→58 迁移成 10 份×100 毫升（M1083 SaveMigrator.From57To58，真实 1000 毫升不变）
+        Assert.That(Count(s, "clean_water"), Is.EqualTo(10), "不补发净水");   // B56 改期望：旧档 2 份×500 毫升经 57→58 迁移成 10 份×100 毫升（M1083 SaveMigrator.From57To58，真实 1000 毫升不变）
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0), "不自动装锅");
         Assert.That(s.Items.All(i => i.ReservedBy == null));
         Assert.That(E.IsLocked(s, pot), Is.False);

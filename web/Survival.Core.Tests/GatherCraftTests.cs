@@ -64,7 +64,7 @@ public class GatherCraftTests : TestBase
         Start(s, ActionRequest.Gather("supply_box"));
         Run(s);
         Assert.That(Count(s, "canned_food", "village"), Is.EqualTo(2));
-        Assert.That(Count(s, "clean_water", "village"), Is.EqualTo(1));
+        Assert.That(Count(s, "clean_water", "village"), Is.EqualTo(5));   // B56（W100-Q929-12 固定水源保原毫升）：supply_box 净水 1 份×500→5 份×100
         var r = E.Start(s, ActionRequest.Gather("supply_box"));
         Assert.That(r.Ok, Is.False);
         Assert.That(r.Reason, Is.EqualTo("该容器已搜空，不再补充"));

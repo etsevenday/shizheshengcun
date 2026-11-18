@@ -288,8 +288,8 @@ public class B10bWorkshopQTests : TestBase
     {
         var s = WithWood(0, 4);
         var pot = s.Items.First(i => i.ItemId == "pot");
-        E.DebugGive(s, "dirty_water", 2, "camp");
-        Ok(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "dirty_water" && i.Owner == "camp").InstanceId, pot.InstanceId, 2));
+        E.DebugGive(s, "dirty_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
+        Ok(s, InstantRequest.FillPot(s.Items.First(i => i.ItemId == "dirty_water" && i.Owner == "camp").InstanceId, pot.InstanceId, 10));
         Ok(s, InstantRequest.PutInFire(pot.InstanceId));
         Ok(s, InstantRequest.LoadCharcoal());
         Lit(s, 120);

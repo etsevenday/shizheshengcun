@@ -116,7 +116,7 @@ public class B17StationTests : TestBase
         Assert.That(s.Locations["camp"].Safehouse!.Interior.Workshops, Does.Contain("water_station"));
         Assert.That(s.Locations["camp"].Facility.Workshops, Does.Not.Contain("water_station"), "建在屋内区，不在外部");
         s.Items.RemoveAll(i => i.ItemId is "dirty_water" or "clean_water" or "filter_media");
-        E.CreateItems(s, "dirty_water", 4, s.Ground);
+        E.CreateItems(s, "dirty_water", 20, s.Ground);   // B56：ex_station_water 脏水 4→20（W100-Q929-11），×5 保持原 2000 毫升
         E.CreateItems(s, "filter_media", 1, ItemInstance.Carried);
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, "ex_station_water"));
@@ -124,7 +124,7 @@ public class B17StationTests : TestBase
         Ok(E.ExitSafehouse(s));
         Assert.That(E.StationBatchesHere(s, "water_station"), Is.Empty);
         AdvanceTo(s, t0 + 30);
-        Assert.That(Sum(s, "clean_water", "safehouseFloor:sh_camp"), Is.EqualTo(4));
+        Assert.That(Sum(s, "clean_water", "safehouseFloor:sh_camp"), Is.EqualTo(20));   // B56（W100-Q929-11）：一批 2 升＝20 份（原 4）
         Assert.That(Sum(s, "dirty_water") + Sum(s, "filter_media"), Is.EqualTo(0));
     }
 }

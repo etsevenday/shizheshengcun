@@ -53,7 +53,7 @@ public class V11CookProtectTests : TestBase
     [Test]
     public void S11_A13_FirstHeatedSegmentProtects_ReservedOnlyDoesNot()
     {
-        var (s, pot) = PotOnFire("clean_water", 2);
+        var (s, pot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var root = RootInPot(s, pot);
         root.ExpiresAt = s.GameMinute + 5;            // 首段内到期
         Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.False, "放入/预留时不保护");
@@ -66,7 +66,7 @@ public class V11CookProtectTests : TestBase
         Assert.That(E.ContentStatus(s, root), Does.Contain("受热保护中").And.Contain("取出即腐败"));
 
         // 待净化（脏水）：食材还没受热，到期照常腐败
-        var (t, tpot) = PotOnFire("dirty_water", 2);
+        var (t, tpot) = PotOnFire("dirty_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var r2 = RootInPot(t, tpot);
         r2.ExpiresAt = t.GameMinute + 10;
         Wait(t, 10);
@@ -85,7 +85,7 @@ public class V11CookProtectTests : TestBase
     [Test]
     public void S11_A14_S06_A11_ExtinguishKeeps_TakeOutClears_FailedTakeOutUnchanged()
     {
-        var (s, pot) = PotOnFire("clean_water", 2);
+        var (s, pot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var root = RootInPot(s, pot);
         root.ExpiresAt = s.GameMinute + 10;
         Wait(s, 10);
@@ -118,7 +118,7 @@ public class V11CookProtectTests : TestBase
         Assert.That(back.Ok, Is.False, "已变质不能重新放回烹饪");
 
         // 仍新鲜的受保护食材取出：只解除保护，不腐败
-        var (t, tpot) = PotOnFire("clean_water", 2);
+        var (t, tpot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var r2 = RootInPot(t, tpot);
         Wait(t, 5);
         Assert.That(E.ProcessOf(t, r2)!.HeatProtected, Is.True);
@@ -135,24 +135,27 @@ public class V11CookProtectTests : TestBase
     [Test]
     public void Q23_ProtectedPastExpiryEdible_AtomicOwnProcessOnly()
     {
-        var (s, pot) = PotOnFire("clean_water", 2);
+        var (s, pot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var meat = E.CreateItems(s, "cooked_meat", 1, "camp").Single();
         meat.ExpiresAt = s.GameMinute + 5;            // 首段内到期
         Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(meat.InstanceId, pot.InstanceId, 1)).Ok, Is.True);
         var root = RootInPot(s, pot);
-        Assert.That(E.PotReservedMl(s, pot.InstanceId), Is.EqualTo(1000), "两份食材各预留500毫升");
+        // B56（S11 文首 B53a Q929 / W100-Q929-08、09）：复煮／水煮每次各 1000 毫升，1 升锅只够先放入的烤肉预留；生块根无水预留（原「两份各预留500」）
+        Assert.That(E.PotReservedMl(s, pot.InstanceId), Is.EqualTo(1000), "烤肉预留1000毫升");
+        Assert.That(E.ProcessOf(s, meat)!.ReservedWaterMl, Is.EqualTo(1000));
+        Assert.That(E.ProcessOf(s, root)!.ReservedWaterMl, Is.EqualTo(0), "生块根等水");
         Wait(s, 5);
         var mp = E.ProcessOf(s, meat)!;
         Assert.That(mp.HeatProtected, Is.True);
         Assert.That(E.PastExpiryButProtected(s, meat), Is.True, "受保护且已过原期限");
-        Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.True);
+        Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.False, "没有水预留的不受热、不取得保护");
 
         SetStats(s, 20, 50, 50, 18, 90, 60);
         var req = ActionRequest.UseInstance(meat.InstanceId).WithRequestId("eat-q23");
         Assert.That(E.CanStart(s, req), Is.Null, "Q23：受保护期间过原期限仍可直接食用");
         var pv = E.Preview(s, req);
         Assert.That(pv.Ok, Is.True, pv.Reason);
-        Assert.That(string.Join("；", pv.Notes), Does.Contain("复煮随之终止").And.Contain("释放预留净水500毫升").And.Contain("已耗燃料不退"));
+        Assert.That(string.Join("；", pv.Notes), Does.Contain("复煮随之终止").And.Contain("释放预留净水1000毫升").And.Contain("已耗燃料不退"));
 
         var fuel = s.Locations["camp"].Facility.FuelMinutes;
         var water = E.PotUnits(s, pot.InstanceId);
@@ -162,9 +165,12 @@ public class V11CookProtectTests : TestBase
         Assert.That(s.Items.Any(i => i.InstanceId == meatId), Is.False, "只扣这一份");
         Assert.That(E.AllProcesses(s).Any(p => p.TargetInstanceId == meatId), Is.False, "终止它自己的复煮进程");
         var rp = E.ProcessOf(s, root)!;
-        Assert.That(rp.HeatProtected, Is.True, "同锅生块根的保护不动");
-        Assert.That(rp.HeatDoneMinutes, Is.EqualTo(5), "同锅生块根的热进度不动");
-        Assert.That(E.PotReservedMl(s, pot.InstanceId), Is.EqualTo(500), "只释放烤肉那份预留");
+        // B56（S11 文首 B53a Q929 / W100-Q929-08、09）：同锅生块根原无预留、未受热，吃烤肉不替它推进（原「保护不动、热进度 5」）；烤肉释放的 1000 归还锅里
+        Assert.That(rp.HeatProtected, Is.False, "同锅生块根的保护不动");
+        Assert.That(rp.HeatDoneMinutes, Is.EqualTo(0), "同锅生块根的热进度不动");
+        // B56：烤肉释放的 1000 毫升在同次设施同步里按投放顺序转给等水的生块根（原「只释放烤肉那份、剩 500」）
+        Assert.That(rp.ReservedWaterMl, Is.EqualTo(1000), "释放的水由等水的生块根取得预留");
+        Assert.That(E.PotReservedMl(s, pot.InstanceId), Is.EqualTo(1000), "只释放烤肉那份预留，不多不少");
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(water), "锅里的水不扣");
         Assert.That(s.Locations["camp"].Facility.FuelMinutes, Is.EqualTo(fuel), "燃料不退");
         Assert.That(s.Log.Last().Text, Does.Contain("食用1份烤肉").And.Contain("复煮随之终止"));
@@ -192,7 +198,7 @@ public class V11CookProtectTests : TestBase
         Assert.That(E.CanStart(s, ActionRequest.UseInstance(meat.InstanceId)), Is.EqualTo("已腐败，不能食用"));
 
         // 受保护后取出：按原期限立即腐败
-        var (t, tpot) = PotOnFire("clean_water", 2);
+        var (t, tpot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var m2 = E.CreateItems(t, "cooked_meat", 1, "camp").Single();
         m2.ExpiresAt = t.GameMinute + 5;
         Assert.That(E.DoInstant(t, InstantRequest.PutFoodInPot(m2.InstanceId, tpot.InstanceId, 1)).Ok, Is.True);
@@ -209,7 +215,7 @@ public class V11CookProtectTests : TestBase
     public void S11_A15_R06_A06_Reboil24hFromCompletion_SpoiledRejected_StoreOnlyNoRefresh()
     {
         // 原期限在复煮途中（第10分钟）：受保护照常完成
-        var (s, pot) = PotOnFire("clean_water", 2);
+        var (s, pot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var meat = E.CreateItems(s, "cooked_meat", 1, "camp").Single();
         meat.ExpiresAt = s.GameMinute + 10;
         Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(meat.InstanceId, pot.InstanceId, 1)).Ok, Is.True);
@@ -228,7 +234,7 @@ public class V11CookProtectTests : TestBase
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(water));
 
         // 已变质烤肉：不可放进锅开工
-        var (t, tpot) = PotOnFire("clean_water", 2);
+        var (t, tpot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var bad = E.CreateItems(t, "cooked_meat", 1, "camp").Single();
         bad.ExpiresAt = t.GameMinute - 1;
         Assert.That(E.DoInstant(t, InstantRequest.PutFoodInPot(bad.InstanceId, tpot.InstanceId, 1)).Ok, Is.False);
@@ -238,7 +244,7 @@ public class V11CookProtectTests : TestBase
     [Test]
     public void S11_A16_S13_A09_CookWaitIncludesProtectable_SaveKeepsProtection()
     {
-        var (s, pot) = PotOnFire("clean_water", 2);
+        var (s, pot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var root = RootInPot(s, pot);
         root.ExpiresAt = s.GameMinute + 10;   // 30 分钟熟成，第10分钟过原期限
         var plan = E.PreviewCookWait(s);
@@ -262,7 +268,7 @@ public class V11CookProtectTests : TestBase
     [Test]
     public void Migration7To8_ProtectsFreshHeated_NotSpoiled()
     {
-        var (s, pot) = PotOnFire("clean_water", 2);
+        var (s, pot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var fresh = RootInPot(s, pot);
         var spoiled = RootInPot(s, pot);
         Wait(s, 5);

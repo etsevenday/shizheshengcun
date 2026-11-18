@@ -278,10 +278,10 @@ public class BM5cExploreEncounterTests : B41bTestBase
     {
         var s = Field(3, "shambler");
         Explore(s, 0.5, null);
-        var json = SaveSerializer.Serialize(s).Replace("\"SchemaVersion\": \"57\"", "\"SchemaVersion\": \"49\"").Replace("\"SchemaVersion\":\"57\"", "\"SchemaVersion\":\"49\"");   // B51c2a1：当前版本 57（S11 Q872 选 B），改它造 49 档
+        var json = SaveSerializer.Serialize(s).Replace("\"SchemaVersion\": \"58\"", "\"SchemaVersion\": \"49\"").Replace("\"SchemaVersion\":\"58\"", "\"SchemaVersion\":\"49\"");   // B56：当前版本 58（M1083 57→58），改它造 49 档
         Assert.That(json, Does.Contain("\"49\""));
         var t = SaveSerializer.Deserialize(json, CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水每份100毫升份数×5，SaveMigrator.From57To58，M1083；S10 文首 B53a Q929）
         Assert.That(t.Main!.EncounterSegment, Is.Null);
         Assert.That(GameEngine.LegacyExploreCheck(t.Main), Is.True, "旧在办探索按原完成边界检查");
         Assert.That(t.ExploreCheckPending, Is.Null);

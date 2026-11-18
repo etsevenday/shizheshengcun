@@ -229,9 +229,9 @@ public class B14bCityQTests : TestBase
     public void CITY_Q149_01_ReliefChoiceNamesAndThreshold()
     {
         var relief = Cfg.City.Services.Single(x => x.Id == "church_relief_ration");
-        Assert.That(relief.Choices.Select(c => c.Label), Is.EqualTo(new[] { "烤熟块根1份（饱食低于40）", "净水1份（水分低于40）" }));
+        Assert.That(relief.Choices.Select(c => c.Label), Is.EqualTo(new[] { "烤熟块根1份（饱食低于40）", "净水5份（水分低于40）" }));   // B56 改期望（M1079 配置 church_relief_ration relief_water：净水×5 保持原 500 毫升；b53a-q928-q929-water-100ml.json Q929 数量换算×5）
         var s = At("c04_alms");
-        Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Choices.Select(c => c.Label), Is.EqualTo(new[] { "烤熟块根1份（饱食低于40）", "净水1份（水分低于40）" }));
+        Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Choices.Select(c => c.Label), Is.EqualTo(new[] { "烤熟块根1份（饱食低于40）", "净水5份（水分低于40）" }));   // B56 改期望（M1079 配置 church_relief_ration relief_water：净水×5 保持原 500 毫升；b53a-q928-q929-water-100ml.json Q929 数量换算×5）
         SetStats(s, 15, 40, 40, 15, 80, 70);
         Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Targets.Single().Blocked, Is.Not.Null, "正好40不算低于40");
         Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_food").Ok, Is.False);

@@ -39,11 +39,12 @@ public class V10CookWaitTests : BattleTestBase
     [Test]
     public void S11_A09_DirtyWaterThenTwoRoots_45Minutes_NoExtraBodyCost()
     {
-        var (s, pot) = PotOnFire("dirty_water", 2);
+        var (s, pot) = PotOnFire("dirty_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         RootsInPot(s, pot, 2);
         var plan = E.PreviewCookWait(s);
         Assert.That(plan.Ok, Is.True, plan.Reason);
-        Assert.That(plan.Targets, Has.Count.EqualTo(3), "净水 + 两份水煮");
+        // B56（S11 文首 B53a Q929 / W100-Q929-08、09）：1 升锅水煮每次 1000 毫升、两份不能同时预留，只有先放入的一份纳入（原「净水 + 两份水煮」3 项）
+        Assert.That(plan.Targets, Has.Count.EqualTo(2), "净水 + 一份水煮");
         Assert.That(plan.EstimatedMinutes, Is.EqualTo(45));
         Assert.That(plan.FuelShort, Is.False);
         Assert.That(plan.BodyRates.Satiety, Is.EqualTo(Cfg.HourlyRates["wait"].Satiety), "复用 wait 速率");
@@ -57,7 +58,8 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(s.Main, Is.Not.Null, "净水完成时不结束");
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
         Assert.That(s.GameMinute - m0, Is.EqualTo(45));
-        Assert.That(E.PotFood(s, pot.InstanceId).Select(f => f.ItemId), Is.EqualTo(new[] { "boiled_root", "boiled_root" }), "成品留在原锅，不自动吃");
+        // B56（S11 文首 B53a Q929 / W100-Q929-08、09）：只有获得水预留的第一份熟成，第二份补水前不能免费熟成（原两份都熟）
+        Assert.That(E.PotFood(s, pot.InstanceId).Select(f => f.ItemId), Is.EqualTo(new[] { "boiled_root", "raw_root" }), "成品留在原锅，不自动吃");
         var w = Cfg.HourlyRates["wait"];
         Assert.That(s.Stats.Energy, Is.EqualTo(10).Within(1e-9), "没有额外体力消耗或恢复");
         Assert.That(s.Stats.Satiety, Is.EqualTo(80 + w.Satiety * 45 / 60).Within(1e-9));
@@ -68,7 +70,7 @@ public class V10CookWaitTests : BattleTestBase
     [Test]
     public void S11_A10_ParallelTargets_TakeLatest_NotSum()
     {
-        var (s, pot) = PotOnFire("clean_water", 1);
+        var (s, pot) = PotOnFire("clean_water", 10);   // B56：水煮每次 1000 毫升（W100-Q929-08），装满 10 份
         RootsInPot(s, pot, 1);
         E.DebugGive(s, "raw_root", 1, "camp");
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(First(s, "raw_root", "camp").InstanceId, 1)).Ok, Is.True);
@@ -119,7 +121,7 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(E.CanStart(t, ActionRequest.WaitCook()), Does.Contain("没有可加工的目标"));
 
         // 未点火：不自动点火、不加木
-        var (u, upot) = PotOnFire("dirty_water", 1);
+        var (u, upot) = PotOnFire("dirty_water", 5);   // B56：每份100毫升，×5 保持原 500 毫升
         u.Locations["camp"].Facility.FireLit = false;
         var wood = Count(u, "wood");
         Assert.That(E.CanStart(u, ActionRequest.WaitCook()), Does.Contain("未燃烧"));
@@ -130,7 +132,7 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(E.CanStart(u, ActionRequest.WaitCook()), Does.Contain("燃料"), "下一段燃料不足5分钟不能开始（开发假设 A8）");
 
         // 燃料不足：1L脏水+两根要45分钟，只有20分钟燃料
-        var (v, vpot) = PotOnFire("dirty_water", 2, fuel: 20);
+        var (v, vpot) = PotOnFire("dirty_water", 10, fuel: 20);   // B56：每份100毫升，×5 保持原 1000 毫升
         RootsInPot(v, vpot, 2);
         plan = E.PreviewCookWait(v);
         Assert.That(plan.Ok, Is.True, plan.Reason);
@@ -146,10 +148,11 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(v.Log.Last(l => l.Kind == "ActionAborted").Text, Does.Contain("等待加工停止").And.Contain("熄灭"));
         Assert.That(Count(v, "wood"), Is.EqualTo(woodV), "不自动补木");
         Assert.That(E.PotLiquid(v, vpot.InstanceId), Is.EqualTo("clean_water"), "已完成的净化保留");
-        Assert.That(E.PotFood(v, vpot.InstanceId).All(f => f.ItemId == "raw_root" && Proc(v, f).HeatDoneMinutes == 5), Is.True, "受热进度保留，不清零");
+        // B56（S11 文首 B53a Q929 / W100-Q929-08、09）：只有获得水预留的第一份受热 5 分钟，第二份无水预留为 0（原两份都 5）
+        Assert.That(E.PotFood(v, vpot.InstanceId).Select(f => (f.ItemId, Proc(v, f).HeatDoneMinutes)), Is.EqualTo(new[] { ("raw_root", 5), ("raw_root", 0) }), "受热进度保留，不清零");
 
         // Q16：完成前才会过原期限、但首段就能受热的新鲜食材取得保护，照样纳入（S11-A16）
-        var (w2, wpot) = PotOnFire("clean_water", 1);
+        var (w2, wpot) = PotOnFire("clean_water", 10);   // B56：水煮每次 1000 毫升（W100-Q929-08），装满 10 份
         RootsInPot(w2, wpot, 1);
         E.PotFood(w2, wpot.InstanceId).Single().ExpiresAt = w2.GameMinute + 10;
         plan = E.PreviewCookWait(w2);
@@ -158,7 +161,7 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(Proc(w2, E.PotFood(w2, wpot.InstanceId).Single()).HeatProtected, Is.False, "预览不先设保护");
 
         // 首次受热前就会腐败（脏水要先净化，食材10分钟后到期）：不纳入并写原因
-        var (w3, w3pot) = PotOnFire("dirty_water", 2);
+        var (w3, w3pot) = PotOnFire("dirty_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         RootsInPot(w3, w3pot, 1);
         E.PotFood(w3, w3pot.InstanceId).Single().ExpiresAt = w3.GameMinute + 10;
         plan = E.PreviewCookWait(w3);
@@ -169,7 +172,7 @@ public class V10CookWaitTests : BattleTestBase
     [Test]
     public void S11_A12_S01_A12_ExitKeepsProgress_RestartAndReload_LastFuelSegmentCompletes()
     {
-        var (s, pot) = PotOnFire("clean_water", 2);
+        var (s, pot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         RootsInPot(s, pot, 1);
         var root = E.PotFood(s, pot.InstanceId).Single();
         Start(s, ActionRequest.WaitCook());
@@ -197,7 +200,8 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(Run(back), Is.EqualTo(SegmentStatus.Completed));
         Assert.That(back.GameMinute - m1, Is.EqualTo(15));
         Assert.That(E.PotFood(back, pot.InstanceId).Single().ItemId, Is.EqualTo("boiled_root"));
-        Assert.That(E.PotUnits(back, pot.InstanceId), Is.EqualTo(1), "只扣一次水、不出第二份");
+        // B56（S11 文首 B53a Q929 / W100-Q929-08、09）：水煮扣 1000，满锅 10 份扣完剩 0（原 2 份扣 1 剩 1）
+        Assert.That(E.PotUnits(back, pot.InstanceId), Is.EqualTo(0), "只扣一次水、不出第二份");
 
         // 末段燃料恰好够：只有 15 分钟燃料与 15 分钟净化
         var (t, tpot) = PotOnFire("dirty_water", 1, fuel: 15);

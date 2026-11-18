@@ -265,10 +265,27 @@ public sealed class Comp20Driver
         if (r.TargetId == "clean_water") WaterDrunk++; else FoodEaten++;
     }
 
+    /// <summary>
+    /// B56（S10／S12 文首 B53a Q929：水每份 100 毫升、饮水自选份数一次 5 分钟）：驱动仍按原「一次喝 500 毫升」的口径——
+    /// 能喝 5 份就喝 5 份，不够就喝能喝的最多份数（原 1 份×500 毫升＝现 5 份×100 毫升）。
+    /// </summary>
+    private ActionRequest DrinkClean()
+    {
+        for (var n = WaterUnitsPerDrink; n > 1; n--)
+        {
+            var r = ActionRequest.UseItem("clean_water", n);
+            if (E.CanStart(S, r) == null) return r;
+        }
+        return ActionRequest.UseItem("clean_water");
+    }
+
+    /// <summary>B56：原 1 份 500 毫升＝现 5 份×100 毫升。</summary>
+    private const int WaterUnitsPerDrink = 5;
+
     private ActionRequest? NextNeed(bool sub)
     {
         var st = S.Stats;
-        if (st.Hydration < 60 && Has("clean_water", sub)) return ActionRequest.UseItem("clean_water");
+        if (st.Hydration < 60 && Has("clean_water", sub)) return DrinkClean();
         if (st.Satiety < 60)
             foreach (var f in new[] { "boiled_root", "cooked_root", "roast_meat", "berry", "canned_food", "canned_beans", "hardtack" })
                 if (Has(f, sub)) return ActionRequest.UseItem(f);
@@ -314,8 +331,10 @@ public sealed class Comp20Driver
             var mate = S.Party.Where(a => a != GameState.PlayerId).OrderByDescending(a => CarriedCount(a, id)).FirstOrDefault();
             var it = mate == null ? null : S.Items.FirstOrDefault(i => i.ItemId == id && i.Owner == ItemInstance.CarriedOwner(mate));
             if (it == null) continue;
-            var r = E.Give(S, mate!, GameState.PlayerId, it.InstanceId, 1, $"comp20-back-{++_seq}");
-            Log(r.Ok ? $"从{E.ActorDisplayName(S, mate!)}拿回{E.ItemName(id)}×1" : $"从{E.ActorDisplayName(S, mate!)}拿回{id}被拒：{r.Reason}");
+            // B56：水每份 100 毫升，拿回原 1 份 500 毫升的量＝5 份（不足按实有）
+            var n = id == "clean_water" ? Math.Min(WaterUnitsPerDrink, it.Count) : 1;
+            var r = E.Give(S, mate!, GameState.PlayerId, it.InstanceId, n, $"comp20-back-{++_seq}");
+            Log(r.Ok ? $"从{E.ActorDisplayName(S, mate!)}拿回{E.ItemName(id)}×{n}" : $"从{E.ActorDisplayName(S, mate!)}拿回{id}被拒：{r.Reason}");
         }
     }
 
@@ -365,6 +384,8 @@ public sealed class Comp20Driver
                 {
                     TargetActorId = t.ActorId, SourceActorId = pick.SourceActorId, InstanceId = pick.InstanceId,
                     PotInstanceId = pick.PotInstanceId, ConfirmStamp = pick.Stamp, RequestId = $"comp20-feed-{++_seq}",
+                    // B56（S12 文首 B53a Q929）：同行饮水按原 500 毫升口径选 5 份，不足按可饮份数
+                    WaterUnits = water ? Math.Max(1, Math.Min(WaterUnitsPerDrink, pick.Portions)) : 1,
                 };
                 var res = E.Feed(S, f);
                 if (!res.Ok) { Log($"给{t.Name}吃喝被拒：{res.Reason}"); continue; }

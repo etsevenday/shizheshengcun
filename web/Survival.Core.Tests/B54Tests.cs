@@ -292,7 +292,7 @@ public class B54Tests : TestBase
     private (GameState s, LogEntry log) WaterMissing(int? dirtyLeft)
     {
         var s = Workshop();
-        foreach (var i in E.CreateItems(s, "dirty_water", 4, s.Ground)) i.ExpiresAt = dirtyLeft is int m ? s.GameMinute + m : null;
+        foreach (var i in E.CreateItems(s, "dirty_water", 20, s.Ground)) i.ExpiresAt = dirtyLeft is int m ? s.GameMinute + m : null;   // B56：每份100毫升，×5 保持原 2000 毫升（配方 ex_station_water 脏水20）
         E.CreateItems(s, "filter_media", 1, s.Ground);
         var t0 = s.GameMinute;
         Ok(E.StartStationBatch(s, Water, "q791"));
@@ -307,7 +307,7 @@ public class B54Tests : TestBase
     {
         var (s, log) = WaterMissing(20);
         var dirty = s.Items.Where(i => i.ItemId == "dirty_water").ToList();
-        Assert.That(dirty.Sum(i => i.Count), Is.EqualTo(4));
+        Assert.That(dirty.Sum(i => i.Count), Is.EqualTo(20));   // B56 改期望（配置 ex_station_water 脏水20，M1079；b56-q973-q974 契约配方表×5）：原 4
         var at = dirty.Select(i => i.ExpiresAt!.Value).Distinct().Single();
         Assert.That(dirty.All(i => i.ShelfPausedMinutes == null && i.ReservedBy == null), Is.True);
         // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）

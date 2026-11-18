@@ -308,7 +308,7 @@ public class B22fTests : BattleTestBase
         var s = New();
         E.DebugLearnAllKnowledge(s);
         s.Items.RemoveAll(i => i.ItemId is "dirty_water" or "clean_water" or "purification_tablet");
-        E.CreateItems(s, "dirty_water", 4, s.CurrentLocation);
+        E.CreateItems(s, "dirty_water", 20, s.CurrentLocation);   // B56：每份100毫升，×5 保持原 2000 毫升（W100-Q929-11 原 2 升进出变 20 份）
         E.CreateItems(s, "purification_tablet", tablets, s.CurrentLocation);
         return s;
     }
@@ -337,7 +337,7 @@ public class B22fTests : BattleTestBase
         Assert.That((Get(s, GameEngine.DailyXp), Get(s, GameEngine.DailyWaterXp)), Is.EqualTo((28, 2)), "总 30、净化 2");
         Assert.That(s.Log.Last(l => l.Kind == "ActionCompleted").Text, Does.Contain("烹饪经验+2（烹饪每日总上限30，只剩2）"));
         // 再一批：净化子限还剩 2，但总额已满 → 0
-        E.CreateItems(s, "dirty_water", 4, s.CurrentLocation);
+        E.CreateItems(s, "dirty_water", 20, s.CurrentLocation);   // B56：每份100毫升，×5 保持原 2000 毫升（W100-Q929-11 原 2 升进出变 20 份）
         Assert.That(E.Preview(s, ActionRequest.Craft("ex_tablet_water")).XpGains, Has.Some.Contains("今日烹饪经验已满30（含净化）"));
         Start(s, ActionRequest.Craft("ex_tablet_water"));
         Run(s);
@@ -382,7 +382,7 @@ public class B22fTests : BattleTestBase
         Assert.That(t.Skills["cooking"].Xp, Is.EqualTo(cook0), "当天新增 0");
         // 次日 00:00 后完成：按完成日新额
         t.GameMinute = At(Clock.Day(t.GameMinute) + 1, 0, 30);
-        E.CreateItems(t, "dirty_water", 4, t.CurrentLocation);
+        E.CreateItems(t, "dirty_water", 20, t.CurrentLocation);   // B56：每份100毫升，×5 保持原 2000 毫升（W100-Q929-11 原 2 升进出变 20 份）
         E.CreateItems(t, "purification_tablet", 1, t.CurrentLocation);
         Start(t, ActionRequest.Craft("ex_tablet_water"));
         Run(t);
@@ -396,8 +396,8 @@ public class B22fTests : BattleTestBase
         var s = New();
         s.Player.DailyCounts[Key(s, GameEngine.DailyXp)] = 29;
         var pot = First(s, "pot");
-        E.DebugGive(s, "dirty_water", 2, "camp");
-        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2)));
+        E.DebugGive(s, "dirty_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
+        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 10)));
         Ok(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)));
         var fac = s.Locations["camp"].Facility;
         fac.FireLit = true; fac.FuelMinutes = 240;

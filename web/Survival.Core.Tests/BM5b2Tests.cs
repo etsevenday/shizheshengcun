@@ -179,8 +179,8 @@ public class BM5b2Tests : TestBase
     {
         var s = New();
         var pot = First(s, "pot");
-        E.DebugGive(s, "clean_water", 2, "camp");
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        E.DebugGive(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升（水煮每次耗水 1000，W100-Q929-08）
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10)).Ok, Is.True);
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
         var fac = s.Locations["camp"].Facility;
         fac.FireLit = true;
@@ -276,8 +276,8 @@ public class BM5b2Tests : TestBase
     {
         var s = New();
         var pot = First(s, "pot");
-        E.DebugGive(s, "clean_water", 2, "camp");
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        E.DebugGive(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升（水煮每次耗水 1000，W100-Q929-08）
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10)).Ok, Is.True);
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
         var fac = s.Locations["camp"].Facility;
         fac.FireLit = true;
@@ -289,13 +289,17 @@ public class BM5b2Tests : TestBase
         }
         foreach (var f in E.PotFood(s, pot.InstanceId)) f.ExpiresAt = s.GameMinute + 5;
         WaitUntil(s, s.GameMinute + 5);
-        Assert.That(E.PotFood(s, pot.InstanceId).All(f => f.ItemId == "raw_root" && E.PastExpiryButProtected(s, f)), Is.True);
+        // B56（b53a-q928-q929-water-100ml.json foodProcesses boil_root waterCostMl 1000、W100-Q929-08／09）：1 升锅两份生块根只有先投放的一份
+        // 获得 1000 毫升预留并受热保护，另一份无热等水不获保护、到期照常转腐败物（原两份都受保护、合计「生块根×2」）
+        var heated = E.PotFood(s, pot.InstanceId);
+        Assert.That(heated.Count(f => f.ItemId == "raw_root" && E.PastExpiryButProtected(s, f)), Is.EqualTo(1));
+        Assert.That(heated.Count(f => f.ItemId == Rot), Is.EqualTo(1));
         var c = E.TakeOutConsequenceOf(s, pot);
-        Assert.That(c.Text, Does.Contain("；已过原保质期：生块根×2。取出后失去烹饪保护，过期食材将变为腐败物。"), "B50a（Q712）：同名合计、清单一次");
+        Assert.That(c.Text, Does.Contain("；已过原保质期：生块根×1。取出后失去烹饪保护，过期食材将变为腐败物。"), "B50a（Q712）：同名合计、清单一次");
         var n0 = s.Log.Count;
         Assert.That(E.DoInstant(s, InstantRequest.TakeOut(pot.InstanceId, "camp")).Ok, Is.True, "取下整锅");
         var line = LogSince(s, n0).Single(l => l.StartsWith("把"));
-        Assert.That(line, Does.EndWith("。生块根×2已腐败，变为腐败物×2。"), "按原名与实际转换量聚合，一次");
+        Assert.That(line, Does.EndWith("。生块根×1已腐败，变为腐败物×1。"), "按原名与实际转换量聚合，一次");
         Assert.That(line, Does.Not.Contain("解除烹饪保护、已过原保质期而腐败"));
         Assert.That(LogSince(s, n0).Count(l => l.Contains("已腐败，变为腐败物")), Is.EqualTo(1), "不另重复发同一句");
         var foods = E.PotFood(s, pot.InstanceId);
@@ -313,8 +317,8 @@ public class BM5b2Tests : TestBase
     {
         var s = New();
         var pot = First(s, "pot");
-        E.DebugGive(s, "clean_water", 2, "camp");
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        E.DebugGive(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升（水煮每次耗水 1000，W100-Q929-08）
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10)).Ok, Is.True);
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
         var fac = s.Locations["camp"].Facility;
         fac.FireLit = true;
@@ -380,8 +384,8 @@ public class BM5b2Tests : TestBase
     {
         var s = New();
         var pot = First(s, "pot");
-        E.DebugGive(s, "clean_water", 2, "camp");
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        E.DebugGive(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升（水煮每次耗水 1000，W100-Q929-08）
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10)).Ok, Is.True);
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
         var fac = s.Locations["camp"].Facility;
         fac.FireLit = true;
@@ -401,7 +405,7 @@ public class BM5b2Tests : TestBase
         var json = o.ToString();
         Assert.That(json, Does.Contain("\"SchemaVersion\": \"50\""));
         var t = SaveSerializer.Deserialize(json, Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("57"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）
+        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）；B56 改期望：存档升 58（M1083 57→58 水份数×5）
         Assert.That(Rotten(t, "berry", "camp"), Is.EqualTo(3), "过期物一次迁移为腐败物");
         Assert.That(t.Items.Count(i => i.ItemId == "berry"), Is.EqualTo(0), "原名下不留副本");
         Assert.That(t.Items.Single(i => i.InstanceId == r.InstanceId).ItemId, Is.EqualTo("raw_root"), "可信烹饪保护保留");
@@ -551,8 +555,8 @@ public class BM5b2Tests : TestBase
     {
         var s = New();
         var pot = First(s, "pot");
-        E.DebugGive(s, "clean_water", 2, "camp");
-        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2)));
+        E.DebugGive(s, "clean_water", 10, "camp");   // B56：每份100毫升，×5 保持原 1000 毫升
+        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10)));
         Ok(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)));
         var fac = s.Locations["camp"].Facility;
         fac.FireLit = true;
