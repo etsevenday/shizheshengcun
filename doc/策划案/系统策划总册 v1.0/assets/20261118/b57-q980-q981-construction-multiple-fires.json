@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target",
+  "sourceCommit": "740e79586d91d64df4471ac91b20a931a034043e",
+  "originalBatch": "2026-11-17 来自 98ab638b B57（提前核对，主要；本批开发已暂停，等答复后继续）",
+  "questionIds": [
+    980,
+    981
+  ],
+  "answers": {
+    "Q980": "A_inherited_Q935",
+    "Q981": "user_multiple_sites_fixed_fires_and_stoves"
+  },
+  "failedConstruction": {
+    "retainProject": true,
+    "retainMaterials": true,
+    "retainProgress": true,
+    "state": "未完工",
+    "failureText": "{配方名}未完成：{实际原因}。无经验。",
+    "experienceOnFailure": 0
+  },
+  "outdoorFirePlacement": {
+    "fixedFireSitesPerZone": null,
+    "fixedFiresPerZone": null,
+    "deployedDistinctStovesPerZone": null,
+    "nullMeansNoQuantityLimit": true,
+    "coexist": true,
+    "existingFireSourceBlocksConstructionOrDeployment": false,
+    "bindMutationsToActualInstance": true,
+    "unfinishedSiteProvidesFire": false,
+    "retainLocationAndOrdinaryActionEligibility": true
+  },
+  "acceptance": [
+    {
+      "id": "B57-Q980-01",
+      "expected": "实际校验拒绝时工地仍存在，材料与进度保留，显示实际原因，无经验。主动拆除才退还该工程已投建材。"
+    },
+    {
+      "id": "B57-Q980-02",
+      "expected": "同一工地通过完工校验后只核销本工地材料、生成一座设施和发放一次经验。"
+    },
+    {
+      "id": "B57-Q981-01",
+      "expected": "在许可野外区可先放两张空火堆工地，再部署两个不同柴炉，也可反序。柴炉部署期间可分别开工并建成两座火堆。"
+    },
+    {
+      "id": "B57-Q981-02",
+      "expected": "同区已经有营地原火堆、野外固定火堆或柴炉时，在其余合法条件满足的前提下可继续放工地或部署其他柴炉。"
+    },
+    {
+      "id": "B57-Q981-03",
+      "expected": "选中第二座点火、投料、取出或收起时只作用于该座，其他设施保有自己的锅、燃料、内容和进度。"
+    },
+    {
+      "id": "B57-Q981-04",
+      "expected": "地点许可、第二次部署同一件实物、遭遇和忙碌等真实条件继续校验，空工地没有取暖与加工功能。"
+    }
+  ]
+}
