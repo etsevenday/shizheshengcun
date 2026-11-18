@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target",
+  "sourceCommit": "218c45986626be953074bc7cabcdd068f5dc9d46",
+  "originalBatch": "2026-11-17 来自 98ab638b B57（提前核对，次要）",
+  "questionIds": [
+    982,
+    983,
+    984,
+    985,
+    986,
+    987,
+    988,
+    989,
+    990
+  ],
+  "answers": {
+    "Q982": "A",
+    "Q983": "A_offered_single_direct_multiple_picker",
+    "Q984": "user_omit_both_messages",
+    "Q985": "A",
+    "Q986": "A",
+    "Q987": "A",
+    "Q988": "A",
+    "Q989": "A",
+    "Q990": "A"
+  },
+  "card": {
+    "name": "{设施名}",
+    "badges": [
+      "未完工",
+      "施工中"
+    ],
+    "progress": "进度{n}%",
+    "percentRounding": "floor",
+    "material": "{材料名} {已投}/{需求}",
+    "runningAndAutoPausedUnexited": "施工中",
+    "centralShowsCumulativeProgress": true
+  },
+  "navigation": {
+    "title": "{设施名}工地",
+    "oneProject": "open_directly",
+    "multipleProjects": "choose_actual_project",
+    "repeatableRecipeKeepsPlacementEntry": true
+  },
+  "constructionExit": {
+    "preNotice": null,
+    "resultMessage": null,
+    "retainProjectMaterialsAndProgress": true
+  },
+  "materialDisabledReasons": {
+    "full": "已满",
+    "noSource": "没有可用的{物名}",
+    "busy": "行动进行中，暂不能整理物品"
+  },
+  "invalidDrop": {
+    "highlight": false,
+    "message": null,
+    "allowedQuantityLimitedByActualShortfall": true
+  },
+  "help": {
+    "narrowExitRefundToApplicableActions": true,
+    "removeDirectBuildFromRecipeSentence": true,
+    "addTutorial": false
+  },
+  "unfinishedSafehouseUsesExistingCopy": true,
+  "missingProjectReason": "先放置工地并投齐材料。",
+  "acceptance": [
+    {
+      "id": "B57-Q982-01",
+      "expected": "累计40.8%的灰工地卡副标显示进度40%，悬停和右栏列真实材料已投与需求，续建中央行动条显示实际累计进度。"
+    },
+    {
+      "id": "B57-Q983-01",
+      "expected": "同配方单个工地直达，多个由玩家选定后打开。野外火堆已有工地时仍可放新工地。工地页标题用设施名加工地。"
+    },
+    {
+      "id": "B57-Q984-01",
+      "expected": "主动退出或撤退离地停止施工时省去施工前后提示，按原停止时机保留该工程、已投材料和累计进度。"
+    },
+    {
+      "id": "B57-Q985-01",
+      "expected": "自动暂停且主施工未退出时灰卡仍写施工中，行动条呈现真正暂停。退出后角标未完工，累计进度保留。"
+    },
+    {
+      "id": "B57-Q986-01",
+      "expected": "依实际原因显示已满、没有可用的物名或行动进行中暂不能整理物品。"
+    },
+    {
+      "id": "B57-Q987-01",
+      "expected": "不需要的物品或已经投齐的材料拖进工地时，无高亮与弹提示，原物品不扣。合法尚有缺口的材料可按缺口投。"
+    },
+    {
+      "id": "B57-Q988-01",
+      "expected": "系统说明的退出返料描述只适用于原返料动作，删除建造从配方直接开始的旧讲法。"
+    },
+    {
+      "id": "B57-Q989-01",
+      "expected": "备料和施工未完工均沿进入及招募原位文案。灰工地可查看，实际未完工屋内不可用。"
+    },
+    {
+      "id": "B57-Q990-01",
+      "expected": "无工地时提交旧开工请求被拒，显示先放置工地并投齐材料，材料和游戏时间无变化。"
+    }
+  ]
+}
