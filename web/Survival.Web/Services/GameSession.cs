@@ -3672,6 +3672,16 @@ public sealed partial class GameSession
         if (FeedPending is not { } f) return;
         f.Draft.SourceKey = string.IsNullOrEmpty(key) ? null : key;
         f.Draft.SourceCleared = false;
+        // B56（Q929「默认100毫升」）：换来源时饮水量回默认 1 份
+        f.Draft.WaterUnits = 1;
+        Notify();
+    }
+
+    /// <summary>B56（S12 文首 B53a Q929）：同行饮水选量，夹在 1..该来源可饮份数；超出由内核 FeedPanel 报「水分不足。」。</summary>
+    public void SetFeedWaterUnits(int units, int max)
+    {
+        if (FeedPending is not { } f) return;
+        f.Draft.WaterUnits = Math.Clamp(units, 1, Math.Max(1, max));
         Notify();
     }
 

@@ -31,6 +31,19 @@
                     }
                 </select>
                 @if (v.Selected != null) { <div class="apop-note" data-feed-source>@v.Selected.Text</div> }
+                @* B56（S12 文首 B53a Q929；W100-Q929-05）：水来源选中后选饮水量，整数份、每份100毫升、默认1；上限＝该来源可饮份数；确认文字与预计变化随所选量由内核重算 *@
+                @if (d.IsWater && v.Selected is { } sel && sel.MaxUnits > 0)
+                {
+                    var wn = d.WaterUnits;
+                    var unitMl = sel.UnitMl;
+                    <div class="tbar-row" role="group" aria-label="@DrinkCopy.Title" data-feed-units>
+                        <b>@DrinkCopy.Title</b>
+                        <button type="button" class="tbar-step" aria-label="减少" disabled="@(wn <= 1)" @onclick="() => G.SetFeedWaterUnits(wn - 1, sel.MaxUnits)">−</button>
+                        <input type="text" inputmode="numeric" value="@wn" aria-label="@DrinkCopy.Title" @onchange="ev => G.SetFeedWaterUnits(ParseUnits(ev), sel.MaxUnits)" />
+                        <button type="button" class="tbar-step" aria-label="增加" disabled="@(wn >= sel.MaxUnits)" @onclick="() => G.SetFeedWaterUnits(wn + 1, sel.MaxUnits)">+</button>
+                        <span class="tbar-qlabel" data-feed-ml>@DrinkCopy.AmountText(Math.Max(0, wn) * unitMl)</span>
+                    </div>
+                }
                 @foreach (var n in v.SourceNotes) { <div class="apop-note" data-feed-note>@n</div> }
                 @if (v.BlockedLine != null) { <div class="ca-note bad" data-feed-blocked>@v.BlockedLine</div> }
             </section>
@@ -54,6 +67,12 @@
 }
 
 @code {
+    private static int ParseUnits(ChangeEventArgs ev)
+    {
+        var digits = new string((ev.Value?.ToString() ?? "").Where(char.IsDigit).ToArray());
+        return int.TryParse(digits, out var v) ? v : 0;
+    }
+
     private async Task Confirm(FeedRequest? req)
     {
         if (req != null) await G.ConfirmFeed(req);

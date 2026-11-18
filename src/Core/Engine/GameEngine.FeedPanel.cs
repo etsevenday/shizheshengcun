@@ -40,12 +40,14 @@ namespace Survival.Core.Engine
         public const string LabelOverflow = "超出上限的部分不会增加。";
         public const string RowFood = "{出物人}的随身物品 · {物品}×{总份数} · 批次#{实例号}{截止段}";
         public const string RowPotFood = "{出物人}的随身锅#{锅号} · {物品}×{总份数} · 批次#{实例号}{截止段}";
-        public const string RowWaterCard = "{出物人}的随身物品 · {水种}{毫升}毫升（{可饮份数}份，每份500毫升） · 编号#{实例号}";
-        public const string RowPotWater = "{出物人}的随身锅#{锅号} · {水种}{毫升}毫升（{可饮份数}份，每份500毫升）";
-        public const string RowCanteen = "{出物人}的随身{水壶}#{壶号} · {水种}{毫升}/{容量}毫升（{可饮次数}次，每次250毫升）";
+        // B56（S12 文首 B53a Q929 本批逐字稿）：三种水来源行括注换「（可用{可饮份数}份，每份100毫升）」；Q977 A 暂用：保留原锅号／壶号／编号段（正式界面仍由 HideInstanceFields 隐去）
+        public const string RowWaterCard = "{出物人}的随身物品 · {水种}{毫升}毫升（可用{可饮份数}份，每份100毫升） · 编号#{实例号}";
+        public const string RowPotWater = "{出物人}的随身锅#{锅号} · {水种}{毫升}毫升（可用{可饮份数}份，每份100毫升）";
+        public const string RowCanteen = "{出物人}的随身{水壶}#{壶号} · {水种}{毫升}/{容量}毫升（可用{可饮份数}份，每份100毫升）";
         public const string PortionFood = "{物品}×1";
-        public const string PortionWater = "{水种}500毫升";
-        public const string PortionCanteen = "{水种}250毫升";
+        /// <summary>B56：食饮确认的单次水量摘要「{水种}{所选毫升}毫升」（锅水、水卡、水壶同一句）。</summary>
+        public const string PortionWater = DrinkCopy.Summary;
+        public const string PortionCanteen = DrinkCopy.Summary;
         public const string RemainingFood = "{物品}×{总份数}";
         public const string RemainingWater = "{水种}{毫升}毫升";
         public const string RemainingCanteen = "{水种}{毫升}/{容量}毫升";
@@ -57,7 +59,8 @@ namespace Survival.Core.Engine
             "可从食物、饮水卡或队伍面板里展开的同行者随身物品卡，选择“给同行者食用”或“给同行者饮用”。打开窗口不会自动选择目标。",
             "先选择同地点、同区域、存活且正在同行的人，再选择你或目标本人随身的来源。不能直接取用第三人、候补、地面或设施中的物品；随身锅内符合条件的食水可以直接选择。",
             "食物只列同一种物品，饮水只列同一水种。不可用批次会灰显并说明原因；确认前请核对目标、出物人、批次、预计变化和余量。",
-            "一次只给一人食用一份。水卡和随身锅水每份500毫升，水壶每次250毫升；食饮按原规则推进5分钟，不能中途取消，不会先转移再扣一份。",
+            // B56（Q976 A 暂用）：含 500／250 的分句换成 Q929 系统说明新稿
+            "一次只给一人食用一份。水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。食饮按原规则推进5分钟，不能中途取消，不会先转移再扣一份。",
             "收益和风险作用于目标本人。脏水仍会造成腹泻，生食、腐败物和药品等仍受原入口限制；配给袋只看目标本人有效穿戴。",
             "战斗、撤出、敌踪、强制对白和其他占用仍按原限制处理。查看说明不吃喝、不耗时、不领奖，关闭后回到原食饮窗口并重新检查情况。",
         };
@@ -125,6 +128,8 @@ namespace Survival.Core.Engine
         public string? SourceKey { get; set; }
         /// <summary>候选被清过：显示 sourceCleared，直到玩家重新选目标或来源。</summary>
         public bool SourceCleared { get; set; }
+        /// <summary>B56（S12 文首 B53a Q929）：饮水选的整数单位 N（每单位 100 毫升），默认 1；食物不用。</summary>
+        public int WaterUnits { get; set; } = 1;
 
         public static FeedDraft From(FeedEntryInfo e) => new FeedDraft { ClassItemId = e.ClassItemId, IsWater = e.IsWater, SourceKey = e.SourceKey };
     }
@@ -142,6 +147,10 @@ namespace Survival.Core.Engine
         public string RemainingText { get; set; } = "";
         public int? ExpiresAt { get; set; }
         public string? Blocked { get; set; }
+        /// <summary>B56：水来源的可饮份数 floor(合法自由水量／100)（数量窗上限）；食物为 0。</summary>
+        public int MaxUnits { get; set; }
+        /// <summary>B56：水来源每份毫升（100）；食物为 0。</summary>
+        public int UnitMl { get; set; }
     }
 
     /// <summary>食饮局部盘四区的只读视图。</summary>
@@ -234,7 +243,7 @@ namespace Survival.Core.Engine
         /// 同类来源行（Q262）：主角在前、目标本人在后，同组按实例号；腐败、预留、加工、锁定、不足一份也列，第三人、地面、候补、设施不列。
         /// 目标不合法时为空。
         /// </summary>
-        public List<FeedRowInfo> FeedClassRows(GameState s, string targetActorId, string classItemId)
+        public List<FeedRowInfo> FeedClassRows(GameState s, string targetActorId, string classItemId, int units = 1)
         {
             var rows = new List<FeedRowInfo>();
             if (FeedTargetBlocked(s, targetActorId) != null) return rows;
@@ -245,19 +254,22 @@ namespace Survival.Core.Engine
                 foreach (var i in s.Items.Where(x => !x.IsWorn && PlaceOf(s, x) == root).OrderBy(x => x.InstanceId))
                 {
                     var same = _items[i.ItemId].Canteen != null ? i.LiquidId == classItemId && i.LiquidMl > 0 : i.ItemId == classItemId;
-                    if (same && seen.Add(FeedRowKey(s, i))) rows.Add(FeedRow(s, targetActorId, source, i));
+                    if (same && seen.Add(FeedRowKey(s, i))) rows.Add(FeedRow(s, targetActorId, source, i, units));
                 }
             }
             return rows;
         }
 
-        private FeedRowInfo FeedRow(GameState s, string targetId, string source, ItemInstance i)
+        private int UnitMlOf(string liquidId) => _items.TryGetValue(liquidId, out var c) ? c.UnitVolumeMl ?? 0 : 0;
+
+        private FeedRowInfo FeedRow(GameState s, string targetId, string source, ItemInstance i, int units = 1)
         {
             var why = FeedItemBlocked(s, new FeedRequest { TargetActorId = targetId, SourceActorId = source, InstanceId = i.InstanceId }, out var plan);
             var cfg = _items[i.ItemId];
             var pot = i.InContainer ? ContainerOf(s, i) : null;
             // 可饮份数：合法未锁未预留的水量；不合法批次写 0。毫升是物理余量，两者不混算
-            var usable = (plan == null ? 0 : FeedAmounts(s, plan).portions).ToString();
+            var portions = plan == null ? 0 : FeedAmounts(s, plan).portions;
+            var usable = portions.ToString();
             var who = ("出物人", ActorDisplayName(s, source));
             var id = i.InstanceId.ToString();
             var row = new FeedRowInfo { Key = FeedRowKey(s, i), SourceActorId = source, InstanceId = i.InstanceId, PotInstanceId = pot?.InstanceId, ExpiresAt = i.ExpiresAt, Blocked = why };
@@ -267,8 +279,10 @@ namespace Survival.Core.Engine
                 var ml = ("毫升", i.LiquidMl.ToString());
                 var cap = ("容量", cfg.Canteen.CapacityMl.ToString());
                 row.Kind = FeedSourceKind.Canteen;
-                row.Text = FeedCopy.Fill(FeedPanelCopy.RowCanteen, who, ("水壶", ItemName(i.ItemId)), ("壶号", id), water, ml, cap, ("可饮次数", usable));
-                row.PortionText = FeedCopy.Fill(FeedPanelCopy.PortionCanteen, water);
+                row.Text = FeedCopy.Fill(FeedPanelCopy.RowCanteen, who, ("水壶", ItemName(i.ItemId)), ("壶号", id), water, ml, cap, ("可饮份数", usable));
+                row.PortionText = FeedCopy.Fill(FeedPanelCopy.PortionCanteen, water, ("所选毫升", (units * UnitMlOf(i.LiquidId!)).ToString()));
+                row.MaxUnits = portions;
+                row.UnitMl = UnitMlOf(i.LiquidId!);
                 row.RemainingText = FeedCopy.Fill(FeedPanelCopy.RemainingCanteen, water, ml, cap);
             }
             else if (pot != null ? IsLiquid(i) : cfg.Kind == "water")
@@ -281,7 +295,9 @@ namespace Survival.Core.Engine
                 row.Text = pot != null
                     ? FeedCopy.Fill(FeedPanelCopy.RowPotWater, who, ("锅号", pot.InstanceId.ToString()), water, ml, ("可饮份数", usable))
                     : FeedCopy.Fill(FeedPanelCopy.RowWaterCard, who, water, ml, ("可饮份数", usable), ("实例号", id));
-                row.PortionText = FeedCopy.Fill(FeedPanelCopy.PortionWater, water);
+                row.PortionText = FeedCopy.Fill(FeedPanelCopy.PortionWater, water, ("所选毫升", (units * UnitMlOf(i.ItemId)).ToString()));
+                row.MaxUnits = portions;
+                row.UnitMl = UnitMlOf(i.ItemId);
                 row.RemainingText = FeedCopy.Fill(FeedPanelCopy.RemainingWater, water, ml);
             }
             else
@@ -317,7 +333,8 @@ namespace Survival.Core.Engine
             }
 
             var target = ("目标", ActorDisplayName(s, d.TargetActorId));
-            v.Rows = FeedClassRows(s, d.TargetActorId, d.ClassItemId);
+            // B56：行的可用／原因按默认 1 单位判（不足 100 毫升灰显「水分不足。」）；用量摘要按所选 N
+            v.Rows = FeedClassRows(s, d.TargetActorId, d.ClassItemId, d.WaterUnits);
             var row = d.SourceKey == null ? null : v.Rows.FirstOrDefault(r => r.Key == d.SourceKey);
             if (d.SourceKey != null && row == null)
             {
@@ -342,8 +359,15 @@ namespace Survival.Core.Engine
                 return v;
             }
 
-            var f = new FeedRequest { TargetActorId = d.TargetActorId, SourceActorId = row.SourceActorId, InstanceId = row.InstanceId };
-            FeedItemBlocked(s, f, out var plan);
+            var f = new FeedRequest { TargetActorId = d.TargetActorId, SourceActorId = row.SourceActorId, InstanceId = row.InstanceId, WaterUnits = d.IsWater ? d.WaterUnits : 1 };
+            // B56：所选 N 超过这一来源可饮量（或小于 1）时不出预计变化，确认禁用、原因「水分不足。」等
+            if (FeedItemBlocked(s, f, out var plan) is string unitsWhy)
+            {
+                v.ConfirmWhy = unitsWhy;
+                v.EffectHint = FeedPanelCopy.SourceRequired;
+                v.BlockedLine = FeedCopy.Fill(FeedPanelCopy.LabelBlocked, ("原因", unitsWhy));
+                return v;
+            }
             f.ConfirmStamp = FeedStamp(s, plan!);
             var p = new ActionPreview();
             FillFeedPreview(s, p, plan!);
