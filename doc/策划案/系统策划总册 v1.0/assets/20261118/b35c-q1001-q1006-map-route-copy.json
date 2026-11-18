@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target",
+  "sourceCommit": "6d51ac99c8df534396ab08d70b0979a8c6042f3f",
+  "originalBatch": "2026-11-17 来自 B35c 开发（地图出发与城市层次要问题）",
+  "questionIds": [
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006
+  ],
+  "answers": {
+    "Q1001": "A",
+    "Q1002": "A",
+    "Q1003": "A",
+    "Q1004": "A",
+    "Q1005": "A",
+    "Q1006": "A"
+  },
+  "copy": {
+    "move": "点相邻地图卡在浮窗里确认移动；在区域地图上，先选相邻地点，在路线区点“出发”。",
+    "layerLead": "点远处的已知地点，路线区会列出实际能走的路线和每段时间。",
+    "layerEnd": "浏览、缩放、切层都不推进游戏时间。",
+    "nextLeg": "{起}→{止} · 基础{N}分钟",
+    "routeTitle": "已知路线",
+    "routeSegment": "{起} → {止}",
+    "routeMinutes": "{N}分钟",
+    "noSelection": "选相邻地点，再点“出发”。远处地点可查看路线。",
+    "cityLegend": "道路只连已发现的城内真实路线。选相邻建筑，再点“出发”。",
+    "worldLegend": "实线：已开通的路线（金色为现在可以出发的相邻路线）",
+    "cityArrival": "已到达{地点}。",
+    "nonAdjacentCity": "先选相邻地点。",
+    "selectNextLeg": "选中下一段：前往{站}"
+  },
+  "moveHelp": {
+    "localSequenceReplacesMoveClauseOnly": true,
+    "moveReplacesSecondSentence": true,
+    "layersSequence": [
+      "layerLead",
+      "move",
+      "layerEnd"
+    ],
+    "constructionPreservesQ988": true
+  },
+  "factionOverview": {
+    "candidatesInOrder": [
+      "selectedKnownViewableCityParent",
+      "currentViewableCity"
+    ],
+    "hideWhenUnavailableOrAlreadyOnCityLayer": true
+  },
+  "arrival": {
+    "cityDepartActualArrivalOnly": true,
+    "ordinaryMapKeepsExistingFeedback": true
+  },
+  "farCitySelection": {
+    "hintWhenBlockedByNonAdjacency": true,
+    "selectLegDoesNotDepart": true
+  },
+  "acceptance": [
+    {
+      "id": "B35C-Q1001-01",
+      "expected": "就近执行只换移动分句，移动条目整句换第二句，分层地图按可看路线、两种入口、不耗时顺序显示。施工说明遵循Q988。"
+    },
+    {
+      "id": "B35C-Q1002-01",
+      "expected": "普通地图路线区的下一段和已知路线逐段显示真实起止、基础分钟，未选时显示Q803定稿。"
+    },
+    {
+      "id": "B35C-Q1003-01",
+      "expected": "普通与城市两个图例各用本批定稿，只对当前可出发的相邻路线标金色。"
+    },
+    {
+      "id": "B35C-Q1004-01",
+      "expected": "人在甲城且普通地图选中已知可看的乙城时鸟瞰进入乙城。选中城不可看则回退到可看的所在城。两项均不可看和已经在城市层时入口隐藏。"
+    },
+    {
+      "id": "B35C-Q1005-01",
+      "expected": "城市层出发且到达后显示已到达实际地点，普通地图及未到达时沿原反馈。"
+    },
+    {
+      "id": "B35C-Q1006-01",
+      "expected": "在城市层选不相邻建筑时，出发禁用提示先选相邻地点，可从真实下一段改选相邻站，改选本身不出发。"
+    }
+  ]
+}
