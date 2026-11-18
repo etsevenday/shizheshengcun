@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target",
+  "sourceCommit": "03bf279278d3ffd5216f82ccc0af27b8ea83466b",
+  "originalBatch": "2026-11-17 来自 88b3f169 B35a2（答复后重核，主要；本批开发已暂停，等答复后继续）",
+  "questionIds": [
+    991,
+    992
+  ],
+  "answers": {
+    "Q991": "A",
+    "Q992": "A"
+  },
+  "directPlacement": {
+    "showCheckboxWhenLegalCompanionCandidatesExist": true,
+    "checkbox": "允许使用同伴的材料",
+    "companionGroupsAfterCarryAndGround": true,
+    "allowExplicitCompanionChoiceEvenWhenPlayerHasSameItem": true,
+    "oneSelectedSourceGroup": true,
+    "bindFacilityPotSlotAndSource": true,
+    "fixedRecipeSupplyRule": "Q596／Q939"
+  },
+  "publicForgeFuel": {
+    "location": "h03",
+    "sharedWithOtherFacilities": false,
+    "persistPerFacility": true,
+    "depositManually": true,
+    "depositMinutes": 0,
+    "requireFullyIdleForDeposit": true,
+    "material": "木炭",
+    "perRecipeOutputShare": 1,
+    "withdrawable": false,
+    "recipeIngredientCountedSeparately": true,
+    "autoDrawFromCarryOrGround": false
+  },
+  "acceptance": [
+    {
+      "id": "B35A2-Q991-01",
+      "expected": "当前火堆、柴炉加工位或锅食材区有合格同伴候选才出现授权框，勾选后按人分组列在随身、地面之后。本人也有同种时可选择同伴。"
+    },
+    {
+      "id": "B35A2-Q991-02",
+      "expected": "手动放物的一次确认只从选定来源组取，并绑定真实设施、锅、槽位和物品。数量超出该组资格或确认对象失效时不能从别组或另一座设施补。固定配方仍走原供料分配。"
+    },
+    {
+      "id": "B35A2-Q992-01",
+      "expected": "营区公共锻炉可按原空闲资格确认添炭，本次添加0分钟。库存按真实设施保存，离开返回或重新读同一局时均读该座余量，投入燃料不能取回。"
+    },
+    {
+      "id": "B35A2-Q992-02",
+      "expected": "制作一份钢材时原料木炭从原料来源取，燃料木炭1从本座库存供给。工作区显示真实本座燃料，炉内不足时要求先手动添加，不用包内木炭自动开工。"
+    }
+  ]
+}
