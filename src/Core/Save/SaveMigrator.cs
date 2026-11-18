@@ -1665,6 +1665,45 @@ namespace Survival.Core.Save
                 }
         }
 
+        /// <summary>
+        /// 只供开发造旧档（DebugLegacyStation56／DebugLegacyStationQueue 把版本号改回 58 之前）：按 57 前每份 500 毫升的旧单位还原水份数等（÷5，不整除的向上取整），
+        /// 水煮／复煮预留 1000 记回旧 500，免得读档再走 57→58 时水被多乘一次 5。不是正式迁移路径。
+        /// </summary>
+        public static void DebugToLegacyWaterUnits(GameState s, GameConfig config)
+        {
+            int Down(int n) => n <= 0 ? n : (n + WaterUnitScale - 1) / WaterUnitScale;
+            var water = new HashSet<string>(config.Items.Where(i => i.Kind == "water").Select(i => i.Id));
+            foreach (var it in s.Items.Where(i => water.Contains(i.ItemId))) it.Count = Down(it.Count);
+            var waterNodes = new HashSet<string>(config.Resources
+                .Where(r => r.IsUnits && r.Outputs.Count == 1 && water.Contains(r.Outputs.Keys.First()))
+                .Select(r => r.NodeId));
+            foreach (var kv in s.Resources.Where(kv => waterNodes.Contains(kv.Key)))
+            {
+                if (kv.Value.Available is int a) kv.Value.Available = Down(a);
+                kv.Value.Reserved = Down(kv.Value.Reserved);
+            }
+            foreach (var a in new[] { s.Main, s.Sub, s.StashedWork, s.ExploreCheckPending })
+            {
+                if (a == null) continue;
+                if (a.Type == ActionType.Gather && waterNodes.Contains(a.TargetId)) a.ReservedResourceUnits = Down(a.ReservedResourceUnits);
+                if (a.LootItemId != null && water.Contains(a.LootItemId)) a.LootCount = Down(a.LootCount);
+            }
+            var waterOffers = new HashSet<string>(config.Appraisal?.Offers.Where(o => water.Contains(o.ItemId)).Select(o => o.Id) ?? Enumerable.Empty<string>());
+            foreach (var q in s.City?.Quotes ?? new List<AppraisalQuoteSnapshot>())
+                foreach (var id in q.Offers.Keys.Where(waterOffers.Contains).ToList())
+                    q.Offers[id] = Down(q.Offers[id]);
+            if (s.City?.Pending is CityServiceTxn txn && txn.OutputItemId != null && water.Contains(txn.OutputItemId))
+                txn.ExactOutput = Down(txn.ExactOutput);
+            foreach (var (_, fac) in DryingFacilities(s))
+                foreach (var p in fac.Processes)
+                {
+                    var cfg = config.Processes.FirstOrDefault(x => x.Id == p.RecipeId);
+                    if (cfg != null && cfg.Target != ProcessTargets.PotLiquidBatch && cfg.WaterCostMl >= 1000 && p.ReservedWaterMl == cfg.WaterCostMl
+                        && (p.RecipeId == "boil_root" || p.RecipeId == "boil_meat" || p.RecipeId == "reboil_cooked_meat"))
+                        p.ReservedWaterMl = 500;
+                }
+        }
+
         /// <summary>Q764 选 A 三分支：不齐且无腐败物→缺料；齐且有腐败物→腐败；其他→未知（配方已不存在也算无法证明）。</summary>
         internal static string LegacyStopReason(GameState s, GameConfig config, string place, DryingSlot b)
         {

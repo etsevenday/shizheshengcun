@@ -181,6 +181,11 @@ namespace Survival.Core.Config
         public string ItemId { get; set; } = "";
         public int Min { get; set; }
         public int Max { get; set; }
+        /// <summary>
+        /// B56（S10 文首 B53a Q929，验收 W100-Q929-12「交易包保原毫升、价值与概率」）：份数档距，默认 1。
+        /// 净水档每份由 500 改 100 毫升后配 min 5、max 10、step 5：仍只出 500 或 1000 毫升、各 1/2，与旧 1—2 份同一抽法。
+        /// </summary>
+        public int Step { get; set; } = 1;
         public int MinGrams { get; set; }
         public int MaxGrams { get; set; }
     }

@@ -42,9 +42,11 @@ namespace Survival.Core.Engine
         /// </summary>
         public static int QuoteQuantity(string campaignId, string serviceId, int worldDay, AppraisalOfferConfig offer, string quoteVersion)
         {
-            var span = (ulong)(offer.Max - offer.Min + 1);
+            // B56（W100-Q929-12）：按档距 Step 取档，档数与旧配置相同，同键同日抽到同一档（净水 1—2 份 → 5 或 10 份）
+            var step = System.Math.Max(1, offer.Step);
+            var span = (ulong)((offer.Max - offer.Min) / step + 1);
             var h = Mix64(Fnv64($"{campaignId}|{serviceId}|{worldDay}|{offer.Id}|{quoteVersion}"));
-            return offer.Min + (int)(h % span);
+            return offer.Min + step * (int)(h % span);
         }
 
         /// <summary>某世界日已锁存的报价表（按锁键找）；没有为 null。</summary>
@@ -96,7 +98,10 @@ namespace Survival.Core.Engine
                 {
                     OfferId = o.Id, ItemId = o.ItemId, ItemName = ItemName(o.ItemId), Quantity = n, Grams = grams,
                     Text = $"{ItemName(o.ItemId)}×{n}（普通，{Fmt.N(grams / 1000.0)}公斤）",
-                    RangeText = $"本档区间{o.Min}—{o.Max}份、每个数量等概率；第{snap.Day}日已锁定为{n}份",
+                    // B56：有档距的档（净水 5 或 10 份）列出可能份数，暂用句见开发记录「暂用文案」
+                    RangeText = o.Step > 1
+                        ? $"本档数量{string.Join("或", Enumerable.Range(0, (o.Max - o.Min) / o.Step + 1).Select(k => o.Min + k * o.Step))}份、每个数量等概率；第{snap.Day}日已锁定为{n}份"
+                        : $"本档区间{o.Min}—{o.Max}份、每个数量等概率；第{snap.Day}日已锁定为{n}份",
                 });
             }
         }

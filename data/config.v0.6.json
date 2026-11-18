@@ -38989,6 +38989,7 @@
         "itemId": "clean_water",
         "min": 5,
         "max": 10,
+        "step": 5,
         "minGrams": 500,
         "maxGrams": 1000
       }

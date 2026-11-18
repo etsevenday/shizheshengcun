@@ -364,6 +364,7 @@ namespace Survival.Core.Engine
             LegacyStationInputsToGround(s, s.Ground, fac);   // B51c2a1：57 前原料在该区地面按批预留
             var ids = fac.StationBatches.Select(b => b.BatchId).ToHashSet();
             foreach (var it in s.Items.Where(i => i.ReservedBy is int rb && ids.Contains(rb) && i.ShelfPausedMinutes != null)) it.ShelfPausedMinutes = null;   // 54 前设施批输入没有暂停保质（原截止 E 保留）
+            Survival.Core.Save.SaveMigrator.DebugToLegacyWaterUnits(s, Config);   // B56：版本号退回 58 前，水按旧每份 500 毫升记，读档 57→58 再×5 还原
             s.SchemaVersion = Survival.Core.Save.SaveMigrator.Schema54;
             return $"开发：已改成旧档（存档54）排队状态：{queued}批排队，各座第一批保持加工中；请立刻保存并重新读档，读档时按 54→55 迁移为并行";
         }
@@ -377,6 +378,7 @@ namespace Survival.Core.Engine
             var fac = FacOf(s, s.Ground);
             if (fac == null || fac.StationBatches.Count == 0) return "开发：当前区的陶窑／净水台没有在办批次，先投料";
             var n = LegacyStationInputsToGround(s, s.Ground, fac);
+            Survival.Core.Save.SaveMigrator.DebugToLegacyWaterUnits(s, Config);   // B56：同上，免得读档时水被多乘一次 5
             s.SchemaVersion = "56";
             return $"开发：已改成旧档（存档56）地面预留：{fac.StationBatches.Count}批、{n}堆原料回到{ZoneName(s, s.Ground)}地面并锁定；请立刻保存并重新读档，读档时按 56→57 移回设施";
         }

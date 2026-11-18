@@ -253,6 +253,8 @@ namespace Survival.Core.Config
                 }
             }
             if (c.SkillPassiveRules.GatherFirstDailyLiquidUnits < 1) e.Add("每日首次采集对水的折算份数须≥1");
+            foreach (var o in c.Appraisal?.Offers ?? new List<AppraisalOfferConfig>())
+                if (o.Step < 1 || o.Max < o.Min || (o.Max - o.Min) % o.Step != 0) e.Add($"鉴定报价档 {o.Id} 的份数区间须为档距 step 的整数倍");
             foreach (var kv in c.Containers)
             {
                 if (kv.Value.FoodSlots < 0) e.Add($"容器 {kv.Key} 食材位不能为负");
