@@ -268,6 +268,11 @@ namespace Survival.Core.Config
         public List<string> IndustrialItems { get; set; } = new List<string>();
         /// <summary>athletics_05“≤20kg 时移动基础工作量×0.95”的重量线（克）。</summary>
         public int MoveLightMaxGrams { get; set; }
+        /// <summary>
+        /// B56（S05／S10／A06 文首 Q973 沿 Q929）：“此处今日首次采集额外+1”作用于水（有每份体积的液体）时每 +1 折成的新水份数——
+        /// 原 +1 旧份＝500 毫升＝新 5 份 100 毫升（合同 b56 waterFirstDaily.newBonusUnits）；其他物品仍 +1。
+        /// </summary>
+        public int GatherFirstDailyLiquidUnits { get; set; } = 1;
     }
 
     /// <summary>v0.6 skillGrowth：能力随等级持续增长，无硬上限（§03）。</summary>

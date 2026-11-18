@@ -81,7 +81,7 @@
   },
   "startingCampGround": {
     "canned_food": 2,
-    "clean_water": 2,
+    "clean_water": 10,
     "wood": 2,
     "fiber": 2,
     "cloth": 2,
@@ -102,7 +102,7 @@
   "containers": {
     "pot": {
       "capacityMl": 1000,
-      "unitMl": 500,
+      "unitMl": 100,
       "accepts": [
         "dirty_water",
         "clean_water"
@@ -128,7 +128,15 @@
       "inputId": "dirty_water",
       "outputId": "clean_water",
       "allowedBatchMl": [
+        100,
+        200,
+        300,
+        400,
         500,
+        600,
+        700,
+        800,
+        900,
         1000
       ],
       "heatMinutes": 15,
@@ -156,7 +164,7 @@
       "outputId": "boiled_root",
       "allowedBatchMl": [],
       "heatMinutes": 30,
-      "waterCostMl": 500,
+      "waterCostMl": 1000,
       "requiredOwner": "pot_inside_lit_fire",
       "requiredLiquid": "clean_water"
     },
@@ -180,7 +188,7 @@
       "outputId": "boiled_meat",
       "allowedBatchMl": [],
       "heatMinutes": 30,
-      "waterCostMl": 500,
+      "waterCostMl": 1000,
       "requiredOwner": "pot_inside_lit_fire",
       "requiredLiquid": "clean_water"
     },
@@ -192,7 +200,7 @@
       "outputId": "boiled_meat",
       "allowedBatchMl": [],
       "heatMinutes": 15,
-      "waterCostMl": 500,
+      "waterCostMl": 1000,
       "requiredOwner": "pot_inside_lit_fire",
       "requiredLiquid": "clean_water"
     },
@@ -259,45 +267,45 @@
     {
       "id": "dirty_water",
       "name": "脏水",
-      "weightGrams": 500,
-      "stackMax": 20,
+      "weightGrams": 100,
+      "stackMax": 100,
       "shelfLifeMinutes": null,
       "kind": "water",
-      "unitVolumeMl": 500,
+      "unitVolumeMl": 100,
       "toolTag": null,
       "edible": true,
       "requiresCooking": false,
       "use": {
         "satiety": 0,
-        "hydration": 30,
+        "hydration": 6,
         "morale": 0,
         "health": 0,
         "causesDiarrhea": true,
         "isBandage": false
       },
-      "desc": "饮用补水30，必定腹泻12小时",
+      "desc": "饮用补水6，必定腹泻12小时",
       "durabilityMaxRange": null
     },
     {
       "id": "clean_water",
       "name": "净水",
-      "weightGrams": 500,
-      "stackMax": 20,
+      "weightGrams": 100,
+      "stackMax": 100,
       "shelfLifeMinutes": null,
       "kind": "water",
-      "unitVolumeMl": 500,
+      "unitVolumeMl": 100,
       "toolTag": null,
       "edible": true,
       "requiresCooking": false,
       "use": {
         "satiety": 0,
-        "hydration": 30,
+        "hydration": 6,
         "morale": 0,
         "health": 0,
         "causesDiarrhea": false,
         "isBandage": false
       },
-      "desc": "饮用补水30",
+      "desc": "饮用补水6",
       "durabilityMaxRange": null
     },
     {
@@ -1826,7 +1834,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：战外10分钟脏水1+滤材1转净水1。作为工具配长效滤芯处理脏水（不消耗）"
+      "desc": "策划用途：战外10分钟脏水5+滤材1转净水5。作为工具配长效滤芯处理脏水（不消耗）"
     },
     {
       "id": "hand_lamp",
@@ -1924,7 +1932,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：1份处理脏水4份，20世界分钟，游戏抽象净化规则。一片配4份脏水，固定等待20分钟得4份净水（制作面板“净水片处理脏水”）"
+      "desc": "策划用途：1份处理脏水20份，20世界分钟，游戏抽象净化规则。一片配20份脏水，固定等待20分钟得20份净水（制作面板“净水片处理脏水”）"
     },
     {
       "id": "filter_cartridge",
@@ -1938,7 +1946,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：用于已有便携滤水器，每芯净化脏水4份，20世界分钟。配便携滤水器，一芯处理4份脏水，固定等待20分钟（制作面板“滤芯处理脏水”）"
+      "desc": "策划用途：用于已有便携滤水器，每芯净化脏水20份，20世界分钟。配便携滤水器，一芯处理20份脏水，固定等待20分钟（制作面板“滤芯处理脏水”）"
     },
     {
       "id": "ration_canteen",
@@ -1952,16 +1960,16 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：空重400g，容量2000ml，250ml分量饮用；不保鲜、不受热。只装同一种水；装入/倒出按500毫升整份水，壶内每次可直接喝250毫升（5分钟，水分+15）",
+      "desc": "策划用途：空重400g，容量2000ml；不保鲜、不受热。只装同一种水；水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。",
       "canteen": {
         "capacityMl": 2000,
-        "sipMl": 250,
-        "transferMl": 500,
+        "sipMl": 100,
+        "transferMl": 100,
         "accepts": [
           "dirty_water",
           "clean_water"
         ],
-        "sipHydration": 15,
+        "sipHydration": 6,
         "gramsPerMl": 1
       }
     },
@@ -12540,7 +12548,7 @@
       "dailyRefill": 0,
       "poolMode": "unlimited",
       "outputs": {
-        "dirty_water": 2
+        "dirty_water": 10
       },
       "toolBonus": null,
       "hazard": null,
@@ -12655,7 +12663,7 @@
       "poolMode": "single_cache",
       "outputs": {
         "canned_food": 2,
-        "clean_water": 1
+        "clean_water": 5
       },
       "toolBonus": null,
       "hazard": null,
@@ -14282,7 +14290,7 @@
       "dailyRefill": 0,
       "poolMode": "unlimited",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14302,7 +14310,7 @@
       "dailyRefill": 0,
       "poolMode": "unlimited",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14322,7 +14330,7 @@
       "dailyRefill": 0,
       "poolMode": "unlimited",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14342,7 +14350,7 @@
       "dailyRefill": 0,
       "poolMode": "unlimited",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14362,7 +14370,7 @@
       "dailyRefill": 0,
       "poolMode": "unlimited",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14378,11 +14386,11 @@
       "revealAt": 25,
       "revealOnVisit": false,
       "baseMinutes": 10,
-      "cap": 12,
-      "dailyRefill": 4,
+      "cap": 60,
+      "dailyRefill": 20,
       "poolMode": "renewable_units",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14398,11 +14406,11 @@
       "revealAt": 25,
       "revealOnVisit": false,
       "baseMinutes": 10,
-      "cap": 12,
-      "dailyRefill": 4,
+      "cap": 60,
+      "dailyRefill": 20,
       "poolMode": "renewable_units",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14418,11 +14426,11 @@
       "revealAt": 25,
       "revealOnVisit": false,
       "baseMinutes": 10,
-      "cap": 12,
-      "dailyRefill": 4,
+      "cap": 60,
+      "dailyRefill": 20,
       "poolMode": "renewable_units",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14438,11 +14446,11 @@
       "revealAt": 25,
       "revealOnVisit": false,
       "baseMinutes": 10,
-      "cap": 12,
-      "dailyRefill": 4,
+      "cap": 60,
+      "dailyRefill": 20,
       "poolMode": "renewable_units",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14458,11 +14466,11 @@
       "revealAt": 25,
       "revealOnVisit": false,
       "baseMinutes": 10,
-      "cap": 12,
-      "dailyRefill": 4,
+      "cap": 60,
+      "dailyRefill": 20,
       "poolMode": "renewable_units",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -14478,11 +14486,11 @@
       "revealAt": 50,
       "revealOnVisit": false,
       "baseMinutes": 10,
-      "cap": 8,
+      "cap": 40,
       "dailyRefill": 0,
       "poolMode": "finite_units",
       "outputs": {
-        "clean_water": 2
+        "clean_water": 10
       },
       "toolBonus": null,
       "hazard": null,
@@ -14498,11 +14506,11 @@
       "revealAt": 50,
       "revealOnVisit": false,
       "baseMinutes": 10,
-      "cap": 8,
+      "cap": 40,
       "dailyRefill": 0,
       "poolMode": "finite_units",
       "outputs": {
-        "clean_water": 2
+        "clean_water": 10
       },
       "toolBonus": null,
       "hazard": null,
@@ -14518,11 +14526,11 @@
       "revealAt": 50,
       "revealOnVisit": false,
       "baseMinutes": 10,
-      "cap": 8,
+      "cap": 40,
       "dailyRefill": 0,
       "poolMode": "finite_units",
       "outputs": {
-        "clean_water": 2
+        "clean_water": 10
       },
       "toolBonus": null,
       "hazard": null,
@@ -15630,7 +15638,7 @@
       "poolMode": "campaign_claim",
       "outputs": {
         "canned_food": 2,
-        "clean_water": 2
+        "clean_water": 10
       },
       "toolBonus": null,
       "hazard": null,
@@ -15680,11 +15688,11 @@
       "revealAt": null,
       "revealOnVisit": true,
       "baseMinutes": 10,
-      "cap": 16,
-      "dailyRefill": 12,
+      "cap": 80,
+      "dailyRefill": 60,
       "poolMode": "renewable_units",
       "outputs": {
-        "clean_water": 2
+        "clean_water": 10
       },
       "toolBonus": null,
       "hazard": null,
@@ -16773,7 +16781,7 @@
       "dailyRefill": 0,
       "poolMode": "unlimited",
       "outputs": {
-        "dirty_water": 4
+        "dirty_water": 20
       },
       "toolBonus": null,
       "hazard": null,
@@ -17215,7 +17223,7 @@
         "lab_reagent": 1,
         "antibiotics": 2,
         "herb": 4,
-        "clean_water": 2
+        "clean_water": 10
       },
       "outputs": {
         "antiviral_cure": 1
@@ -19331,7 +19339,7 @@
       "baseMinutes": 20,
       "inputs": {
         "lab_reagent": 1,
-        "clean_water": 1
+        "clean_water": 5
       },
       "outputs": {
         "disinfectant": 1
@@ -19352,7 +19360,7 @@
       "kind": "craft",
       "baseMinutes": 15,
       "inputs": {
-        "clean_water": 1,
+        "clean_water": 5,
         "salt": 1
       },
       "outputs": {
@@ -19417,7 +19425,7 @@
       "baseMinutes": 30,
       "inputs": {
         "herb": 2,
-        "clean_water": 1
+        "clean_water": 5
       },
       "outputs": {
         "herb_extract": 1
@@ -19627,11 +19635,11 @@
       "kind": "craft",
       "baseMinutes": 20,
       "inputs": {
-        "dirty_water": 4,
+        "dirty_water": 20,
         "purification_tablet": 1
       },
       "outputs": {
-        "clean_water": 4
+        "clean_water": 20
       },
       "catalysts": [],
       "requirement": null,
@@ -19674,11 +19682,11 @@
       "kind": "craft",
       "baseMinutes": 20,
       "inputs": {
-        "dirty_water": 4,
+        "dirty_water": 20,
         "filter_cartridge": 1
       },
       "outputs": {
-        "clean_water": 4
+        "clean_water": 20
       },
       "catalysts": [
         "water_filter"
@@ -19723,7 +19731,7 @@
       "baseMinutes": 60,
       "inputs": {
         "grain": 2,
-        "clean_water": 1,
+        "clean_water": 5,
         "salt": 1
       },
       "outputs": {
@@ -19772,7 +19780,7 @@
       "inputs": {
         "grain": 1,
         "raw_meat": 1,
-        "clean_water": 2
+        "clean_water": 10
       },
       "outputs": {
         "stew_portion": 2
@@ -20026,7 +20034,7 @@
       "baseMinutes": 30,
       "inputs": {
         "herb_extract": 1,
-        "clean_water": 1
+        "clean_water": 5
       },
       "outputs": {
         "emergency_tonic": 2
@@ -20049,11 +20057,11 @@
       "kind": "craft",
       "baseMinutes": 30,
       "inputs": {
-        "dirty_water": 4,
+        "dirty_water": 20,
         "filter_media": 1
       },
       "outputs": {
-        "clean_water": 4
+        "clean_water": 20
       },
       "catalysts": [],
       "requirement": null,
@@ -20919,7 +20927,7 @@
           },
           {
             "id": "supplyReady",
-            "label": "随身或营地有净水3与熟制块根2"
+            "label": "随身或营地有净水15与熟制块根2"
           }
         ]
       }
@@ -32375,7 +32383,8 @@
       "scrap",
       "parts"
     ],
-    "moveLightMaxGrams": 20000
+    "moveLightMaxGrams": 20000,
+    "gatherFirstDailyLiquidUnits": 5
   },
   "skillExec": [
     {
@@ -34183,7 +34192,7 @@
       {
         "id": "water_station",
         "name": "固定净水台",
-        "note": "每批耗过滤材料1，无火；一批脏水4份/2L",
+        "note": "每批耗过滤材料1，无火；一批脏水20份/2L",
         "buildRecipe": "build_water_station"
       },
       {
@@ -35309,7 +35318,7 @@
         }
       ],
       "baseMinutesTotal": 70,
-      "suggestedCleanWater": 2,
+      "suggestedCleanWater": 10,
       "suggestedFood": 2,
       "suggestedWeapon": true
     },
@@ -36675,7 +36684,7 @@
         "kind": "limited_relief",
         "worldMinutes": 5,
         "inputs": {},
-        "effect": "目标当前同行者N<40可选熟块根1，或W<40可选净水1；只选一项，全队同机构每世界日合计最多1份；完成生成普通既有食品实例落当前服务地面，不自动吃喝",
+        "effect": "目标当前同行者N<40可选熟块根1，或W<40可选净水5；只选一项，全队同机构每世界日合计最多1份；完成生成普通既有食品实例落当前服务地面，不自动吃喝",
         "questId": null,
         "facts": [],
         "choices": [
@@ -36690,11 +36699,11 @@
           },
           {
             "id": "relief_water",
-            "label": "净水1份（水分低于40）",
+            "label": "净水5份（水分低于40）",
             "stat": "hydration",
             "below": 40.0,
             "outputs": {
-              "clean_water": 1
+              "clean_water": 5
             }
           }
         ],
@@ -38978,8 +38987,8 @@
       {
         "id": "white_for_water",
         "itemId": "clean_water",
-        "min": 1,
-        "max": 2,
+        "min": 5,
+        "max": 10,
         "minGrams": 500,
         "maxGrams": 1000
       }

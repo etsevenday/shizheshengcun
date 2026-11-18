@@ -240,6 +240,19 @@ namespace Survival.Core.Config
             }
             foreach (var it in c.Items.Where(i => i.ContainerId != null))
                 if (!c.Containers.ContainsKey(it.ContainerId!)) e.Add($"物品 {it.Id} 的容器定义 {it.ContainerId} 不存在");
+            // B56（S10 文首 Q929）：水壶装／倒／饮按水卡每份体积（100 毫升）计，容量须为整数倍；可装物品须是有每份体积的液体
+            foreach (var it in c.Items.Where(i => i.Canteen != null))
+            {
+                var cn = it.Canteen!;
+                if (cn.TransferMl <= 0 || cn.CapacityMl <= 0 || cn.CapacityMl % cn.TransferMl != 0) e.Add($"水壶 {it.Id} 容量须为转移单位的整数倍");
+                foreach (var a in cn.Accepts)
+                {
+                    var w = c.Items.FirstOrDefault(i => i.Id == a);
+                    if (w == null || w.UnitVolumeMl == null) e.Add($"水壶 {it.Id} 可装物品 {a} 须是有每份体积的液体");
+                    else if (w.UnitVolumeMl != cn.TransferMl) e.Add($"水壶 {it.Id} 可装物品 {a} 的每份体积须为{cn.TransferMl}毫升");
+                }
+            }
+            if (c.SkillPassiveRules.GatherFirstDailyLiquidUnits < 1) e.Add("每日首次采集对水的折算份数须≥1");
             foreach (var kv in c.Containers)
             {
                 if (kv.Value.FoodSlots < 0) e.Add($"容器 {kv.Key} 食材位不能为负");
@@ -293,6 +306,9 @@ namespace Survival.Core.Config
                 {
                     if (potCt == null || !potCt.Accepts.Contains(p.InputId) || !potCt.Accepts.Contains(p.OutputId))
                         e.Add($"设施进程 {p.Id} 的锅内输入输出须是容器可装物品");
+                    // B56（S10 Q929 补问 A）：单纯烧水可处理量为每份体积的整数倍、至锅容量
+                    else if (p.AllowedBatchMl.Any(ml => ml <= 0 || ml % potCt.UnitMl != 0 || ml > potCt.CapacityMl))
+                        e.Add($"设施进程 {p.Id} 可处理水量须为每份体积的正整数倍且不超过容量");
                 }
                 else if (p.InPot)
                 {
