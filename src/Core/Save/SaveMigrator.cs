@@ -93,6 +93,7 @@ namespace Survival.Core.Save
         public const string Schema54 = "54";
         public const string Schema55 = "55";
         public const string Schema56 = "56";
+        public const string Schema57 = "57";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -164,6 +165,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema54) From54To55(s);
             if (s.SchemaVersion == Schema55) From55To56(s, config);
             if (s.SchemaVersion == Schema56) From56To57(s, config);
+            if (s.SchemaVersion == Schema57) From57To58(s, config);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
@@ -1599,7 +1601,7 @@ namespace Survival.Core.Save
         /// </summary>
         private static void From56To57(GameState s, GameConfig config)
         {
-            s.SchemaVersion = GameState.CurrentSchema;
+            s.SchemaVersion = Schema57;
             foreach (var (place, fac) in DryingFacilities(s))
                 foreach (var b in fac.StationBatches)
                 {
@@ -1612,6 +1614,54 @@ namespace Survival.Core.Save
                         it.ReservedBy = null;
                         it.PlacedOrder = null;
                     }
+                }
+        }
+
+        /// <summary>B56 迁移的水量倍数：旧水卡／锅水每份 500 毫升 ÷ 新每份 100 毫升（S10 文首 B53a Q929「数量换算×5」）。</summary>
+        internal const int WaterUnitScale = 5;
+
+        /// <summary>
+        /// 57 → 58（B56，S10／S11／S12 文首 B53a Q929、B56 Q973）：水卡与锅水每份由 500 毫升改为 100 毫升，真实毫升不变——
+        /// ① 全部水物品（items kind=water：脏水、净水；随身、地面、锅里、箱柜、封存账、设施批次里等一切 owner）份数×5；
+        /// ② 按件计库存、唯一产物为水的资源点 Available／Reserved×5，在办（主行动、副行动、暂存工作、待检查探索）采集该点的预留份数×5；
+        /// ③ 已锁鉴定报价表中产水档的确切份数×5，在办换物事务锁定的水输出份数×5；探索已抽定的水掉落份数×5（现行掉落表无水，防御性）；
+        /// ④ 水煮／复煮每次耗水改为 1000 毫升：在办记录的旧预留（500 毫升）低于新耗水时清为 0，读档后的设施同步按原投放顺序重新预留（锅里不够 1000 就等待）；
+        /// 受热进度、状态与保护标记不动。水壶按毫升存（LiquidMl），不换算。净化／锅烧水经验按毫升记账，不动。静默。
+        /// </summary>
+        private static void From57To58(GameState s, GameConfig config)
+        {
+            s.SchemaVersion = GameState.CurrentSchema;
+            var water = new HashSet<string>(config.Items.Where(i => i.Kind == "water").Select(i => i.Id));
+            foreach (var it in s.Items.Where(i => water.Contains(i.ItemId))) it.Count *= WaterUnitScale;
+
+            var waterNodes = new HashSet<string>(config.Resources
+                .Where(r => r.IsUnits && r.Outputs.Count == 1 && water.Contains(r.Outputs.Keys.First()))
+                .Select(r => r.NodeId));
+            foreach (var kv in s.Resources.Where(kv => waterNodes.Contains(kv.Key)))
+            {
+                if (kv.Value.Available is int a) kv.Value.Available = a * WaterUnitScale;
+                kv.Value.Reserved *= WaterUnitScale;
+            }
+            foreach (var a in new[] { s.Main, s.Sub, s.StashedWork, s.ExploreCheckPending })
+            {
+                if (a == null) continue;
+                if (a.Type == ActionType.Gather && waterNodes.Contains(a.TargetId)) a.ReservedResourceUnits *= WaterUnitScale;
+                if (a.LootItemId != null && water.Contains(a.LootItemId)) a.LootCount *= WaterUnitScale;
+            }
+
+            var waterOffers = new HashSet<string>(config.Appraisal?.Offers.Where(o => water.Contains(o.ItemId)).Select(o => o.Id) ?? Enumerable.Empty<string>());
+            foreach (var q in s.City?.Quotes ?? new List<AppraisalQuoteSnapshot>())
+                foreach (var id in q.Offers.Keys.Where(waterOffers.Contains).ToList())
+                    q.Offers[id] *= WaterUnitScale;
+            if (s.City?.Pending is CityServiceTxn txn && txn.OutputItemId != null && water.Contains(txn.OutputItemId))
+                txn.ExactOutput *= WaterUnitScale;
+
+            foreach (var (_, fac) in DryingFacilities(s))
+                foreach (var p in fac.Processes)
+                {
+                    var cfg = config.Processes.FirstOrDefault(x => x.Id == p.RecipeId);
+                    if (cfg == null || cfg.WaterCostMl <= 0 || p.ReservedWaterMl <= 0) continue;
+                    if (p.ReservedWaterMl < cfg.WaterCostMl) p.ReservedWaterMl = 0;
                 }
         }
 

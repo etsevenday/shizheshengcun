@@ -80,8 +80,10 @@ namespace Survival.Core.State
         /// "56" 起已停止晾制位不再有 legacy 原因（B53a，S11 文首 2026-11-15 Q764 选 A）：55→56 一次把缺可信原因的旧停止位按当前可证明实物分为缺料／腐败／未知（静默）。
         /// "57" 起陶窑与固定净水台在办批的原料（配方 Inputs）真实归属本设施该批（B51c2a1，S11 Q872 选 B）：owner 为 ItemInstance.StationOwner(区, 批次ID)，不再留地面预留；
         /// 燃料（配方 Fuel）仍在该区地面以批次 ID 预留（Q921 燃料库存待 B35a2a）。56→57 把在办批仍在该区地面、按本批预留的原料移进设施（暂停保质剩余 R 不变，燃料不动，静默）。
+        /// "58" 起水卡与锅水每份 100 毫升（B56，S10 文首 B53a Q929）：57→58 把一切水物品份数、产水资源点库存与在办采集预留、已锁鉴定产水报价与换物输出×5（真实毫升不变），
+        /// 水煮／复煮旧 500 毫升预留清零待读档后按 1000 毫升重新预留（静默）。
         /// </summary>
-        public const string CurrentSchema = "57";
+        public const string CurrentSchema = "58";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
