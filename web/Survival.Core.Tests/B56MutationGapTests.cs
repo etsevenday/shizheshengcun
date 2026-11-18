@@ -344,4 +344,31 @@ public class B56MutationGapTests : TestBase
         Assert.That(E.PotUnits(m, pot.InstanceId), Is.EqualTo(10));
         Assert.That(E.ProcessOf(m, m.Items.Single(i => i.InstanceId == food.InstanceId))!.ReservedWaterMl, Is.EqualTo(1000), "读档当场仍是 1000，不清零");
     }
+
+    // ───────────── 第二轮补测（基线 16015261..cae91955） ─────────────
+
+    [Test]
+    public void DrinkLiquidOf_NonLiquidCard_Null_PairedWithWaterCard()
+    {
+        // Drink.cs DrinkLiquidOf：只有液体（有每份体积）才有水种；食物卡没有
+        var s = Fresh();
+        var berry = E.CreateItems(s, "berry", 1, ItemInstance.Carried).Single();
+        var water = E.CreateItems(s, "clean_water", 2, ItemInstance.Carried).Single();
+        Assert.That(E.DrinkLiquidOf(berry), Is.Null);
+        Assert.That(E.DrinkLiquidOf(water), Is.EqualTo("clean_water"), "配对：水卡的水种是它自己");
+    }
+
+    [Test]
+    public void Migrate57To58_ProcessRecipeNoLongerInConfig_Skipped()
+    {
+        // From57To58 ④：进程配方已不在配置里的旧记录跳过（cfg == null 不处理、不报错），预留原样留给读档后的设施同步
+        var s = Fresh();
+        s.Locations["camp"].Facility.Processes.Add(new FacilityProcess { ProcessId = "p-gone", RecipeId = "gone_recipe", TargetInstanceId = 999999, ReservedWaterMl = 500 });
+        s.SchemaVersion = "57";
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(m.SchemaVersion, Is.EqualTo("58"));
+        var gone = m.Locations["camp"].Facility.Processes.Where(p => p.RecipeId == "gone_recipe").ToList();
+        Assert.That(gone, Has.Count.EqualTo(1));
+        Assert.That(gone[0].ReservedWaterMl, Is.EqualTo(500));
+    }
 }
