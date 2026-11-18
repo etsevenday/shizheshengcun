@@ -225,6 +225,14 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 - **完整档**——其余批次（改了玩法、规则、数值、存档、行动流程，新页面，打开功能开关等）：照上面第 2、3 步原样做，含通用回归与复验后的快速回归。
 - 开发记录里这一节叫"本地试玩结论"（11-16 前的旧记录叫"线上复验结论"），写明用的是哪一档、试的是哪个提交打的 Release 包。
 
+**试玩场景并行试用（2026-11-18 用户定，只试 2 批）**：`tools/playtest/run.mjs` 把试玩路线固化成可重放场景（用法 `tools/playtest/README.md`，试点结论 `doc/开发记录/试玩场景库试点.md`）。从本规则生效后第一个走本地试玩的批次起，连续 2 批在上面第 2、3 步之外**并行**做下面几件，对比两种做法；试用期内**推送与否仍只看试玩代理的结论**，场景的结果只记录、不挡推送。2 批做完（看试点文档「并行试用记录」表已有 2 行）就不再做，`PushNotification`"试玩场景并行试用 2 批已完成，对比见 doc/开发记录/试玩场景库试点.md"，等用户定要不要改流程。
+- a. 打包、起服务后，起试玩代理**之前**，本会话跑一次全量场景：`node tools/playtest/run.mjs`（Bash `run_in_background`，约 1.5 分钟；Chrome 用 9350 口，和试玩代理的 `cdp.mjs` 9333 不冲突，可以同时跑）。读 `tools/playtest/out/runs/<时间>/summary.txt`，记下用时、失败步与「错」「警」。截图基线在 `tools/playtest/out/baseline/`（不入库）；第一次跑没有基线，全部存为新基线。
+- b. 试玩代理 brief 照旧写，**不告诉它场景的结果**（两边独立才能比）；末尾加一项：试玩结束后把本批必走路线写成场景 `tools/playtest/scenarios/<批次号小写>-<主题>.json`（照 README 写法，起点优先用 `tools/playtest/fixtures/` 里现成的存档，缺局面就加 `fixtures/build/NN-*.json` 再 `node tools/playtest/run.mjs tools/playtest/fixtures/build --jobs 1 --write-fixtures`；需要稳定选择器可在 Razor 上只加 `data-pt` 属性），用 `node tools/playtest/run.mjs <场景名> --sizes 1280x720` 跑通，报告里写写场景花了多久、场景能不能复现它报的 bug。
+- c. 修复后复验：试玩代理照旧复验；本会话同时再跑一次全量场景（含新场景），记下用时与结果。
+- d. 场景报的问题，若试玩代理没报、核实是真问题，照第 3 步交开发代理修（和试玩发现的一样处理）；是误报（选择器过时、时机不稳）就修场景，误报条数照记。
+- e. 在 `doc/开发记录/试玩场景库试点.md` 文末「并行试用记录」表加一行（批次、档位、场景全量用时、场景发现、试玩代理用时与发现、各自独有的问题、写场景用时、误报），随本批推送。新场景、新 fixture、`data-pt` 改动一起 add；`tools/playtest/out/` 不入库。
+- 场景跑不起来（找不到 Chrome、端口被占）不挡本批，表里记原因即可。
+
 5. 万一本地试玩跑不起来（`dotnet publish` 失败、找不到 Chrome、5199 端口被占且 `serve.mjs stop` 关不掉）→ **不推送**：批次 `blocked`，`note` 写原因，`PushNotification`"<批次> 已开发完、本地试玩起不来（原因），未推送"，清锁结束；等用户处理。`pendingPlaytest` 只剩 11-16 前"先上线后试玩"留下的旧记录：非空时用户在场的会话照旧补试玩、修、推，然后清空，不再往里追加。
 
 - 用户在场、想看着试玩时也可以用内置浏览器：本会话 `preview_start {name:"published"}`（5199，就是上面的本地 Release 包，launch.json 里调 `serve.mjs run`；别和后台 `serve.mjs start` 同时开）或 `{name:"web-fb"}`（5190，dev 服务器），让试玩代理复用这台、别自己 preview_start；开发代理自测用 `web`（5177）/`web-alt`（5180）。本地 dev 服务器的 js/css 带固定 `?v=dev`，可能拿到缓存旧文件，试玩前强制刷新（线上 pages.yml 换成提交号，不受影响）；服务器要 stop 再 start 才加载新版本。
