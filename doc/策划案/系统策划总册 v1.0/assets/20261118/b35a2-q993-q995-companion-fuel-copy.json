@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target",
+  "sourceCommit": "5f8a1764e3cba17b9ae3acef2269a34279305297",
+  "originalBatch": "2026-11-17 来自 88b3f169 B35a2（答复后重核，次要）",
+  "questionIds": [
+    993,
+    994,
+    995
+  ],
+  "answers": {
+    "Q993": "A",
+    "Q994": "A",
+    "Q995": "A"
+  },
+  "snippets": {
+    "companionGroup": "{姓名}的随身物品",
+    "companionSupply": "取用{姓名}的{材料名}×{数量}",
+    "ownSupply": "随身{物品}×{n}",
+    "groundSupply": "地面{物品}×{n}",
+    "fuelDropHint": "添加燃料 · {燃料名}"
+  },
+  "acceptance": [
+    {
+      "id": "B35A2-Q993-01",
+      "expected": "手动放物勾选授权后，每位合格同伴各有“姓名的随身物品”分组，列在随身、地面之后。"
+    },
+    {
+      "id": "B35A2-Q994-01",
+      "expected": "锅食谱与煅烧预览显示真实出物人、实际材料和数量，本人及地面沿原格式。"
+    },
+    {
+      "id": "B35A2-Q995-01",
+      "expected": "拖合法木炭到锻炉或陶窑卡时提示“添加燃料 · 木炭”，松手后对应数量窗用同一标题，确认才添到选中的设施。"
+    }
+  ]
+}
