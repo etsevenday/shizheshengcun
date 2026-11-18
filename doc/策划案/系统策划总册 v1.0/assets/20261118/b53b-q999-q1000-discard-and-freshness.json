@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target",
+  "sourceCommit": "5be0dbca6b7c437779de25a6c3cb679a1580e635",
+  "originalBatch": "2026-11-17 来自 B53b 试玩（行末丢弃次要问题）",
+  "questionIds": [
+    999,
+    1000
+  ],
+  "answers": {
+    "Q999": "A",
+    "Q1000": "user_freshness_percent_no_shelf_time_display"
+  },
+  "discardConfirmation": {
+    "selectionAndQuantityViewsShowOverallAndAvailable": true,
+    "confirmationShowsOverallAndAvailable": false,
+    "confirmationUsesActualSelectedItemsContentsAndWarning": true
+  },
+  "freshness": {
+    "label": "新鲜度{n}%",
+    "startPercent": 100,
+    "denominator": "full_shelf_duration_of_actual_batch",
+    "numerator": "current_remaining_shelf_amount_of_actual_batch",
+    "rounding": "floor_positive_partial_min_1",
+    "showExpiryOrRemainingDuration": false,
+    "useActualBatchAndProtection": true,
+    "retainOriginalSpoilageAndExpiryOrdering": true,
+    "recordDiscardAtTransactionTime": true
+  },
+  "acceptance": [
+    {
+      "id": "B53B-Q999-01",
+      "expected": "野果共5份可丢3份、本次选2份，主层和数量层显示总数与可丢弃数，确认层显示真实2份和原警示。"
+    },
+    {
+      "id": "B53B-Q1000-01",
+      "expected": "新增有期限批次显示新鲜度100%，正常推进后按该批原完整保鲜时长同比下降。无期限物品无新鲜度行。"
+    },
+    {
+      "id": "B53B-Q1000-02",
+      "expected": "物品卡、清单、详情、预估和新记录统一按百分比显示。保质日期、剩余时长和玩家帮助中的固定期限均不展示。"
+    },
+    {
+      "id": "B53B-Q1000-03",
+      "expected": "暂停态保持相应批次的新鲜度，恢复接着降。受热保护下取出确会腐败的食材仍提示真实后果，腐败处理按原规则。"
+    },
+    {
+      "id": "B53B-Q1000-04",
+      "expected": "移物和拆分后保留批次原百分比，同百分比不同真实批次仍按原精度分开，最终确认和成功日志使用实际被丢弃批次及份数。"
+    }
+  ]
+}
