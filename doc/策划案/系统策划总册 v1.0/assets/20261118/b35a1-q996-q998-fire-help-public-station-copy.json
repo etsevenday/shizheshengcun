@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target",
+  "sourceCommit": "b742d035295b252527228088021f19477c169682",
+  "originalBatch": "2026-11-17 来自 B35a1 试玩（次要）",
+  "questionIds": [
+    996,
+    997,
+    998
+  ],
+  "answers": {
+    "Q996": "A",
+    "Q997": "A",
+    "Q998": "A"
+  },
+  "heatHelp": {
+    "hardtack": {
+      "sentenceLead": "谷物放进有净水的锅",
+      "secondStep": "2. 把谷物×2拖到锅的食材区"
+    },
+    "stew": {
+      "sentenceLead": "谷物和生肉放进有净水的锅",
+      "secondStep": "2. 把谷物×1、生肉×1拖到锅的食材区"
+    }
+  },
+  "publicWorktableDetail": "{实际设施卡名} · {配方名}",
+  "lockedPublicFacility": {
+    "card": "未开放",
+    "tooltip": "{实际设施卡名}未开放。{实际原因}",
+    "rightShowsFullActualReason": true
+  },
+  "acceptance": [
+    {
+      "id": "B35A1-Q996-01",
+      "expected": "火堆和柴炉的处理说明中，烘制与炖煮两条句首都写出食材，第2步明确谷物2或谷物1和生肉1，辅助材料、用水、有效受热时间及其他步骤按既定配方。"
+    },
+    {
+      "id": "B35A1-Q997-01",
+      "expected": "公共工作台配方详情用当前设施卡全名。选择营区工坊工作台的砍刀时，抬头是“营区工坊工作台 · 砍刀”。"
+    },
+    {
+      "id": "B35A1-Q998-01",
+      "expected": "未开放卡的状态行仅写未开放，悬停及右栏展示完整真实原因；原因已有“需要：”时，悬停前一句以句号结束，原因前缀展示一次。"
+    }
+  ]
+}
