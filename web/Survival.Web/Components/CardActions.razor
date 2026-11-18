@@ -113,7 +113,7 @@
             var cid = cInst.InstanceId;
             var cc = e.Item(cInst.ItemId).Canteen!;
             <div class="ca-note" data-canteen title="只装同一种水，不混装；@(CanteenRuleNote)不能放进火堆或锅里">@e.CanteenLabel(cInst) · 只装同种水；@CanteenRuleNote</div>
-            @if (cInst.LiquidId != null && cInst.LiquidMl > 0) { <DrinkBox InstanceId="@cid" /> }
+            @if (_cOp == null && cInst.LiquidId != null && cInst.LiquidMl > 0) { <DrinkBox InstanceId="@cid" /> }
             <div class="tbar-row keep-row canteen-ops">
                 @foreach (var wid in cc.Accepts)
                 {
@@ -153,7 +153,8 @@
                         <input type="text" inputmode="numeric" value="@_cText" @oninput="COnInput" aria-label="@(fill ? CanteenFillTitle : CanteenPourTitle)" />
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => CStep(1, omax)">+</button>
                         <span class="tbar-qlabel">@DrinkCopy.AmountText(Math.Max(0, on) * unitMl)</span>
-                        <button type="button" class="tbar-go" data-enter disabled="@(owhy != null || oinvalid || moveBusy)"
+                        @* 开发假设：不贴 data-enter——卡下已有移动主确认，再贴就成两个、回车失效；与旧喝一口按钮一样只点按 *@
+                        <button type="button" class="tbar-go" disabled="@(owhy != null || oinvalid || moveBusy)"
                                 @onclick="() => CanteenGo(cid, fill, fsrc?.InstanceId, pzone, on)">确认@(on)</button>
                     </div>
                     @if (owhy != null) { <div class="ca-note bad">@owhy</div> }

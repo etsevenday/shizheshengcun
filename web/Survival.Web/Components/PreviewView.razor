@@ -44,6 +44,15 @@
     }
 
     <div class="lines rail-main">
+        @* B56（S14 文首 B53a Q929 本批逐字稿）：自选饮水的右栏先列「饮水：{水种}{毫升}毫升」「补水：{补水值}」「耗时：5分钟」，与饮水窗同源 *@
+        @if (p.Ok && p.Drink is DrinkPreviewInfo drink)
+        {
+            foreach (var line in drink.Lines)
+            {
+                var cut = line.IndexOf('：');
+                <div data-pv-drink><span>@(cut > 0 ? line[..cut] : line)</span><b>@(cut > 0 ? line[(cut + 1)..] : "")</b></div>
+            }
+        }
         @if (p.Ok)
         {
             @* B47a3（Q682）：按当前条件求不出可信完成时，耗时与完成时刻写“未预估”（原因见下方风险行） *@

@@ -143,7 +143,7 @@ public class B43KeyHintTests : TestBase
         }
         Has("DropQuantity", "<EnterCap On=\"@(!invalid)\" Edit=\"@_qtyEditing\" />");   // BM8（Q660）／试玩修复：数量框编辑中才标 Enter
         // B45b（Q584）：加工菜单锅层多个可能动作时由 HideEnterCap 收起键帽，其余同 disabled 条件
-        Has("CardActions", "<EnterCap On=\"@(!HideEnterCap && why == null)\" />", 4);   // B56 改期望：水壶装入／倒出数量窗（02 Q978 A 暂用，M1080）新增一个「确认{数量}」主确认 data-enter
+        Has("CardActions", "<EnterCap On=\"@(!HideEnterCap && why == null)\" />", 3);
         Has("GearCompare", "@GearPanelCopy.ConfirmEquip<EnterCap On=\"@(p.Blocked == null)\" />");
         Has("GearGive", "@GearPanelCopy.ConfirmGive<EnterCap On=\"@(p.Blocked == null)\" Edit=\"@(p.ShowQuantity && _qtyEditing)\" />");   // BM8（Q660）／试玩修复：数量框编辑中才标 Enter
         Has("OverflowOverlay", "<EnterCap On=\"@(!(over || _busy))\" />");

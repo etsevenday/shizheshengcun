@@ -22,7 +22,8 @@ public static class ProcessGuide
                    + $"火堆燃料另计（两批并行不倍扣，点火那5分钟不计热）；把{e.ItemName(p.InputId)}拖到火堆是添加燃料，不是煅烧。不给经验。";
         return (p.IsPotBatch ? "boil_water" : p.InPot ? "boil_root" : "roast_root") switch
         {
-            "boil_water" => $"装了{e.ItemName(p.InputId)}的金属锅放进燃烧的火堆，0.5升或1升都是{p.HeatMinutes}分钟原地烧成{e.ItemName(p.OutputId)}；不自动补水。",
+            // B56（02 Q976 A 暂用）：旧「半升或一升都是」换成 Q929 新稿「烧水可少量进行」，受热分钟不变
+            "boil_water" => $"装了{e.ItemName(p.InputId)}的金属锅放进燃烧的火堆，{p.HeatMinutes}分钟原地烧成{e.ItemName(p.OutputId)}；水量每份100毫升，烧水可少量进行；不自动补水。",
             "roast_root" => $"{e.ItemName(p.InputId)}直接放进燃烧火堆的空加工位，每份{p.HeatMinutes}分钟烤成{e.ItemName(p.OutputId)}，不需要锅和水。",
             "boil_root" => $"{e.ItemName(p.InputId)}放进有{e.ItemName(p.RequiredLiquid ?? "")}的锅、锅放进燃烧的火堆，每份{p.HeatMinutes}分钟煮成{e.ItemName(p.OutputId)}，完成时扣{p.WaterCostMl}毫升；空锅只存放不加工。",
             _ => "",
@@ -45,7 +46,7 @@ public static class ProcessGuide
         {
             "boil_water" => new()
             {
-                (p.InputId, e.ItemName(p.InputId), "1. 把水卡拖到锅的水量条，每份500毫升"),
+                (p.InputId, e.ItemName(p.InputId), "1. 把水卡拖到锅的水量条，每份100毫升"),
                 ("pot", "金属锅", "2. 把锅拖到火堆的空加工位"),
                 ("fire_lit", "燃烧的火堆", $"3. 点火并保持燃料，{heat}"),
                 (p.OutputId, e.ItemName(p.OutputId), "4. 留在原锅，可饮用或倒出"),

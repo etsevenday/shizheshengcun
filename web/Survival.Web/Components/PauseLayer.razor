@@ -87,6 +87,12 @@
                     var batch = e.UsableBatches(s, id, allowGround, true).FirstOrDefault();
                     if (batch == null) continue;
                     var cfg = e.Item(id);
+                    if (cfg.Kind == "water")
+                    {
+                        @* B56（S10／S12 文首 B53a Q929：暂停层与卡下同一饮水窗）：入口文字按 02 Q975 A 暂用「饮用净水·5分钟」 *@
+                        <DrinkBox InstanceId="@batch.InstanceId" EntryText="@($"饮用{cfg.Name}·5分钟")" EntryClass="secondary supply-btn" />
+                        continue;
+                    }
                     var req = ActionRequest.UseInstance(batch.InstanceId);
                     var p = G.Preview(req);
                     <button class="secondary supply-btn" disabled="@(!p.Ok || busy)" title="@p.Reason" @onclick="() => Sub(req)"><span class="ir-icon">@Icons.Markup(id)</span><span class="sb-name">@GameEngine.UseVerb(cfg)1份@(cfg.Name)·5分钟</span><small>@(cfg.Use == null ? "" : e.MedicineEffectText(s, cfg.Use) ?? GameEngine.UseEffectText(cfg.Use))</small></button>
@@ -97,8 +103,9 @@
             @if (dirty != null)
             {
                 <div class="risk" style="max-width:820px">
-                    脏水可以应急补水30，但必定腹泻12小时（期间每小时额外失水3）。
-                    <button class="linkish" disabled="@busy" @onclick="() => Sub(ActionRequest.UseInstance(dirty.InstanceId))">仍然饮用1份脏水</button>
+                    @* B56：说明句按 02 Q976 A 暂用、入口按 Q975 A 暂用「仍然饮用脏水」，点开走饮水窗选量 *@
+                    脏水每100毫升补水6，但必定腹泻12小时（期间每小时额外失水3）。
+                    <DrinkBox InstanceId="@dirty.InstanceId" EntryText="仍然饮用脏水" EntryClass="linkish" />
                 </div>
             }
             @if (!supplies.Any(id => e.UsableBatches(s, id, allowGround, true).Any()))

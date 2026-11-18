@@ -585,7 +585,8 @@ public static class HelpCatalog
                             var input = e.ItemName(p.InputId);
                             var output = e.ItemName(p.OutputId);
                             list.Add(p.IsPotBatch
-                                ? $"{p.Name}：锅里的{input}受热{p.HeatMinutes}分钟变成{output}，0.5升或1升同样时间。"
+                                // B56（02 Q976 A 暂用）：旧「半升或一升同样时间」句换成 Q929 系统说明新稿
+                                ? $"{p.Name}：锅里的{input}受热{p.HeatMinutes}分钟变成{output}。水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。"
                                 : p.InPot
                                     ? $"{p.Name}：{input}放在有{e.ItemName(p.RequiredLiquid ?? "clean_water")}的锅里受热{p.HeatMinutes}分钟成为{output}，完成时用掉{p.WaterCostMl}毫升。"
                                     : $"{p.Name}：{input}直接放进火堆加工位，受热{p.HeatMinutes}分钟成为{output}。");

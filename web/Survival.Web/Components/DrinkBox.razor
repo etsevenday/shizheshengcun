@@ -25,8 +25,8 @@
     var ml = n * src.UnitMl;
     if (!_open)
     {
-        <div class="ca-use-row">
-            <button type="button" class="ca-use @(risky ? "risky" : "")" data-drink-entry aria-expanded="false" disabled="@(entryWhy != null)"
+        <div class="@(EntryClass == null ? "ca-use-row" : "drink-entry-wrap")">
+            <button type="button" class="@(EntryClass ?? "ca-use") @(risky ? "risky" : "")" data-drink-entry aria-expanded="false" disabled="@(entryWhy != null)"
                     title="@(entryWhy ?? DrinkCopy.Title)" @onclick="() => Open(src)">@(EntryText ?? GameEngine.DrinkEntryText(liquidCfg))</button>
             @if (Note != null) { <span class="ca-use-note">@Note</span> }
         </div>
@@ -43,7 +43,8 @@
                 <span class="tbar-qlabel" data-drink-ml>@DrinkCopy.AmountText(Math.Max(0, ml))</span>
             </div>
             <div class="tbar-row">
-                <button type="button" class="tbar-go @(risky ? "risky" : "")" data-enter disabled="@(why != null || _busy)"
+                @* 开发假设：不贴 data-enter（所在卡下／暂停层已有各自主确认，旧饮用按钮也只点按） *@
+                <button type="button" class="tbar-go @(risky ? "risky" : "")" disabled="@(why != null || _busy)"
                         @onmouseenter="() => G.Hover(req, DrinkCopy.Title)" @onfocus="() => G.Hover(req, DrinkCopy.Title)"
                         @onclick="() => Drink(req)">@DrinkCopy.ActionText(Math.Max(0, ml))</button>
             </div>
@@ -73,6 +74,8 @@
     [Parameter] public string? EntryText { get; set; }
     /// <summary>入口旁的效果说明（卡下原效果短注）；null 不显示。</summary>
     [Parameter] public string? Note { get; set; }
+    /// <summary>入口按钮的样式类（暂停层补给格「secondary supply-btn」、脏水链接「linkish」）；null 为卡下「ca-use」。</summary>
+    [Parameter] public string? EntryClass { get; set; }
 
     private bool _open;
     private bool _busy;

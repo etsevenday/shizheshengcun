@@ -736,6 +736,10 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .ca-use:is(:disabled, .gate-off) { background: #5b5a4b; color: #b4b19f; }
 .ca-use-note { flex: 1 1 140px; font-size: var(--fs-aux); color: var(--muted); line-height: 1.4; }
 .ca-use-note em { font-style: normal; color: var(--text); margin-left: 6px; white-space: nowrap; }
+/* B56（S10／S14 文首 B53a Q929）：饮水窗与水壶装入／倒出数量窗——标题一行、步进一行、开始按钮一行，沿卡下操作区的细框 */
+.ca-drink { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; border: 1px solid var(--line, rgba(0,0,0,.2)); border-radius: 4px; }
+.ca-drink-head { font-size: var(--fs-aux); }
+.drink-entry-wrap { display: contents; }
 .ca-note { font-size: var(--fs-aux); color: var(--muted); line-height: 1.4; }
 .ca-note.bad { color: #f0c7b9; }
 .ca-note.warn { color: var(--warn); }
