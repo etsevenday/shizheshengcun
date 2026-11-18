@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "status": "planning_target",
+  "sourceCommit": "64af8771ce8eb27c6309403206cede4a600ab04a",
+  "originalBatch": "2026-11-17 来自 9e3db204 B51c2a1（被动设施取出，开发中次要）",
+  "questionIds": [
+    1007,
+    1008,
+    1009
+  ],
+  "answers": {
+    "Q1007": "A",
+    "Q1008": "A",
+    "Q1009": "A"
+  },
+  "snippets": {
+    "materialLocation": "{区域}／{设施名}",
+    "singleMovement": "把{名}从{位置}取出到{去向}",
+    "singleResetClause": "相关加工进度清零",
+    "allMovement": "已取出至{地点}地面：{物品清单}。",
+    "spoiledItem": "腐败物×{数量}",
+    "conversionInPlace": "{原物名}×{数量}已腐败，变为腐败物×{数量}。"
+  },
+  "locationScope": {
+    "kilnAndFixedWaterStation": true,
+    "showBatchNumber": false,
+    "currentInputRowsReadOnly": true
+  },
+  "singleTakeout": {
+    "reportRealResetOrRecipeAbandon": true,
+    "useRecipeAbandonInsteadOfDuplicateReset": true,
+    "preserveOriginalPreviewAndSettlement": true
+  },
+  "allTakeout": {
+    "listActualMovedItemsAfterSpoilage": true,
+    "appendActualSpoilageOnce": true,
+    "countContainersByActualOwnership": true,
+    "showShelfTime": false
+  },
+  "acceptance": [
+    {
+      "id": "B51C2A1-Q1007-01",
+      "expected": "位置字段有显示时，第二批黏土显示临时营地／陶窑，净水台同格式，均无批次编号。当前只读原料行的交互照旧。"
+    },
+    {
+      "id": "B51C2A1-Q1008-01",
+      "expected": "单件取出实际清零时结果含清零。锅食谱实际作废时用其原后果分句一次。无相关加工后果时只报移动，原取出预告可见。"
+    },
+    {
+      "id": "B51C2A1-Q1009-01",
+      "expected": "全部取出当场将一份落地生肉转换时，清单列腐败物×1，随一次真实转化报告。已有腐败物仅计实物，整锅内容按实际归属，无虚列散件。"
+    }
+  ]
+}
