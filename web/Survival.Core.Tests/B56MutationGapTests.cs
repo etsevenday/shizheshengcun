@@ -371,4 +371,38 @@ public class B56MutationGapTests : TestBase
         Assert.That(gone, Has.Count.EqualTo(1));
         Assert.That(gone[0].ReservedWaterMl, Is.EqualTo(500));
     }
+
+    // ───────────── 试玩修复 BUG-1：同行饮水超量保留输入 ─────────────
+
+    [Test]
+    public void FeedPanel_Canteen_OverMaxKeepsChoice_ShortageBlocks_PairedWithMax()
+    {
+        // 试玩场景：给林昭饮用、来源林昭的壶 700 毫升（可用 7 份），输入 8。
+        // 开发假设 5、S12 文首 B53a「水量不足…的数量禁用原因：水分不足。」、W100-Q929-06：超量保留所选，禁确认，整次不扣
+        var s = WithLin();
+        var c = E.CreateItems(s, "ration_canteen", 1, ItemInstance.CarriedOwner(Lin)).Single();
+        c.LiquidId = "clean_water";
+        c.LiquidMl = 700;
+        var d = FeedDraft.From(E.FeedEntry(s, c.InstanceId)!);
+        Assert.That(d.IsWater, Is.True);
+        d.TargetActorId = Lin;
+        d.SourceKey = E.FeedPanel(s, d).Rows.Single(r => r.InstanceId == c.InstanceId).Key;
+        d.WaterUnits = 8;
+        var before = SaveSerializer.Serialize(s);
+        var over = E.FeedPanel(s, d);
+        Assert.That(d.WaterUnits, Is.EqualTo(8), "内核不改所选份数");
+        Assert.That(over.Selected, Is.Not.Null, "来源仍选中，份数输入行仍显示");
+        Assert.That(over.Selected!.MaxUnits, Is.EqualTo(7));
+        Assert.That((over.ConfirmWhy, over.BlockedLine, over.Request), Is.EqualTo(("水分不足。", "不可用：水分不足。", (FeedRequest?)null)));
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "只看不扣");
+        // 配对：恰好 7 份可以确认，确认句 700 毫升（S12 逐字稿「给{目标}饮用：{水壶}内{水种}{所选毫升}毫升 · 5分钟」）
+        d.WaterUnits = 7;
+        var ok = E.FeedPanel(s, d);
+        Assert.That(ok.ConfirmWhy, Is.Null);
+        Assert.That(ok.Request!.WaterUnits, Is.EqualTo(7));
+        Assert.That(ok.ConfirmText, Is.EqualTo("给林昭饮用：分量水壶内净水700毫升 · 5分钟"));
+        Ok(E.Feed(s, ok.Request));
+        Assert.That((c.LiquidId, c.LiquidMl), Is.EqualTo(((string?)null, 0)), "喝空回空壶");
+        Assert.That(s.Actors[Lin].Stats.Hydration, Is.EqualTo(72.0).Within(1e-9), "30 + 6×7");
+    }
 }

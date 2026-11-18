@@ -57,7 +57,11 @@ public class B56UiWiringTests
         Assert.That(pop, Does.Contain("d.IsWater && v.Selected is { } sel && sel.MaxUnits > 0").And.Contain("G.SetFeedWaterUnits("));
         var session = Web("Services/GameSession.cs");
         Assert.That(session, Does.Contain("f.Draft.WaterUnits = 1;"), "换来源回默认 1 份");
-        Assert.That(session, Does.Contain("Math.Clamp(units, 1, Math.Max(1, max))"));
+        // B56 试玩修复 BUG-1（开发假设 5、S12 文首 B53a「水量不足…的数量禁用原因：水分不足。」、W100-Q929-06）：原断言要求夹到 1..上限，
+        // 改为只保下限 1、超量保留输入交内核 FeedPanel 报「不可用：水分不足。」（规则由 B56MutationGapTests.FeedPanel_Canteen_OverMax… 测）
+        Assert.That(session, Does.Contain("f.Draft.WaterUnits = Math.Max(1, units);"));
+        Assert.That(session, Does.Not.Contain("Math.Clamp(units, 1, Math.Max(1, max))"), "不再静默夹到可饮上限");
+        Assert.That(pop, Does.Contain("G.SetFeedWaterUnits(ParseUnits(ev))"), "输入框原样把所选份数交给会话");
     }
 
     [Test]

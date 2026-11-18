@@ -3677,11 +3677,14 @@ public sealed partial class GameSession
         Notify();
     }
 
-    /// <summary>B56（S12 文首 B53a Q929）：同行饮水选量，夹在 1..该来源可饮份数；超出由内核 FeedPanel 报「水分不足。」。</summary>
-    public void SetFeedWaterUnits(int units, int max)
+    /// <summary>
+    /// B56（S12 文首 B53a Q929）：同行饮水选量，只保下限 1。B56 试玩修复 BUG-1：超过该来源可饮份数时保留玩家输入，
+    /// 由内核 FeedPanel 报「不可用：水分不足。」并禁确认（W100-Q929-06 超量整次不扣），与自用饮水窗一致，不再静默夹到上限。
+    /// </summary>
+    public void SetFeedWaterUnits(int units)
     {
         if (FeedPending is not { } f) return;
-        f.Draft.WaterUnits = Math.Clamp(units, 1, Math.Max(1, max));
+        f.Draft.WaterUnits = Math.Max(1, units);
         Notify();
     }
 

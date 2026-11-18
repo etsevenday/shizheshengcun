@@ -38,9 +38,9 @@
                     var unitMl = sel.UnitMl;
                     <div class="tbar-row" role="group" aria-label="@DrinkCopy.Title" data-feed-units>
                         <b>@DrinkCopy.Title</b>
-                        <button type="button" class="tbar-step" aria-label="减少" disabled="@(wn <= 1)" @onclick="() => G.SetFeedWaterUnits(wn - 1, sel.MaxUnits)">−</button>
-                        <input type="text" inputmode="numeric" value="@wn" aria-label="@DrinkCopy.Title" @onchange="ev => G.SetFeedWaterUnits(ParseUnits(ev), sel.MaxUnits)" />
-                        <button type="button" class="tbar-step" aria-label="增加" disabled="@(wn >= sel.MaxUnits)" @onclick="() => G.SetFeedWaterUnits(wn + 1, sel.MaxUnits)">+</button>
+                        <button type="button" class="tbar-step" aria-label="减少" disabled="@(wn <= 1)" @onclick="() => G.SetFeedWaterUnits(wn - 1)">−</button>
+                        <input type="text" inputmode="numeric" value="@wn" aria-label="@DrinkCopy.Title" @onchange="ev => G.SetFeedWaterUnits(ParseUnits(ev))" />
+                        <button type="button" class="tbar-step" aria-label="增加" disabled="@(wn >= sel.MaxUnits)" @onclick="() => G.SetFeedWaterUnits(wn + 1)">+</button>
                         <span class="tbar-qlabel" data-feed-ml>@DrinkCopy.AmountText(Math.Max(0, wn) * unitMl)</span>
                     </div>
                 }
