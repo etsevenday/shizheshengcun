@@ -411,4 +411,244 @@ public class B51c2a2Tests : TestBase
         Assert.That(GameEngine.TakeAllSupported("workbench"), Is.False, "范围外设施不支持");
         Assert.That(GameEngine.DryingShelfPauseText, Is.EqualTo("晾晒时，不会变质"));
     }
+
+    // ───────────── 变异测试补测（基线 513fd622..7d1058b3） ─────────────
+
+    /// <summary>在当前区晾制架补一个已停止的位（异常起点，只造起点；同 B53b SpoiledStop）。</summary>
+    private static DryingSlot StoppedSlot(GameState s, int slot, string reason, int endMinute) =>
+        AddSlot(s, new DryingSlot
+        {
+            Slot = slot, BatchId = 5400 + slot, RecipeId = "dry_berries", Status = DryingSlot.Spoiled, StartMinute = endMinute - 60, DoneMinutes = 55,
+            RequiredMinutes = 120, EndMinute = endMinute, InitiatorActorId = GameState.PlayerId, StopReason = reason,
+        });
+
+    private static DryingSlot AddSlot(GameState s, DryingSlot b)
+    {
+        s.Locations[s.Ground].Facility.DryingSlots.Add(b);
+        return b;
+    }
+
+    /// <summary>
+    /// B51C-Q879-01（快照戳范围）：本位「取出」的戳与整座「全部取出」的戳不能互用——哪怕只有这一位，拿整座的戳取单位也拒「物品已变，请重选。」（配对：本位戳确实取出）。
+    /// </summary>
+    [Test]
+    public void MT_DryingStamp_ScopeBound()
+    {
+        var s = Rack();
+        Make(s, "berry", 2, ItemInstance.Carried);
+        Ok(E.StartDrying(s, "dry_berries"));
+        var all = E.DryingTakeStamp(s, s.Ground);
+        Assert.That(all, Is.EqualTo(E.TakeAllStamp(s, s.Ground, GameEngine.DryingStationId)), "起点：整座戳");
+        var r = E.TakeDryingSlot(s, 0, all);
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, Changed)));
+        Assert.That(DrySlots(s), Has.Count.EqualTo(1), "被拒不动");
+        Ok(E.TakeDryingSlot(s, 0, E.DryingTakeStamp(s, s.Ground, 0)));
+        Assert.That(DrySlots(s), Is.Empty);
+    }
+
+    /// <summary>
+    /// B51C-Q879-01（份数变化）：渲染后位内同一份物品的份数变了（实例不变），单位取出与全部取出都整次拒「物品已变，请重选。」；重取戳后按真实份数取出（配对）。
+    /// </summary>
+    [Test]
+    public void MT_DryingStamp_CountChanged_Rejected()
+    {
+        var s = Rack();
+        Make(s, "berry", 2, ItemInstance.Carried);
+        Ok(E.StartDrying(s, "dry_berries"));
+        var slotStamp = E.DryingTakeStamp(s, s.Ground, 0);
+        var allStamp = E.TakeAllStamp(s, s.Ground, GameEngine.DryingStationId);
+        var berry = s.Items.Single(i => i.ItemId == "berry");
+        berry.Count = 3;   // 起点：同一实例份数变了
+        var r = E.TakeDryingSlot(s, 0, slotStamp);
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, Changed)));
+        var ra = E.TakeAll(s, s.Ground, GameEngine.DryingStationId, allStamp);
+        Assert.That((ra.Ok, ra.Reason), Is.EqualTo((false, Changed)));
+        Assert.That(berry.InDrying, Is.True, "被拒不动");
+        Ok(TakeDryingNow(s, 0));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：野果×3。"));
+    }
+
+    /// <summary>
+    /// B51C-Q879-01（位状态变化）：渲染「全部取出」后这一位从晾制中停下（位内物品没变），整座计划从「中止在制」变成「取停止位余物」，整次拒「物品已变，请重选。」。
+    /// </summary>
+    [Test]
+    public void MT_DryingStamp_StatusChanged_Rejected()
+    {
+        var s = Rack();
+        Make(s, "berry", 2, ItemInstance.Carried);
+        Ok(E.StartDrying(s, "dry_berries"));
+        var stamp = E.TakeAllStamp(s, s.Ground, GameEngine.DryingStationId);
+        var b = DrySlots(s).Single();
+        b.Status = DryingSlot.Spoiled;   // 起点：位停下，物品不变
+        b.StopReason = DryingSlot.StopUnknown;
+        b.EndMinute = s.GameMinute;
+        var r = E.TakeAll(s, s.Ground, GameEngine.DryingStationId, stamp);
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, Changed)));
+        Assert.That(DrySlots(s), Has.Count.EqualTo(1));
+    }
+
+    /// <summary>
+    /// S11 Q880「原料已腐败：只能清理… → 原料已腐败。」：晾制中的位里只要有一份原料已腐败（旧档未受保护的在制批），本位「取出」就拒「原料已腐败。」；
+    /// 位里没有物品的异常晾制位拒「没有可取出的物品。」（Q879 A）。
+    /// </summary>
+    [Test]
+    public void MT_DryingSlotTake_PartlySpoiled_AndEmpty()
+    {
+        var s = Rack();
+        Make(s, "raw_meat", 1, ItemInstance.Carried);
+        Make(s, "salt", 1, ItemInstance.Carried);
+        Ok(E.StartDrying(s, "dry_meat"));
+        var meat = s.Items.Single(i => i.ItemId == "raw_meat");
+        meat.ShelfPausedMinutes = null;   // 起点：旧档未受保护、已过期的在制原料
+        meat.ExpiresAt = s.GameMinute - 1;
+        Assert.That(E.IsSpoiled(s, meat), Is.True);
+        Assert.That(E.IsSpoiled(s, s.Items.Single(i => i.ItemId == "salt")), Is.False, "盐没坏：只是一份坏");
+        Assert.That(E.DryingSlotTakeBlocked(s, 0), Is.EqualTo("原料已腐败。"));
+
+        AddSlot(s, new DryingSlot
+        {
+            Slot = 3, BatchId = 5403, RecipeId = "dry_berries", Status = DryingSlot.Drying, StartMinute = s.GameMinute, RequiredMinutes = 120,
+            InitiatorActorId = GameState.PlayerId,
+        });
+        Assert.That(E.DryingSlotTakeBlocked(s, 3), Is.EqualTo(Empty), "位内无物品");
+    }
+
+    /// <summary>
+    /// S11 Q880 映射表（停止位说明）：已停止且仍有余物的位说明末「；取出剩余物品。」、悬停「取出剩余物品。」；余物已空的位说明以「。」收尾、无悬停（暂用拼接，见开发记录 B51c2a2.5）。
+    /// 这里用腐败停止与原因未知两类停止位（缺料停止见 B50a Q713）。
+    /// </summary>
+    [Test]
+    public void MT_StoppedSlotLine_RestOrNone()
+    {
+        var s = Rack();
+        var end = s.GameMinute - 5;
+        StoppedSlot(s, 0, DryingSlot.StopSpoiled, end);
+        StoppedSlot(s, 1, DryingSlot.StopSpoiled, end);
+        StoppedSlot(s, 2, DryingSlot.StopUnknown, end);
+        Make(s, "salt", 1, ItemInstance.DryingOwner(s.Ground, 0));
+        var views = E.DryingSlotViews(s).Where(v => v.Status == DryingSlot.Spoiled).OrderBy(v => v.Slot).ToList();
+        Assert.That(views, Has.Count.EqualTo(3));
+        var at = Clock.DayTime(end);
+        Assert.That((views[0].Line, views[0].CleanupHint), Is.EqualTo(($"晾制果干在{at}停止，没有成品；取出剩余物品。", (string?)"取出剩余物品。")));
+        Assert.That((views[1].Line, views[1].CleanupHint), Is.EqualTo(($"晾制果干在{at}停止，没有成品。", (string?)null)));
+        Assert.That((views[2].Line, views[2].CleanupHint), Is.EqualTo(("晾制果干已停止，无成品。", (string?)null)));
+    }
+
+    /// <summary>
+    /// S11 Q778（全部取出只移实物）＋Q880（异常空位用「清空」复位）：晾架「全部取出」不动没有余物的异常停止位，它仍在、仍可「清空」；
+    /// 只剩这种位时「全部取出」为「没有可取出的物品。」。
+    /// </summary>
+    [Test]
+    public void MT_DryingTakeAll_SkipsEmptyStoppedSlot()
+    {
+        var s = Rack();
+        Make(s, "berry", 2, ItemInstance.Carried);
+        Ok(E.StartDrying(s, "dry_berries"));
+        StoppedSlot(s, 1, DryingSlot.StopUnknown, s.GameMinute - 5);
+        Ok(TakeAllNow(s, GameEngine.DryingStationId));
+        Assert.That(DrySlots(s).Select(b => b.Slot), Is.EqualTo(new[] { 1 }), "空的异常位不被全部取出复位");
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：野果×2。"));
+        Assert.That(E.TakeAllBlocked(s, s.Ground, GameEngine.DryingStationId), Is.EqualTo(Empty));
+        Ok(E.TakeDrying(s, 1, false));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已清空。"));
+    }
+
+    /// <summary>Q879 A：当前区没有火堆／柴炉时火堆「全部取出」为「没有可取出的物品。」（配对：营地有火堆、有锅时可取）。</summary>
+    [Test]
+    public void MT_FireTakeAll_NoFireHere_Empty()
+    {
+        var s = New();
+        Do(s, InstantRequest.PutInFire(Pot(s).InstanceId));
+        Assert.That(E.TakeAllBlocked(s, "camp", GameEngine.FireTakeAllId), Is.Null);
+        s.CurrentLocation = "field";   // 起点：人在没有火堆的地点
+        Assert.That(E.HasFireAt(s, s.Ground), Is.False, "起点：此地无火堆");
+        Assert.That(E.TakeAllBlocked(s, s.Ground, GameEngine.FireTakeAllId), Is.EqualTo(Empty));
+        var r = TakeAllNow(s, GameEngine.FireTakeAllId);
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, Empty)));
+    }
+
+    /// <summary>B51C-Q879-01（火堆份数变化）：渲染后加工位上同一份食材的份数变了（实例不变）整次拒「物品已变，请重选。」（配对：新戳确实取出）。</summary>
+    [Test]
+    public void MT_FireStamp_CountChanged_Rejected()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "raw_meat");
+        E.DebugGive(s, "raw_meat", 1, "camp");
+        var meat = First(s, "raw_meat", "camp");
+        Do(s, InstantRequest.PutInFireSlot(meat.InstanceId, 0, 1));
+        var stamp = E.TakeAllStamp(s, "camp", GameEngine.FireTakeAllId);
+        meat.Count = 2;   // 起点：同一实例份数变了
+        var r = E.TakeAll(s, "camp", GameEngine.FireTakeAllId, stamp);
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, Changed)));
+        Assert.That(meat.InFacility, Is.True);
+        Ok(TakeAllNow(s, GameEngine.FireTakeAllId));
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：生肉×2。"));
+    }
+
+    /// <summary>
+    /// Q1009／IsSpoiled 口径（原截止分钟＝当前分钟即算到期，同单件取出 Q16）：受热保护中原截止恰为此刻的生肉，全部取出时也转为腐败物，
+    /// 转换句只在结果句里接一次，不另写一条日志。
+    /// </summary>
+    [Test]
+    public void MT_FireTakeAll_ExpiresExactlyNow_Converted_OneLogLine()
+    {
+        var s = New();
+        var (_, meat) = FireWithPotAndMeat(s, meatExpires: 10);   // 受热 10 分钟后原截止＝此刻
+        Assert.That(meat.ExpiresAt, Is.EqualTo(s.GameMinute), "起点：原截止恰为此刻");
+        Assert.That(E.ProcessOf(s, meat)!.HeatProtected, Is.True);
+        var n0 = s.Log.Count;
+        Ok(TakeAllNow(s, GameEngine.FireTakeAllId));
+        Assert.That(s.Log.Skip(n0).Select(l => l.Text), Is.EqualTo(new[] { "已取出至临时营地地面：金属锅×1、腐败物×1。生肉×1已腐败，变为腐败物×1。" }), "只这一条");
+    }
+
+    /// <summary>合堆（原取出口径：放到地面后同物同期限合成一堆）：火堆全部取出的生肉落地后与地面上同期限的生肉合成一堆。</summary>
+    [Test]
+    public void MT_FireTakeAll_MergesWithGroundStack()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == "raw_meat");
+        E.DebugGive(s, "raw_meat", 2, "camp");
+        var meat = First(s, "raw_meat", "camp");
+        var exp = meat.ExpiresAt;
+        Do(s, InstantRequest.PutInFireSlot(meat.InstanceId, 0, 1));
+        Assert.That(s.Items.Where(i => i.ItemId == "raw_meat").Select(i => (i.InFacility, i.Count)).OrderBy(x => x.InFacility),
+            Is.EqualTo(new[] { (false, 1), (true, 1) }), "起点：地面一份、火堆一份");
+        Ok(TakeAllNow(s, GameEngine.FireTakeAllId));
+        var ground = s.Items.Where(i => i.ItemId == "raw_meat").ToList();
+        Assert.That(ground, Has.Count.EqualTo(1), "合成一堆");
+        Assert.That((ground[0].Owner, ground[0].Count, ground[0].ExpiresAt), Is.EqualTo(("camp", 2, exp)));
+    }
+
+    /// <summary>
+    /// Q877／Q1009（锅食谱作废）：锅里正在烘制远行硬饼（谷物×2＋辅料盐×1）时全部取出——锅连谷物到地面，硬饼整份作废，辅料盐按原规则真实退回地面，
+    /// 盐独立落地所以列在锅之后，直接烹饪的生肉随后；锅食谱进度清除。清单「金属锅×1、盐×1、生肉×1」（Q876 B 按真实移出先后）。
+    /// </summary>
+    [Test]
+    public void MT_FireTakeAll_PotRecipeAuxReturned_ListedAfterPot()
+    {
+        var s = New();
+        E.DebugLearnAllKnowledge(s);
+        s.Skills["cooking"].Level = 5;
+        s.Items.RemoveAll(i => i.ItemId is "grain" or "salt" or "raw_meat" or "clean_water");
+        var pot = Pot(s);
+        E.DebugGive(s, "clean_water", 10, "camp");
+        Do(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 10));
+        if (pot.IsCarried) Do(s, InstantRequest.Drop(pot.InstanceId, 1));
+        Do(s, InstantRequest.PutInFire(pot.InstanceId));
+        LightFire(s);
+        E.CreateItems(s, "grain", 2, "camp");
+        E.CreateItems(s, "salt", 1, "camp");
+        Do(s, InstantRequest.LoadPotRecipe("pot_hardtack", pot.InstanceId));
+        E.DebugGive(s, "raw_meat", 1, "camp");
+        Do(s, InstantRequest.PutInFireSlot(First(s, "raw_meat", "camp").InstanceId, 1, 1));
+        WaitMinutes(s, 10);
+        Assert.That(E.PotContents(s, pot.InstanceId).Count(i => i.ItemId == "salt"), Is.EqualTo(1), "起点：辅料盐在锅里");
+
+        Ok(TakeAllNow(s, GameEngine.FireTakeAllId));
+
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：金属锅×1、盐×1、生肉×1。"));
+        Assert.That(s.Items.Where(i => i.ItemId == "salt").Select(i => (i.Owner, i.Count)), Is.EqualTo(new[] { ("camp", 1) }), "盐退回地面一次");
+        Assert.That(E.PotContents(s, pot.InstanceId).Where(i => i.ItemId == "grain").Sum(i => i.Count), Is.EqualTo(2), "谷物随锅");
+        Assert.That(s.Locations["camp"].Facility.Processes, Is.Empty);
+    }
 }
