@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-19",
+  "status": "planning_target",
+  "sourceCommit": "14009d4fa8edf50a19b35a9f4dbd571a1d538e63",
+  "originalBatch": "2026-11-19 来自 5f8a1764 B35a2b（答复后重核，主要；本批开发已暂停，等答复后继续）",
+  "questionIds": [
+    1016
+  ],
+  "answers": {
+    "Q1016": "A"
+  },
+  "siteInput": {
+    "consentLabel": "允许使用同伴的材料",
+    "consentPlacement": "above_site_material_list",
+    "showWhenAnyNeededMaterialHasLegalCompanionSource": true,
+    "requiresCompanionsToCoverAllShortfall": false,
+    "max": "min(materialShortfall, eligibleCarried + eligibleLocalGround + authorizedEligibleCompanion)",
+    "buttonOrder": [
+      "carried",
+      "currentGround",
+      "companionEarliestActualExpiry"
+    ],
+    "dragOnlyUsesDraggedSource": true,
+    "noSourceWithoutConsent": "没有可用的{物名}",
+    "companionOnlyAllowedWithConsent": true,
+    "fixedRecipeRetainsQ596": true
+  },
+  "acceptance": [
+    {
+      "id": "B35A2B-Q1016-01",
+      "expected": "工地缺木材10份，本人有3份、同伴有4份、当前地面没有时显示勾选框，未勾选上限3，已勾选上限7。投7后真实剩余需求为3。"
+    },
+    {
+      "id": "B35A2B-Q1016-02",
+      "expected": "本人和地面均无合法材料时，勾选后有合格同伴材料即可投入，未勾选沿没有可用物名。合格同伴没有相关材料时不显示框。"
+    },
+    {
+      "id": "B35A2B-Q1016-03",
+      "expected": "按钮按随身、地面、同伴顺序分配，同伴真实最临期批次优先。拖放只从原合法卡扣实际份数，确认时超量或权限失效按原拒绝。"
+    },
+    {
+      "id": "B35A2B-Q1016-04",
+      "expected": "投料进入实际指定工地，部分补料不启动施工。固定配方仍按原同伴合法供料门槛判断。"
+    }
+  ]
+}
