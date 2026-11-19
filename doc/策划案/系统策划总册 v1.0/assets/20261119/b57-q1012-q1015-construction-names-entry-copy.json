@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-19",
+  "status": "planning_target",
+  "sourceCommit": "b16cd5fe2e2549d3f094ff12034496bda4ae2bb5",
+  "originalBatch": "2026-11-19 来自 03bf2792 B57（答复后提前核对，次要）",
+  "questionIds": [
+    1012,
+    1013,
+    1014,
+    1015
+  ],
+  "answers": {
+    "Q1012": "A",
+    "Q1013": "A",
+    "Q1014": "user_place_new_from_facility_construction_edit_existing_from_site_card",
+    "Q1015": {
+      "part1": "A",
+      "part2": "B_offered_remaining_quantity",
+      "part3": "user_exact_facility_not_found"
+    }
+  },
+  "buildingDisplayNames": {
+    "shelter": "遮蔽棚",
+    "bed": "床垫",
+    "build_workbench": "工作台",
+    "build_forge": "锻炉",
+    "build_sewing": "缝纫台",
+    "build_medical": "医疗台",
+    "build_armory": "军械台",
+    "safehouse_base": "安全屋",
+    "safehouse_bed": "床垫",
+    "safehouse_fire": "火堆",
+    "wild_fixed_fire": "火堆",
+    "build_kiln": "陶窑",
+    "build_water_station": "固定净水台",
+    "build_drying_rack": "晾制架"
+  },
+  "indoorBedHasIndependentBuiltCard": false,
+  "displayNumberedFireNames": false,
+  "separateSameNameInstances": true,
+  "entry": {
+    "existingSiteFromFacilityCard": true,
+    "placeNewInFacilityConstruction": true,
+    "mustChooseExistingSiteBeforePlacing": false,
+    "keepsDragCandidateNavigation": true,
+    "existingSiteNumberRestrictionsRemain": true
+  },
+  "snippets": {
+    "siteTitle": "{设施名}工地",
+    "placeSite": "放置工地",
+    "duplicateSite": "这里已有{设施名}工地。",
+    "tooMany": "最多可投{n}份。",
+    "full": "已满",
+    "missingOrOutOfZone": "设施不存在"
+  },
+  "excessiveInputRejectsWholeRequest": true,
+  "acceptance": [
+    {
+      "id": "B57-Q1012-01",
+      "expected": "14个配方的灰卡与工地页按本批设施名字表，野外／屋内火堆都写火堆；屋内床垫完工灰卡消失并在安全屋卡显示有床。"
+    },
+    {
+      "id": "B57-Q1013-01",
+      "expected": "两个同区火堆同名照列，菜单右栏和日志无编号。操作第二座时只变第二座；同名同进度的工地仍可各自打开。"
+    },
+    {
+      "id": "B57-Q1014-01",
+      "expected": "设施栏点击灰卡进入原工地投料。从设施建造点野外火堆放置，可在已有一处或多处时再添独立灰卡，无需先选择旧工地。其他设施原数量限制照旧。"
+    },
+    {
+      "id": "B57-Q1015-01",
+      "expected": "受限同类工地已存在报原句。剩1份收到投2份报“最多可投1份。”，此笔不投；已投齐报已满。目标已消失或离开当前区报设施不存在。"
+    }
+  ]
+}
