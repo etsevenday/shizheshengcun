@@ -259,7 +259,7 @@ public class B51c2a2Tests : TestBase
     }
 
     /// <summary>营地火堆：加工位1 放满锅净水（10 份×100）＋1 份生块根的锅，加工位2 直接放 1 份生肉；点燃受热 10 分钟（同 UiRevisionV07 起点）。</summary>
-    private (ItemInstance Pot, ItemInstance Meat) FireWithPotAndMeat(GameState s, int? meatExpires = null)
+    private (ItemInstance Pot, ItemInstance Meat) FireWithPotAndMeat(GameState s, int? meatExpires = null, int? rootExpires = null)
     {
         var pot = Pot(s);
         E.DebugGive(s, "clean_water", 10, "camp");
@@ -267,6 +267,7 @@ public class B51c2a2Tests : TestBase
         Do(s, InstantRequest.PutInFire(pot.InstanceId));
         E.DebugGive(s, "raw_root", 1, "camp");
         Do(s, InstantRequest.PutFoodInPot(First(s, "raw_root", "camp").InstanceId, pot.InstanceId, 1));
+        if (rootExpires is int rt) E.PotContents(s, pot.InstanceId).Single(i => i.ItemId == "raw_root").ExpiresAt = s.GameMinute + rt;
         s.Items.RemoveAll(i => i.ItemId == "raw_meat");
         E.DebugGive(s, "raw_meat", 1, "camp");
         var meat = First(s, "raw_meat", "camp");
@@ -325,6 +326,25 @@ public class B51c2a2Tests : TestBase
         Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：金属锅×1、腐败物×1。生肉×1已腐败，变为腐败物×1。"));
         Assert.That((GroundSum(s, "spoiled_matter"), GroundSum(s, "raw_meat")), Is.EqualTo((1, 0)), "地面确实是腐败物×1");
         Assert.That(pot.Owner, Is.EqualTo("camp"));
+    }
+
+    /// <summary>
+    /// Q1009（锅内）：「整锅仍按Q876作为一件移出，内容随原归属，锅内物未独立落地就不重复列为散件」——锅内受热保护且原保质已过的生块根随锅在锅里转为腐败物，
+    /// 清单只写锅名，清单后接一次原转换句（与单件取出同一受热保护判定）。
+    /// </summary>
+    [Test]
+    public void Q1009_FireTakeAll_ExpiredRootInPot_StaysInPot_ConversionLineOnce()
+    {
+        var s = New();
+        var (pot, _) = FireWithPotAndMeat(s, rootExpires: 5);
+        var root = E.PotContents(s, pot.InstanceId).Single(i => i.ItemId == "raw_root");
+        Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.True, "起点：受热保护中");
+
+        Ok(TakeAllNow(s, GameEngine.FireTakeAllId));
+
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：金属锅×1、生肉×1。生块根×1已腐败，变为腐败物×1。"));
+        Assert.That(E.PotContents(s, pot.InstanceId).Select(i => i.ItemId).OrderBy(x => x), Is.EqualTo(new[] { "clean_water", "spoiled_matter" }), "在锅里转换、随锅");
+        Assert.That(GroundSum(s, "spoiled_matter"), Is.EqualTo(0), "未独立落地");
     }
 
     /// <summary>
