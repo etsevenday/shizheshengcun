@@ -257,7 +257,7 @@
             <MapRouteArea OnPickNext="PickNext" />
         }
         </div>
-        @* B35c（逐字稿 P07b、Q595）：底部三键。「势力鸟瞰」进主世界上所选的城，没选城时进人所在的城（Q1004 暂用 A）；城市层里不显示 *@
+        @* B35c（逐字稿 P07b、Q595）：底部三键。「势力鸟瞰」进主世界上所选的城，没选城时进人所在的城（Q1004 A 定稿 R315）；城市层里不显示 *@
         <div class="map-foot">
             <button type="button" class="secondary @(v.LayerKey == GameEngine.WorldLayer ? "on" : "")" aria-pressed="@(v.LayerKey == GameEngine.WorldLayer)" title="返回主世界（只切换查看，不移动）" @onclick="() => SwitchLayer(GameEngine.WorldLayer)">@MapCopy.World</button>
             @if (factionLayer != null)
@@ -476,7 +476,7 @@ else
     }
 
     /// <summary>
-    /// 「势力鸟瞰」的目标城市层（B35c，Q1004 暂用 A）：普通层上已选中某座已知主城父节点就进那座城，否则进人所在的城；
+    /// 「势力鸟瞰」的目标城市层（B35c，Q1004 A 定稿 R315）：普通层上已选中某座已知主城父节点就进那座城，否则进人所在的城；
     /// 都没有（人不在城里且没选城）不显示。只切换查看，不移动、不耗时。
     /// </summary>
     private string? FactionLayer(List<(string Key, string Name)> layers)

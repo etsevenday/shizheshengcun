@@ -17,13 +17,13 @@ namespace Survival.Core.Engine
         public const string ReadOnly = "在城市层只能查看；关闭地图后再操作。";
         public const string LegacyReveal = "已按旧存档的到访记录补显城内建筑，仅用于浏览与定位，不补发奖励，也不开通新路线。";
         public static string Outside(string place) => $"{place}是城外独立地点，不在鸟瞰内，经区域地图前往。";
-        /// <summary>Q804：城市层点“出发”到达后的提示（Q1005 暂用：只在城市层出发到达后显示）。</summary>
+        /// <summary>Q804：城市层点“出发”到达后的提示（Q1005 A 定稿 R315：只在城市层出发且实际到达后显示）。</summary>
         public static string Arrived(string target) => $"已到达{target}。";
         /// <summary>Q810 A：远城只读，替代下一路段与“出发”。</summary>
         public const string RemoteOnly = "仅供查看；前往请用主世界地图。";
-        /// <summary>Q804：城市层图例移动句。</summary>
-        public const string LegendMove = "选相邻建筑，再点‘出发’。";
-        /// <summary>原图例前半句（开发方原句，Q1003 暂用 A：保留后接 Q804 句）。</summary>
+        /// <summary>Q804：城市层图例移动句。BM12（Q1003 A 定稿，合同 b35c-q1001-q1006 copy.cityLegend）：引号按定稿写“出发”。</summary>
+        public const string LegendMove = "选相邻建筑，再点“出发”。";
+        /// <summary>原图例前半句（Q1003 A 定稿 R315：保留，后接 Q804 句）。</summary>
         public const string LegendRoads = "道路只连已发现的城内真实路线。";
         /// <summary>Q808 A：城市层右列未选建筑时的提示（逐字稿 §2 P07b）。</summary>
         public const string NoPick = "选择图上的建筑查看路线。";
@@ -285,7 +285,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 城市层点“出发”走完这一段后的提示（Q804：“已到达{地点}。”；B35c 删“继续前往原远处目标”旧提醒，Q1005 暂用只在城市层出发后由界面调用）。
+        /// 城市层点“出发”走完这一段后的提示（Q804：“已到达{地点}。”；B35c 删“继续前往原远处目标”旧提醒，Q1005 A 定稿只在城市层出发后由界面调用）。
         /// 只在这一段已真实到达（人在目标、没有进行中的主行动）时写；中途退出、仍在路上为 null。只读。
         /// </summary>
         public string? CityArrivalNote(GameState s, string targetId) =>

@@ -1038,7 +1038,7 @@ public sealed partial class GameSession
     /// <summary>
     /// 地图路线区“出发”（B35c；Q591、Q793 B，Q595 城市层与普通层同源）：内核按真实相邻关系与移动规则重验后只提交这一段，
     /// 成功立即收起地图（返回链作废，BM4a Q590），用中央推进条与退出按钮；失败留在原页并给原具体原因。
-    /// 从城市层出发且这一段真实到达时提示“已到达{地点}。”（Q804；Q1005 暂用：普通地图不加）。不走 BeginAction 的城市只读拦截（出发本身就是城市层的合法入口）。
+    /// 从城市层出发且这一段真实到达时提示“已到达{地点}。”（Q804；Q1005 A 定稿 R315：普通地图沿原反馈不加）。不走 BeginAction 的城市只读拦截（出发本身就是城市层的合法入口）。
     /// </summary>
     public async Task MapDepart(string targetId, string requestId)
     {

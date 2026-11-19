@@ -39,7 +39,8 @@ public class B35cShellTests
     public void MapCopy_Verbatim()
     {
         Assert.That(MapCopy.Depart, Is.EqualTo("出发"), "Q591");
-        Assert.That(MapCopy.DefaultHint, Is.EqualTo("选相邻地点，再点‘出发’。远处地点可查看路线。"), "Q803 默认");
+        // BM12：02 Q1002 A 定稿（合同 b35c-q1001-q1006 copy.noSelection）引号写“出发”；原期望为 Q803 暂用“‘出发’”
+        Assert.That(MapCopy.DefaultHint, Is.EqualTo("选相邻地点，再点“出发”。远处地点可查看路线。"), "Q803 默认（Q1002 A 定稿）");
         Assert.That(MapCopy.FootNote, Is.EqualTo("在路线区点‘出发’；耗时为预计值。"), "Q803 脚注");
         Assert.That(MapCopy.PickAdjacent, Is.EqualTo("先选相邻地点。"), "Q915 B");
         Assert.That((MapCopy.Here, MapCopy.Target, MapCopy.NextLegTitle, MapCopy.RoutesTitle), Is.EqualTo(("当前位置", "所选目的地", "下一路段", "已知路线")), "逐字稿 P07a");
@@ -101,7 +102,7 @@ public class B35cShellTests
         Assert.That(map, Does.Contain("FootNote=\"@MapCopy.FootNote\""));
         foreach (var old in new[] { "地点旁出现移动确认", "在地图上该地点旁的浮窗确认移动", "一次只移动一段相邻路线，不提供自动寻路。", "不提供自动寻路：一次只能确认下一段。", "选中下一段：前往@" })
             Assert.That(map, Does.Not.Contain(old), old);
-        Assert.That(Web("Components/MapRouteArea.razor"), Does.Contain("<div class=\"mr-hint\">@MapCopy.DefaultHint</div>"), "路线区没选目的地也显示默认句（Q1002 暂用 A）");
+        Assert.That(Web("Components/MapRouteArea.razor"), Does.Contain("<div class=\"mr-hint\">@MapCopy.DefaultHint</div>"), "路线区没选目的地也显示默认句（Q1002 A 定稿）");
     }
 
     /// <summary>Q591-A01：可出发相邻连线按内核 Departable 描金并带微动态；prefers-reduced-motion 时保留静态描金（不按动画判定可达）；旧“与当前地点相连就描金”撤掉。</summary>
@@ -190,7 +191,7 @@ public class B35cShellTests
         var tools = Slice(map, "@if (cityLayer == null)", "<button type=\"button\" class=\"secondary\" @onclick=\"Close\">");
         Assert.That(tools, Does.Contain("data-map-cmd=\"out\"").And.Contain("data-map-cmd=\"in\"").And.Contain(">总览</button>").And.Contain(">图例</button>"));
         var pickFirst = Slice(map, "private string? FactionLayer(", "private void ToggleLegend()");
-        Assert.That(pickFirst.IndexOf("G.MapPicked is string p && G.E.IsCityParent(p)", StringComparison.Ordinal), Is.LessThan(pickFirst.IndexOf("G.E.CityOf(G.S.CurrentLocation)", StringComparison.Ordinal)), "Q1004 暂用 A：先所选城，再所在城");
+        Assert.That(pickFirst.IndexOf("G.MapPicked is string p && G.E.IsCityParent(p)", StringComparison.Ordinal), Is.LessThan(pickFirst.IndexOf("G.E.CityOf(G.S.CurrentLocation)", StringComparison.Ordinal)), "Q1004 A 定稿：先所选城，再所在城");
     }
 
     /// <summary>B36-Q807-01：城市层盖①②③（tall-panel、进度卡沿原鸟瞰位置），④随身只读判据 CityBrowsing 只看“地图开着且显示城市层”；普通主世界／地牢层不误锁。</summary>
@@ -264,7 +265,7 @@ public class B35cShellTests
 
     /// <summary>
     /// B35S-Q916-01：系统说明三处移动帮助（就近执行、移动、分层地图）同用 Q916 批准句，分别指地点栏卡浮窗与区域地图路线区“出发”；
-    /// 旧“在旁边的浮窗里确认移动”等句删除；句子只出现在这三处（不到处追加）。就近执行段是分号串列，句末句号随列表改分号；分层地图“右栏会列出”改“路线区会列出”（Q1001 暂用 A）。
+    /// 旧“在旁边的浮窗里确认移动”等句删除；句子只出现在这三处（不到处追加）。就近执行段是分号串列，句末句号随列表改分号；分层地图“右栏会列出”改“路线区会列出”（Q1001 A 定稿）。
     /// </summary>
     [Test]
     public void Q916_HelpThreePlaces()

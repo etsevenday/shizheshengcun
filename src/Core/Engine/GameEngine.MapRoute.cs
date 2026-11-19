@@ -11,13 +11,13 @@ namespace Survival.Core.Engine
     {
         /// <summary>Q591：唯一普通移动按钮业务名（不写“前往下一站”，不把时长拼进按钮名）。</summary>
         public const string Depart = "出发";
-        /// <summary>Q803：没选目的地时的默认提示（路线区与右栏当前位置页）。</summary>
-        public const string DefaultHint = "选相邻地点，再点‘出发’。远处地点可查看路线。";
+        /// <summary>Q803：没选目的地时的默认提示（路线区与右栏当前位置页）。BM12（Q1002 A 定稿，合同 b35c-q1001-q1006 copy.noSelection）：引号按定稿写“出发”。</summary>
+        public const string DefaultHint = "选相邻地点，再点“出发”。远处地点可查看路线。";
         /// <summary>Q803：右栏只读预估脚注。</summary>
         public const string FootNote = "在路线区点‘出发’；耗时为预计值。";
         /// <summary>Q915 B：选中远处地点、出发因不相邻而禁用时，按钮旁只写这一句。</summary>
         public const string PickAdjacent = "先选相邻地点。";
-        /// <summary>Q916 A：系统说明三处移动帮助同句。</summary>
+        /// <summary>Q916 A：系统说明三处移动帮助同句（Q1001 A 定稿 R315：就近执行只换移动分句、移动段换第二句、分层地图按“路线区会列出…”＋本句＋“浏览、缩放、切层都不推进游戏时间。”）。</summary>
         public const string Help = "点相邻地图卡在浮窗里确认移动；在区域地图上，先选相邻地点，在路线区点“出发”。";
         /// <summary>逐字稿 §2 P07a 区名。</summary>
         public const string Here = "当前位置";
@@ -27,7 +27,7 @@ namespace Survival.Core.Engine
         /// <summary>Q595：地图底部业务按钮。</summary>
         public const string World = "主世界";
         public const string FactionView = "势力鸟瞰";
-        /// <summary>Q808：下一路段原格式。</summary>
+        /// <summary>Q808：下一路段原格式（Q1002 A 定稿：普通地图路线区同用）。</summary>
         public static string NextLeg(string from, string to, int minutes) => $"{from}→{to} · 基础{minutes}分钟";
         /// <summary>原右栏“选中下一段”按钮（A10-EXUI §1；Q793 B 保留，移进路线区）。</summary>
         public static string SelectNext(string to) => $"选中下一段：前往{to}";
