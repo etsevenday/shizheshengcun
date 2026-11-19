@@ -761,7 +761,8 @@ public class B50aTests : TestBase
         var detail = Web("Components", "ItemDetail.razor");
         Assert.That(detail, Does.Contain("GameEngine.SpoiledMatterDetailText").And.Contain("GameEngine.OriginTitle").And.Contain("e.SpoiledPhysicalText(b.Stacks, RotNeedsCap(b))"),
             "详情拒绝句、来源段、批次物理明细");
-        var dry = Web("Components", "DryingOverlay.razor");
-        Assert.That(dry, Does.Contain("v.CleanupHint").And.Not.Contain("会在完成前腐败"), "缺料／未知清理悬停；撤去果干临期红字判断");
+        // B51c2a2（测试规则第 9 条）：停止位按钮悬停读 v.CleanupHint 改由 bUnit 断渲染结果（Survival.Web.Tests B51c2a2TakeUiTests.StoppedSlot_RestButtons_AndClear，
+        // 悬停「取出剩余物品。」，S11 Q880）；这里只留撤去果干临期红字的源码断言（去注释读源码）
+        Assert.That(SourceText.Web("Components/DryingOverlay.razor"), Does.Not.Contain("会在完成前腐败"), "撤去果干临期红字判断");
     }
 }
