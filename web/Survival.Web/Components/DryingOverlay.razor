@@ -79,8 +79,11 @@
                                             @onclick="(MouseEventArgs ev) => TakeSlot(k, stamp, ev)">@GameEngine.TakeLabel</button>
                                     break;
                                 case "done":
-                                    @* Q346、Q364：「收取」打开居中盘「收取」，盘里「取到随身」「取到地面」各自直接提交 *@
-                                    <button type="button" id="@($"dry-take-{k}")" class="primary" disabled="@busy" title="选择去向：取到随身或当前地面（0分钟），这一位空出" @onclick="() => Harvest(k)">收取</button>
+                                    @* Q346、Q364：「收取」打开居中盘「收取」，盘里「取到随身」「取到地面」各自直接提交。
+                                       B51c2a2 试玩修复（S11 Q871 B）：按内核取出门槛置灰——主／子行动进行或暂停都不能收取，悬停写真实原因；
+                                       取到地面不受容量限制，ToGroundBlocked 对已晾好的位只会是门槛原因（随身容量失败仍按 Q364 在盘内报） *@
+                                    var harvestWhy = v.ToGroundBlocked;
+                                    <button type="button" id="@($"dry-take-{k}")" class="primary" data-pt="dry-harvest" data-slot="@k" disabled="@(busy || harvestWhy != null)" title="@(harvestWhy ?? "选择去向：取到随身或当前地面（0分钟），这一位空出")" @onclick="() => Harvest(k)">收取</button>
                                     break;
                                 default:
                                     @* B51c2a2（Q880 映射表）：原「清理·到随身／清理·到地面」→「取到随身／取到地面」，悬停「取出剩余物品。」；无余物的异常位只有「清空」 *@

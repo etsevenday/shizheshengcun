@@ -229,7 +229,9 @@
                容量或其他校验失败时在盘内写实际原因、盘不关，可改选另一合法去向；成功后收盘并刷新该位。取消、×、遮罩、Esc 按 Q338 只收起。 *@
             var k = int.Parse(pop.Id);
             var v = e.DryingSlotViews(s).First(x => x.Slot == k);
-            var dryBusy = G.Running || s.Sub != null || _go;
+            // B51c2a2 试玩修复（S11 Q871 B）：两键同样按内核取出门槛置灰（主行动暂停也算），悬停写真实原因；随身容量不足仍点后在盘内报（Q364）
+            var harvestGate = v.ToGroundBlocked;
+            var dryBusy = G.Running || s.Sub != null || _go || harvestGate != null;
             <AnchorPop AnchorId="@pop.AnchorId" Title="@CardStates.HarvestTitle" CssClass="@("harvest" + G.MenuHideCss)" Sub="@($"{v.Title} · {v.RecipeName}")" OnClose="G.ClosePop">
                 <Art>@Icons.Markup(e.DryingContents(s, s.Ground, k).FirstOrDefault()?.ItemId ?? "dried_meat")</Art>
                 <ChildContent>
@@ -237,8 +239,8 @@
                     @if (_harvestFail != null && _tried) { <div class="apop-risk">@_harvestFail</div> }
                 </ChildContent>
                 <Actions>
-                    <button type="button" class="primary apop-go" disabled="@dryBusy" @onclick="() => Harvest(k, true)">@CardStates.HarvestToCarried</button>
-                    <button type="button" class="secondary apop-go" disabled="@dryBusy" @onclick="() => Harvest(k, false)">@CardStates.HarvestToGround</button>
+                    <button type="button" class="primary apop-go" data-pt="harvest-carried" disabled="@dryBusy" title="@harvestGate" @onclick="() => Harvest(k, true)">@CardStates.HarvestToCarried</button>
+                    <button type="button" class="secondary apop-go" data-pt="harvest-ground" disabled="@dryBusy" title="@harvestGate" @onclick="() => Harvest(k, false)">@CardStates.HarvestToGround</button>
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
                 </Actions>
             </AnchorPop>

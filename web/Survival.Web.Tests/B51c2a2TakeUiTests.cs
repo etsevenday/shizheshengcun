@@ -164,6 +164,8 @@ public class B51c2a2TakeUiTests : WebTestBase
         var cut = Ctx.RenderComponent<FireMenu>();
         var btn = cut.Find("[data-pt=fire-take-all]");
         Assert.That((btn.TextContent, btn.HasAttribute("disabled"), btn.HasAttribute("title")), Is.EqualTo(("全部取出", false, false)));
+        // B51c2a2 试玩修复（开发方排版）：与同排「熄灭」同一类按钮样式，置灰走该类 disabled 样式
+        Assert.That(btn.ClassList, Is.SupersetOf(new[] { "loc-btn", "res-btn", "fc-btn", "plain" }));
 
         btn.Click();
 
@@ -184,5 +186,81 @@ public class B51c2a2TakeUiTests : WebTestBase
         var btn = cut.Find("[data-pt=fire-take-all]");
         Assert.That((btn.HasAttribute("disabled"), btn.GetAttribute("title")), Is.EqualTo((true, Busy)));
         Assert.That(pot.InFacility, Is.True);
+    }
+
+    // ───────────── 试玩修复：已晾好位「收取」按取出门槛置灰（S11 Q871 B） ─────────────
+
+    /// <summary>起点：一位果干已晾好（配置 dry_berries 120 分钟，B50a Q666-A02），推进世界时间到完成。</summary>
+    private void DoneSlot()
+    {
+        Rack();
+        StartBerries();
+        var end = S.GameMinute + 120;
+        while (S.GameMinute < end)
+        {
+            if (S.Main == null) Ok(E.Start(S, ActionRequest.Wait(30)));
+            E.Advance(S);
+        }
+        if (S.Main?.Type == ActionType.Wait) E.Cancel(S);
+        Assert.That(DrySlots.Single().Status, Is.EqualTo(DryingSlot.Done), "起点：已晾好");
+        G.OpenPanel("drying");
+    }
+
+    private IRenderedComponent<ActionPops> OpenHarvestPop(IRenderedComponent<DryingOverlay> cut)
+    {
+        cut.Find("[data-pt=dry-harvest][data-slot='0']").Click();
+        Assert.That(G.Pop?.Kind, Is.EqualTo("harvest"), "起点：收取盘打开");
+        return Ctx.RenderComponent<ActionPops>();
+    }
+
+    /// <summary>配对（Q346／Q364）：空闲时「收取」可点、悬停原句，盘里「取到地面」可点，点后果干到地面。</summary>
+    [Test]
+    public void Harvest_Idle_Enabled_TakesToGround()
+    {
+        DoneSlot();
+        var cut = Ctx.RenderComponent<DryingOverlay>();
+        var btn = cut.Find("[data-pt=dry-harvest][data-slot='0']");
+        Assert.That((btn.HasAttribute("disabled"), btn.GetAttribute("title")), Is.EqualTo((false, "选择去向：取到随身或当前地面（0分钟），这一位空出")));
+        var pops = OpenHarvestPop(cut);
+        var ground = pops.Find("[data-pt=harvest-ground]");
+        Assert.That(ground.HasAttribute("disabled"), Is.False);
+        ground.Click();
+        Assert.That(GroundSum("dried_berries"), Is.EqualTo(1));
+        Assert.That(DrySlots, Is.Empty);
+    }
+
+    /// <summary>
+    /// 试玩 bug（S11 Q871 B：角色主行动暂停也不能取出）：休息等主行动处于暂停时，「收取」置灰、悬停「行动进行中，暂不能整理物品」；
+    /// 已打开的收取盘两键也置灰、悬停同句，果干不动。
+    /// </summary>
+    [Test]
+    public void Harvest_MainPaused_Greyed()
+    {
+        DoneSlot();
+        var cut = Ctx.RenderComponent<DryingOverlay>();
+        var pops = OpenHarvestPop(cut);
+        Ok(E.Start(S, ActionRequest.Wait(30)));
+        S.Main!.Status = ActionStatus.Paused;   // 起点：主行动暂停（如休息被阈值暂停）
+        cut.Render();
+        pops.Render();
+        var btn = cut.Find("[data-pt=dry-harvest][data-slot='0']");
+        Assert.That((btn.HasAttribute("disabled"), btn.GetAttribute("title")), Is.EqualTo((true, Busy)));
+        foreach (var pt in new[] { "harvest-carried", "harvest-ground" })
+        {
+            var b = pops.Find($"[data-pt={pt}]");
+            Assert.That((b.HasAttribute("disabled"), b.GetAttribute("title")), Is.EqualTo((true, Busy)), pt);
+        }
+        Assert.That(DrySlots.Single().Status, Is.EqualTo(DryingSlot.Done), "果干不动");
+    }
+
+    /// <summary>试玩 bug（S11 Q871 B）：主行动进行中（如睡觉）「收取」置灰，悬停写「行动进行中，暂不能整理物品」，不再是去向说明原句。</summary>
+    [Test]
+    public void Harvest_MainRunning_GreyedWithReason()
+    {
+        DoneSlot();
+        Ok(E.Start(S, ActionRequest.Wait(30)));
+        var cut = Ctx.RenderComponent<DryingOverlay>();
+        var btn = cut.Find("[data-pt=dry-harvest][data-slot='0']");
+        Assert.That((btn.HasAttribute("disabled"), btn.GetAttribute("title")), Is.EqualTo((true, Busy)));
     }
 }

@@ -87,7 +87,7 @@
                             var takeAllStamp = e.TakeAllStamp(s, here, GameEngine.FireTakeAllId);
                             <div class="btn-row fm-quick">
                                 <FireQuickActions InMenu="true" />
-                                <button class="btn" data-pt="fire-take-all" disabled="@(G.Running || takeAllWhy != null)" title="@takeAllWhy"
+                                <button type="button" class="loc-btn res-btn fc-btn plain" data-pt="fire-take-all" disabled="@(G.Running || takeAllWhy != null)" title="@takeAllWhy"
                                         @onclick="(MouseEventArgs ev) => TakeAll(here, takeAllStamp, ev)">@GameEngine.TakeAllLabel</button>
                                 @if (woodWhy != null) { <span class="tiny muted">@woodWhy</span> }
                             </div>
