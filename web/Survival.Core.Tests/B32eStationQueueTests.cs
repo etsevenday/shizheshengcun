@@ -334,7 +334,8 @@ public class B32eStationQueueTests : TestBase
         var razor = RazorOf(Path.Combine("Components", "CraftOverlay.razor"));
         Assert.That(razor, Does.Contain(">投料批数<"));
         Assert.That(razor, Does.Contain("投料（@(batch)批）"));
-        Assert.That(razor, Does.Contain("@GameEngine.StationTitle(sbList.Count, true)"));   // B51c2a1 改期望（S11 Q779 选 B：说明显示时标题不重复上限）
+        // B51c2b 删断言（S11 §Q870 B「只数真实正在加工的批」／§Q924 B 余料条目不计加工中；测试规则第 8 条）：标题改按真实加工批数，
+        // 由 bUnit B51c2bFacilityItemUiTests.Station_PartialArrow_ResidualRow_TitleCountsProcessing 断渲染出的「加工中{批数}批」
         Assert.That(razor, Does.Contain("@GameEngine.StationParallelHelp"));
         Assert.That(razor, Does.Contain("e.StationBatchRow(s, sbItem, seq)"));
         Assert.That(razor, Does.Contain("@e.StationOutputGround(s, zonePlace)"));

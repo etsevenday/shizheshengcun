@@ -9,7 +9,10 @@
    点“投料…”记下当时预览的来源（SourceKey），确认时带给内核重验；预览变了先提示、要求看新预览再确认，不悄悄换料。
    B51c2a2（S11 Q870 B／Q778／Q871 B／Q880／Q966）：撤「取消·到随身／到地面」，晾制中的位改一个「取出」（原料回本区地面，带本位计划快照戳与请求号）；
    面板操作区常驻「全部取出」（空设施置灰、悬停真实原因，可用时不加悬停，Q879 A）；停止位「待取出」，按钮「取到随身」「取到地面」（悬停「取出剩余物品。」），
-   无余物的异常位只有「清空」。取出类按钮的门槛（角色主／子行动进行或暂停「行动进行中，暂不能整理物品」等）全由内核给出。 *@
+   无余物的异常位只有「清空」。取出类按钮的门槛（角色主／子行动进行或暂停「行动进行中，暂不能整理物品」等）全由内核给出。
+   B51c2b（S11 §Q870 B／§Q924 B／§Q925 B／§Q926 A）：位内物品改为真实物品卡（FacilityItemCard：箭头取到随身、点卡数量取出、可拖出）；
+   取走在制原料的一部分后这一位成「余料」（「取出」放回本区地面，「查看配方」进本位补投预览）；各晾制位是材料卡的落点 dryslot:{位号}——
+   松手只选中该位并定位到用这件物品的食谱预览，仍要「投料…」「确认投料」（选中位与定位放在 GameSession.DryingPickSlot／DryingFocusRecipes）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -17,7 +20,8 @@
     var views = here ? e.DryingSlotViews(s) : new List<DryingSlotView>();
     var recipes = e.DryingRecipes.ToList();
     var busy = G.Running || s.Sub != null;
-    var pick = _pickSlot is int ps && views.Any(v => v.Slot == ps && v.Status == "empty") ? ps : (int?)null;
+    var pick = G.DryingPickSlot is int ps && views.Any(v => v.Slot == ps && v.Status is "empty" or DryingSlot.Residual) ? ps : (int?)null;
+    var focus = G.DryingFocusRecipes;
     var allWhy = here ? e.TakeAllBlocked(s, s.Ground, GameEngine.DryingStationId) : null;
     var allStamp = here ? e.TakeAllStamp(s, s.Ground, GameEngine.DryingStationId) : "";
 }
@@ -45,7 +49,7 @@
                     var k = v.Slot;
                     var lit = G.Highlights.Contains(GameEngine.DryingSlotHighlight(s.Ground, k));
                     @* B32b（P02c、Q362）：「工位{序号}」+ 状态（空闲／晾制中／可收取／原料已腐败），下列「配方」「原料」「加工进度」；晾制中的位挂加工中，晾好时亮一次（Q368） *@
-                    <div class="sh-row dry-slot @v.Status @(pick == k ? "on" : "") @(v.Status == "drying" ? "st-busy" : "") @(lit ? "fresh" : "")" data-dry-slot="@k">
+                    <div class="sh-row dry-slot @v.Status @(pick == k ? "on" : "") @(v.Status == "drying" ? "st-busy" : "") @(lit ? "fresh" : "")" data-dry-slot="@k" data-drop="@($"dryslot:{k}")" data-drop-level="card">
                         <div class="sh-row-head"><b>@v.Title</b><span class="dry-state @(v.Status == "spoiled" ? "warn-text" : "muted")">@CardStates.DryingStatusText(v.Status)</span></div>
                         @if (v.RecipeName != null)
                         {
@@ -53,7 +57,15 @@
                         }
                         @if (v.Contents.Count > 0)
                         {
-                            <div class="tiny dry-line"><span class="muted">原料</span> @string.Join("、", v.Contents)</div>
+                            @* B51c2b（Q925 B）：位内每份物品一张真实卡，状态行沿原「原料」括注（保质暂停／保质到…） *@
+                            var slotItems = e.DryingContents(s, s.Ground, k);
+                            <div class="tiny dry-line"><span class="muted">原料</span></div>
+                            <div class="fi-row" data-dry-items="@k">
+                                @for (var j = 0; j < slotItems.Count; j++)
+                                {
+                                    <FacilityItemCard Item="slotItems[j]" Status="@(j < v.Contents.Count ? NoteOf(v.Contents[j]) : null)" />
+                                }
+                            </div>
                         }
                         @if (v.Status == "drying")
                         {
@@ -71,6 +83,13 @@
                                 case "empty":
                                     @* Q363：只在空闲位显示「查看配方」，替代原「投到这一位」：选中这一位并在下方定位可用食谱（只查看，不投料） *@
                                     <button type="button" class="secondary" disabled="@busy" title="选这一位，在下方看可用食谱与预览" @onclick="() => ViewRecipes(k)">查看配方</button>
+                                    break;
+                                case DryingSlot.Residual:
+                                    @* B51c2b（S11 §Q924 B）：余料位——「取出」把余料放回本区地面、空出这一位；「查看配方」选这一位，下方食谱区给本位补投预览（余料先用） *@
+                                    var rstamp = v.TakeStamp;
+                                    <button type="button" class="secondary" data-pt="dry-take" data-slot="@k" disabled="@(busy || v.TakeBlocked != null)" title="@v.TakeBlocked"
+                                            @onclick="(MouseEventArgs ev) => TakeSlot(k, rstamp, ev)">@GameEngine.TakeLabel</button>
+                                    <button type="button" class="secondary" data-pt="dry-refill" data-slot="@k" disabled="@busy" title="选这一位，在下方看可用食谱与预览" @onclick="() => ViewRecipes(k)">查看配方</button>
                                     break;
                                 case "drying":
                                     @* B51c2a2（Q870 B）：只结束这一位，原料回本区地面；不能取时置灰、悬停真实原因 *@
@@ -109,7 +128,7 @@
                     var o = e.DryingPreview(s, rc.Id, pick);
                     var id = rc.Id;
                     var slotText = o.Slot >= 0 ? CardStates.DryingSlotName(o.Slot) : "没有空位";
-                    <div class="sh-row dry-option @(o.Ok ? "" : "missing")" data-dry-recipe="@id">
+                    <div class="sh-row dry-option @(o.Ok ? "" : "missing") @(focus != null && focus.Contains(id) ? "on" : "")" data-dry-recipe="@id">
                         <div class="sh-row-head">
                             <span class="dry-icon">@Icons.Markup(rc.Outputs.Keys.First())</span>
                             <b>@rc.Name</b>
@@ -159,7 +178,6 @@
 </div>
 
 @code {
-    private int? _pickSlot;
     private string? _confirm;
     /// <summary>点“投料…”时看到的预览来源（Q214：确认按它重验，变了要求再确认）。</summary>
     private string? _confirmKey;
@@ -167,20 +185,36 @@
     private void Close() => G.OpenPanel(null);
 
     private ElementReference recipesBox;
-    private bool _scrollRecipes;
 
-    /// <summary>Q363「查看配方」：选中这一位并把下方食谱区滚到可见（只查看，不投料）。</summary>
+    /// <summary>B51c2b：面板新打开时清掉旧的选位与定位（拖入定位打开的面板保留这次定位）。</summary>
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (G.DryingScrollPending) return;
+        G.DryingPickSlot = null;
+        G.DryingFocusRecipes = null;
+    }
+
+    /// <summary>位内原料原写法「生肉×1（保质暂停，剩余…）」的括注部分（卡的状态行）；没有括注为 null。</summary>
+    private static string? NoteOf(string content)
+    {
+        var a = content.IndexOf('（');
+        return a >= 0 && content.EndsWith("）") ? content.Substring(a + 1, content.Length - a - 2) : null;
+    }
+
+    /// <summary>Q363「查看配方」：选中这一位并把下方食谱区滚到可见（只查看，不投料）。B51c2b：余料位同样进本位补投预览。</summary>
     private void ViewRecipes(int k)
     {
-        _pickSlot = k;
+        G.DryingPickSlot = k;
+        G.DryingFocusRecipes = null;
         _confirm = null;
-        _scrollRecipes = true;
+        G.DryingScrollPending = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!_scrollRecipes) return;
-        _scrollRecipes = false;
+        if (!G.DryingScrollPending) return;
+        G.DryingScrollPending = false;
         try { await JS.InvokeVoidAsync("survival.scrollIntoView", recipesBox); } catch (Exception) { /* 只影响定位 */ }
     }
 
@@ -194,7 +228,8 @@
         if (r.Ok)
         {
             _confirm = null;
-            _pickSlot = null;
+            G.DryingPickSlot = null;
+            G.DryingFocusRecipes = null;
         }
         else if (r.Reason != GameEngine.DryingPreviewChanged) _confirm = null;   // 预览变了：留在确认处，显示新预览与“重新确认”
     }

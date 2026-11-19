@@ -321,10 +321,16 @@
                                B51c2a1（S11 Q870 B／Q872 B／Q923 B）：撤「取消本批」，每批一行「取出」（绑定该行渲染时的真实 batchId 与本批计划快照戳）；
                                批内原料在设施里，按只读物品行列出（不可拖、不可选，箭头与数量取出归 B51c2b）。燃料仍在地面预留，不在批内列（Q921）。
                                Q879：「取出」不加悬停说明，不能取时置灰、悬停写真实拒绝原因。
-                               B51b 试玩修复 M972：队列区在 .cm-body 与投料栏之间自成一区，标题与并行说明固定、逐批列表单独滚动，优先分高度 *@
+                               B51b 试玩修复 M972：队列区在 .cm-body 与投料栏之间自成一区，标题与并行说明固定、逐批列表单独滚动，优先分高度。
+                               B51c2b（S11 §Q870 B／§Q924 B／§Q925 B）：批内原料改为真实物品卡（FacilityItemCard：箭头取到随身、点卡数量取出、可拖出）；
+                               取走部分原料后该批结束成「余料」条目（不计加工中、仍计入10条上限，「取出」照旧），标题与并行说明只数真实正在加工的批 *@
                             var zonePlace = s.Ground;
+                            var processing = e.StationProcessingCount(s, rc.Station);
                             <div class="station-queue" data-station-queue>
-                                <div class="sq-head"><b data-station-title>@GameEngine.StationTitle(sbList.Count, true)</b><small class="tiny muted" data-station-help>@GameEngine.StationParallelHelp</small></div>
+                                @if (processing > 0)
+                                {
+                                    <div class="sq-head"><b data-station-title>@GameEngine.StationTitle(processing, true)</b><small class="tiny muted" data-station-help>@GameEngine.StationParallelHelp</small></div>
+                                }
                                 <div class="sq-rows" data-wheel="y">
                                 @for (var k = 0; k < sbList.Count; k++)
                                 {
@@ -335,15 +341,21 @@
                                     var takeWhy = e.StationBatchTakeBlocked(s, zonePlace, rc.Station, bid);
                                     var takeStamp = e.StationTakeStamp(s, zonePlace, rc.Station, bid);
                                     var stationId = rc.Station;
-                                    <div class="sq-row" data-station-batch="@bid">
-                                        <span class="cg-facts"><b title="@rowText">@rowText</b><small class="cg-xp" title="@e.StationBatchXpNote(s, sbItem)">@e.StationBatchXpNote(s, sbItem)</small><small class="cg-sum">@e.StationOutputGround(s, zonePlace)</small></span>
+                                    <div class="sq-row @(sbItem.Residual ? "residual" : "")" data-station-batch="@bid">
+                                        @if (sbItem.Residual)
+                                        {
+                                            <span class="cg-facts"><b title="@rowText">@rowText</b></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="cg-facts"><b title="@rowText">@rowText</b><small class="cg-xp" title="@e.StationBatchXpNote(s, sbItem)">@e.StationBatchXpNote(s, sbItem)</small><small class="cg-sum">@e.StationOutputGround(s, zonePlace)</small></span>
+                                        }
                                         <button type="button" class="secondary cg-start" data-station-take title="@takeWhy" disabled="@(takeWhy != null || StationHeld)"
                                                 @onclick="(MouseEventArgs ev) => TakeStation(zonePlace, stationId, bid, takeStamp, ev)">@GameEngine.TakeLabel</button>
                                         <div class="sq-inputs" data-station-inputs>
                                             @foreach (var inp in e.StationBatchInputs(s, zonePlace, sbItem))
                                             {
-                                                <ItemRow Icon="@inp.ItemId" Name="@e.ItemName(inp.ItemId)" Qty="@($"×{inp.Count}")" CssClass="sq-input"
-                                                         Status="@(inp.ShelfPausedMinutes is int r ? GameEngine.ShelfPausedText(r) : null)" />
+                                                <FacilityItemCard Item="inp" Status="@(inp.ShelfPausedMinutes is int r ? GameEngine.ShelfPausedText(r) : null)" />
                                             }
                                         </div>
                                     </div>
@@ -388,7 +400,9 @@
                                         @* B22d 试玩修复 M418：经验句放在说明前面单独一行，窄屏（≤1400）时说明压成一行省略、悬停看全文，经验句不被裁掉。
                                            B51b（Q701.2／Q727）：新批都从现在开始，预计完成时刻同刻合成「预计{日期时刻}完成」；经验按预计完成日与先完成的在途批次估算 *@
                                         var etas = e.StationEtaText(s, rc, batch);   // Q399
+                                        var refill = e.StationRefillText(s, rc, batch);   // B51c2b（Q924 B）：会复用余料条目时列出余料与补足来源（暂用句）
                                         <b>被动@(rc.BaseMinutes)分钟</b><small class="cg-xp" title="@e.StationBatchXpPreview(s, rc, batch)">@e.StationBatchXpPreview(s, rc, batch)</small><small class="cg-sum cg-eta" title="@etas" data-station-eta>@etas</small><small class="cg-sum" title="@e.StationBatchSummary(rc)">@e.StationBatchSummary(rc)</small>
+                                        @if (refill != null) { <small class="cg-sum" data-station-refill title="@refill">@refill</small> }
                                     }
                                     else { <small class="warn-text">@sbWhy</small> }
                                 </span>

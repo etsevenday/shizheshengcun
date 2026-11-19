@@ -47,7 +47,8 @@ public class B51c2a2TakeUiTests : WebTestBase
         StartBerries();
         var cut = Ctx.RenderComponent<DryingOverlay>();
         var slot0 = cut.Find("[data-dry-slot='0']");
-        Assert.That(slot0.QuerySelectorAll("button").Select(b => b.TextContent.Trim()), Is.EqualTo(new[] { "取出" }), "晾制中只一个「取出」");
+        // B51c2b 改选择器（S11 §Q870 B／§Q925 B：位内原料卡加了取到随身箭头，原「位按钮只一个取出」改断位按钮行 .dry-btns）
+        Assert.That(slot0.QuerySelectorAll(".dry-btns button").Select(b => b.TextContent.Trim()), Is.EqualTo(new[] { "取出" }), "晾制中只一个「取出」");
         var all = cut.Find("[data-pt=dry-take-all]");
         Assert.That((all.TextContent, all.HasAttribute("disabled"), all.HasAttribute("title")), Is.EqualTo(("全部取出", false, false)), "可用时无悬停");
 

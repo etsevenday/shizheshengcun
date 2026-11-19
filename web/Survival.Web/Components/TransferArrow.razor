@@ -2,13 +2,16 @@
 
 @* 物品卡右下角的三角箭头：点一下直接转移 1 件（地面→随身拾取，随身→地面放下），与点卡片弹出的拾取条并行（试玩留言 fb68265e、4bb723b0）。
    按住不放先转 1 件，过 HoldDelayMs 后每 RepeatMs 再转 1 件，松手、移出箭头、物品转完或转移失败（如超重）即停（留言 fb68265e 第 1 条“长按持续快速转移”）。
-   系统策划总册 v1.0 Q5-2（S14 §9.2）：箭头不选中卡片、不打开操作条；要改数量或目的地请点卡片本身。失败原因写在右栏提示。 *@
-<button type="button" class="card-arrow @(ToCarried ? "down" : "up")" disabled="@(!Enabled)"
-        aria-label="@(ToCarried ? "拾取1件" : "放下1件")"
+   系统策划总册 v1.0 Q5-2（S14 §9.2）：箭头不选中卡片、不打开操作条；要改数量或目的地请点卡片本身。失败原因写在右栏提示。
+   B51c2b（S11 §Q870 B、§Q927 B）：晾制位／陶窑净水台批内物品卡与火堆食物卡也用这个箭头（同一按下节奏与停止规则，只认按下时那张卡）；
+   ToZone 指定去向（火堆食物取到随身），CssClass／Label 让火堆食物卡沿原按钮样式与可访问名称，StopKeys 不让键盘激活冒泡到卡片。 *@
+<button type="button" class="@(CssClass ?? (ToCarried ? "card-arrow down" : "card-arrow up"))" disabled="@(!Enabled)"
+        aria-label="@(Label ?? (ToCarried ? "拾取1件" : "放下1件"))"
         title="@(Title ?? (ToCarried ? "取到随身1件，按住连续拾取（点卡片本身可输入数量）" : "放到当前地面1件，按住连续放下（点卡片本身可输入数量）"))"
         @onpointerdown="OnPointerDown"
         @onpointerup="StopHold" @onpointerleave="StopHold" @onpointercancel="StopHold"
         @oncontextmenu:preventDefault="true"
+        @onkeydown:stopPropagation="StopKeys"
         @onclick="OnClick" @onclick:stopPropagation="true">@(ToCarried ? "▼" : "▲")</button>
 
 @code {
@@ -21,15 +24,23 @@
     [Parameter] public bool Enabled { get; set; } = true;
     /// <summary>不可用时的说明（如“已部署 · 先收起才能拾取”）；为空用默认拾取/放下说明。</summary>
     [Parameter] public string? Title { get; set; }
+    /// <summary>B51c2b：明确去向（如火堆食物取到随身 carried）；为空沿原规则（设施物品卡默认随身，其余按 TransferOne 原去向）。</summary>
+    [Parameter] public string? ToZone { get; set; }
+    /// <summary>B51c2b：按钮样式类（火堆食物卡沿原 row-arrow）；为空用卡角箭头样式。</summary>
+    [Parameter] public string? CssClass { get; set; }
+    /// <summary>B51c2b：可访问名称（火堆食物卡沿原「把{物名}取到随身」）；为空用原「拾取1件／放下1件」。</summary>
+    [Parameter] public string? Label { get; set; }
+    /// <summary>B51c2b：键盘激活不冒泡到外层卡片（火堆食物卡原按钮如此）。</summary>
+    [Parameter] public bool StopKeys { get; set; }
 
-    private bool ToCarried => Owner != ItemInstance.Carried;
+    private bool ToCarried => ToZone != null ? ToZone == ItemInstance.Carried : Owner != ItemInstance.Carried;
     private CancellationTokenSource? _hold;
 
     // 鼠标、触屏走 pointerdown；键盘回车/空格产生的 click 没有按下次数（Detail 为 0），单独转 1 件
     private void OnClick(MouseEventArgs e)
     {
         if (e.Detail != 0 || !Enabled) return;
-        TransferOnce(Owner, ItemId, InstanceId);
+        TransferOnce(Owner, ItemId, InstanceId, ToZone);
     }
 
     private async Task OnPointerDown(PointerEventArgs e)
@@ -37,13 +48,13 @@
         if (!Enabled || e.Button != 0) return;
         StopHold();
         // 记下按下时的卡片：卡片转完后同位置可能换成别的物品，不能跟着转
-        var owner = Owner; var itemId = ItemId; var instanceId = InstanceId;
-        if (!TransferOnce(owner, itemId, instanceId)) return;
+        var owner = Owner; var itemId = ItemId; var instanceId = InstanceId; var zone = ToZone;
+        if (!TransferOnce(owner, itemId, instanceId, zone)) return;
         var cts = _hold = new CancellationTokenSource();
         try
         {
             await Task.Delay(HoldDelayMs, cts.Token);
-            while (!cts.IsCancellationRequested && TransferOnce(owner, itemId, instanceId))
+            while (!cts.IsCancellationRequested && TransferOnce(owner, itemId, instanceId, zone))
                 await Task.Delay(RepeatMs, cts.Token);
         }
         catch (TaskCanceledException) { }
@@ -54,7 +65,7 @@
         }
     }
 
-    private bool TransferOnce(string owner, string itemId, int? instanceId) => G.TransferOne(owner, itemId, instanceId).Ok;
+    private bool TransferOnce(string owner, string itemId, int? instanceId, string? zone) => G.TransferOne(owner, itemId, instanceId, zone).Ok;
 
     private void StopHold() => _hold?.Cancel();
 

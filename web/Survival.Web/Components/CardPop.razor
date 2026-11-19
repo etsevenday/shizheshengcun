@@ -8,11 +8,12 @@
 @* M120：菜单（含战斗菜单）打开时让位，浮窗不压在菜单遮罩之上。B32d（逐字稿 §1.5 Q390）起菜单期间只隐藏（menu-hidden，display:none）、不卸载，
    盘内数量、去向等状态保留，关菜单后仍有效的原盘原样恢复，不用重新点来源卡（显示条件 CardPopShown 仍不含菜单期间） *@
 @* B31c：同一显示条件另有 GameSession.CardPopShown（中央行动位据此判断有没有居中局部盘），两处须一致 *@
+@* B51c2b（Q925 B）：晾制位、陶窑／净水台批内的物品卡不弹（操作在面板里该卡下的数量取出窗，同 CardPopShown） *@
 @* B45（FACPROC 第 3 条、Q548）：火堆加工菜单开着时不弹；火堆里的锅、水、食材只在右栏只读，执行在中央加工菜单（同 CardPopShown） *@
 @* B32d（逐字稿 §1.5 Q378）：来源卡被新开的面板盖住时按来源失效收盘但保留选中（CardPopCovered）；玩家重新点来源卡（Select/PickBatch）再打开 *@
 @if (G.State != null && G.Pop == null && G.FeedPending == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending && !G.DuplicateWeaponsPending
      && (!G.CardPopCovered || G.CardPopHeldUnderPanel) && G.Panel != GameSession.FireMenuPanel && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid
-     && G.InFireCrumbs(G.Selected) == null)
+     && G.InFireCrumbs(G.Selected) == null && !G.IsFacilityItemSel(G.Selected))
 {
     var pot = PotOf();
     @* BM4a（Q590）：顶栏面板覆盖打开时原物品操作盘同菜单一样只隐藏、不卸载（盘内数量、去向保留），整条链按返回关完后原样恢复 *@

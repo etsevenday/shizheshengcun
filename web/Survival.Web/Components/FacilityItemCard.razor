@@ -1,0 +1,95 @@
+@inherits GameComponent
+
+@* B51c2b（S11／S07／S14「2026-11-17 B51c2、B47b与B52b」§Q870 B 快捷箭头，「2026-11-17 B51c2a／B51c2b」§Q925 B）：
+   晾制位、陶窑／净水台批内的一张真实物品卡——图标、名称×份数、状态行、取到随身箭头（TransferArrow：点一下 1 份，按住连续取同一张卡）。
+   点卡本体：右栏看这张卡的详情（只读），并在卡下打开数量取出窗（标题「取出」、去向「取到随身／取到地面」、确认「确认 {数量}」、取消；量词与上限沿原数量规则），
+   箭头与这一位／批的「取出」、操作区「全部取出」同时保留。卡本体可拖到随身或当前地面（S07 原起拖阈值、跨区默认 1 份、Shift 松手选数量）。
+   门槛（角色主／子行动进行或暂停等）与容量全部来自内核 FacilityItemGate／FacilityItemTakeBlocked；失败原因写在数量窗内，不改去向、不缩量。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var name = Item.Count > 1 ? $"{e.ItemName(Item.ItemId)}×{Item.Count}" : e.ItemName(Item.ItemId);
+    var key = $"{Item.Owner}|{Item.ItemId}|{Item.InstanceId}";
+    var where = e.WherePath(s, Item);
+    var gate = e.FacilityItemGate(s, Item);
+    var on = G.FacTake?.InstanceId == Item.InstanceId;
+    var busy = G.Running;
+}
+<div class="irow fi-card @(on ? "selected" : "")" data-pt="fac-item" data-inst="@Item.InstanceId" role="button" tabindex="0"
+     title="@($"{name} · {where}{(Status != null ? " · " + Status : "")}")"
+     data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@where"
+     @onclick="Pick" @onclick:stopPropagation="true" @onkeydown="Key">
+    <span class="ir-icon">@Icons.Markup(Item.ItemId)</span>
+    <span class="ir-text">
+        <span class="ir-name">@name</span>
+        @if (!string.IsNullOrEmpty(Status)) { <span class="ir-status">@Status</span> }
+    </span>
+    <TransferArrow Owner="@Item.Owner" ItemId="@Item.ItemId" InstanceId="@Item.InstanceId" Enabled="@(gate == null && !busy)" Title="@gate" StopKeys="true" />
+</div>
+@if (on && G.FacTake is { } d)
+{
+    var zone = d.ToCarried ? ItemInstance.Carried : s.Ground;
+    var max = e.FacilityItemMax(s, Item, zone);
+    var n = int.TryParse(d.Qty.Trim(), out var v) ? v : 0;
+    var why = gate ?? (max < 1 ? e.FacilityItemTakeBlocked(s, Item, 1, zone) : null);
+    var invalid = why != null || n < 1 || n > max;
+    <div class="fi-take" data-pt="fac-take" @onclick:stopPropagation="true">
+        <h3 class="dq-head"><span class="ir-icon">@Icons.Markup(Item.ItemId)</span>@GameEngine.TakeLabel · @e.ItemName(Item.ItemId)</h3>
+        <div class="btn-row fi-dest">
+            <button type="button" class="@(d.ToCarried ? "primary" : "secondary")" data-pt="fac-take-carried" aria-pressed="@(d.ToCarried ? "true" : "false")" @onclick="() => G.SetFacilityTakeDest(true)">@GameEngine.DryingToCarriedLabel</button>
+            <button type="button" class="@(d.ToCarried ? "secondary" : "primary")" data-pt="fac-take-ground" aria-pressed="@(d.ToCarried ? "false" : "true")" @onclick="() => G.SetFacilityTakeDest(false)">@GameEngine.DryingToGroundLabel</button>
+        </div>
+        @if (why != null)
+        {
+            <div class="tbar-note bad" data-pt="fac-take-why">@why</div>
+        }
+        else
+        {
+            <div class="small muted">最多 @max</div>
+            <div class="tbar-row">
+                <button type="button" class="tbar-step" aria-label="减少" @onclick="() => Step(-1, max)">−</button>
+                <input type="text" inputmode="numeric" value="@d.Qty" data-pt="fac-take-qty" @oninput="OnInput" aria-label="数量" />
+                <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1, max)">+</button>
+                <button type="button" class="tbar-max" @onclick="() => d.Qty = max.ToString()">最多@(max)</button>
+            </div>
+            @if (n < 1 || n > max) { <div class="tbar-note bad">请输入 1 到 @max 之间的数字</div> }
+        }
+        @if (G.Notice != null) { <div class="tbar-note bad" data-pt="fac-take-fail">@G.Notice</div> }
+        <div class="btn-row">
+            <button type="button" class="primary" data-pt="fac-take-ok" disabled="@invalid" @onclick="(MouseEventArgs ev) => Confirm(n, ev)">确认@(invalid ? "" : $" {n}")</button>
+            <button type="button" class="secondary" data-pt="fac-take-cancel" @onclick="G.CancelFacilityTake">取消</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public ItemInstance Item { get; set; } = null!;
+    /// <summary>卡上的状态行（晾制位沿位内原料原写法，如「保质暂停，剩余2小时」；设施批内沿原「保质暂停，剩余…」）；没有为 null。</summary>
+    [Parameter] public string? Status { get; set; }
+
+    private void Pick() => G.PickFacilityItem(Item);
+
+    private void Key(KeyboardEventArgs ev)
+    {
+        if (ev.Key is "Enter" or " ") Pick();
+    }
+
+    private void OnInput(ChangeEventArgs ev)
+    {
+        if (G.FacTake is { } d) d.Qty = new string((ev.Value?.ToString() ?? "").Where(char.IsDigit).ToArray());
+    }
+
+    private void Step(int k, int max)
+    {
+        if (G.FacTake is not { } d) return;
+        var cur = int.TryParse(d.Qty.Trim(), out var v) ? v : 0;
+        d.Qty = Math.Clamp(cur + k, 1, Math.Max(1, max)).ToString();
+    }
+
+    /// <summary>最后一次点击才提交；双击的第二下不再提交（同 B51c2a 取出按钮）。</summary>
+    private void Confirm(int n, MouseEventArgs ev)
+    {
+        if (ev.Detail > 1) return;
+        G.ConfirmFacilityTake(n);
+    }
+}

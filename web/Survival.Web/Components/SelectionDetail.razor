@@ -55,7 +55,8 @@
         @* B32b（Q339）：火堆里的锅、水或食材在右栏顶部给层级路径，可逐级点回所在锅与火堆详情 *@
         @if (G.InFireCrumbs(sel) is { } crumbs) { <FireCrumbs Path="crumbs" /> }
         @* B45（Q548）：火堆里的内容在右栏只读（批次不可点，操作在中央加工菜单） *@
-        <ItemDetail Sel="sel" ReadOnly="@(Peek || G.InFireCrumbs(sel) != null)" PeekBatch="@Batch" />
+        @* B51c2b（Q925 B）：晾制位、陶窑／净水台批内的物品卡在右栏只看详情，数量取出在面板里该卡下 *@
+        <ItemDetail Sel="sel" ReadOnly="@(Peek || G.InFireCrumbs(sel) != null || G.IsFacilityItemSel(sel))" PeekBatch="@Batch" />
         break;
     case SelectionKind.Facility:
         <FireDetail />

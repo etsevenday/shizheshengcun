@@ -651,7 +651,7 @@ public sealed partial class GameSession
     /// B45（FACPROC 第 3 条、Q548）：火堆加工菜单开着时不弹（菜单内有自己的操作区）；火堆里的锅、水、食材不再用选卡盘执行（只读右栏，操作在中央加工菜单）。
     public bool CardPopShown => State != null && Pop == null && FeedPending == null && !IgniteMenuOpen && !DialogueLocked && !OverflowPending && !DuplicateWeaponsPending
         && !MenuOpen && !BattleMenuOpen && !CardPopCovered && Panel != FireMenuPanel && Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid
-        && InFireCrumbs(Selected) == null;
+        && InFireCrumbs(Selected) == null && !IsFacilityItemSel(Selected);
 
     /// <summary>
     /// B32d（逐字稿 §1.5 Q378）：选卡操作盘的来源卡被新开的面板实际盖住（app.js survivalPop 按覆盖范围判断），已按来源失效收盘。
@@ -2136,6 +2136,7 @@ public sealed partial class GameSession
         if (intent.IsPreview)
         {
             if (intent.Verb == DropVerb.PreviewRecipe) ShowRecipes(intent);
+            else if (intent.Verb == DropVerb.PreviewDrying && intent.Slot is int dk) FocusDrying(dk, intent.Recipes);   // B51c2b（Q926 A）
             else if (intent.Action != null) ShowAction(intent.Action, intent.Label.Replace("查看", ""));
             return ActionResult.Success();
         }
@@ -2567,6 +2568,9 @@ public sealed partial class GameSession
                 .OrderBy(i => E.CardSideOf(i) != null)   // B22 M408：普通卡的箭头先转普通物品，战利品卡/已鉴定卡（B22d）的箭头带实例号
                 .ThenBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
         if (inst == null) return ActionResult.Fail("没有可转移的物品");
+        // B51c2b（S11 §Q870 B 快捷箭头）：晾制位、陶窑／净水台批内的物品卡——默认取 1 份到随身，同一取出事务（门槛、C＋R 后容量、部分取料结束所属位／批）
+        if (GameEngine.IsFacilityItem(inst))
+            return Instant(InstantRequest.FacilityTake(inst.InstanceId, 1, toZone ?? ItemInstance.Carried, E.FacilityItemStamp(S, inst)));
         // 火堆或锅里的物品：明确目标“取下到地面”或“拾取到随身”，与拖出走同一校验（统一卡片案第 5 节）
         if (inst.InFacility || (inst.InContainer && !E.IsLiquid(inst)))
         {

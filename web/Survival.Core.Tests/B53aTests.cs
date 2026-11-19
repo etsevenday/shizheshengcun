@@ -761,8 +761,8 @@ public class B53aTests : TestBase
         Assert.That(d, Does.Contain("@onclick=\"() => G.OpenDiscard(waterTarget)\">@DiscardCopy.DiscardWater</button>"), "水量行末丢弃水");
         Assert.That(d, Does.Contain("<DiscardPanel Target=\"@discardTarget\" />"));
         Assert.That(d, Does.Contain("<DiscardPanel Target=\"@waterTarget\" HideButton=\"@canteen\" />"));
-        // 对照：悬停与加工菜单打开时传入只读
-        Assert.That(Web("Components", "SelectionDetail.razor"), Does.Contain("ReadOnly=\"@(Peek || G.InFireCrumbs(sel) != null)\""));
+        // 对照：悬停与加工菜单打开时传入只读；B51c2b 改期望（S11／S07 §Q925 B：设施批内／晾制位物品卡右栏也只读，取出走面板里的数量窗）
+        Assert.That(Web("Components", "SelectionDetail.razor"), Does.Contain("ReadOnly=\"@(Peek || G.InFireCrumbs(sel) != null || G.IsFacilityItemSel(sel))\""));
         var p = Web("Components", "DiscardPanel.razor");
         Assert.That(p, Does.Contain("@(Target.IsWater ? DiscardCopy.DiscardWater : DiscardCopy.Discard)</button>"));
     }

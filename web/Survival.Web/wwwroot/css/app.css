@@ -1863,3 +1863,20 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 
 /* ───── BM11（S14／美术16 Q920 A）：地点人物卡细插画区各分辨率统一暂藏（名称、岗位、状态与按钮保持；B36b 排版另定） ───── */
 .npc-card .oc-art { display: none; }
+
+/* B51c2b（S11 §Q870 B／§Q925 B）：晾制位、陶窑／净水台批内的真实物品卡（紧凑一行：图标、名称×份数、状态、取到随身箭头）与卡下数量取出窗 */
+.fi-row { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.irow.fi-card { flex: 0 1 auto; min-width: 0; min-height: 0; margin-top: 0; padding: 2px 4px; gap: 4px; cursor: pointer; position: relative; }
+.irow.fi-card + .irow.fi-card { margin-top: 0; }
+.irow.fi-card.selected { border-color: var(--accent, #c9a227); }
+.irow.fi-card .ir-icon { width: 20px; height: 20px; border-radius: 3px; }
+.irow.fi-card .ir-icon svg { width: 18px; height: 18px; }
+.irow.fi-card .ir-text { flex-direction: row; align-items: baseline; gap: 6px; line-height: 1.25; }
+.irow.fi-card .ir-name { font-size: var(--fs-aux); white-space: nowrap; }
+.irow.fi-card .ir-status { white-space: nowrap; }
+.irow.fi-card .card-arrow { position: static; flex: 0 0 auto; }
+.fi-take { flex: 1 0 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel, transparent); }
+.fi-take .dq-head { margin: 0 0 4px; font-size: var(--fs-body); }
+.fi-take .fi-dest { margin-bottom: 4px; }
+.sq-row.residual { opacity: .9; }
+.dry-option.on { outline: 2px solid var(--accent, #c9a227); }

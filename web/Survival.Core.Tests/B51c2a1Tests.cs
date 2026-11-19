@@ -446,7 +446,7 @@ public class B51c2a1Tests : TestBase
         Assert.That(craft, Does.Contain("var allWhy = e.TakeAllBlocked(s, allPlace, allStation);"));
         Assert.That(craft, Does.Contain("data-station-take-all title=\"@allWhy\" disabled=\"@(allWhy != null || StationHeld)\""));
         Assert.That(craft, Does.Contain("G.E.TakeAll(G.S, place, stationId, stamp, requestKey)"));
-        Assert.That(craft, Does.Contain("@GameEngine.StationTitle(sbList.Count, true)"));
+        // B51c2b 删断言（S11 §Q870 B／§Q924 B；测试规则第 8 条）：标题只数真实加工批，改由 bUnit B51c2bFacilityItemUiTests 断渲染结果
         Assert.That(craft, Does.Not.Contain("data-station-cancel"));
         var menu = File.ReadAllText(Path.Combine(Root(), "web", "Survival.Web", "Components", "MenuOverlay.razor"));
         Assert.That(menu, Does.Contain("G.E.DebugLegacyStation56"));

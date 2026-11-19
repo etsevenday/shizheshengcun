@@ -23,8 +23,9 @@
         <span class="pc-text"><span class="pc-name">@name</span>@if (Slot.HasValue) {<span class="pc-status">加工位@(Slot)</span>}</span>
         @if (!ReadOnly)
         {
-        <button type="button" class="row-arrow" aria-label="@($"把{name}取到随身")" title="取到随身（不打开操作窗；点图标可选目的地）"
-                disabled="@(G.E.IsBusy(s) || G.Running)" @onclick="Take" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
+        @* B51c2b（S11／S09 §Q927 B）：沿原单击 1 份／件取到随身，加长按——同一 TransferArrow 节奏与停止规则，只认按下时这张卡（取完即停，不拿邻卡／新卡） *@
+        <TransferArrow Owner="@Item.Owner" ItemId="@Item.ItemId" InstanceId="@Item.InstanceId" ToZone="@ItemInstance.Carried" CssClass="row-arrow" StopKeys="true"
+                       Label="@($"把{name}取到随身")" Title="取到随身（不打开操作窗；点图标可选目的地）" Enabled="@(!(G.E.IsBusy(s) || G.Running))" />
         }
     </div>
     @* B10b 试玩修复：1280×720 加工位只有一行，状态另备短写（“煅烧暂停 0/60（未燃）”），全文在悬停提示与宽屏 *@
@@ -65,8 +66,6 @@
         else if (ReadOnly) G.ReadOnlyCrumb(sel);
         else G.Select(sel);
     }
-
-    private void Take() => G.TransferOne(Item.Owner, Item.ItemId, Item.InstanceId, ItemInstance.Carried);
 
     private void Key(KeyboardEventArgs ev)
     {
