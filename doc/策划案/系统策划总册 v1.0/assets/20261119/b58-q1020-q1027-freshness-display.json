@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-19",
+  "status": "planning_target",
+  "sourceCommit": "115c19bb0b01ce93bc466fa478687ad628fdc95a",
+  "originalBatch": "2026-11-19 来自 6d51ac99 B58（新鲜度百分比，提前核对，次要）",
+  "questionIds": [
+    1020,
+    1021,
+    1022,
+    1023,
+    1024,
+    1025,
+    1026,
+    1027
+  ],
+  "answers": {
+    "Q1020": "A",
+    "Q1021": "B",
+    "Q1022": "user_exact_takeout_spoils_warning",
+    "Q1023": "B",
+    "Q1024": "A",
+    "Q1025": "A_with_user_move_general_rules_to_help_category",
+    "Q1026": "user_omit_indefinite_freshness_and_convert_actual_spoilage",
+    "Q1027": "A"
+  },
+  "snippets": {
+    "freshness": "新鲜度{n}%",
+    "corpseFreshness": "尸体新鲜度{n}%",
+    "partialPaused": "含新鲜度暂停",
+    "protectedFreshness": "新鲜度{n}% · 烹饪保护",
+    "willSpoilOnTakeout": "取出后腐败",
+    "newOutputPreview": "（完成时新鲜度100%）",
+    "helpCategory": "保质与腐败"
+  },
+  "freshness": {
+    "rounding": "floor_remaining_ratio_positive_min_1",
+    "maxPercentOnlyAtFull": true,
+    "pauseWholeShowPercentOnly": true,
+    "multiBatchCardShowsActualFrontBatch": true,
+    "partialPauseUsesTag": true,
+    "protectedCanShowZero": true,
+    "spoilImmediatelyWhenActuallyDue": true,
+    "noFreshnessLineForNonPerishable": true,
+    "noExpiryTimeInPlayerUi": true
+  },
+  "authoredCopy": {
+    "developerDraftsAndTracksTemporaryChanges": true,
+    "generalNonTimeRulesMoveToHelp": true
+  },
+  "acceptance": [
+    {
+      "id": "B58-Q1020-01",
+      "expected": "实际剩余99.9%显示99%，0.1%显示1%，真实满与耗尽分别显示100%和0%。使用真实剩余值向下取整。"
+    },
+    {
+      "id": "B58-Q1021-01",
+      "expected": "整批冻结只显示实际百分比，副标沿正面批次，详情逐批显示。混合卡部分冻结继续显示含新鲜度暂停。"
+    },
+    {
+      "id": "B58-Q1022-01",
+      "expected": "生肉在烹饪保护中耗尽保鲜量，详情显示新鲜度0% · 烹饪保护。真会转换时取出确认写取出后腐败并列受影响食材。"
+    },
+    {
+      "id": "B58-Q1023-01",
+      "expected": "新的有期限成品预估写完成时新鲜度100%，实际成功生成时为100%。只是移物或存放的原批不刷新，已有物品显示当前值。"
+    },
+    {
+      "id": "B58-Q1024-01",
+      "expected": "系统说明、物品说明和引导中相应旧时长已替换，逐项列入暂用稿登记，实际数值和原结算未被文案改动。"
+    },
+    {
+      "id": "B58-Q1025-01",
+      "expected": "不含具体时间的通用规则说明保留原用词并归入保质与腐败，操作区只露出当前信息和实际后果。"
+    },
+    {
+      "id": "B58-Q1026-01",
+      "expected": "无期限物品无新鲜度或不会腐败行，真正腐败的物品直接显示腐败物，仍有烹饪保护的0%食材不提前转换。"
+    },
+    {
+      "id": "B58-Q1027-01",
+      "expected": "喂食单行与尸体预估分别显示新鲜度75%和尸体新鲜度75%，清单括注仍写（新鲜度75%）。"
+    }
+  ]
+}
