@@ -651,4 +651,43 @@ public class B51c2a2Tests : TestBase
         Assert.That(E.PotContents(s, pot.InstanceId).Where(i => i.ItemId == "grain").Sum(i => i.Count), Is.EqualTo(2), "谷物随锅");
         Assert.That(s.Locations["camp"].Facility.Processes, Is.Empty);
     }
+
+    // ───────────── 变异测试第二轮补测（基线 513fd622..dc99337a） ─────────────
+
+    /// <summary>
+    /// S11 Q871 B（只扩四类被动设施取出，「不扩禁普通地面随身／添料原业务」）：不在火堆上的锅里取食材仍按原门槛——主行动进行中拒原句「行动进行中，不能整理物品」；
+    /// 配对：同一口锅放进火堆后，取锅里食材改走取出门槛「行动进行中，暂不能整理物品」。
+    /// </summary>
+    [Test]
+    public void MT2_TakeOut_PotNotInFire_KeepsOldGate_InFireUsesTakeGate()
+    {
+        var s = New();
+        var pot = Pot(s);
+        Assert.That(pot.InFacility, Is.False, "起点：锅不在火堆上");
+        E.DebugGive(s, "raw_root", 1, "camp");
+        Do(s, InstantRequest.PutFoodInPot(First(s, "raw_root", "camp").InstanceId, pot.InstanceId, 1));
+        var root = E.PotContents(s, pot.InstanceId).Single(i => i.ItemId == "raw_root");
+        Start(s, ActionRequest.Wait(30));
+        Assert.That(E.TakeOutBlocked(s, root, "camp"), Is.EqualTo("行动进行中，不能整理物品"), "不在火堆：原门槛");
+        E.Cancel(s);
+        Do(s, InstantRequest.PutInFire(pot.InstanceId));
+        Start(s, ActionRequest.Wait(30));
+        Assert.That(E.TakeOutBlocked(s, root, "camp"), Is.EqualTo(Busy), "火堆上锅里：取出门槛");
+    }
+
+    /// <summary>
+    /// 腐败停止位说明（B53a 原句「{配方名}在{时刻}停止，没有成品」）：旧档没有停止时刻的位省去「在{时刻}」，余物已空时以「。」收尾（Q880 暂用拼接）。
+    /// </summary>
+    [Test]
+    public void MT2_SpoiledStopLine_NoEndMinute()
+    {
+        var s = Rack();
+        AddSlot(s, new DryingSlot
+        {
+            Slot = 0, BatchId = 5500, RecipeId = "dry_berries", Status = DryingSlot.Spoiled, StartMinute = s.GameMinute - 60, DoneMinutes = 55,
+            RequiredMinutes = 120, EndMinute = null, InitiatorActorId = GameState.PlayerId, StopReason = DryingSlot.StopSpoiled,
+        });
+        var v = E.DryingSlotViews(s).Single(x => x.Slot == 0);
+        Assert.That(v.Line, Is.EqualTo("晾制果干停止，没有成品。"));
+    }
 }
