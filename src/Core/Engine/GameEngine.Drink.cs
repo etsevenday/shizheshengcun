@@ -8,7 +8,7 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// 自选饮水的逐字稿（B56；S10／S12／S14 文首「2026-11-17 B53a完整原批Q928—Q929」§本批逐字稿，合同 assets/20261117/b53a-q928-q929-water-100ml.json copy）。
-    /// 入口按钮与完成日志按 02 Q975 开发方建议 A 暂用（待文案定稿后替换），见开发记录 B56 暂用文案。
+    /// 入口按钮与完成日志按 02 Q975 A 定稿，见开发记录 B56 暂用文案。
     /// </summary>
     public static class DrinkCopy
     {
@@ -29,10 +29,10 @@ namespace Survival.Core.Engine
         /// <summary>食饮确认的单次水量摘要。</summary>
         public const string Summary = "{水种}{所选毫升}毫升";
 
-        /// <summary>Q975 A 暂用：卡下／详情的饮水入口按钮（脏水接「（风险）」）。</summary>
+        /// <summary>Q975 A 定稿：卡下／详情的饮水入口按钮（脏水接「（风险）」）。</summary>
         public const string Entry = "饮用";
         public const string EntryRisky = "饮用（风险）";
-        /// <summary>Q975 A 暂用：主角自饮完成日志的动作名部分「饮用{水种}{毫升}毫升」（日志整句＝动作名＋「：{变化}。」）。</summary>
+        /// <summary>Q975 A 定稿：主角自饮完成日志的动作名部分「饮用{水种}{毫升}毫升」（日志整句＝动作名＋「：{变化}。」）。</summary>
         public const string LogLabel = "饮用{水种}{毫升}毫升";
 
         public static string AmountText(int ml) => Amount.Replace("{毫升}", ml.ToString());
@@ -187,7 +187,7 @@ namespace Survival.Core.Engine
             };
         }
 
-        /// <summary>Q975 A 暂用：饮水入口按钮「饮用」／脏水「饮用（风险）」；食物、药品沿原「食用1份」等。</summary>
+        /// <summary>Q975 A 定稿：饮水入口按钮「饮用」／脏水「饮用（风险）」；食物、药品沿原「食用1份」等。</summary>
         public static string DrinkEntryText(ItemConfig liquid) => UseRisky(liquid) ? DrinkCopy.EntryRisky : DrinkCopy.Entry;
     }
 }

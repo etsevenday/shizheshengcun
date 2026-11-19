@@ -1495,7 +1495,7 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .discard-sub.in-list .discard-qty button { min-width: 40px; min-height: 40px; }
 .discard-sub.in-list .discard-opt { color: var(--text); background: #26342b; border: 1px solid var(--line); }
 .discard-sub.in-list .discard-opt.danger { color: #f3e3d6; background: #5e3528; border-color: #a8735d; }
-.discard-sub.in-list .discard-opt:disabled { color: #7d8578; background: transparent; border-color: var(--line); }
+.discard-sub.in-list .discard-opt:disabled, .discard-sub.in-list .discard-opt[aria-disabled="true"] { color: #7d8578; background: transparent; border-color: var(--line); }
 .discard-sub.in-list .discard-back { color: var(--text); background: transparent; border: 1px solid var(--line); }
 .discard-sub.in-list .discard-qty { display: flex; align-items: center; gap: 6px; }
 .discard-sub.in-list .discard-qty input { flex: 1 1 auto; min-width: 0; }

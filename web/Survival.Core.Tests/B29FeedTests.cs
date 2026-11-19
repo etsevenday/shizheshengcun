@@ -140,8 +140,8 @@ public class B29FeedTests : TestBase
         var c = (JObject)JObject.Parse(File.ReadAllText(Doc()))["feeding"]!["panelCopy"]!;
         var flat = Flat(c).ToList();
         Assert.That(flat.Select(x => x.path), Is.EquivalentTo(FeedPanelCopy.All.Keys));
-        // B56（S12 文首 B53a Q929 本批逐字稿；Q977 A 暂用保留锅号／壶号／编号段）：三种水来源行括注换「（可用{可饮份数}份，每份100毫升）」，
-        // 单次用量摘要换「{水种}{所选毫升}毫升」；其余逐字对旧契约。说明第 4 段含 500／250 的分句按 02 Q976 A 暂用换 Q929 系统说明新稿
+        // B56（S12 文首 B53a Q929 本批逐字稿；02 Q977 B 定稿：模板保留锅号／壶号／编号段供合同比对，正式界面由 HideInstanceFields 去掉）：三种水来源行括注换「（可用{可饮份数}份，每份100毫升）」，
+        // 单次用量摘要换「{水种}{所选毫升}毫升」；其余逐字对旧契约。说明第 4 段含 500／250 的分句按 02 Q976 B 定稿换同伴饮水短稿
         var b56 = new Dictionary<string, (string Old, string New)>
         {
             ["sourceRows.waterCard"] = ("{出物人}的随身物品 · {水种}{毫升}毫升（{可饮份数}份，每份500毫升） · 编号#{实例号}", "{出物人}的随身物品 · {水种}{毫升}毫升（可用{可饮份数}份，每份100毫升） · 编号#{实例号}"),
@@ -162,7 +162,7 @@ public class B29FeedTests : TestBase
         }
         var help = c["helpText"]!.Values<string>().ToList();
         Assert.That(help[3], Is.EqualTo("一次只给一人食用一份。水卡和随身锅水每份500毫升，水壶每次250毫升；食饮按原规则推进5分钟，不能中途取消，不会先转移再扣一份。"), "旧契约第 4 段原句");
-        help[3] = "一次只给一人食用一份。水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。食饮按原规则推进5分钟，不能中途取消，不会先转移再扣一份。";
+        help[3] = "一次只给一人食用一份。每份100毫升，可选数量，一次5分钟。食饮按原规则推进5分钟，不能中途取消，不会先转移再扣一份。";
         Assert.That(FeedPanelCopy.HelpText, Is.EqualTo(help));
     }
 
@@ -208,7 +208,7 @@ public class B29FeedTests : TestBase
         var dirty = Give(s, "dirty_water", ItemInstance.Carried, 5);   // B56：每份100毫升，×5 保持原 500 毫升
         var rows = E.FeedClassRows(s, Lin, "clean_water");
         Assert.That(rows.Select(r => r.Kind), Is.EqualTo(new[] { FeedSourceKind.Water, FeedSourceKind.PotWater, FeedSourceKind.Canteen }));
-        // B56（S12 文首 B53a Q929 本批逐字稿；Q977 A 暂用保留锅号／壶号／编号段）：用量摘要按所选毫升（默认 1 份＝100 毫升，水壶不再固定 250）；可饮份数＝floor(合法自由水量／100)
+        // B56（S12 文首 B53a Q929 本批逐字稿；02 Q977 B 定稿：模板保留锅号／壶号／编号段供合同比对，正式界面由 HideInstanceFields 去掉）：用量摘要按所选毫升（默认 1 份＝100 毫升，水壶不再固定 250）；可饮份数＝floor(合法自由水量／100)
         Assert.That(rows.Select(r => r.PortionText), Is.EqualTo(new[] { "净水100毫升", "净水100毫升", "净水100毫升" }));
         Assert.That(rows[0].Text, Is.EqualTo($"你的随身物品 · 净水1000毫升（可用10份，每份100毫升）"));
         Assert.That(rows[1].Text, Is.EqualTo($"你的随身锅 · 净水1000毫升（可用10份，每份100毫升）"));
@@ -247,7 +247,7 @@ public class B29FeedTests : TestBase
         Give(s, "clean_water", ItemInstance.ContainerOwner(pot.InstanceId), 5);
         s.Locations["camp"].Facility.Processes.Add(new FacilityProcess { RecipeId = "boil_root", TargetInstanceId = 99999, PotInstanceId = pot.InstanceId, ReservedWaterMl = 450 });
         var row = E.FeedClassRows(s, Lin, "clean_water").Single();
-        // B56（S12 文首 B53a Q929 本批逐字稿；Q977 A 暂用保留锅号／壶号／编号段）；不足一份沿 b53a json copy.shortage「水分不足。」
+        // B56（S12 文首 B53a Q929 本批逐字稿；02 Q977 B 定稿：模板保留锅号／壶号／编号段供合同比对，正式界面由 HideInstanceFields 去掉）；不足一份沿 b53a json copy.shortage「水分不足。」
         Assert.That(row.Text, Is.EqualTo($"你的随身锅 · 净水500毫升（可用0份，每份100毫升）"));
         Assert.That(row.Blocked, Is.EqualTo("水分不足。"));
     }

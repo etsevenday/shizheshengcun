@@ -89,7 +89,7 @@
                     var cfg = e.Item(id);
                     if (cfg.Kind == "water")
                     {
-                        @* B56（S10／S12 文首 B53a Q929：暂停层与卡下同一饮水窗）：入口文字按 02 Q975 A 暂用「饮用净水·5分钟」 *@
+                        @* B56（S10／S12 文首 B53a Q929：暂停层与卡下同一饮水窗）：入口文字按 02 Q975 A 定稿「饮用净水·5分钟」 *@
                         <DrinkBox InstanceId="@batch.InstanceId" EntryText="@($"饮用{cfg.Name}·5分钟")" EntryClass="secondary supply-btn" />
                         continue;
                     }
@@ -103,8 +103,8 @@
             @if (dirty != null)
             {
                 <div class="risk" style="max-width:820px">
-                    @* B56：说明句按 02 Q976 A 暂用、入口按 Q975 A 暂用「仍然饮用脏水」，点开走饮水窗选量 *@
-                    脏水每100毫升补水6，但必定腹泻12小时（期间每小时额外失水3）。
+                    @* B56：说明句按 02 Q976 B 定稿短稿、入口按 Q975 A 定稿「仍然饮用脏水」，点开走饮水窗选量 *@
+                    脏水每100毫升补水6；必定腹泻12小时，每小时额外失水3。
                     <DrinkBox InstanceId="@dirty.InstanceId" EntryText="仍然饮用脏水" EntryClass="linkish" />
                 </div>
             }

@@ -69,6 +69,8 @@ public sealed partial class GameSession
     public void DiscardChooseQuantity()
     {
         if (Discarding is not DiscardDraft d) return;
+        // B56（02 Q979 B）：水不足一份时按钮只置灰（aria-disabled）、仍可点按／回车——这时只查看禁用原因「水分不足。」，不进数量层
+        if (DiscardViewOf(d.Target).QuantityBlocked is string why) { d.Error = why; Notify(); return; }
         d.Stage = DiscardStage.Quantity;
         d.QuantityText = "1";
         d.Error = null;

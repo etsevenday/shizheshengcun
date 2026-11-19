@@ -90,7 +90,7 @@ namespace Survival.Core.Engine
         /// <summary>「选择数量」的上限 N：物品＝可丢弃份数；水＝floor(可丢弃毫升／每份)，为 0 时数量路径禁用。</summary>
         public int MaxUnits { get; set; }
         /// <summary>
-        /// B56（S10 文首 B53a Q929；Q979 A 暂用）：水有可丢弃的真实尾水但不足一份（100 毫升）时「选择数量」禁用的原因「水分不足。」；
+        /// B56（S10 文首 B53a Q929；02 Q979 B 定稿）：水有可丢弃的真实尾水但不足一份（100 毫升）时「选择数量」禁用的原因「水分不足。」；
         /// 数量路径可用或本身无可丢弃（看 <see cref="Blocked"/>）时为 null。「全部丢弃」仍按实际毫升可删尾水。
         /// </summary>
         public string? QuantityBlocked { get; set; }

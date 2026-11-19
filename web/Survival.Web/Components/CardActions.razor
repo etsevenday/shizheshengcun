@@ -109,7 +109,7 @@
         @if (m.Instance is ItemInstance cInst && e.IsCanteen(cInst))
         {
             @* B16（R49，S10 X4、A07 X1.5）：分量水壶只装同一种水。B56（S10 文首 B53a Q929）：壶内饮用走自选饮水窗（N×100毫升、一次5分钟），不再固定一口250；
-               装入／倒出按 02 Q978 A 暂用数量窗（标题「装水」「倒出」，默认1份、旁写「{毫升}毫升」、按钮「确认{数量}」）；说明句按 Q976 A 暂用新稿 *@
+               装入／倒出按 02 Q978 A 定稿数量窗（标题「装水」「倒出」，默认1份、旁写「{毫升}毫升」、按钮「确认{数量}」）；单位句按 Q976 B 定稿「每份100毫升。」 *@
             var cid = cInst.InstanceId;
             var cc = e.Item(cInst.ItemId).Canteen!;
             <div class="ca-note" data-canteen title="只装同一种水，不混装；@(CanteenRuleNote)不能放进火堆或锅里">@e.CanteenLabel(cInst) · 只装同种水；@CanteenRuleNote</div>
@@ -472,9 +472,9 @@
     private string BatchTitle(ItemBatch b) =>
         $"这一批×{b.Count}：{BatchFresh(b)}{(string.IsNullOrEmpty(b.GrantEventId) ? "" : " · 来源单独成批")}{(b.Reserved ? " · 正被当前行动预留" : "")}";
 
-    // B56（Q976 A 暂用）：水壶说明里含 500／250 的分句换成 Q929 系统说明新稿
-    private const string CanteenRuleNote = "水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。";
-    // B56（Q978 A 暂用）：水壶装入／倒出数量窗标题沿原专窗动作名
+    // B56（02 Q976 B 定稿）：水壶装倒提示的单位句只换成「每份100毫升。」，容量与只装同种水等原规则保留
+    private const string CanteenRuleNote = "每份100毫升。";
+    // B56（02 Q978 A 定稿）：水壶装入／倒出数量窗标题沿原专窗动作名
     private const string CanteenFillTitle = "装水";
     private const string CanteenPourTitle = "倒出";
     private string? _cOp;

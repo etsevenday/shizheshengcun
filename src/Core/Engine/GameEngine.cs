@@ -817,7 +817,7 @@ namespace Survival.Core.Engine
         /// <summary>是否在玩法白名单内可对自身使用（配置 use 不为空）；材料、工具、空锅、生块根为否。</summary>
         public static bool CanSelfUse(ItemConfig cfg) => cfg.Use != null;
 
-        /// <summary>卡下自用按钮文案：“食用1份”“使用1份”；B56（Q975 A 暂用）水卡／锅水为“饮用”“饮用（风险）”（水量在饮水窗里选）。</summary>
+        /// <summary>卡下自用按钮文案：“食用1份”“使用1份”；B56（02 Q975 A 定稿）水卡／锅水为“饮用”“饮用（风险）”（水量在饮水窗里选）。</summary>
         public static string UseButtonText(ItemConfig cfg) =>
             cfg.Kind == "water" ? DrinkEntryText(cfg) : UseVerb(cfg) + "1份" + (UseRisky(cfg) ? "（风险）" : "");
 

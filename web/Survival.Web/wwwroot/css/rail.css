@@ -114,8 +114,8 @@
 [data-detail-rail] .discard-row > button { flex: 1 1 8em; min-height: 40px; padding: 6px 10px; font-size: var(--fs-body); border-radius: 4px; }
 [data-detail-rail] .discard-opt { color: var(--text); background: #26342b; border: 1px solid var(--line); }
 [data-detail-rail] .discard-opt.danger { color: #f3e3d6; background: #5e3528; border-color: #a8735d; }
-[data-detail-rail] .discard-opt:hover:not(:disabled) { border-color: var(--accent); }
-[data-detail-rail] .discard-opt:disabled { color: #7d8578; background: transparent; border-color: var(--line); }
+[data-detail-rail] .discard-opt:hover:not(:disabled):not([aria-disabled="true"]) { border-color: var(--accent); }
+[data-detail-rail] .discard-opt:disabled, [data-detail-rail] .discard-opt[aria-disabled="true"] { color: #7d8578; background: transparent; border-color: var(--line); }
 [data-detail-rail] .discard-back { color: var(--text); background: transparent; border: 1px solid var(--line); }
 [data-detail-rail] .discard-back:hover { background: #2f3a31; }
 [data-detail-rail] .discard-qty { align-items: center; }

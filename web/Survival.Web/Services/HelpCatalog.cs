@@ -461,6 +461,8 @@ public static class HelpCatalog
                         {
                             $"选中食物或水，点卡下的“食用/饮用”，耗时{c.ItemActions.UseMinutes}分钟，效果开始时立即生效；超出上限的部分浪费，按钮旁会提示溢出。",
                             $"脏水必定引起腹泻{Dur(c.ItemActions.DiarrheaMinutes)}，期间每小时额外失水{T(-c.ItemActions.DiarrheaExtraHydrationPerHour)}。脏水在火堆上的锅里烧开就成了净水。",
+                            // B56（S12 文首 B53a Q929 系统说明；02 Q976 B「系统说明的完整饮水规则保留」）
+                            "水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。",
                             "生块根、生肉要烤或煮熟才能吃。战斗中不能吃喝。",
                         };
                     },
@@ -585,8 +587,8 @@ public static class HelpCatalog
                             var input = e.ItemName(p.InputId);
                             var output = e.ItemName(p.OutputId);
                             list.Add(p.IsPotBatch
-                                // B56（02 Q976 A 暂用）：旧「半升或一升同样时间」句换成 Q929 系统说明新稿
-                                ? $"{p.Name}：锅里的{input}受热{p.HeatMinutes}分钟变成{output}。水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。"
+                                // B56（02 Q976 B 定稿）：旧「半升或一升同样时间」分句换成烧水行短稿「100毫升起，时长不变。」
+                                ? $"{p.Name}：锅里的{input}受热{p.HeatMinutes}分钟变成{output}，100毫升起，时长不变。"
                                 : p.InPot
                                     ? $"{p.Name}：{input}放在有{e.ItemName(p.RequiredLiquid ?? "clean_water")}的锅里受热{p.HeatMinutes}分钟成为{output}，完成时用掉{p.WaterCostMl}毫升。"
                                     : $"{p.Name}：{input}直接放进火堆加工位，受热{p.HeatMinutes}分钟成为{output}。");

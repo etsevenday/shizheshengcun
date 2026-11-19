@@ -6,6 +6,14 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B56UiWiringTests
 {
+    private static string Repo(string relative)
+    {
+        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "doc", "策划案"))) dir = dir.Parent;
+        Assert.That(dir, Is.Not.Null, "找不到仓库根目录");
+        return File.ReadAllText(Path.Combine(dir!.FullName, relative));
+    }
+
     private static string Web(string relative)
     {
         var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
@@ -28,15 +36,18 @@ public class B56UiWiringTests
     }
 
     [Test]
-    public void Entries_CardPotCanteenPause_AllUseDrinkBox_TempCopyQ975Q976()
+    public void Entries_CardPotCanteenPause_AllUseDrinkBox_FinalCopyQ975Q976()
     {
         var card = Web("Components/CardActions.razor");
         Assert.That(card, Does.Contain("e.Item(m.ItemId).Kind == \"water\"").And.Contain("<DrinkBox InstanceId=\"@m.UseId.Value\" />"), "水卡与锅水");
         Assert.That(card, Does.Contain("<DrinkBox InstanceId=\"@cid\" />"), "水壶");
         Assert.That(card, Does.Not.Contain("CanteenSipText").And.Not.Contain("按500毫升装倒"), "旧一口 250／按 500 装倒撤下");
         var pause = Web("Components/PauseLayer.razor");
-        Assert.That(pause, Does.Contain("EntryText=\"@($\"饮用{cfg.Name}·5分钟\")\"").And.Contain("EntryText=\"仍然饮用脏水\""), "Q975 A 暂用");
-        Assert.That(pause, Does.Contain("脏水每100毫升补水6，但必定腹泻12小时（期间每小时额外失水3）。"), "Q976 A 暂用");
+        Assert.That(pause, Does.Contain("EntryText=\"@($\"饮用{cfg.Name}·5分钟\")\"").And.Contain("EntryText=\"仍然饮用脏水\""), "Q975 A 定稿");
+        // 02 Q976 B 定稿（S14 2026-11-18 B56 次要原批）：各处逐处短稿，替换开发方 A 暂用的整段 Q929 新稿
+        Assert.That(pause, Does.Contain("脏水每100毫升补水6；必定腹泻12小时，每小时额外失水3。"), "Q976 B 暂停层脏水短稿");
+        Assert.That(card, Does.Contain("CanteenRuleNote = \"每份100毫升。\"").And.Contain("只装同种水；@CanteenRuleNote"), "Q976 B 水壶装倒单位句");
+        Assert.That(Repo("data/config.v0.6.json"), Does.Contain("容量2000ml；不保鲜、不受热。只装同一种水；每份100毫升。\""), "Q976 B 水壶物品说明单位句，容量保留");
         Assert.That(pause, Does.Not.Contain("仍然饮用1份脏水").And.Not.Contain("应急补水30"));
     }
 
@@ -65,18 +76,28 @@ public class B56UiWiringTests
     }
 
     [Test]
-    public void DiscardPanel_QuantityBlockedReason_MlBesideInput_Q979A()
+    public void DiscardPanel_QuantityBlockedReason_MlBesideInput_Q979B()
     {
+        // 02 Q979 B 定稿：删子区常驻原因行；置灰但可聚焦（aria-disabled），悬停 title、读屏 aria-describedby、点按／回车由会话写进原因行
         var panel = Web("Components/DiscardPanel.razor");
-        Assert.That(panel, Does.Contain("v.QuantityBlocked is string qb").And.Contain("title=\"@v.QuantityBlocked\""), "子区原因行与悬停都写「水分不足。」");
+        Assert.That(panel, Does.Not.Contain("data-pt=\"discard-qty-why\"").And.Not.Contain("@DiscardCopy.ChooseQuantity：@qb"), "无常驻重复原因行");
+        Assert.That(panel, Does.Contain("aria-disabled=\"@(v.QuantityBlocked != null ? \"true\" : null)\"")
+            .And.Contain("aria-describedby=\"@(v.QuantityBlocked != null ? \"discard-qty-why\" : null)\"")
+            .And.Contain("title=\"@v.QuantityBlocked\""), "键盘、触屏、读屏、悬停都能看到禁用原因");
+        Assert.That(panel, Does.Contain("disabled=\"@(v.MaxUnits < 1 && v.QuantityBlocked == null)\""), "水分不足时不用原生 disabled（否则不可聚焦）");
+        var session = Web("Services/GameSession.Discard.cs");
+        Assert.That(session, Does.Contain("if (DiscardViewOf(d.Target).QuantityBlocked is string why) { d.Error = why; Notify(); return; }"), "点按只看原因、不进数量层");
         Assert.That(panel, Does.Contain("DrinkCopy.AmountText(qn * v.UnitMl)"), "输入旁「{毫升}毫升」");
     }
 
     [Test]
     public void HelpAndGuide_NoOldHalfLitreSentence()
     {
-        Assert.That(Web("Services/HelpCatalog.cs"), Does.Not.Contain("0.5升或1升").And.Contain("烧水可少量进行"));
+        // 02 Q976 B 定稿：烧水行「100毫升起，时长不变。」；系统说明完整饮水规则保留（饮食与饮水条）
+        var help = Web("Services/HelpCatalog.cs");
+        Assert.That(help, Does.Not.Contain("0.5升或1升").And.Contain("变成{output}，100毫升起，时长不变。\"")
+            .And.Contain("\"水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。\""));
         var guide = Web("Services/ProcessGuide.cs");
-        Assert.That(guide, Does.Not.Contain("0.5升或1升").And.Not.Contain("每份500毫升").And.Contain("每份100毫升"));
+        Assert.That(guide, Does.Not.Contain("0.5升或1升").And.Not.Contain("每份500毫升").And.Contain("每份100毫升").And.Contain("100毫升起，时长不变"));
     }
 }
