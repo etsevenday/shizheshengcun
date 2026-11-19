@@ -417,7 +417,7 @@ class Job {
   }
   async shot(name, st) {
     await this.ev(`(() => { const s = document.createElement('style'); s.id = '__pt_freeze'; s.textContent = ${JSON.stringify(FREEZE_CSS)}; document.head.appendChild(s); return true; })()`);
-    if (st.mask) await this.ev(`(() => { for (const spec of ${JSON.stringify(st.mask)}) for (const el of window.__pt.findAll(spec)) el.style.setProperty('visibility', 'hidden', 'important'); return true; })()`);
+    if (st.mask) await this.ev(`(() => { for (const spec of ${JSON.stringify(st.mask)}) for (const el of window.__pt.findAll(spec)) { el.style.setProperty('visibility', 'hidden', 'important'); el.setAttribute('data-pt-masked', ''); } return true; })()`);
     // 鼠标挪到左上角（避免上一步点击留下的悬停态让截图时有时无），等动画收尾
     if (st.park !== false) await this.mouse('mouseMoved', 0, 0);
     await this.settle(st.settle ?? 400);
@@ -425,7 +425,8 @@ class Job {
     if (st.clip) { await this.locate(st.clip, 0, 3000, false); p.clip = await this.ev(`(() => { const r = window.__pt.findAll(${JSON.stringify(st.clip)})[0].getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height, scale: 1 }; })()`); }
     const r = await send('Page.captureScreenshot', { format: 'png', ...p }, this.sid);
     await this.ev(`(() => { document.getElementById('__pt_freeze')?.remove(); return true; })()`);
-    if (st.mask) await this.ev(`(() => { for (const spec of ${JSON.stringify(st.mask)}) for (const el of window.__pt.findAll(spec)) el.style.removeProperty('visibility'); return true; })()`);
+    // 按标记恢复：findAll 只认可见元素，隐藏后再按选择器找会找不到（B56 并行试用发现）
+    if (st.mask) await this.ev(`(() => { for (const el of document.querySelectorAll('[data-pt-masked]')) { el.style.removeProperty('visibility'); el.removeAttribute('data-pt-masked'); } return true; })()`);
     const rel = join(this.sc.name, this.size, name + '.png');
     const cur = join(this.runDir, 'shots', rel); mkdirSync(dirname(cur), { recursive: true });
     const buf = Buffer.from(r.data, 'base64'); writeFileSync(cur, buf);
