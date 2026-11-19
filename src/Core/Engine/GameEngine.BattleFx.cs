@@ -18,8 +18,8 @@ namespace Survival.Core.Engine
         private int _fxSeq;
         /// <summary>B47b（Q617）：最近一次结束的出手结束时的显示快照（父出手在子事件之后继续出段时，作为续段开始前的显示）。</summary>
         private GameState? _fxLastClose;
-        /// <summary>BM11（R280，R03 §Q617）：本次指令提交前行动者的 AP；本条指令记下的第一条出手取走它（见 <see cref="FxBegin"/>）。</summary>
-        private (string Actor, int Ap)? _fxCmdAp;
+        /// <summary>BM11（R280，R03 §Q617）：本次指令提交前行动者的 AP；BM12（Q967 A）：连同提交前体力。本条指令记下的第一条出手取走它（见 <see cref="FxBegin"/>）。</summary>
+        private (string Actor, int Ap, double Energy)? _fxCmdAp;
 
         /// <summary>取走自上次以来记下的出手事件（按真实发生顺序；反击／迎击插在触发处）。界面每次提交或每一步之后调用一次。</summary>
         public List<BattleFxEvent> DrainBattleFx()
@@ -77,10 +77,16 @@ namespace Survival.Core.Engine
             };
             // BM11（R280，R03 §Q617）：本次指令真实扣 AP 在第一段出手开始之前；这条指令的第一段全屏出手的开始快照把行动者 AP 还原成提交前值，
             // AP 与 HP 一样到该段结果帧才追齐（续段、子事件不再改）。第一条记录是短反馈的（防御、装填等）沿原规则立即显示真实 AP。
+            // BM12（Q967 A，R03／S14／A10 文首 BM11 试玩次要节）：本次行动者的体力同样还原成提交前值，与 AP 同在该段结果帧变成真实后值；
+            // 只改显示快照里这一名行动者（不串人），真实体力仍在提交时扣一次，不在结果帧重扣。
             if (_fxCmdAp is { } pre)
             {
                 _fxCmdAp = null;
-                if (!shortFeedback && _fxOpen.Count == 0 && ev.View?.Battle is BattleState vb && vb.BattleId == b.BattleId) vb.Fighter(pre.Actor).Ap = pre.Ap;
+                if (!shortFeedback && _fxOpen.Count == 0 && ev.View?.Battle is BattleState vb && vb.BattleId == b.BattleId)
+                {
+                    vb.Fighter(pre.Actor).Ap = pre.Ap;
+                    if (ev.View.Actors.TryGetValue(pre.Actor, out var va)) va.Stats.Energy = pre.Energy;
+                }
             }
             if (_fx.Count >= 400) _fx.RemoveRange(0, _fx.Count - 300);   // 没人取走（测试、离线推进）时不无限增长
             _fx.Add(ev);

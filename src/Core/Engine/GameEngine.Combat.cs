@@ -1215,7 +1215,7 @@ namespace Survival.Core.Engine
             var b = s.Battle!;
             // B9a：这条指令属于正在激活的成员；结算途中他若战死（例如击倒膨胀感染者被喷溅），激活已在 AllyDownInBattle 里结束
             var actor = b.FocusId;
-            if (!s.SimCopy) _fxCmdAp = (actor, b.PlayerAp);   // BM11（R280，R03 §Q617）：AP 到第一段出手结果帧才显示扣后值
+            if (!s.SimCopy) _fxCmdAp = (actor, b.PlayerAp, s.Actor(actor).Stats.Energy);   // BM11（R280，R03 §Q617）：AP 到第一段出手结果帧才显示扣后值；BM12（Q967 A）：体力同步
             bool StillActing() => s.Battle != null && !s.Progress.Dead && ActingAlly(b) == actor;
             // 武器技能与应急拳击（B7 R25）：扣技能 AP 后按类型执行（攻击 / 格挡增益指挥医疗装填）
             if (IsSkillAction(c.Action) || c.Action == DesperatePunch)
