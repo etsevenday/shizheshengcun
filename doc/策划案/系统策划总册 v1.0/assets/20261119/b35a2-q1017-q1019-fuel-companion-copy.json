@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-19",
+  "status": "planning_target",
+  "sourceCommit": "513fd622c29a6343fd0e94dcf19fc3b2a76680f0",
+  "originalBatch": "2026-11-19 来自 5f8a1764 B35a2（答复后重核，次要）",
+  "questionIds": [
+    1017,
+    1018,
+    1019
+  ],
+  "answers": {
+    "Q1017": "A",
+    "Q1018": "user_omit_companion_interruption_notice_in_all_previews",
+    "Q1019": "A"
+  },
+  "snippets": {
+    "fuelZero": "燃料：{燃料名}×{数量}",
+    "fuelReserved": "燃料：{燃料名}×{数量}（预留{n}）",
+    "omitCompanionInterruptionNote": "同伴提供的未消耗材料在中止后留在{地点}地面。",
+    "companionPatchKitLocation": "{姓名}的随身物品",
+    "selectPatchKitHint": "选择修补包（不选则默认用能恢复最多、消耗最少的一包）"
+  },
+  "fuel": {
+    "showReservedOnlyWhenPositive": true
+  },
+  "companionSupply": {
+    "showInterruptionDestinationReminderInPreviews": false,
+    "actualSettlementUnchanged": true
+  },
+  "fieldRepair": {
+    "companionCandidatesAfterCarriedAndGround": true,
+    "usesActualOwnerName": true,
+    "keepOriginalEmptyCopy": true,
+    "preserveDefaultSelectionRule": true
+  },
+  "acceptance": [
+    {
+      "id": "B35A2-Q1017-01",
+      "expected": "本座燃料木炭3份且预留为0时只写燃料：木炭×3。有1份预留时按同一库存写预留1，仍算可用2份。"
+    },
+    {
+      "id": "B35A2-Q1018-01",
+      "expected": "主动制作、维修与设施等供料预览均不显示同伴材料中止去向提醒，实际供料分配仍可查看，原行动结算和返料去向仍正确。"
+    },
+    {
+      "id": "B35A2-Q1019-01",
+      "expected": "合格同伴修补包排在随身、地面之后，小字是持有人的随身物品，提示为本批逐字稿。选中同伴的包后只消耗该实际包，空态沿原句。"
+    }
+  ]
+}
