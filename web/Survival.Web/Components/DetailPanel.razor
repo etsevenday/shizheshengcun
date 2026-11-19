@@ -10,7 +10,8 @@
     var e = G.E;
     var sel = G.Selected;
     var craftPaused = s.Main != null && s.Main.Status == ActionStatus.Paused && (s.Main.Type == ActionType.Craft || s.Main.Type == ActionType.Build);
-    var craftDetail = G.Panel == "craft" && s.Sub == null && (s.Main == null || craftPaused);
+    // B51c2b 试玩修复 B2（S11 §Q925 B）：工作区里点了陶窑／净水台批内物品卡，右栏改看这张卡的详情（只读），不再停在配方预估
+    var craftDetail = G.Panel == "craft" && s.Sub == null && (s.Main == null || craftPaused) && !G.IsFacilityItemSel(sel);
     var dragPreview = sel.Kind == SelectionKind.Action && G.PendingAction != null && s.Sub == null
                       && (s.Main == null || s.Main.Status == ActionStatus.Paused) && !G.Running;
     var tab = G.DetailTab;

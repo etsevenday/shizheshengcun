@@ -10,7 +10,9 @@
     var carried = sel.Owner == ItemInstance.Carried;
     // 设施与锅里的物品按根位置判断：仍在随身或当前地点（含当前火堆与锅）才可操作
     var probe = s.Items.FirstOrDefault(i => i.Owner == sel.Owner);
-    var stillThere = probe != null && (e.PlaceOf(s, probe) == ItemInstance.Carried || e.PlaceOf(s, probe) == here);
+    // B51c2b 试玩修复 B2（S11 §Q925 B「点本体看右栏详情」）：晾制位里的物品按晾制架所在区判断（PlaceOf 不认晾制位物主）
+    var probePlace = probe == null ? null : ItemInstance.TryDrying(probe.Owner, out var dryPlace, out _) ? dryPlace : e.PlaceOf(s, probe);
+    var stillThere = probe != null && (probePlace == ItemInstance.Carried || probePlace == here);
     // 锅里的液体按锅与液体种类选中（InstanceId 是锅），其余按真实实例或同区同物品
     var potLiquid = sel.Kind == SelectionKind.PotLiquid;
     var list = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id && (potLiquid || sel.InstanceId == null || i.InstanceId == sel.InstanceId))

@@ -1874,7 +1874,10 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .irow.fi-card .ir-text { flex-direction: row; align-items: baseline; gap: 6px; line-height: 1.25; }
 .irow.fi-card .ir-name { font-size: var(--fs-aux); white-space: nowrap; }
 .irow.fi-card .ir-status { white-space: nowrap; }
-.irow.fi-card .card-arrow { position: static; flex: 0 0 auto; }
+/* B51c2b 试玩修复 B1（S11 §Q925 B）：箭头自身作定位基准，扩大点击区（::after）只贴着箭头一圈；原 position: static 让 ::after 以整张卡为基准盖满卡身，
+   点卡身变成点箭头、卡身拖不起来 */
+.irow.fi-card .card-arrow { position: relative; right: auto; bottom: auto; flex: 0 0 auto; }
+.irow.fi-card .card-arrow::after { inset: -3px; }
 .fi-take { flex: 1 0 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel, transparent); }
 .fi-take .dq-head { margin: 0 0 4px; font-size: var(--fs-body); }
 .fi-take .fi-dest { margin-bottom: 4px; }

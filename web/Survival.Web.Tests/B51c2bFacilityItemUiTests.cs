@@ -228,4 +228,50 @@ public class B51c2bFacilityItemUiTests : WebTestBase
         Assert.That(neighbor.InFacility, Is.True, "相邻食物不动");
         await cut.InvokeAsync(() => cut.Find("button.row-arrow").PointerUpAsync(new PointerEventArgs()));
     }
+
+    // ───────────── 试玩修复 B2：点（含键盘 Enter）设施物品卡后右栏看这张卡的详情（S11 §Q925 B） ─────────────
+
+    /// <summary>
+    /// 试玩修复 B2（S11 §Q925 B「点本体看右栏详情」）：晾制架面板里用键盘 Enter 选中位内野果卡，右栏显示这张卡的只读详情（名称「野果」），
+    /// 不再是「这件物品已不在此处。」。
+    /// </summary>
+    [Test]
+    public void DryingCard_KeyboardEnter_RightRailShowsItem()
+    {
+        BerriesDrying();
+        G.OpenPanel("drying");
+        var cut = Ctx.RenderComponent<DryingOverlay>();
+        var rail = Ctx.RenderComponent<DetailPanel>();
+        cut.Find("[data-pt=fac-item]").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        rail.Render();
+        Assert.That(rail.Markup, Does.Not.Contain("这件物品已不在此处"));
+        Assert.That(rail.Find(".rail-head h2").TextContent.Trim(), Is.EqualTo("野果"));
+        Assert.That(cut.FindAll("[data-pt=fac-take]"), Has.Count.EqualTo(1), "数量窗同时打开");
+    }
+
+    /// <summary>
+    /// 试玩修复 B2（S11 §Q925 B）：陶窑工作区里点批内黏土卡，右栏从配方预估改为这张卡的只读详情（名称「黏土」）；
+    /// 对照：点卡前右栏是配方预估（没有物品表头）。
+    /// </summary>
+    [Test]
+    public void StationCard_Click_RightRailShowsItemNotRecipe()
+    {
+        E.DebugBuildAllWorkshops(S);
+        S.Skills["crafting"].Level = 3;
+        S.Progress.Flags.Add("h03_ceramic_notice_read");
+        S.Items.RemoveAll(i => i.ItemId is "clay" or "charcoal" or "ceramic_shell");
+        E.CreateItems(S, "clay", 2, S.Ground);
+        E.CreateItems(S, "charcoal", 1, S.Ground);
+        Ok(E.StartStationBatch(S, "ex_ceramic_shell", "k"));
+        G.OpenWorkspace(E.WorkspaceForStationHere(S, "kiln")!, "ex_ceramic_shell");
+        var cut = Ctx.RenderComponent<CraftOverlay>();
+        var rail = Ctx.RenderComponent<DetailPanel>();
+        Assert.That(rail.FindAll(".rail-page .rail-head h2").Select(h => h.TextContent.Trim()), Does.Not.Contain("黏土"), "起点：右栏是配方预估");
+
+        cut.Find("[data-station-inputs] [data-pt=fac-item]").Click();
+        rail.Render();
+
+        Assert.That(rail.Find(".rail-page .rail-head h2").TextContent.Trim(), Is.EqualTo("黏土"));
+        Assert.That(rail.Markup, Does.Not.Contain("这件物品已不在此处"));
+    }
 }
