@@ -1,26 +1,18 @@
+using Survival.Core.Engine;
+
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B56 界面接线（S10／S12／S14 文首 2026-11-17 B53a Q929；02 Q975—Q979 A 暂用）：测试工程不引用网页壳，这里读组件源码确认饮水窗、
+/// B56 界面接线（S10／S12／S14 文首 2026-11-17 B53a Q929；02 Q975—Q979 定稿）：测试工程不引用网页壳，这里读组件源码确认饮水窗、
 /// 同行饮水选量、水壶数量窗、丢水不足一份原因与说明句接上了；规则本身由 B56WaterTests 测。
 /// </summary>
 public class B56UiWiringTests
 {
-    private static string Repo(string relative)
-    {
-        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-        while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "doc", "策划案"))) dir = dir.Parent;
-        Assert.That(dir, Is.Not.Null, "找不到仓库根目录");
-        return File.ReadAllText(Path.Combine(dir!.FullName, relative));
-    }
+    // 2026-11-19 起：源码断言用 SourceText.Web（去注释），文案期望从策划合同取（SourceText.Contract）
+    private static string Web(string relative) => SourceText.Web(relative);
 
-    private static string Web(string relative)
-    {
-        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-        while (dir != null && !Directory.Exists(Path.Combine(dir.FullName, "doc", "策划案"))) dir = dir.Parent;
-        Assert.That(dir, Is.Not.Null, "找不到仓库根目录");
-        return File.ReadAllText(Path.Combine(dir!.FullName, "web", "Survival.Web", relative));
-    }
+    /// <summary>B56 次要原批 Q975—Q979 定稿合同（S14 2026-11-18 节）。</summary>
+    private static Newtonsoft.Json.Linq.JObject Q975Q979() => SourceText.Contract("b56-q975-q979-water-ui-copy.json");
 
     [Test]
     public void DrinkBox_TitleStepperAmountAction_FromDrinkCopy_HoverRightColumn()
@@ -43,11 +35,16 @@ public class B56UiWiringTests
         Assert.That(card, Does.Contain("<DrinkBox InstanceId=\"@cid\" />"), "水壶");
         Assert.That(card, Does.Not.Contain("CanteenSipText").And.Not.Contain("按500毫升装倒"), "旧一口 250／按 500 装倒撤下");
         var pause = Web("Components/PauseLayer.razor");
-        Assert.That(pause, Does.Contain("EntryText=\"@($\"饮用{cfg.Name}·5分钟\")\"").And.Contain("EntryText=\"仍然饮用脏水\""), "Q975 A 定稿");
+        var c = Q975Q979();
+        Assert.That((string)c["drinkCopy"]!["pausedClean"]!, Is.EqualTo("饮用净水·5分钟"), "合同净水即「饮用{水种}·5分钟」");
+        Assert.That(pause, Does.Contain("EntryText=\"@($\"饮用{cfg.Name}·5分钟\")\"").And.Contain($"EntryText=\"{c["drinkCopy"]!["pausedDirty"]}\""), "Q975 A 定稿");
         // 02 Q976 B 定稿（S14 2026-11-18 B56 次要原批）：各处逐处短稿，替换开发方 A 暂用的整段 Q929 新稿
-        Assert.That(pause, Does.Contain("脏水每100毫升补水6；必定腹泻12小时，每小时额外失水3。"), "Q976 B 暂停层脏水短稿");
-        Assert.That(card, Does.Contain("CanteenRuleNote = \"每份100毫升。\"").And.Contain("只装同种水；@CanteenRuleNote"), "Q976 B 水壶装倒单位句");
-        Assert.That(Repo("data/config.v0.6.json"), Does.Contain("容量2000ml；不保鲜、不受热。只装同一种水；每份100毫升。\""), "Q976 B 水壶物品说明单位句，容量保留");
+        var ctx = c["contextualCopy"]!;
+        Assert.That(pause, Does.Contain((string)ctx["dirtyWaterRisk"]!), "Q976 B 暂停层脏水短稿");
+        Assert.That(card, Does.Contain($"CanteenRuleNote = \"{ctx["containerUnitSentence"]}\"").And.Contain("只装同种水；@CanteenRuleNote"), "Q976 B 水壶装倒单位句");
+        Assert.That(FeedPanelCopy.HelpText[3], Does.Contain((string)ctx["companionDrinkSentence"]!), "Q976 B 同伴饮水说明");
+        var canteen = Survival.Core.Config.ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json"))).Items.Single(i => i.Id == "ration_canteen");
+        Assert.That(canteen.Desc, Does.EndWith("只装同一种水；" + ctx["containerUnitSentence"]).And.Contain("容量2000ml"), "Q976 B 水壶物品说明单位句，容量保留");
         Assert.That(pause, Does.Not.Contain("仍然饮用1份脏水").And.Not.Contain("应急补水30"));
     }
 
@@ -94,8 +91,9 @@ public class B56UiWiringTests
     public void HelpAndGuide_NoOldHalfLitreSentence()
     {
         // 02 Q976 B 定稿：烧水行「100毫升起，时长不变。」；系统说明完整饮水规则保留（饮食与饮水条）
+        var boil = (string)Q975Q979()["contextualCopy"]!["boilSentence"]!;
         var help = Web("Services/HelpCatalog.cs");
-        Assert.That(help, Does.Not.Contain("0.5升或1升").And.Contain("变成{output}，100毫升起，时长不变。\"")
+        Assert.That(help, Does.Not.Contain("0.5升或1升").And.Contain("变成{output}，" + boil + "\"")
             .And.Contain("\"水量每份100毫升。饮水可选数量，一次5分钟。水煮料理每次耗水1000毫升；烧水可少量进行。\""));
         var guide = Web("Services/ProcessGuide.cs");
         Assert.That(guide, Does.Not.Contain("0.5升或1升").And.Not.Contain("每份500毫升").And.Contain("每份100毫升").And.Contain("100毫升起，时长不变"));

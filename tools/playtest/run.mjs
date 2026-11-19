@@ -6,7 +6,7 @@
 //
 //   node tools/playtest/run.mjs [场景文件或目录…] [选项]
 //     默认跑 tools/playtest/scenarios/ 下所有 .json（下划线开头的除外）
-//     --base <网址>        游戏地址根（默认 http://localhost:5199），场景里的 open 路径接在后面
+//     --base <网址>        游戏地址根（默认：serve.mjs start 为本仓库 publish/local/wwwroot 记下的实际地址，没有就 http://localhost:5199），场景里的 open 路径接在后面
 //     --sizes 1280x720,…   分辨率（默认 1280x720,1600x900,1920x1080；场景可自己限定）
 //     --jobs <n>           同时跑几个（场景×分辨率）任务，默认 3
 //     --out <目录>         输出根（默认 tools/playtest/out，已 gitignore）；本次结果在 <out>/runs/<时间>/
@@ -19,9 +19,12 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, statSy
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname, basename, extname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { decodePng, encodePng, diffPng } from './png.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// 与 serve.mjs 的 currentFile 同一算法（不能 import serve.mjs：它顶层会起服务）
+const currentFile = dir => join(tmpdir(), `survival-serve-root-${createHash('md5').update(dir.toLowerCase()).digest('hex').slice(0, 8)}.json`);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // ───────────── 参数 ─────────────
@@ -39,6 +42,10 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--keep-going') opt.keepGoing = true;
   else if (a.startsWith('--')) { console.error('未知选项 ' + a); process.exit(2); }
   else opt.files.push(a);
+}
+if (!process.argv.includes('--base')) {
+  // serve.mjs start 在 5199 被占时会换端口，并把实际地址记在临时目录（按发布目录区分）
+  try { opt.base = JSON.parse(readFileSync(currentFile(resolve(HERE, '..', '..', 'publish', 'local', 'wwwroot')), 'utf8')).url; } catch { }
 }
 opt.base = opt.base.replace(/\/+$/, '');
 const SIZES = opt.sizes.split(',').map(s => s.trim()).filter(Boolean);
@@ -121,6 +128,11 @@ const desc = el => { if (!el || !el.tagName) return String(el); let s = el.tagNa
   if (c.length) s += '.' + c.join('.'); const t = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30); if (t) s += ' "' + t + '"'; return s; };
 const ownText = el => { let t = ''; for (const n of el.childNodes) if (n.nodeType === 3) t += n.nodeValue; return t.trim(); };
 const textOf = el => (el.innerText || el.getAttribute('aria-label') || el.title || '').replace(/\s+/g, ' ').trim();
+// 玩家看得见的文字：innerText 去掉只给读屏用的视觉隐藏块（.sr-only 之类：渲染了但只有 ≤1px 大）。B56 复验时 expectNoText 被 sr-only 原因误报
+const srOnly = root => { const hits = []; for (const e of root.querySelectorAll('*')) { if (!e.getClientRects().length) continue;
+  const r = e.getBoundingClientRect(); if (r.width > 1 || r.height > 1 || !(e.innerText || '').trim()) continue;
+  if (!hits.some(h => h.contains(e))) hits.push(e); } return hits; };
+const seenText = el => { let t = el.innerText || ''; for (const h of srOnly(el)) t = t.replace(h.innerText, ''); return t; };
 const INTER = 'button,a,[role=button],input,select,textarea,summary,[data-pt],[tabindex]';
 // 选择器：用 " >> " 串起来逐层缩小范围；每段可以是 pt=名（[data-pt="名"]）、text=子串、text==全文、或 CSS
 function matchPart(roots, part) {
@@ -162,7 +174,8 @@ window.__pt = {
     if (scroll) { const h = hitInfo(el); if (!h.full || h.covered) el.scrollIntoView({ block: 'center', inline: 'nearest' }); }
     return { found: true, count: all.length, ...hitInfo(el) };
   },
-  text(spec) { if (!spec) return document.body.innerText; return findAll(spec).map(e => e.innerText).join('\n'); },
+  seen: seenText,
+  text(spec) { if (!spec) return seenText(document.body); return findAll(spec).map(seenText).join('\n'); },
   check(watch, minFont) {
     const vw = innerWidth, vh = innerHeight; const res = { overflow: [], watch: [], smallFonts: [], clipped: [], errorUi: false };
     const eu = document.querySelector('#blazor-error-ui'); if (eu && getComputedStyle(eu).display !== 'none') res.errorUi = true;
@@ -374,7 +387,7 @@ class Job {
       }
       case 'expect': {
         await this.waitFor(async () => {
-          const all = await this.ev(`(window.__pt.findAll(${JSON.stringify(a)})).map(e => ({ t: e.innerText || e.value || '', d: !!(e.disabled || e.closest('[disabled],[inert],[aria-disabled=true]')) }))`);
+          const all = await this.ev(`(window.__pt.findAll(${JSON.stringify(a)})).map(e => ({ t: window.__pt.seen(e) || e.value || '', d: !!(e.disabled || e.closest('[disabled],[inert],[aria-disabled=true]')) }))`);
           if (st.absent) return all.length === 0 || `${a} 应不存在，实有 ${all.length} 个`;
           if (st.count !== undefined && all.length !== st.count) return `${a} 应有 ${st.count} 个，实有 ${all.length} 个`;
           if (!all.length) return `找不到 ${a}`;

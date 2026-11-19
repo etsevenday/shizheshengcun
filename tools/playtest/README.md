@@ -27,7 +27,7 @@ node tools/playtest/run.mjs
 ```
 
 - 不带参数跑 `scenarios/` 下全部（下划线开头的不算）；也可写文件名或名字：`run.mjs b53a-discard smoke-panels`。
-- 常用选项：`--base http://localhost:5199`（默认）、`--sizes 1280x720`（只跑一档）、`--jobs 3`、`--keep-going`（某步失败后继续）、`--headful`（看着它跑）、`--update-baseline`（界面有意改动后重置截图基线）。
+- 常用选项：`--base <地址>`（默认用 `serve.mjs start` 为本仓库 publish/local/wwwroot 记下的实际地址，没有就 http://localhost:5199）、`--sizes 1280x720`（只跑一档）、`--jobs 3`、`--keep-going`（某步失败后继续）、`--headful`（看着它跑）、`--update-baseline`（界面有意改动后重置截图基线）。
 - 退出码：全部通过 0，否则 1。控制台最后打印摘要；同样内容写在 `out/runs/<时间>/summary.txt`，完整记录在 `results.json`。
 - 端口：Chrome 调试口默认 9350（`PLAYTEST_RUN_PORT` 可改），与 `cdp.mjs` 的 9333 不冲突，可以同时用。
 
@@ -145,3 +145,9 @@ node tools/playtest/run.mjs tools/playtest/fixtures/build --jobs 1 --write-fixtu
 - 一条路线一个场景，按「批次＋主题」命名（`b53a-discard.json`），`desc` 写来源（开发记录哪一节）。坏了先看 `summary.txt` 的失败步与 `fail/` 截图，多半是选择器要改，不用重写整条路线。
 - 断言写「玩家能看到的结果」：数量变化、日志句、按钮可用与否、`inView`。只点不断言的场景会假绿。
 - 写新场景时先用 `dump` 看页面上有哪些元素、哪些带 `data-pt`。
+
+## 2026-11-19 调整
+
+- `serve.mjs start` 不写端口时，5199 被别的程序（或另一份包）占着会自动换下一个空闲端口并打印实际地址；以前只看“能访问”就说已在运行，可能拿别的包去试。服务响应带 `X-Survival-Root` 头，用来认出是不是同一目录。
+- `expectText`／`expectNoText`／`expect … text` 只认玩家看得见的文字：`.sr-only` 这类只给读屏、渲染成 ≤1px 的文字不算。
+- `shot` 的 `mask` 截图后按 `data-pt-masked` 标记恢复被隐藏的元素。

@@ -213,7 +213,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 流程（改了玩法或界面时）：
 1. 开发代理完成、测试全绿、文档同步、**本地提交但不推送** → 本会话打本地 Release 包并起服务（每条 Bash 一条命令，不串）：
    - `dotnet publish web/Survival.Web -c Release -o publish/local`（约 20 秒；`publish/` 已在 .gitignore）
-   - `node tools/playtest/serve.mjs start`（后台起静态服务 http://localhost:5199/ ，能访问才返回；全部响应 no-store，不会拿到上一包的旧 js/css）
+   - `node tools/playtest/serve.mjs start`（后台起静态服务，默认 http://localhost:5199/ ；5199 被别的程序占着时自动换下一个空闲端口——**以它打印的地址为准**，试玩代理 brief 里的地址也换成它，`run.mjs` 不写 `--base` 会自动用它；能访问才返回；全部响应 no-store，不会拿到上一包的旧 js/css）
    修复后重新 publish 即可，服务不用重启；浏览器那边 `node tools/playtest/cdp.mjs reload`。
 2. 起**试玩代理**（Agent，general-purpose，不传 model，effort high），只用 Bash 跑 `node tools/playtest/cdp.mjs`（零依赖无头 Chrome，不需要任何人点确认；用法见文件头注释：`start / open / find / clicktext / click / drag / wheel / key / eval / text / shot / errs / size / stop`），对 `http://localhost:5199/?dev=1` 试玩（**不去线上地址**）。brief 照 `/design-dev` 第 4 步写（改了什么、规则在哪、必走路线、三档分辨率 `size 1280 720` / `1600 900` / `1920 1080`、报告格式），截图存 scratchpad 后用 Read 看。告诉它：每条 Bash 只写一条 `node tools/playtest/cdp.mjs <命令> …`（在仓库根目录、相对路径、不用变量、不和别的命令用 `;`/`&&` 串起来），这样才匹配本机 settings.local.json 的放行规则、定时回合里不弹确认；每步操作后用 `text`/`find`/`eval` 读界面确认结果；`clicktext` 报"被遮挡/禁用"要记下；结束 `stop`。这个无头浏览器有独立的配置目录，不会碰用户自己浏览器里的存档。
 3. 分类试玩结果（`/design-dev` 第 5 步）：bug 交同一个开发代理修（一次提交 `M<n> 试玩修复：…`、测试全绿、开发计划加"试玩修复"一节，仍不推送），本会话重新 `dotnet publish … -o publish/local`，再 `SendMessage` 给同一个试玩代理在本地复验 + 快速回归。最多两轮；两轮仍不过 → 看剩下的是什么：违反策划案、坏存档、主流程走不通、控制台报错的**不推送**，批次 `blocked`，`note` 写清现象，`PushNotification` 告诉用户；只剩显示细节类小问题（第 2.3 节第 8 条"次要"的范围）的照常推送，遗留写进开发记录与提交说明并在通知里列出。体验问题写成待确认问题；属于次要的标"（次要）"进攒批（第 2.3 节第 8 条），不为它另开批次。
@@ -233,7 +233,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 - e. 在 `doc/开发记录/试玩场景库试点.md` 文末「并行试用记录」表加一行（批次、档位、场景全量用时、场景发现、试玩代理用时与发现、各自独有的问题、写场景用时、误报），随本批推送。新场景、新 fixture、`data-pt` 改动一起 add；`tools/playtest/out/` 不入库。
 - 场景跑不起来（找不到 Chrome、端口被占）不挡本批，表里记原因即可。
 
-5. 万一本地试玩跑不起来（`dotnet publish` 失败、找不到 Chrome、5199 端口被占且 `serve.mjs stop` 关不掉）→ **不推送**：批次 `blocked`，`note` 写原因，`PushNotification`"<批次> 已开发完、本地试玩起不来（原因），未推送"，清锁结束；等用户处理。`pendingPlaytest` 只剩 11-16 前"先上线后试玩"留下的旧记录：非空时用户在场的会话照旧补试玩、修、推，然后清空，不再往里追加。
+5. 万一本地试玩跑不起来（`dotnet publish` 失败、找不到 Chrome、`serve.mjs start` 起不来）→ **不推送**：批次 `blocked`，`note` 写原因，`PushNotification`"<批次> 已开发完、本地试玩起不来（原因），未推送"，清锁结束；等用户处理。`pendingPlaytest` 只剩 11-16 前"先上线后试玩"留下的旧记录：非空时用户在场的会话照旧补试玩、修、推，然后清空，不再往里追加。
 
 - 用户在场、想看着试玩时也可以用内置浏览器：本会话 `preview_start {name:"published"}`（5199，就是上面的本地 Release 包，launch.json 里调 `serve.mjs run`；别和后台 `serve.mjs start` 同时开）或 `{name:"web-fb"}`（5190，dev 服务器），让试玩代理复用这台、别自己 preview_start；开发代理自测用 `web`（5177）/`web-alt`（5180）。本地 dev 服务器的 js/css 带固定 `?v=dev`，可能拿到缓存旧文件，试玩前强制刷新（线上 pages.yml 换成提交号，不受影响）；服务器要 stop 再 start 才加载新版本。
 - 试玩手法：`?dev=1` 后菜单里有开发入口（测试箱含烤肉/水煮肉、放各种敌人、普通活性物质、跳日期等）；要触发暂停层，可在 `localStorage['survival.save.v1']` 里把 `Stats.Energy` 改到略高于低体力线再开行动；动存档前先另存一份到 `qa.backup.*`。批量连点时注意战斗结束后界面切回地块，同一坐标可能点到敌踪卡误接敌。

@@ -6,7 +6,9 @@
 做什么：
   1. 在系统临时目录开一个 detached worktree（目标提交），不碰共用工作区的 bin/obj，可和本地试玩同时跑。
   2. 取 基线..目标 在 src/Core 里新增/修改的行，换算成 Stryker 的字符位置（mutate 里 {a..b} 是字符偏移，不是行号），
-     只变异这些行。
+     只变异这些行。开发入口代码不变异（2026-11-19 起）：GameEngine.Debug.cs 整个文件、名字以 Debug 开头的方法
+     （DebugFeedKit、DebugStationKit、DebugToLegacyWaterUnits 等，只供 ?dev=1 造测试局面）——B56 存活＋无覆盖 97 条里
+     72 条在这里，逐条写“不补”理由白花时间；扣掉的行数会打印出来。
   3. 跑 dotnet stryker（测试过滤同 CI：排除 Tuning、DesignSync）。约 7 分钟，其中 6 分钟是编译整个引擎变异体的固定开销，
      批次大小影响不大。定时回合里用 Bash run_in_background 跑。
   4. 把"存活"（Survived：改坏了测试仍全绿）与"无覆盖"（NoCoverage：没有任何测试跑到这行）逐条写进
@@ -31,10 +33,35 @@ def git(*args, cwd=ROOT):
     return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True, encoding="utf-8").stdout
 
 
+DEBUG_METHOD = re.compile(r"^\s*(?:(?:public|private|internal|protected|static|override|async|unsafe|partial|virtual|sealed|new)\s+)+[\w<>\[\],.?() ]+?\s+Debug\w*\s*[<(]")
+
+
+def debug_lines(text):
+    """开发入口代码占的行号（1 起）：Debug 开头的方法从签名行到配对的右花括号（表达式体方法到分号）。"""
+    lines = text.splitlines()
+    out = set()
+    i = 0
+    while i < len(lines):
+        if not DEBUG_METHOD.match(lines[i]):
+            i += 1
+            continue
+        depth, seen, j = 0, False, i
+        while j < len(lines):
+            code = lines[j].split("//")[0]
+            depth += code.count("{") - code.count("}")
+            seen = seen or "{" in code
+            if (seen and depth <= 0) or (not seen and code.rstrip().endswith(";")):
+                break
+            j += 1
+        out.update(range(i + 1, j + 2))
+        i = j + 1
+    return out
+
+
 def changed_spans(base, head, wt):
-    """基线..目标 在 src/Core/*.cs 里新增/修改的行 → Stryker mutate 模式（字符偏移）。"""
+    """基线..目标 在 src/Core/*.cs 里新增/修改的行（扣掉开发入口代码）→ Stryker mutate 模式（字符偏移）。返回 (spans, 扣掉的行数)。"""
     diff = git("diff", "-U0", base, head, "--", "src/Core")
-    spans, cur, line_starts = [], None, {}
+    spans, cur, line_starts, debug, skipped = [], None, {}, {}, 0
     for l in diff.splitlines():
         if l.startswith("+++ "):
             cur = l[6:].strip() if l.startswith("+++ b/") and l.endswith(".cs") else None
@@ -51,9 +78,21 @@ def changed_spans(base, head, wt):
                 text = f.read()
             starts = [0] + [i + 1 for i, ch in enumerate(text) if ch == "\n"] + [len(text)]
             line_starts[cur] = starts
+            debug[cur] = set(range(1, len(starts) + 1)) if Path(cur).name == "GameEngine.Debug.cs" else debug_lines(text)
         st = line_starts[cur]
-        spans.append((cur, a, c, f"**/{Path(cur).name}{{{st[a - 1]}..{st[min(a - 1 + c, len(st) - 1)]}}}"))
-    return spans
+        # 把本段里不属于开发入口的连续行各自作为一段
+        run = []
+        for ln in list(range(a, a + c)) + [None]:
+            if ln is not None and ln not in debug[cur]:
+                run.append(ln)
+                continue
+            if ln is not None:
+                skipped += 1
+            if run:
+                ra, rc = run[0], len(run)
+                spans.append((cur, ra, rc, f"**/{Path(cur).name}{{{st[ra - 1]}..{st[min(ra - 1 + rc, len(st) - 1)]}}}"))
+                run = []
+    return spans, skipped
 
 
 def main():
@@ -75,8 +114,13 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     git("worktree", "add", "--detach", str(wt), head)
     try:
-        spans = changed_spans(base, head, wt)
+        spans, skipped = changed_spans(base, head, wt)
         lines = sum(c for _, _, c, _ in spans)
+        if skipped:
+            print(f"开发入口代码（GameEngine.Debug.cs、Debug 开头的方法）{skipped} 行不变异")
+        if not spans:
+            print(f"{base}..{head}：src/Core 只改了开发入口代码，不用跑变异测试。")
+            return 0
         print(f"{base}..{head}：src/Core 改动 {lines} 行、{len(spans)} 段，开始变异测试（约 7 分钟）")
         tests = wt / "web" / "Survival.Core.Tests"
         (tests / "stryker-config.json").write_text(json.dumps({"stryker-config": {
