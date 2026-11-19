@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-19",
+  "status": "planning_target",
+  "sourceCommit": "29c44cc79adb6aec9446271b7086dfe6bd8ccabe",
+  "originalBatch": "2026-11-18 来自 B56 试玩（饮水显示次要问题）",
+  "questionIds": [
+    1010,
+    1011
+  ],
+  "answers": {
+    "Q1010": "A",
+    "Q1011": "A"
+  },
+  "drinkResult": {
+    "useActualWaterGain": true,
+    "appliesTo": [
+      "self",
+      "companion"
+    ],
+    "deltaFromHydrationApplication": true,
+    "keepCompanionNumberFormat": true
+  },
+  "fillSource": {
+    "label": "来源：{实际归属}{水名} {该堆可用份数}份",
+    "useActualSelectedSourceStack": true,
+    "buttonSourceOrder": [
+      "carried",
+      "currentGround"
+    ],
+    "maxByOneStackAndFreeCapacity": true,
+    "showInFillQuantityWindow": true
+  },
+  "acceptance": [
+    {
+      "id": "B56-Q1010-01",
+      "expected": "结算前水分95且上限100时，自己喝和同伴喝300毫升的结果都报实际增加5点，毫升和同伴来源照实。"
+    },
+    {
+      "id": "B56-Q1011-01",
+      "expected": "壶尚可容纳20份、随身净水5份且地面50份时，按钮打开的装水窗写来源：随身净水 5份，上限5。若只剩2份容量，来源仍显示5份而数量上限为2。"
+    },
+    {
+      "id": "B56-Q1011-02",
+      "expected": "仅有地面合法水堆时标地面来源，实际确认只扣所选水堆，原混水、权限与失效处理照旧。"
+    }
+  ]
+}
