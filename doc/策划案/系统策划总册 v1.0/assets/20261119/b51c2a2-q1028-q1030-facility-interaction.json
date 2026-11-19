@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-19",
+  "status": "planning_target",
+  "sourceCommit": "2612268d843b71e816b6f7015f3901d6d8923a69",
+  "originalBatch": "2026-11-19 来自 B51c2a2（开发与试玩中发现，次要）",
+  "questionIds": [
+    1028,
+    1029,
+    1030
+  ],
+  "answers": {
+    "Q1028": "按真实槽位展示，免重复提示",
+    "Q1029": "合法放入自动晾制，按卡取出",
+    "Q1030": "行动进度弹框阻断框外操作"
+  },
+  "fireAndPot": {
+    "showRealCardSlots": true,
+    "foodCardsStackInPot": false,
+    "silentInvalidDrop": true,
+    "repeatFullOrNonemptyReason": false,
+    "preserveActualAdverseConsequences": true
+  },
+  "dryingRack": {
+    "validDirectDropCommitsInput": true,
+    "passiveCraftStartsWhenRecipeReady": true,
+    "takeoutEntrypoints": [
+      "drag",
+      "card_arrow",
+      "take_all"
+    ],
+    "removeEmptyStoppedStateAutomatically": true,
+    "showRoutineTransferLog": false,
+    "retainOriginalSettlement": true
+  },
+  "progressModal": {
+    "scope": [
+      "sleep",
+      "central_action_progress_modal"
+    ],
+    "useMaskAndBlur": true,
+    "blockBackgroundInputAndHover": true,
+    "allowTopmostControls": true,
+    "hideCoveredFireControlsReasons": true
+  },
+  "acceptance": [
+    {
+      "id": "B51C2A2-Q1028-01",
+      "expected": "火堆满位及锅有内容时可直接看见对应卡片和槽位，满位与要求空锅的非法拖放不高亮、不落卡、不重复报原因。打开锅再返回能回到同一火源。"
+    },
+    {
+      "id": "B51C2A2-Q1028-02",
+      "expected": "锅里两份同名同批食材各占一槽，保留各自状态。实际取出会腐败时仍有已定的后果告知。"
+    },
+    {
+      "id": "B51C2A2-Q1029-01",
+      "expected": "将合法食材拖入晾制架空位即投入，齐料后随世界时间加工。非法物或满位松手无转移、无额外提示。"
+    },
+    {
+      "id": "B51C2A2-Q1029-02",
+      "expected": "在制物、余料和可取成品走拖拽、卡片三角箭头或全部取出。常规转移可从卡片去向看到结果，没有专用清空入口。空异常位恢复为空槽，原题四处暂用文字均撤下。"
+    },
+    {
+      "id": "B51C2A2-Q1030-01",
+      "expected": "开着火堆界面进入睡眠或显示中央行动进度弹框时，背景加遮罩和模糊。点击、触摸、拖放、Tab 和背景快捷键均不能操作火堆，框外不出现本题两条禁用原因。最上层控件可用。"
+    },
+    {
+      "id": "B51C2A2-Q1030-02",
+      "expected": "进度弹框退出后按实际状态恢复合法操作。普通页面内嵌进度条保持原交互。"
+    }
+  ]
+}
