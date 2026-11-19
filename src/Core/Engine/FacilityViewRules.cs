@@ -91,6 +91,7 @@ namespace Survival.Core.Engine
             "empty" => "空闲",
             DryingSlot.Drying => "晾制中",
             DryingSlot.Done => "可收取",
+            DryingSlot.Residual => GameEngine.ResidualText,   // B51c2b（S11 §Q924「短状态可用“余料”」）
             _ => DryingStoppedText,
         };
 

@@ -171,12 +171,20 @@ namespace Survival.Core.Engine
         /// BM5b2（Q606）：每种输入按 UsableBatches 的顺序（截止先到先用、同截止随身优先、再实例号）配够，不再把截止晚于完成的批排在前面。
         /// 肉干也按这个顺序取，但肉干受 Q215 保护，不把“原截止早于完成”当作投后会腐败。
         /// </summary>
-        private List<(ItemInstance inst, int take)> DryingSources(GameState s, RecipeConfig rc, int finish)
+        private List<(ItemInstance inst, int take)> DryingSources(GameState s, RecipeConfig rc, int finish, List<ItemInstance>? residual = null)
         {
             var list = new List<(ItemInstance, int)>();
             foreach (var kv in rc.Inputs)
             {
                 var left = kv.Value;
+                // B51c2b（S11 §Q924 B）：补投先用本位对应配方的合法余料，再按原来源顺序补足所缺
+                foreach (var r in (residual ?? new List<ItemInstance>()).Where(i => i.ItemId == kv.Key))
+                {
+                    if (left <= 0) break;
+                    var take = Math.Min(left, r.Count);
+                    list.Add((r, take));
+                    left -= take;
+                }
                 // BM5b2（S06 Q606）：取代 Q214「截止晚于完成的先取」排序，同一合格来源内按最早有效到期配够（果干临期警告不变）
                 foreach (var w in UsableBatches(s, kv.Key, true).Where(w => !IsLocked(s, w)))
                 {
@@ -209,11 +217,15 @@ namespace Survival.Core.Engine
             else
             {
                 if (slot < 0 || slot >= n) return "没有这个晾制位";
-                if (DryingSlotAt(s, s.Ground, slot.Value) != null) return DryingFullText;
+                // B51c2b（S11 §Q924 B／§Q926 A）：本位原配方、余料全部合法可用的余料位是可补投的例外；其余占用位（在制、成品、停止、
+                // 余料含腐败物或换配方）仍拒「已满」（不覆盖、不吞物）
+                if (DryingSlotAt(s, s.Ground, slot.Value) is DryingSlot occupied && !DryingRefillable(s, s.Ground, occupied, rc)) return DryingFullText;
             }
+            var residual = slot is int rk ? DryingResidualItems(s, s.Ground, rk) : new List<ItemInstance>();
             foreach (var kv in rc.Inputs)
             {
-                var have = UsableBatches(s, kv.Key, true).Where(w => !IsLocked(s, w)).Sum(w => w.Count);
+                var have = UsableBatches(s, kv.Key, true).Where(w => !IsLocked(s, w)).Sum(w => w.Count)
+                           + residual.Where(i => i.ItemId == kv.Key).Sum(i => i.Count);
                 if (have >= kv.Value) continue;
                 var near = Accessible(s, true).Where(i => i.ItemId == kv.Key).ToList();
                 var spoiled = near.Where(i => IsSpoiled(s, i)).Sum(i => i.Count);
@@ -267,7 +279,26 @@ namespace Survival.Core.Engine
             : IsSpoiled(s, i) ? "已腐败" : i.ExpiresAt is int x ? $"保质到{Clock.DayTime(x)}" : "不腐败";
 
         private static string SourceKeyOf(int slot, IEnumerable<(ItemInstance inst, int take)> src) =>
-            slot + "|" + string.Join(",", src.Select(x => $"{(x.inst.IsCarried ? "carried" : "ground")}:{x.inst.InstanceId}x{x.take}"));
+            slot + "|" + string.Join(",", src.Select(x => $"{(x.inst.InDrying ? "residual" : x.inst.IsCarried ? "carried" : "ground")}:{x.inst.InstanceId}x{x.take}"));
+
+        /// <summary>B51c2b：预览与投料日志里一份来源的位置前缀——随身、地面，本位余料写「余料」（S11 §Q924「短状态可用“余料”」）。</summary>
+        private static string SourcePrefix(ItemInstance i) => i.InDrying ? ResidualText : i.IsCarried ? "随身" : "地面";
+
+        /// <summary>B51c2b（S11 §Q924 B）：某区某位为余料位时位内的余料；其他状态或空位为空表。</summary>
+        private List<ItemInstance> DryingResidualItems(GameState s, string place, int slot) =>
+            DryingSlotAt(s, place, slot) is { Status: DryingSlot.Residual } ? DryingContents(s, place, slot) : new List<ItemInstance>();
+
+        /// <summary>
+        /// B51c2b（S11 §Q924 B、§Q926 A）：这一位能否按 rc 补投——余料位、本位原配方，位内每份余料都是本配方输入、未腐败、份数不超过配方所需
+        /// （腐败物或多出的物品不能当合法输入，补投不能吞掉它们，按原容量校验拒「已满」）。
+        /// </summary>
+        private bool DryingRefillable(GameState s, string place, DryingSlot b, RecipeConfig rc)
+        {
+            if (b.Status != DryingSlot.Residual || b.RecipeId != rc.Id) return false;
+            var items = DryingContents(s, place, b.Slot);
+            return items.All(i => rc.Inputs.ContainsKey(i.ItemId) && !IsSpoiledMatter(i) && !IsSpoiled(s, i))
+                   && items.GroupBy(i => i.ItemId).All(g => g.Sum(i => i.Count) <= rc.Inputs[g.Key]);
+        }
 
         /// <summary>晾制架卡上一条食谱在某位（null 为第一个空位）的预览（只读）。</summary>
         public DryingOption DryingPreview(GameState s, string recipeId, int? slot = null)
@@ -291,10 +322,10 @@ namespace Survival.Core.Engine
             var why = DryingBlocked(s, rc, slot);
             if (why == null || !why.StartsWith("缺少"))
             {
-                var src = DryingSources(s, rc, finish);
+                var src = DryingSources(s, rc, finish, slot is int rk ? DryingResidualItems(s, s.Ground, rk) : null);
                 foreach (var (inst, take) in src)
                 {
-                    o.Sources.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}×{take}（{ExpiryNote(s, inst)}）");
+                    o.Sources.Add($"{SourcePrefix(inst)}{ItemName(inst.ItemId)}×{take}（{ExpiryNote(s, inst)}）");
                 }
                 o.SourceKey = SourceKeyOf(k, src);
             }
@@ -318,14 +349,17 @@ namespace Survival.Core.Engine
             var k = slot ?? FirstFreeDryingSlot(s)!.Value;
             var owner = ItemInstance.DryingOwner(place, k);
             var finish = s.GameMinute + rc.BaseMinutes;
-            var sources = DryingSources(s, rc, finish);
+            // B51c2b（S11 §Q924 B）：余料位补投——先用本位余料再补来源；齐料确认后复用原位，旧余料记录换成新批（新批 ID、进度 0、经验快照重取），不另占一位
+            var old = DryingSlotAt(s, place, k);
+            var sources = DryingSources(s, rc, finish, old != null ? DryingResidualItems(s, place, k) : null);
             if (expectedSourceKey != null && expectedSourceKey != SourceKeyOf(k, sources))
                 return ActionResult.Fail(DryingPreviewChanged);
+            if (old != null) fac.DryingSlots.Remove(old);
             var pause = DryingPausesShelf(rc);
             var taken = new List<string>();
             foreach (var (inst, take) in sources)
             {
-                taken.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}×{take}");
+                taken.Add($"{SourcePrefix(inst)}{ItemName(inst.ItemId)}×{take}");
                 ItemInstance moved;
                 if (take < inst.Count) moved = SplitOff(s, inst, take);
                 else moved = inst;
@@ -408,6 +442,8 @@ namespace Survival.Core.Engine
             if (b.Status == DryingSlot.Done) return "已经晾好了：请取出成品";
             if (b.Status == DryingSlot.Spoiled) return DryingStopKind(b) == DryingSlot.StopSpoiled ? DryingSpoiledInputText : DryingTakeRestText;
             var items = DryingContents(s, place, slot);
+            // B51c2b（S11 §Q924 B「原单项／全部取出路径始终可用」）：余料位「取出」把余料（含已腐败的）全部放回本区地面、空出这一位
+            if (b.Status == DryingSlot.Residual) return items.Count == 0 ? TakeEmptyText : null;
             if (items.Any(i => IsSpoiled(s, i))) return DryingSpoiledInputText;
             return items.Count == 0 ? TakeEmptyText : null;
         }
@@ -669,6 +705,13 @@ namespace Survival.Core.Engine
                         v.TakeBlocked = DryingSlotTakeBlocked(s, k);
                         v.TakeStamp = DryingTakeStamp(s, place, k);
                         break;
+                    case DryingSlot.Residual:
+                        // B51c2b（S11 §Q924 B）：余料位不计晾制中、不结算；「取出」放回本区地面（同晾制中位的取出），可按本位原配方补投
+                        v.Title = CardStates.DryingSlotName(k);
+                        v.XpText = null;   // 旧批已结束，不给经验（Q924「不继承旧经验」），不写经验句
+                        v.TakeBlocked = DryingSlotTakeBlocked(s, k);
+                        v.TakeStamp = DryingTakeStamp(s, place, k);
+                        break;
                     case DryingSlot.Done:
                         v.Title = CardStates.DryingSlotName(k);
                         v.Line = $"{(b.EndMinute is int e ? Clock.DayTime(e) + "完成" : "已完成")}，留在这一位占位，取出后空出";
@@ -712,9 +755,12 @@ namespace Survival.Core.Engine
             var unknown = stopped.Count(k => k == DryingSlot.StopUnknown);
             var bad = stopped.Count(k => k == DryingSlot.StopSpoiled);
             var free = Math.Max(0, DryingSlotCount - slots.Count);
+            var residual = slots.Count(b => b.Status == DryingSlot.Residual);
             var parts = new List<string>();
             if (drying > 0) parts.Add($"晾制中{drying}");
             if (done > 0) parts.Add($"待取{done}");
+            // B51c2b（S11 §Q924「短状态可用“余料”」）：余料位单独计数（暂用写法，见开发记录 B51c2b.5）
+            if (residual > 0) parts.Add($"{ResidualText}{residual}");
             // B50a（Q713）：按停止原因分开计工位数（不是原料份数）
             if (missing > 0) parts.Add($"缺料{missing}");
             if (unknown > 0) parts.Add($"停止{unknown}");

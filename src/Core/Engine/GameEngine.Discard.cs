@@ -179,9 +179,10 @@ namespace Survival.Core.Engine
         {
             if (AllProcesses(s).Any(p => p.Status != ProcessStatus.Done && (TouchesItem(p, i.InstanceId) || p.PotInstanceId == i.InstanceId))) return true;
             if (i.InContainer && IsPotAux(s, i)) return true;
-            if (ItemInstance.TryDrying(i.Owner, out var place, out var slot) && DryingSlotAt(s, place, slot) is DryingSlot b && b.Status != DryingSlot.Done) return true;
-            if (AllFacilityStates(s).Any(x => x.Fac.StationBatches.Any(sb => sb.InputInstanceIds.Contains(i.InstanceId)))) return true;
-            if (ItemInstance.TryStation(i.Owner, out var splace, out var sbid) && StationBatchAt(s, splace, sbid) != null) return true;   // B51c2a1：设施批内原料
+            // B51c2b（S11 §Q924 B）：余料位／余料条目里的余料已不在加工中
+            if (ItemInstance.TryDrying(i.Owner, out var place, out var slot) && DryingSlotAt(s, place, slot) is DryingSlot b && b.Status != DryingSlot.Done && b.Status != DryingSlot.Residual) return true;
+            if (AllFacilityStates(s).Any(x => x.Fac.StationBatches.Any(sb => !sb.Residual && sb.InputInstanceIds.Contains(i.InstanceId)))) return true;
+            if (ItemInstance.TryStation(i.Owner, out var splace, out var sbid) && StationBatchAt(s, splace, sbid) is { Residual: false }) return true;   // B51c2a1：设施批内原料
             if (IsPot(i)) return PotContents(s, i.InstanceId).Any(c => DiscardProcessing(s, c));
             return false;
         }

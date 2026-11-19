@@ -295,10 +295,11 @@ namespace Survival.Core.Engine
         private bool WorkOwned(GameState s, ItemInstance i)
         {
             if (i.ReservedBy != null) return true;
-            if (ItemInstance.TryStation(i.Owner, out var splace, out var sbid)) return StationBatchAt(s, splace, sbid) != null;
+            // B51c2b（S11 §Q870 B／§Q924 B）：余料条目／余料位的余料已解锁、恢复正常保质，不再是在办工作的输入
+            if (ItemInstance.TryStation(i.Owner, out var splace, out var sbid)) return StationBatchAt(s, splace, sbid) is { Residual: false };
             if (!ItemInstance.TryDrying(i.Owner, out var place, out var slot)) return false;
             var b = DryingSlotAt(s, place, slot);
-            return b != null && b.Status != DryingSlot.Done;
+            return b != null && b.Status != DryingSlot.Done && b.Status != DryingSlot.Residual;
         }
 
         /// <summary>

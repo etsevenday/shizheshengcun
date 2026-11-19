@@ -38,6 +38,8 @@ namespace Survival.Core.Engine
         private ActionResult DoInstantOnce(GameState s, InstantRequest r)
         {
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
+            // B51c2b（S11 §Q871 B）：设施物品卡取出走四类被动设施统一取出门槛（战斗沿该设施原句），不套通用整理的战斗句
+            if (r.Kind == InstantKind.FacilityTake) return TakeFacilityItem(s, r.InstanceId, r.Count, r.Zone, r.CardKey);
             // 战斗与敌踪待选时锁定一切实体操作（v0.5 §16）：装备与弹药走战斗指令
             if (s.Battle != null) return ActionResult.Fail("战斗中不能整理物品；换武器、装填与用药请用战斗指令");
             var here = s.Ground;

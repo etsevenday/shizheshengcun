@@ -52,9 +52,83 @@ namespace Survival.Core.Engine
         public int StationBatchAffordable(GameState s, RecipeConfig rc) =>
             rc.AllInputs.Count == 0 ? StationParallelCap : rc.AllInputs.Min(kv => StationFreeCount(s, kv.Key) / Math.Max(1, kv.Value));
 
-        /// <summary>投料批数的可选上限：min(10 − 当前在办批数, 材料与燃料足够的完整批数)。</summary>
-        public int StationBatchMaxNew(GameState s, RecipeConfig rc) =>
-            Math.Max(0, Math.Min(StationRoom(s, rc.Station), StationBatchAffordable(s, rc)));
+        /// <summary>
+        /// 投料批数的可选上限：min(10 − 当前条目数＋可复用余料条目数, 材料与燃料足够的完整批数)。
+        /// B51c2b（S11 §Q924 B）：新批先复用同配方余料条目（余料先用、只补所缺），再按原 10 条上限校验新开条目。
+        /// </summary>
+        public int StationBatchMaxNew(GameState s, RecipeConfig rc)
+        {
+            for (var n = StationRoomFor(s, rc); n > 0; n--)
+                if (StationShortOf(s, rc, n) == null) return n;
+            return 0;
+        }
+
+        /// <summary>
+        /// B51c2b（S11 §Q924 B）：这条在办记录能否被 rc 补投复用——余料条目、同配方，每份余料都是本配方原料、未腐败、份数不超过配方所需
+        /// （腐败物或多出的物品不能当合法输入，补投不吞物，这样的余料条目只能取出）。
+        /// </summary>
+        private bool StationRefillable(GameState s, string place, StationBatch b, RecipeConfig rc)
+        {
+            if (!b.Residual || b.RecipeId != rc.Id) return false;
+            var items = StationBatchInputs(s, place, b);
+            return items.All(i => rc.Inputs.ContainsKey(i.ItemId) && !IsSpoiledMatter(i) && !IsSpoiled(s, i))
+                   && items.GroupBy(i => i.ItemId).All(g => g.Sum(i => i.Count) <= rc.Inputs[g.Key]);
+        }
+
+        /// <summary>B51c2b：当前区这座设施可被 rc 补投复用的余料条目，按原条目先后（先复用前面的）。</summary>
+        public List<StationBatch> StationReusable(GameState s, RecipeConfig rc) =>
+            StationList(FacOf(s, s.Ground), rc.Station).Where(b => StationRefillable(s, s.Ground, b, rc)).ToList();
+
+        /// <summary>B51c2b：还能投的批数（10 − 当前条目数＋可复用余料条目数；余料条目计入上限）。</summary>
+        private int StationRoomFor(GameState s, RecipeConfig rc) =>
+            Math.Max(0, StationRoom(s, rc.Station) + StationReusable(s, rc).Count);
+
+        /// <summary>B51c2b：投 batches 批要从随身与当前地面取的各物品份数（前几批先扣去所复用余料条目里的余料；燃料每批照取）。</summary>
+        private Dictionary<string, int> StationNeeds(GameState s, RecipeConfig rc, int batches)
+        {
+            var reuse = StationReusable(s, rc);
+            var need = new Dictionary<string, int>();
+            for (var k = 0; k < batches; k++)
+            {
+                var res = k < reuse.Count ? StationBatchInputs(s, s.Ground, reuse[k]) : new List<ItemInstance>();
+                foreach (var kv in rc.AllInputs)
+                {
+                    need.TryGetValue(kv.Key, out var n);
+                    need[kv.Key] = n + kv.Value - (rc.Inputs.ContainsKey(kv.Key) ? res.Where(i => i.ItemId == kv.Key).Sum(i => i.Count) : 0);
+                }
+            }
+            return need;
+        }
+
+        /// <summary>投 batches 批时第一种不够的物品的原拒绝句（沿原「缺少{物}（{有}/{需}，只取随身与当前地面）」）；都够为 null。</summary>
+        private string? StationShortOf(GameState s, RecipeConfig rc, int batches)
+        {
+            foreach (var kv in StationNeeds(s, rc, batches))
+            {
+                var have = StationFreeCount(s, kv.Key);
+                if (have < kv.Value) return $"缺少{ItemName(kv.Key)}（{have}/{kv.Value}，只取随身与当前地面）";
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// B51c2b（S11 §Q924「补投预览列清本位余料与各补足来源及真实数量」）：投 batches 批会复用余料条目时的预览句（暂用文案，见开发记录 B51c2b.5）——
+        /// 「先用余料{物品清单}，再从随身与当前地面取{物品清单}」；不复用余料为 null。
+        /// </summary>
+        public string? StationRefillText(GameState s, RecipeConfig rc, int batches)
+        {
+            var reuse = StationReusable(s, rc).Take(Math.Max(0, batches)).ToList();
+            if (reuse.Count == 0) return null;
+            var res = new List<(string Name, int Count)>();
+            foreach (var b in reuse)
+                foreach (var i in StationBatchInputs(s, s.Ground, b)) res.Add((ItemName(i.ItemId), i.Count));
+            var more = StationNeeds(s, rc, batches).Where(kv => kv.Value > 0).Select(kv => (Name: ItemName(kv.Key), Count: kv.Value)).ToList();
+            return $"先用{ResidualText}{ItemListText(res)}" + (more.Count > 0 ? $"，再从随身与当前地面取{ItemListText(more)}" : "");
+        }
+
+        /// <summary>「{物名}×{数量}」同名合量、按首次出现先后、顿号连接（同 Q876 B 清单写法）。</summary>
+        private static string ItemListText(IEnumerable<(string Name, int Count)> xs) =>
+            string.Join("、", xs.GroupBy(x => x.Name).Select(g => $"{g.Key}×{g.Sum(x => x.Count)}"));
 
         /// <summary>在当前区投 batches 批被动加工现在不能做的原因；能做为 null（整次校验：余位与全部批的材料、燃料）。</summary>
         public string? StationBatchBlocked(GameState s, RecipeConfig rc, int batches = 1)
@@ -71,18 +145,13 @@ namespace Survival.Core.Engine
                 if (lv < kv.Value) return $"需要{SkillName(kv.Key)}{kv.Value}级（当前{lv}级）";
             }
             if (StationBlocked(s, rc) is string station) return station;
-            var room = StationRoom(s, rc.Station);
+            // B51c2b（S11 §Q924 B）：余料条目计入 10 条上限；同配方可复用的余料条目先被新批替换，再按上限校验新开条目
+            var room = StationRoomFor(s, rc);
             // Q701.4（逐字稿 Q701—Q703 表）：并行批额满／投料超过并行剩余容量；校验顺序沿 Q380／Q397
             if (room <= 0) return $"加工批次已满（{StationParallelCap}批）。";
             if (batches < 1) return "投料批数必须是1或更大的整数。";
             if (batches > room) return $"还可同时加工{room}批，请减少投料批数。";
-            foreach (var kv in rc.AllInputs)
-            {
-                var have = StationFreeCount(s, kv.Key);
-                var need = kv.Value * batches;
-                if (have < need) return $"缺少{ItemName(kv.Key)}（{have}/{need}，只取随身与当前地面）";
-            }
-            return null;
+            return StationShortOf(s, rc, batches);
         }
 
         /// <summary>某批的预计完成时刻：当前世界时刻 + 本批剩余时长（Q701.2 各批同时加工，不串行相加）。</summary>
@@ -110,8 +179,13 @@ namespace Survival.Core.Engine
         public static string StationTitle(int batches, bool helpShown) => helpShown ? $"加工中{batches}批" : $"加工中{batches}批（最多{StationParallelCap}批）";
 
         /// <summary>Q727 并行批次主行（逐字稿 B51 表 batchRow）：「批次{序号} · {配方名} · {已进行}/{所需}分 · 预计{日期时刻}完成」，序号只作显示。</summary>
-        public string StationBatchRow(GameState s, StationBatch b, int seq) =>
-            $"批次{seq} · {RecipeNameOf(b.RecipeId)} · {b.DoneMinutes}/{b.RequiredMinutes}分 · 预计{Clock.DayTime(StationBatchFinish(s, b))}完成";
+        public string StationBatchRow(GameState s, StationBatch b, int seq) => b.Residual
+            // B51c2b（S11 §Q924「短状态可用“余料”」）：余料条目只写序号、配方与「余料」（暂用拼接，见开发记录 B51c2b.5）
+            ? $"批次{seq} · {RecipeNameOf(b.RecipeId)} · {ResidualText}"
+            : $"批次{seq} · {RecipeNameOf(b.RecipeId)} · {b.DoneMinutes}/{b.RequiredMinutes}分 · 预计{Clock.DayTime(StationBatchFinish(s, b))}完成";
+
+        /// <summary>B51c2b（S11 §Q870 B「只数真实正在加工的批」／§Q924）：这座设施真实正在加工的批数（标题「加工中{批数}批」只数这些，余料条目不算）。</summary>
+        public int StationProcessingCount(GameState s, string stationId) => StationBatchesHere(s, stationId).Count(b => !b.Residual);
 
         /// <summary>Q727 每批原产物落点（逐字稿 B51 表 outputGround）：「完成后放在{区域}地面。」，区域为这座设施原所在区。</summary>
         public string StationOutputGround(GameState s, string place) => $"完成后放在{ZoneName(s, place)}地面。";
@@ -123,7 +197,7 @@ namespace Survival.Core.Engine
         public string StationSummary(GameState s, string place, string stationId)
         {
             var name = StationName(stationId);
-            var list = StationList(FacOf(s, place), stationId);
+            var list = StationList(FacOf(s, place), stationId).Where(b => !b.Residual).ToList();   // B51c2b（Q924）：余料条目不计加工中
             return list.Count == 0 ? $"{name} · 空闲"
                 : $"{name} · 加工中{list.Count}批 · 最近{Clock.DayTime(list.Min(b => StationBatchFinish(s, b)))}完成";
         }
@@ -160,7 +234,8 @@ namespace Survival.Core.Engine
         {
             foreach (var (place, fac) in AllFacilityStates(s).ToList())
                 foreach (var g in fac.StationBatches.GroupBy(b => b.StationId).ToList())
-                    foreach (var b in g.ToList()) yield return (place, fac, b);
+                    foreach (var b in g.ToList())
+                        if (!b.Residual) yield return (place, fac, b);   // B51c2b（Q924）：余料条目不推进、不结算、不计经验预估
         }
 
         /// <summary>
@@ -259,16 +334,21 @@ namespace Survival.Core.Engine
             var place = s.Ground;
             var fac = FacOf(s, place)!;
             var preview = StationBatchXpPreview(s, rc, batches);
+            // B51c2b（S11 §Q924 B）：前几批复用同配方余料条目（原位置换成新批：新批 ID、进度 0、经验快照重取），余料先用、只从来源补所缺
+            var reuse = StationReusable(s, rc);
             int? first = null;
             for (var n = 0; n < batches; n++)
             {
                 var id = s.NextActionId++;
                 first ??= id;
                 var locked = new List<int>();
+                var old = n < reuse.Count ? reuse[n] : null;
+                var residual = old != null ? StationBatchInputs(s, place, old) : new List<ItemInstance>();
                 foreach (var kv in rc.Inputs)
                 {
+                    var mine = residual.Where(i => i.ItemId == kv.Key).ToList();
                     // B51c2a1（S11 Q872 选 B）：原料真实归属本设施该批，不留地面预留、不算地面来源
-                    foreach (var moved in TakeStationSources(s, kv.Key, kv.Value))
+                    foreach (var moved in mine.Concat(TakeStationSources(s, kv.Key, kv.Value - mine.Sum(i => i.Count))).ToList())
                     {
                         moved.Owner = ItemInstance.StationOwner(place, id);
                         moved.PlacedOrder = null;
@@ -278,12 +358,14 @@ namespace Survival.Core.Engine
                     }
                 }
                 ReserveStationFuel(s, rc, place, id, locked);
-                fac.StationBatches.Add(new StationBatch
+                var batch = new StationBatch
                 {
                     BatchId = id, StationId = rc.Station, RecipeId = rc.Id, InputInstanceIds = locked,
                     RequiredMinutes = rc.BaseMinutes, StartMinute = s.GameMinute, InitiatorActorId = GameState.PlayerId,
                     XpSnapshot = StationBatchXpFor(rc.Station),
-                });
+                };
+                if (old != null) fac.StationBatches[fac.StationBatches.IndexOf(old)] = batch;
+                else fac.StationBatches.Add(batch);
             }
             Normalize(s, ItemInstance.Carried);
             RememberRequest(s, requestId);

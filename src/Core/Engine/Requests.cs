@@ -158,7 +158,7 @@ namespace Survival.Core.Engine
         public string ResultText { get; set; } = "";
     }
 
-    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe, StoreCabinet, TakeCabinet, MoveToPot }
+    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe, StoreCabinet, TakeCabinet, MoveToPot, FacilityTake }
 
     public sealed class InstantRequest
     {
@@ -242,6 +242,12 @@ namespace Survival.Core.Engine
         /// <summary>B17 安全屋柜子：柜子 → 随身（zone 为空或 carried）或屋内地面（zone = 屋内地面 owner）。</summary>
         public static InstantRequest TakeCabinet(int instanceId, int count = 1, string? zone = null) =>
             new InstantRequest { Kind = InstantKind.TakeCabinet, InstanceId = instanceId, Count = count, Zone = zone ?? "" };
+        /// <summary>
+        /// B51c2b（S11 §Q870 B、§Q925 B）：从晾制位／陶窑净水台批内取出这一张设施物品卡的 count 份到随身或当前地面（卡片箭头、数量取出、拖出同一事务）。
+        /// stamp 为按下／打开数量窗时的 <see cref="GameEngine.FacilityItemStamp"/>（设施位／批与卡实例），放在 CardKey。
+        /// </summary>
+        public static InstantRequest FacilityTake(int instanceId, int count, string zone, string stamp) =>
+            new InstantRequest { Kind = InstantKind.FacilityTake, InstanceId = instanceId, Count = count, Zone = zone, CardKey = stamp };
         public static InstantRequest Reorder(string zone, string cardKey, int index) =>
             new InstantRequest { Kind = InstantKind.Reorder, Zone = zone, CardKey = cardKey, Index = index };
 

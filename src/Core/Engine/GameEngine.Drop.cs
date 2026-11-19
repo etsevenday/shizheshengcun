@@ -38,7 +38,7 @@ namespace Survival.Core.Engine
     /// 落点种类。基础UI修订 v0.7 第 6.2 节取消了左栏“自身”投放卡：不再有 Self 落点，拖到左栏、右栏或人物页签一律无效，
     /// 对自身使用统一走选中物品后的卡下按钮。
     /// </summary>
-    public enum DropTargetKind { Zone, Card, FireFuel, FirePotSlot, FireSlot, FireCard, PotFill, PotFood, Resource, Location, RecipeSlot }
+    public enum DropTargetKind { Zone, Card, FireFuel, FirePotSlot, FireSlot, FireCard, PotFill, PotFood, Resource, Location, RecipeSlot, DryingSlot }
 
     /// <summary>拖拽落点。Id：区 ID / 卡片键 / 地点 ID / 锅实例 ID / 资源点 ID / 配方 ID；ItemId 只给配方材料槽。</summary>
     public sealed class DropTarget
@@ -79,6 +79,8 @@ namespace Survival.Core.Engine
                 case "potfill": return new DropTarget { Kind = DropTargetKind.PotFill, Id = rest };
                 case "potfood": return new DropTarget { Kind = DropTargetKind.PotFood, Id = rest };
                 case "res": return new DropTarget { Kind = DropTargetKind.Resource, Id = rest };
+                // B51c2b（S11 §Q926 A）：晾制架面板的晾制位（位号 0 起）
+                case "dryslot": return new DropTarget { Kind = DropTargetKind.DryingSlot, Id = rest };
                 case "loc": return new DropTarget { Kind = DropTargetKind.Location, Id = rest };
                 case "slot":
                 {
@@ -95,7 +97,7 @@ namespace Survival.Core.Engine
     /// 拖拽动词。Ignite 是 v0.7 第 4.1 节的点火专用修订：打火器松手即开始点火（不再打开需要再按“开始”的预览），
     /// 其余耗时交互（指定工具采集、配方）仍是预览类。
     /// </summary>
-    public enum DropVerb { None, Reorder, Transfer, AddFuel, Ignite, FillPot, Decant, PutInFire, PutFood, TakeOut, PreviewGatherTool, PreviewRecipe, MoveToPot }
+    public enum DropVerb { None, Reorder, Transfer, AddFuel, Ignite, FillPot, Decant, PutInFire, PutFood, TakeOut, PreviewGatherTool, PreviewRecipe, MoveToPot, PreviewDrying }
 
     /// <summary>落点解析结果：即时类带 Instant（壳直接提交），开始类带 Action（壳松手即开始），预览类带 Action 或候选配方（壳打开面板预选）。</summary>
     public sealed class DropIntent
@@ -118,8 +120,11 @@ namespace Survival.Core.Engine
         public bool FallThrough { get; set; }
         /// <summary>B41c2（Q523）：锁定主行动暂停中把本行动锁住的同一原工具拾取到随身——唯一放过忙碌表的拾取。</summary>
         public bool LockedToolPickup { get; set; }
+        /// <summary>B51c2b（S11 §Q926 A）：拖到晾制位的预览——要选中的晾制位（0 起）；其他落点为 null。</summary>
+        public int? Slot { get; set; }
 
-        public bool IsPreview => Verb == DropVerb.PreviewGatherTool || Verb == DropVerb.PreviewRecipe;
+        /// <summary>预览类：只打开面板预选，不提交（B51c2b 起含拖到晾制位的食谱预览 PreviewDrying）。</summary>
+        public bool IsPreview => Verb == DropVerb.PreviewGatherTool || Verb == DropVerb.PreviewRecipe || Verb == DropVerb.PreviewDrying;
 
         /// <summary>松手即开始的耗时行动（点火）：Action 已通过开始校验，壳用起拖时的 requestId 提交。</summary>
         public bool StartsAction => Verb == DropVerb.Ignite;
@@ -176,6 +181,8 @@ namespace Survival.Core.Engine
                     ? "该物品已被预留" : "物品已不在");
             var here = s.Ground;
             if (head.IsWorn) return DropIntent.No(WornMoveBlocked);
+            // B51c2b（S11 §Q925 B）：晾制位、陶窑／净水台批内的物品卡只能拖到随身或当前地面（取出），门槛与容量同卡片箭头
+            if (IsFacilityItem(head)) return FacilityItemDrop(s, head, dst);
             var srcPlace = PlaceOf(s, head);
             if (srcPlace != ItemInstance.Carried && srcPlace != here) return DropIntent.No("其他地点的物品不能操作");
 
@@ -193,6 +200,7 @@ namespace Survival.Core.Engine
                 case DropTargetKind.Resource: intent = DropOnResource(s, src, head, dst.Id); break;
                 case DropTargetKind.Location: intent = DropOnLocation(s, src, head, dst.Id); break;
                 case DropTargetKind.RecipeSlot: intent = DropOnSlot(s, src, head, dst.Id, dst.ItemId); break;
+                case DropTargetKind.DryingSlot: intent = DropOnDryingSlot(s, src, head, dst.Id); break;
                 default: intent = DropIntent.No(Unsupported); break;
             }
             return intent.Ok ? Busy(s, intent) ?? intent : intent;

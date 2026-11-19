@@ -577,6 +577,11 @@ namespace Survival.Core.State
         public const string Drying = "drying";
         public const string Done = "done";
         public const string Spoiled = "spoiled";
+        /// <summary>
+        /// B51c2b（S11「2026-11-17 B51c2a／B51c2b完整两原批」§Q924 B、§Q870 B）：卡片箭头／数量取出／拖出取走在制位部分原料后，
+        /// 同一事务结束这一批，未移余料解锁留本位、恢复正常保质并占位；不计晾制中、不结算；可按本位原配方补投（余料先用），取净才空出。
+        /// </summary>
+        public const string Residual = "residual";
 
         /// <summary>位号 0—7（界面显示为第 1—8 位）。</summary>
         public int Slot { get; set; }
@@ -631,6 +636,12 @@ namespace Survival.Core.State
         /// B51b（Q701.2，存档 55）起各批全部并行、没有等候批：54→55 迁移把旧等候批转为在办并清为 false，此后恒为 false，仅为读旧档保留。
         /// </summary>
         public bool Queued { get; set; }
+
+        /// <summary>
+        /// B51c2b（S11 §Q924 B、§Q870 B）：取走部分批内原料后这一批已结束、只剩余料（批内原料解锁、恢复正常保质，仍计入每座 10 条上限），
+        /// 不计「加工中」、不推进不结算、不给经验；补投时被同配方新批复用（先用余料），取净才释放。旧档没有这个字段读出 false。
+        /// </summary>
+        public bool Residual { get; set; }
 
         public StationBatch Clone()
         {
