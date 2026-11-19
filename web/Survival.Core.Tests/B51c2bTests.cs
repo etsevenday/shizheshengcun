@@ -439,4 +439,463 @@ public class B51c2bTests : TestBase
         Assert.That(refill.Recipes, Is.EqualTo(new[] { "dry_berries" }));
         Assert.That(Drop(s, meat, "dryslot:0").Reason, Is.EqualTo(Full));
     }
+
+    // ───────────── 变异测试补测（基线 2612268d..8dd031e0，见开发记录 B51c2b.8） ─────────────
+
+    /// <summary>直接造一个晾制余料位（起点构造）：位号 slot、配方 recipe，位内物品另造。</summary>
+    private DryingSlot ResidualSlot(GameState s, int slot, string recipe)
+    {
+        var b = new DryingSlot
+        {
+            Slot = slot, BatchId = 8800 + slot, RecipeId = recipe, Status = DryingSlot.Residual, StartMinute = s.GameMinute - 30,
+            RequiredMinutes = 120, EndMinute = s.GameMinute - 10, InitiatorActorId = GameState.PlayerId,
+        };
+        DrySlots(s).Add(b);
+        return b;
+    }
+
+    /// <summary>直接造一条陶窑余料条目（起点构造），批内物品另造。</summary>
+    private StationBatch ResidualKiln(GameState s, int id)
+    {
+        var b = new StationBatch
+        {
+            BatchId = id, StationId = "kiln", RecipeId = Kiln, RequiredMinutes = 60, StartMinute = s.GameMinute - 10,
+            InitiatorActorId = GameState.PlayerId, Residual = true,
+        };
+        E.FacOf(s, s.Ground)!.StationBatches.Add(b);
+        return b;
+    }
+
+    /// <summary>在 owner 造一张卡（起点构造）；expires 给定时改写它的截止（keep 为真时连 null 也写）。</summary>
+    private ItemInstance MakeIn(GameState s, string itemId, int count, string owner, int? expires = null, bool keep = false)
+    {
+        var made = E.CreateItems(s, itemId, count, owner);
+        Assert.That(made, Has.Count.EqualTo(1));
+        if (keep || expires.HasValue) made[0].ExpiresAt = expires;
+        return made[0];
+    }
+
+    /// <summary>IsPreview（DropIntent 原定义）：采集工具、配方、晾制位三种预览都只打开面板，不提交。</summary>
+    [Test]
+    public void MT_IsPreview_AllThreeKinds()
+    {
+        Assert.That(new[] { DropVerb.PreviewGatherTool, DropVerb.PreviewRecipe, DropVerb.PreviewDrying, DropVerb.TakeOut }
+            .Select(v => new DropIntent { Verb = v }.IsPreview), Is.EqualTo(new[] { true, true, true, false }));
+    }
+
+    /// <summary>Q924 B「余料先用，再从来源补足所缺」：余料野果×1、随身野果×3，补投按原来源顺序（截止先到先用，Q606）只补 1 份：取地面那份先到期的野果，随身 3 份不动。</summary>
+    [Test]
+    public void MT_DryingRefill_TakesOnlyShortfall()
+    {
+        var s = Rack();
+        var card = BerriesInSlot0(s);
+        Ok(Take(s, card, 1, s.Ground));
+        MakeIn(s, "berry", 3, ItemInstance.Carried, s.GameMinute + 600);
+        var o = E.DryingPreview(s, "dry_berries", 0);
+        Assert.That(o.Sources, Has.Count.EqualTo(2));
+        Assert.That(o.Sources[1], Does.StartWith("地面野果×1（"));
+        Ok(E.StartDrying(s, "dry_berries", 0, null, o.SourceKey));
+        Assert.That(E.DryingContents(s, s.Ground, 0).Sum(i => i.Count), Is.EqualTo(2), "配方野果×2");
+        Assert.That((Sum(s, "berry", ItemInstance.Carried), Sum(s, "berry", s.Ground)), Is.EqualTo((3, 0)));
+    }
+
+    /// <summary>
+    /// Q214（预览来源变了要求再确认）＋Q924 B：预览看到的是「余料野果×1」，确认前这份余料被「取出」到地面——同一实例改从地面来，
+    /// 确认按原预览拒「原料或晾制位有变化……」，不悄悄换来源。
+    /// </summary>
+    [Test]
+    public void MT_DryingRefill_ResidualMovedToGround_PreviewChanged()
+    {
+        var s = Rack();
+        var card = BerriesInSlot0(s);
+        Ok(Take(s, card, 1, ItemInstance.Carried));
+        foreach (var i in s.Items.Where(i => i.ItemId == "berry" && i.Owner == ItemInstance.Carried)) i.ExpiresAt = s.GameMinute + 600;   // 随身那份晚到期，地面余料排在前
+        var o = E.DryingPreview(s, "dry_berries", 0);
+        Assert.That(o.Sources[0], Does.StartWith("余料野果×1"));
+        Ok(E.TakeDryingSlot(s, 0, E.DryingTakeStamp(s, s.Ground, 0)));
+        var r = E.StartDrying(s, "dry_berries", 0, null, o.SourceKey);
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, GameEngine.DryingPreviewChanged)));
+    }
+
+    /// <summary>Q924 B 只有余料位才把位内物品当来源：晾制中的位预览（拒「已满」）不把位内原料列成「余料」。</summary>
+    [Test]
+    public void MT_Preview_InProgressSlot_NoResidualSources()
+    {
+        var s = Rack();
+        BerriesInSlot0(s);
+        MakeIn(s, "berry", 2, ItemInstance.Carried, s.GameMinute + 600);
+        var o = E.DryingPreview(s, "dry_berries", 0);
+        Assert.That(o.Reason, Is.EqualTo(Full));
+        Assert.That(o.Sources.Count(x => x.StartsWith("余料")), Is.EqualTo(0));
+    }
+
+    /// <summary>Q924 B：余料与配方所需一样多（肉干取走盐，余生肉×1＝所需1）仍可补投，只补盐。</summary>
+    [Test]
+    public void MT_DryingRefillable_ResidualEqualsNeed()
+    {
+        var s = Rack();
+        MakeIn(s, "raw_meat", 1, ItemInstance.Carried);
+        MakeIn(s, "salt", 1, ItemInstance.Carried);
+        Ok(E.StartDrying(s, "dry_meat"));
+        var salt = E.DryingContents(s, s.Ground, 0).Single(i => i.ItemId == "salt");
+        Ok(Take(s, salt, 1, ItemInstance.Carried));
+        var o = E.DryingPreview(s, "dry_meat", 0);
+        Assert.That(o.Ok, Is.True, o.Reason);
+        Assert.That(o.Sources.Select(x => x.Substring(0, x.IndexOf('（'))), Is.EqualTo(new[] { "余料生肉×1", "随身盐×1" }));
+    }
+
+    /// <summary>
+    /// Q924 B「本位对应配方合法余料」：位内有一份不是本配方原料（盐之于果干）、已到期未转换的野果、
+    /// 同名合计超过所需（两份野果 1＋2＞2）、或一种超量一种合法（生肉×1＋生肉×1＋盐×1），都不能补投，按占用拒「已满」（不吞物）；对照合法余料可补投。
+    /// </summary>
+    [Test]
+    public void MT_DryingRefillable_IllegalResidual_Full()
+    {
+        var s = Rack();
+        MakeIn(s, "berry", 2, ItemInstance.Carried, s.GameMinute + 600);
+        MakeIn(s, "raw_meat", 1, ItemInstance.Carried);
+        MakeIn(s, "salt", 1, ItemInstance.Carried);
+
+        ResidualSlot(s, 0, "dry_berries");
+        MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 0), s.GameMinute + 300);
+        MakeIn(s, "salt", 1, ItemInstance.DryingOwner(s.Ground, 0));
+        ResidualSlot(s, 1, "dry_berries");
+        MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 1), s.GameMinute);   // 已到期、尚未转换
+        ResidualSlot(s, 2, "dry_berries");
+        MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 2), s.GameMinute + 300);
+        MakeIn(s, "berry", 2, ItemInstance.DryingOwner(s.Ground, 2), s.GameMinute + 400);
+        ResidualSlot(s, 3, "dry_meat");
+        MakeIn(s, "raw_meat", 1, ItemInstance.DryingOwner(s.Ground, 3), s.GameMinute + 300);
+        MakeIn(s, "raw_meat", 1, ItemInstance.DryingOwner(s.Ground, 3), s.GameMinute + 400);
+        MakeIn(s, "salt", 1, ItemInstance.DryingOwner(s.Ground, 3));
+        ResidualSlot(s, 4, "dry_berries");
+        MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 4), s.GameMinute + 300);   // 对照：合法余料
+
+        Assert.That(E.DryingContents(s, s.Ground, 2), Has.Count.EqualTo(2), "起点：两份分开");
+        Assert.That(new[] { (0, "dry_berries"), (1, "dry_berries"), (2, "dry_berries"), (3, "dry_meat"), (4, "dry_berries") }
+            .Select(x => E.DryingPreview(s, x.Item2, x.Item1).Reason),
+            Is.EqualTo(new string?[] { Full, Full, Full, Full, null }));
+        // Q924「列清……真实数量」：超量余料位的预览来源只按配方所需列，不出「×0」
+        Assert.That(E.DryingPreview(s, "dry_meat", 3).Sources.Count(x => x.Contains("×0")), Is.EqualTo(0));
+    }
+
+    /// <summary>Q879 A：余料位里的物品都没了（如被丢弃），「取出」置灰「没有可取出的物品。」。</summary>
+    [Test]
+    public void MT_ResidualSlot_Empty_TakeEmpty()
+    {
+        var s = Rack();
+        ResidualSlot(s, 0, "dry_berries");
+        Assert.That(E.DryingSlotTakeBlocked(s, 0), Is.EqualTo("没有可取出的物品。"));
+    }
+
+    /// <summary>晾制架摘要：余料位单独计数（暂用「余料{n}」，开发记录 B51c2b.5），接原「空{n}」。</summary>
+    [Test]
+    public void MT_DryingSummary_ResidualCount()
+    {
+        var s = Rack();
+        var card = BerriesInSlot0(s);
+        Ok(Take(s, card, 1, s.Ground));
+        Assert.That(E.DryingSummary(s), Is.EqualTo("余料1 · 空7"));
+    }
+
+    /// <summary>Q925 B：陶窑余料条目被补投换成新批后，余料卡打开时的旧身份戳不再生效，拒「物品已变，请重选。」。</summary>
+    [Test]
+    public void MT_KilnStamp_OldBatch_Changed()
+    {
+        var s = Workshop();
+        KilnInputs(s, 1);
+        Ok(E.StartStationBatch(s, Kiln, "k"));
+        Ok(Take(s, Inputs(s, KilnBatches(s).Single()).Single(), 1, s.Ground));
+        var residual = Inputs(s, KilnBatches(s).Single()).Single();
+        var oldStamp = E.FacilityItemStamp(s, residual);
+        E.CreateItems(s, "charcoal", 1, s.Ground);
+        Ok(E.StartStationBatch(s, Kiln, "k2"));
+        Assert.That(residual.Owner, Is.EqualTo(ItemInstance.StationOwner(s.Ground, KilnBatches(s).Single().BatchId)), "余料进了新批");
+        Assert.That(Take(s, residual, 1, s.Ground, oldStamp).Reason, Is.EqualTo(Changed));
+        Assert.That(Sum(s, "clay", s.Ground), Is.EqualTo(0), "什么都不动");
+    }
+
+    /// <summary>Q925 B：所属晾制位／设施批记录已不在的物品（异常残留）不能按设施物品卡取出，拒「物品已变，请重选。」；不存在的卡同样拒。</summary>
+    [Test]
+    public void MT_FacilityItem_NoRecord_Changed()
+    {
+        var s = Rack();
+        var dry = MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 3), s.GameMinute + 300);
+        var w = Workshop();
+        var st = MakeIn(w, "clay", 1, ItemInstance.StationOwner(w.Ground, 99999));
+        Assert.That((E.FacilityItemGate(s, dry), E.FacilityItemGate(w, st)), Is.EqualTo((Changed, Changed)));
+        Assert.That(Take(s, dry, 1, s.Ground).Reason, Is.EqualTo(Changed));
+        Assert.That(E.DoInstant(s, InstantRequest.FacilityTake(987654, 1, s.Ground, "x")).Reason, Is.EqualTo(Changed), "卡已不在");
+        Assert.That(dry.Owner, Is.EqualTo(ItemInstance.DryingOwner(s.Ground, 3)));
+    }
+
+    /// <summary>
+    /// S07 数量规则（FAC-Q870-03）：取到随身的上限按随身容量（已满五张卡为 0），取到当前地面的上限是这张卡全部份数；
+    /// 随身容量失败带回可取上限 0，门槛失败（行动进行中）不带上限。
+    /// </summary>
+    [Test]
+    public void MT_FacilityItemMax_ByZone_AndFailMax()
+    {
+        var s = Rack();
+        var card = BerriesInSlot0(s);
+        foreach (var id in new[] { "wood", "stone", "rope", "plank", "cloth" }) E.CreateItems(s, id, 1, ItemInstance.Carried);
+        Assert.That((E.FacilityItemMax(s, card, ItemInstance.Carried), E.FacilityItemMax(s, card, s.Ground)), Is.EqualTo((0, 2)));
+        Assert.That(Take(s, card, 1, ItemInstance.Carried).MaxCount, Is.EqualTo(0));
+        Start(s, ActionRequest.Wait(30));
+        var busy = Take(s, card, 1, s.Ground);
+        Assert.That((busy.Reason, busy.MaxCount), Is.EqualTo((Busy, (int?)null)));
+    }
+
+    /// <summary>去向只认随身或当前地面（原句「只能取到随身或当前地面」）；份数小于 1 拒原句「数量无效」；拖到别处拒「只能放到随身或当前地面」。</summary>
+    [Test]
+    public void MT_FacilityTake_BadZoneOrCount()
+    {
+        var s = Rack();
+        var card = BerriesInSlot0(s);
+        Assert.That(Take(s, card, 1, "elsewhere").Reason, Is.EqualTo("只能取到随身或当前地面"));
+        var zero = Take(s, card, 0, s.Ground);
+        Assert.That((zero.Reason, zero.MaxCount), Is.EqualTo(("数量无效", (int?)null)), "取到地面不受容量限制，失败不带可取上限");
+        Assert.That(Drop(s, card, "zone:elsewhere").Reason, Is.EqualTo("只能放到随身或当前地面"));
+        Assert.That(card.Count, Is.EqualTo(2));
+    }
+
+    /// <summary>
+    /// Q880「原料已腐败。」只挡晾制中的位：在制原料已到期（旧档未暂停）拒取；余料位里到期未转换的野果可以取出（取出后同一边界转为腐败物，
+    /// 结果沿原转换句；S06 Q610 每个变更边界做一次到期转换）。
+    /// </summary>
+    [Test]
+    public void MT_SpoiledInput_OnlyBlocksDrying_ResidualTakeConverts()
+    {
+        var s = Rack();
+        var card = BerriesInSlot0(s);
+        card.ShelfPausedMinutes = null;
+        card.ExpiresAt = s.GameMinute;
+        Assert.That(E.FacilityItemTakeBlocked(s, card, 1, s.Ground), Is.EqualTo("原料已腐败。"));
+
+        ResidualSlot(s, 1, "dry_berries");
+        var old = MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 1), s.GameMinute);
+        Assert.That(E.FacilityItemTakeBlocked(s, old, 1, s.Ground), Is.Null);
+        Ok(Take(s, old, 1, s.Ground));
+        var ground = s.Items.Where(i => i.Owner == s.Ground).ToList();
+        Assert.That(ground.Select(i => (i.ItemId, i.Count)), Is.EqualTo(new[] { (GameEngine.SpoiledMatterId, 1) }), "落地即转为腐败物");
+        Assert.That(s.Log.Select(l => l.Text), Does.Contain("野果×1已腐败，变为腐败物×1。"));
+        Assert.That(DrySlots(s).Any(x => x.Slot == 1), Is.False, "位取空即空出");
+    }
+
+    /// <summary>落地合堆（同单件取出）：同一位先后两次各取 1 份到地面，同期限的两份在地面合成一堆野果×2。</summary>
+    [Test]
+    public void MT_FacilityTake_MergesOnGround()
+    {
+        var s = Rack();
+        var card = BerriesInSlot0(s);
+        Ok(Take(s, card, 1, s.Ground));
+        var rest = E.DryingContents(s, s.Ground, 0).Single();
+        Ok(Take(s, rest, 1, s.Ground));
+        var ground = s.Items.Where(i => i.ItemId == "berry" && i.Owner == s.Ground).ToList();
+        Assert.That(ground.Select(i => i.Count), Is.EqualTo(new[] { 2 }));
+    }
+
+    /// <summary>FacilityItems 文档「已晾好／已停止的位只是少了物品」（S11 §Q870 B 只结束在制批）：停止位（缺料）取走一份，仍是停止位、不改成余料。</summary>
+    [Test]
+    public void MT_StoppedSlot_PartialTake_StaysStopped()
+    {
+        var s = Rack();
+        DrySlots(s).Add(new DryingSlot
+        {
+            Slot = 0, BatchId = 7300, RecipeId = "dry_berries", Status = DryingSlot.Spoiled, StartMinute = s.GameMinute - 60, DoneMinutes = 50,
+            RequiredMinutes = 120, EndMinute = s.GameMinute - 5, InitiatorActorId = GameState.PlayerId, StopReason = DryingSlot.StopMissing,
+        });
+        var berry = MakeIn(s, "berry", 2, ItemInstance.DryingOwner(s.Ground, 0), s.GameMinute + 300);
+        Ok(Take(s, berry, 1, s.Ground));
+        Assert.That(DrySlots(s).Select(x => x.Status), Is.EqualTo(new[] { DryingSlot.Spoiled }));
+    }
+
+    /// <summary>FAC-Q870-04（陶窑）：批内原料带暂停保质（R＝100）时，取走 1 份后余料同样恢复 C＋R；整批取空则这条记录删掉。</summary>
+    [Test]
+    public void MT_KilnResidual_ResumesCR_EmptyRemoved()
+    {
+        var s = Workshop();
+        MakeIn(s, "clay", 2, s.Ground, s.GameMinute + 100);
+        E.CreateItems(s, "charcoal", 1, s.Ground);
+        Ok(E.StartStationBatch(s, Kiln, "k"));
+        var b = KilnBatches(s).Single();
+        var inBatch = Inputs(s, b).Single();
+        Assert.That(inBatch.ShelfPausedMinutes, Is.EqualTo(100), "起点：开工暂停保质");
+        AdvanceTo(s, s.GameMinute + 30);
+        var c = s.GameMinute;
+        Ok(Take(s, inBatch, 1, s.Ground));
+        var rest = Inputs(s, b).Single();
+        Assert.That((rest.Count, rest.ExpiresAt, rest.ShelfPausedMinutes), Is.EqualTo((1, (int?)(c + 100), (int?)null)), "余料恢复 C＋R");
+        Ok(Take(s, rest, 1, s.Ground));
+        Assert.That(KilnBatches(s), Is.Empty, "取空即删掉这条");
+    }
+
+    /// <summary>Q926 A 落点：晾制位号只认 0—7；位号非法、当前区没有晾制架、火堆上的食物、已到期的材料都拒。</summary>
+    [Test]
+    public void MT_DropOnDryingSlot_Guards()
+    {
+        var s = Rack();
+        var berry = MakeIn(s, "berry", 1, ItemInstance.Carried, s.GameMinute + 600);
+        Assert.That(new[] { "dryslot:8", "dryslot:-1", "dryslot:x" }.Select(t => Drop(s, berry, t).Reason),
+            Is.EqualTo(new[] { GameEngine.Unsupported, GameEngine.Unsupported, GameEngine.Unsupported }));
+        Assert.That(Drop(s, berry, "dryslot:7").Ok, Is.True, "对照：第 8 位");
+
+        var old = MakeIn(s, "berry", 1, s.Ground, s.GameMinute);   // 已到期未转换
+        Assert.That(Drop(s, old, "dryslot:1").Reason, Is.EqualTo("这批材料不可用"));
+
+        var meat = MakeIn(s, "raw_meat", 1, s.Ground);
+        Ok(E.DoInstant(s, InstantRequest.PutInFireSlot(meat.InstanceId, 0)));
+        var onFire = s.Items.Single(i => i.ItemId == "raw_meat" && i.InFacility);
+        Assert.That(Drop(s, onFire, "dryslot:1").Reason, Is.EqualTo(GameEngine.Unsupported));
+
+        var w = Workshop();
+        var b2 = MakeIn(w, "berry", 1, ItemInstance.Carried, w.GameMinute + 600);
+        Assert.That(Drop(w, b2, "dryslot:0").Reason, Is.EqualTo("临时营地没有晾制架（只能操作当前区的晾制架）"));
+    }
+
+    /// <summary>
+    /// 到期转换的身边日志（S06 Q610；B50a「在办工作的输入不写普通句」）：余料位里的野果、已晾好位里的果干到期都写普通转换句；
+    /// 对照：晾制中位里未暂停的旧档原料到期由停止句接分句、缺料停止位里的原料（WorkOwned 原注释「含已腐败停止待清理」）都属在办工作，不写普通句。
+    /// </summary>
+    [Test]
+    public void MT_SpoilLog_ResidualAndDone_Normal_DryingWork()
+    {
+        var s = Rack();
+        ResidualSlot(s, 0, "dry_berries");
+        MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 0), s.GameMinute + 10);
+        DrySlots(s).Add(new DryingSlot
+        {
+            Slot = 1, BatchId = 7401, RecipeId = "dry_berries", Status = DryingSlot.Done, StartMinute = s.GameMinute - 200, DoneMinutes = 120,
+            RequiredMinutes = 120, EndMinute = s.GameMinute - 80, InitiatorActorId = GameState.PlayerId,
+        });
+        MakeIn(s, "dried_berries", 1, ItemInstance.DryingOwner(s.Ground, 1), s.GameMinute + 10);
+        MakeIn(s, "raw_meat", 1, ItemInstance.Carried);
+        MakeIn(s, "salt", 1, ItemInstance.Carried);
+        Ok(E.StartDrying(s, "dry_meat", 2));
+        var meat = E.DryingContents(s, s.Ground, 2).Single(i => i.ItemId == "raw_meat");
+        meat.ShelfPausedMinutes = null;   // 旧档：未暂停
+        meat.ExpiresAt = s.GameMinute + 10;
+        DrySlots(s).Single(x => x.Slot == 2).ShelfPaused = false;
+        DrySlots(s).Add(new DryingSlot
+        {
+            Slot = 3, BatchId = 7403, RecipeId = "dry_meat", Status = DryingSlot.Spoiled, StartMinute = s.GameMinute - 60, DoneMinutes = 50,
+            RequiredMinutes = 180, EndMinute = s.GameMinute - 5, InitiatorActorId = GameState.PlayerId, StopReason = DryingSlot.StopMissing,
+        });
+        MakeIn(s, "raw_meat", 1, ItemInstance.DryingOwner(s.Ground, 3), s.GameMinute + 10);   // 缺料停止位里的生肉
+
+        AdvanceTo(s, s.GameMinute + 30);
+
+        var texts = s.Log.Select(l => l.Text).ToList();
+        Assert.That(texts, Does.Contain("野果×1已腐败，变为腐败物×1。"), "余料位");
+        Assert.That(texts, Does.Contain("果干×1已腐败，变为腐败物×1。"), "已晾好位");
+        Assert.That(texts, Does.Not.Contain("生肉×1已腐败，变为腐败物×1。"), "晾制中在办原料（由停止句接分句）、停止待取出位里的原料都不写普通句");
+        Assert.That(texts, Does.Contain("临时营地晾制架工位3：生肉已腐败，晾制肉干停止，没有成品、不给经验；原料留在这一位，回到当地取出。腐败部分已变为腐败物。"), "对照：在办原料由停止句说明");
+    }
+
+    /// <summary>
+    /// Q924 B 补投预览：余料已够配方所需时补足来源只列燃料（不列「黏土×0」）；两条余料条目同名合量（S11 Q876 B 清单写法）。
+    /// </summary>
+    [Test]
+    public void MT_StationRefillText_FullResidual_AndMerged()
+    {
+        var s = Workshop();
+        var rc = Cfg.Recipes.Single(r => r.Id == Kiln);
+        var b = ResidualKiln(s, 9001);
+        MakeIn(s, "clay", 2, ItemInstance.StationOwner(s.Ground, b.BatchId));
+        E.CreateItems(s, "charcoal", 1, s.Ground);
+        Assert.That(E.StationRefillText(s, rc, 1), Is.EqualTo("先用余料黏土×2，再从随身与当前地面取木炭×1"), "黏土不写×0");
+
+        var w = Workshop();
+        KilnInputs(w, 2);
+        Ok(E.StartStationBatch(w, Kiln, "k", 2));
+        foreach (var x in KilnBatches(w)) Ok(Take(w, Inputs(w, x).Single(), 1, w.Ground));
+        Assert.That(E.StationRefillText(w, rc, 2), Is.EqualTo("先用余料黏土×2，再从随身与当前地面取黏土×2、木炭×2"));
+    }
+
+    /// <summary>净水台（无燃料）余料已齐：预览只写「先用余料脏水×20、滤材×1」，不接补足来源。</summary>
+    [Test]
+    public void MT_StationRefillText_NothingMore()
+    {
+        var s = Workshop();
+        E.DebugBuildAllWorkshops(s);
+        var rc = Cfg.Recipes.Single(r => r.Id == "ex_station_water");
+        var b = new StationBatch
+        {
+            BatchId = 9101, StationId = rc.Station, RecipeId = rc.Id, RequiredMinutes = 30, StartMinute = s.GameMinute - 10,
+            InitiatorActorId = GameState.PlayerId, Residual = true,
+        };
+        E.FacOf(s, s.Ground)!.StationBatches.Add(b);
+        MakeIn(s, "dirty_water", 20, ItemInstance.StationOwner(s.Ground, b.BatchId));
+        MakeIn(s, "filter_media", 1, ItemInstance.StationOwner(s.Ground, b.BatchId));
+        Assert.That(E.StationRefillText(s, rc, 1), Is.EqualTo("先用余料脏水×20、滤材×1"));
+    }
+
+    /// <summary>
+    /// Q924 B（陶窑）「本位对应配方合法余料」：余料条目里有非原料（石头）、已到期的黏土、同名合计超量（1＋2＞2）都不能复用；对照合法余料可复用。
+    /// </summary>
+    [Test]
+    public void MT_StationRefillable_IllegalResidual()
+    {
+        var s = Workshop();
+        var rc = Cfg.Recipes.Single(r => r.Id == Kiln);
+        var a = ResidualKiln(s, 9201);
+        MakeIn(s, "clay", 1, ItemInstance.StationOwner(s.Ground, a.BatchId));
+        MakeIn(s, "stone", 1, ItemInstance.StationOwner(s.Ground, a.BatchId));
+        var bb = ResidualKiln(s, 9202);
+        MakeIn(s, "clay", 1, ItemInstance.StationOwner(s.Ground, bb.BatchId), s.GameMinute);   // 已到期
+        var c = ResidualKiln(s, 9203);
+        MakeIn(s, "clay", 1, ItemInstance.StationOwner(s.Ground, c.BatchId), s.GameMinute + 500);
+        MakeIn(s, "clay", 2, ItemInstance.StationOwner(s.Ground, c.BatchId));
+        Assert.That(Inputs(s, c), Has.Count.EqualTo(2), "起点：两份分开");
+        Assert.That(E.StationReusable(s, rc), Is.Empty);
+        var ok = ResidualKiln(s, 9204);
+        MakeIn(s, "clay", 1, ItemInstance.StationOwner(s.Ground, ok.BatchId));
+        Assert.That(E.StationReusable(s, rc).Select(x => x.BatchId), Is.EqualTo(new[] { 9204 }), "对照");
+    }
+
+    /// <summary>Q924 B（净水台）：一种超量（脏水×21＞20）、一种合法（滤材×1）的余料条目不能复用；对照恰好够（脏水×20）可复用。</summary>
+    [Test]
+    public void MT_StationRefillable_WaterOneOver()
+    {
+        var s = Workshop();
+        E.DebugBuildAllWorkshops(s);
+        var rc = Cfg.Recipes.Single(r => r.Id == "ex_station_water");
+        foreach (var (id, water) in new[] { (9301, 21), (9302, 20) })
+        {
+            E.FacOf(s, s.Ground)!.StationBatches.Add(new StationBatch
+            {
+                BatchId = id, StationId = rc.Station, RecipeId = rc.Id, RequiredMinutes = 30, StartMinute = s.GameMinute - 10,
+                InitiatorActorId = GameState.PlayerId, Residual = true,
+            });
+            MakeIn(s, "dirty_water", water, ItemInstance.StationOwner(s.Ground, id));
+            MakeIn(s, "filter_media", 1, ItemInstance.StationOwner(s.Ground, id));
+        }
+        Assert.That(E.StationReusable(s, rc).Select(x => x.BatchId), Is.EqualTo(new[] { 9302 }));
+    }
+
+    /// <summary>Q924 B（陶窑）余料先用：补投只从地面取所缺的 1 份黏土（取出的 1 份放回地面后又添 3 份，地面 4 份，补投后剩 3）。</summary>
+    [Test]
+    public void MT_KilnRefill_TakesOnlyShortfall()
+    {
+        var s = Workshop();
+        KilnInputs(s, 1);
+        Ok(E.StartStationBatch(s, Kiln, "k"));
+        Ok(Take(s, Inputs(s, KilnBatches(s).Single()).Single(), 1, s.Ground));
+        E.CreateItems(s, "clay", 3, s.Ground);
+        E.CreateItems(s, "charcoal", 1, s.Ground);
+        Ok(E.StartStationBatch(s, Kiln, "k2"));
+        Assert.That(Sum(s, "clay", s.Ground), Is.EqualTo(3));
+        Assert.That(Inputs(s, KilnBatches(s).Single()).Sum(i => i.Count), Is.EqualTo(2));
+    }
+
+    /// <summary>Q870 B「只数真实正在加工的批」：两批在加工、一条余料，加工中批数为 2。</summary>
+    [Test]
+    public void MT_StationProcessingCount_ExcludesResidual()
+    {
+        var s = Workshop();
+        KilnInputs(s, 3);
+        Ok(E.StartStationBatch(s, Kiln, "k", 3));
+        Ok(Take(s, Inputs(s, KilnBatches(s)[0]).Single(), 1, s.Ground));
+        Assert.That(E.StationProcessingCount(s, "kiln"), Is.EqualTo(2));
+    }
 }
