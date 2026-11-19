@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Survival.Core.Tests", "Surv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Survival.Web", "Survival.Web\Survival.Web.csproj", "{59A3E4D8-34F2-4FEB-8EFC-A7E86C0CFDCE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Survival.Web.Tests", "Survival.Web.Tests\Survival.Web.Tests.csproj", "{9829F1F5-8126-43B9-A34B-065383491A16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{59A3E4D8-34F2-4FEB-8EFC-A7E86C0CFDCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59A3E4D8-34F2-4FEB-8EFC-A7E86C0CFDCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59A3E4D8-34F2-4FEB-8EFC-A7E86C0CFDCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9829F1F5-8126-43B9-A34B-065383491A16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9829F1F5-8126-43B9-A34B-065383491A16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9829F1F5-8126-43B9-A34B-065383491A16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9829F1F5-8126-43B9-A34B-065383491A16}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
