@@ -354,18 +354,19 @@ public class B50aTests : TestBase
         Assert.That(DrySlots(s).Single().ShelfPaused, Is.True);
         AdvanceTo(s, t0 + 60);
         Assert.That(DrySlots(s).Single().Status, Is.EqualTo(DryingSlot.Drying), "越过原截止仍在晾");
-        Assert.That(E.CancelDrying(s, 0, false).Ok, Is.True);
+        Assert.That(TakeDryingNow(s, 0).Ok, Is.True);   // B51c2a2（Q870 B）：原 CancelDrying(…, 到地面)
         var c1 = s.GameMinute;
         Assert.That(s.Items.Where(i => i.ItemId == "berry").Select(i => (i.Owner, i.ExpiresAt, i.ShelfPausedMinutes)),
             Is.All.EqualTo((s.Ground, (int?)(c1 + 30), (int?)null)), "新截止＝C＋R，仍剩 30");
         Assert.That(Xp(s), Is.EqualTo(x0), "取消不给经验");
-        Assert.That(s.Log.Last().Text, Does.Contain("没有成品，不给经验"));
+        // B51c2a2 改期望（S11 Q876 B 结果句；Q878 删中止／成本尾句）：原断取消日志含「没有成品，不给经验」
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取出至{E.ZoneName(s, s.Ground)}地面：野果×2。"));
 
         AdvanceTo(s, c1 + 10);
         Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
         Assert.That(s.Items.Where(i => i.ItemId == "berry").Select(i => i.ShelfPausedMinutes), Is.All.EqualTo(20), "按退回后的真实剩余 20 重新快照");
         AdvanceTo(s, c1 + 40);
-        Assert.That(E.CancelDrying(s, 0, false).Ok, Is.True);
+        Assert.That(TakeDryingNow(s, 0).Ok, Is.True);
         Assert.That(s.Items.Where(i => i.ItemId == "berry").Select(i => i.ExpiresAt), Is.All.EqualTo(s.GameMinute + 20), "不刷新成完整保质");
     }
 
@@ -413,16 +414,17 @@ public class B50aTests : TestBase
         var berries = Make(s, "berry", 2, ItemInstance.Carried, t0 + 40);
         Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
         AdvanceTo(s, t0 + 30);
-        var knives = new List<ItemInstance>();
-        for (var k = 0; k < 5; k++) knives.AddRange(E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried));
-        Assert.That(E.CancelDrying(s, 0, true).Ok, Is.False, "随身满整次拒绝");
+        // B51c2a2 改段（S11 Q870 B：在制位「取出」只到设施所在区地面，原「随身满整次拒绝」随取消去向撤下）：改断计划变了整次拒绝、快照不变
+        var stale = E.DryingTakeStamp(s, s.Ground, 0);
+        E.CreateItems(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 0));   // 起点：渲染后位内物品变化
+        Assert.That(E.TakeDryingSlot(s, 0, stale).Reason, Is.EqualTo("物品已变，请重选。"), "计划变了整次拒绝");
         Assert.That(berries.Select(i => (i.InDrying, i.ShelfPausedMinutes, i.ExpiresAt)), Is.All.EqualTo((true, (int?)40, (int?)null)), "不半退、快照不变");
-        s.Items.RemoveAll(i => knives.Contains(i));
+        s.Items.RemoveAll(i => i.ItemId == "berry" && i.Count == 1 && i.InDrying && !berries.Contains(i));
 
-        Assert.That(E.CancelDrying(s, 0, false, "rq-cancel").Ok, Is.True);
+        Assert.That(TakeDryingNow(s, 0, "rq-cancel").Ok, Is.True);
         var n = s.Items.Where(i => i.ItemId == "berry").Sum(i => i.Count);
         var logs = s.Log.Count;
-        E.CancelDrying(s, 0, false, "rq-cancel");
+        TakeDryingNow(s, 0, "rq-cancel");
         Assert.That(s.Items.Where(i => i.ItemId == "berry").Sum(i => i.Count), Is.EqualTo(n), "重复请求不重复退料");
         Assert.That(s.Log.Count, Is.EqualTo(logs), "重复请求不重复写日志");
         Assert.That(n, Is.EqualTo(2));
@@ -519,15 +521,17 @@ public class B50aTests : TestBase
 
         var v0 = E.DryingSlotViews(s)[0];
         Assert.That(v0.StopKind, Is.EqualTo(DryingSlot.StopMissing));
-        Assert.That(v0.Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；清理可取回剩余物品。"));
+        // B51c2a2 改期望（S11／逐字稿 §Q880 映射表：「有余物的原清理说明／悬停 → 取出剩余物品。」「原“请清理剩余物品”拒绝提示 → 请取出剩余物品。」
+        // 「设施满位 → 已满」；清理只用于地图）：原说明尾「清理可取回剩余物品。」、悬停「取出剩余物品，清空该位。」、取消拒绝「原料不全：请清理剩余物品。」、占位「原料不全，待清理」
+        Assert.That(v0.Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；取出剩余物品。"));
         Assert.That(v0.XpText, Is.EqualTo("原料不全，无成品和经验。"));
-        Assert.That(v0.CleanupHint, Is.EqualTo("取出剩余物品，清空该位。"));
-        Assert.That(E.CancelDrying(s, 0, false).Reason, Is.EqualTo("原料不全：请清理剩余物品。"));
-        Assert.That(E.StartDrying(s, "dry_berries", 0).Reason, Does.Contain("原料不全，待清理"), "状态按缺料");
+        Assert.That(v0.CleanupHint, Is.EqualTo("取出剩余物品。"));
+        Assert.That(E.DryingSlotTakeBlocked(s, 0), Is.EqualTo("请取出剩余物品。"));
+        Assert.That(E.StartDrying(s, "dry_berries", 0).Reason, Is.EqualTo("已满"));
         var v2 = E.DryingSlotViews(s)[2];
-        Assert.That((v2.Line, v2.XpText, v2.CleanupHint), Is.EqualTo(($"{E.Recipe("dry_berries").Name}已停止，无成品；清理可取回剩余物品。", "本批已停止，无成品和经验。", "取出剩余物品，清空该位。")));
-        Assert.That(E.CancelDrying(s, 2, false).Reason, Is.EqualTo("本批已停止：请清理剩余物品。"));
-        Assert.That(E.StartDrying(s, "dry_berries", 2).Reason, Does.Contain("加工已停止，待清理"));
+        Assert.That((v2.Line, v2.XpText, v2.CleanupHint), Is.EqualTo(($"{E.Recipe("dry_berries").Name}已停止，无成品；取出剩余物品。", "本批已停止，无成品和经验。", "取出剩余物品。")));
+        Assert.That(E.DryingSlotTakeBlocked(s, 2), Is.EqualTo("请取出剩余物品。"));
+        Assert.That(E.StartDrying(s, "dry_berries", 2).Reason, Is.EqualTo("已满"));
 
         // 真腐败另计：工位4 放一批旧档未受保护的到期果干
         Make(s, "berry", 2, ItemInstance.Carried, t0 + 600);
@@ -538,22 +542,24 @@ public class B50aTests : TestBase
         AdvanceTo(s, s.GameMinute + 10);
         Assert.That((b3.Status, b3.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopSpoiled)));
         Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "缺料2", "停止1", "腐败1", "空4" }), "按原因分开计工位数");
-        Assert.That(E.DryingSlotViews(s)[3].CleanupHint, Is.Null, "真腐败位沿现行清理悬停");
+        // B51c2a2 改期望（Q880：有余物的停止位悬停一律「取出剩余物品。」）：原断真腐败位为 null（沿旧清理悬停）
+        Assert.That(E.DryingSlotViews(s)[3].CleanupHint, Is.EqualTo("取出剩余物品。"));
 
         // 缺料后剩料再腐败：原因仍是缺料
         var salt = s.Items.Single(i => i.Owner == ItemInstance.DryingOwner(place, 0));
         Assert.That(salt.ItemId, Is.EqualTo("salt"));
         Assert.That(b0.StopReason, Is.EqualTo(DryingSlot.StopMissing));
 
-        // 清理：剩盐只返一次、不补生肉；空位只写该位已空
+        // 取出：剩盐只返一次、不补生肉；无余物的异常位「清空」只写「已清空。」
+        // B51c2a2 改期望（S11 Q880：余物取出统一原实际移物结果句、不以「清理{地点}…」开头；异常空位复位成功「已清空。」）
         Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Does.Match(@"^清理.+晾制架工位1：盐×1取到.+，该位已空。$"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"从{E.ZoneName(s, place)}晾制架工位1取出盐×1到{E.ZoneName(s, place)}地面，这一位空出。"));
         Assert.That(E.TakeDrying(s, 0, false).Reason, Does.Contain("是空的"), "只返一次");
         Assert.That(s.Items.Count(i => i.ItemId == "raw_meat"), Is.EqualTo(0), "缺失不补");
         Assert.That(E.TakeDrying(s, 1, false).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Does.Match(@"^清理.+晾制架工位2：该位已空。$"), "不造虚拟物品");
+        Assert.That(s.Log.Last().Text, Is.EqualTo("已清空。"), "不造虚拟物品");
         Assert.That(E.TakeDrying(s, 2, false).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Does.Match(@"^清理.+晾制架工位3：野果×2取到.+，该位已空。$"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"从{E.ZoneName(s, place)}晾制架工位3取出野果×2到{E.ZoneName(s, place)}地面，这一位空出。"));
         Assert.That(s.Items.Where(i => i.ItemId == "berry" && i.Owner == s.Ground).Select(i => i.ExpiresAt), Is.All.Not.Null, "受保护的剩料释放时按 C＋R 恢复截止");
         Assert.That(Xp(s), Is.EqualTo(x0), "停止不给经验");
     }

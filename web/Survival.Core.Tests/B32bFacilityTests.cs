@@ -71,7 +71,7 @@ public class B32bFacilityTests : TestBase
         AdvanceTo(s, s.GameMinute + 120);
         Assert.That(E.DryingSlotBusy(s, 0), Is.False, "已晾好不挂加工中");
         Assert.That(CardStates.DryingStatusText(E.DryingSlotViews(s)[0].Status), Is.EqualTo("可收取"));
-        Assert.That(CardStates.DryingStatusText(DryingSlot.Spoiled), Is.EqualTo("待清理"));   // B53a 改期望：已停止位短状态「待清理」（S11 文首 2026-11-15 §Q765、逐字稿 dryStopped；Q861 选 A）
+        Assert.That(CardStates.DryingStatusText(DryingSlot.Spoiled), Is.EqualTo("待取出"));   // B51c2a2 改期望：S11／逐字稿 §Q880 映射表「异常停止位“待清理” → 待取出」；原 B53a 改期望：已停止位短状态「待清理」（S11 文首 2026-11-15 §Q765、逐字稿 dryStopped；Q861 选 A）
     }
 
     /// <summary>Q374-A01：新晾制日志与拒绝原因引用工位时写「工位{序号}」，序号与面板一致。</summary>
@@ -90,11 +90,14 @@ public class B32bFacilityTests : TestBase
         Ok(E.StartDrying(s, "dry_berries", 0));
         Assert.That(s.Log.Last().Text, Does.Contain("晾制架工位1开始"));
         var rc = Cfg.Recipes.First(r => r.Id == "dry_berries");
-        Assert.That(E.DryingBlocked(s, rc, 0), Does.StartWith("工位1正在用"));
-        Assert.That(E.DryingCancelBlocked(s, 1, false), Is.EqualTo("工位2是空的"));
+        // B51c2a2 改期望（S11 Q880 映射表「设施满位 → 已满」，Q926 占用位短原因「已满」）：原断「工位1正在用…」
+        Assert.That(E.DryingBlocked(s, rc, 0), Is.EqualTo("已满"));
+        // B51c2a2 改调用与期望（Q870 B 撤取消，在制位「取出」；空位再取出按快照变化原句「物品已变，请重选。」）
+        Assert.That(E.DryingSlotTakeBlocked(s, 1), Is.EqualTo("物品已变，请重选。"));
         Assert.That(E.DryingTakeBlocked(s, 1, false), Is.EqualTo("工位2是空的"));
-        Ok(E.CancelDrying(s, 0, false));
-        Assert.That(s.Log.Last().Text, Does.Contain("晾制架工位1的").And.Not.Contain("第1位"));
+        Ok(TakeDryingNow(s, 0));
+        // B51c2a2 改期望（Q876 B 结果句，不再写工位名）：原断取消日志含「晾制架工位1的」
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取出至{E.ZoneName(s, s.Ground)}地面：野果×2。"));
     }
 
     // ───────────── Q368 高亮落点 ─────────────

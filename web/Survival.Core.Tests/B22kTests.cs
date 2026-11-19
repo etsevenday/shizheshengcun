@@ -114,7 +114,8 @@ public class B22kTests : TestBase
         Assert.That(v.ShelfPaused, Is.True);
         Assert.That(v.Line, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("腐败"), "B50a（Q666）：在制位说明用正式句");
         Assert.That(v.Contents.First(c => c.StartsWith("生肉")), Does.Contain("保质暂停，剩余30分钟"));
-        Assert.That(v.CancelHint, Is.EqualTo(GameEngine.DryingCancelHintText), "B50a（Q666）：晾制取消说明正式句");
+        // B51c2a2 改断言（S11／逐字稿 §Q966：旧晾制取消成本提示随取消入口撤下；Q870 B 在制位改为「取出」）：原断 CancelHint＝取消说明
+        Assert.That(v.TakeBlocked, Is.Null, "B51c2a2（Q870 B）：晾制中的位可「取出」");
     }
 
     /// <summary>
@@ -223,35 +224,28 @@ public class B22kTests : TestBase
         Ok(E.StartDrying(s, "dry_meat"));
         AdvanceTo(s, t0 + 60);
 
-        // 目的地不合法：随身已满五张 → 整次拒绝，仍留位、快照不变
-        var knives = new List<ItemInstance>();
-        for (var k = 0; k < 5; k++) knives.AddRange(E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried));
-        var blocked = E.CancelDrying(s, 0, true);
-        Assert.That(blocked.Reason, Does.Contain("随身卡位不够"));
-        Assert.That((meat.InDrying, salt.InDrying), Is.EqualTo((true, true)), "不半退");
-        Assert.That((meat.ShelfPausedMinutes, meat.ExpiresAt), Is.EqualTo(((int?)30, (int?)null)), "保持原快照");
-        Assert.That(Slots(s).Single().Status, Is.EqualTo(DryingSlot.Drying));
-        s.Items.RemoveAll(i => knives.Contains(i));
-
-        Ok(E.CancelDrying(s, 0, true));
+        // B51c2a2 删段并改调用（S11 Q870 B／Q778：撤「取消·到随身／到地面」二选一，在制位「取出」只到设施所在区地面，没有随身容量校验）：
+        // 原「随身已满五张 → 整次拒绝、快照不变」一段随随身去向一起撤下；计划变化的整次拒绝见 B51c2a2Tests
+        Assert.That((meat.ShelfPausedMinutes, meat.ExpiresAt), Is.EqualTo(((int?)30, (int?)null)), "取出前保持原快照");
+        Ok(TakeDryingNow(s, 0));
         Assert.That(s.GameMinute, Is.EqualTo(t0 + 60), "已过时间不退");
         var back = First(s, "raw_meat");
-        Assert.That(back.Owner, Is.EqualTo(ItemInstance.Carried));
+        Assert.That(back.Owner, Is.EqualTo(s.Ground), "B51c2a2（Q870 B）：取出到设施所在区地面（原退回随身）");
         Assert.That(back.ExpiresAt, Is.EqualTo(t0 + 60 + 30), "新截止＝退料分钟 C＋R，仍剩 30 分钟");
         Assert.That(back.ShelfPausedMinutes, Is.Null);
-        Assert.That(Count(s, "salt", ItemInstance.Carried), Is.EqualTo(1), "盐 1 原样退回");
+        Assert.That(Count(s, "salt", s.Ground), Is.EqualTo(1), "盐 1 原样退回地面（B51c2a2 Q870 B）");
         Assert.That(Count(s, "salt"), Is.EqualTo(1), "盐不复制");
         Assert.That(Slots(s), Is.Empty, "清本批进度");
         Assert.That(CookXp(s), Is.EqualTo(x0), "取消不给经验");
-        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消{E.ZoneName(s, s.Ground)}晾制架工位1的晾制肉干（已晾60分钟，不退时间）：生肉×1、盐×1退回随身，没有成品，不给经验。"));
+        // B51c2a2 改断言（S11 Q876 B 结果句、Q878 不接中止／成本尾句、Q882 不接保质句）：原取消日志「已取消…退回随身，没有成品，不给经验。」
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取出至{E.ZoneName(s, s.Ground)}地面：生肉×1、盐×1。"));
 
         // 再投再取消：R 仍是 30，不刷新成完整保质
         var t1 = s.GameMinute;
         Ok(E.StartDrying(s, "dry_meat"));
         Assert.That(First(s, "raw_meat").ShelfPausedMinutes, Is.EqualTo(30), "重新投料以退回后的真实剩余快照");
         AdvanceTo(s, t1 + 90);
-        Ok(E.CancelDrying(s, 0, false));
+        Ok(TakeDryingNow(s, 0));   // B51c2a2：原 CancelDrying(…, 到地面)
         Assert.That(First(s, "raw_meat", s.Ground).ExpiresAt, Is.EqualTo(t1 + 90 + 30));
         Assert.That(Count(s, "salt"), Is.EqualTo(1));
         Assert.That(CookXp(s), Is.EqualTo(x0));

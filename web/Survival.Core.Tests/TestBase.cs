@@ -159,4 +159,11 @@ public abstract class TestBase
 
     /// <summary>B51c2a1：这份物品归某个陶窑／净水台批（设施内原料或地面预留燃料）。</summary>
     protected static bool InAnyBatch(ItemInstance i) => i.ReservedBy != null || i.InStation;
+
+    /// <summary>
+    /// B51c2a2（S11 Q870 B／Q778，撤「取消·到随身／到地面」）：晾制中这一位「取出」——带当前计划快照戳提交（原料回本区地面）。
+    /// 供原调用 CancelDrying 的旧测试改用。
+    /// </summary>
+    protected ActionResult TakeDryingNow(GameState s, int slot, string? requestId = null) =>
+        E.TakeDryingSlot(s, slot, E.DryingTakeStamp(s, s.Ground, slot), requestId);
 }

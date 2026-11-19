@@ -607,9 +607,12 @@ namespace Survival.Core.Engine
         /// <summary>从火堆或锅里取出到随身或当前地面能否成立；到随身时整锅连同内容一起计重，超 30 公斤整次拒绝（P403）。</summary>
         public string? TakeOutBlocked(GameState s, ItemInstance inst, string zone)
         {
-            var busy = HolderBlocked(s);
-            if (busy != null) return busy;
             var inPotFood = inst.InContainer && !IsLiquid(inst);
+            // B51c2a2（S11 Q871 B，HolderBlocked 拆取出／放入）：从火堆里取出（含火堆上锅里的食材）走四类被动设施统一取出门槛——
+            // 角色主／子行动进行或暂停都拒「行动进行中，暂不能整理物品」，战斗沿火堆原句；随身／地面锅里取食材与放入类仍按原 HolderBlocked
+            var inFire = inst.InFacility || (inPotFood && ContainerOf(s, inst) is ItemInstance box && box.InFacility);
+            var busy = inFire ? FacilityTakeBlocked(s, s.Ground, FireBattleText) : HolderBlocked(s);
+            if (busy != null) return busy;
             if (!inst.InFacility && !inPotFood) return inst.InContainer ? "锅里的水请用倒出" : "只能取出火堆或锅里的物品";
             var place = PlaceOf(s, inst);
             if (!(place == ItemInstance.Carried || place == s.Ground)) return "异地不能取用设施里的物品";

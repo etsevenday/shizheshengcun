@@ -453,14 +453,16 @@ public class B53bTests : BattleTestBase
         s.Items.Add(new ItemInstance { InstanceId = s.NextInstanceId++, ItemId = Rot, Count = 1, Owner = ItemInstance.DryingOwner(s.Ground, 0), SpoiledFrom = "berry", SpoiledUnitGrams = 200, SpoiledStackMax = 20 });
         Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
         var log = s.Log.Last().Text;
-        Assert.That(log, Does.Match(@"^清理.+晾制架工位1：腐败物×1取到.+，这一位空出。腐败物不可食用。$"));
+        // B51c2a2 改期望（S11 Q880：余物取出统一原实际移物结果句，不以「清理{地点}…」作日志引句）
+        Assert.That(log, Is.EqualTo($"从{E.ZoneName(s, s.Ground)}晾制架工位1取出腐败物×1到{E.ZoneName(s, s.Ground)}地面，这一位空出。腐败物不可食用。"));
         Assert.That(log, Does.Not.Contain("按腐败物处理"));
 
         var t = Rack();
         SpoiledStop(t);
         var fresh = Give(t, "salt", ItemInstance.DryingOwner(t.Ground, 0));
         Assert.That(E.TakeDrying(t, 0, false).Ok, Is.True);
-        Assert.That(t.Log.Last().Text, Does.Match(@"^清理.+晾制架工位1：盐×1.*取到.+，这一位空出。$"), "无腐败物不接、不编坏料");
+        // B51c2a2 改期望（S11 Q880：「清理」只用于地图，余物取出不以「清理…」引句）：原 Does.Match(@"^清理.+晾制架工位1：盐×1.*取到.+，这一位空出。$")
+        Assert.That(t.Log.Last().Text, Is.EqualTo($"从{E.ZoneName(t, t.Ground)}晾制架工位1取出盐×1到{E.ZoneName(t, t.Ground)}地面，这一位空出。"), "无腐败物不接、不编坏料");
         Assert.That(t.Items.Contains(fresh), Is.True);
     }
 

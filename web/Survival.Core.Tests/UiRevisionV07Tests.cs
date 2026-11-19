@@ -150,7 +150,8 @@ public class UiRevisionV07Tests : TestBase
         Assert.That(E.TakeOutBlocked(s, pot, ItemInstance.Carried), Is.Null, "空闲时可以取下加工中的锅");
         Assert.That(E.TakeOutConsequenceOf(s, pot).Text, Does.Contain("水煮受热10分钟"));
         Start(s, ActionRequest.Wait(30));
-        Assert.That(E.TakeOutBlocked(s, pot, ItemInstance.Carried), Is.EqualTo("行动进行中，不能整理物品"), "不因内嵌展示解锁被占用的实体");
+        // B51c2a2 改期望（S11 Q871 B：火堆取出与角色主／子行动进行或暂停统一「行动进行中，暂不能整理物品」）：原「行动进行中，不能整理物品」
+        Assert.That(E.TakeOutBlocked(s, pot, ItemInstance.Carried), Is.EqualTo("行动进行中，暂不能整理物品"), "不因内嵌展示解锁被占用的实体");
     }
 
     [Test]

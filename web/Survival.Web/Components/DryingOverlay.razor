@@ -3,10 +3,13 @@
 
 @* 晾制架面板（策划答复 Q170，S11/A07「八位晾架完整定稿」；开发计划 v0.9 B22c）：当前区晾制架的 8 个独立晾制位。
    空位：选食谱（果干/肉干）→ 预览写明投到第几位、取哪几份原料（只取随身与当前地面）、完成时刻、经验与日额 → 确认投料（0 分钟）。
-   晾制中：进度条、剩余时间、原料保质；“取消·到随身/到地面”：果干按原截止退回，肉干恢复投料时的剩余保质（Q215）。已晾好：“取到随身/取到地面”。原料腐败：“清理·到随身/到地面”（原样取出）。
+   晾制中：进度条、剩余时间、原料保质；“取出”（B51c2a2 起，原“取消·到随身/到地面”）。已晾好：“收取”。已停止：“取到随身/取到地面”（原样取出）或“清空”。
    全部数据来自内核 DryingSlotViews / DryingPreview；按钮的禁用原因写在悬停提示里。样式沿用安全屋面板。
    B22k（Q214/Q215）：肉干预览与位上写“开始制作后暂停原料保质计时，取消后恢复剩余时长”，不再标制作中腐败红字；B50a（S11 文首 Q666）起果干同样暂停保质，原果干临期红字撤去；Q713 缺料／未知停止位清理悬停用 v.CleanupHint。
-   点“投料…”记下当时预览的来源（SourceKey），确认时带给内核重验；预览变了先提示、要求看新预览再确认，不悄悄换料。 *@
+   点“投料…”记下当时预览的来源（SourceKey），确认时带给内核重验；预览变了先提示、要求看新预览再确认，不悄悄换料。
+   B51c2a2（S11 Q870 B／Q778／Q871 B／Q880／Q966）：撤「取消·到随身／到地面」，晾制中的位改一个「取出」（原料回本区地面，带本位计划快照戳与请求号）；
+   面板操作区常驻「全部取出」（空设施置灰、悬停真实原因，可用时不加悬停，Q879 A）；停止位「待取出」，按钮「取到随身」「取到地面」（悬停「取出剩余物品。」），
+   无余物的异常位只有「清空」。取出类按钮的门槛（角色主／子行动进行或暂停「行动进行中，暂不能整理物品」等）全由内核给出。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -15,6 +18,8 @@
     var recipes = e.DryingRecipes.ToList();
     var busy = G.Running || s.Sub != null;
     var pick = _pickSlot is int ps && views.Any(v => v.Slot == ps && v.Status == "empty") ? ps : (int?)null;
+    var allWhy = here ? e.TakeAllBlocked(s, s.Ground, GameEngine.DryingStationId) : null;
+    var allStamp = here ? e.TakeAllStamp(s, s.Ground, GameEngine.DryingStationId) : "";
 }
 
 <div class="sub-panel safehouse-panel drying-panel" role="dialog" aria-label="晾制架">
@@ -29,6 +34,11 @@
         }
         else
         {
+            @* B51c2a2（Q778／Q879 A）：本设施操作区「全部取出」——空设施置灰并悬停「没有可取出的物品。」，被挡时悬停真实原因，可用时不加悬停 *@
+            <div class="btn-row dry-ops">
+                <button type="button" class="secondary" data-pt="dry-take-all" disabled="@(G.Running || allWhy != null)" title="@allWhy"
+                        @onclick="(MouseEventArgs ev) => TakeAll(allStamp, ev)">@GameEngine.TakeAllLabel</button>
+            </div>
             <div class="dry-grid">
                 @foreach (var v in views)
                 {
@@ -63,16 +73,26 @@
                                     <button type="button" class="secondary" disabled="@busy" title="选这一位，在下方看可用食谱与预览" @onclick="() => ViewRecipes(k)">查看配方</button>
                                     break;
                                 case "drying":
-                                    <button type="button" class="secondary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? v.CancelHint + "（退回随身）")" @onclick="() => Cancel(k, true)">取消·到随身</button>
-                                    <button type="button" class="secondary" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? v.CancelHint + "（退回当前地面）")" @onclick="() => Cancel(k, false)">取消·到地面</button>
+                                    @* B51c2a2（Q870 B）：只结束这一位，原料回本区地面；不能取时置灰、悬停真实原因 *@
+                                    var stamp = v.TakeStamp;
+                                    <button type="button" class="secondary" data-pt="dry-take" data-slot="@k" disabled="@(busy || v.TakeBlocked != null)" title="@v.TakeBlocked"
+                                            @onclick="(MouseEventArgs ev) => TakeSlot(k, stamp, ev)">@GameEngine.TakeLabel</button>
                                     break;
                                 case "done":
                                     @* Q346、Q364：「收取」打开居中盘「收取」，盘里「取到随身」「取到地面」各自直接提交 *@
                                     <button type="button" id="@($"dry-take-{k}")" class="primary" disabled="@busy" title="选择去向：取到随身或当前地面（0分钟），这一位空出" @onclick="() => Harvest(k)">收取</button>
                                     break;
                                 default:
-                                    <button type="button" class="secondary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? v.CleanupHint ?? "把原料原样取到随身（腐败的不能吃），这一位空出")" @onclick="() => Take(k, true)">清理·到随身</button>
-                                    <button type="button" class="secondary" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? v.CleanupHint ?? "把原料原样取到当前地面（腐败的不能吃），这一位空出")" @onclick="() => Take(k, false)">清理·到地面</button>
+                                    @* B51c2a2（Q880 映射表）：原「清理·到随身／清理·到地面」→「取到随身／取到地面」，悬停「取出剩余物品。」；无余物的异常位只有「清空」 *@
+                                    if (v.Contents.Count > 0)
+                                    {
+                                        <button type="button" class="secondary" data-pt="dry-rest-carried" data-slot="@k" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? v.CleanupHint)" @onclick="() => Take(k, true)">@GameEngine.DryingToCarriedLabel</button>
+                                        <button type="button" class="secondary" data-pt="dry-rest-ground" data-slot="@k" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? v.CleanupHint)" @onclick="() => Take(k, false)">@GameEngine.DryingToGroundLabel</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="secondary" data-pt="dry-clear" data-slot="@k" disabled="@(busy || v.ToGroundBlocked != null)" title="@v.ToGroundBlocked" @onclick="() => Take(k, false)">@GameEngine.DryingClearLabel</button>
+                                    }
                                     break;
                             }
                         </div>
@@ -176,6 +196,19 @@
         else if (r.Reason != GameEngine.DryingPreviewChanged) _confirm = null;   // 预览变了：留在确认处，显示新预览与“重新确认”
     }
 
-    private void Cancel(int slot, bool toCarried) => G.EngineDo(() => G.E.CancelDrying(G.S, slot, toCarried, Guid.NewGuid().ToString("N")));
     private void Take(int slot, bool toCarried) => G.EngineDo(() => G.E.TakeDrying(G.S, slot, toCarried, Guid.NewGuid().ToString("N")));
+
+    /// <summary>B51c2a2（Q870 B）：晾制中的这一位「取出」——带渲染时的本位计划快照戳，请求号按戳（同一计划连点只生效一次）；双击的第二下不再提交。</summary>
+    private void TakeSlot(int slot, string stamp, MouseEventArgs ev)
+    {
+        if (ev.Detail > 1) return;
+        G.EngineDo(() => G.E.TakeDryingSlot(G.S, slot, stamp, "dry-take:" + stamp));
+    }
+
+    /// <summary>B51c2a2（Q778）：「全部取出」带渲染时的整座计划快照戳，请求号按戳；计划变了由内核回「物品已变，请重选。」。</summary>
+    private void TakeAll(string stamp, MouseEventArgs ev)
+    {
+        if (ev.Detail > 1) return;
+        G.EngineDo(() => G.E.TakeAll(G.S, G.S.Ground, GameEngine.DryingStationId, stamp, "dry-takeall:" + stamp));
+    }
 }

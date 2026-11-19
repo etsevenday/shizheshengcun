@@ -309,7 +309,7 @@ public class B51c1Tests : TestBase
         E.CreateItems(s, "salt", 1, s.Ground);
         var o = E.DryingPreview(s, "dry_meat");
         Assert.That(o.PausesShelf, Is.True);
-        const string own = "开始制作后暂停原料保质计时";   // S11 Q666 原句（取出动词随 Q778）；BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）：删“，取消后恢复剩余时长”
+        const string own = "晾晒时，不会变质";   // B51c2a2 改期望：S11／逐字稿 §Q966 用户原句取代 BM11 暂用「开始制作后暂停原料保质计时」；原注：S11 Q666 原句（取出动词随 Q778）；BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）：删“，取消后恢复剩余时长”
         Assert.That(o.Note.Split(own).Length - 1, Is.EqualTo(1), "Q666 自身说明一次");
         Assert.That(o.Note, Does.Not.Contain("所选原料暂停保质").And.Not.Contain("退料恢复剩余保质"), "不叠通用说明");
         Assert.That(E.StartDrying(s, "dry_meat").Ok, Is.True);

@@ -264,7 +264,8 @@ public class B53aTests : TestBase
         Stopped(s, 2, "dry_berries", DryingSlot.StopUnknown);
         Stopped(s, 3, "dry_berries", DryingSlot.StopSpoiled);
         var views = E.DryingSlotViews(s);
-        Assert.That(views.Take(4).Select(v => CardStates.DryingStatusText(v.Status)), Is.All.EqualTo("待清理"));
+        // B51c2a2 改期望（S11／逐字稿 §Q880 映射表「异常停止位“待清理” → 待取出」）：原「待清理」
+        Assert.That(views.Take(4).Select(v => CardStates.DryingStatusText(v.Status)), Is.All.EqualTo("待取出"));
         Assert.That(views.Take(4).Select(v => v.StopKind), Is.EqualTo(new[] { "missing", "missing", "unknown", "spoiled" }), "各位原实际原因仍可查看");
         Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "缺料2", "停止1", "腐败1", "空4" }), "不合并成待清理总数");
     }
@@ -294,9 +295,10 @@ public class B53aTests : TestBase
         Stopped(s, 0, "dry_berries", DryingSlot.StopUnknown);
         RotIn(s, ItemInstance.DryingOwner(s.Ground, 0), "berry", 1);
         var line = E.DryingSlotViews(s)[0].Line;
-        Assert.That(line, Is.EqualTo($"{E.Recipe("dry_berries").Name}已停止，无成品；清理可取回剩余物品。腐败物不可食用。"));
+        // B51c2a2 改期望（S11 Q880：「有余物的原清理说明 → 取出剩余物品。」；余物取出用原实际移物结果句、不以「清理{地点}…」开头）
+        Assert.That(line, Is.EqualTo($"{E.Recipe("dry_berries").Name}已停止，无成品；取出剩余物品。腐败物不可食用。"));
         Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Does.Match(@"^清理.+晾制架工位1：腐败物×1取到.+，该位已空。腐败物不可食用。$"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"从{E.ZoneName(s, s.Ground)}晾制架工位1取出腐败物×1到{E.ZoneName(s, s.Ground)}地面，这一位空出。腐败物不可食用。"));
     }
 
     /// <summary>Q765-A03 对照：位内没有腐败物时不接「腐败物不可食用。」。</summary>
@@ -306,7 +308,8 @@ public class B53aTests : TestBase
         var s = Rack();
         Stopped(s, 0, "dry_meat", DryingSlot.StopMissing);
         Give(s, "salt", ItemInstance.DryingOwner(s.Ground, 0));
-        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；清理可取回剩余物品。"));
+        // B51c2a2 改期望（S11 Q880 映射：原尾句「清理可取回剩余物品。」→「取出剩余物品。」）
+        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；取出剩余物品。"));
         Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
         Assert.That(s.Log.Last().Text, Does.Not.Contain(NotEdible));
     }
@@ -1324,7 +1327,8 @@ public class B53aTests : TestBase
         Stopped(s, 0, "dry_meat", DryingSlot.StopMissing);
         RotIn(s, ItemInstance.DryingOwner(s.Ground, 0), "raw_meat", 1);
         Give(s, "salt", ItemInstance.DryingOwner(s.Ground, 0));
-        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；清理可取回剩余物品。腐败物不可食用。"));
+        // B51c2a2 改期望（S11 Q880 映射：原尾句「清理可取回剩余物品。」→「取出剩余物品。」）
+        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；取出剩余物品。腐败物不可食用。"));
     }
 
     /// <summary>Q764-A01「只对缺可信原因的已停止位补」：55 档里晾制中的位（原因为空）不补原因；配方已不存在的停止位按「无法证明」为未知。</summary>

@@ -33,8 +33,9 @@ public class BM11CraftShelfTests : TestBase
     {
         Assert.That(GameEngine.ProductionShelfNote, Is.EqualTo("加工时原料暂停保质。"));   // S08 §Q882：通用生产原对应说明
         Assert.That(GameEngine.DryingShelfHelpText, Is.EqualTo("晾制时原料暂停保质；成品正常计时。"));   // S08 §Q882：晾制既有短说明
-        Assert.That(GameEngine.DryingShelfPauseText, Is.EqualTo("开始制作后暂停原料保质计时"));   // 原句删“，取消后恢复剩余时长”（暂用）
-        Assert.That(GameEngine.DryingCancelHintText, Is.EqualTo("已过制作时间不退，没有成品，不给经验。"));   // 原句删首分句“取消后恢复投料时剩余的保质时长；”
+        // B51c2a2 改期望（S11／逐字稿「2026-11-18 BM11试玩完整原批」§Q966 用户原句，逐字、无末标点）：原 BM11 暂用「开始制作后暂停原料保质计时」
+        Assert.That(GameEngine.DryingShelfPauseText, Is.EqualTo("晾晒时，不会变质"));
+        // B51c2a2 删断言（§Q966：旧晾制取消成本提示「已过制作时间不退，没有成品，不给经验。」随取消入口撤下，常量已删）
     }
 
     /// <summary>SMALL-Q882-01 配对：取消返料句不附期限，但物品详情的真实 C＋R 照常（截止＝取消时刻＋暂停 R）。</summary>

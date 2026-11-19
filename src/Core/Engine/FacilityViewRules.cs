@@ -83,7 +83,7 @@ namespace Survival.Core.Engine
         public static string DryingSlotName(int slotIndex) => $"工位{slotIndex + 1}";
 
         /// <summary>
-        /// P02c：晾制位状态「空闲」「晾制中」「可收取」；已实际停止的异常／历史位统一短状态「待清理」（B53a，S11 文首 2026-11-15 §Q765、2026-11-17 §Q861 选 A，逐字稿 dryStopped），
+        /// P02c：晾制位状态「空闲」「晾制中」「可收取」；已实际停止的异常／历史位统一短状态「待取出」（B51c2a2 Q880；原 B53a「待清理」，S11 文首 2026-11-15 §Q765、2026-11-17 §Q861 选 A，逐字稿 dryStopped），
         /// 真实停止原因仍在位内说明与架摘要「缺料{n}／停止{n}／腐败{n}」里分开。
         /// </summary>
         public static string DryingStatusText(string status) => status switch
@@ -94,8 +94,8 @@ namespace Survival.Core.Engine
             _ => DryingStoppedText,
         };
 
-        /// <summary>逐字稿 dryStopped。</summary>
-        public const string DryingStoppedText = "待清理";
+        /// <summary>逐字稿 dryStopped；B51c2a2（S11／逐字稿 §Q880 映射表「异常停止位“待清理”… → 待取出」）取代原「待清理」。</summary>
+        public const string DryingStoppedText = "待取出";
 
         /// <summary>Q364：晾制收取居中盘标题与两键。</summary>
         public const string HarvestTitle = "收取";

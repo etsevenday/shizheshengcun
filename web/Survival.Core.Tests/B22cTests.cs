@@ -74,7 +74,8 @@ public class B22cTests : TestBase
         Assert.That(Count(s, "raw_meat", s.Ground) + Count(s, "salt", s.Ground) + Count(s, "berry", s.Ground), Is.EqualTo(0), "原料全部迁入晾制位");
         Assert.That(s.Items.Where(i => i.ItemId is "raw_meat" or "salt" or "berry").All(i => i.InDrying), Is.True);
         E.CreateItems(s, "berry", 2, s.Ground);
-        Assert.That(E.StartDrying(s, "dry_berries").Reason, Does.Contain("8个晾制位都在用"), "第 9 批拒绝");
+        // B51c2a2 改期望（S11／逐字稿 §Q880「设施满位正式短句只用“已满”」）：原「8个晾制位都在用（每位一批）…」
+        Assert.That(E.StartDrying(s, "dry_berries").Reason, Is.EqualTo("已满"), "第 9 批拒绝");
         Assert.That(Count(s, "berry", s.Ground), Is.EqualTo(2), "拒绝不扣料");
         s.Items.RemoveAll(i => i.ItemId == "berry" && i.Owner == s.Ground);
 
@@ -91,7 +92,8 @@ public class B22cTests : TestBase
         Assert.That(Count(s, "raw_meat") + Count(s, "salt") + Count(s, "berry"), Is.EqualTo(0), "原料一次核销，无免费原料、不复制盐");
         Assert.That(s.Items.Where(i => i.ItemId == "dried_meat").All(i => i.ExpiresAt == t0 + 180 + 168 * 60), Is.True, "肉干截止 = 完成 + 168 小时");
         Assert.That(s.Items.Where(i => i.ItemId == "dried_berries").All(i => i.ExpiresAt == t0 + 120 + 168 * 60), Is.True, "果干截止 = 完成 + 168 小时");
-        Assert.That(E.StartDrying(s, "dry_berries").Reason, Does.Contain("都在用"), "完成品仍占位");
+        // B51c2a2 改期望（S11／逐字稿 §Q880「设施满位正式短句只用“已满”」）：原 Does.Contain("都在用")
+        Assert.That(E.StartDrying(s, "dry_berries").Reason, Is.EqualTo("已满"), "完成品仍占位");
 
         // 取出：到当地地面；到随身验五卡
         Ok(E.TakeDrying(s, 0, false));
@@ -155,14 +157,15 @@ public class B22cTests : TestBase
         Assert.That(E.DryingSlotAt(s, s.Ground, 3), Is.Not.Null, "投到所选的第 4 位");
         AdvanceTo(s, t0 + 60);
         Assert.That(E.DryingSlotAt(s, s.Ground, 3)!.DoneMinutes, Is.EqualTo(60));
-        Ok(E.CancelDrying(s, 3, true));
+        // B51c2a2 改调用与期望（S11 Q870 B／Q778：撤「取消·到随身／到地面」，在制位「取出」原料退设施所在区地面）
+        Ok(TakeDryingNow(s, 3));
         Assert.That(s.GameMinute, Is.EqualTo(t0 + 60), "已过时间不退");
         Assert.That(E.DryingSlotAt(s, s.Ground, 3), Is.Null, "清本批进度");
-        Assert.That(First(s, "raw_meat").Owner, Is.EqualTo(ItemInstance.Carried));
+        Assert.That(First(s, "raw_meat").Owner, Is.EqualTo(s.Ground), "B51c2a2（Q870 B）：取出到设施所在区地面（原取消到随身）");
         Assert.That(First(s, "raw_meat").ExpiresAt, Is.EqualTo(meatExp + 60), "Q215：恢复投料时的剩余保质（退料分钟＋R）");
         Assert.That(Count(s, "salt"), Is.EqualTo(1), "盐不复制");
         Assert.That(CookXp(s), Is.EqualTo(x0), "取消 0 经验");
-        Assert.That(E.CancelDrying(s, 3, true).Reason, Does.Contain("是空的"), "取消幂等");
+        Assert.That(TakeDryingNow(s, 3).Reason, Is.EqualTo("物品已变，请重选。"), "B51c2a2：该位已空再取出拒绝（S11 Q880 快照变化原句；原「是空的」随取消撤下）");
 
         // B50a（S11 文首 Q666-A02，取代 Q214 果干照原截止腐败）：野果在完成前原会到期，投料即暂停保质，晾满 120 分钟照常完成
         s.Items.RemoveAll(i => i.ItemId is "raw_meat" or "salt");
