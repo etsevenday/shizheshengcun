@@ -452,7 +452,7 @@ namespace Survival.Core.Engine
             if (src.Kind != DropSourceKind.Card || !_locs[loc].CanBuildShelter) return DropIntent.No(Unsupported);
             // 原料拖至营地地点卡：列出营地设施配方（遮蔽棚、床垫、工坊）
             // B22e：野外固定火堆（group wild）在手工制作“设施建造”里选，营地本身已有火堆，不列在这里
-            // B35a1（Q933①）：另加当前同地同区真实已有设施的相关配方，不另加徒手制造；提示句 Q969 暂用 A「查看可制作的配方」（原「查看营地设施」）
+            // B35a1（Q933①）：另加当前同地同区真实已有设施的相关配方，不另加徒手制造；提示句 Q969 A 定稿（R305）「查看可制作的配方」（原「查看营地设施」）
             return CandidatePreview(DropRecipeCandidates(s, new[] { head.ItemId }, true), "查看可制作的配方") ?? DropIntent.No(Unsupported);
         }
 

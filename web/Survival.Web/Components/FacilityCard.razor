@@ -4,7 +4,7 @@
    撤工坊聚合卡与「选择设施」层；未建设施不出占位卡（未建条目在手工制作「设施建造」里）。
    遮蔽棚、床垫施工中照原样保留带忙碌样式的虚线卡（判断集中在 GameEngine.BuildStageHere，B57 持续工地替换）。
    工坊状态「{设施名} · 制作中／空闲」（Q796），陶窑、固定净水台沿 Q727 被动批次汇总句；公共卡角标「公共」、状态只写「制作中／空闲」、悬停「公共设施。」（Q936），
-   未开放保留原真实原因。点卡进入该座真实设施的工作区（只列本座配方）。 *@
+   未开放状态行只写「未开放」，悬停与右栏写「{设施卡名}未开放。」接完整真实原因（BM12 Q998 A）。点卡进入该座真实设施的工作区（只列本座配方）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -25,7 +25,8 @@
     else if (v.Kind == "public")
     {
         sub = v.State;
-        tip = blocked ? $"{v.Name}未开放：{v.Blocked}" : GameEngine.PublicTooltip;
+        // BM12（Q998 A）：状态行只写“未开放”（State），悬停与右栏“{实际设施卡名}未开放。{完整真实原因}”
+        tip = blocked ? GameEngine.LockedPublicTooltip(v.Name, v.Blocked!) : GameEngine.PublicTooltip;
         badge = blocked ? "未开放" : GameEngine.PublicBadge;
     }
     else

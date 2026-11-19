@@ -58,11 +58,11 @@
                     <div class="craft-tabs" role="tablist" aria-label="@(site != null ? "配方分组" : "制作分类")">
                         @if (site != null)
                         {
-                            // 与设施栏该座卡同一状态行（Q796／Q936；未开放写原真实原因）
+                            // 与设施栏该座卡同一状态行（Q796／Q936；BM12 Q998 A：未开放只写“未开放”，悬停同卡面“{设施卡名}未开放。{完整原因}”）
                             var siteCard = e.FacilityCardsHere(s).FirstOrDefault(c => c.Workspace?.Key == site.Key);
                             var siteBlock = siteCard?.Blocked;
                             var siteState = siteCard?.State ?? (e.CraftingAt(s, site) ? GameEngine.CraftingText : GameEngine.IdleText);
-                            <div class="craft-site" data-craft-site-block title="@siteState">
+                            <div class="craft-site" data-craft-site-block title="@(siteBlock != null ? GameEngine.LockedPublicTooltip(site.Name, siteBlock) : siteState)">
                                 @Icons.Markup("facility:" + site.StationId)
                                 <span><b>@site.Name</b><small class="@(siteBlock != null ? "warn-text" : "muted")">@siteState</small></span>
                             </div>
@@ -114,7 +114,8 @@
                         @* B51b 试玩修复 M972：配方说明到产物包一层 .cm-body——一般配方 display:contents 照旧；
                            陶窑／净水台这一层自成滚动区，逐批列表移到它下面单独滚动，投料批数移进卡底投料栏 *@
                         <div class="cm-body" data-wheel="y">
-                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? (GameEngine.IsWildFireRecipe(rc) ? "野外建造" : "设施建造") : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
+                        @* BM12（Q997 A）：设施工作区里抬头前缀用当前实际打开的设施卡名（如「营区工坊工作台 · 砍刀」），其余沿原写法 *@
+                        <div class="eyebrow" title="@RecipeHint(rc)">@e.RecipeDetailEyebrow(rc, site) ⓘ</div>
                         @* B10（A10 §9.1）：来源、工坊与门槛一次写全；不满足的标出原因（不是缺料） *@
                         <div class="craft-source" data-craft-source>
                             <span>@RecipeMeta(rc)</span>

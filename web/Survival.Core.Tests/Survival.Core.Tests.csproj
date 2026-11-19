@@ -29,6 +29,8 @@
     <Compile Include="../Survival.Web/Services/ActorArt.cs" Link="Linked/ActorArt.cs" />
     <!-- B53b：丢弃子区的纯界面规则（清单子区何时有效、原因行排法） -->
     <Compile Include="../Survival.Web/Services/DiscardRules.cs" Link="Linked/DiscardRules.cs" />
+    <!-- BM12（Q996）：火堆／柴炉处理说明的纯文字规则（只读配置），直接编译进测试验逐字句 -->
+    <Compile Include="../Survival.Web/Services/ProcessGuide.cs" Link="Linked/ProcessGuide.cs" />
   </ItemGroup>
 
   <ItemGroup>

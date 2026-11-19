@@ -20,6 +20,9 @@ public static class ProcessGuide
         if (p.IsSlotBatch)
             return $"点击火堆或柴炉卡，在加工菜单的空加工位点「煅烧木炭」投料：每批{e.ItemName(p.InputId)}×{p.InputCount}占1个加工位，{p.HeatMinutes}有效受热分钟后原位变成{e.ItemName(p.OutputId)}×{p.OutputCount}。"
                    + $"火堆燃料另计（两批并行不倍扣，点火那5分钟不计热）；把{e.ItemName(p.InputId)}拖到火堆是添加燃料，不是煅烧。不给经验。";
+        // BM12（Q996 A，合同 b35a1-q996-q998 heatHelp）：锅食谱（烘制远行硬饼、炖煮谷肉炖食）句首补主食材名（“谷物”“谷物和生肉”，读配置 foodInputs），其余照原锅煮模板
+        if (p.IsPotRecipe)
+            return $"{PotFoodLead(e, p)}放进有{e.ItemName(p.RequiredLiquid ?? "")}的锅、锅放进燃烧的火堆，每份{p.HeatMinutes}分钟煮成{e.ItemName(p.OutputId)}，完成时扣{p.WaterCostMl}毫升；空锅只存放不加工。";
         return (p.IsPotBatch ? "boil_water" : p.InPot ? "boil_root" : "roast_root") switch
         {
             // B56（02 Q976 B 定稿）：旧「半升或一升都是」换成烧水行短稿「100毫升起，时长不变」，受热分钟不变
@@ -29,6 +32,13 @@ public static class ProcessGuide
             _ => "",
         };
     }
+
+    /// <summary>BM12（Q996 A）：锅食谱主食材名，多种用“和”连（“谷物和生肉”）。</summary>
+    private static string PotFoodLead(GameEngine e, ProcessConfig p) => string.Join("和", p.FoodInputs.Keys.Select(e.ItemName));
+
+    /// <summary>BM12（Q996 A）：锅食谱第 2 步“2. 把{食材}×{份数}、…拖到锅的食材区”（份数读配置 foodInputs）。</summary>
+    private static string PotFoodStep(GameEngine e, ProcessConfig p) =>
+        $"2. 把{string.Join("、", p.FoodInputs.Select(kv => $"{e.ItemName(kv.Key)}×{kv.Value}"))}拖到锅的食材区";
 
     /// <summary>图示步骤：每步一行“图标+名称+说明”。</summary>
     public static List<(string icon, string name, string note)> Steps(GameEngine e, ProcessConfig p)
@@ -60,7 +70,10 @@ public static class ProcessGuide
             _ => new()
             {
                 (p.RequiredLiquid ?? "clean_water", e.ItemName(p.RequiredLiquid ?? "clean_water"), $"1. 锅里装净水，每份食材预留{p.WaterCostMl}毫升"),
-                (p.InputId, e.ItemName(p.InputId), "2. 拖到锅的食材区（最多2份）"),
+                p.IsPotRecipe
+                    // BM12（Q996 A）：锅食谱第 2 步写出食材名与份数；图标取第一种主食材，名称列各主食材名
+                    ? (p.FoodInputs.Keys.First(), string.Join("、", p.FoodInputs.Keys.Select(e.ItemName)), PotFoodStep(e, p))
+                    : (p.InputId, e.ItemName(p.InputId), "2. 拖到锅的食材区（最多2份）"),
                 ("pot", "金属锅", "3. 锅放进火堆的空加工位"),
                 ("fire_lit", "燃烧的火堆", $"4. {heat}，完成时扣水"),
                 (p.OutputId, e.ItemName(p.OutputId), "5. 留在原锅食材位"),

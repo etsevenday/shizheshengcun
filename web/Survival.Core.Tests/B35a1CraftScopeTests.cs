@@ -393,7 +393,8 @@ public class B35a1CraftScopeTests : TestBase
         Assert.That(wb.Blocked, Is.Null);
         Assert.That(wb.State, Is.EqualTo("空闲"));
         Assert.That(cards[1].Blocked, Is.Not.Null, "锻炉未开放（缺 FA02 记录）");
-        Assert.That(cards[1].State, Is.EqualTo(cards[1].Blocked), "未开放写原真实原因");
+        // BM12（02 Q998 A，合同 b35a1-q996-q998 lockedPublicFacility.card）：状态行只写“未开放”，完整原因在 Blocked（悬停与右栏）；原期望 State＝Blocked
+        Assert.That(cards[1].State, Is.EqualTo("未开放"), "未开放状态行只写未开放（Q998 A）");
         E.CreateItems(s, "scrap", 1, s.Ground);
         Start(s, ActionRequest.Craft("make_fastener"));
         var busy = E.FacilityCardsHere(s).Where(c => c.Kind == "public").ToList();
@@ -540,7 +541,7 @@ public class B35a1CraftScopeTests : TestBase
         var session = Web("Services", "GameSession.cs");
         var svc = Slice(session, "public async Task<ActionResult> StartCityService(", "    public ");
         Assert.That(svc, Does.Not.Contain("OpenPanel(\"craft\"").And.Not.Contain("OpenHandCraft").And.Not.Contain("OpenWorkspace"));
-        Assert.That(Web("Components", "CityServiceOverlay.razor"), Does.Contain("startLabel = v.StartLabel ?? $\"{v.Title}（{v.TimeText}）\""), "Q968 暂用 A：通用按钮格式");
+        Assert.That(Web("Components", "CityServiceOverlay.razor"), Does.Contain("startLabel = v.StartLabel ?? $\"{v.Title}（{v.TimeText}）\""), "Q968 A 定稿（R305）：通用按钮格式");
     }
 
     /// <summary>B35A1-Q930-04：三座营区公共设施各由其真实卡进入，配方仅本座。</summary>
@@ -779,7 +780,7 @@ public class B35a1CraftScopeTests : TestBase
         s.StashedWork = new ActionState { Type = ActionType.Craft, TargetId = "make_fastener", SourceLocation = "camp", Status = ActionStatus.Paused };
         Assert.That(Wb(), Is.EqualTo("空闲"), "营地工作台的活不算这座");
         s.StashedWork = new ActionState { Type = ActionType.Craft, TargetId = "make_fastener", SourceLocation = "h03_workshop", Status = ActionStatus.Paused };
-        Assert.That(Wb(), Is.EqualTo("制作中"), "本座的暂存工作仍算（Q972 暂用 A）");
+        Assert.That(Wb(), Is.EqualTo("制作中"), "本座的暂存工作仍算（Q972 A 定稿，R305）");
     }
 
     /// <summary>Q795 B：遮蔽棚、床垫卡只在营地外部区出；在别处有在办的遮蔽棚建造也不出卡；回营地出“施工中”卡（对照）。床垫建成出卡。</summary>
@@ -822,7 +823,7 @@ public class B35a1CraftScopeTests : TestBase
         Assert.That(Card(), Is.EqualTo($"{E.StationName("kiln")} · 加工中1批 · 最近{Clock.DayTime(t0 + 60)}完成"));
     }
 
-    /// <summary>拖拽候选提示：材料拖到材料沿原 D12 行11“查看可制作的配方”；材料拖到营地地点卡同字（Q969 暂用 A）。</summary>
+    /// <summary>拖拽候选提示：材料拖到材料沿原 D12 行11“查看可制作的配方”；材料拖到营地地点卡同字（Q969 A 定稿，R305）。</summary>
     [Test]
     public void Mut_Q904_Q969_CandidateLabels()
     {

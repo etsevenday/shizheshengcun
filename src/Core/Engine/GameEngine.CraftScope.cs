@@ -44,7 +44,7 @@ namespace Survival.Core.Engine
         public string? Blocked { get; set; }
         /// <summary>点击进入的真实工作区（遮蔽棚、床垫为 null）。</summary>
         public CraftWorkspace? Workspace { get; set; }
-        /// <summary>本人正在这座设施主动制作（Q796；Q972 暂用 A：主行动没退出就算制作中）。</summary>
+        /// <summary>本人正在这座设施主动制作（Q796；Q972 A 定稿：主行动没退出就算制作中，身体提醒自动暂停也算）。</summary>
         public bool Crafting { get; set; }
     }
 
@@ -201,6 +201,21 @@ namespace Survival.Core.Engine
         /// <summary>Q936：公共设施卡角标与悬停。</summary>
         public const string PublicBadge = "公共";
         public const string PublicTooltip = "公共设施。";
+        /// <summary>BM12（Q998 A，合同 b35a1-q996-q998 lockedPublicFacility.card）：未开放公共设施卡的状态行只写“未开放”。</summary>
+        public const string LockedPublicState = "未开放";
+
+        /// <summary>
+        /// BM12（Q998 A，lockedPublicFacility.tooltip）：未开放公共设施卡的悬停“{实际设施卡名}未开放。{实际原因}”；
+        /// 原因已带“需要：”前缀时原样只留一次（直接接在句号后，不再另加冒号或前缀）。右栏说明取同一句（完整原因）。
+        /// </summary>
+        public static string LockedPublicTooltip(string cardName, string reason) => $"{cardName}未开放。{reason}";
+
+        /// <summary>
+        /// 配方详情抬头“{前缀} · {配方名}”：设施建造／野外建造沿原写法；BM12（Q997 A）在设施工作区里前缀用当前实际打开的设施卡名
+        /// （如“营区工坊工作台 · 砍刀”），顶栏手工制作沿原工坊短名。
+        /// </summary>
+        public string RecipeDetailEyebrow(RecipeConfig rc, CraftWorkspace? site) =>
+            $"{(rc.IsBuild ? (IsWildFireRecipe(rc) ? "野外建造" : "设施建造") : site?.Name ?? StationName(rc.Station))} · {rc.Name}";
         /// <summary>Q935 合同 stageLabels.built（遮蔽棚／床垫原有角标同字）。</summary>
         public const string BuiltBadge = "已建成";
 
@@ -215,7 +230,7 @@ namespace Survival.Core.Engine
             return null;
         }
 
-        /// <summary>Q796／Q909：本人正在这座真实设施主动制作（主行动或暂存的在办工作；暂停未退出仍算，Q972 暂用 A）。同类另一座不算。</summary>
+        /// <summary>Q796／Q909：本人正在这座真实设施主动制作（主行动或暂存的在办工作；暂停未退出仍算，Q972 A 定稿 R305）。同类另一座不算。</summary>
         public bool CraftingAt(GameState s, CraftWorkspace w) =>
             s.Ground == w.Ground && s.MainWorks().Any(a => a.Type == ActionType.Craft && a.SourceLocation == w.Location
                 && _recipes.TryGetValue(a.TargetId, out var rc) && rc.Station == w.StationId);
@@ -241,8 +256,8 @@ namespace Survival.Core.Engine
                     list.Add(new FacilityCardView
                     {
                         Kind = "public", Name = w.Name, StationId = w.StationId, Stage = FacilityStage.Built, Workspace = w, Blocked = why, Crafting = crafting,
-                        // Q936：状态只写“制作中／空闲”；未开放保留原真实原因
-                        State = why ?? (crafting ? CraftingText : IdleText),
+                        // Q936：状态只写“制作中／空闲”；BM12（Q998 A）：未开放状态行只写“未开放”，完整真实原因在 Blocked（悬停与右栏）
+                        State = why != null ? LockedPublicState : crafting ? CraftingText : IdleText,
                     });
                     continue;
                 }

@@ -129,7 +129,7 @@
                 }
                 @SvcFacts(v)
                 <div class="btn-row">
-                    @* B35a1（Q930 B、Q968 暂用 A）：工坊服务办完不再打开制作页，提交按钮改用通用格式「{服务名}（{工时}）」 *@
+                    @* B35a1（Q930 B；Q968 A 定稿 R305：「使用营区工坊（0分钟）」「使用试制工坊（0分钟）」）：工坊服务办完不再打开制作页，提交按钮改用通用格式「{服务名}（{工时}）」 *@
                     @{ var startLabel = v.StartLabel ?? $"{v.Title}（{v.TimeText}）"; }
                     <GateButton Class="primary" Name="@startLabel" Blocked="@why" Title="@($"办理：{v.Title}")" OnClick="() => Do(id, pickTarget, pickChoice)">
                         @startLabel

@@ -191,7 +191,7 @@ public sealed partial class GameSession
         && (c.Workspace == null || E.WorkspaceHere(S, c.Workspace.Key) != null);
 
     /// <summary>
-    /// Q970 暂用 A：候选表头“显示全部”——退出候选，进入顶栏“手工制作”的“全部配方”（不含设施配方）；不写分类记忆。
+    /// Q970 A 定稿（R305）：候选表头“显示全部”——退出候选，进入顶栏“手工制作”的“全部配方”（不含设施配方）；不写分类记忆。
     /// </summary>
     public void CandidatesShowAll()
     {
