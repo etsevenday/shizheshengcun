@@ -81,8 +81,14 @@
                                B45b（Q581 选 A）：主层同时有「点燃」「熄灭」「等待加工」，与卡面是同一个组件 FireQuickActions（不复制一份）；
                                点燃打开原点火盘（锚 fm-ignite），耗时行动成功开始才收起菜单交回中央进度条，未成功／仍在选工具时留在本层 *@
                             var woodWhy = G.FireWoodWhy(out _);
+                            @* B51c2a2（S11 Q778／Q877／Q879 A）：主层「全部取出」——整锅连内容与直接烹饪食材等全部外层物一次放到本区地面；
+                               可用时无悬停，被挡置灰、悬停写真实原因（Q871 B 门槛、空设施「没有可取出的物品。」）；带计划快照戳，双击第二下不再提交 *@
+                            var takeAllWhy = e.TakeAllBlocked(s, here, GameEngine.FireTakeAllId);
+                            var takeAllStamp = e.TakeAllStamp(s, here, GameEngine.FireTakeAllId);
                             <div class="btn-row fm-quick">
                                 <FireQuickActions InMenu="true" />
+                                <button class="btn" data-pt="fire-take-all" disabled="@(G.Running || takeAllWhy != null)" title="@takeAllWhy"
+                                        @onclick="(MouseEventArgs ev) => TakeAll(here, takeAllStamp, ev)">@GameEngine.TakeAllLabel</button>
                                 @if (woodWhy != null) { <span class="tiny muted">@woodWhy</span> }
                             </div>
                         }
@@ -453,6 +459,13 @@
     };
 
     private void PickSource(ItemInstance it) => G.FireMenuPickSource(it);
+
+    /// <summary>B51c2a2（Q877／Q879 A）：火堆「全部取出」——按打开时的计划快照戳提交，快照变化由内核回「物品已变，请重选。」；请求号绑定快照，连按同一快照只生效一次。</summary>
+    private void TakeAll(string here, string stamp, MouseEventArgs ev)
+    {
+        if (ev.Detail > 1) return;
+        G.EngineDo(() => G.E.TakeAll(G.S, here, GameEngine.FireTakeAllId, stamp, "fire-takeall:" + stamp));
+    }
 
     /// <summary>BM5b1（Q601）：「移入锅（加工位{目标序号}）」——双击的第二下不再提交；请求号绑定这一份当前放入序，连按同一请求只生效一次。</summary>
     private void Move(MouseEventArgs ev, MoveToPotOption mv)
