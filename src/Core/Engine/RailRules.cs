@@ -22,6 +22,8 @@ namespace Survival.Core.Engine
         public const string Calc = "计算明细";
         /// <summary>R05「2026-11-14 Q613主控定稿」：敌踪右栏的健康、护甲、速度、伤害与命中预估归「战斗详情」，默认收起（不在 Q589 九组表里）。</summary>
         public const string BattleDetail = "战斗详情";
+        /// <summary>B67（S08 D28、S14 D25–D31 节“实物详情可展开「已知工艺」”）：物品详情的工艺链折叠组（不在 Q589 九组表里）。</summary>
+        public const string CraftChain = "已知工艺";
 
         public static readonly string[] AllGroups = { Desc, Batch, Content, Queue, Members, EquipDetail, Skills, Traits, Calc };
 
@@ -60,6 +62,8 @@ namespace Survival.Core.Engine
         public const string Calc = "calc";
         /// <summary>R05 Q613「战斗详情」。</summary>
         public const string BattleDetail = "battle";
+        /// <summary>B67 D28「已知工艺」。</summary>
+        public const string CraftChain = "craftchain";
     }
 
     public sealed partial class GameEngine

@@ -22,6 +22,8 @@ namespace Survival.Core.Engine
         public bool Usable { get; set; }
         /// <summary>来源所在地点（地图定位用）；配方与掉落为 null。</summary>
         public string? LocationId { get; set; }
+        /// <summary>B67（S05 D22）：资源点实例（resource 行的 NodeId，定位当前场景真实资源卡用）；其余种类为 null。</summary>
+        public string? NodeId { get; set; }
         /// <summary>从当前位置的已开通路线（“当前位置”/“A→B→C · 约N基础分钟”/“现在没有已开通的路线”）。</summary>
         public string Route { get; set; } = "";
     }
@@ -163,7 +165,7 @@ namespace Survival.Core.Engine
             return new ItemSourceView
             {
                 Kind = "resource", Account = AccountLabel(r), Title = $"{LocName(r.LocationId)} · {r.Name}", Detail = string.Join(" · ", parts),
-                Status = status, Usable = usable, LocationId = r.LocationId, Route = route,
+                Status = status, Usable = usable, LocationId = r.LocationId, NodeId = r.NodeId, Route = route,
             };
         }
 
