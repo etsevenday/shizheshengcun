@@ -9,6 +9,7 @@
     1029,
     1030
   ],
+  "clarifyingQuestionIds": [1033, 1034, 1035, 1036, 1037, 1038, 1039],
   "answers": {
     "Q1028": "按真实槽位展示，免重复提示",
     "Q1029": "合法放入自动晾制，按卡取出",
@@ -23,21 +24,33 @@
   },
   "dryingRack": {
     "validDirectDropCommitsInput": true,
+    "directDropDefault": "min_remaining_requirement_and_dragged_stack_available",
+    "autoSupplyOtherIngredientsOnDirectDrop": false,
+    "collapsedOccupiedTitle": "{首件物品名}等",
+    "stackRawCardsInExpandedSlot": false,
     "passiveCraftStartsWhenRecipeReady": true,
     "takeoutEntrypoints": [
       "drag",
       "card_arrow",
+      "card_quantity",
       "take_all"
     ],
     "removeEmptyStoppedStateAutomatically": true,
     "showRoutineTransferLog": false,
     "retainOriginalSettlement": true
   },
+  "cooking": {
+    "freezeAllCommittedInputsAtCookingStart": true,
+    "resumeRemainingFreshnessOnRemoval": true,
+    "freshnessLabel": "新鲜度{n}%"
+  },
   "progressModal": {
     "scope": [
       "sleep",
       "central_action_progress_modal"
     ],
+    "centerAllActiveActionProgress": true,
+    "preserveInlinePassiveProgress": true,
     "useMaskAndBlur": true,
     "blockBackgroundInputAndHover": true,
     "allowTopmostControls": true,
@@ -50,19 +63,19 @@
     },
     {
       "id": "B51C2A2-Q1028-02",
-      "expected": "锅里两份同名同批食材各占一槽，保留各自状态。实际取出会腐败时仍有已定的后果告知。"
+      "expected": "锅里两份同名同批食材各占一槽，保留各自状态。烹饪中的食材取出后恢复剩余保鲜计时。实际独立后果按真实状态反馈。"
     },
     {
       "id": "B51C2A2-Q1029-01",
-      "expected": "将合法食材拖入晾制架空位即投入，齐料后随世界时间加工。非法物或满位松手无转移、无额外提示。"
+      "expected": "只从拖起的食材堆按配方缺量限幅投入，Shift 可少投，齐料后随世界时间加工。非法物或满位松手无转移、无额外提示。"
     },
     {
       "id": "B51C2A2-Q1029-02",
-      "expected": "在制物、余料和可取成品走拖拽、卡片三角箭头或全部取出。常规转移可从卡片去向看到结果，没有专用清空入口。空异常位恢复为空槽，原题四处暂用文字均撤下。"
+      "expected": "占位折叠标题为首件物品名加「等」，展开逐份显示原料。取出走拖拽、卡片三角箭头、卡本体数量窗或全部取出。常规转移由卡片去向表达。空异常位恢复为空槽，原题四处暂用文字均撤下。"
     },
     {
       "id": "B51C2A2-Q1030-01",
-      "expected": "开着火堆界面进入睡眠或显示中央行动进度弹框时，背景加遮罩和模糊。点击、触摸、拖放、Tab 和背景快捷键均不能操作火堆，框外不出现本题两条禁用原因。最上层控件可用。"
+      "expected": "开着火堆界面进入睡眠或其他主动行动进度时，所有布局均显示同一居中进度框，背景加遮罩和模糊。点击、触摸、拖放、Tab 和背景快捷键均不能操作火堆。最上层控件可用。"
     },
     {
       "id": "B51C2A2-Q1030-02",

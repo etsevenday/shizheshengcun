@@ -14,6 +14,7 @@
     1026,
     1027
   ],
+  "clarifyingQuestionIds": [770, 1036, 1037, 1039],
   "answers": {
     "Q1020": "A",
     "Q1021": "B",
@@ -28,7 +29,7 @@
     "freshness": "新鲜度{n}%",
     "corpseFreshness": "尸体新鲜度{n}%",
     "partialPaused": "含新鲜度暂停",
-    "protectedFreshness": "新鲜度{n}% · 烹饪保护",
+    "protectedFreshness": "新鲜度{n}%",
     "willSpoilOnTakeout": "取出后腐败",
     "newOutputPreview": "（完成时新鲜度100%）",
     "helpCategory": "保质与腐败"
@@ -39,7 +40,9 @@
     "pauseWholeShowPercentOnly": true,
     "multiBatchCardShowsActualFrontBatch": true,
     "partialPauseUsesTag": true,
-    "protectedCanShowZero": true,
+    "protectedCanShowZero": false,
+    "cookingFreezesAllCommittedInputs": true,
+    "cookingRemovalResumesFrozenFreshness": true,
     "spoilImmediatelyWhenActuallyDue": true,
     "noFreshnessLineForNonPerishable": true,
     "noExpiryTimeInPlayerUi": true
@@ -59,7 +62,7 @@
     },
     {
       "id": "B58-Q1022-01",
-      "expected": "生肉在烹饪保护中耗尽保鲜量，详情显示新鲜度0% · 烹饪保护。真会转换时取出确认写取出后腐败并列受影响食材。"
+      "expected": "生肉开始烹饪后保鲜量保持冻结，卡面与详情只写「新鲜度{n}%」，取出后从冻结值恢复计时。"
     },
     {
       "id": "B58-Q1023-01",
@@ -75,7 +78,7 @@
     },
     {
       "id": "B58-Q1026-01",
-      "expected": "无期限物品无新鲜度或不会腐败行，真正腐败的物品直接显示腐败物，仍有烹饪保护的0%食材不提前转换。"
+      "expected": "无期限物品省去新鲜度行，实际到期的物品当次转为腐败物。烹饪中的实际投入原料从开工时冻结，取出后继续计时。"
     },
     {
       "id": "B58-Q1027-01",
