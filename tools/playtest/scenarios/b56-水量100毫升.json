@@ -150,6 +150,7 @@
     { "expect": ".event", "text": "成品留在原位（15分钟）", "timeout": 30000 },
     { "waitGone": "text=行动进行中", "timeout": 60000 },
     { "eval": "(()=>{const m=s=>{const [a,b]=s.split(':');return a*60+ +b};return m(document.querySelector('.sl-now .time').textContent.trim())-m(document.documentElement.dataset.ptT0)})()", "equals": 15,"label": "300毫升只烧15分钟" },
+    { "hover": ".sl-now .time", "label": "B60：遮罩撤下后指针仍停在「等待加工」按钮上会重新悬停、右栏显示按钮预览；移开指针看选中的火堆详情" },
     { "expectText": "净水300毫升" },
 
     { "note": "烧好的锅取回随身；B53a 地面锅（净水1000＋生肉1）再放1份生肉、放上火堆：只一份预留1000，另一份「待净水1000毫升」" },
