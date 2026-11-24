@@ -14,6 +14,30 @@ public class B41bResumeReturnTests : B41bTestBase
 {
     private string Field => E.LocName("field");
 
+    /// <summary>
+    /// 非锁定处理尸体续接的工具复核（R05 Q465、Q475「其他用途工具缺失沿原通用句」，S01 B60 Q1100）：原刀不在随身、也不在当前地面（在营地）——
+    /// 「需要随身有效的石刀/厨房刀/简易斧」（工具名与顺序取策划案数据《人物战斗与免疫参考配置 v0.6》野狗尸体 requiredCarriedTools：stone_knife、kitchen_knife、hatchet）；
+    /// 原刀在当前地面（荒地）或随身时直接继续（Q1100）。
+    /// </summary>
+    [Test]
+    public void Q1100_UnlockedButcher_ToolElsewhere_CarriedToolReason_GroundOrCarriedOk()
+    {
+        var s = Field(3);
+        ItemInstance? knife = null;
+        PausedAtField(s, g =>
+        {
+            knife = E.DebugCreateEquipment(g, "stone_knife", "white", ItemInstance.Carried);
+            return ActionRequest.Butcher(E.CreateItems(g, "carcass_feral_dog", 1, "field").Single().InstanceId);
+        });
+        Assert.That(s.Main!.NoExit, Is.False, "起点：非锁定");
+        knife!.Owner = "camp";
+        AssertBlocked(s, "需要随身有效的石刀/厨房刀/简易斧");
+        knife.Owner = "field";
+        Assert.That(E.ResumeBlockReason(s), Is.Null, "原刀在当前地面：直接继续");
+        knife.Owner = ItemInstance.Carried;
+        Assert.That(E.ResumeBlockReason(s), Is.Null, "随身：直接继续");
+    }
+
     /// <summary>重验失败：给定原因，且状态、预留、原暂停原因都不变。</summary>
     private void AssertBlocked(GameState s, string why)
     {

@@ -87,6 +87,54 @@ public class B41bKeptWorkTests : B41bTestBase
     }
 
     /// <summary>
+    /// Q1100「实际离开原地点或原工作区域时」：撤退留在同一地点、但已不在原工作区域（起点：本次工作记在该地点的屋内区域，人在屋外）——同样结束本次工作。
+    /// 配对：同一地点同一区域不结束（<see cref="Q1100_RetreatStaysAtSite_WorkKeptPaused_ResumeContinuesSameProgress"/>）。
+    /// </summary>
+    [Test]
+    public void Q1100_RetreatStaysAtSiteButLeftWorkZone_WorkEnds()
+    {
+        var s = Field(3);
+        E.DebugTeleport(s, "field");   // 起点：清掉来路记录，撤退只能留在原地
+        E.DebugGive(s, "stone", 1, ItemInstance.Carried);
+        E.DebugGive(s, "fiber", 1, "field");
+        E.DebugSpawnEnemy(s, "shambler", "field");
+        Start(s, ActionRequest.Craft("knife"));
+        var id = s.Main!.ActionId;
+        var label = s.Main.Label;
+        s.Main.StartZone = GameState.SafehouseZone;   // 起点：原工作区域为屋内（只造起点）
+        SetLeft(s, GameEngine.SingleCardKey(s.WorldEnemies.Single().Id), 0);
+        Assert.That(Step(s), Is.EqualTo(SegmentStatus.Paused));
+        RetreatOk(s);
+        Assert.That((s.CurrentLocation, s.CurrentZone), Is.EqualTo(("field", GameState.ExteriorZone)), "起点核对：同一地点、屋外");
+        Assert.That(s.Main, Is.Null, "离开原工作区域：本次工作结束");
+        Assert.That(s.Items.Any(i => i.ReservedBy == id), Is.False);
+        Assert.That(s.Log.Last().Text, Does.StartWith($"{label}已中止。原因：已撤退离开"));
+    }
+
+    /// <summary>
+    /// 系统中止也是行动结束边界（R05 Q416、Q467：合法退出、结束都在边界检查敌方接近；AbortLocked 同原合法退出）：锁定工作预留被改、点「继续行动」自动中止——
+    /// 当地有到期的敌踪卡时随即开战。配对：没有到期卡时中止后不开战。
+    /// </summary>
+    [Test]
+    public void LockedAbort_IsActionEndBoundary_DueCardFights()
+    {
+        foreach (var due in new[] { true, false })
+        {
+            var s = Field(3);
+            var id = PausedCraft(s);
+            s.Main!.NoExit = true;
+            var w = E.DebugSpawnEnemy(s, "shambler", "field");
+            if (due) SetLeft(s, GameEngine.SingleCardKey(w.Id), 0);
+            Reserved(s, "fiber", id).ReservedBy = null;   // 起点：预留被改（永久原因）
+            Assert.That(E.LockedResume(s).Kind, Is.EqualTo(LockedResumeKind.Permanent));
+            Assert.That(s.Battle, Is.Null, "起点：还没开战");
+            var r = E.Resume(s);
+            Assert.That((r.Ok, r.Aborted, s.Main), Is.EqualTo((true, true, (ActionState?)null)));
+            Assert.That(s.Battle != null, Is.EqualTo(due), due ? "到期卡在中止边界开战" : "配对：没有到期卡不开战");
+        }
+    }
+
+    /// <summary>
     /// 旧档（B60a 之前存下的撤退离地保留、人在异地）：Q1100 起不再有撤退返程的移动例外（取代 Q464／Q473 的地图放行）——暂停中开新移动按普通暂停拒绝；
     /// 非锁定工作仍可「退出行动」，按 Q466／Q471 开工来源返还收束。
     /// </summary>
