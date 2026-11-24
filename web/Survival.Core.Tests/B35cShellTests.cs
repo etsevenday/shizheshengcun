@@ -325,7 +325,8 @@ public class B35cShellTests
     {
         Assert.That(Web("Components/CardPop.razor"), Does.Contain("+ (G.CityBrowsing ? \" city-ro\" : \"\") +"));
         Assert.That(Web("wwwroot/css/cityoverview.css"), Does.Contain(".wasteland .apop.card-pop.apop-c.city-ro { height: fit-content;"));
-        Assert.That(Web("Components/ItemDetail.razor"), Does.Contain("@if (G.Panel != GameSession.FireMenuPanel && G.InFireCrumbs(sel) == null && !G.CityBrowsing)"));
+        // B51c2b.10（S11／S07 §Q925 B 设施物品卡右栏只读）：条件末尾另加 && !G.IsFacilityItemSel(sel)，城市层不显示的部分不变
+        Assert.That(Web("Components/ItemDetail.razor"), Does.Contain("@if (G.Panel != GameSession.FireMenuPanel && G.InFireCrumbs(sel) == null && !G.CityBrowsing && "));
     }
 
     /// <summary>试玩修复 4：城市层楼栋、道路与路标排在标题下方的绘图区里，左上楼栋选中框不压在标题下。</summary>

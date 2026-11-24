@@ -198,4 +198,30 @@ public class B51c2bPlayFixUiTests : WebTestBase
 
         Assert.That(Ctx.JSInterop.Invocations.Count(i => i.Identifier == "survival.revealNearest"), Is.EqualTo(1));
     }
+
+    // ───────────── 体验观察：右栏不显示设施物品卡用不了的操作提示 ─────────────
+
+    /// <summary>
+    /// 右栏底部说明（S11／S07 §Q925 B：设施物品卡在右栏是只读详情，取出在面板里的箭头与数量窗）：点晾制位野果卡后右栏不出「食用1份」等指向选卡操作窗的脚注；
+    /// 配对：选中随身的野果卡，脚注照常显示「食用1份」。
+    /// </summary>
+    [Test]
+    public void RailFoot_HiddenForFacilityItem_ShownForCarried()
+    {
+        DryingAndKiln();
+        G.OpenPanel("drying");
+        var dry = Ctx.RenderComponent<DryingOverlay>();
+        var rail = Ctx.RenderComponent<DetailPanel>();
+        dry.Find("[data-pt=fac-item]").Click();
+        rail.Render();
+        Assert.That(RailTitle(rail), Is.EqualTo("野果"));
+        Assert.That(rail.FindAll(".detail-foot"), Is.Empty);
+
+        dry.Find("[data-pt=fac-item] button.card-arrow").Click(detail: 0);
+        G.OpenPanel(null);
+        G.Select(new Selection { Kind = SelectionKind.ItemGroup, Id = "berry", Owner = ItemInstance.Carried });
+        rail.Render();
+        Assert.That(rail.FindAll(".detail-foot"), Has.Count.EqualTo(1), "配对：随身卡照常有脚注");
+        Assert.That(rail.Find(".detail-foot").TextContent, Does.Contain("食用1份"));
+    }
 }

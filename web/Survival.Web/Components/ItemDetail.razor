@@ -331,8 +331,10 @@ else
     </div>
 
     @* B45（Q548）：火堆里的内容与加工菜单开着时右栏只读、操作在中央加工菜单——不显示指向选卡操作窗的旧脚注；
-       B35c 试玩修复（Q807／Q913）：地图城市层里④只读，同样不显示（不另加文字） *@
-    @if (G.Panel != GameSession.FireMenuPanel && G.InFireCrumbs(sel) == null && !G.CityBrowsing)
+       B35c 试玩修复（Q807／Q913）：地图城市层里④只读，同样不显示（不另加文字）；
+       B51c2b 试玩遗留：晾制位、陶窑／净水台批内的设施物品卡在右栏是只读详情（S11／S07 §Q925 B，操作在面板里的箭头与数量窗），
+       同样不显示指向选卡操作窗的「食用1份」等旧脚注（不另加文字） *@
+    @if (G.Panel != GameSession.FireMenuPanel && G.InFireCrumbs(sel) == null && !G.CityBrowsing && !G.IsFacilityItemSel(sel))
     {
     <div class="detail-foot">
         <div class="under">@(busy ? "行动进行中，暂不能整理物品" : GameEngine.CanSelfUse(cfg) ? $"在被选中卡片旁的操作窗里点“{GameEngine.UseButtonText(cfg)}”使用；转移目标与数量也在那里" : "转移目标与数量在被选中卡片旁的操作窗里")</div>
