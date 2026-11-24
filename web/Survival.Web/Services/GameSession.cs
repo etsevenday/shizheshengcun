@@ -2009,6 +2009,8 @@ public sealed partial class GameSession
             case SelectionKind.Tool when Selected.InstanceId is int id:
             {
                 var it = S.Items.FirstOrDefault(i => i.InstanceId == id);
+                // B51c2b 试玩遗留 N2：选中的设施物品卡整张取走（并进已有的堆或换到随身／地面）后不跟到新位置，不弹随身卡操作窗
+                if (IsFacilityOwner(Selected.Owner) && (it == null || !GameEngine.IsFacilityItem(it))) { DropTakenFacilityItemSel(); return; }
                 if (it == null) { ClearSelectionSilently(); return; }
                 if (it.Owner == Selected.Owner && it.ItemId == Selected.Id) return;
                 // 设施里的物品取出后改选它的新位置，卡下操作条与右栏跟着走

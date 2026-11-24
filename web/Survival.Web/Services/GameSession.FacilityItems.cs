@@ -61,6 +61,23 @@ public sealed partial class GameSession
         }
     }
 
+    /// <summary>物主是晾制位或陶窑／净水台的批（设施物品卡原来所在）。</summary>
+    private static bool IsFacilityOwner(string owner) =>
+        ItemInstance.TryDrying(owner, out _, out _) || ItemInstance.TryStation(owner, out _, out _);
+
+    /// <summary>
+    /// B51c2b 试玩遗留 N2（S14 §9.2 Q5-2「设施整锅／直烤位／锅内子物箭头→随身1份或1实例；不能弹操作条」；S11 §Q925 B 数量窗确认只是移动）：
+    /// 选中的设施物品卡整张被取走（到随身、到地面，或并进已有的堆）后，选中不跟到新位置的卡，免得自动弹出随身卡的操作窗；
+    /// 面板开着时右栏页签不动（陶窑工作区回到配方预估），没开面板时同原程序清空回人物页。
+    /// </summary>
+    private void DropTakenFacilityItemSel()
+    {
+        var tab = DetailTab;
+        ClearSelectionSilently();
+        if (Panel != null) DetailTab = tab;
+        FacTake = null;
+    }
+
     public void SetFacilityTakeDest(bool toCarried)
     {
         if (FacTake == null) return;

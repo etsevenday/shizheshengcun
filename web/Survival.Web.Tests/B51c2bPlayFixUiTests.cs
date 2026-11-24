@@ -89,4 +89,59 @@ public class B51c2bPlayFixUiTests : WebTestBase
         Assert.That(RailTitle(rail), Is.EqualTo(KilnOutput));
         Assert.That(craft.FindAll("[data-pt=fac-take]"), Is.Empty, "数量窗收起");
     }
+
+    // ───────────── N2：选中的设施物品卡整张取走后不弹随身卡操作窗 ─────────────
+
+    /// <summary>
+    /// N2（S14 §9.2 Q5-2「设施整锅／直烤位／锅内子物箭头→随身1份或1实例；不能弹操作条」；S11 §Q925 B）：先点卡身选中晾制位野果×2，
+    /// 箭头取 1 份时这张卡仍在位里、仍选中（对照）；再点箭头整张取到随身后，不弹随身卡的操作窗、选中清空、右栏页签仍是「对象」。
+    /// 配对：直接选中随身的野果卡确会弹操作窗（CardPopShown 判据有效）。
+    /// </summary>
+    [Test]
+    public void N2_SelectedDryingCard_ArrowTakesAll_NoCardPop()
+    {
+        DryingAndKiln();
+        G.OpenPanel("drying");
+        var dry = Ctx.RenderComponent<DryingOverlay>();
+        var card = S.Items.Single(i => i.ItemId == "berry");
+        dry.Find("[data-pt=fac-item]").Click();
+        Assert.That(G.Selected.InstanceId, Is.EqualTo(card.InstanceId));
+
+        dry.Find("[data-pt=fac-item] button.card-arrow").Click(detail: 0);
+        Assert.That(Sum("berry", ItemInstance.Carried), Is.EqualTo(1));
+        Assert.That(G.Selected.InstanceId, Is.EqualTo(card.InstanceId), "对照：只取了 1 份，卡仍在位里、仍选中");
+
+        dry.Find("[data-pt=fac-item] button.card-arrow").Click(detail: 0);
+
+        Assert.That(Sum("berry", ItemInstance.Carried), Is.EqualTo(2), "整张取到随身");
+        Assert.That(G.CardPopShown, Is.False, "不弹随身卡操作窗");
+        Assert.That(G.Selected.Kind, Is.EqualTo(SelectionKind.None));
+        Assert.That(G.DetailTab, Is.EqualTo(DetailTab.Object), "面板开着，右栏页签不跳到人物页");
+
+        G.Select(new Selection { Kind = SelectionKind.ItemGroup, Id = "berry", Owner = ItemInstance.Carried });
+        Assert.That(G.CardPopShown, Is.True, "配对：直接选中随身卡确会弹操作窗");
+    }
+
+    /// <summary>
+    /// N2（同上，数量窗）：陶窑工作区点批内黏土×2 卡、数量窗「最多」后确认，整张到随身——不弹操作窗、选中清空，右栏回到陶壳配方预估。
+    /// </summary>
+    [Test]
+    public void N2_KilnCard_QuantityMax_NoCardPop_RailRecipe()
+    {
+        DryingAndKiln();
+        OpenKiln();
+        var craft = Ctx.RenderComponent<CraftOverlay>();
+        var rail = Ctx.RenderComponent<DetailPanel>();
+        craft.Find("[data-station-inputs] [data-pt=fac-item]").Click();
+        craft.Find("[data-pt=fac-take] button.tbar-max").Click();
+        Assert.That(craft.Find("[data-pt=fac-take-ok]").TextContent, Is.EqualTo("确认 2"), "S11 §Q925 B「确认{数量}」");
+
+        craft.Find("[data-pt=fac-take-ok]").Click();
+        rail.Render();
+
+        Assert.That(Sum("clay", ItemInstance.Carried), Is.EqualTo(2));
+        Assert.That(G.CardPopShown, Is.False, "不弹随身卡操作窗");
+        Assert.That(G.Selected.Kind, Is.EqualTo(SelectionKind.None));
+        Assert.That(RailTitle(rail), Is.EqualTo(KilnOutput));
+    }
 }
