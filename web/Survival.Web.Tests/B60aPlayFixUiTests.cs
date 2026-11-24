@@ -75,6 +75,55 @@ public class B60aPlayFixUiTests : WebTestBase
         Assert.That(G.Notice, Is.EqualTo(CityCopy.Arrived(E.LocName("h02_square"))), "「已到达」照常");
     }
 
+    /// <summary>
+    /// Q1005 A 定稿（R315）、Q804：从城市层点「出发」且实际到达后显示「已到达{地点}。」——地图仍开着、右栏回对象页时，这句在右栏可见（地图默认句同在）。
+    /// </summary>
+    [Test]
+    public async Task CityDepart_Arrived_ArrivalNoteVisibleOnObjectPage()
+    {
+        CityStart();
+        SetupMapJs();
+        var map = Ctx.RenderComponent<MapOverlay>();
+        var rail = Ctx.RenderComponent<DetailPanel>();
+        await map.Find("[data-pt=city-depart]").ClickAsync(new MouseEventArgs());
+        AckAll();
+        rail.Render();
+        Assert.That((S.CurrentLocation, G.Panel, G.DetailTab), Is.EqualTo(("h02_square", "map", DetailTab.Object)), "起点核对：已到达、地图开着、右栏对象页");
+        Assert.That(rail.Find("[data-pt=map-arrived]").TextContent, Is.EqualTo("已到达营区广场。"), "Q1005：到达句可见");
+        Assert.That(rail.Find(".detail-body").TextContent, Does.Contain(MapCopy.DefaultHint));
+    }
+
+    /// <summary>配对（现状不变：出发失败的原因只在路线区，Q915／B35c）：城市层对不相邻的鉴定所出发被拒——当前反馈是拒绝原因，右栏不出到达位。</summary>
+    [Test]
+    public async Task CityDepart_Rejected_ReasonNotInArrivalSlot()
+    {
+        CityStart();
+        var rail = Ctx.RenderComponent<DetailPanel>();
+        await G.MapDepart("h05_appraisal", "rq-b60a-far");
+        rail.Render();
+        Assert.That((S.CurrentLocation, S.Main), Is.EqualTo(("h03_workshop", (ActionState?)null)), "起点核对：没走");
+        Assert.That(G.Notice, Is.Not.Null, "起点核对：有拒绝原因");
+        Assert.That(rail.FindAll("[data-pt=map-arrived]"), Is.Empty);
+    }
+
+    /// <summary>配对（Q1005 A「普通地图沿原反馈不加」）：普通地图出发走到荒地——右栏没有「已到达…」。</summary>
+    [Test]
+    public async Task MapDepart_Arrived_NoArrivalNote()
+    {
+        S.Locations["field"].Visited = true;
+        G.OpenTopPanel("map");
+        G.PickMapNode("field");
+        SetupMapJs();
+        var map = Ctx.RenderComponent<MapOverlay>();
+        var rail = Ctx.RenderComponent<DetailPanel>();
+        await map.Find("[data-pt=map-depart]").ClickAsync(new MouseEventArgs());
+        AckAll();
+        rail.Render();
+        Assert.That((S.CurrentLocation, G.Panel, G.DetailTab), Is.EqualTo(("field", "map", DetailTab.Object)), "起点核对");
+        Assert.That(rail.FindAll("[data-pt=map-arrived]"), Is.Empty);
+        Assert.That(rail.Find(".detail-body").TextContent, Does.Not.Contain("已到达"));
+    }
+
     /// <summary>复现 1（主世界）：营地开普通地图、选相邻荒地、点「出发」走到——地图仍开着，右栏对象页显示地图默认句（BM12 Q1002）。</summary>
     [Test]
     public async Task MapDepart_Arrived_RightRailBackToMapObjectPage()

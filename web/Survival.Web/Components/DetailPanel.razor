@@ -86,6 +86,12 @@
     }
     else if (G.Panel == "map")
     {
+        @* B60a 试玩修复（Q1005 A 定稿、Q804；S14 B60 Q1103）：城市层出发实际到达后地图仍开着、右栏回对象页——「已到达{地点}。」显示在地图右栏顶部（原在人物页反馈位）；
+           只认这句到达提示（当前反馈正是本地点的到达句），出发失败等原因仍只在路线区 *@
+        @if (G.Notice != null && G.Notice == e.CityArrivalNote(s, s.CurrentLocation))
+        {
+            <div class="notice" data-pt="map-arrived">@G.Notice</div>
+        }
         <MapOverlay Part="detail" />
     }
     else if (G.Panel == "rest")
