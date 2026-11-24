@@ -1,0 +1,84 @@
+@inherits GameComponent
+
+@* B67 R353「已知工艺」（S08 D28 与 2026-11-24 Q1040／Q1041；S14 D25–D31 节、D28-01、Q1040-01、Q1041-01；02 Q1040 B、Q1041 A）：
+   从当前物品的真实定义出发，先列已公开的上一步配方（以它为产物），再列以它为原料的已公开后续工序；每步写“{用料} → {工位} → {配方名}”，
+   无实体工位写「手工制作」。多条路线按配方配置顺序；有下一层的工序可逐步展开（上一步再往前、后续再往后），同一路径上已出现过的配方不再重复展开。
+   点一步：手工制作入口与本区可合法使用的设施工作区走原入口并选中该配方；实体工位不可用时不跳转，在本步下只读显示原门槛说明。
+   浏览不移动选中实物、不消耗或预留、不解锁、不推进时间。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var prev = e.CraftChainPrev(s, ItemId);
+    var next = e.CraftChainNext(s, ItemId);
+}
+<ul class="chain-list" data-pt="chain-list" data-chain-item="@ItemId">
+    @foreach (var rc in prev) { @Node(rc, true, "p:" + rc.Id, new[] { rc.Id }) }
+    @foreach (var rc in next) { @Node(rc, false, "n:" + rc.Id, new[] { rc.Id }) }
+</ul>
+
+@code {
+    /// <summary>当前实物的物品 Id。</summary>
+    [Parameter, EditorRequired] public string ItemId { get; set; } = "";
+
+    /// <summary>已展开的路径（“p:配方/配方…”或“n:…”）；只是界面状态。</summary>
+    private readonly HashSet<string> _open = new();
+    /// <summary>正在只读显示门槛说明的那一步（路径）；没有为 null。</summary>
+    private string? _why;
+    private string _for = "";
+
+    protected override void OnParametersSet()
+    {
+        if (ItemId == _for) return;
+        _for = ItemId;
+        _open.Clear();
+        _why = null;
+    }
+
+    private RenderFragment Node(RecipeConfig rc, bool back, string path, string[] seen) => __builder =>
+    {
+        var e = G.E;
+        var s = G.S;
+        var text = e.CraftChainText(rc);
+        var kids = (back ? e.CraftChainPrevOf(s, rc) : e.CraftChainNextOf(s, rc)).Where(k => !seen.Contains(k.Id)).ToList();
+        var open = _open.Contains(path) && kids.Count > 0;
+        <li class="chain-node" data-pt="chain-node" data-recipe="@rc.Id" data-dir="@(back ? "prev" : "next")">
+            <div class="chain-row">
+                @if (kids.Count > 0)
+                {
+                    <button type="button" class="chain-toggle" data-pt="chain-toggle" aria-expanded="@(open ? "true" : "false")"
+                            aria-label="@(open ? RailText.Collapse(text) : RailText.Expand(text))" @onclick="() => Toggle(path)"><span aria-hidden="true">@(open ? "▾" : "▸")</span></button>
+                }
+                else
+                {
+                    <span class="chain-toggle" aria-hidden="true"></span>
+                }
+                <button type="button" class="linkish chain-step" data-pt="chain-step" @onclick="() => Open(rc, path)">@text</button>
+            </div>
+            @if (_why == path)
+            {
+                <div class="chain-why" data-pt="chain-why">
+                    @foreach (var w in G.ChainReadOnlyReasons(rc)) { <div class="warn-text">@w</div> }
+                </div>
+            }
+            @if (open)
+            {
+                <ul class="chain-list">
+                    @foreach (var k in kids) { @Node(k, back, path + "/" + k.Id, seen.Append(k.Id).ToArray()) }
+                </ul>
+            }
+        </li>
+    };
+
+    private void Toggle(string path)
+    {
+        if (!_open.Remove(path)) _open.Add(path);
+    }
+
+    /// <summary>点一步：能走原入口就进（不改选中实物）；实体工位不可用时在本步下只读显示原门槛说明（再点收起）。</summary>
+    private void Open(RecipeConfig rc, string path)
+    {
+        if (G.OpenChainRecipe(rc.Id)) { _why = null; return; }
+        if (G.E.HandCraftTabOf(rc) != null) return;   // 手工制作入口没开成（战斗、对白锁等原规则）：不另造说明
+        _why = _why == path ? null : path;
+    }
+}

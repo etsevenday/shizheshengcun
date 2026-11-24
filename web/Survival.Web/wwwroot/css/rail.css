@@ -120,3 +120,12 @@
 [data-detail-rail] .discard-back:hover { background: #2f3a31; }
 [data-detail-rail] .discard-qty { align-items: center; }
 [data-detail-rail] .discard-qty input { flex: 1 1 auto; min-width: 0; }
+
+/* B67（S08 D28）「已知工艺」：工序一行一步，左侧展开键（有下一层时），点工序文字进原配方入口；只读门槛说明在该步下面。像素为开发方取舍 */
+[data-detail-rail] .chain-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+[data-detail-rail] .chain-list .chain-list { padding-left: 14px; border-left: 1px dashed var(--line); margin-left: 9px; }
+[data-detail-rail] .chain-row { display: flex; align-items: flex-start; gap: 4px; }
+[data-detail-rail] .chain-toggle { flex: 0 0 18px; width: 18px; min-height: 22px; padding: 0; border: 0; background: none; color: var(--muted); font-size: var(--fs-aux); line-height: 22px; }
+[data-detail-rail] button.chain-toggle:hover { color: inherit; }
+[data-detail-rail] .chain-step { flex: 1 1 auto; min-width: 0; min-height: 22px; text-align: left; white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
+[data-detail-rail] .chain-why { padding: 2px 0 4px 22px; font-size: var(--fs-aux); display: flex; flex-direction: column; gap: 2px; }

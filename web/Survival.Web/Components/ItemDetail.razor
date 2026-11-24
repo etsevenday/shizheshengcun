@@ -328,6 +328,14 @@ else
                 }
             </RailFold>
         }
+        @if (!ReadOnly && !G.InBattleUi && !G.CityBrowsing && e.HasCraftChain(s, cfg.Id))
+        {
+            @* B67（S08 D28、S14 D25–D31 节“实物详情可展开「已知工艺」”、Q1040-01）：正式点选的实物详情，筛过目录与公开性后有工序才出这一组（不出空入口）；
+               悬停只读、加工菜单只读、鸟瞰浏览与战斗中不放（点工序会进制作页） *@
+            <RailFold Type="@railType" Group="@RailGroups.CraftChain" Name="@RailText.CraftChain">
+                <CraftChain ItemId="@cfg.Id" />
+            </RailFold>
+        }
     </div>
 
     @* B45（Q548）：火堆里的内容与加工菜单开着时右栏只读、操作在中央加工菜单——不显示指向选卡操作窗的旧脚注；
