@@ -848,6 +848,8 @@ public sealed partial class GameSession
         if (from == FireMenuPanel && !InChainAfter(FireMenuPanel)) LeaveFireMenu(next == null);
         // B35a1（Q931 B）：安全屋面板只在当前地点已建安全屋时能开（屋外、屋内都行），其余入口一律不开
         if (next == "safehouse" && State != null && E.SafehousePanelBlocked(S) != null) return;
+        // B51c2b 试玩遗留 N1：离开这一层面板时，面板里的设施物品卡（晾制位、陶窑／净水台批内）的选中与数量窗一起清掉
+        if (next != from) DropFacilityItemSel();
         // B23：查来源的地图真正关闭即结束这次查询（BM4a：关地图回制作由返回链恢复，不再另存快照）
         if (!InChainAfter("map")) SourceItem = null;
         // B32g（逐字稿 §1.5 Q401 选 C）：打开新的一级浏览／工具面板时收起原物品操作盘，保留选中与右栏；焦点随后交给新面板。

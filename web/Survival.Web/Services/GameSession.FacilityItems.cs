@@ -46,6 +46,21 @@ public sealed partial class GameSession
         Notify();
     }
 
+    /// <summary>
+    /// B51c2b 试玩遗留 N1（S14 Q487／B51c2b.7「工作区详细预估在右栏」；S11 §Q925 B 只在点卡本体时看本卡详情）：
+    /// 设施物品卡只在打开它的面板里可见——离开这一层面板（关闭、换面板）或在工作区点配方行时，收起数量窗并清掉这张卡的选中，
+    /// 右栏回到工作区的配方预估，不再停在已看不见的卡上。
+    /// </summary>
+    private void DropFacilityItemSel()
+    {
+        FacTake = null;
+        if (IsFacilityItemSel(Selected))
+        {
+            Selected = new Selection();
+            CardPopCovered = false;
+        }
+    }
+
     public void SetFacilityTakeDest(bool toCarried)
     {
         if (FacTake == null) return;

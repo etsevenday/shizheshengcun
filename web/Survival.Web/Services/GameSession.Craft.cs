@@ -128,6 +128,8 @@ public sealed partial class GameSession
     public void SelectCraftRecipe(string? id)
     {
         PeekClear();
+        // B51c2b 试玩遗留 N1：点配方行回到这条配方的右栏预估——清掉工作区里批内物品卡的选中与数量窗
+        DropFacilityItemSel();
         if (CraftRecipe != id)
         {
             CraftBatch = 1;
