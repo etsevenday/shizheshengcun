@@ -98,21 +98,55 @@ window.survival = {
     var a = document.activeElement;
     var inLock = a && a.closest && a.closest('[data-prog-lock], .pause-scrim, .cprog, .menu-modal, .modal');
     window.__survivalProgPrev = a && a !== document.body && !inLock ? a : null;
+    // B60a 试玩修复（Q1103）：记下原焦点所在的区域（由近到远的上级），原焦点随后消失时就近落回仍合法的位置
+    var chain = [];
+    for (var p = window.__survivalProgPrev && window.__survivalProgPrev.parentElement; p && p !== document.body && p !== document.documentElement; p = p.parentElement) chain.push(p);
+    window.__survivalProgChain = chain;
     if (a && a.blur && a !== document.body && !inLock) a.blur();
   },
   // B60（Q1038「退出浮窗或真实结束后恢复当前仍合法的上级面板与焦点」）：原焦点仍在、可用、不在 inert 里就回它；否则不动（留给当前合法的最上层）。只聚焦、不执行
-  progLockEnd: function () {
-    var prev = window.__survivalProgPrev;
+  progLockEnd: function (pref) {
+    var prev = window.__survivalProgPrev, chain = window.__survivalProgChain || [];
     window.__survivalProgPrev = null;
+    window.__survivalProgChain = null;
     if (!prev) return;
-    var tries = 0;
+    pref = pref || [];
+    var FOC = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    var tries = 0, blocked = false;
+    // B60a 试玩修复（S14 B60 Q1103「焦点沿 Q1038 回到仍合法的位置」）：原焦点不在或不可用时，先取 .NET 给的原页落点（地图当前位置节点／地图容器、火堆菜单首个可用控件），
+    // 再取原焦点所在区域里仍在的第一个可用控件；都没有就不动。不落到 body、不进 inert
+    function usable(c) {
+      if (!c || !c.isConnected || c.disabled) return false;
+      if (c.closest && c.closest('[inert]')) { blocked = true; return false; }
+      return !!(c.getClientRects && c.getClientRects().length);
+    }
+    function firstIn(h) {
+      if (!h || !h.isConnected) return null;
+      if (h.matches && h.matches(FOC) && usable(h)) return h;
+      var list = h.querySelectorAll(FOC);
+      for (var i = 0; i < list.length; i++) if (usable(list[i])) return list[i];
+      return null;
+    }
+    function pick() {
+      blocked = false;
+      if (prev.isConnected && !prev.disabled && prev.closest && prev.closest('[inert]')) { blocked = true; return null; }   // 原焦点还在、只是暂时 inert：等它解除再回它
+      if (usable(prev)) return prev;
+      for (var i = 0; i < pref.length; i++) {
+        var t = firstIn(document.querySelector(pref[i]));
+        if (t) return t;
+      }
+      for (var j = 0; j < chain.length; j++) {
+        var u = firstIn(chain[j]);
+        if (u) return u;
+      }
+      return null;
+    }
     function go() {
-      if (!prev.isConnected || prev.disabled) return;
-      if (prev.closest && prev.closest('[inert]')) { if (++tries < 20) requestAnimationFrame(go); return; }
-      if (!(prev.offsetWidth || prev.offsetHeight)) return;
       var ae = document.activeElement;
       if (ae && ae !== document.body && ae !== prev) return;   // 已有新的明确焦点：不抢
-      try { prev.focus({ preventScroll: true }); } catch (e) { }
+      var t = pick();
+      if (!t) { if (blocked && ++tries < 20) requestAnimationFrame(go); return; }
+      try { t.focus({ preventScroll: true }); } catch (e) { }
     }
     setTimeout(go, 0);
   },

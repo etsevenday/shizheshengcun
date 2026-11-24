@@ -27,6 +27,23 @@ public partial class GameSession
     /// </summary>
     public string ProgressKeep => ProgressKeepBase;
 
+    /// <summary>
+    /// B60a 试玩修复（S14 B60 Q1103「焦点沿 Q1038 回到仍合法的位置」）：进度浮窗退出时原焦点已不在（点火盘确认键、随所选目的地清除而消失的「出发」键），
+    /// 按当前回到的原页给出仍合法的落点（app.js progLockEnd 依次取第一个存在、可用、不在 inert 里的；本身不可聚焦就取其中第一个可用控件）：
+    /// 地图——当前位置节点（普通层地点节点、城市层建筑），再地图视口、地图窗；火堆菜单——菜单内第一个可用控件。其他页为空，按原焦点所在区域就近找（app.js）。
+    /// </summary>
+    public string[] ProgReturnFocus
+    {
+        get
+        {
+            if (State == null) return [];
+            if (Panel == "map")
+                return [$"[id=\"mn-{S.CurrentLocation}\"]", $".city-bldg[data-node=\"{S.CurrentLocation}\"]", ".map-viewport", ".map-panel"];
+            if (Panel == FireMenuPanel) return [".fire-menu"];
+            return [];
+        }
+    }
+
     /// <summary>进度遮罩的基础白名单（顶栏「菜单」、底栏存档处理按钮）。</summary>
     public const string ProgressKeepBase = ".top [data-menu-key], .footer .save button";
 

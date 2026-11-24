@@ -85,10 +85,35 @@ public class B60UiWiringTests
         onset = onset.Substring(0, onset.IndexOf("\n  },", StringComparison.Ordinal));
         Assert.That(onset, Does.Contain("survivalDrag.cancel();"));
         Assert.That(onset, Does.Contain("a.blur();"));
-        var end = js.Substring(js.IndexOf("progLockEnd: function () {", StringComparison.Ordinal));
+        var end = js.Substring(js.IndexOf("progLockEnd: function (pref) {", StringComparison.Ordinal));
         end = end.Substring(0, end.IndexOf("\n  },", StringComparison.Ordinal));
-        Assert.That(end, Does.Contain("prev.focus({ preventScroll: true });").And.Not.Contain(".click()"), "只还焦点、不执行");
+        Assert.That(end, Does.Contain("if (usable(prev)) return prev;").And.Contain("t.focus({ preventScroll: true });").And.Not.Contain(".click()"), "原焦点合法先回它；只还焦点、不执行");
         var screen = Web("Components/GameScreen.razor");
-        Assert.That(screen, Does.Contain("await JS.InvokeVoidAsync(plock ? \"survival.progLockOnset\" : \"survival.progLockEnd\");"));
+        // B60a 试玩修复（S14 B60 Q1103「焦点沿 Q1038 回到仍合法的位置」）：结束时带上原页落点（改期望：原为不带参数的 progLockEnd）
+        Assert.That(screen, Does.Contain("if (plock) await JS.InvokeVoidAsync(\"survival.progLockOnset\");"));
+        Assert.That(screen, Does.Contain("else await JS.InvokeVoidAsync(\"survival.progLockEnd\", new object[] { G.ProgReturnFocus });"));
+    }
+
+    /// <summary>
+    /// B60a 试玩修复（S14 B60 Q1103「焦点沿 Q1038 回到仍合法的位置」）：原焦点已不在（点火盘确认键、随所选清除而消失的「出发」键）时，
+    /// progLockEnd 先按网页给的原页落点（地图当前位置节点／地图容器、火堆菜单），再按原焦点所在区域（开始时记下的上级）找第一个可用、不在 inert 里的控件；
+    /// 都没有就不动——不把焦点放到 body。原焦点还在、只是暂时 inert 时等它解除再回它（沿 B60 原行为）。真实落点已用无头 Chrome 核对（开发记录）。
+    /// </summary>
+    [Test]
+    public void LockEnd_PrevGone_FallsBackToPageThenRegion_NeverBody()
+    {
+        var js = Web("wwwroot/js/app.js");
+        var onset = js.Substring(js.IndexOf("progLockOnset: function () {", StringComparison.Ordinal));
+        onset = onset.Substring(0, onset.IndexOf("\n  },", StringComparison.Ordinal));
+        Assert.That(onset, Does.Contain("window.__survivalProgChain = chain;"), "开始时记下原焦点所在区域");
+        var end = js.Substring(js.IndexOf("progLockEnd: function (pref) {", StringComparison.Ordinal));
+        end = end.Substring(0, end.IndexOf("\n  },", StringComparison.Ordinal));
+        var iPrev = end.IndexOf("if (usable(prev)) return prev;", StringComparison.Ordinal);
+        var iPref = end.IndexOf("var t = firstIn(document.querySelector(pref[i]));", StringComparison.Ordinal);
+        var iChain = end.IndexOf("var u = firstIn(chain[j]);", StringComparison.Ordinal);
+        Assert.That(new[] { iPrev, iPref, iChain }.All(i => i >= 0) && iPrev < iPref && iPref < iChain, Is.True, "顺序：原焦点 → 原页落点 → 原区域");
+        Assert.That(end, Does.Contain("if (c.closest && c.closest('[inert]')) { blocked = true; return false; }"), "不进 inert");
+        Assert.That(end, Does.Contain("if (!t) { if (blocked && ++tries < 20) requestAnimationFrame(go); return; }"), "没有合法落点就不动");
+        Assert.That(end, Does.Not.Contain("document.body.focus"));
     }
 }

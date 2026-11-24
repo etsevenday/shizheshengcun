@@ -282,7 +282,12 @@
         if (plock != _progSeen)
         {
             _progSeen = plock;
-            try { await JS.InvokeVoidAsync(plock ? "survival.progLockOnset" : "survival.progLockEnd"); }
+            // B60a 试玩修复（Q1103「焦点沿 Q1038 回到仍合法的位置」）：结束时带上原页的合法落点，原焦点已不在时落到这里而不是 body
+            try
+            {
+                if (plock) await JS.InvokeVoidAsync("survival.progLockOnset");
+                else await JS.InvokeVoidAsync("survival.progLockEnd", new object[] { G.ProgReturnFocus });
+            }
             catch (JSException) { /* 旧缓存 app.js：只少了焦点处理，遮罩与 inert 照常 */ }
         }
         if (firstRender)

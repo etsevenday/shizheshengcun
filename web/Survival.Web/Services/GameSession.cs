@@ -1008,6 +1008,8 @@ public sealed partial class GameSession
         MapAnchor = S.CurrentLocation;
         MapFocus = S.CurrentLocation;
         if (SourceItem != null && !_chain.Contains("craft")) { SourceItem = null; MapSourceSpot = null; }
+        // B60a 试玩修复（Q1103「回到该页」）：换地点清选中时右栏回了人物页（ResetOnLocationChange）；地图仍开着，右栏回到地图打开时的对象页（BM12 Q1002 默认句）
+        DetailTab = DetailTab.Object;
     }
 
     /// <summary>地图上点选／取消所选目的地（城市层建筑、普通层地点同一状态；只选中，不移动、不办服务）。</summary>
@@ -1038,7 +1040,8 @@ public sealed partial class GameSession
         Pop = null;
         ClearHoverNow();
         ReconcileSelection();
-        if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
+        // B60a 试玩修复（S14 B60 Q1103「回到该页」）：地图留在进度浮窗下，右栏保持地图打开时的对象页，不切人物页
+        if (Selected.Kind == SelectionKind.None && Panel != "map") DetailTab = DetailTab.Character;
         Drain();
         Commit();
         Notify();
