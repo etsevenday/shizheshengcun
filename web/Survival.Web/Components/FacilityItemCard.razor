@@ -58,7 +58,8 @@
             @if (n < 1 || n > max) { <div class="tbar-note bad">请输入 1 到 @max 之间的数字</div> }
         }
         @if (G.Notice != null) { <div class="tbar-note bad" data-pt="fac-take-fail">@G.Notice</div> }
-        <div class="btn-row">
+        @* B51c2b／B59a 试玩修复 M1137（S14 FACPROC-A11「不遮唯一确认」）：滚到可见时最后再保证「确认／取消」这一行在可视区（data-reveal-last，见 survival.revealNearest） *@
+        <div class="btn-row fi-take-go" data-reveal-last>
             <button type="button" class="primary" data-pt="fac-take-ok" disabled="@invalid" @onclick="(MouseEventArgs ev) => Confirm(n, ev)">确认@(invalid ? "" : $" {n}")</button>
             <button type="button" class="secondary" data-pt="fac-take-cancel" @onclick="G.CancelFacilityTake">取消</button>
         </div>

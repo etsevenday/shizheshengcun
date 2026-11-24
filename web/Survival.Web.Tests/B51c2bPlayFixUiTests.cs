@@ -228,4 +228,57 @@ public class B51c2bPlayFixUiTests : WebTestBase
         Assert.That(rail.FindAll(".detail-foot"), Has.Count.EqualTo(1), "配对：随身卡照常有脚注");
         Assert.That(rail.Find(".detail-foot").TextContent, Does.Contain("食用1份"));
     }
+
+    // ───────────── 试玩修复 M1137：被动设施面板只盖①②时的紧凑排版标记、数量窗确认行可见 ─────────────
+
+    /// <summary>
+    /// M1137（S14 FACPROC-A11「主要动作与关闭可见，长内容内部滚动」；保留 N3 的 S11／S14 §Q778 只盖①②）：晾制架面板、陶窑工作区、火堆加工菜单开着时，
+    /// 主画面四行网格标 passive-panel（紧凑排版的样式钩子，CSS 让投料栏粘底、数量与提交条成一行），且仍不加加高类；
+    /// 配对：工作台工作区（tall-panel）、整备（full-panel）不标 passive-panel。实际几何 bUnit 看不到，交试玩。
+    /// </summary>
+    [Test]
+    public void M1137_PassivePanels_MarkedForCompactLayout()
+    {
+        DryingAndKiln();
+        var screen = Ctx.RenderComponent<GameScreen>();
+        string[] Rows()
+        {
+            screen.Render();
+            return screen.Find(".center-scroll.four").ClassList.ToArray();
+        }
+
+        G.OpenPanel("drying");
+        Assert.That(Rows(), Does.Contain("passive-panel").And.Not.Contain("tall-panel"), "晾制架面板");
+        OpenKiln();
+        Assert.That(Rows(), Does.Contain("passive-panel").And.Not.Contain("tall-panel"), "陶窑工作区");
+        G.OpenPanel(null);
+        G.OpenFireMenu();
+        Assert.That(Rows(), Does.Contain("passive-panel").And.Not.Contain("full-panel"), "火堆加工菜单");
+        G.OpenPanel(null);
+
+        G.OpenWorkspace(E.WorkspaceForStationHere(S, "workbench")!);
+        Assert.That(Rows(), Does.Contain("tall-panel").And.Not.Contain("passive-panel"), "配对：工作台工作区");
+        G.OpenPanel(null);
+        G.OpenPanel("gear");
+        Assert.That(Rows(), Does.Contain("full-panel").And.Not.Contain("passive-panel"), "配对：整备");
+    }
+
+    /// <summary>
+    /// M1137（S14 FACPROC-A11「不遮唯一确认」）：陶窑批内黏土卡的数量窗里「确认／取消」所在行标 data-reveal-last，
+    /// 打开时 survival.revealNearest 滚完整个窗后再保证这一行可见（窗比滚动区高时也露出确认）；仍只调一次。
+    /// </summary>
+    [Test]
+    public void M1137_KilnQuantityBox_ConfirmRowRevealedLast()
+    {
+        DryingAndKiln();
+        OpenKiln();
+        var craft = Ctx.RenderComponent<CraftOverlay>();
+        craft.Find("[data-station-inputs] [data-pt=fac-item]").Click();
+        craft.Render();
+
+        var last = craft.FindAll("[data-pt=fac-take] [data-reveal-last]");
+        Assert.That(last, Has.Count.EqualTo(1));
+        Assert.That(last[0].QuerySelectorAll("button").Select(b => b.GetAttribute("data-pt")), Is.EqualTo(new[] { "fac-take-ok", "fac-take-cancel" }));
+        Assert.That(Ctx.JSInterop.Invocations.Count(i => i.Identifier == "survival.revealNearest"), Is.EqualTo(1));
+    }
 }

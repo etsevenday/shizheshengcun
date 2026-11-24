@@ -443,4 +443,22 @@ public class B59aTests : TestBase
         Assert.That(js, Does.Contain("if (!h.r.ok) { if (h.r.kind !== 'quiet') flash(h.r.reason || '暂不支持此组合', ev.clientX, ev.clientY); cleanup(); return; }"),
             "松手：quiet 不闪原因，也不回落到所在区；no 照旧闪原因");
     }
+
+    /// <summary>
+    /// 试玩修复 M1137 网页壳接线（bUnit 跑不到 drag.js，源码断言，测试规则第 9 条）：拖动中每次指针移动都检查贴边自动滚动，松手／取消清理时停止；
+    /// 自动滚动只认可纵滚的区域（overflow-y 为 auto／scroll 且确有可滚内容）。
+    /// </summary>
+    [Test]
+    public void M1137_DragJs_EdgeAutoScroll_Wired()
+    {
+        var js = SourceText.Web("wwwroot/js/drag.js");
+        var move = js.IndexOf("function onMove(ev)", StringComparison.Ordinal);
+        var call = js.IndexOf("autoScroll(ev.clientX, ev.clientY);", StringComparison.Ordinal);
+        var begin = js.IndexOf("function begin()", StringComparison.Ordinal);
+        Assert.That(move >= 0 && move < call && call < begin, Is.True, "指针移动（onMove）时检查贴边");
+        var clean = js.IndexOf("function cleanup() {", StringComparison.Ordinal);
+        Assert.That(clean, Is.GreaterThanOrEqualTo(0));
+        Assert.That(js.Substring(clean, 40), Does.Contain("stopAuto();"), "松手／取消清理时即停");
+        Assert.That(js, Does.Contain("if (oy === 'auto' || oy === 'scroll') return n;"), "只认可纵滚区域");
+    }
 }

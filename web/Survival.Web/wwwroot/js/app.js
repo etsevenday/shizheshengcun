@@ -135,6 +135,15 @@ window.survival = {
   revealNearest: function (el) {
     if (!el || !el.scrollIntoView) return;
     try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { el.scrollIntoView(false); }
+    // B51c2b／B59a 试玩修复 M1137（S14 FACPROC-A11「不遮唯一确认」）：窗比滚动区高时，最后保证标了 data-reveal-last 的确认行可见
+    var last = el.querySelector && el.querySelector('[data-reveal-last]');
+    if (last) { try { last.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { last.scrollIntoView(false); } }
+  },
+  // B59a 试玩修复 M1137：把焦点放到选择器找到的第一个元素上（不滚动），找不到不动
+  focusQuery: function (sel) {
+    var el = sel ? document.querySelector(sel) : null;
+    if (!el || !el.focus) return;
+    try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
   },
   // B22 试玩修复 M408：滚到某元素（居中）并短暂高亮（回收箱卡“取出…”跳到人物页的回收箱块）
   scrollFlash: function (id) {

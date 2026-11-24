@@ -319,4 +319,30 @@ public class B59aDryingUiTests : WebTestBase
         cut.Render();
         Assert.That(cut.FindAll(".pc-recipe-why").Select(x => x.TextContent), Is.Not.Empty.And.All.Contains("锅里没有水"), "配对：其他真实原因照旧");
     }
+
+    // ───────────── 试玩修复 M1137：点标题展开后焦点留在标题 ─────────────
+
+    /// <summary>
+    /// M1137（试玩：鼠标点晾制位标题展开后焦点回到 body，Enter／空格不再作用于该标题）：点占用位标题后，面板把焦点放回这一位的标题
+    /// （survival.focusQuery，选择器指向同一位 dry-toggle），随后用 Enter 收起照常生效；配对：点空位标题不展开，也不调焦点。
+    /// </summary>
+    [Test]
+    public void M1137_ToggleClick_KeepsFocusOnHead()
+    {
+        Rack();
+        StartBerries();
+        var cut = Ctx.RenderComponent<DryingOverlay>();
+
+        Head(cut, 1).Click();
+        Assert.That(Ctx.JSInterop.Invocations.Count(i => i.Identifier == "survival.focusQuery"), Is.EqualTo(0), "配对：空位不调焦点");
+
+        Head(cut, 0).Click();
+        var calls = Ctx.JSInterop.Invocations.Where(i => i.Identifier == "survival.focusQuery").ToList();
+        Assert.That(calls, Has.Count.EqualTo(1));
+        Assert.That(calls[0].Arguments.Single(), Is.EqualTo("[data-pt=dry-toggle][data-slot='0']"));
+        Assert.That(Head(cut, 0).GetAttribute("aria-expanded"), Is.EqualTo("true"));
+
+        Head(cut, 0).KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
+        Assert.That(Head(cut, 0).GetAttribute("aria-expanded"), Is.EqualTo("false"), "Enter 收起照常生效");
+    }
 }

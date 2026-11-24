@@ -184,8 +184,16 @@
     /// <summary>B59a（§Q1034）：点占用位标题展开／收起；空位沿原空槽，不展开。</summary>
     private void Toggle(int k, bool occupied)
     {
-        if (occupied) G.ToggleDryingSlot(k);
+        if (!occupied) return;
+        G.ToggleDryingSlot(k);
+        _refocus = k;
     }
+
+    /// <summary>
+    /// B59a 试玩修复 M1137（试玩：鼠标点标题展开后焦点落回 body，Enter／空格不再作用于该标题）：展开／收起重绘后把焦点放回这一位的标题，
+    /// 鼠标与键盘之后都能接着用 Enter／空格切换（只定位焦点，不滚动、不改状态）。
+    /// </summary>
+    private int? _refocus;
 
     private void ToggleKey(KeyboardEventArgs ev, int k, bool occupied)
     {
@@ -209,6 +217,11 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_refocus is int rk)
+        {
+            _refocus = null;
+            try { await JS.InvokeVoidAsync("survival.focusQuery", $"[data-pt=dry-toggle][data-slot='{rk}']"); } catch (Exception) { /* 只影响焦点 */ }
+        }
         if (!G.DryingScrollPending) return;
         G.DryingScrollPending = false;
         try { await JS.InvokeVoidAsync("survival.scrollIntoView", recipesBox); } catch (Exception) { /* 只影响定位 */ }

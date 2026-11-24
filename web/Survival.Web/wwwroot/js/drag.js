@@ -59,7 +59,47 @@ window.survivalDrag = (function () {
     st.lastY = ev.clientY;
     hover(ev.clientX, ev.clientY);
     place(ev.clientX, ev.clientY);   // 先按落点更新拖影内容，再按它的实际大小摆位（贴近窗口边时翻到指针另一侧）
+    autoScroll(ev.clientX, ev.clientY);
   }
+
+  // B51c2b／B59a 试玩修复 M1137：拖动中指针贴近可纵滚区域（晾制架、陶窑／净水台、火堆加工菜单等面板的内部滚动区）的上／下沿时自动滚动，
+  // 越靠边越快；离开边沿、滚到头、松手或取消即停。滚动触发上面的 scroll 捕获监听，按最后指针坐标重算落点（不按滚动前坐标投放）。
+  var EDGE = 28, auto = null;
+  function scrollerAt(x, y) {
+    if (ghost) ghost.style.display = 'none';
+    var el = document.elementFromPoint(x, y);
+    if (ghost) ghost.style.display = '';
+    for (var n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+      if (n.scrollHeight > n.clientHeight + 1) {
+        var oy = window.getComputedStyle(n).overflowY;
+        if (oy === 'auto' || oy === 'scroll') return n;
+      }
+    }
+    return null;
+  }
+  function autoScroll(x, y) {
+    var sc = scrollerAt(x, y), dir = 0, k = 0;
+    if (sc) {
+      var r = sc.getBoundingClientRect();
+      var edge = Math.min(EDGE, r.height / 4);
+      if (y < r.top + edge && sc.scrollTop > 0) { dir = -1; k = (r.top + edge - y) / edge; }
+      else if (y > r.bottom - edge && sc.scrollTop + sc.clientHeight < sc.scrollHeight - 1) { dir = 1; k = (y - (r.bottom - edge)) / edge; }
+    }
+    if (!dir) { stopAuto(); return; }
+    var step = Math.max(2, Math.round(14 * Math.min(1, k)));
+    if (auto && auto.el === sc) { auto.dir = dir; auto.step = step; return; }
+    stopAuto();
+    auto = { el: sc, dir: dir, step: step, raf: 0 };
+    var tick = function () {
+      if (!auto || !st || !st.started) { auto = null; return; }
+      var before = auto.el.scrollTop;
+      auto.el.scrollTop = before + auto.dir * auto.step;
+      if (auto.el.scrollTop === before) { auto = null; return; }   // 到头了
+      auto.raf = requestAnimationFrame(tick);
+    };
+    auto.raf = requestAnimationFrame(tick);
+  }
+  function stopAuto() { if (auto) { cancelAnimationFrame(auto.raf); auto = null; } }
 
   function begin() {
     var keys = [];
@@ -255,6 +295,7 @@ window.survivalDrag = (function () {
   function cancel() { if (st) cleanup(); }
 
   function cleanup() {
+    stopAuto();
     if (st && st.hoverKey) { try { net.invokeMethodAsync('DragHover', st.src, null); } catch (e) { } }
     if (st && st.el) st.el.classList.remove('drag-source');
     document.body.classList.remove('dragging');

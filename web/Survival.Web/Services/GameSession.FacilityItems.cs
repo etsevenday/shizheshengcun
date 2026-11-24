@@ -121,11 +121,12 @@ public sealed partial class GameSession
         && (Panel is "drying" or FireMenuPanel || (Panel == "craft" && CraftSite?.StationId is "kiln" or "water_station"));
 
     /// <summary>
-    /// 中部四行网格上标面板覆盖范围的样式类：被动设施面板（<see cref="PassivePanelOpen"/>）不加类，只在①②合并区；
+    /// 中部四行网格上标面板覆盖范围的样式类：被动设施面板（<see cref="PassivePanelOpen"/>）不加覆盖类，只在①②合并区，
+    /// 另标 passive-panel 供紧凑排版（B51c2b／B59a 试玩修复 M1137：①②高度内主要动作固定可见、长内容内部滚动，S14 FACPROC-A11）；
     /// 整备、成长盖四行（full-panel）；其余手工制作、安全屋、城市层盖①②③（tall-panel），沿原排版。
     /// </summary>
     public string PanelRowsClass =>
-        PassivePanelOpen ? ""
+        PassivePanelOpen ? "passive-panel"
         : Panel is "gear" or "growth" ? "full-panel"
         : Panel is "craft" or "safehouse" || CityBrowsing || (Panel == "city" && CityPanelTall) ? "tall-panel"
         : "";

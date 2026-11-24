@@ -515,3 +515,70 @@
 .craft-tabs .craft-site svg, .craft-tabs .craft-site img { width: 28px; height: 28px; flex: none; }
 .craft-tabs .craft-site span { display: flex; flex-direction: column; min-width: 0; }
 .craft-tabs .craft-site small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ───── B51c2b／B59a 试玩修复 M1137：被动设施面板只盖①②（S11／S14 §Q778、Q1028 答复）时的紧凑排版 ─────
+   S14 FACPROC-A11「主要动作与关闭可见，长内容内部滚动，不卡屏外、不遮唯一确认」：①②在 1280×720 只有约 288px 高，
+   晾制架面板、陶窑／固定净水台工作区、火堆／柴炉加工菜单开着时四行网格标 passive-panel（GameSession.PanelRowsClass），这里：
+   ① 面板头、路径、内边距压紧，标题与副标题挤成一行（副标题省略、悬停看全文）；
+   ② 陶窑／净水台配方卡整张一个滚动区（配方说明、批次列表与批内卡不再各自限高滚动），「投料批数／投料／全部取出」投料栏粘在卡底、始终可见，
+      说明压成两行、操作排成一行；滚到可见时给投料栏让出底边（scroll-padding）；
+   ③ 设施物品卡数量窗压成两到三行（标题一行，去向、数量与确认／取消同行换行排）；
+   ④ 火堆加工菜单底部数量与提交条排成一行，主层燃料／受热两行并排；
+   ⑤ 晾制架工位按宽度自动多列（1280 下一行四位），工位与按钮压紧。像素与排版为开发方取舍。 */
+.center-scroll.four.passive-panel .panel-host .sub-panel > .sub-head { padding: 4px 12px; gap: 8px; }
+.center-scroll.four.passive-panel .panel-host .sub-panel > .sub-head > div:first-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.center-scroll.four.passive-panel .panel-host .sub-panel > .sub-head h2 { line-height: 1.2; }
+.center-scroll.four.passive-panel .panel-host .sub-panel > .sub-head button { min-height: 32px; padding: 2px 12px; flex: none; }
+
+/* ② 陶窑／净水台工作区 */
+.center-scroll.four.passive-panel .craft-grid { padding: 6px 12px; gap: 6px 10px; }
+.center-scroll.four.passive-panel .craft-tabs .craft-site { padding: 2px 6px; margin-bottom: 0; gap: 6px; }
+.center-scroll.four.passive-panel .craft-tabs .craft-site svg, .center-scroll.four.passive-panel .craft-tabs .craft-site img { width: 22px; height: 22px; }
+.center-scroll.four.passive-panel .craft-tabs .craft-site span { flex-direction: row; align-items: baseline; gap: 8px; }
+.center-scroll.four.passive-panel .craft-side > .craft-mats.station-mats { overflow-x: hidden; overflow-y: auto; padding: 8px 10px 0; scroll-padding-bottom: 64px; }
+.center-scroll.four.passive-panel .craft-side > .craft-mats.station-mats > .cm-body { flex: 0 0 auto; min-height: 0; overflow: visible; }
+.center-scroll.four.passive-panel .craft-side > .craft-mats.station-mats > .station-queue { flex: 0 0 auto; min-height: 0; }
+.center-scroll.four.passive-panel .craft-side > .craft-mats.station-mats .sq-rows { flex: 0 0 auto; min-height: 0; overflow: visible; }
+.center-scroll.four.passive-panel .craft-side > .craft-mats.station-mats > .craft-go[data-station-go] {
+  position: sticky; bottom: 0; z-index: 2; margin: 6px -10px 0; padding: 6px 10px; border-radius: 0; flex-wrap: nowrap; gap: 8px; background: #252e27;
+}
+.center-scroll.four.passive-panel .craft-go[data-station-go] .cg-facts { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; align-items: baseline; line-height: 1.25; }
+.center-scroll.four.passive-panel .craft-go[data-station-go] .cg-facts > * { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.center-scroll.four.passive-panel .craft-go[data-station-go] .cg-facts > .cg-sum,
+.center-scroll.four.passive-panel .craft-go[data-station-go] .cg-facts > .warn-text { grid-column: 1 / -1; }
+.center-scroll.four.passive-panel .craft-go[data-station-go] .cg-facts > .warn-text { white-space: normal; }
+.center-scroll.four.passive-panel .craft-go[data-station-go] .cg-act { display: flex; flex-direction: row; align-items: center; gap: 6px; }
+.center-scroll.four.passive-panel .craft-go[data-station-go] .cg-act > .batch-row { grid-column: auto; margin: 0; }
+.center-scroll.four.passive-panel .craft-go[data-station-go] .cg-act > .cg-start { min-width: 0; min-height: 34px; padding: 4px 12px; }
+
+/* ③ 设施物品卡数量窗（晾制架、陶窑／净水台共用） */
+.center-scroll.four.passive-panel .fi-take { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 4px 8px; }
+.center-scroll.four.passive-panel .fi-take > .dq-head { flex: 1 1 100%; margin: 0; }
+.center-scroll.four.passive-panel .fi-take > .tbar-note { flex: 1 1 100%; }
+.center-scroll.four.passive-panel .fi-take > .btn-row { flex: 0 1 auto; margin: 0; gap: 6px; }
+.center-scroll.four.passive-panel .fi-take > .btn-row > button { flex: 0 0 auto; min-height: 32px; padding: 3px 12px; }
+.center-scroll.four.passive-panel .fi-take > .tbar-row .tbar-step, .center-scroll.four.passive-panel .fi-take > .tbar-row .tbar-max { min-height: 32px; }
+
+/* ④ 火堆／柴炉加工菜单 */
+.center-scroll.four.passive-panel .panel-host > .fire-menu-wrap { padding: 4px; }
+.center-scroll.four.passive-panel .fire-menu .fm-title { display: flex; align-items: baseline; gap: 0 10px; min-width: 0; }
+.center-scroll.four.passive-panel .fire-menu .fm-title .sub { display: inline; margin-left: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.center-scroll.four.passive-panel .fire-menu .fm-crumbs { padding: 2px 12px; }
+.center-scroll.four.passive-panel .fire-menu .fm-body { padding: 6px 12px; gap: 6px; }
+.center-scroll.four.passive-panel .fire-menu .fm-facts { display: flex; flex-wrap: wrap; gap: 0 18px; line-height: 1.5; }
+.center-scroll.four.passive-panel .fire-menu .fm-facts > div { justify-content: flex-start; gap: 6px; }
+.center-scroll.four.passive-panel .fire-menu .fm-quick .fc-btn { min-height: 34px; }
+.center-scroll.four.passive-panel .fire-menu .fm-slot { min-height: 0; padding: 4px 8px; }
+.center-scroll.four.passive-panel .fire-menu .fm-foot { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 4px 12px 6px; }
+.center-scroll.four.passive-panel .fire-menu .fm-foot > .fm-qty { flex: 0 0 auto; }
+.center-scroll.four.passive-panel .fire-menu .fm-foot > .fm-go { flex: 1 1 240px; width: auto; }
+.center-scroll.four.passive-panel .fire-menu .fm-foot > .ca-note { flex: 1 1 100%; }
+.center-scroll.four.passive-panel .fire-menu .fm-foot .tbar-step, .center-scroll.four.passive-panel .fire-menu .fm-foot .tbar-go { min-height: 34px; }
+
+/* ⑤ 晾制架面板 */
+.center-scroll.four.passive-panel .drying-panel .sh-body { gap: 6px; padding: 6px 12px; }
+.center-scroll.four.passive-panel .drying-panel .dry-ops > button { flex: 0 0 auto; min-height: 32px; padding: 3px 12px; }
+.center-scroll.four.passive-panel .drying-panel .dry-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
+.center-scroll.four.passive-panel .drying-panel .dry-slot { padding: 4px 8px; gap: 2px; }
+.center-scroll.four.passive-panel .drying-panel .dry-btns { margin-top: 0; }
+.center-scroll.four.passive-panel .drying-panel .dry-btns > button { flex: 0 0 auto; min-height: 30px; padding: 2px 10px; }
