@@ -242,9 +242,9 @@
                 {
                     e.MaxPutInFire(s, pot, out var fireWhy);
                     <div class="tbar-row">
-                        <button type="button" class="tbar-go alt" disabled="@(fireWhy != null)" title="@(fireWhy ?? "放进火堆空加工位，燃烧时自动烧水、水煮")" @onclick="() => PutInFire(pot.InstanceId)">放入火堆加工位</button>
+                        <button type="button" class="tbar-go alt" disabled="@(fireWhy != null)" title="@(fireWhy == null ? "放进火堆空加工位，燃烧时自动烧水、水煮" : fireWhy.Length > 0 ? fireWhy : null)" @onclick="() => PutInFire(pot.InstanceId)">放入火堆加工位</button>
                     </div>
-                    @if (fireWhy != null) { <div class="ca-note bad">放入火堆：@fireWhy</div> }
+                    @if (!string.IsNullOrEmpty(fireWhy)) { <div class="ca-note bad">放入火堆：@fireWhy</div> }   @* B59a（§Q1028）：加工位已满不写原因句 *@
                 }
                 @if (invalid) { <div class="ca-note bad">请输入 1 到 @m.Available 之间的数字</div> }
                 else if (m.ToCarried && (m.Max < 1 || tooHeavy)) { <div class="ca-note bad">@((m.Group != null ? e.GroupPickupBlockedText(s, m.Owner, m.ItemId, m.Side, m.Max < 1 ? 1 : n) : G.PickupLimitText(m.ItemId, m.Max < 1 ? 1 : n, m.Instance ?? m.Head)) ?? $"最多可取{m.Max}份")</div> }

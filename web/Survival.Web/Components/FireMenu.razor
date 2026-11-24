@@ -110,7 +110,7 @@
                                         {
                                             @* Q111／Q339：只在第一处可用空位出现（投料进的就是这一位）；点开原居中投料盘确认，按钮本身不投料 *@
                                             <button type="button" id="fc-charcoal" class="secondary slot-charcoal @(charcoalOpen ? "on" : "")" aria-haspopup="dialog" aria-expanded="@charcoalOpen"
-                                                    title="@($"煅烧木炭：{e.CharcoalRuleText()}。点开看原料来源与燃料，确认后投料{(charcoal.Ok ? "" : "（现在不能：" + charcoal.Reason + "）")}")"
+                                                    title="@($"煅烧木炭：{e.CharcoalRuleText()}。点开看原料来源与燃料，确认后投料{(charcoal.Ok || string.IsNullOrEmpty(charcoal.Reason) ? "" : "（现在不能：" + charcoal.Reason + "）")}")"
                                                     @onclick="ToggleCharcoal" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">煅烧木炭</button>
                                         }
                                     </div>
@@ -138,7 +138,7 @@
                                                 <div class="fm-move">
                                                     <button type="button" class="secondary fm-move-btn" disabled="@(mvWhy != null)"
                                                             @onclick="ev => Move(ev, mv)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@mv.Label</button>
-                                                    @if (mvWhy != null) { <span class="tiny warn-text fm-move-why">@mvWhy</span> }
+                                                    @if (!string.IsNullOrEmpty(mvWhy)) { <span class="tiny warn-text fm-move-why">@mvWhy</span> }
                                                 </div>
                                             }
                                         }
@@ -381,14 +381,18 @@
                                行旁「原因」是独立只读控件（可聚焦）：悬停／聚焦／点按时在底部说明位显示该行原真实拒绝句，离开后恢复当前选择的说明；
                                不选材料、不打开数量输入、不投放。悬停整行仍按全局合同只读查看该来源。 *@
                             @* BM5b1（Q603／Q604）：灰行本身不接焦点——按下不把焦点移走（也不清已有合法来源）；行旁「原因」按钮照常可聚焦、只读 *@
-                            <div class="fm-src-row no" @key="rk" data-src-key="@rk" aria-disabled="true" data-peek="@peek" title="@($"{nm}×{r.Count}（{label}）：{why}")" @onmousedown:preventDefault="true">
+                            @* B59a（S11 §Q1028）：目标是满的锅等静默拒绝（原因为空）时只标灰「不可放入」，不给「原因」按钮 *@
+                            <div class="fm-src-row no" @key="rk" data-src-key="@rk" aria-disabled="true" data-peek="@peek" title="@($"{nm}×{r.Count}（{label}）{(why.Length > 0 ? "：" + why : "")}")" @onmousedown:preventDefault="true">
                                 <span class="pc-ico">@Icons.Markup(it.ItemId)</span>
                                 <span class="fm-src-name">@nm<b>×@r.Count</b>@if (it.ExpiresAt.HasValue) {<small>@Ui.FreshOf(e, s, it)</small>}</span>
                                 <span class="fm-src-no">@NotPlaceable</span>
+                                @if (why.Length > 0)
+                                {
                                 <button type="button" class="fm-src-whybtn @(_whyId == rk ? "on" : "")" title="@why" aria-pressed="@(_whyId == rk)"
                                         @onmouseenter="() => ShowWhy(rk)" @onfocus="() => ShowWhy(rk)" @onclick="() => ShowWhy(rk)"
                                         @onmouseleave="() => HideWhy(rk)" @onblur="() => HideWhy(rk)"
                                         @onmousedown:stopPropagation="true" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@WhyLabel</button>
+                                }
                             </div>
                         }
                         else
@@ -453,7 +457,7 @@
             </div>
             @* Q588：「原因」控件悬停／聚焦／点按时，这一位显示那一行的完整真实原因；离开后恢复当前有效选择的说明 *@
             @{ var peekWhy = _whyId is string wid ? st.Carried.Concat(st.Ground).FirstOrDefault(r => r.Key == wid)?.Why : null; }
-            @if ((peekWhy ?? st.Reason) is string note) { <div class="ca-note bad" role="status">@note</div> }
+            @if ((peekWhy ?? st.Reason) is string note && note.Length > 0) { <div class="ca-note bad" role="status">@note</div> }
             @if (m.Fail != null) { <div class="ca-note bad">@m.Fail</div> }
         </div>
     };

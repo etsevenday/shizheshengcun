@@ -37,31 +37,33 @@ public class B51c2a2TakeUiTests : WebTestBase
     }
 
     /// <summary>
-    /// FAC-Q870-01（网页壳）：晾制中的位只有一个「取出」（撤原「取消·到随身／到地面」），点它原料回本区地面、该位空出、日志「已取出至{地点}地面：野果×2。」；
-    /// 面板「全部取出」此时可用且无悬停（Q879 A），取完后置灰并悬停「没有可取出的物品。」。
+    /// FAC-Q870-01（网页壳）→ B59a 改写（S11／S07／S14 §Q1029「取代 Q870／Q923 中与此冲突的晾制位专用“取出”、收取与停止位专用按钮」）：
+    /// 晾制中的位不再有任何位按钮（原「取出」已撤），取出只走卡片与操作区「全部取出」；
+    /// 面板「全部取出」此时可用且无悬停（Q879 A），点后原料回本区地面、该位空出、不写常规取出日志（§Q1029 撤常规取出日志），取完置灰并悬停「没有可取出的物品。」。
     /// </summary>
     [Test]
-    public void DryingSlot_TakeButton_ReturnsToGround_TakeAllThenGreyed()
+    public void DryingSlot_NoSlotButtons_TakeAllThenGreyed()
     {
         Rack();
         StartBerries();
         var cut = Ctx.RenderComponent<DryingOverlay>();
         var slot0 = cut.Find("[data-dry-slot='0']");
-        // B51c2b 改选择器（S11 §Q870 B／§Q925 B：位内原料卡加了取到随身箭头，原「位按钮只一个取出」改断位按钮行 .dry-btns）
-        Assert.That(slot0.QuerySelectorAll(".dry-btns button").Select(b => b.TextContent.Trim()), Is.EqualTo(new[] { "取出" }), "晾制中只一个「取出」");
+        Assert.That(slot0.QuerySelectorAll("button").Length, Is.EqualTo(0), "B59a §Q1029：晾制中的位没有专用按钮");
+        Assert.That(cut.FindAll("[data-pt=dry-take]"), Is.Empty, "§Q1029：撤晾制位专用「取出」");
         var all = cut.Find("[data-pt=dry-take-all]");
         Assert.That((all.TextContent, all.HasAttribute("disabled"), all.HasAttribute("title")), Is.EqualTo(("全部取出", false, false)), "可用时无悬停");
+        var logs = S.Log.Count;
 
-        cut.Find("[data-pt=dry-take][data-slot='0']").Click();
+        all.Click();
 
         Assert.That(DrySlots, Is.Empty, "该位空出");
         Assert.That(GroundSum("berry"), Is.EqualTo(2), "原料回本区地面");
-        Assert.That(S.Log.Last().Text, Is.EqualTo($"已取出至{E.ZoneName(S, S.Ground)}地面：野果×2。"), "Q876 B 结果句");
+        Assert.That(S.Log.Skip(logs).Select(l => l.Text).Where(x => x.StartsWith("已取出至")), Is.Empty, "§Q1029：不写常规取出日志");
         all = cut.Find("[data-pt=dry-take-all]");
         Assert.That((all.HasAttribute("disabled"), all.GetAttribute("title")), Is.EqualTo((true, Empty)), "空设施置灰、悬停真实原因");
     }
 
-    /// <summary>B51-Q778-02（网页壳）：点面板「全部取出」把两位在制原料一次放到地面，结果同名合量「野果×4」。</summary>
+    /// <summary>B51-Q778-02（网页壳）：点面板「全部取出」把两位在制原料一次放到地面，地面同名合量 4 份（B59a：§Q1029 撤常规取出日志，原「已取出至…野果×4。」断言改为不写该日志）。</summary>
     [Test]
     public void DryingTakeAll_Button_TakesEverySlot()
     {
@@ -70,13 +72,17 @@ public class B51c2a2TakeUiTests : WebTestBase
         StartBerries();
         Assert.That(DrySlots, Has.Count.EqualTo(2));
         var cut = Ctx.RenderComponent<DryingOverlay>();
+        var logs = S.Log.Count;
         cut.Find("[data-pt=dry-take-all]").Click();
         Assert.That(DrySlots, Is.Empty);
         Assert.That(GroundSum("berry"), Is.EqualTo(4));
-        Assert.That(S.Log.Last().Text, Is.EqualTo($"已取出至{E.ZoneName(S, S.Ground)}地面：野果×4。"));
+        Assert.That(S.Log.Skip(logs).Select(l => l.Text).Where(x => x.StartsWith("已取出至")), Is.Empty, "§Q1029");
     }
 
-    /// <summary>FAC-Q871-01（网页壳）：主行动进行中，晾制中位「取出」与「全部取出」都置灰、悬停「行动进行中，暂不能整理物品」；点了也不动（配对：空闲时可点）。</summary>
+    /// <summary>
+    /// FAC-Q871-01（网页壳）：主行动进行中，「全部取出」与位内原料卡箭头都置灰、悬停「行动进行中，暂不能整理物品」；不动（配对：空闲时可点）。
+    /// B59a：原位「取出」按钮已撤（§Q1029），改断展开后的原料卡箭头。
+    /// </summary>
     [Test]
     public void DryingTake_BusyMain_GreyedWithReason()
     {
@@ -84,23 +90,27 @@ public class B51c2a2TakeUiTests : WebTestBase
         StartBerries();
         Ok(E.Start(S, ActionRequest.Wait(30)));
         var cut = Ctx.RenderComponent<DryingOverlay>();
-        var take = cut.Find("[data-pt=dry-take][data-slot='0']");
-        Assert.That((take.HasAttribute("disabled"), take.GetAttribute("title")), Is.EqualTo((true, Busy)));
+        cut.Find("[data-pt=dry-toggle][data-slot='0']").Click();
+        var arrow = cut.Find("[data-dry-items='0'] [data-pt=fac-item] button.card-arrow");
+        Assert.That((arrow.HasAttribute("disabled"), arrow.GetAttribute("title")), Is.EqualTo((true, Busy)));
         var all = cut.Find("[data-pt=dry-take-all]");
         Assert.That((all.HasAttribute("disabled"), all.GetAttribute("title")), Is.EqualTo((true, Busy)));
         Assert.That(DrySlots.Single().Status, Is.EqualTo(DryingSlot.Drying));
 
         E.Cancel(S);
         cut.Render();
-        Assert.That(cut.Find("[data-pt=dry-take][data-slot='0']").HasAttribute("disabled"), Is.False, "空闲恢复可点");
+        Assert.That(cut.Find("[data-dry-items='0'] [data-pt=fac-item] button.card-arrow").HasAttribute("disabled"), Is.False, "空闲恢复可点");
+        Assert.That(cut.Find("[data-pt=dry-take-all]").HasAttribute("disabled"), Is.False, "空闲恢复可点");
     }
 
     /// <summary>
-    /// B51C-Q880-01（网页壳）：停止位状态「待取出」，按钮「取到随身」「取到地面」，悬停「取出剩余物品。」；点「取到地面」余物到地面。
-    /// 无余物的异常位只有「清空」，点后该位空出、日志「已清空。」。（取代 B50a Q713 读源码 v.CleanupHint 的旧断言）
+    /// B51C-Q880-01（网页壳）→ B59a 改写（S11／S07／S14 §Q1029「取代……停止位专用按钮」「空的异常停止位自动恢复成普通空位，无须玩家操作」；
+    /// S11「2026-11-24」§Q1034 已停止位和普通余料一样直接展示剩余物品卡，不再显示按钮、提示、说明或专用状态）：
+    /// 留有余物的停止位没有「取到随身／取到地面／清空」按钮，也没有说明行，展开即见余物卡，走卡片箭头取走；最后一件离开后这一位自动回到空位（不写「已清空。」）。
+    /// 无余物的异常位在下一次变更边界自动恢复成空位（不再出「清空」）。
     /// </summary>
     [Test]
-    public void StoppedSlot_RestButtons_AndClear()
+    public void StoppedSlot_NoButtons_CardsOnly_AutoRestored()
     {
         Rack();
         foreach (var k in new[] { 0, 1 })
@@ -109,27 +119,25 @@ public class B51c2a2TakeUiTests : WebTestBase
                 Slot = k, BatchId = 7100 + k, RecipeId = "dry_meat", Status = DryingSlot.Spoiled, StartMinute = S.GameMinute - 60, DoneMinutes = 55,
                 RequiredMinutes = 180, EndMinute = S.GameMinute - 5, InitiatorActorId = GameState.PlayerId, StopReason = DryingSlot.StopMissing,
             });
-        E.CreateItems(S, "salt", 1, ItemInstance.DryingOwner(S.Ground, 0));   // 起点：位 1 留有余物盐×1，位 2 已空
+        E.CreateItems(S, "salt", 1, ItemInstance.DryingOwner(S.Ground, 0));   // 起点：位 1 留有余物盐×1，位 2 已空（尚未经过变更边界）
         var cut = Ctx.RenderComponent<DryingOverlay>();
 
-        var s0 = cut.Find("[data-dry-slot='0']");
-        Assert.That(s0.QuerySelector(".dry-state")!.TextContent, Is.EqualTo("待取出"), "Q880：待清理 → 待取出");
-        var carried = cut.Find("[data-pt=dry-rest-carried][data-slot='0']");
-        var ground = cut.Find("[data-pt=dry-rest-ground][data-slot='0']");
-        Assert.That((carried.TextContent, carried.GetAttribute("title")), Is.EqualTo(("取到随身", "取出剩余物品。")));
-        Assert.That((ground.TextContent, ground.GetAttribute("title")), Is.EqualTo(("取到地面", "取出剩余物品。")));
-        Assert.That(cut.FindAll("[data-pt=dry-clear][data-slot='0']"), Is.Empty, "有余物不出「清空」");
-        var clear = cut.Find("[data-pt=dry-clear][data-slot='1']");
-        Assert.That(clear.TextContent, Is.EqualTo("清空"));
-        Assert.That(cut.FindAll("[data-slot='1'][data-pt^=dry-rest]"), Is.Empty, "无余物不出取到随身／地面");
+        Assert.That(cut.FindAll("[data-pt^=dry-rest]"), Is.Empty, "§Q1029：撤停止位「取到随身／取到地面」");
+        Assert.That(cut.FindAll("[data-pt=dry-clear]"), Is.Empty, "§Q1029：撤「清空」");
+        Assert.That(cut.Find("[data-dry-slot='0']").QuerySelectorAll("button").Length, Is.EqualTo(0), "停止位没有任何按钮");
+        cut.Find("[data-pt=dry-toggle][data-slot='0']").Click();
+        var cards = cut.FindAll("[data-dry-items='0'] [data-pt=fac-item]");
+        Assert.That(cards, Has.Count.EqualTo(1));
+        Assert.That(cards[0].QuerySelector(".ir-name")!.TextContent, Is.EqualTo("盐"));
+        var logs = S.Log.Count;
 
-        ground.Click();
-        Assert.That(GroundSum("salt"), Is.EqualTo(1), "余物到地面");
-        Assert.That(DrySlots.Select(b => b.Slot), Is.EqualTo(new[] { 1 }));
+        cards[0].QuerySelector("button.card-arrow")!.Click(detail: 0);
 
-        cut.Find("[data-pt=dry-clear][data-slot='1']").Click();
-        Assert.That(DrySlots, Is.Empty);
-        Assert.That(S.Log.Last().Text, Is.EqualTo("已清空。"), "Q880：异常空位复位 → 已清空。");
+        Assert.That(S.Items.Where(i => i.ItemId == "salt" && i.IsCarried).Sum(i => i.Count), Is.EqualTo(1), "余物经卡片箭头到随身");
+        Assert.That(DrySlots, Is.Empty, "§Q1029：位 1 最后一件离开后回到空位；位 2 空停止位同一变更边界自动恢复");
+        Assert.That(S.Log.Skip(logs).Select(l => l.Text), Has.None.EqualTo("已清空。"), "§Q1029 撤清空日志");
+        cut.Render();
+        Assert.That(cut.FindAll("[data-pt=dry-view]"), Has.Count.EqualTo(8), "全部回到普通空位（「查看配方」；晾制架 8 位，B50a Q713 汇总「空8」口径）");
     }
 
     /// <summary>Q966（网页壳）：选食谱预览里的暂停说明写用户原句「晾晒时，不会变质」。</summary>
@@ -189,7 +197,7 @@ public class B51c2a2TakeUiTests : WebTestBase
         Assert.That(pot.InFacility, Is.True);
     }
 
-    // ───────────── 试玩修复：已晾好位「收取」按取出门槛置灰（S11 Q871 B） ─────────────
+    // ───────────── 已晾好位：B59a 撤「收取」（S11 §Q1029），成品走卡片取出 ─────────────
 
     /// <summary>起点：一位果干已晾好（配置 dry_berries 120 分钟，B50a Q666-A02），推进世界时间到完成。</summary>
     private void DoneSlot()
@@ -207,61 +215,42 @@ public class B51c2a2TakeUiTests : WebTestBase
         G.OpenPanel("drying");
     }
 
-    private IRenderedComponent<ActionPops> OpenHarvestPop(IRenderedComponent<DryingOverlay> cut)
-    {
-        cut.Find("[data-pt=dry-harvest][data-slot='0']").Click();
-        Assert.That(G.Pop?.Kind, Is.EqualTo("harvest"), "起点：收取盘打开");
-        return Ctx.RenderComponent<ActionPops>();
-    }
-
-    /// <summary>配对（Q346／Q364）：空闲时「收取」可点、悬停原句，盘里「取到地面」可点，点后果干到地面。</summary>
+    /// <summary>
+    /// 原 Harvest_Idle_Enabled_TakesToGround（Q346／Q364 收取盘）→ B59a 改写（S11／S07／S14 §Q1029「取代 Q870／Q923 中与此冲突的……收取……按钮」）：
+    /// 已晾好位没有「收取」，也不再开收取盘；展开后成品果干是一张卡，空闲时箭头可点，点后果干到随身、这一位空出。
+    /// </summary>
     [Test]
-    public void Harvest_Idle_Enabled_TakesToGround()
+    public void DoneSlot_NoHarvest_CardArrowTakes()
     {
         DoneSlot();
         var cut = Ctx.RenderComponent<DryingOverlay>();
-        var btn = cut.Find("[data-pt=dry-harvest][data-slot='0']");
-        Assert.That((btn.HasAttribute("disabled"), btn.GetAttribute("title")), Is.EqualTo((false, "选择去向：取到随身或当前地面（0分钟），这一位空出")));
-        var pops = OpenHarvestPop(cut);
-        var ground = pops.Find("[data-pt=harvest-ground]");
-        Assert.That(ground.HasAttribute("disabled"), Is.False);
-        ground.Click();
-        Assert.That(GroundSum("dried_berries"), Is.EqualTo(1));
+        Assert.That(cut.FindAll("[data-pt=dry-harvest]"), Is.Empty, "§Q1029：撤收取");
+        cut.Find("[data-pt=dry-toggle][data-slot='0']").Click();
+        var cards = cut.FindAll("[data-dry-items='0'] [data-pt=fac-item]");
+        Assert.That(cards, Has.Count.EqualTo(1));
+        Assert.That(cards[0].QuerySelector(".ir-name")!.TextContent, Is.EqualTo("果干"));
+        var arrow = cards[0].QuerySelector("button.card-arrow")!;
+        Assert.That(arrow.HasAttribute("disabled"), Is.False);
+        arrow.Click(detail: 0);
+        Assert.That(S.Items.Where(i => i.ItemId == "dried_berries" && i.IsCarried).Sum(i => i.Count), Is.EqualTo(1));
         Assert.That(DrySlots, Is.Empty);
+        Assert.That(G.Pop, Is.Null, "不开收取盘");
     }
 
     /// <summary>
-    /// 试玩 bug（S11 Q871 B：角色主行动暂停也不能取出）：休息等主行动处于暂停时，「收取」置灰、悬停「行动进行中，暂不能整理物品」；
-    /// 已打开的收取盘两键也置灰、悬停同句，果干不动。
+    /// 试玩 bug（S11 Q871 B：角色主行动暂停也不能取出）→ B59a 改写（收取按钮已撤，§Q1029）：主行动暂停时成品卡箭头置灰、悬停「行动进行中，暂不能整理物品」，果干不动。
     /// </summary>
     [Test]
-    public void Harvest_MainPaused_Greyed()
+    public void DoneSlot_MainPaused_CardArrowGreyed()
     {
         DoneSlot();
         var cut = Ctx.RenderComponent<DryingOverlay>();
-        var pops = OpenHarvestPop(cut);
+        cut.Find("[data-pt=dry-toggle][data-slot='0']").Click();
         Ok(E.Start(S, ActionRequest.Wait(30)));
         S.Main!.Status = ActionStatus.Paused;   // 起点：主行动暂停（如休息被阈值暂停）
         cut.Render();
-        pops.Render();
-        var btn = cut.Find("[data-pt=dry-harvest][data-slot='0']");
-        Assert.That((btn.HasAttribute("disabled"), btn.GetAttribute("title")), Is.EqualTo((true, Busy)));
-        foreach (var pt in new[] { "harvest-carried", "harvest-ground" })
-        {
-            var b = pops.Find($"[data-pt={pt}]");
-            Assert.That((b.HasAttribute("disabled"), b.GetAttribute("title")), Is.EqualTo((true, Busy)), pt);
-        }
+        var arrow = cut.Find("[data-dry-items='0'] [data-pt=fac-item] button.card-arrow");
+        Assert.That((arrow.HasAttribute("disabled"), arrow.GetAttribute("title")), Is.EqualTo((true, Busy)));
         Assert.That(DrySlots.Single().Status, Is.EqualTo(DryingSlot.Done), "果干不动");
-    }
-
-    /// <summary>试玩 bug（S11 Q871 B）：主行动进行中（如睡觉）「收取」置灰，悬停写「行动进行中，暂不能整理物品」，不再是去向说明原句。</summary>
-    [Test]
-    public void Harvest_MainRunning_GreyedWithReason()
-    {
-        DoneSlot();
-        Ok(E.Start(S, ActionRequest.Wait(30)));
-        var cut = Ctx.RenderComponent<DryingOverlay>();
-        var btn = cut.Find("[data-pt=dry-harvest][data-slot='0']");
-        Assert.That((btn.HasAttribute("disabled"), btn.GetAttribute("title")), Is.EqualTo((true, Busy)));
     }
 }

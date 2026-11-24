@@ -212,35 +212,12 @@
                     }
                     <div class="@(shortFuel ? "apop-risk" : "apop-note")">燃料另计：@info.FuelNote</div>
                     <div class="apop-note">熄火保留进度；取出未完成的一批退回@(info.InputCount)份木材、清进度，已烧燃料不退；完成后木炭留在加工位，取出才进包。</div>
-                    @if (!info.Ok) { <div class="apop-risk">@info.Reason</div> }
+                    @if (!info.Ok && !string.IsNullOrEmpty(info.Reason)) { <div class="apop-risk">@info.Reason</div> }
                     @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
                 </ChildContent>
                 <Actions>
                     @* Q365：主按钮始终写「确认投料」，当前受阻时禁用，原因在盘内 *@
                     <button type="button" class="primary apop-go" data-enter disabled="@(!info.Ok || busy)" @onclick="LoadCharcoal">确认投料<EnterCap On="@(info.Ok && !busy)" /></button>
-                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
-                </Actions>
-            </AnchorPop>
-            break;
-        }
-        case "harvest":
-        {
-            @* B32b（逐字稿 §1.2 Q346、§1.5 Q364）：晾制成品「收取」居中盘。两键各自按原去向校验直接提交，不另加确认；
-               容量或其他校验失败时在盘内写实际原因、盘不关，可改选另一合法去向；成功后收盘并刷新该位。取消、×、遮罩、Esc 按 Q338 只收起。 *@
-            var k = int.Parse(pop.Id);
-            var v = e.DryingSlotViews(s).First(x => x.Slot == k);
-            // B51c2a2 试玩修复（S11 Q871 B）：两键同样按内核取出门槛置灰（主行动暂停也算），悬停写真实原因；随身容量不足仍点后在盘内报（Q364）
-            var harvestGate = v.ToGroundBlocked;
-            var dryBusy = G.Running || s.Sub != null || _go || harvestGate != null;
-            <AnchorPop AnchorId="@pop.AnchorId" Title="@CardStates.HarvestTitle" CssClass="@("harvest" + G.MenuHideCss)" Sub="@($"{v.Title} · {v.RecipeName}")" OnClose="G.ClosePop">
-                <Art>@Icons.Markup(e.DryingContents(s, s.Ground, k).FirstOrDefault()?.ItemId ?? "dried_meat")</Art>
-                <ChildContent>
-                    @foreach (var c in v.Contents) { <div class="apop-note">@c</div> }
-                    @if (_harvestFail != null && _tried) { <div class="apop-risk">@_harvestFail</div> }
-                </ChildContent>
-                <Actions>
-                    <button type="button" class="primary apop-go" data-pt="harvest-carried" disabled="@dryBusy" title="@harvestGate" @onclick="() => Harvest(k, true)">@CardStates.HarvestToCarried</button>
-                    <button type="button" class="secondary apop-go" data-pt="harvest-ground" disabled="@dryBusy" title="@harvestGate" @onclick="() => Harvest(k, false)">@CardStates.HarvestToGround</button>
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消<EscCap On="@G.EscOnDisk" /></button>
                 </Actions>
             </AnchorPop>
@@ -293,7 +270,7 @@
     /// <summary>浮窗目标仍然有效：相邻路线仍可走、敌人仍在本地可见、拖拽预览仍是当前选择。失效时不通知界面地收起。</summary>
     private bool Valid(GameSession.PopContext pop)
     {
-        if (!ReferenceEquals(pop, _seen)) { _seen = pop; _tried = false; _harvestFail = null; }
+        if (!ReferenceEquals(pop, _seen)) { _seen = pop; _tried = false; }
         var s = G.S;
         var e = G.E;
         var ok = pop.Kind switch
@@ -304,7 +281,6 @@
             // B45：煅烧投料盘从中央火堆加工菜单的空加工位打开（盘叠在菜单之上）
             "charcoal" => s.Battle == null && (G.Panel == null || G.Panel == GameSession.FireMenuPanel) && pop.Id == s.Ground && e.HasFireAt(s, s.Ground),
             "lockstack" => s.Battle == null && G.Panel == null && e.AdjacentLockedGroups(s).Any(g => g.Routes.Count >= 3),
-            "harvest" => s.Battle == null && G.Panel == "drying" && e.DryingRackHere(s) && int.TryParse(pop.Id, out var hk) && e.DryingSlotAt(s, s.Ground, hk)?.Status == DryingSlot.Done,
             "gather" => G.Selected.Kind == SelectionKind.Action && G.PendingAction != null && G.PendingAction.Type == ActionType.Gather && G.PendingAction.TargetId == pop.Id,
             _ => true,
         };
@@ -353,23 +329,6 @@
             // B10b 试玩修复：投料后收起浮窗并清掉选中（被取走一部分的木材堆不再弹操作窗盖住火堆）
             // B45（FACPROC 第 5 条）：从加工菜单进入的确认支路成功后只收起该支路、回菜单父层，不清菜单的设施上下文
             if (res.Ok) { if (G.Panel == GameSession.FireMenuPanel) G.ClosePop(); else G.ClearSelection(); }
-        }
-        finally { _go = false; }
-    }
-
-    /// <summary>Q364：本盘上一次提交被拒的实际原因（换盘时清掉）。</summary>
-    private string? _harvestFail;
-
-    private void Harvest(int slot, bool toCarried)
-    {
-        if (_go) return;
-        _go = true;
-        _tried = true;
-        try
-        {
-            var r = G.EngineDo(() => G.E.TakeDrying(G.S, slot, toCarried, Guid.NewGuid().ToString("N")));
-            _harvestFail = r.Ok ? null : r.Reason;
-            if (r.Ok) G.ClosePop();
         }
         finally { _go = false; }
     }

@@ -51,6 +51,7 @@ public class B51c2bPlayFixUiTests : WebTestBase
         DryingAndKiln();
         G.OpenPanel("drying");
         var dry = Ctx.RenderComponent<DryingOverlay>();
+        dry.Find("[data-pt=dry-toggle][data-slot='0']").Click();   // B59a（S11「2026-11-24」§Q1034）：占用位默认收起，先展开才见逐份原料卡
         var rail = Ctx.RenderComponent<DetailPanel>();
         dry.Find("[data-pt=fac-item]").Click();
         rail.Render();
@@ -103,6 +104,7 @@ public class B51c2bPlayFixUiTests : WebTestBase
         DryingAndKiln();
         G.OpenPanel("drying");
         var dry = Ctx.RenderComponent<DryingOverlay>();
+        dry.Find("[data-pt=dry-toggle][data-slot='0']").Click();   // B59a（S11「2026-11-24」§Q1034）：占用位默认收起，先展开才见逐份原料卡
         var card = S.Items.Single(i => i.ItemId == "berry");
         dry.Find("[data-pt=fac-item]").Click();
         Assert.That(G.Selected.InstanceId, Is.EqualTo(card.InstanceId));
@@ -191,6 +193,7 @@ public class B51c2bPlayFixUiTests : WebTestBase
         DryingAndKiln();
         G.OpenPanel("drying");
         var dry = Ctx.RenderComponent<DryingOverlay>();
+        dry.Find("[data-pt=dry-toggle][data-slot='0']").Click();   // B59a（S11「2026-11-24」§Q1034）：占用位默认收起，先展开才见逐份原料卡
         Assert.That(Ctx.JSInterop.Invocations.Count(i => i.Identifier == "survival.revealNearest"), Is.EqualTo(0), "配对：没开数量窗不滚");
 
         dry.Find("[data-pt=fac-item]").Click();
@@ -211,6 +214,7 @@ public class B51c2bPlayFixUiTests : WebTestBase
         DryingAndKiln();
         G.OpenPanel("drying");
         var dry = Ctx.RenderComponent<DryingOverlay>();
+        dry.Find("[data-pt=dry-toggle][data-slot='0']").Click();   // B59a（S11「2026-11-24」§Q1034）：占用位默认收起，先展开才见逐份原料卡
         var rail = Ctx.RenderComponent<DetailPanel>();
         dry.Find("[data-pt=fac-item]").Click();
         rail.Render();

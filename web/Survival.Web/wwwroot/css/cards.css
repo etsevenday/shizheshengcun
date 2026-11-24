@@ -379,6 +379,10 @@
 /* B32b 晾制位（P02c、Q362、Q368）：标题行「工位n」+ 状态字，晾制中挂加工中，晾好亮一次 */
 .drying-panel .dry-slot .sh-row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .drying-panel .dry-slot .dry-line .muted { margin-right: 4px; }
+/* B59a（S11 §Q1034）：占用位标题可点展开／收起（开发方排版）；展开后逐份原料卡换行排 */
+.drying-panel .dry-slot .dry-head[role=button] { cursor: pointer; }
+.drying-panel .dry-slot .dry-head[role=button]:focus-visible { outline: 1px dashed var(--accent, #c9823a); outline-offset: 2px; }
+.drying-panel .dry-slot .dry-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .wasteland .drying-panel .dry-slot.st-busy { box-shadow: inset 3px 0 0 var(--ink2-gold); }
 .drying-panel .dry-slot.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 1; }
 

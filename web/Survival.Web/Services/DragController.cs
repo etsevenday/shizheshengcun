@@ -48,7 +48,8 @@ public sealed class DragController
             map[key] = new
             {
                 ok = i.Ok,
-                kind = !i.Ok ? "no" : i.Verb == DropVerb.Reorder ? "reorder" : i.IsPreview ? "preview" : i.StartsAction ? "start" : "instant",
+                // B59a（S11／S07 §Q1028／§Q1029）：静默拒绝 quiet——不高亮、不显示禁止原因、松手不提示，仍挡住落到所在区的回落
+                kind = !i.Ok ? (i.Silent || string.IsNullOrEmpty(i.Reason) ? "quiet" : "no") : i.Verb == DropVerb.Reorder ? "reorder" : i.IsPreview ? "preview" : i.StartsAction ? "start" : "instant",
                 label = i.Label,
                 reason = i.Reason,
                 fall = i.FallThrough,
@@ -74,13 +75,14 @@ public sealed class DragController
         if (src == null || dst == null) return Result(false, GameEngine.Unsupported);
         // 松手时按当前状态重新解析：起拖后状态可能已变（引用失效即刷新）
         var intent = G.E.ResolveDrop(G.S, src, dst);
-        if (!intent.Ok) return Result(false, intent.Reason);
+        if (!intent.Ok) return Result(false, intent.Silent ? "" : intent.Reason);
         if (shift && intent.Quantifiable)
         {
             G.AskDropQuantity(intent, _requestId);
             return Result(true, "");
         }
-        var res = G.ExecuteDrop(intent, 1, _requestId);
+        // B59a（S11 §Q1033 A）：拖入晾制位普通松手默认投 min(本位缺口, 这堆可投)，其余落点仍默认 1 份
+        var res = G.ExecuteDrop(intent, intent.DefaultQuantity > 0 ? intent.DefaultQuantity : 1, _requestId);
         return Result(res.Ok, res.Reason);
     }
 

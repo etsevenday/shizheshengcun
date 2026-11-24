@@ -6,7 +6,7 @@ namespace Survival.Web.Services;
 /// <summary>
 /// B51c2b「被动设施卡片箭头、余料与拖入」的网页壳状态（S11／S07／S14「2026-11-17 B51c2a／B51c2b完整两原批」§Q925 B、§Q926 A）：
 /// 晾制位、陶窑／净水台批内物品卡点本体——右栏看本卡详情（只读），面板里就地打开数量取出窗（标题「取出」、去向「取到随身／取到地面」、确认「确认 {数量}」）；
-/// 材料卡拖到晾制位——选中该位并定位到用这件物品的食谱预览（只导航，仍要「投料…」「确认投料」）。
+/// B59a（§Q1029）起材料卡拖到晾制位即投料（内核 LoadDrying），不再只导航；晾制架栏位可展开、逐份显示（§Q1034／§Q1035）。
 /// </summary>
 public sealed partial class GameSession
 {
@@ -14,6 +14,8 @@ public sealed partial class GameSession
     public sealed class FacilityTakeDraft
     {
         public int InstanceId { get; init; }
+        /// <summary>B59a（§Q1035「原料每份独立显示、不叠卡」）：晾制位里同一实例逐份显示时点的是第几份（0 起）；陶窑／净水台批内卡为 null。</summary>
+        public int? Unit { get; init; }
         public string Stamp { get; init; } = "";
         public bool ToCarried { get; set; } = true;
         public string Qty { get; set; } = "1";
@@ -31,10 +33,10 @@ public sealed partial class GameSession
     /// 点设施物品卡本体（Q925 B）：选中并在右栏看这张卡的真实详情，同时在面板里打开这张卡的数量取出窗（绑定此刻的卡实例与位／批身份）。
     /// 再点同一张卡收起数量窗。
     /// </summary>
-    public void PickFacilityItem(ItemInstance it)
+    public void PickFacilityItem(ItemInstance it, int? unit = null)
     {
         if (State == null) return;
-        if (FacTake?.InstanceId == it.InstanceId)
+        if (FacTake?.InstanceId == it.InstanceId && FacTake.Unit == unit)
         {
             FacTake = null;
             Notify();
@@ -42,7 +44,7 @@ public sealed partial class GameSession
         }
         SyncRightSilently(new Selection { Kind = SelectionKind.Tool, Id = it.ItemId, Owner = it.Owner, InstanceId = it.InstanceId });
         Notice = null;
-        FacTake = new FacilityTakeDraft { InstanceId = it.InstanceId, Stamp = E.FacilityItemStamp(S, it) };
+        FacTake = new FacilityTakeDraft { InstanceId = it.InstanceId, Unit = unit, Stamp = E.FacilityItemStamp(S, it) };
         Notify();
     }
 
@@ -128,24 +130,23 @@ public sealed partial class GameSession
         : Panel is "craft" or "safehouse" || CityBrowsing || (Panel == "city" && CityPanelTall) ? "tall-panel"
         : "";
 
-    // ───────────── Q926 A：拖到晾制位只做导航 ─────────────
+    // ───────────── 晾制架面板：选位与栏位展开 ─────────────
 
-    /// <summary>晾制架面板选中的位（「查看配方」或拖入定位）；面板重新打开时清空。</summary>
+    /// <summary>晾制架面板选中的位（空位或余料位的「查看配方」）；面板重新打开时清空。B59a（§Q1029）起拖入即投料，不再由拖入定位。</summary>
     public int? DryingPickSlot { get; set; }
-    /// <summary>拖入定位到的食谱（用这件物品的原合法晾制食谱；多条都列）；没有为 null。</summary>
-    public List<string>? DryingFocusRecipes { get; set; }
     /// <summary>面板下次渲染后把食谱区滚到可见（只影响定位）。</summary>
     public bool DryingScrollPending { get; set; }
 
     /// <summary>
-    /// 材料卡拖到晾制位松手（Q926 A）：选中这一位并定位到对应合法食谱预览；不开工、不预留、不搬物。面板没开就打开晾制架面板。
+    /// B59a（S11「2026-11-24」§Q1034 用户另定「晾晒架的每个栏位都可点开查看内容」、§Q1035「展开晾晒架栏位后原料每份独立显示」）：
+    /// 晾制架面板里当前展开的栏位（位号）；面板重新打开时全部收起。
     /// </summary>
-    public void FocusDrying(int slot, List<string> recipes)
+    public HashSet<int> DryingOpenSlots { get; } = new();
+
+    /// <summary>点栏位标题：展开／收起这一栏（只看，不改状态、不推进时间）。</summary>
+    public void ToggleDryingSlot(int slot)
     {
-        DryingPickSlot = slot;
-        DryingFocusRecipes = recipes;
-        DryingScrollPending = true;
-        if (Panel != "drying") OpenPanel("drying");
+        if (!DryingOpenSlots.Remove(slot)) DryingOpenSlots.Add(slot);
         Notify();
     }
 }

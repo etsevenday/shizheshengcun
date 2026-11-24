@@ -10,7 +10,8 @@
         <div class="modal" data-enter-scope tabindex="-1" role="dialog" aria-label="选择数量" @onclick:stopPropagation="true" @onkeydown="OnKey">
             @{ var src = d.Instant == null ? null : G.S.Items.FirstOrDefault(i => i.InstanceId == d.Instant.InstanceId); }
             <h3 class="dq-head">@if (src != null) {<span class="ir-icon">@Icons.Markup(src.ItemId)</span>}@Verb(d)@(src != null ? $" · {G.E.ItemName(src.ItemId)}" : "")</h3>
-            <div class="small muted">@d.Label.Replace("1份", "").Replace("1", "") · 最多 @d.MaxQuantity</div>
+            @* B59a：晾制拖入的短动作带默认份数（「投入{物名}×{n}」），数量框里去掉「×{n}」只留动作，份数看输入框与「最多」 *@
+            <div class="small muted">@(d.Verb == DropVerb.LoadDrying && d.Label.LastIndexOf('×') is var x && x > 0 ? d.Label.Substring(0, x) : d.Label.Replace("1份", "").Replace("1", "")) · 最多 @d.MaxQuantity</div>
             <div class="tbar-row">
                 <button type="button" class="tbar-step" aria-label="减少" @onclick="() => Step(-1)">−</button>
                 <span class="tbar-qlabel">@ShellKeys.Qty <kbd class="kc">@ShellKeys.Digits</kbd></span>
@@ -39,7 +40,7 @@
         if (G.PendingDrop != null && !ReferenceEquals(G.PendingDrop, shown))
         {
             shown = G.PendingDrop;
-            text = "1";
+            text = G.PendingDrop.DefaultQuantity > 0 ? G.PendingDrop.DefaultQuantity.ToString() : "1";   // B59a（§Q1033 A）：晾制拖入从默认份数起选更少
             StateHasChanged();
             await JS.InvokeVoidAsync("survival.focusSelect", input);
         }
@@ -54,6 +55,7 @@
         DropVerb.PutInFire => "放进火堆加工位",
         DropVerb.PutFood => "放进锅的食材区",
         DropVerb.TakeOut => "从设施取出",
+        DropVerb.LoadDrying => "投料",   // B59a：沿晾制架原按钮「投料…」（暂用，见开发记录 B59a.6）
         _ => d.Instant?.Kind == InstantKind.Pickup ? "拾取" : "放下",
     };
 

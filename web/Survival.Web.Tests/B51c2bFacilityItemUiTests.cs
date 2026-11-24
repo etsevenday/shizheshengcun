@@ -23,6 +23,9 @@ public class B51c2bFacilityItemUiTests : WebTestBase
 
     private List<DryingSlot> DrySlots => S.Locations[S.Ground].Facility.DryingSlots;
 
+    /// <summary>B59a（S11「2026-11-24」§Q1034 用户另定）：占用位默认收起，点标题展开后才列出逐份原料卡。</summary>
+    private static void Expand(IRenderedComponent<DryingOverlay> cut, int k) => cut.Find($"[data-pt=dry-toggle][data-slot='{k}']").Click();
+
     /// <summary>营地建好晾制架，位 1 投果干（野果×2）。</summary>
     private void BerriesDrying()
     {
@@ -35,16 +38,18 @@ public class B51c2bFacilityItemUiTests : WebTestBase
 
     /// <summary>
     /// FAC-Q870-02（网页壳）：晾制位里每份原料是一张物品卡，卡上有取到随身箭头；点一下（键盘激活，单次）取 1 份到随身，
-    /// 这一位成「余料」，位按钮变成「取出」「查看配方」（S11 §Q924 B）。
+    /// 这一位成「余料」，位按钮只剩「查看配方」（S11 §Q924 B；B59a §Q1029 撤晾制位专用「取出」）。
+    /// B59a 改期望（S11「2026-11-24」§Q1035「晾制位每份一张卡」）：原「一张野果×2」改为两张「野果」，取 1 份后余 1 张。
     /// </summary>
     [Test]
     public void DryingCard_Arrow_TakesOne_SlotShowsResidual()
     {
         BerriesDrying();
         var cut = Ctx.RenderComponent<DryingOverlay>();
+        Expand(cut, 0);
         var cards = cut.FindAll("[data-dry-items='0'] [data-pt=fac-item]");
-        Assert.That(cards, Has.Count.EqualTo(1));
-        Assert.That(cards[0].QuerySelector(".ir-name")!.TextContent, Is.EqualTo("野果×2"));
+        Assert.That(cards, Has.Count.EqualTo(2), "§Q1035：每份一张卡");
+        Assert.That(cards.Select(c => c.QuerySelector(".ir-name")!.TextContent), Is.EqualTo(new[] { "野果", "野果" }));
         var arrow = cards[0].QuerySelector("button.card-arrow")!;
         Assert.That((arrow.TextContent, arrow.HasAttribute("disabled")), Is.EqualTo(("▼", false)));
 
@@ -54,8 +59,8 @@ public class B51c2bFacilityItemUiTests : WebTestBase
         Assert.That(DrySlots.Single().Status, Is.EqualTo(DryingSlot.Residual));
         var slot0 = cut.Find("[data-dry-slot='0']");
         Assert.That(slot0.QuerySelector(".dry-state")!.TextContent, Is.EqualTo("余料"), "S11 §Q924 短状态");
-        Assert.That(slot0.QuerySelectorAll(".dry-btns button").Select(b => b.TextContent.Trim()), Is.EqualTo(new[] { "取出", "查看配方" }));
-        Assert.That(cut.Find("[data-dry-items='0'] .ir-name").TextContent, Is.EqualTo("野果"), "余料卡仍在本位");
+        Assert.That(slot0.QuerySelectorAll(".dry-btns button").Select(b => b.TextContent.Trim()), Is.EqualTo(new[] { "查看配方" }), "§Q1029 撤「取出」");
+        Assert.That(cut.FindAll("[data-dry-items='0'] .ir-name").Select(x => x.TextContent), Is.EqualTo(new[] { "野果" }), "余料卡仍在本位");
 
         // S11 §Q924 B：余料位「查看配方」选中这一位，食谱区给本位补投预览——来源先列本位余料
         cut.Find("[data-pt=dry-refill][data-slot='0']").Click();
@@ -73,6 +78,7 @@ public class B51c2bFacilityItemUiTests : WebTestBase
         BerriesDrying();
         var cut = Ctx.RenderComponent<DryingOverlay>();
         var card = S.Items.Single(i => i.ItemId == "berry");
+        Expand(cut, 0);
         cut.Find("[data-pt=fac-item]").Click();
 
         Assert.That((G.Selected.Kind, G.Selected.InstanceId), Is.EqualTo((SelectionKind.Tool, (int?)card.InstanceId)), "右栏看这张卡");
@@ -105,6 +111,7 @@ public class B51c2bFacilityItemUiTests : WebTestBase
         S.Items.RemoveAll(i => i.Owner == ItemInstance.Carried);
         foreach (var id in new[] { "wood", "stone", "rope", "plank", "cloth" }) E.CreateItems(S, id, 1, ItemInstance.Carried);
         var cut = Ctx.RenderComponent<DryingOverlay>();
+        Expand(cut, 0);
         cut.Find("[data-pt=fac-item]").Click();
 
         Assert.That(cut.Find("[data-pt=fac-take-why]").TextContent, Is.EqualTo("随身卡位已满（5/5张）：会多出一张新卡，请先放下或用掉一张"));
@@ -122,6 +129,7 @@ public class B51c2bFacilityItemUiTests : WebTestBase
     {
         BerriesDrying();
         var cut = Ctx.RenderComponent<DryingOverlay>();
+        Expand(cut, 0);
         Assert.That(cut.Find("[data-pt=fac-item] button.card-arrow").HasAttribute("disabled"), Is.False, "空闲可用");
         Ok(E.Start(S, ActionRequest.Wait(30)));
         cut.Render();
@@ -130,23 +138,30 @@ public class B51c2bFacilityItemUiTests : WebTestBase
     }
 
     /// <summary>
-    /// FACF-Q926-01（网页壳）：拖野果到空晾制位松手——面板选中位 2 并高亮果干食谱（只导航，不投料），食谱区标题「投到工位2：选食谱」。
+    /// 原 FACF-Q926-01（拖到空晾制位只导航、不投料）→ B59a 改写（S11／S07／S14 §Q1029「材料卡合法拖入晾制位即提交这次投入」「取代 Q926 A 的只预览」；
+    /// S11「2026-11-24」§Q1033 A 未齐的原料留在位里）：拖野果×1 到空位 2 松手——野果进位 2、该位成余料（果干配方需 2 份，B50a Q666-A02），
+    /// 不打开面板、不弹提示、不写日志；再拖 1 份即齐料开始晾制。
     /// </summary>
     [Test]
-    public void DropOnDryingSlot_FocusesSlotAndRecipe()
+    public void DropOnDryingSlot_LoadsDirectly_ThenStarts()
     {
         BerriesDrying();
-        var berry = E.CreateItems(S, "berry", 1, ItemInstance.Carried)[0];
-        var intent = E.ResolveDrop(S, DropSource.Parse($"card:{berry.Owner}|berry|{berry.InstanceId}")!, DropTarget.Parse("dryslot:1")!);
-        Ok(G.ExecuteDrop(intent, 1, "drop-q926"));
+        var b1 = E.CreateItems(S, "berry", 1, ItemInstance.Carried)[0];
+        var logs = S.Log.Count;
+        var intent = E.ResolveDrop(S, DropSource.Parse($"card:{b1.Owner}|berry|{b1.InstanceId}")!, DropTarget.Parse("dryslot:1")!);
+        Assert.That((intent.Ok, intent.Verb, intent.DefaultQuantity), Is.EqualTo((true, DropVerb.LoadDrying, 1)), "默认份数＝min(缺 2, 这堆 1)");
+        Ok(G.ExecuteDrop(intent, 1, "drop-b59a-1"));
 
-        Assert.That(G.Panel, Is.EqualTo("drying"), "面板没开就打开晾制架面板");
-        var cut = Ctx.RenderComponent<DryingOverlay>();
-        Assert.That(cut.Find("[data-dry-slot='1']").ClassList, Does.Contain("on"));
-        Assert.That(cut.Find("[data-dry-recipe='dry_berries']").ClassList, Does.Contain("on"));
-        Assert.That(cut.Find("[data-dry-recipe='dry_meat']").ClassList, Does.Not.Contain("on"));
-        Assert.That(cut.Find(".dry-recipes h3").TextContent, Is.EqualTo("投到工位2：选食谱"));
-        Assert.That((berry.Owner, DrySlots.Count), Is.EqualTo((ItemInstance.Carried, 1)), "不搬物、不开工");
+        Assert.That(G.Panel, Is.Not.EqualTo("drying"), "不再打开面板导航");
+        Assert.That(G.Notice, Is.Null, "不弹提示");
+        Assert.That(S.Log.Count, Is.EqualTo(logs), "§Q1029 不写常规入位日志");
+        var slot1 = DrySlots.Single(b => b.Slot == 1);
+        Assert.That((slot1.Status, slot1.RecipeId, b1.Owner), Is.EqualTo((DryingSlot.Residual, "dry_berries", ItemInstance.DryingOwner(S.Ground, 1))));
+
+        var b2 = E.CreateItems(S, "berry", 1, ItemInstance.Carried)[0];
+        intent = E.ResolveDrop(S, DropSource.Parse($"card:{b2.Owner}|berry|{b2.InstanceId}")!, DropTarget.Parse("dryslot:1")!);
+        Ok(G.ExecuteDrop(intent, 1, "drop-b59a-2"));
+        Assert.That(DrySlots.Single(b => b.Slot == 1).Status, Is.EqualTo(DryingSlot.Drying), "§Q1033：齐料即按原事务开始晾制");
     }
 
     /// <summary>
@@ -242,6 +257,7 @@ public class B51c2bFacilityItemUiTests : WebTestBase
         G.OpenPanel("drying");
         var cut = Ctx.RenderComponent<DryingOverlay>();
         var rail = Ctx.RenderComponent<DetailPanel>();
+        Expand(cut, 0);
         cut.Find("[data-pt=fac-item]").KeyDown(new KeyboardEventArgs { Key = "Enter" });
         rail.Render();
         Assert.That(rail.Markup, Does.Not.Contain("这件物品已不在此处"));

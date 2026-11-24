@@ -181,7 +181,8 @@ window.survivalDrag = (function () {
     var qkey = ghost.querySelector('.dg-key');
     if (qkey) qkey.hidden = !(h && h.r && h.r.ok && h.r.qty);
     st.hit = h;
-    if (!h || !h.r) {
+    // B59a（S11／S07 §Q1028／§Q1029）：静默拒绝的落点（满位、不接受该物、无操作资格）不高亮、不写禁止原因
+    if (!h || !h.r || (!h.r.ok && h.r.kind === 'quiet')) {
       ghost.classList.remove('ok', 'preview', 'no');
       label.textContent = '';
       if (overInfoColumn(x, y)) { ghost.classList.add('no'); label.textContent = '⛔ ' + NO_SELF; }
@@ -220,7 +221,7 @@ window.survivalDrag = (function () {
       cleanup();
       return;
     }
-    if (!h.r.ok) { flash(h.r.reason || '暂不支持此组合', ev.clientX, ev.clientY); cleanup(); return; }
+    if (!h.r.ok) { if (h.r.kind !== 'quiet') flash(h.r.reason || '暂不支持此组合', ev.clientX, ev.clientY); cleanup(); return; }
     var shift = ev.shiftKey;
     // B32b（Q367）：松手时记下被拖的卡作为轨迹起点（成功转移后由 survivalFx 播来源→去向）
     if (window.survivalFx && st.el) survivalFx.note(st.el);

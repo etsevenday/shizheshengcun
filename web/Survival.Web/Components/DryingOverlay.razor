@@ -10,9 +10,11 @@
    B51c2a2（S11 Q870 B／Q778／Q871 B／Q880／Q966）：撤「取消·到随身／到地面」，晾制中的位改一个「取出」（原料回本区地面，带本位计划快照戳与请求号）；
    面板操作区常驻「全部取出」（空设施置灰、悬停真实原因，可用时不加悬停，Q879 A）；停止位「待取出」，按钮「取到随身」「取到地面」（悬停「取出剩余物品。」），
    无余物的异常位只有「清空」。取出类按钮的门槛（角色主／子行动进行或暂停「行动进行中，暂不能整理物品」等）全由内核给出。
-   B51c2b（S11 §Q870 B／§Q924 B／§Q925 B／§Q926 A）：位内物品改为真实物品卡（FacilityItemCard：箭头取到随身、点卡数量取出、可拖出）；
-   取走在制原料的一部分后这一位成「余料」（「取出」放回本区地面，「查看配方」进本位补投预览）；各晾制位是材料卡的落点 dryslot:{位号}——
-   松手只选中该位并定位到用这件物品的食谱预览，仍要「投料…」「确认投料」（选中位与定位放在 GameSession.DryingPickSlot／DryingFocusRecipes）。 *@
+   B51c2b（S11 §Q870 B／§Q924 B／§Q925 B）：位内物品改为真实物品卡（FacilityItemCard：箭头取到随身、点卡数量取出、可拖出）；取走在制原料的一部分后这一位成「余料」。
+   B59a（S11／S07／S14 §Q1029；S11／S14「2026-11-24」§Q1033–Q1035）：各晾制位是材料卡的落点 dryslot:{位号}——合法拖入即投料（内核 LoadDrying，默认投本位缺口与这堆可投的较小值），
+   非法静默；撤晾制位专用「取出」「收取」「取到随身／取到地面」「清空」按钮与停止位说明，取出只走卡片（拖出、箭头、点卡数量窗）与操作区「全部取出」。
+   每个栏位点标题可展开／收起（G.DryingOpenSlots）：占用位收起时标题为「{首件物品名}等」，展开后原料逐份一张卡、不叠卡；空位沿原空槽（「查看配方」）；
+   余料位（部分取出余下或新投未齐）保留「查看配方」走 Q924 补投确认。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -21,7 +23,6 @@
     var recipes = e.DryingRecipes.ToList();
     var busy = G.Running || s.Sub != null;
     var pick = G.DryingPickSlot is int ps && views.Any(v => v.Slot == ps && v.Status is "empty" or DryingSlot.Residual) ? ps : (int?)null;
-    var focus = G.DryingFocusRecipes;
     var allWhy = here ? e.TakeAllBlocked(s, s.Ground, GameEngine.DryingStationId) : null;
     var allStamp = here ? e.TakeAllStamp(s, s.Ground, GameEngine.DryingStationId) : "";
 }
@@ -48,76 +49,61 @@
                 {
                     var k = v.Slot;
                     var lit = G.Highlights.Contains(GameEngine.DryingSlotHighlight(s.Ground, k));
-                    @* B32b（P02c、Q362）：「工位{序号}」+ 状态（空闲／晾制中／可收取／原料已腐败），下列「配方」「原料」「加工进度」；晾制中的位挂加工中，晾好时亮一次（Q368） *@
-                    <div class="sh-row dry-slot @v.Status @(pick == k ? "on" : "") @(v.Status == "drying" ? "st-busy" : "") @(lit ? "fresh" : "")" data-dry-slot="@k" data-drop="@($"dryslot:{k}")" data-drop-level="card">
-                        <div class="sh-row-head"><b>@v.Title</b><span class="dry-state @(v.Status == "spoiled" ? "warn-text" : "muted")">@CardStates.DryingStatusText(v.Status)</span></div>
-                        @if (v.RecipeName != null)
+                    var occupied = v.Status != "empty";
+                    var open = occupied && G.DryingOpenSlots.Contains(k);
+                    @* B32b（P02c、Q362）：「工位{序号}」+ 状态（空闲／晾制中／可收取／余料／待取出），晾制中的位挂加工中，晾好时亮一次（Q368）。
+                       B59a（§Q1034）：占用位点标题展开／收起，收起时标题「{首件物品名}等」；展开列出配方、逐份原料卡、进度与经验 *@
+                    <div class="sh-row dry-slot @v.Status @(pick == k ? "on" : "") @(v.Status == "drying" ? "st-busy" : "") @(lit ? "fresh" : "") @(open ? "open" : "")" data-dry-slot="@k" data-drop="@($"dryslot:{k}")" data-drop-level="card">
+                        <div class="sh-row-head dry-head" data-pt="dry-toggle" data-slot="@k" role="@(occupied ? "button" : null)" tabindex="@(occupied ? "0" : null)" aria-expanded="@(occupied ? (open ? "true" : "false") : null)"
+                             aria-label="@v.Title" @onclick="() => Toggle(k, occupied)" @onkeydown="ev => ToggleKey(ev, k, occupied)">
+                            <b class="dry-title">@(occupied && !open ? v.CollapsedTitle : v.Title)</b><span class="dry-state @(v.Status == "spoiled" ? "warn-text" : "muted")">@CardStates.DryingStatusText(v.Status)</span>
+                        </div>
+                        @if (open)
                         {
-                            <div class="tiny dry-line"><span class="muted">配方</span> @v.RecipeName</div>
-                        }
-                        @if (v.Contents.Count > 0)
-                        {
-                            @* B51c2b（Q925 B）：位内每份物品一张真实卡，状态行沿原「原料」括注（保质暂停／保质到…） *@
-                            var slotItems = e.DryingContents(s, s.Ground, k);
-                            <div class="tiny dry-line"><span class="muted">原料</span></div>
-                            <div class="fi-row" data-dry-items="@k">
-                                @for (var j = 0; j < slotItems.Count; j++)
-                                {
-                                    <FacilityItemCard Item="slotItems[j]" Status="@(j < v.Contents.Count ? NoteOf(v.Contents[j]) : null)" />
-                                }
-                            </div>
+                            @if (v.RecipeName != null)
+                            {
+                                <div class="tiny dry-line"><span class="muted">配方</span> @v.RecipeName</div>
+                            }
+                            @if (v.Contents.Count > 0)
+                            {
+                                @* B51c2b（Q925 B）：位内物品是真实物品卡，状态行沿原「原料」括注（保质暂停／保质到…）；
+                                   B59a（§Q1035）：每份独立一张卡，同种同批也不叠（只是显示逐份，不拆出新实例） *@
+                                var slotItems = e.DryingContents(s, s.Ground, k);
+                                <div class="tiny dry-line"><span class="muted">原料</span></div>
+                                <div class="fi-row" data-dry-items="@k">
+                                    @for (var j = 0; j < slotItems.Count; j++)
+                                    {
+                                        var it = slotItems[j];
+                                        var note = j < v.Contents.Count ? NoteOf(v.Contents[j]) : null;
+                                        @for (var u = 0; u < it.Count; u++)
+                                        {
+                                            <FacilityItemCard @key="@($"{it.InstanceId}:{u}")" Item="it" Unit="u" Status="@note" />
+                                        }
+                                    }
+                                </div>
+                            }
                         }
                         @if (v.Status == "drying")
                         {
-                            <div class="tiny dry-line"><span class="muted">加工进度</span> @(v.DoneMinutes)/@(v.RequiredMinutes)分钟</div>
+                            @if (open) { <div class="tiny dry-line"><span class="muted">加工进度</span> @(v.DoneMinutes)/@(v.RequiredMinutes)分钟</div> }
                             <div class="fuel-track"><i style="width:@(v.DoneMinutes * 100 / Math.Max(1, v.RequiredMinutes))%"></i></div>
                         }
-                        <div class="tiny @(v.Status == "spoiled" ? "warn-text" : "muted")">@v.Line</div>
-                        @if (v.XpText != null && v.Status != "empty")
+                        @if (!occupied || open)
                         {
-                            <div class="tiny cg-xp">@v.XpText</div>
-                        }
-                        <div class="btn-row dry-btns">
-                            @switch (v.Status)
+                            @if (!string.IsNullOrEmpty(v.Line)) { <div class="tiny @(v.Status == "spoiled" ? "warn-text" : "muted")">@v.Line</div> }
+                            @if (v.XpText != null && occupied)
                             {
-                                case "empty":
-                                    @* Q363：只在空闲位显示「查看配方」，替代原「投到这一位」：选中这一位并在下方定位可用食谱（只查看，不投料） *@
-                                    <button type="button" class="secondary" disabled="@busy" title="选这一位，在下方看可用食谱与预览" @onclick="() => ViewRecipes(k)">查看配方</button>
-                                    break;
-                                case DryingSlot.Residual:
-                                    @* B51c2b（S11 §Q924 B）：余料位——「取出」把余料放回本区地面、空出这一位；「查看配方」选这一位，下方食谱区给本位补投预览（余料先用） *@
-                                    var rstamp = v.TakeStamp;
-                                    <button type="button" class="secondary" data-pt="dry-take" data-slot="@k" disabled="@(busy || v.TakeBlocked != null)" title="@v.TakeBlocked"
-                                            @onclick="(MouseEventArgs ev) => TakeSlot(k, rstamp, ev)">@GameEngine.TakeLabel</button>
-                                    <button type="button" class="secondary" data-pt="dry-refill" data-slot="@k" disabled="@busy" title="选这一位，在下方看可用食谱与预览" @onclick="() => ViewRecipes(k)">查看配方</button>
-                                    break;
-                                case "drying":
-                                    @* B51c2a2（Q870 B）：只结束这一位，原料回本区地面；不能取时置灰、悬停真实原因 *@
-                                    var stamp = v.TakeStamp;
-                                    <button type="button" class="secondary" data-pt="dry-take" data-slot="@k" disabled="@(busy || v.TakeBlocked != null)" title="@v.TakeBlocked"
-                                            @onclick="(MouseEventArgs ev) => TakeSlot(k, stamp, ev)">@GameEngine.TakeLabel</button>
-                                    break;
-                                case "done":
-                                    @* Q346、Q364：「收取」打开居中盘「收取」，盘里「取到随身」「取到地面」各自直接提交。
-                                       B51c2a2 试玩修复（S11 Q871 B）：按内核取出门槛置灰——主／子行动进行或暂停都不能收取，悬停写真实原因；
-                                       取到地面不受容量限制，ToGroundBlocked 对已晾好的位只会是门槛原因（随身容量失败仍按 Q364 在盘内报） *@
-                                    var harvestWhy = v.ToGroundBlocked;
-                                    <button type="button" id="@($"dry-take-{k}")" class="primary" data-pt="dry-harvest" data-slot="@k" disabled="@(busy || harvestWhy != null)" title="@(harvestWhy ?? "选择去向：取到随身或当前地面（0分钟），这一位空出")" @onclick="() => Harvest(k)">收取</button>
-                                    break;
-                                default:
-                                    @* B51c2a2（Q880 映射表）：原「清理·到随身／清理·到地面」→「取到随身／取到地面」，悬停「取出剩余物品。」；无余物的异常位只有「清空」 *@
-                                    if (v.Contents.Count > 0)
-                                    {
-                                        <button type="button" class="secondary" data-pt="dry-rest-carried" data-slot="@k" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? v.CleanupHint)" @onclick="() => Take(k, true)">@GameEngine.DryingToCarriedLabel</button>
-                                        <button type="button" class="secondary" data-pt="dry-rest-ground" data-slot="@k" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? v.CleanupHint)" @onclick="() => Take(k, false)">@GameEngine.DryingToGroundLabel</button>
-                                    }
-                                    else
-                                    {
-                                        <button type="button" class="secondary" data-pt="dry-clear" data-slot="@k" disabled="@(busy || v.ToGroundBlocked != null)" title="@v.ToGroundBlocked" @onclick="() => Take(k, false)">@GameEngine.DryingClearLabel</button>
-                                    }
-                                    break;
+                                <div class="tiny cg-xp">@v.XpText</div>
                             }
-                        </div>
+                        }
+                        @if (v.Status is "empty" or DryingSlot.Residual)
+                        {
+                            <div class="btn-row dry-btns">
+                                @* Q363：空闲位「查看配方」——选中这一位并在下方定位可用食谱（只查看，不投料）；
+                                   B59a（§Q1034「也可主动用原「查看配方」走 Q924 补投确认」）：余料位同样进本位补投预览。晾制位专用取出／收取／清空按钮已撤（§Q1029） *@
+                                <button type="button" class="secondary" data-pt="@(v.Status == "empty" ? "dry-view" : "dry-refill")" data-slot="@k" disabled="@busy" title="选这一位，在下方看可用食谱与预览" @onclick="() => ViewRecipes(k)">查看配方</button>
+                            </div>
+                        }
                     </div>
                 }
             </div>
@@ -128,7 +114,7 @@
                     var o = e.DryingPreview(s, rc.Id, pick);
                     var id = rc.Id;
                     var slotText = o.Slot >= 0 ? CardStates.DryingSlotName(o.Slot) : "没有空位";
-                    <div class="sh-row dry-option @(o.Ok ? "" : "missing") @(focus != null && focus.Contains(id) ? "on" : "")" data-dry-recipe="@id">
+                    <div class="sh-row dry-option @(o.Ok ? "" : "missing")" data-dry-recipe="@id">
                         <div class="sh-row-head">
                             <span class="dry-icon">@Icons.Markup(rc.Outputs.Keys.First())</span>
                             <b>@rc.Name</b>
@@ -186,13 +172,24 @@
 
     private ElementReference recipesBox;
 
-    /// <summary>B51c2b：面板新打开时清掉旧的选位与定位（拖入定位打开的面板保留这次定位）。</summary>
+    /// <summary>面板新打开时清掉旧的选位，栏位全部收起（B59a §Q1034）。</summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
         if (G.DryingScrollPending) return;
         G.DryingPickSlot = null;
-        G.DryingFocusRecipes = null;
+        G.DryingOpenSlots.Clear();
+    }
+
+    /// <summary>B59a（§Q1034）：点占用位标题展开／收起；空位沿原空槽，不展开。</summary>
+    private void Toggle(int k, bool occupied)
+    {
+        if (occupied) G.ToggleDryingSlot(k);
+    }
+
+    private void ToggleKey(KeyboardEventArgs ev, int k, bool occupied)
+    {
+        if (ev.Key is "Enter" or " ") Toggle(k, occupied);
     }
 
     /// <summary>位内原料原写法「生肉×1（保质暂停，剩余…）」的括注部分（卡的状态行）；没有括注为 null。</summary>
@@ -206,7 +203,6 @@
     private void ViewRecipes(int k)
     {
         G.DryingPickSlot = k;
-        G.DryingFocusRecipes = null;
         _confirm = null;
         G.DryingScrollPending = true;
     }
@@ -218,9 +214,6 @@
         try { await JS.InvokeVoidAsync("survival.scrollIntoView", recipesBox); } catch (Exception) { /* 只影响定位 */ }
     }
 
-    /// <summary>Q364：成品「收取」打开居中盘（去向二选一，各自直接提交）。</summary>
-    private void Harvest(int k) => G.OpenPop("harvest", k.ToString(), $"dry-take-{k}");
-
     private void Load(string recipeId, int slot)
     {
         var key = _confirmKey;
@@ -229,18 +222,8 @@
         {
             _confirm = null;
             G.DryingPickSlot = null;
-            G.DryingFocusRecipes = null;
         }
         else if (r.Reason != GameEngine.DryingPreviewChanged) _confirm = null;   // 预览变了：留在确认处，显示新预览与“重新确认”
-    }
-
-    private void Take(int slot, bool toCarried) => G.EngineDo(() => G.E.TakeDrying(G.S, slot, toCarried, Guid.NewGuid().ToString("N")));
-
-    /// <summary>B51c2a2（Q870 B）：晾制中的这一位「取出」——带渲染时的本位计划快照戳，请求号按戳（同一计划连点只生效一次）；双击的第二下不再提交。</summary>
-    private void TakeSlot(int slot, string stamp, MouseEventArgs ev)
-    {
-        if (ev.Detail > 1) return;
-        G.EngineDo(() => G.E.TakeDryingSlot(G.S, slot, stamp, "dry-take:" + stamp));
     }
 
     /// <summary>B51c2a2（Q778）：「全部取出」带渲染时的整座计划快照戳，请求号按戳；计划变了由内核回「物品已变，请重选。」。</summary>

@@ -1109,7 +1109,7 @@ public sealed partial class GameSession
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
         if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
         var res = f();
-        Notice = res.Ok ? null : res.Reason;
+        Notice = res.Ok || string.IsNullOrEmpty(res.Reason) ? null : res.Reason;   // B59a：静默拒绝（空原因）不出提示条
         if (res.Ok)
         {
             if (closePanel && E.DialogueLocked(S)) { Panel = null; Pop = null; }
@@ -1960,7 +1960,8 @@ public sealed partial class GameSession
         if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
         var movedId = r.Kind is InstantKind.Pickup or InstantKind.Drop ? E.FindItem(S, r.InstanceId)?.ItemId : null;
         var res = E.DoInstant(S, r);
-        Notice = res.Ok ? null : res.Reason;
+        // B59a（S11 §Q1028／§Q1029）：满位、空锅条件与晾制拖入的静默拒绝原因为空，不出提示条
+        Notice = res.Ok || string.IsNullOrEmpty(res.Reason) ? null : res.Reason;
         if (res.Ok)
         {
             // B41c2（Q523）：锁定行动原工具拾取超容量时是自动中止，物品没有移动，不放交换高亮
@@ -2140,7 +2141,6 @@ public sealed partial class GameSession
         if (intent.IsPreview)
         {
             if (intent.Verb == DropVerb.PreviewRecipe) ShowRecipes(intent);
-            else if (intent.Verb == DropVerb.PreviewDrying && intent.Slot is int dk) FocusDrying(dk, intent.Recipes);   // B51c2b（Q926 A）
             else if (intent.Action != null) ShowAction(intent.Action, intent.Label.Replace("查看", ""));
             return ActionResult.Success();
         }

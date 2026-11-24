@@ -105,11 +105,12 @@ else
             {
                 var opt = o;
                 <button type="button" class="secondary small-btn" disabled="@(!opt.Ok || busy)"
-                        title="@($"{opt.Name}：{opt.InputText} → {opt.OutputText}；{opt.Note}{(opt.Ok ? $"；将取：{string.Join("、", opt.Sources)}" : $"；现在不能做：{opt.Reason}")}")"
+                        title="@($"{opt.Name}：{opt.InputText} → {opt.OutputText}；{opt.Note}{(opt.Ok ? $"；将取：{string.Join("、", opt.Sources)}" : string.IsNullOrEmpty(opt.Reason) ? "" : $"；现在不能做：{opt.Reason}")}")"
                         @onclick="() => LoadRecipe(opt.ProcessId)" @onclick:stopPropagation="true">做@(opt.Name)</button>
             }
         </div>
-        @foreach (var o in opts.Where(o => !o.Ok))
+        @* B59a（S11 §Q1028）：锅里已有食材时锅食谱照真实合法性置灰，不写原因句（原「锅里已有食材{n}/{n}（…），请先取出」） *@
+        @foreach (var o in opts.Where(o => !o.Ok && !string.IsNullOrEmpty(o.Reason)))
         {
             <div class="pc-recipe-why" title="@($"{o.Name}：{o.Reason}")">@o.Name：@o.Reason</div>
         }
