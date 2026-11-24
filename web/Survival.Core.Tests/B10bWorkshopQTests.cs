@@ -124,7 +124,8 @@ public class B10bWorkshopQTests : TestBase
         Assert.That(Burns(s), Has.Count.EqualTo(2));
         var full = E.DoInstant(s, InstantRequest.LoadCharcoal());
         Assert.That(full.Ok, Is.False);
-        Assert.That(full.Reason, Does.StartWith("火堆加工位已满"));
+        // B59a 改期望（S11 §Q1028：撤「火堆加工位已满（…），请先取出」重复原因句，由真实槽位表达；内核拒绝原因为空）：原 Does.StartWith("火堆加工位已满")
+        Assert.That(full.Reason, Is.EqualTo(""));
 
         // 拖木到火堆仍是加燃料（AddFuel），不能拖进加工位
         var w = s.Items.First(i => i.ItemId == "wood" && i.Owner == "camp");
@@ -177,7 +178,8 @@ public class B10bWorkshopQTests : TestBase
         var pot = t.Items.First(i => i.ItemId == "pot");
         Ok(t, InstantRequest.PutInFire(pot.InstanceId));
         Ok(t, InstantRequest.LoadCharcoal());
-        Assert.That(E.DoInstant(t, InstantRequest.LoadCharcoal()).Reason, Does.StartWith("火堆加工位已满"));
+        // B59a 改期望（S11 §Q1028：撤「火堆加工位已满（…），请先取出」重复原因句，由真实槽位表达；内核拒绝原因为空）：原 Does.StartWith("火堆加工位已满")
+        Assert.That(E.DoInstant(t, InstantRequest.LoadCharcoal()).Reason, Is.EqualTo(""));
         Lit(t, 60);
         Pass(t, 60);
         Assert.That(Charcoal(t), Is.EqualTo(3));
@@ -270,7 +272,8 @@ public class B10bWorkshopQTests : TestBase
         // 成品占位：两位都是成品时不能再投
         E.CreateItems(t, "wood", 8, "camp");
         Ok(t, InstantRequest.LoadCharcoal());
-        Assert.That(E.DoInstant(t, InstantRequest.LoadCharcoal()).Reason, Does.StartWith("火堆加工位已满"));
+        // B59a 改期望（S11 §Q1028：撤「火堆加工位已满（…），请先取出」重复原因句，由真实槽位表达；内核拒绝原因为空）：原 Does.StartWith("火堆加工位已满")
+        Assert.That(E.DoInstant(t, InstantRequest.LoadCharcoal()).Reason, Is.EqualTo(""));
 
         // 收取：取到随身成为随身卡，满五卡整次拒绝，成品留位
         var u = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);

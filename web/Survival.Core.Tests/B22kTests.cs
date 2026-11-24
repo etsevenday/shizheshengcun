@@ -109,7 +109,8 @@ public class B22kTests : TestBase
         Assert.That(pm.Note, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("到期即腐败"));
         Assert.That(pm.Sources[0], Is.EqualTo($"随身生肉×1（保质到{Clock.DayTime(t0 + 30)}）"), "预览仍写原截止");
         Ok(E.StartDrying(s, "dry_meat", null, null, pm.SourceKey));
-        Assert.That(s.Log.Last().Text, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("会在完成前腐败"));
+        // B59a 改断言对象（S11 §Q1029 撤常规晾制入位日志）：原断投料日志，改断位上说明
+        Assert.That(E.DryingSlotViews(s)[2].Line, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("会在完成前腐败"));
         var v = E.DryingSlotViews(s)[2];
         Assert.That(v.ShelfPaused, Is.True);
         Assert.That(v.Line, Does.Contain(GameEngine.DryingShelfPauseText).And.Not.Contain("腐败"), "B50a（Q666）：在制位说明用正式句");
@@ -237,8 +238,8 @@ public class B22kTests : TestBase
         Assert.That(Count(s, "salt"), Is.EqualTo(1), "盐不复制");
         Assert.That(Slots(s), Is.Empty, "清本批进度");
         Assert.That(CookXp(s), Is.EqualTo(x0), "取消不给经验");
-        // B51c2a2 改断言（S11 Q876 B 结果句、Q878 不接中止／成本尾句、Q882 不接保质句）：原取消日志「已取消…退回随身，没有成品，不给经验。」
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取出至{E.ZoneName(s, s.Ground)}地面：生肉×1、盐×1。"));
+        // B59a 改期望（S11 §Q1029 撤晾制取出常规播报）：原「已取出至{地点}地面：生肉×1、盐×1。」（B51c2a2）——不再写结果日志
+        Assert.That(s.Log.Last().Text, Does.Not.StartWith("已取出至"));
 
         // 再投再取消：R 仍是 30，不刷新成完整保质
         var t1 = s.GameMinute;

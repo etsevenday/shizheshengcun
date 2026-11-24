@@ -251,7 +251,8 @@ public class B22cTests : TestBase
         for (var k = 0; k < 4; k++)
         {
             Ok(E.StartDrying(s, "dry_meat", k));
-            Assert.That(s.Log.Last().Text, Does.Contain(k < 2 ? "经验+12" : k == 2 ? "经验+6" : "预计已满30"), $"肉干第{k + 1}位投料日志");
+            // B59a 改断言对象（S11 §Q1029 撤常规晾制入位日志）：原断投料日志，改断这一位的经验说明（同一 DryingXpNote）
+            Assert.That(E.DryingSlotViews(s)[k].XpText, Does.Contain(k < 2 ? "经验+12" : k == 2 ? "经验+6" : "预计已满30"), $"肉干第{k + 1}位经验说明");
         }
         var want = new[] { "经验+12", "经验+12", "经验+6", "预计已满30" };
         var slots = new[] { 7, 4, 5, 6 };
@@ -259,7 +260,8 @@ public class B22cTests : TestBase
         {
             Assert.That(E.DryingPreview(s, "dry_berries", slots[n]).XpText, Does.Contain(want[n]), $"果干第{slots[n] + 1}位预估");
             Ok(E.StartDrying(s, "dry_berries", slots[n]));
-            Assert.That(s.Log.Last().Text, Does.Contain(want[n]), $"果干第{slots[n] + 1}位投料日志");
+            // B59a 改断言对象（S11 §Q1029 撤常规晾制入位日志）：原断投料日志，改断这一位的经验说明
+            Assert.That(E.DryingSlotViews(s)[slots[n]].XpText, Does.Contain(want[n]), $"果干第{slots[n] + 1}位经验说明");
         }
         var views = E.DryingSlotViews(s);
         Assert.That(views[4].XpText, Does.Contain("经验+12"), "第5位：只有第8位比它先结算");
@@ -279,7 +281,8 @@ public class B22cTests : TestBase
         var pv = E.DryingPreview(s, "dry_berries");
         Assert.That(pv.Warnings, Is.Empty, "B50a（Q666）：果干也暂停保质，不再有会在完成前腐败红字");
         Ok(E.StartDrying(s, "dry_berries"));
-        Assert.That(s.Log.Last().Text, Does.Not.Contain("会在完成前腐败").And.Contain(GameEngine.DryingShelfPauseText), "投料日志写暂停保质");
+        // B59a 改断言对象（S11 §Q1029 撤常规晾制入位日志）：原断投料日志写暂停保质，改断位上说明
+        Assert.That(E.DryingSlotViews(s).Single(v => v.Status == DryingSlot.Drying).Line, Does.Not.Contain("会在完成前腐败").And.Contain(GameEngine.DryingShelfPauseText), "位上写暂停保质");
         Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "晾制中1", "空7" }));
     }
 

@@ -157,8 +157,8 @@ public class B43KeyHintTests : TestBase
         Assert.That(Web("Components/AnchorPop.razor"), Does.Contain("data-enter-scope tabindex=\"-1\""), "居中局部盘是确认区");
         var pops = Web("Components/ActionPops.razor");
         Assert.That(Regex.Matches(pops, "data-enter ").Count, Is.EqualTo(3), "移动、投炭、采集各一个唯一确认（B41e3 删旧「接近」盘；敌踪盘不贴 Enter，Q499）");
-        var harvest = pops.Substring(pops.IndexOf("@CardStates.HarvestToCarried") - 200, 400);
-        Assert.That(harvest, Does.Not.Contain("data-enter"), "收取随身／地面是并列分支，不贴默认 Enter");
+        // B59a：晾制「收取」盘随晾制位专用收取按钮撤下（S11 §Q1029），原「收取随身／地面不贴默认 Enter」断言删去
+        Assert.That(pops, Does.Not.Contain("@CardStates.HarvestToCarried"));
         Assert.That(pops, Does.Contain("终止本次远征…</button>").And.Not.Contain("data-enter disabled=\"@busy\" @onclick=\"G.OpenAbort\""), "打开终止确认窗不是提交");
         Assert.That(Web("Components/FeedPop.razor") + Web("Components/IgniteMenu.razor"), Does.Contain("@v.ConfirmText<EnterCap On=\"@(why == null)\" />").And.Contain("@CardStates.IgniteButton(minutes)<EnterCap"));
         Assert.That(Web("Components/DropQuantity.razor"), Does.Not.Contain("if (ev.Key == \"Enter\") Confirm();"), "回车只走一条路由，已聚焦的取消键不再同时确认");

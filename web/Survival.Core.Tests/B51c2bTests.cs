@@ -109,7 +109,8 @@ public class B51c2bTests : TestBase
         Assert.That((rest[0].ItemId, rest[0].Count, rest[0].ExpiresAt, rest[0].ShelfPausedMinutes, rest[0].ReservedBy),
             Is.EqualTo(("berry", 1, (int?)(c + 30), (int?)null, (int?)null)), "余料解锁、恢复 C＋R、留原位");
         Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(xp), "无经验");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("把野果从临时营地／晾制架工位1取出到随身。"), "沿火堆单件取出原句");
+// B59a 改期望（S11 §Q1029「同步撤下常规晾制入位、取出和全部取出重复播报」）：原「把野果从临时营地／晾制架工位1取出到随身。」（B51c2b 沿火堆单件取出原句）——晾制位取出不写日志
+        Assert.That(s.Log.Last().Text, Does.Not.StartWith("把野果"));
         Assert.That(E.DryingSlotViews(s)[0].Status, Is.EqualTo(DryingSlot.Residual));
         Assert.That(CardStates.DryingStatusText(DryingSlot.Residual), Is.EqualTo("余料"), "S11 §Q924 短状态");
     }
@@ -137,7 +138,8 @@ public class B51c2bTests : TestBase
         Ok(Take(s, card, 2, s.Ground));
         Assert.That(DrySlots(s), Is.Empty, "位已取空即空出");
         Assert.That(Sum(s, "berry", s.Ground), Is.EqualTo(2));
-        Assert.That(s.Log.Last().Text, Is.EqualTo("把野果×2从临时营地／晾制架工位1取出到临时营地地面。"));
+// B59a 改期望（S11 §Q1029「同步撤下常规晾制入位、取出和全部取出重复播报」）：原「把野果×2从临时营地／晾制架工位1取出到临时营地地面。」
+        Assert.That(s.Log.Last().Text, Does.Not.StartWith("把野果"));
     }
 
     /// <summary>
@@ -227,7 +229,8 @@ public class B51c2bTests : TestBase
         Assert.That(inSlot.Sum(i => i.Count), Is.EqualTo(2));
         Assert.That(inSlot.All(i => i.ShelfPausedMinutes == 30 && i.ExpiresAt == null), Is.True, "重新暂停保质（R＝30）");
         Assert.That(Sum(s, "berry", ItemInstance.Carried), Is.EqualTo(0));
-        Assert.That(s.Log.Last().Text, Does.Contain("投入余料野果×1、随身野果×1"));
+// B59a 改期望（S11 §Q1029「同步撤下常规晾制入位、取出和全部取出重复播报」）：原断投料日志含「投入余料野果×1、随身野果×1」——来源顺序已由预览 Sources 断言
+        Assert.That(s.Log.Last().Text, Does.Not.Contain("投入余料"));
         Assert.That(Take(s, residual, 1, s.Ground, oldStamp).Reason, Is.EqualTo(Changed), "旧批身份戳不再生效");
     }
 
@@ -403,42 +406,9 @@ public class B51c2bTests : TestBase
         Assert.That((d.Ok, d.Reason), Is.EqualTo((false, Busy)));
     }
 
-    /// <summary>
-    /// FACF-Q926-01：材料卡拖到空晾制位——只导航：选中该位、定位用这件物品的食谱（野果 → 果干），落点提示沿空位按钮「查看配方」；不搬物、不开工。
-    /// FACF-Q926-02：拖到晾制中的位拒「已满」。
-    /// </summary>
-    [Test]
-    public void Q926_DragToDryingSlot_EmptyPreview_OccupiedFull()
-    {
-        var s = Rack();
-        BerriesInSlot0(s);
-        var berry = E.CreateItems(s, "berry", 1, ItemInstance.Carried)[0];
-
-        var empty = Drop(s, berry, "dryslot:1");
-        Assert.That((empty.Ok, empty.Verb, empty.Label, empty.Slot), Is.EqualTo((true, DropVerb.PreviewDrying, "查看配方", (int?)1)));
-        Assert.That(empty.Recipes, Is.EqualTo(new[] { "dry_berries" }));
-        Assert.That(empty.IsPreview, Is.True, "预览类：壳只导航不提交");
-        Assert.That((berry.Owner, DrySlots(s).Count), Is.EqualTo((ItemInstance.Carried, 1)), "不搬物、不开工");
-
-        var occupied = Drop(s, berry, "dryslot:0");
-        Assert.That((occupied.Ok, occupied.Reason), Is.EqualTo((false, Full)));
-    }
-
-    /// <summary>Q926 A 例外（Q924 B）：同配方可补投的余料位进本位补投预览；别的材料拖到这一余料位拒「已满」。</summary>
-    [Test]
-    public void Q926_DragToResidualSlot_RefillOrFull()
-    {
-        var s = Rack();
-        var card = BerriesInSlot0(s);
-        Ok(Take(s, card, 1, s.Ground));
-        var berry = s.Items.Single(i => i.ItemId == "berry" && i.Owner == s.Ground);
-        var meat = E.CreateItems(s, "raw_meat", 1, ItemInstance.Carried)[0];
-
-        var refill = Drop(s, berry, "dryslot:0");
-        Assert.That((refill.Ok, refill.Slot), Is.EqualTo((true, (int?)0)));
-        Assert.That(refill.Recipes, Is.EqualTo(new[] { "dry_berries" }));
-        Assert.That(Drop(s, meat, "dryslot:0").Reason, Is.EqualTo(Full));
-    }
+    // B59a 删除 Q926_DragToDryingSlot_EmptyPreview_OccupiedFull、Q926_DragToResidualSlot_RefillOrFull：
+    // S11／S07／S14 §Q1029「合法普通拖入直接提交这次投入，取代 Q926 A 的“只预览、再确认投料”……非法物品、无容量或无操作资格的目标不高亮，松手不投放、不扣物、不弹提示」，
+    // 原「拖到空位只定位食谱」「占用位拒已满」「余料位进补投预览」三条前提作废；新规则见 B59aTests（Q1033_01_*、Q1029_01_IllegalTargets_Silent_IdleEmptyOk、Q1034_02_ResidualAfterTake_DragRefill）。
 
     // ───────────── 变异测试补测（基线 2612268d..8dd031e0，见开发记录 B51c2b.8） ─────────────
 
@@ -475,12 +445,15 @@ public class B51c2bTests : TestBase
         return made[0];
     }
 
-    /// <summary>IsPreview（DropIntent 原定义）：采集工具、配方、晾制位三种预览都只打开面板，不提交。</summary>
+    /// <summary>
+    /// IsPreview（DropIntent 原定义）：采集工具、配方两种预览只打开面板，不提交。
+    /// B59a 改期望（S11 §Q1029 取代 Q926 A）：原第三种「晾制位预览」PreviewDrying 撤下，拖到晾制位改为即时投料 LoadDrying（不是预览）。
+    /// </summary>
     [Test]
     public void MT_IsPreview_AllThreeKinds()
     {
-        Assert.That(new[] { DropVerb.PreviewGatherTool, DropVerb.PreviewRecipe, DropVerb.PreviewDrying, DropVerb.TakeOut }
-            .Select(v => new DropIntent { Verb = v }.IsPreview), Is.EqualTo(new[] { true, true, true, false }));
+        Assert.That(new[] { DropVerb.PreviewGatherTool, DropVerb.PreviewRecipe, DropVerb.LoadDrying, DropVerb.TakeOut }
+            .Select(v => new DropIntent { Verb = v }.IsPreview), Is.EqualTo(new[] { true, true, false, false }));
     }
 
     /// <summary>Q924 B「余料先用，再从来源补足所缺」：余料野果×1、随身野果×3，补投按原来源顺序（截止先到先用，Q606）只补 1 份：取地面那份先到期的野果，随身 3 份不动。</summary>
@@ -588,14 +561,17 @@ public class B51c2bTests : TestBase
         Assert.That(E.DryingSlotTakeBlocked(s, 0), Is.EqualTo("没有可取出的物品。"));
     }
 
-    /// <summary>晾制架摘要：余料位单独计数（暂用「余料{n}」，开发记录 B51c2b.5），接原「空{n}」。</summary>
+    /// <summary>
+    /// 晾制架摘要：余料位占一位、计入「空{n}」的扣减。
+    /// B59a 改期望（S11「2026-11-24」§Q1034「不另列余料位数或缺料提示」、S14 Q1034-02「没有……余料位数摘要」）：原「余料1 · 空7」（B51c2b 暂用余料计数）。
+    /// </summary>
     [Test]
     public void MT_DryingSummary_ResidualCount()
     {
         var s = Rack();
         var card = BerriesInSlot0(s);
         Ok(Take(s, card, 1, s.Ground));
-        Assert.That(E.DryingSummary(s), Is.EqualTo("余料1 · 空7"));
+        Assert.That(E.DryingSummary(s), Is.EqualTo("空7"));
     }
 
     /// <summary>Q925 B：陶窑余料条目被补投换成新批后，余料卡打开时的旧身份戳不再生效，拒「物品已变，请重选。」。</summary>
@@ -730,27 +706,31 @@ public class B51c2bTests : TestBase
         Assert.That(KilnBatches(s), Is.Empty, "取空即删掉这条");
     }
 
-    /// <summary>Q926 A 落点：晾制位号只认 0—7；位号非法、当前区没有晾制架、火堆上的食物、已到期的材料都拒。</summary>
+    /// <summary>
+    /// 晾制位落点：位号只认 0—7；位号非法、当前区没有晾制架、火堆上的食物、已到期的材料都不接收。
+    /// B59a 改期望（S11 §Q1029「非法物品、无容量或无操作资格的目标不高亮，松手不投放、不扣物、不弹提示」）：原各给拒绝句（「暂不支持此组合」「这批材料不可用」
+    /// 「临时营地没有晾制架（只能操作当前区的晾制架）」）——现在一律静默（Silent、原因为空）。
+    /// </summary>
     [Test]
     public void MT_DropOnDryingSlot_Guards()
     {
         var s = Rack();
         var berry = MakeIn(s, "berry", 1, ItemInstance.Carried, s.GameMinute + 600);
-        Assert.That(new[] { "dryslot:8", "dryslot:-1", "dryslot:x" }.Select(t => Drop(s, berry, t).Reason),
-            Is.EqualTo(new[] { GameEngine.Unsupported, GameEngine.Unsupported, GameEngine.Unsupported }));
+        Assert.That(new[] { "dryslot:8", "dryslot:-1", "dryslot:x" }.Select(t => Drop(s, berry, t)).Select(d => (d.Ok, d.Silent, d.Reason)),
+            Is.All.EqualTo((false, true, "")));
         Assert.That(Drop(s, berry, "dryslot:7").Ok, Is.True, "对照：第 8 位");
 
         var old = MakeIn(s, "berry", 1, s.Ground, s.GameMinute);   // 已到期未转换
-        Assert.That(Drop(s, old, "dryslot:1").Reason, Is.EqualTo("这批材料不可用"));
+        Assert.That((Drop(s, old, "dryslot:1").Silent, Drop(s, old, "dryslot:1").Reason), Is.EqualTo((true, "")));
 
         var meat = MakeIn(s, "raw_meat", 1, s.Ground);
         Ok(E.DoInstant(s, InstantRequest.PutInFireSlot(meat.InstanceId, 0)));
         var onFire = s.Items.Single(i => i.ItemId == "raw_meat" && i.InFacility);
-        Assert.That(Drop(s, onFire, "dryslot:1").Reason, Is.EqualTo(GameEngine.Unsupported));
+        Assert.That((Drop(s, onFire, "dryslot:1").Silent, Drop(s, onFire, "dryslot:1").Reason), Is.EqualTo((true, "")));
 
         var w = Workshop();
         var b2 = MakeIn(w, "berry", 1, ItemInstance.Carried, w.GameMinute + 600);
-        Assert.That(Drop(w, b2, "dryslot:0").Reason, Is.EqualTo("临时营地没有晾制架（只能操作当前区的晾制架）"));
+        Assert.That((Drop(w, b2, "dryslot:0").Silent, Drop(w, b2, "dryslot:0").Reason), Is.EqualTo((true, "")));
     }
 
     /// <summary>
@@ -789,7 +769,8 @@ public class B51c2bTests : TestBase
         Assert.That(texts, Does.Contain("野果×1已腐败，变为腐败物×1。"), "余料位");
         Assert.That(texts, Does.Contain("果干×1已腐败，变为腐败物×1。"), "已晾好位");
         Assert.That(texts, Does.Not.Contain("生肉×1已腐败，变为腐败物×1。"), "晾制中在办原料（由停止句接分句）、停止待取出位里的原料都不写普通句");
-        Assert.That(texts, Does.Contain("临时营地晾制架工位3：生肉已腐败，晾制肉干停止，没有成品、不给经验；原料留在这一位，回到当地取出。腐败部分已变为腐败物。"), "对照：在办原料由停止句说明");
+        // B59a 改期望（S11 §Q1029 撤自动停止日志「回到当地取出」尾句）：原「…不给经验；原料留在这一位，回到当地取出。腐败部分已变为腐败物。」
+        Assert.That(texts, Does.Contain("临时营地晾制架工位3：生肉已腐败，晾制肉干停止，没有成品、不给经验。腐败部分已变为腐败物。"), "对照：在办原料由停止句说明");
     }
 
     /// <summary>

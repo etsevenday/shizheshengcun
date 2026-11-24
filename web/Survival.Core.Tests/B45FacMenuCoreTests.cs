@@ -110,7 +110,9 @@ public class B45FacMenuCoreTests : TestBase
 
         var again = E.ResolveDrop(s, DropSource.Parse("card:carried|raw_root")!, t);
         Assert.That(again.Ok, Is.False);
-        Assert.That(again.Reason, Is.EqualTo("加工位2已被占用，请重新选择。"));
+        // B59a 改期望（S11 §Q1028「拖到满位……不高亮、不转移、不追加提示」）：原拖放原因「加工位2已被占用，请重新选择。」——拖放静默；按钮入口仍原句
+        Assert.That((again.Silent, again.Reason), Is.EqualTo((true, "")));
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFireSlot(First(s, "raw_root", ItemInstance.Carried).InstanceId, 1)).Reason, Is.EqualTo("加工位2已被占用，请重新选择。"));
     }
 
     /// <summary>Q557-A04：新工位分配随存档保存，读档后仍在原指定工位。</summary>

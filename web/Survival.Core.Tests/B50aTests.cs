@@ -359,8 +359,8 @@ public class B50aTests : TestBase
         Assert.That(s.Items.Where(i => i.ItemId == "berry").Select(i => (i.Owner, i.ExpiresAt, i.ShelfPausedMinutes)),
             Is.All.EqualTo((s.Ground, (int?)(c1 + 30), (int?)null)), "新截止＝C＋R，仍剩 30");
         Assert.That(Xp(s), Is.EqualTo(x0), "取消不给经验");
-        // B51c2a2 改期望（S11 Q876 B 结果句；Q878 删中止／成本尾句）：原断取消日志含「没有成品，不给经验」
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取出至{E.ZoneName(s, s.Ground)}地面：野果×2。"));
+        // B59a 改期望（S11 §Q1029 撤晾制取出常规播报）：原「已取出至{地点}地面：野果×2。」（B51c2a2）——不再写结果日志
+        Assert.That(s.Log.Last().Text, Does.Not.StartWith("已取出至"));
 
         AdvanceTo(s, c1 + 10);
         Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
@@ -512,8 +512,9 @@ public class B50aTests : TestBase
         var n0 = s.Log.Count;
         AdvanceTo(s, t0 + 5);
         var b0 = DrySlots(s).Single(b => b.Slot == 0);
-        var b1 = DrySlots(s).Single(b => b.Slot == 1);
-        Assert.That((b0.Status, b0.StopReason, b1.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopMissing, DryingSlot.StopMissing)));
+        Assert.That((b0.Status, b0.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopMissing)));
+        // B59a 改期望（S11 §Q1029「空的异常停止位自动恢复成普通空位，无须玩家操作」）：原断工位2 缺料停止位仍在（待「清空」）——原料全丢的这一位停止后即恢复空位
+        Assert.That(DrySlots(s).Any(b => b.Slot == 1), Is.False);
         Assert.That(s.Log.Skip(n0).Select(l => l.Text), Has.None.Contains(GameEngine.SpoiledWorkClause).And.None.Contains("已腐败"), "缺料不写腐败");
         var b2 = DrySlots(s).Single(b => b.Slot == 2);
         b2.Status = DryingSlot.Spoiled;
@@ -523,43 +524,46 @@ public class B50aTests : TestBase
         Assert.That(v0.StopKind, Is.EqualTo(DryingSlot.StopMissing));
         // B51c2a2 改期望（S11／逐字稿 §Q880 映射表：「有余物的原清理说明／悬停 → 取出剩余物品。」「原“请清理剩余物品”拒绝提示 → 请取出剩余物品。」
         // 「设施满位 → 已满」；清理只用于地图）：原说明尾「清理可取回剩余物品。」、悬停「取出剩余物品，清空该位。」、取消拒绝「原料不全：请清理剩余物品。」、占位「原料不全，待清理」
-        Assert.That(v0.Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；取出剩余物品。"));
+        // B59a 改期望（S11 §Q1029 撤停止位「无成品／取出剩余物品」等说明与悬停）：原 Line「{配方}已因缺料停止，无成品；取出剩余物品。」、CleanupHint「取出剩余物品。」
+        Assert.That(v0.Line, Is.EqualTo(""));
         Assert.That(v0.XpText, Is.EqualTo("原料不全，无成品和经验。"));
-        Assert.That(v0.CleanupHint, Is.EqualTo("取出剩余物品。"));
+        Assert.That(v0.CleanupHint, Is.Null);
         Assert.That(E.DryingSlotTakeBlocked(s, 0), Is.EqualTo("请取出剩余物品。"));
         Assert.That(E.StartDrying(s, "dry_berries", 0).Reason, Is.EqualTo("已满"));
         var v2 = E.DryingSlotViews(s)[2];
-        Assert.That((v2.Line, v2.XpText, v2.CleanupHint), Is.EqualTo(($"{E.Recipe("dry_berries").Name}已停止，无成品；取出剩余物品。", "本批已停止，无成品和经验。", "取出剩余物品。")));
+        // B59a 改期望（S11 §Q1029）：原 Line「{配方}已停止，无成品；取出剩余物品。」、CleanupHint「取出剩余物品。」
+        Assert.That((v2.Line, v2.XpText, v2.CleanupHint), Is.EqualTo(("", "本批已停止，无成品和经验。", (string?)null)));
         Assert.That(E.DryingSlotTakeBlocked(s, 2), Is.EqualTo("请取出剩余物品。"));
         Assert.That(E.StartDrying(s, "dry_berries", 2).Reason, Is.EqualTo("已满"));
 
         // 真腐败另计：工位4 放一批旧档未受保护的到期果干
         Make(s, "berry", 2, ItemInstance.Carried, t0 + 600);
-        Assert.That(E.StartDrying(s, "dry_berries").Ok, Is.True);
+        // B59a 改调用（S11 §Q1029：工位2 已自动恢复空位，「第一个空位」不再是工位4）：原 StartDrying(s, "dry_berries") 不指定位
+        Assert.That(E.StartDrying(s, "dry_berries", 3).Ok, Is.True);
         var b3 = DrySlots(s).Single(b => b.Slot == 3);
         b3.ShelfPaused = false;
         foreach (var i in s.Items.Where(i => i.Owner == ItemInstance.DryingOwner(place, 3))) { i.ShelfPausedMinutes = null; i.ExpiresAt = s.GameMinute + 5; }
         AdvanceTo(s, s.GameMinute + 10);
         Assert.That((b3.Status, b3.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopSpoiled)));
-        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "缺料2", "停止1", "腐败1", "空4" }), "按原因分开计工位数");
-        // B51c2a2 改期望（Q880：有余物的停止位悬停一律「取出剩余物品。」）：原断真腐败位为 null（沿旧清理悬停）
-        Assert.That(E.DryingSlotViews(s)[3].CleanupHint, Is.EqualTo("取出剩余物品。"));
+        // B59a 改期望（S11 §Q1029 空异常位自动恢复空位）：原「缺料2…空4」——工位2 已恢复空位
+        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "缺料1", "停止1", "腐败1", "空5" }), "按原因分开计工位数");
+        // B59a 改期望（S11 §Q1029 撤停止位悬停）：原「取出剩余物品。」
+        Assert.That(E.DryingSlotViews(s)[3].CleanupHint, Is.Null);
 
         // 缺料后剩料再腐败：原因仍是缺料
         var salt = s.Items.Single(i => i.Owner == ItemInstance.DryingOwner(place, 0));
         Assert.That(salt.ItemId, Is.EqualTo("salt"));
         Assert.That(b0.StopReason, Is.EqualTo(DryingSlot.StopMissing));
 
-        // 取出：剩盐只返一次、不补生肉；无余物的异常位「清空」只写「已清空。」
-        // B51c2a2 改期望（S11 Q880：余物取出统一原实际移物结果句、不以「清理{地点}…」开头；异常空位复位成功「已清空。」）
+        // 取出：剩盐只返一次、不补生肉
+        // B59a 改期望（S11 §Q1029 撤余物取出重复日志与「清空」成功日志；空异常位已自动恢复）：原断「从…工位1取出盐×1到…，这一位空出。」「已清空。」「从…工位3取出野果×2…」
         Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"从{E.ZoneName(s, place)}晾制架工位1取出盐×1到{E.ZoneName(s, place)}地面，这一位空出。"));
+        Assert.That(Count(s, "salt", place), Is.EqualTo(1), "剩盐回地面");
         Assert.That(E.TakeDrying(s, 0, false).Reason, Does.Contain("是空的"), "只返一次");
         Assert.That(s.Items.Count(i => i.ItemId == "raw_meat"), Is.EqualTo(0), "缺失不补");
-        Assert.That(E.TakeDrying(s, 1, false).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已清空。"), "不造虚拟物品");
+        Assert.That(E.TakeDrying(s, 1, false).Reason, Does.Contain("是空的"), "空异常位已自动恢复，不造虚拟物品");
         Assert.That(E.TakeDrying(s, 2, false).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"从{E.ZoneName(s, place)}晾制架工位3取出野果×2到{E.ZoneName(s, place)}地面，这一位空出。"));
+        Assert.That(s.Log.Select(l => l.Text), Has.None.Contains("这一位空出").And.None.EqualTo("已清空。"));
         Assert.That(s.Items.Where(i => i.ItemId == "berry" && i.Owner == s.Ground).Select(i => i.ExpiresAt), Is.All.Not.Null, "受保护的剩料释放时按 C＋R 恢复截止");
         Assert.That(Xp(s), Is.EqualTo(x0), "停止不给经验");
     }

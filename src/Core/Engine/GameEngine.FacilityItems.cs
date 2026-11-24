@@ -62,9 +62,37 @@ namespace Survival.Core.Engine
             return c;
         }
 
-        /// <summary>取到 zone 最多几份：随身按真实 C＋R 后的合堆、五卡与 30 公斤；当前地面不限（这张卡的全部份数）。</summary>
-        public int FacilityItemMax(GameState s, ItemInstance i, string zone) =>
-            zone == ItemInstance.Carried ? MaxPickupBatch(s, ResumedCopy(s, i), i.Count) : i.Count;
+        /// <summary>
+        /// 这张设施物品卡一次可取的实物（取出顺序）：晾制位按 B59a（S11「2026-11-24」§Q1035 A＋手写「数量可选本位该物品当前合法份数……按真实本位、同物品、合法批次及明确选中实物绑定，
+        /// 不从别位或别的原料凑数」）——先这张卡的实例，再本位同物品的其他实例（展开顺序）；陶窑／净水台批内卡只这一实例（B51c2b 原样）。
+        /// </summary>
+        public List<ItemInstance> FacilityItemTakeSet(GameState s, ItemInstance i)
+        {
+            var list = new List<ItemInstance> { i };
+            if (ItemInstance.TryDrying(i.Owner, out var place, out var slot))
+                list.AddRange(DryingContents(s, place, slot).Where(x => x.InstanceId != i.InstanceId && x.ItemId == i.ItemId));
+            return list;
+        }
+
+        /// <summary>
+        /// 取到 zone 最多几份：随身按真实 C＋R 后的合堆、五卡与 30 公斤；当前地面不限。份数上限为 <see cref="FacilityItemTakeSet"/> 的合计
+        /// （晾制位＝本位这种物品的全部份数，B59a §Q1035；陶窑／净水台＝这张卡的份数）。
+        /// </summary>
+        public int FacilityItemMax(GameState s, ItemInstance i, string zone)
+        {
+            var set = FacilityItemTakeSet(s, i);
+            var total = set.Sum(x => x.Count);
+            if (zone != ItemInstance.Carried) return total;
+            if (set.Count == 1) return MaxPickupBatch(s, ResumedCopy(s, i), i.Count);
+            for (var n = total; n >= 1; n--)
+            {
+                var plan = PlanGroup(set.Select(x => ResumedCopy(s, x)), n);
+                if (!RootCardsAllowOf(s, GameState.PlayerId, RootCardsAfterPlan(s, GameState.PlayerId, plan))) continue;
+                if (CarriedGrams(s) + plan.Sum(p => ItemGrams(s, p.inst) * p.n / System.Math.Max(1, p.inst.Count)) > Config.Carry.HardGrams) continue;
+                return n;
+            }
+            return 0;
+        }
 
         /// <summary>
         /// 把这张设施物品卡的 count 份取到 zone（随身或当前地面）现在不能做的原因：门槛 → 去向 → 份数 → 在制原料已腐败（旧档未受保护）→ 随身容量
@@ -75,10 +103,16 @@ namespace Survival.Core.Engine
             if (FacilityItemGate(s, i) is string gate) return gate;
             if (zone != ItemInstance.Carried && zone != s.Ground) return "只能取到随身或当前地面";
             if (count < 1) return "数量无效";
-            if (count > i.Count) return TakeChangedText;
+            var set = FacilityItemTakeSet(s, i);
+            if (count > set.Sum(x => x.Count)) return TakeChangedText;
             if (ItemInstance.TryDrying(i.Owner, out var place, out var slot) && DryingSlotAt(s, place, slot) is { Status: DryingSlot.Drying } && IsSpoiled(s, i))
                 return DryingSpoiledInputText;
-            return zone == ItemInstance.Carried ? PickupBlockedText(s, ResumedCopy(s, i), count) : null;
+            if (zone != ItemInstance.Carried) return null;
+            if (set.Count == 1) return PickupBlockedText(s, ResumedCopy(s, i), count);
+            // B59a（§Q1035）：本位同物品跨实例取到随身——按整次真实合堆、五卡与 30 公斤预演；超出时沿原拾取拒绝句并写最多可取几份
+            var max = FacilityItemMax(s, i, zone);
+            if (count <= max) return null;
+            return max <= 0 ? RootCardsFullText(s) : $"{RootCardsFullText(s)}；最多可取{max}份";
         }
 
         /// <summary>
@@ -98,16 +132,22 @@ namespace Survival.Core.Engine
             var from = WherePath(s, i);
             var owner = i.Owner;
             var name = count <= 1 ? ItemName(i.ItemId) : $"{ItemName(i.ItemId)}×{count}";
-            var moved = count < i.Count ? SplitOff(s, i, count) : i;
-            ResumeShelf(s, moved);
-            moved.Owner = zone;
-            moved.PlacedOrder = null;
-            moved.ReservedBy = null;
+            // B59a（§Q1035）：晾制位先取这张卡、不够再取本位同物品的其他实例（不从别位或别的原料凑数）；陶窑／净水台只这一实例
+            foreach (var (src, n) in PlanGroup(FacilityItemTakeSet(s, i), count))
+            {
+                var moved = n < src.Count ? SplitOff(s, src, n) : src;
+                ResumeShelf(s, moved);
+                moved.Owner = zone;
+                moved.PlacedOrder = null;
+                moved.ReservedBy = null;
+            }
             Normalize(s, zone);
-            if (ItemInstance.TryDrying(owner, out var dplace, out var slot)) SettleDryingAfterTake(s, dplace, slot);
+            var drying = ItemInstance.TryDrying(owner, out var dplace, out var slot);
+            if (drying) SettleDryingAfterTake(s, dplace, slot);
             else if (ItemInstance.TryStation(owner, out var splace, out var batchId)) SettleStationAfterTake(s, splace, batchId);
             var to = zone == ItemInstance.Carried ? "随身" : $"{LocName(zone)}地面";
-            Emit(s, GameEventKind.Info, $"把{name}从{from}取出到{to}。");
+            // B59a（S11 §Q1029「同步撤下常规晾制……取出……重复播报，直接看卡片、槽位和真实进度」）：晾制位物品取出不写日志；陶窑／净水台沿原句
+            if (!drying) Emit(s, GameEventKind.Info, $"把{name}从{from}取出到{to}。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -174,28 +214,6 @@ namespace Survival.Core.Engine
             var toCarried = zone == ItemInstance.Carried;
             return Instant(DropVerb.TakeOut, $"{(toCarried ? "拾取" : "取出")}1份{InstanceName(head)}到{(toCarried ? "随身" : "地面")}",
                 InstantRequest.FacilityTake(head.InstanceId, 1, zone, FacilityItemStamp(s, head)), FacilityItemMax(s, head, zone));
-        }
-
-        /// <summary>
-        /// 材料卡拖到晾制位（S11／S07 §Q926 A）：只做导航——选中这一位并定位到用这件物品的原合法食谱预览，仍要原「投料…」「确认投料」才迁入开工；
-        /// 不预留、不搬物、不推进时间。空位列出用这件物品的晾制食谱（多条时都列，不代选）；正常占用位（在制、成品、停止、不能补投的余料位）拒「已满」；
-        /// 同配方可补投的余料位（Q924 B）进该位的补投预览。落点提示沿空位原按钮「查看配方」（Q363）。
-        /// </summary>
-        private DropIntent DropOnDryingSlot(GameState s, DropSource src, ItemInstance head, string id)
-        {
-            if (!int.TryParse(id, out var k) || k < 0 || k >= DryingSlotCount) return DropIntent.No(Unsupported);
-            if (!DryingRackHere(s)) return DropIntent.No($"{ZoneName(s, s.Ground)}没有晾制架（只能操作当前区的晾制架）");
-            if (src.Kind != DropSourceKind.Card || head.InFacility || head.InContainer) return DropIntent.No(Unsupported);
-            var recipes = DryingRecipes.Where(r => r.Inputs.ContainsKey(head.ItemId)).ToList();
-            if (recipes.Count == 0) return DropIntent.No(Unsupported);
-            if (head.ReservedBy != null || IsSpoiled(s, head) || IsSpoiledMatter(head)) return DropIntent.No("这批材料不可用");
-            if (DryingSlotAt(s, s.Ground, k) is DryingSlot b)
-            {
-                var refill = recipes.FirstOrDefault(r => DryingRefillable(s, s.Ground, b, r));
-                if (refill == null) return DropIntent.No(DryingFullText);
-                recipes = new List<RecipeConfig> { refill };
-            }
-            return new DropIntent { Ok = true, Verb = DropVerb.PreviewDrying, Label = "查看配方", Recipes = recipes.Select(r => r.Id).ToList(), Slot = k };
         }
     }
 }

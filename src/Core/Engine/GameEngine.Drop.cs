@@ -79,7 +79,7 @@ namespace Survival.Core.Engine
                 case "potfill": return new DropTarget { Kind = DropTargetKind.PotFill, Id = rest };
                 case "potfood": return new DropTarget { Kind = DropTargetKind.PotFood, Id = rest };
                 case "res": return new DropTarget { Kind = DropTargetKind.Resource, Id = rest };
-                // B51c2b（S11 §Q926 A）：晾制架面板的晾制位（位号 0 起）
+                // B51c2b：晾制架面板的晾制位（位号 0 起）；B59a（§Q1029）起合法拖入即投料
                 case "dryslot": return new DropTarget { Kind = DropTargetKind.DryingSlot, Id = rest };
                 case "loc": return new DropTarget { Kind = DropTargetKind.Location, Id = rest };
                 case "slot":
@@ -97,7 +97,7 @@ namespace Survival.Core.Engine
     /// 拖拽动词。Ignite 是 v0.7 第 4.1 节的点火专用修订：打火器松手即开始点火（不再打开需要再按“开始”的预览），
     /// 其余耗时交互（指定工具采集、配方）仍是预览类。
     /// </summary>
-    public enum DropVerb { None, Reorder, Transfer, AddFuel, Ignite, FillPot, Decant, PutInFire, PutFood, TakeOut, PreviewGatherTool, PreviewRecipe, MoveToPot, PreviewDrying }
+    public enum DropVerb { None, Reorder, Transfer, AddFuel, Ignite, FillPot, Decant, PutInFire, PutFood, TakeOut, PreviewGatherTool, PreviewRecipe, MoveToPot, LoadDrying }
 
     /// <summary>落点解析结果：即时类带 Instant（壳直接提交），开始类带 Action（壳松手即开始），预览类带 Action 或候选配方（壳打开面板预选）。</summary>
     public sealed class DropIntent
@@ -120,16 +120,26 @@ namespace Survival.Core.Engine
         public bool FallThrough { get; set; }
         /// <summary>B41c2（Q523）：锁定主行动暂停中把本行动锁住的同一原工具拾取到随身——唯一放过忙碌表的拾取。</summary>
         public bool LockedToolPickup { get; set; }
-        /// <summary>B51c2b（S11 §Q926 A）：拖到晾制位的预览——要选中的晾制位（0 起）；其他落点为 null。</summary>
-        public int? Slot { get; set; }
+        /// <summary>
+        /// B59a（S11／S07／S14 §Q1028、§Q1029）：静默拒绝——满位、不接受该物的槽、不满足空锅条件或无操作资格的目标不高亮、松手不转移、不弹提示（Reason 为空）。
+        /// </summary>
+        public bool Silent { get; set; }
+        /// <summary>B59a（S11 2026-11-24 §Q1033 A）：普通松手（不按 Shift）提交的份数；0 为原默认 1 份。</summary>
+        public int DefaultQuantity { get; set; }
 
-        /// <summary>预览类：只打开面板预选，不提交（B51c2b 起含拖到晾制位的食谱预览 PreviewDrying）。</summary>
-        public bool IsPreview => Verb == DropVerb.PreviewGatherTool || Verb == DropVerb.PreviewRecipe || Verb == DropVerb.PreviewDrying;
+        /// <summary>预览类：只打开面板预选，不提交。B59a（S11 §Q1029 取代 Q926 A）：拖到晾制位不再是预览（原 PreviewDrying 撤下），改为即时投料 LoadDrying。</summary>
+        public bool IsPreview => Verb == DropVerb.PreviewGatherTool || Verb == DropVerb.PreviewRecipe;
 
         /// <summary>松手即开始的耗时行动（点火）：Action 已通过开始校验，壳用起拖时的 requestId 提交。</summary>
         public bool StartsAction => Verb == DropVerb.Ignite;
 
         public static DropIntent No(string reason, bool fallThrough = false) => new DropIntent { Ok = false, Reason = reason, FallThrough = fallThrough };
+
+        /// <summary>B59a（§Q1028／§Q1029）：静默拒绝（不高亮、不转移、不提示）。</summary>
+        public static DropIntent Quiet() => new DropIntent { Ok = false, Silent = true, Reason = "" };
+
+        /// <summary>B59a：拒绝原因为空串（<see cref="GameEngine.SlotQuietReason"/>）或调用方判定为静默时给静默拒绝，否则原拒绝。</summary>
+        public static DropIntent NoOrQuiet(string reason, bool quiet = false) => quiet || reason.Length == 0 ? Quiet() : No(reason);
     }
 
     /// <summary>“什么能拖到什么”的白名单放在内核，网页壳与将来的 UGUI 共用（开发计划 v0.2 第 4.6 节）。</summary>
@@ -171,7 +181,17 @@ namespace Survival.Core.Engine
             s.Items.Where(i => i.Owner == head.Owner && i.ItemId == head.ItemId && i.ExpiresAt == head.ExpiresAt && i.ReservedBy == null && i.RewardOrigin == head.RewardOrigin && CardSideOf(i) == CardSideOf(head))
                 .Sum(i => i.Count);
 
+        /// <summary>
+        /// 解析一次拖放。B59a（S11／S07／S14 §Q1029「非法物品、无容量或无操作资格的目标不高亮，松手不投放、不扣物、不弹提示」）：
+        /// 落在晾制位上的任何拒绝（含死亡、战斗、忙碌等前置门槛）一律静默。
+        /// </summary>
         public DropIntent ResolveDrop(GameState s, DropSource src, DropTarget dst)
+        {
+            var intent = ResolveDropCore(s, src, dst);
+            return dst.Kind == DropTargetKind.DryingSlot && !intent.Ok ? DropIntent.Quiet() : intent;
+        }
+
+        private DropIntent ResolveDropCore(GameState s, DropSource src, DropTarget dst)
         {
             if (s.Progress.Dead) return DropIntent.No("角色已死亡");
             if (s.Battle != null) return DropIntent.No("战斗中不能整理或投放物品");
@@ -364,8 +384,9 @@ namespace Survival.Core.Engine
                 // 不论两个加工位空闲、加工中或待取，落点预览、成功日志与容量拒绝都只说燃料；煅烧从中央加工菜单空加工位的「煅烧木炭」进入（B45 Q546）
                 return DropOnFuel(s, head, loc);
             // B45（Q557）：明确加工位（中央加工菜单的工位落点）只看这一位、最多 1 份，真实落在该位；整卡落点仍原规则
-            var max = MaxPutInFire(s, head, out var why, slot);
-            if (why != null) return DropIntent.No(why);
+            // B59a（§Q1028）：满位、明确位被占、已有锅、不接受该物（液体、木材、不可加工物、腐败物）静默；忙碌、异地、预留等原拒绝句保持
+            var max = MaxPutInFireCore(s, head, out var why, slot, out var quiet);
+            if (why != null) return DropIntent.NoOrQuiet(why, quiet);
             var name = ItemName(head.ItemId);
             var req = slot is int k ? InstantRequest.PutInFireSlot(head.InstanceId, k) : InstantRequest.PutInFire(head.InstanceId);
             if (IsPot(head))
@@ -394,9 +415,8 @@ namespace Survival.Core.Engine
         {
             if (pot == null || !IsPot(pot)) return DropIntent.No(Unsupported);
             if (head.InstanceId == pot.InstanceId) return DropIntent.No(Unsupported, fallThrough: true);
-            if (IsLiquid(head)) return src.Kind == DropSourceKind.PotChild
-                ? DropIntent.No("暂不支持锅与锅之间倒水")
-                : DropIntent.No($"{ItemName(head.ItemId)}请拖到锅的水量条上装入");
+            // B59a（§Q1028「不接受该物的槽」）：液体拖到食材区静默
+            if (IsLiquid(head)) return DropIntent.Quiet();
             if (head.Owner == ItemInstance.ContainerOwner(pot.InstanceId)) return DropIntent.No(Unsupported, fallThrough: true);
             return DropFoodOnPot(s, head, pot);
         }
@@ -429,12 +449,13 @@ namespace Survival.Core.Engine
             if (head.InFacility && pot.InFacility && MoveToPotRequest(s, head, pot) is InstantRequest mv)
             {
                 var block = MoveToPotBlocked(s, mv);
-                if (block != null) return DropIntent.No(block);
+                if (block != null) return DropIntent.NoOrQuiet(block);
                 return Instant(DropVerb.MoveToPot, MoveToPotLabel(mv.TargetSlot!.Value + 1), mv);   // BM7a（Q644）：落点只写同一短动作与真实目标
             }
             var group = Groupable(head);
-            var max = MaxPutFood(s, head, pot, out var why, group ? GroupCount(s, head) : (int?)null);
-            if (why != null) return DropIntent.No(why);
+            // B59a（§Q1028）：锅的食材槽已满、不接受该物（锅、腐败物、不能放进锅的物品）静默；忙碌、异地、预留、负重等原拒绝句保持
+            var max = MaxPutFoodCore(s, head, pot, out var why, group ? GroupCount(s, head) : (int?)null, out var quiet);
+            if (why != null) return DropIntent.NoOrQuiet(why, quiet);
             var req = InstantRequest.PutFoodInPot(head.InstanceId, pot.InstanceId);
             if (group) AsGroup(req, head);   // BM5b2（Q606）：同组自动配批
             return Instant(DropVerb.PutFood, $"放进{ItemName(pot.ItemId)}食材区（{PotFoodHint(s, pot)}）", req, max);

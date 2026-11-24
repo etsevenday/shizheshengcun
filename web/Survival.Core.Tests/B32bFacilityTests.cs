@@ -88,7 +88,8 @@ public class B32bFacilityTests : TestBase
         Run(s);
         E.CreateItems(s, "berry", 4, s.Ground);
         Ok(E.StartDrying(s, "dry_berries", 0));
-        Assert.That(s.Log.Last().Text, Does.Contain("晾制架工位1开始"));
+        // B59a 改期望（S11 §Q1029 撤常规晾制入位日志）：原断日志含「晾制架工位1开始」，改断这一位开始晾制
+        Assert.That(E.DryingSlotViews(s)[0].Status, Is.EqualTo(DryingSlot.Drying));
         var rc = Cfg.Recipes.First(r => r.Id == "dry_berries");
         // B51c2a2 改期望（S11 Q880 映射表「设施满位 → 已满」，Q926 占用位短原因「已满」）：原断「工位1正在用…」
         Assert.That(E.DryingBlocked(s, rc, 0), Is.EqualTo("已满"));
@@ -96,8 +97,9 @@ public class B32bFacilityTests : TestBase
         Assert.That(E.DryingSlotTakeBlocked(s, 1), Is.EqualTo("物品已变，请重选。"));
         Assert.That(E.DryingTakeBlocked(s, 1, false), Is.EqualTo("工位2是空的"));
         Ok(TakeDryingNow(s, 0));
-        // B51c2a2 改期望（Q876 B 结果句，不再写工位名）：原断取消日志含「晾制架工位1的」
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取出至{E.ZoneName(s, s.Ground)}地面：野果×2。"));
+        // B59a 改期望（S11 §Q1029 撤晾制取出常规播报）：原「已取出至{地点}地面：野果×2。」——不再写结果日志，改断原料回地面
+        Assert.That(s.Log.Last().Text, Does.Not.StartWith("已取出至"));
+        Assert.That(Count(s, "berry", s.Ground), Is.EqualTo(4));
     }
 
     // ───────────── Q368 高亮落点 ─────────────
@@ -358,17 +360,19 @@ public class B32bFacilityTests : TestBase
         Assert.That(p, Does.Not.Contain("无法投料"));
     }
 
-    /// <summary>Q346、Q363、Q364：晾制位「查看配方」只在空闲位；「收取」打开居中盘，取到随身／地面各自提交。</summary>
+    /// <summary>
+    /// Q346、Q363：晾制位「查看配方」在空闲位（B59a 起余料位也有，§Q1034）。
+    /// B59a 改期望（S11 §Q1029「取代 Q870／Q923 中与此冲突的晾制位专用“取出”、收取与停止位专用按钮」）：原断「收取」打开居中盘 harvest、盘内取到随身／地面——收取盘撤下。
+    /// </summary>
     [Test]
     public void Q364_A01_DryingViewRecipesAndHarvestPop()
     {
         var d = Web("Components/DryingOverlay.razor");
         Assert.That(d, Does.Contain("查看配方"));
-        Assert.That(d, Does.Contain("G.OpenPop(\"harvest\""));
+        Assert.That(d, Does.Not.Contain("G.OpenPop(\"harvest\""));
         Assert.That(d, Does.Contain("CardStates.DryingSlotName("));
         var p = Web("Components/ActionPops.razor");
-        Assert.That(p, Does.Contain("CardStates.HarvestToCarried"));
-        Assert.That(p, Does.Contain("CardStates.HarvestToGround"));
+        Assert.That(p, Does.Not.Contain("CardStates.HarvestToCarried"));
         Assert.That(Web("Components/DryingRackCard.razor"), Does.Contain("Ink2=\"true\""));
     }
 

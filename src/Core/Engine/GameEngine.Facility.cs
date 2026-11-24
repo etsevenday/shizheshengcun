@@ -402,26 +402,35 @@ namespace Survival.Core.Engine
         /// <summary>燃料空余容量不足一份木材时的原阻断句（拖入与「投入木材」共用）。</summary>
         public string FuelRoomText(FacilityState fac) => $"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{FuelCapOf(fac)}分钟）";
 
-        private string FireFullText(GameState s, string loc)
-        {
-            var n = Config.Fire.ProcessingSlots;
-            var names = string.Join("、", FireContents(s, loc).Select(i => IsPot(i) ? $"{ItemName(i.ItemId)}" : $"{ItemName(i.ItemId)}"));
-            return $"火堆加工位已满（{n}/{n}：{names}），请先取出";
-        }
+        /// <summary>
+        /// B59a（S11／S07／S09／S10／S14「2026-11-19 B51c2a2原批Q1028—Q1030」§Q1028）：火堆加工位已满、锅的食材槽已满、锅食谱因锅内已有食材而不可投料这三处
+        /// 撤掉重复原因句（容量与内容清单、「请先取出」分句），由真实槽位、物品和按钮可用性表达；内核拒绝原因用空串，界面不显示，拖放静默。
+        /// </summary>
+        public const string SlotQuietReason = "";
+
+        /// <summary>原「火堆加工位已满（{n}/{n}：{物名}），请先取出」；B59a（§Q1028）起为 <see cref="SlotQuietReason"/>。</summary>
+        private static string FireFullText(GameState s, string loc) => SlotQuietReason;
 
         /// <summary>
         /// 最多还能放进当前火堆几份（锅只能 1）；不能放时给出原因，不偷偷改投别处。
         /// B45（S14 Q557）：slot 给出明确加工位（0 起）时只看这一位——被占用即「加工位{序号}已被占用，请重新选择。」（另一位空也不改投），
         /// 可放时最多 1 份／1 口锅；其他原资格阻断仍按原顺序在前。slot 为 null 是整张火堆卡的原规则（全部空位、自动第一空位）。
         /// </summary>
-        public int MaxPutInFire(GameState s, ItemInstance inst, out string? reason, int? slot = null)
+        public int MaxPutInFire(GameState s, ItemInstance inst, out string? reason, int? slot = null) => MaxPutInFireCore(s, inst, out reason, slot, out _);
+
+        /// <summary>
+        /// 同 <see cref="MaxPutInFire"/>；quiet 为真表示这条拒绝在拖放上静默（B59a，S11 §Q1028「拖到满位、不接受该物的槽……不高亮、不转移、不追加提示」）：
+        /// 加工位已满、明确位被占、火堆已有锅（满位），以及液体、木材、腐败物、不可加工物（这个槽不接受该物）。忙碌、异地、预留、占用、已腐败未转换仍按原句提示。
+        /// </summary>
+        private int MaxPutInFireCore(GameState s, ItemInstance inst, out string? reason, int? slot, out bool quiet)
         {
+            quiet = false;
             var here = s.Ground;
             reason = HolderBlocked(s);
             if (reason != null) return 0;
             if (!HasFireAt(s, here)) { reason = "这里没有火堆"; return 0; }
             var cfg = _items[inst.ItemId];
-            if (IsSpoiledMatter(inst)) { reason = SpoiledMatterRejectText; return 0; }   // BM5b2（Q610）
+            if (IsSpoiledMatter(inst)) { reason = SpoiledMatterRejectText; quiet = true; return 0; }   // BM5b2（Q610）
             if (inst.InFacility) { reason = PlaceOf(s, inst) == here ? $"{cfg.Name}已经在火堆里" : "异地不能操作火堆"; return 0; }
             if (!(inst.IsCarried || inst.Owner == here))
             {
@@ -439,30 +448,33 @@ namespace Survival.Core.Engine
             if (IsPot(inst))
             {
                 var cur = FirePot(s, here);
-                if (cur != null) { reason = $"火堆已有{PotDesc(s, cur)}，最多放{Config.Fire.MaxPots}口锅；请先取下"; return 0; }
-                if (SlotFull() is string pf) { reason = pf; return 0; }
+                if (cur != null) { reason = $"火堆已有{PotDesc(s, cur)}，最多放{Config.Fire.MaxPots}口锅；请先取下"; quiet = true; return 0; }
+                if (SlotFull() is string pf) { reason = pf; quiet = true; return 0; }
                 return 1;
             }
-            if (IsLiquid(inst)) { reason = $"{cfg.Name}不能直接倒进火堆（不会产生净水，也不会灭火），请拖进锅里"; return 0; }
+            if (IsLiquid(inst)) { reason = $"{cfg.Name}不能直接倒进火堆（不会产生净水，也不会灭火），请拖进锅里"; quiet = true; return 0; }
             // Q111：拖木材到火堆仍是添加燃料；煅烧木炭走中央加工菜单空加工位的显式「煅烧木炭」投料，不把同一拖动默默改成煅烧（指引句 Q377／Q546）
             if (CharcoalProcess is ProcessConfig cp && inst.ItemId == cp.InputId)
             {
                 reason = CharcoalFuelDragNote(cp);
+                quiet = true;
                 return 0;
             }
             // B45（Q556）：没有煅烧配方时只留前句，不编可用煅烧入口
             if (CharcoalProcess == null && inst.ItemId == "wood")
             {
                 reason = WoodIsFuelNote;
+                quiet = true;
                 return 0;
             }
             if (!CanRoast(inst.ItemId))
             {
                 reason = cfg.Kind == "food" ? $"{cfg.Name}没有可用的处理配方，放进火堆也不会再加工" : $"{cfg.Name}不能放进火堆加工位";
+                quiet = true;
                 return 0;
             }
             if (IsSpoiled(s, inst)) { reason = $"{cfg.Name}已腐败，不能再加工"; return 0; }
-            if (SlotFull() is string ff) { reason = ff; return 0; }
+            if (SlotFull() is string ff) { reason = ff; quiet = true; return 0; }
             return slot.HasValue ? Math.Min(1, inst.Count) : Math.Min(free, inst.Count);
         }
 
@@ -526,15 +538,22 @@ namespace Survival.Core.Engine
         public int MaxPutFood(GameState s, ItemInstance food, ItemInstance pot, out string? reason) => MaxPutFood(s, food, pot, out reason, null);
 
         /// <summary>BM5b2（Q642／Q606）：available 给出这一组（同来源／物品／卡侧）的可用总数时按组算上限（组首判定资格，份数按组合计）。</summary>
-        public int MaxPutFood(GameState s, ItemInstance food, ItemInstance pot, out string? reason, int? available)
+        public int MaxPutFood(GameState s, ItemInstance food, ItemInstance pot, out string? reason, int? available) => MaxPutFoodCore(s, food, pot, out reason, available, out _);
+
+        /// <summary>
+        /// 同 <see cref="MaxPutFood"/>；quiet 为真表示拖放静默（B59a，S11 §Q1028）：锅的食材槽已满（原因为 <see cref="SlotQuietReason"/>），
+        /// 以及液体、锅、腐败物、不能放进锅的物品（食材槽不接受该物）。忙碌、异地、预留、占用、已腐败未转换、负重仍按原句提示。
+        /// </summary>
+        private int MaxPutFoodCore(GameState s, ItemInstance food, ItemInstance pot, out string? reason, int? available, out bool quiet)
         {
+            quiet = false;
             reason = PotBlocked(s, pot);
             if (reason != null) return 0;
             var cfg = PotConfig(pot);
             var fc = _items[food.ItemId];
-            if (IsLiquid(food)) { reason = $"{fc.Name}请拖到锅的水量条上装入"; return 0; }
-            if (IsPot(food)) { reason = "不能锅套锅"; return 0; }
-            if (IsSpoiledMatter(food)) { reason = SpoiledMatterRejectText; return 0; }   // BM5b2（Q610）
+            if (IsLiquid(food)) { reason = $"{fc.Name}请拖到锅的水量条上装入"; quiet = true; return 0; }
+            if (IsPot(food)) { reason = "不能锅套锅"; quiet = true; return 0; }
+            if (IsSpoiledMatter(food)) { reason = SpoiledMatterRejectText; quiet = true; return 0; }   // BM5b2（Q610）
             if (!(food.IsCarried || food.Owner == s.Ground))
             {
                 reason = food.InFacility || food.InContainer ? $"先把{fc.Name}取出来再放进锅" : "只能放入随身或当前地面的食材";
@@ -545,6 +564,7 @@ namespace Survival.Core.Engine
             if (!CanStoreInPot(pot, food.ItemId))
             {
                 reason = fc.Kind == "food" ? $"{fc.Name}没有可用的处理配方，不能放进锅里加工" : $"{fc.Name}不能放进锅里";
+                quiet = true;
                 return 0;
             }
             if (IsSpoiled(s, food)) { reason = $"{fc.Name}已腐败，不能再加工"; return 0; }
@@ -552,10 +572,9 @@ namespace Survival.Core.Engine
             var free = cfg.FoodSlots - foods.Count;
             if (free < 1)
             {
-                var liquid = PotLiquid(s, pot.InstanceId);
-                var water = liquid == null ? "无水" : $"{ItemName(liquid)}{PotUnits(s, pot.InstanceId) * cfg.UnitMl}毫升";
-                var list = string.Join("、", foods.GroupBy(f => f.ItemId).Select(g => $"{ItemName(g.Key)}×{g.Count()}"));
-                reason = $"锅内{water}、食材{foods.Count}/{cfg.FoodSlots}（{list}），请先取出食物";
+                // B59a（§Q1028）：取代「锅内{水}、食材{n}/{n}（{清单}），请先取出食物」——由锅页真实食材槽表达，不写原因句
+                reason = SlotQuietReason;
+                quiet = true;
                 return 0;
             }
             var max = Math.Min(free, available ?? food.Count);

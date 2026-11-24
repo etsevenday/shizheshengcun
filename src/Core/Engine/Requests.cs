@@ -158,7 +158,7 @@ namespace Survival.Core.Engine
         public string ResultText { get; set; } = "";
     }
 
-    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe, StoreCabinet, TakeCabinet, MoveToPot, FacilityTake }
+    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe, StoreCabinet, TakeCabinet, MoveToPot, FacilityTake, DryingDrop }
 
     public sealed class InstantRequest
     {
@@ -248,6 +248,11 @@ namespace Survival.Core.Engine
         /// </summary>
         public static InstantRequest FacilityTake(int instanceId, int count, string zone, string stamp) =>
             new InstantRequest { Kind = InstantKind.FacilityTake, InstanceId = instanceId, Count = count, Zone = zone, CardKey = stamp };
+        /// <summary>
+        /// B59a（S11 §Q1029、§Q1033 A）：材料卡拖到当前区晾制位 slot 即投 count 份（只用手中这一堆；可堆叠卡另挂同组）。recipeId 为解析落点时这一位接收的配方，放在 CardKey。
+        /// </summary>
+        public static InstantRequest DryingDrop(int headInstanceId, int slot, string recipeId, int count) =>
+            new InstantRequest { Kind = InstantKind.DryingDrop, InstanceId = headInstanceId, Slot = slot, CardKey = recipeId, Count = count };
         public static InstantRequest Reorder(string zone, string cardKey, int index) =>
             new InstantRequest { Kind = InstantKind.Reorder, Zone = zone, CardKey = cardKey, Index = index };
 

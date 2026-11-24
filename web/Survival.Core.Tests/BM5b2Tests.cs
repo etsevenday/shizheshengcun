@@ -262,8 +262,8 @@ public class BM5b2Tests : TestBase
         var n0 = s.Log.Count;
         WaitUntil(s, t1 + 70);
         var log = LogSince(s, n0);
-        // B51c2a2 改期望（S11 Q880「清理」只用于地图，按真实动作叫取出；沿完成句「回到当地取出」，暂用）：原「回到当地清理。」
-        Assert.That(log, Has.Some.EndsWith("原料留在这一位，回到当地取出。腐败部分已变为腐败物。").And.Some.Contains("野果已腐败"));
+        // B59a 改期望（S11 §Q1029 撤自动停止日志「回到当地取出」尾句）：原 EndsWith("原料留在这一位，回到当地取出。腐败部分已变为腐败物。")
+        Assert.That(log, Has.Some.EndsWith("没有成品、不给经验。腐败部分已变为腐败物。").And.Some.Contains("野果已腐败"));
         Assert.That(log, Has.None.Contains("变为腐败物×"), "晾制中原料由停工结果说明，不另写普通句");
         var slot = s.Locations["camp"].Facility.DryingSlots.Single();
         Assert.That(slot.Status, Is.EqualTo(DryingSlot.Spoiled));

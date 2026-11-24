@@ -202,7 +202,8 @@ public class DropResolverTests : TestBase
         E.DoInstant(s, i.Instant!);
         Assert.That(Pot(s).Owner, Is.EqualTo("facility:camp:fire"), "锅的真实归属变为火堆");
         Assert.That(R(s, Card(PotCard(s)), "potslot:camp").Reason, Does.Contain("已经在火堆里"));
-        Assert.That(R(s, Card("camp|stone"), "potslot:camp").Reason, Is.EqualTo("石块不能放进火堆加工位"));
+        // B59a 改期望（S11 §Q1028「拖到满位、不接受该物的槽……不高亮、不转移、不追加提示」）：原「石块不能放进火堆加工位」
+        Assert.That((R(s, Card("camp|stone"), "potslot:camp").Silent, R(s, Card("camp|stone"), "potslot:camp").Reason), Is.EqualTo((true, "")));
     }
 
     [Test]
@@ -313,7 +314,8 @@ public class DropResolverTests : TestBase
         Assert.That(E.DoInstant(s, i.Instant!).Ok, Is.True);
         Assert.That(E.PotFood(s, Pot(s).InstanceId), Has.Count.EqualTo(1));
         E.DebugGive(s, "cooked_root", 1, "camp");
-        Assert.That(R(s, Card("camp|cooked_root"), "card:" + PotCard(s)).Reason, Does.StartWith("烤熟块根没有可用的处理配方"));
+        // B59a 改期望（S11 §Q1028「拖到满位、不接受该物的槽……不高亮、不转移、不追加提示」）：原「烤熟块根没有可用的处理配方…」
+        Assert.That(R(s, Card("camp|cooked_root"), "card:" + PotCard(s)).Silent, Is.True);
     }
 
     [Test]
@@ -348,8 +350,9 @@ public class DropResolverTests : TestBase
         Assert.That(i.MaxQuantity, Is.EqualTo(2), "两个空位");
         E.DoInstant(s, i.Instant!);
         Assert.That(s.Items.Count(x => x.Owner == "facility:camp:fire"), Is.EqualTo(1));
-        Assert.That(R(s, Card("camp|cooked_root"), "fireslot:camp").Reason, Does.StartWith("烤熟块根没有可用的处理配方"));
-        Assert.That(R(s, Card("camp|clean_water"), "fire:camp").Reason, Does.Contain("请拖进锅里"));
+        // B59a 改期望（S11 §Q1028「拖到满位、不接受该物的槽……不高亮、不转移、不追加提示」）：原「烤熟块根没有可用的处理配方…」「…请拖进锅里」
+        Assert.That(R(s, Card("camp|cooked_root"), "fireslot:camp").Silent, Is.True);
+        Assert.That(R(s, Card("camp|clean_water"), "fire:camp").Silent, Is.True);
         Assert.That(R(s, Card("camp|wood"), "fireslot:camp").Verb, Is.EqualTo(DropVerb.AddFuel), "木材落在火堆任何位置都是投料");
         Assert.That(R(s, Card("camp|raw_root"), "fuel:camp").Reason, Is.EqualTo("生块根请拖到火堆的空加工位或锅的食材区；燃料区只收木材"), "试玩 B7：写明原因");
     }
@@ -365,7 +368,8 @@ public class DropResolverTests : TestBase
         var other = s.Items.Last(x => x.ItemId == "pot");
         var no = R(s, Card($"camp|pot|{other.InstanceId}"), "fire:camp");
         Assert.That(no.Ok, Is.False);
-        Assert.That(no.Reason, Does.Contain("火堆已有金属锅（"));
+        // B59a 改期望（S11 §Q1028「拖到满位、不接受该物的槽……不高亮、不转移、不追加提示」）：原「火堆已有金属锅（…），最多放1口锅；请先取下」
+        Assert.That((no.Silent, no.Reason), Is.EqualTo((true, "")));
     }
 
     [Test]
@@ -381,8 +385,9 @@ public class DropResolverTests : TestBase
         E.DoInstant(s, i.Instant!);
         Assert.That(s.Items.Single(x => x.ItemId == "raw_root").Owner, Is.EqualTo("pot:" + pot.InstanceId));
         Assert.That(s.Items.Count(x => x.Owner == "facility:camp:fire"), Is.EqualTo(1), "火堆里只有锅");
-        // 非法：水拖到食材区给出原因，不偷偷改投水量区
-        Assert.That(R(s, Card("camp|clean_water"), $"potfood:{pot.InstanceId}").Reason, Does.Contain("水量条"));
+        // 非法：水拖到食材区不偷偷改投水量区
+        // B59a 改期望（S11 §Q1028「拖到满位、不接受该物的槽……不高亮、不转移、不追加提示」）：原断原因含「水量条」——静默
+        Assert.That(R(s, Card("camp|clean_water"), $"potfood:{pot.InstanceId}").Silent, Is.True);
         // 水拖到火堆里锅的水量区：直接装水
         Assert.That(R(s, Card("camp|clean_water"), $"potfill:{pot.InstanceId}").Verb, Is.EqualTo(DropVerb.FillPot));
         // 锅卡缩略图本身也是锅的落点

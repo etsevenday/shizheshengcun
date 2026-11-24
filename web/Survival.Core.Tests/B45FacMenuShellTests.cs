@@ -132,7 +132,8 @@ public class B45FacMenuShellTests : TestBase
         var src = DropSource.Parse($"card:{ItemInstance.Carried}|raw_root|{roots.InstanceId}")!;
         var r = E.ResolveDrop(s, src, DropTarget.Parse("fslot:0:camp")!);
         Assert.That(r.Ok, Is.False);
-        Assert.That(r.Reason, Is.EqualTo("加工位1已被占用，请重新选择。"));
+        // B59a 改期望（S11 §Q1028「拖到满位……不高亮、不转移、不追加提示」）：原拖放原因「加工位1已被占用，请重新选择。」——拖放静默
+        Assert.That((r.Silent, r.Reason), Is.EqualTo((true, "")));
         Assert.That(E.FireSlots(s, "camp")[1], Is.Null, "另一空位不被改投");
     }
 

@@ -75,7 +75,8 @@ public class FacilityProcessTests : TestBase
         Assert.That(Count(s, "raw_root", "camp"), Is.EqualTo(4));
         var third = E.DoInstant(s, InstantRequest.PutInFire(First(s, "raw_root", "camp").InstanceId));
         Assert.That(third.Ok, Is.False);
-        Assert.That(third.Reason, Does.StartWith("火堆加工位已满"));
+        // B59a 改期望（S11 §Q1028：撤「火堆加工位已满（…），请先取出」重复原因句，由真实槽位表达；内核拒绝原因为空）：原 Does.StartWith("火堆加工位已满")
+        Assert.That(third.Reason, Is.EqualTo(""));
 
         var t = New();
         var r2 = GiveRoots(t, 5);
@@ -86,7 +87,8 @@ public class FacilityProcessTests : TestBase
         var inFire = t.Items.Where(i => i.Owner == Fire).ToList();
         Assert.That(inFire, Has.Count.EqualTo(2), "2根直烤各占一位");
         Assert.That(inFire.All(i => i.Count == 1), Is.True, "每份单独一个实例");
-        Assert.That(E.DoInstant(t, InstantRequest.PutInFire(Pot(t).InstanceId)).Reason, Does.StartWith("火堆加工位已满"), "满位后锅也放不进");
+        // B59a 改期望（S11 §Q1028：撤「火堆加工位已满（…），请先取出」重复原因句，由真实槽位表达；内核拒绝原因为空）：原 Does.StartWith("火堆加工位已满")
+        Assert.That(E.DoInstant(t, InstantRequest.PutInFire(Pot(t).InstanceId)).Reason, Is.EqualTo(""), "满位后锅也放不进");
         // 设施内的两份不会合堆成一份
         var u = SaveSerializer.Deserialize(SaveSerializer.Serialize(t));
         Assert.That(u.Items.Count(i => i.Owner == Fire), Is.EqualTo(2));

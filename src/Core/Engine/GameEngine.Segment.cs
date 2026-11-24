@@ -896,6 +896,7 @@ namespace Survival.Core.Engine
         {
             // BM5b2（Q610）：每个变更边界补做到期转换（不走世界段的时间跳跃、取出解除保护后等）；无到期物时不做事
             ConvertDueSpoilage(s);
+            PruneEmptyDryingSlots(s);   // B59a（S11 §Q1029）：空的异常停止位等无物非在制位自动恢复成空位
             var f = s.Progress.Flags;
             if (s.Locations.TryGetValue("field", out var field) && field.Progress >= 50) f.Add("field50");
             if ((s.Locations.TryGetValue("stream", out var st) && st.Visited) || (s.Locations.TryGetValue("woods", out var wd) && wd.Visited))

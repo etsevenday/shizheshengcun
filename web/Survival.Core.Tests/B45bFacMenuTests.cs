@@ -172,7 +172,8 @@ public class B45bFacMenuTests : TestBase
         Assert.That(dis, Does.Contain("<span class=\"fm-src-no\">@NotPlaceable</span>"));
         Assert.That(dis, Does.Contain("class=\"fm-src-whybtn"), "独立「原因」控件");
         Assert.That(dis, Does.Contain("@onfocus=\"() => ShowWhy(rk)\""), "键盘可聚焦查看");
-        Assert.That(menu, Does.Contain("if ((peekWhy ?? st.Reason) is string note)"), "底部说明位显示，离开恢复当前说明");
+        // B59a 改期望（S11 §Q1028：满位等静默拒绝原因为空时不显示说明）：原 "if ((peekWhy ?? st.Reason) is string note)"
+        Assert.That(menu, Does.Contain("if ((peekWhy ?? st.Reason) is string note && note.Length > 0)"), "底部说明位显示，离开恢复当前说明");
         // BM5b1（Q603）起主层也走同一判定（木材从主层起灰显），其余主层材料仍不判定
         Assert.That(menu, Does.Contain("if (!taken) why = G.FireMenuBlockWhy(it);"), "同一真实投放规则逐行判定");
         var fac = Web("Services", "GameSession.FacMenu.cs");

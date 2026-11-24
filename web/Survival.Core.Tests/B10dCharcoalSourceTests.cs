@@ -194,7 +194,8 @@ public class B10dCharcoalSourceTests : TestBase
         Assert.That(Confirm(x, E.CharcoalLoadPreview(x).Plan).Ok, Is.True);
         var before = SaveSerializer.Serialize(x);
         var res = Confirm(x, E.CharcoalLoadPreview(x).Plan);
-        Assert.That(res.Reason, Does.StartWith("火堆加工位已满"));
+        // B59a 改期望（S11 §Q1028：撤「火堆加工位已满（…），请先取出」重复原因句，由真实槽位表达；内核拒绝原因为空）：原 Does.StartWith("火堆加工位已满")
+        Assert.That(res.Reason, Is.EqualTo(""));
         Assert.That(SaveSerializer.Serialize(x), Is.EqualTo(before));
 
         var y = WithWood(0, 4);

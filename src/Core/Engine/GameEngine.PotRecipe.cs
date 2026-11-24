@@ -116,7 +116,8 @@ namespace Survival.Core.Engine
             if (PotFireLocation(pot) != here) return "先把锅放进当前地点的火堆加工位";
             var ct = PotConfig(pot);
             var foods = PotFood(s, pot.InstanceId);
-            if (foods.Count > 0) return $"锅里已有食材{foods.Count}/{ct.FoodSlots}（{string.Join("、", foods.Select(f => ItemName(f.ItemId)))}），请先取出";
+            // B59a（S11 §Q1028）：取代「锅里已有食材{n}/{n}（{物名}），请先取出」——按钮照真实合法性置灰，由锅页真实食材槽表达，不写原因句
+            if (foods.Count > 0) return SlotQuietReason;
             if (pc.FoodInputs.Values.Sum() > ct.FoodSlots) return "食材位不够";
             var liquid = PotLiquid(s, pot.InstanceId);
             var need = pc.RequiredLiquid ?? "clean_water";

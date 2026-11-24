@@ -203,7 +203,8 @@ public class BM5b1FacMenuTests : TestBase
         var btn = Slice(menu, "class=\"secondary fm-move-btn\"", "</button>");
         Assert.That(btn, Does.Not.Contain("title=").And.Not.Contain("aria-description"), "悬停与读屏不重复说明句；可访问名称仍是按钮文字");
         Assert.That(btn, Does.Contain("@mv.Label"));
-        Assert.That(menu, Does.Contain("@if (mvWhy != null) { <span class=\"tiny warn-text fm-move-why\">@mvWhy</span> }"), "真实拒绝原因仍就近可读");
+        // B59a 改期望（S11 §Q1028：锅满等静默拒绝原因为空时不出空的原因行）：原 "@if (mvWhy != null) { … }"
+        Assert.That(menu, Does.Contain("@if (!string.IsNullOrEmpty(mvWhy)) { <span class=\"tiny warn-text fm-move-why\">@mvWhy</span> }"), "真实拒绝原因仍就近可读");
         // 实际规则与日志不变：有直烤受热才追加清零句
         var heat = E.ProcessOf(s, meat)?.HeatDoneMinutes ?? 0;
         Ok(E.DoInstant(s, mv.Request.WithRequestId("bm7a-q644")));
@@ -222,7 +223,8 @@ public class BM5b1FacMenuTests : TestBase
         WaitMinutes(s, 10);
         var snap = Snap(s);
         var mv = E.MoveToPotOptionFor(s, 0)!;
-        Assert.That(mv.Reason, Does.StartWith("锅内净水"), "原锅满句");
+        // B59a 改期望（S11 §Q1028 撤锅的食材槽已满原因句「锅内{水}、食材{n}/{n}（…），请先取出食物」）：原 Does.StartWith("锅内净水")
+        Assert.That(mv.Reason, Is.EqualTo(""), "锅满不写原因句");
         var bad = E.DoInstant(s, mv.Request);
         Assert.That(bad.Ok, Is.False);
         Assert.That(bad.Reason, Is.EqualTo(mv.Reason));

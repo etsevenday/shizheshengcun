@@ -295,10 +295,11 @@ public class B53aTests : TestBase
         Stopped(s, 0, "dry_berries", DryingSlot.StopUnknown);
         RotIn(s, ItemInstance.DryingOwner(s.Ground, 0), "berry", 1);
         var line = E.DryingSlotViews(s)[0].Line;
-        // B51c2a2 改期望（S11 Q880：「有余物的原清理说明 → 取出剩余物品。」；余物取出用原实际移物结果句、不以「清理{地点}…」开头）
-        Assert.That(line, Is.EqualTo($"{E.Recipe("dry_berries").Name}已停止，无成品；取出剩余物品。腐败物不可食用。"));
+        // B59a 改期望（S11 §Q1029 撤停止位「无成品／取出剩余物品」等说明与余物取出重复日志及「腐败物不可食用」附句）：
+        // 原说明「{配方}已停止，无成品；取出剩余物品。腐败物不可食用。」、日志「从…工位1取出腐败物×1到…地面，这一位空出。腐败物不可食用。」——位内腐败物由真实卡片表达
+        Assert.That(line, Is.EqualTo(""));
         Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"从{E.ZoneName(s, s.Ground)}晾制架工位1取出腐败物×1到{E.ZoneName(s, s.Ground)}地面，这一位空出。腐败物不可食用。"));
+        Assert.That(s.Log.Select(l => l.Text), Has.None.Contains(NotEdible));
     }
 
     /// <summary>Q765-A03 对照：位内没有腐败物时不接「腐败物不可食用。」。</summary>
@@ -308,8 +309,8 @@ public class B53aTests : TestBase
         var s = Rack();
         Stopped(s, 0, "dry_meat", DryingSlot.StopMissing);
         Give(s, "salt", ItemInstance.DryingOwner(s.Ground, 0));
-        // B51c2a2 改期望（S11 Q880 映射：原尾句「清理可取回剩余物品。」→「取出剩余物品。」）
-        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；取出剩余物品。"));
+        // B59a 改期望（S11 §Q1029 撤停止位说明）：原「{配方}已因缺料停止，无成品；取出剩余物品。」
+        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo(""));
         Assert.That(E.TakeDrying(s, 0, false).Ok, Is.True);
         Assert.That(s.Log.Last().Text, Does.Not.Contain(NotEdible));
     }
@@ -1327,8 +1328,8 @@ public class B53aTests : TestBase
         Stopped(s, 0, "dry_meat", DryingSlot.StopMissing);
         RotIn(s, ItemInstance.DryingOwner(s.Ground, 0), "raw_meat", 1);
         Give(s, "salt", ItemInstance.DryingOwner(s.Ground, 0));
-        // B51c2a2 改期望（S11 Q880 映射：原尾句「清理可取回剩余物品。」→「取出剩余物品。」）
-        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo($"{E.Recipe("dry_meat").Name}已因缺料停止，无成品；取出剩余物品。腐败物不可食用。"));
+        // B59a 改期望（S11 §Q1029 撤停止位说明，含「腐败物不可食用」附句）：原「{配方}已因缺料停止，无成品；取出剩余物品。腐败物不可食用。」
+        Assert.That(E.DryingSlotViews(s)[0].Line, Is.EqualTo(""));
     }
 
     /// <summary>Q764-A01「只对缺可信原因的已停止位补」：55 档里晾制中的位（原因为空）不补原因；配方已不存在的停止位按「无法证明」为未知。</summary>

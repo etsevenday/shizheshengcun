@@ -63,8 +63,10 @@ namespace Survival.Core.Engine
         public bool ShelfPaused { get; set; }
         /// <summary>停止位的展示原因（B50a，S11 文首 Q713）：missing 缺料、unknown 未知、spoiled 腐败（旧档 legacy 按 Q764 待定前沿现行腐败文字）；非停止位为 null。</summary>
         public string? StopKind { get; set; }
-        /// <summary>停止位有余物时「取到随身／取到地面」的悬停「取出剩余物品。」（B51c2a2，S11 Q880 映射表）；无余物或非停止位为 null。</summary>
+        /// <summary>停止位有余物时「取到随身／取到地面」的悬停「取出剩余物品。」（B51c2a2，S11 Q880 映射表）；无余物或非停止位为 null。B59a（§Q1029）起恒为 null（停止位专用按钮撤下）。</summary>
         public string? CleanupHint { get; set; }
+        /// <summary>B59a（S11 §Q1034 用户另定）：占用位收起时的标题「{首件物品名}等」（展开列表第一件实物）；空位为 null。</summary>
+        public string? CollapsedTitle { get; set; }
     }
 
     /// <summary>
@@ -356,10 +358,8 @@ namespace Survival.Core.Engine
                 return ActionResult.Fail(DryingPreviewChanged);
             if (old != null) fac.DryingSlots.Remove(old);
             var pause = DryingPausesShelf(rc);
-            var taken = new List<string>();
             foreach (var (inst, take) in sources)
             {
-                taken.Add($"{SourcePrefix(inst)}{ItemName(inst.ItemId)}×{take}");
                 ItemInstance moved;
                 if (take < inst.Count) moved = SplitOff(s, inst, take);
                 else moved = inst;
@@ -382,10 +382,7 @@ namespace Survival.Core.Engine
             };
             fac.DryingSlots.Add(slotRec);
             RememberRequest(s, requestId);
-            // B22c 试玩修复 M470：日志经验按这一位自身（self）算，不把刚投的这一位当成“先完成的晾制位”；原料会在完成前到期时日志也写警告
-            Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架工位{k + 1}开始{rc.Name}：投入{string.Join("、", taken)}；被动{Clock.Duration(rc.BaseMinutes)}，"
-                                        + $"预计{Clock.DayTime(finish)}完成（不占行动，离开也继续）；{DryingXpNote(s, slotRec)}"
-                                        + (pause ? "；" + DryingShelfPauseText : "") + "。");
+            // B59a（S11 §Q1029「同步撤下常规晾制入位、取出和全部取出重复播报，直接看卡片、槽位和真实进度」）：撤原「{区}晾制架工位{n}开始{配方}：投入……」日志
             UpdateFlags(s);
             return ActionResult.Success(id);
         }
@@ -508,15 +505,13 @@ namespace Survival.Core.Engine
         private ActionResult CommitDryingTake(GameState s, string place, List<(DryingSlot Slot, List<ItemInstance> Items)> plan, string? requestId)
         {
             var fac = FacOf(s, place)!;
-            var moved = new List<(string Name, int Count)>();
             foreach (var (b, items) in plan)
             {
                 fac.DryingSlots.Remove(b);
-                foreach (var it in items) moved.Add((ItemName(it.ItemId), it.Count));
                 MoveDryingOut(s, items, place);
             }
             RememberRequest(s, requestId);
-            Emit(s, GameEventKind.Info, TakeResultText(ZoneName(s, place), moved));
+            // B59a（S11 §Q1029）：撤晾制架取出与全部取出的常规播报（原「已取出至{地点}地面：{物品清单}。」），直接看卡片与槽位
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -533,19 +528,11 @@ namespace Survival.Core.Engine
             var fac = FacOf(s, place)!;
             var b = DryingSlotAt(s, place, slot)!;
             var items = DryingContents(s, place, slot);
-            var spoiled = b.Status == DryingSlot.Spoiled;
-            var what = spoiled
-                ? string.Join("、", items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}{(IsSpoiled(s, i) && !IsSpoiledMatter(i) ? "（已腐败）" : "")}"))
-                : string.Join("、", items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}（{ExpiryNote(s, i)}）"));
             fac.DryingSlots.Remove(b);
             MoveDryingOut(s, items, toCarried ? ItemInstance.Carried : place);
             RememberRequest(s, requestId);
-            // B53a（S11 §Q765）／B53b（§Q868 A①）：停止位位内确有腐败物时句末接一次「腐败物不可食用。」
-            // B51c2a2（S11 Q880）：停止位余物取出统一用原实际移物结果句，不再以「清理{地点}…」开头；无余物的异常位「清空」成功只写「已清空。」
-            var rotNote = spoiled && DryingHasRot(s, items) ? SpoiledNotEdibleText : "";
-            Emit(s, GameEventKind.Info, spoiled && items.Count == 0
-                ? DryingClearedText
-                : $"从{ZoneName(s, place)}晾制架工位{slot + 1}取出{what}到{DestName(s, toCarried)}，这一位空出。{rotNote}");
+            // B59a（S11 §Q1029）：撤余物取出的重复日志（「从{区}晾制架工位{n}取出……这一位空出。」及「腐败物不可食用。」附句）与「清空」成功日志「已清空。」；
+            // 晾制位专用「收取」「取到随身／取到地面」「清空」按钮同批撤下，界面不再调用本入口（保留给开发入口与旧测试）
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -576,7 +563,8 @@ namespace Survival.Core.Engine
                         var turned = bad != null && SpoilWorkInputs(s, items.Select(i => i.InstanceId).ToList());
                         Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架工位{b.Slot + 1}："
                                                     + (bad != null ? $"{badName}已腐败" : "原料不全")
-                                                    + $"，{rc.Name}停止，没有成品、不给经验；原料留在这一位，回到当地取出。"
+                                                    // B59a（S11 §Q1029）：撤自动停止日志的「原料留在这一位，回到当地取出」尾句（B51c2a2 暂用）
+                                                    + $"，{rc.Name}停止，没有成品、不给经验。"
                                                     + (turned ? SpoiledWorkClause : ""));
                         continue;
                     }
@@ -690,6 +678,7 @@ namespace Survival.Core.Engine
                 v.DoneMinutes = b.DoneMinutes;
                 v.RequiredMinutes = b.RequiredMinutes;
                 v.Contents = items.Select(i => $"{ItemName(i.ItemId)}×{i.Count}（{ExpiryNote(s, i)}）").ToList();
+                v.CollapsedTitle = DryingCollapsedTitle(s, place, k);
                 v.XpText = DryingXpNote(s, b);
                 switch (b.Status)
                 {
@@ -721,17 +710,10 @@ namespace Survival.Core.Engine
                     default:
                         v.Title = CardStates.DryingSlotName(k);
                         v.StopKind = DryingStopKind(b);
-                        // B51c2a2（S11 Q880 映射表「有余物的原清理说明／悬停 → 取出剩余物品。」，清理只用于地图）：原「；清理可取回剩余物品。」「；清理即把原料原样取出（腐败的不能吃）」
-                        // 换成「；取出剩余物品。」（无余物时省去该分句）；位内确有腐败物时句末接一次「腐败物不可食用。」（Q868），腐败停止位同样处理（暂用拼接，见开发记录）
-                        var rest = items.Count > 0 ? "；" + DryingCleanupHintText : "。";
-                        var rot = DryingHasRot(s, items) ? SpoiledNotEdibleText : "";
-                        v.Line = v.StopKind switch
-                        {
-                            DryingSlot.StopMissing => $"{rc.Name}已因缺料停止，无成品{rest}{rot}",
-                            DryingSlot.StopUnknown => $"{rc.Name}已停止，无成品{rest}{rot}",
-                            _ => $"{rc.Name}{(b.EndMinute is int m ? $"在{Clock.DayTime(m)}" : "")}停止，没有成品{rest}{rot}",
-                        };
-                        v.CleanupHint = items.Count > 0 ? DryingCleanupHintText : null;
+                        // B59a（S11 §Q1029「撤下原题四处暂用内容：停止位的“无成品／取出剩余物品”等说明……停止位仍有物时照实显示卡片」）：
+                        // 撤 B51c2a2 暂用说明「{配方}已因缺料停止，无成品；取出剩余物品。」等与悬停「取出剩余物品。」，停止位只显示真实卡片
+                        v.Line = "";
+                        v.CleanupHint = null;
                         v.ToCarriedBlocked = DryingTakeBlocked(s, k, true);
                         v.ToGroundBlocked = DryingTakeBlocked(s, k, false);
                         break;
@@ -755,12 +737,10 @@ namespace Survival.Core.Engine
             var unknown = stopped.Count(k => k == DryingSlot.StopUnknown);
             var bad = stopped.Count(k => k == DryingSlot.StopSpoiled);
             var free = Math.Max(0, DryingSlotCount - slots.Count);
-            var residual = slots.Count(b => b.Status == DryingSlot.Residual);
             var parts = new List<string>();
             if (drying > 0) parts.Add($"晾制中{drying}");
             if (done > 0) parts.Add($"待取{done}");
-            // B51c2b（S11 §Q924「短状态可用“余料”」）：余料位单独计数（暂用写法，见开发记录 B51c2b.5）
-            if (residual > 0) parts.Add($"{ResidualText}{residual}");
+            // B59a（S11 §Q1034「不另列余料位数或缺料提示」、S14 Q1034-02「没有……余料位数摘要」）：撤 B51c2b 暂用的「余料{n}」计数
             // B50a（Q713）：按停止原因分开计工位数（不是原料份数）
             if (missing > 0) parts.Add($"缺料{missing}");
             if (unknown > 0) parts.Add($"停止{unknown}");

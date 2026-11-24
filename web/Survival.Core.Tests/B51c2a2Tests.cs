@@ -86,7 +86,8 @@ public class B51c2a2Tests : TestBase
         Assert.That(s.Items.Count(i => i.ItemId == "dried_berries"), Is.EqualTo(0), "没有成品");
         Assert.That(DrySlots(s).Select(b => (b.Slot, b.Status)), Is.EqualTo(new[] { (1, DryingSlot.Drying) }), "该位结束，另一位不动");
         Assert.That(s.Items.Where(i => i.ItemId is "raw_meat" or "salt").All(i => i.InDrying), Is.True, "另一位原料仍在晾制位");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：野果×2。"), "Q876 B 结果句；临时营地＝本局起始区名");
+// B59a 改期望（S11 §Q1029「同步撤下常规晾制入位、取出和全部取出重复播报」）：原「已取出至临时营地地面：野果×2。」——不写结果日志
+        Assert.That(s.Log.Last().Text, Does.Not.StartWith("已取出至"));
     }
 
     /// <summary>B51C-Q879-01：计划快照变化整次拒「物品已变，请重选。」、不动物品；同一请求号只生效一次（配对：首次确实取出）。</summary>
@@ -176,7 +177,8 @@ public class B51c2a2Tests : TestBase
         Assert.That(Xp(s), Is.EqualTo(x0), "不重发经验、取出在制不给经验");
         var meat = s.Items.Single(i => i.ItemId == "raw_meat");
         Assert.That((meat.ExpiresAt, meat.ShelfPausedMinutes), Is.EqualTo(((int?)(c + 600), (int?)null)), "C＋R：投料时剩 600");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：果干×1、生肉×1、盐×1。"));
+// B59a 改期望（S11 §Q1029「同步撤下常规晾制入位、取出和全部取出重复播报」）：原「已取出至临时营地地面：果干×1、生肉×1、盐×1。」
+        Assert.That(s.Log.Last().Text, Does.Not.StartWith("已取出至"));
 
         Assert.That(E.TakeAllBlocked(s, s.Ground, GameEngine.DryingStationId), Is.EqualTo(Empty));
         var again = TakeAllNow(s, GameEngine.DryingStationId);
@@ -198,7 +200,9 @@ public class B51c2a2Tests : TestBase
         Assert.That(DrySlots(s), Has.Count.EqualTo(2), "两位都不动");
         Ok(TakeAllNow(s, GameEngine.DryingStationId));
         Assert.That(DrySlots(s), Is.Empty);
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：野果×4。"), "Q876 B 同名合量");
+// B59a 改期望（S11 §Q1029「同步撤下常规晾制入位、取出和全部取出重复播报」）：原「已取出至临时营地地面：野果×4。」
+        Assert.That(s.Items.Where(i => i.ItemId == "berry" && i.Owner == s.Ground).Sum(i => i.Count), Is.EqualTo(4), "全部回地面");
+        Assert.That(s.Log.Last().Text, Does.Not.StartWith("已取出至"));
     }
 
     /// <summary>
@@ -465,7 +469,8 @@ public class B51c2a2Tests : TestBase
         Assert.That((ra.Ok, ra.Reason), Is.EqualTo((false, Changed)));
         Assert.That(berry.InDrying, Is.True, "被拒不动");
         Ok(TakeDryingNow(s, 0));
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：野果×3。"));
+        // B59a 改期望（S11 §Q1029「同步撤下常规晾制入位、取出和全部取出重复播报」）：原「已取出至临时营地地面：野果×3。」
+        Assert.That(s.Items.Where(i => i.ItemId == "berry" && i.Owner == s.Ground).Sum(i => i.Count), Is.EqualTo(3));
     }
 
     /// <summary>
@@ -528,15 +533,15 @@ public class B51c2a2Tests : TestBase
         Make(s, "salt", 1, ItemInstance.DryingOwner(s.Ground, 0));
         var views = E.DryingSlotViews(s).Where(v => v.Status == DryingSlot.Spoiled).OrderBy(v => v.Slot).ToList();
         Assert.That(views, Has.Count.EqualTo(3));
-        var at = Clock.DayTime(end);
-        Assert.That((views[0].Line, views[0].CleanupHint), Is.EqualTo(($"晾制果干在{at}停止，没有成品；取出剩余物品。", (string?)"取出剩余物品。")));
-        Assert.That((views[1].Line, views[1].CleanupHint), Is.EqualTo(($"晾制果干在{at}停止，没有成品。", (string?)null)));
-        Assert.That((views[2].Line, views[2].CleanupHint), Is.EqualTo(("晾制果干已停止，无成品。", (string?)null)));
+        // B59a 改期望（S11 §Q1029「撤下原题四处暂用内容：停止位的“无成品／取出剩余物品”等说明」，停止位仍有物时照实显示卡片）：
+        // 原 Line「晾制果干在{时刻}停止，没有成品；取出剩余物品。」／「…没有成品。」／「晾制果干已停止，无成品。」、CleanupHint「取出剩余物品。」
+        Assert.That(views.Select(v => (v.Line, v.CleanupHint)), Is.All.EqualTo(("", (string?)null)));
     }
 
     /// <summary>
-    /// S11 Q778（全部取出只移实物）＋Q880（异常空位用「清空」复位）：晾架「全部取出」不动没有余物的异常停止位，它仍在、仍可「清空」；
-    /// 只剩这种位时「全部取出」为「没有可取出的物品。」。
+    /// S11 Q778（全部取出只移实物）：晾架「全部取出」只取有物品的位，只剩空位时「全部取出」为「没有可取出的物品。」。
+    /// B59a 改期望（S11 §Q1029「空的异常停止位自动恢复成普通空位，无须玩家操作」，撤 Q880「清空」）：原断没有余物的异常停止位在全部取出后仍在、再「清空」写「已清空。」——
+    /// 现在它在同一变更边界自动恢复为空位，不写日志。
     /// </summary>
     [Test]
     public void MT_DryingTakeAll_SkipsEmptyStoppedSlot()
@@ -546,11 +551,10 @@ public class B51c2a2Tests : TestBase
         Ok(E.StartDrying(s, "dry_berries"));
         StoppedSlot(s, 1, DryingSlot.StopUnknown, s.GameMinute - 5);
         Ok(TakeAllNow(s, GameEngine.DryingStationId));
-        Assert.That(DrySlots(s).Select(b => b.Slot), Is.EqualTo(new[] { 1 }), "空的异常位不被全部取出复位");
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已取出至临时营地地面：野果×2。"));
+        Assert.That(DrySlots(s), Is.Empty, "空的异常位自动恢复为空位");
+        Assert.That(s.Items.Where(i => i.ItemId == "berry" && i.Owner == s.Ground).Sum(i => i.Count), Is.EqualTo(2));
         Assert.That(E.TakeAllBlocked(s, s.Ground, GameEngine.DryingStationId), Is.EqualTo(Empty));
-        Ok(E.TakeDrying(s, 1, false));
-        Assert.That(s.Log.Last().Text, Is.EqualTo("已清空。"));
+        Assert.That(s.Log.Select(l => l.Text), Has.None.EqualTo("已清空。"));
     }
 
     /// <summary>Q879 A：当前区没有火堆／柴炉时火堆「全部取出」为「没有可取出的物品。」（配对：营地有火堆、有锅时可取）。</summary>
@@ -688,6 +692,7 @@ public class B51c2a2Tests : TestBase
             RequiredMinutes = 120, EndMinute = null, InitiatorActorId = GameState.PlayerId, StopReason = DryingSlot.StopSpoiled,
         });
         var v = E.DryingSlotViews(s).Single(x => x.Slot == 0);
-        Assert.That(v.Line, Is.EqualTo("晾制果干停止，没有成品。"));
+        // B59a 改期望（S11 §Q1029 撤停止位「无成品」等说明）：原「晾制果干停止，没有成品。」
+        Assert.That((v.Status, v.Line), Is.EqualTo((DryingSlot.Spoiled, "")));
     }
 }
