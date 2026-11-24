@@ -63,13 +63,14 @@ dotnet test web/Survival.sln
   1. 留言原文（去掉称呼等个人信息）和你改了什么、改在哪几个文件。
   2. 怎么起服务器：`preview_start {name: "web-fb"}`（5190 端口，专给试玩会话用，避免和主会话抢端口）。
   3. 怎么回到出问题的那一刻：`feedback-inbox/<目录>/save.json` 写入 `localStorage.survival.save.v1` 后刷新、点“继续”；也要从新开局再走一遍相关操作。
-  4. 要检查什么：留言里的问题是否消失；相关的其他路径是否还正常（例如改了拾取就同时试拖拽、箭头、数量框）；控制台（`read_console_messages`）有无报错；1280×720 下有无裁切。
-  5. 禁止事项：不改任何文件、不提交、不 mark 留言、不去线上地址玩。
-  6. 报告格式：每项“通过／未通过”，未通过的写复现步骤、看到的现象、截图。
+  4. **脚本为主**（2026-11-24 用户定）：先把留言问题的复现与修复验证写成场景 `tools/playtest/scenarios/fb-<编号>.json` 并三档跑通（用法 `tools/playtest/README.md`；起点优先用现成 fixture，留言的 save.json 不便转成 fixture 时再手走），AI 只看场景截图里与留言相关的画面；场景写不了的部分才手点。
+  5. 要检查什么：留言里的问题是否消失；相关的其他路径是否还正常（例如改了拾取就同时试拖拽、箭头、数量框）；控制台（`read_console_messages`）有无报错；1280×720 下有无裁切。
+  6. 禁止事项：除场景文件外不改任何文件、不提交、不 mark 留言、不去线上地址玩。
+  7. 报告格式：每项“通过／未通过”，未通过的写复现步骤、看到的现象、截图。
 
 等它结束（应用会在它结束时唤醒本会话），读它的报告，**自己核对一遍**再下结论：未通过的回第 3 步改，改完再起一轮试玩；两轮仍不过就把现象整理好问用户。
 
-试玩通过后、推送前，在**本地 Release 包**上复核一次（2026-11-16 用户定：本地验完再发布，不等上线后再看）：`dotnet publish web/Survival.Web -c Release -o publish/local` → `preview_start {name:"published"}`（5199）→ 用留言的 save.json "继续"，把留言里的问题再走一遍，看控制台 → `preview_stop`。Release 包上不对的回第 3 步。
+试玩通过后、推送前，在**本地 Release 包**上复核一次（2026-11-16 用户定：本地验完再发布，不等上线后再看）：`dotnet publish web/Survival.Web -c Release -o publish/local` → `preview_start {name:"published"}`（5199）→ 本会话跑全量场景 `node tools/playtest/run.mjs`（含本条留言的新场景，作回归），无失败、无「错」 → 用留言的 save.json "继续"，把留言里的问题再走一遍，看控制台 → `preview_stop`。新场景随修复一起提交。Release 包上不对的回第 3 步。
 
 ## 5 更新上线
 
