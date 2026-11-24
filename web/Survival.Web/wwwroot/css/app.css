@@ -802,6 +802,10 @@ kbd { font-size: var(--fs-aux); }
 /* B4：操作条里执行按钮独占一行（数量控件在上一行），按钮文字不逐字折行 */
 .tbar .tbar-row .tbar-go { flex: 1 1 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tbar .tbar-row input { flex: 1 1 48px; min-width: 48px; }
+/* B35b（Q948 A）：物品卡两种维修各一组“原配方标签＋开始维修按钮”，标签与按钮同行成组、组独占一行 */
+.tbar .tbar-row .keep-grp { flex: 1 1 100%; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.tbar .tbar-row .keep-grp .keep-lab { flex: none; font-size: var(--fs-aux); color: var(--muted); white-space: nowrap; }
+.tbar .tbar-row .keep-grp .tbar-go { flex: 1 1 auto; min-width: 0; }
 /* B5：当前地图卡按钮标题、物品卡副标不逐字折行 */
 .map-card .loc-btn strong, .map-card .loc-btn small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .card .cinfo { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

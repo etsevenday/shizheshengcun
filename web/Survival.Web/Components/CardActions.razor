@@ -301,7 +301,7 @@
             @if (m.Instance is ItemInstance kInst && s.Battle == null && (kInst.IsCarried || kInst.Owner == s.Ground) && !e.IsFieldPatch(kInst)
                  && (kInst.MaxDurability.HasValue || e.Item(kInst.ItemId).IsEquipment))
             {
-                @* B4（A05 §5；开发计划 v0.9 B4 H8/H9/H10）：选中有耐久的工具/装备时卡下给“维修·30分钟”，选中装备时给“拆解·15分钟”；
+                @* B4（A05 §5；开发计划 v0.9 B4 H8/H9/H10）：选中有耐久的工具/装备时卡下给维修入口，选中装备时给拆解入口（B35b 起按钮文字见下）；
                    单击直接开始、悬停在右栏看预测；不可用时按钮禁用并在下面写原因。手工制作面板里的“工具维护”保留。 *@
                 var kid = kInst.InstanceId;
                 var repairRc = e.RepairRecipe;
@@ -313,25 +313,35 @@
                 var fpReq = fpRc != null && kInst.MaxDurability.HasValue && e.FieldPatchEligible(kInst.ItemId) ? new ActionRequest { Type = ActionType.Craft, TargetId = fpRc.Id, InstanceId = kid } : null;
                 var fpWhy = fpReq == null ? null : G.Running ? "行动进行中" : e.CanStart(s, fpReq);
                 var swhy = sreq == null ? null : G.Running ? "行动进行中" : e.CanStart(s, sreq);
+                @* B35b（S08／A10／R02 2026-11-17 B35 次要 Q912 A、2026-11-18 B35b Q947 A／Q948 A，2026-11-16 B35 Q801—Q802，BM11 Q965）：
+                   按钮“{动作名}（{实际预计时长}）”与右栏完整预估同源（G.Preview(...).ConfirmText）；不能开工只写动作名，原因仍在下面。
+                   工具维护与现场修补两个按钮都叫“开始维修”，各自前面一组原配方标签（“工具维护”“现场修补”），读屏经 role=group＋aria-labelledby 关联本组标签；
+                   两种做法仍各走原真实事务，不合并。拆解按钮“开始拆解（…）”。 *@
                 <div class="tbar-row keep-row">
                     @if (rreq != null)
                     {
-                        <button type="button" class="tbar-go alt" disabled="@(rwhy != null)" title="@(rwhy ?? "单击直接开始；右侧显示预测")"
-                                @onmouseenter="() => G.Hover(rreq, RepairTitle)" @onmouseleave="() => G.Hover(null)"
-                                @onclick="() => StartKeep(rreq)">维修·@(repairRc!.BaseMinutes)分钟</button>
+                        <div class="keep-grp" role="group" aria-labelledby="@($"kg-repair-{kid}")" data-pt="card-repair-group">
+                            <span class="keep-lab" id="@($"kg-repair-{kid}")" data-pt="card-repair-label">@repairRc!.Name</span>
+                            <button type="button" class="tbar-go alt" disabled="@(rwhy != null)" title="@(rwhy ?? "单击直接开始；右侧显示预测")" data-pt="card-repair"
+                                    @onmouseenter="() => G.Hover(rreq, RepairTitle)" @onmouseleave="() => G.Hover(null)"
+                                    @onclick="() => StartKeep(rreq)">@(rwhy == null ? G.Preview(rreq).ConfirmText : GameEngine.StartVerb(repairRc))</button>
+                        </div>
                     }
                     @if (fpReq != null)
                     {
                         @* B22b（Q168）：品阶野外修补包“现场修补”，默认用能恢复最多、消耗最少的一包；要换包在制作面板“现场修补”里选 *@
-                        <button type="button" class="tbar-go alt" disabled="@(fpWhy != null)" title="@(fpWhy ?? "按包品阶扣包耐久修补；单击直接开始；右侧显示预测；要换包在制作面板选")"
-                                @onmouseenter="() => G.Hover(fpReq, PatchTitle)" @onmouseleave="() => G.Hover(null)"
-                                @onclick="() => StartKeep(fpReq)">现场修补·@(fpRc!.BaseMinutes)分钟</button>
+                        <div class="keep-grp" role="group" aria-labelledby="@($"kg-patch-{kid}")" data-pt="card-patch-group">
+                            <span class="keep-lab" id="@($"kg-patch-{kid}")" data-pt="card-patch-label">@fpRc!.Name</span>
+                            <button type="button" class="tbar-go alt" disabled="@(fpWhy != null)" title="@(fpWhy ?? "按包品阶扣包耐久修补；单击直接开始；右侧显示预测；要换包在制作面板选")" data-pt="card-patch"
+                                    @onmouseenter="() => G.Hover(fpReq, PatchTitle)" @onmouseleave="() => G.Hover(null)"
+                                    @onclick="() => StartKeep(fpReq)">@(fpWhy == null ? G.Preview(fpReq).ConfirmText : GameEngine.StartVerb(fpRc))</button>
+                        </div>
                     }
                     @if (sreq != null)
                     {
-                        <button type="button" class="tbar-go alt" disabled="@(swhy != null)" title="@(swhy ?? "单击直接开始；右侧显示预测")"
+                        <button type="button" class="tbar-go alt" disabled="@(swhy != null)" title="@(swhy ?? "单击直接开始；右侧显示预测")" data-pt="card-salvage"
                                 @onmouseenter="() => G.Hover(sreq, SalvageTitle)" @onmouseleave="() => G.Hover(null)"
-                                @onclick="() => StartKeep(sreq)">拆解·@(salvageRc!.BaseMinutes)分钟</button>
+                                @onclick="() => StartKeep(sreq)">@(swhy == null ? G.Preview(sreq).ConfirmText : GameEngine.StartVerb(salvageRc!))</button>
                     }
                 </div>
                 @if (rwhy != null) { <div class="ca-note bad">维修：@rwhy</div> }

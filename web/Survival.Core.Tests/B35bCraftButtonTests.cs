@@ -205,4 +205,25 @@ public class B35bCraftButtonTests : TestBase
         Assert.That(GameEngine.CraftAreaHint("开始建造"), Is.EqualTo("在‘本次制作’区点‘开始建造’；右栏显示完整预估。"));
         Assert.That(GameEngine.StationAreaGuide("投料（1批 · 1小时）"), Is.EqualTo("在‘本次制作’区点‘投料（1批 · 1小时）’。"));
     }
+    // ───────────── 系统说明 ─────────────
+
+    /// <summary>
+    /// Q593 A（逐字稿“系统说明预估段”）：手工制作说明的“在配方卡下方点‘开始制作’”换成逐字预估段（期望句从逐字稿原文取）；
+    /// 行动确认段里“在所选配方卡下方‘开始’”的旧位置也不再出现（暂用说法见开发记录“暂用文案”）。Q946 燃料说明句不在本批改（继承 Q943 C）。
+    /// </summary>
+    [Test]
+    public void Help_CraftEstimateParagraph_Verbatim_OldPlacementGone()
+    {
+        var verbatim = File.ReadAllText(Path.Combine(SourceText.Root(), "doc", "策划案", "重墨像素风界面与卡片 v0.9", "重墨 V2 开工裁定与界面逐字稿.md"));
+        const string head = "系统说明预估段：“";
+        var at = verbatim.IndexOf(head, StringComparison.Ordinal);
+        Assert.That(at, Is.GreaterThan(0));
+        var para = verbatim.Substring(at + head.Length, verbatim.IndexOf('”', at + head.Length) - at - head.Length);
+        Assert.That(para, Is.EqualTo("选择配方后，在‘本次制作’区查看耗时和产物，并点对应开工按钮；右栏显示完整预估。"));
+
+        var help = SourceText.Web(Path.Combine("Services", "HelpCatalog.cs"));
+        Assert.That(help, Does.Contain("火堆和锅里的要先取出。" + para));
+        Assert.That(help, Does.Not.Contain("配方卡下方"));
+        Assert.That(help, Does.Contain("制作和建造在‘本次制作’区点对应开工按钮；"));
+    }
 }
