@@ -271,6 +271,43 @@ public class B35bCraftPageUiTests : WebTestBase
         Assert.That(G.MapSourceSpot, Is.Null, "离开来源链地图即清高亮");
     }
 
+    /// <summary>
+    /// B35b 试玩修复 M1157（Q599 B：“悬停有已知地点的来源行时，右栏只读显示该地点详情；悬停不改已选来源、配方／数量草稿或地图移动目标，不开图、不出发”）：
+    /// 侧页里悬停“荒地纤维丛”行的地点（与该行 data-peek 同键）——右栏显示地点详情（data-peek-shown=node…）；制作窗口仍在、所选来源与配方不变、不开地图、不移动。
+    /// 配对：侧页没列着的地点（营地）、以及回到配方视图后同一地点都不受理（右栏不换）。
+    /// </summary>
+    [Test]
+    public void Sources_HoverLocatableRow_RightBarShowsNodeReadOnly()
+    {
+        KnifeMats(1, 0);
+        DiscoverFieldFiber();
+        var cut = OpenKnife();
+        cut.Find("[data-source-item=fiber]").Click();
+        var key = G.CraftSourceKey;
+        var here = S.CurrentLocation;
+        var rowPeek = cut.Find("[data-pt=src-row][aria-pressed=true]").GetAttribute("data-peek")!;
+        Assert.That(rowPeek, Is.EqualTo(Peek.Node("field")));
+        Ctx.JSInterop.Setup<double[]>("survivalMap.size", _ => true).SetResult(new double[] { 900, 600 });
+        Ctx.JSInterop.Setup<double[]>("survivalMap.getCenter", _ => true).SetResult(new double[] { 450, 300 });
+        var rail = Ctx.RenderComponent<DetailPanel>();
+
+        G.PeekEnter(Peek.Node(here));   // 配对：营地不是侧页列着的地点
+        Assert.That(G.PeekKeyNow, Is.Null);
+
+        G.PeekEnter(rowPeek);
+        Assert.That(G.PeekKeyNow, Is.EqualTo(rowPeek));
+        rail.Render();
+        Assert.That(rail.Find("[data-peek-shown]").GetAttribute("data-peek-shown"), Is.EqualTo(rowPeek));
+        Assert.That((G.Panel, G.CraftSourcesOpen, G.CraftSourceKey, G.CraftRecipe), Is.EqualTo(("craft", true, key, "knife")), "悬停不换页、不改所选来源与配方");
+        Assert.That((G.MapPicked, S.CurrentLocation), Is.EqualTo(((string?)null, here)), "不选目的地、不移动");
+
+        // 配对：回到配方视图后，同一地点不再受理
+        G.PeekClear();
+        G.CloseCraftSources();
+        G.PeekEnter(rowPeek);
+        Assert.That(G.PeekKeyNow, Is.Null);
+    }
+
     /// <summary>普通地图（不是来源链）关闭键仍按原返回链写法，不写“返回材料来源”（Q592 配对）。</summary>
     [Test]
     public void PlainMap_CloseLabelUnchanged()

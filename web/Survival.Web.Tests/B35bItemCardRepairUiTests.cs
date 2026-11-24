@@ -76,6 +76,30 @@ public class B35bItemCardRepairUiTests : WebTestBase
     }
 
     /// <summary>
+    /// B35b 试玩修复 M1157（Q947 A“原因仍在原旁侧”）：不能开工的原因句在本组按钮旁（同一组内、紧跟按钮），按钮以 aria-describedby 指向它；
+    /// 能开工的按钮旁没有原因句。原句不变（“维修：…”“拆解：…”）。
+    /// </summary>
+    [Test]
+    public void DisabledReasons_BesideOwnButton()
+    {
+        var cut = OpenMachete(patchPack: true, repairMats: false);
+        var rbtn = cut.Find("[data-pt=card-repair]");
+        var rwhy = cut.Find("[data-pt=card-repair-group] .ca-note.bad");
+        Assert.That(rwhy.TextContent, Does.StartWith("维修："));
+        Assert.That(rbtn.NextElementSibling?.Id, Is.EqualTo(rwhy.Id), "原因紧跟本组按钮");
+        Assert.That(rbtn.GetAttribute("aria-describedby"), Is.EqualTo(rwhy.Id));
+        var sbtn = cut.Find("[data-pt=card-salvage]");
+        var swhy = cut.Find("[data-pt=card-salvage-group] .ca-note.bad");
+        Assert.That(swhy.TextContent, Is.EqualTo("拆解：拆解1阶装备需要制造3级（当前1级）"));
+        Assert.That(sbtn.NextElementSibling?.Id, Is.EqualTo(swhy.Id));
+        Assert.That(sbtn.GetAttribute("aria-describedby"), Is.EqualTo(swhy.Id));
+        // 配对：现场修补能开工——组内没有原因句、按钮不挂 describedby
+        Assert.That(cut.FindAll("[data-pt=card-patch-group] .ca-note.bad"), Is.Empty);
+        Assert.That(cut.Find("[data-pt=card-patch]").HasAttribute("aria-describedby"), Is.False);
+        Assert.That(cut.FindAll(".ca-note.bad").Count(n => n.TextContent.StartsWith("维修：")), Is.EqualTo(1), "原因只出现一次（不在组外重复）");
+    }
+
+    /// <summary>
     /// 配对（Q801—Q802、Q948 A）：放上废料、零件后工具维护也能开工——两个按钮都叫“开始维修（…）”，时长各取各自预估；两组仍靠标签区分；
     /// 拿掉修补包后现场修补变灰只写“开始维修”，标签“现场修补”仍在（两个灰按钮也能分清）。
     /// </summary>

@@ -323,8 +323,10 @@
                         <div class="keep-grp" role="group" aria-labelledby="@($"kg-repair-{kid}")" data-pt="card-repair-group">
                             <span class="keep-lab" id="@($"kg-repair-{kid}")" data-pt="card-repair-label">@repairRc!.Name</span>
                             <button type="button" class="tbar-go alt" disabled="@(rwhy != null)" title="@(rwhy ?? "单击直接开始；右侧显示预测")" data-pt="card-repair"
+                                    aria-describedby="@(rwhy != null ? $"kw-repair-{kid}" : null)"
                                     @onmouseenter="() => G.Hover(rreq, RepairTitle)" @onmouseleave="() => G.Hover(null)"
                                     @onclick="() => StartKeep(rreq)">@(rwhy == null ? G.Preview(rreq).ConfirmText : GameEngine.StartVerb(repairRc))</button>
+                            @if (rwhy != null) { <div class="ca-note bad keep-why" id="@($"kw-repair-{kid}")">维修：@rwhy</div> }
                         </div>
                     }
                     @if (fpReq != null)
@@ -333,25 +335,30 @@
                         <div class="keep-grp" role="group" aria-labelledby="@($"kg-patch-{kid}")" data-pt="card-patch-group">
                             <span class="keep-lab" id="@($"kg-patch-{kid}")" data-pt="card-patch-label">@fpRc!.Name</span>
                             <button type="button" class="tbar-go alt" disabled="@(fpWhy != null)" title="@(fpWhy ?? "按包品阶扣包耐久修补；单击直接开始；右侧显示预测；要换包在制作面板选")" data-pt="card-patch"
+                                    aria-describedby="@(fpWhy != null && !(G.Running && rwhy != null) ? $"kw-patch-{kid}" : null)"
                                     @onmouseenter="() => G.Hover(fpReq, PatchTitle)" @onmouseleave="() => G.Hover(null)"
                                     @onclick="() => StartKeep(fpReq)">@(fpWhy == null ? G.Preview(fpReq).ConfirmText : GameEngine.StartVerb(fpRc))</button>
+                            @if (fpWhy != null && !(G.Running && rwhy != null)) { <div class="ca-note bad keep-why" id="@($"kw-patch-{kid}")">现场修补：@fpWhy</div> }
                         </div>
                     }
                     @if (sreq != null)
                     {
-                        <button type="button" class="tbar-go alt" disabled="@(swhy != null)" title="@(swhy ?? "单击直接开始；右侧显示预测")" data-pt="card-salvage"
-                                @onmouseenter="() => G.Hover(sreq, SalvageTitle)" @onmouseleave="() => G.Hover(null)"
-                                @onclick="() => StartKeep(sreq)">@(swhy == null ? G.Preview(sreq).ConfirmText : GameEngine.StartVerb(salvageRc!))</button>
+                        <div class="keep-grp" data-pt="card-salvage-group">
+                            <button type="button" class="tbar-go alt" disabled="@(swhy != null)" title="@(swhy ?? "单击直接开始；右侧显示预测")" data-pt="card-salvage"
+                                    aria-describedby="@(swhy != null ? $"kw-salvage-{kid}" : null)"
+                                    @onmouseenter="() => G.Hover(sreq, SalvageTitle)" @onmouseleave="() => G.Hover(null)"
+                                    @onclick="() => StartKeep(sreq)">@(swhy == null ? G.Preview(sreq).ConfirmText : GameEngine.StartVerb(salvageRc!))</button>
+                            @if (swhy != null) { <div class="ca-note bad keep-why" id="@($"kw-salvage-{kid}")">拆解：@swhy</div> }
+                        </div>
                     }
                 </div>
-                @if (rwhy != null) { <div class="ca-note bad">维修：@rwhy</div> }
-                @if (fpReq != null && fpWhy != null && !(G.Running && rwhy != null)) { <div class="ca-note bad">现场修补：@fpWhy</div> }
+                @* B35b 试玩修复 M1157（Q947“原因在按钮旁”）：三条不能开工原因移进各自按钮组、紧挨按钮右侧（原句与显示条件不变），
+                   1280×720 物品卡浮窗里不再被挤到可见区以下 *@
                 @if (fpReq != null && fpWhy == null && e.FieldPatchBlocked(s, kid, null, out var fpT, out var fpK, out var fpQ) == null)
                 {
                     var fpNotes = e.FieldPatchNotes(fpT!, fpK!, fpQ);
                     <div class="ca-note">现场修补：@fpNotes[0]；@fpNotes[1]</div>
                 }
-                @if (swhy != null) { <div class="ca-note bad">拆解：@swhy</div> }
                 @if (sreq != null && swhy == null && e.SalvageOutput(kInst) is (string so, int sn))
                 {
                     var sy = e.SalvageYield(s, kInst);

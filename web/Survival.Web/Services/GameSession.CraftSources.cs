@@ -30,6 +30,10 @@ public sealed partial class GameSession
     public bool SourceLocatable(ItemSourceView v) =>
         State != null && v.LocationId is string loc && S.Locations.TryGetValue(loc, out var l) && l.Discovered;
 
+    /// <summary>B35b 试玩修复 M1157（Q599 B）：侧页开着且某条列着的来源行在该已知地点——悬停看地点详情（B42 Node）只认这些地点。</summary>
+    private bool CraftSourceNodeListed(string locationId) =>
+        CraftSourcesOpen && CraftSources().Any(v => v.LocationId == locationId && SourceLocatable(v));
+
     /// <summary>侧页当前物品的来源（每次按当前真实状态现算）。</summary>
     public List<ItemSourceView> CraftSources() => State == null || CraftSourceItem == null ? new() : E.ItemSources(S, CraftSourceItem);
 

@@ -200,7 +200,9 @@ public sealed partial class GameSession
             case PeekKey.Gear:
                 return Panel == "gear" && int.TryParse(first, out var gid) && E.FindItem(S, gid) != null;
             case PeekKey.Node:
-                return Panel == "map" && S.Locations.TryGetValue(first, out var nl) && nl.Discovered;
+                // B35b 试玩修复 M1157（Q599 B）：制作窗口的材料来源侧页里，有已知地点的来源行悬停／聚焦时右栏同样只读显示该地点（只认侧页当前列着的地点）
+                return (Panel == "map" || Panel == "craft" && CraftSourceNodeListed(first))
+                    && S.Locations.TryGetValue(first, out var nl) && nl.Discovered;
             case PeekKey.Recipe:
                 // B35a1：只认当前上下文列着的配方（本分类／本座设施／候选），秘密配方未显现即失效（Q600）
                 return Panel == "craft" && E.Config.Recipes.FirstOrDefault(r => r.Id == first && !r.IsSalvage) is { } prc
