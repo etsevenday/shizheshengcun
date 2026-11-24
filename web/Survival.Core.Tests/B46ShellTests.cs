@@ -73,8 +73,8 @@ public class B46ShellTests
         Assert.That(cp, Does.Contain("<div class=\"cp-note cp-resume warn-text\">"), "警示色");
         var css = Web("wwwroot/css/shell.css");
         Assert.That(css, Does.Contain(".cprog .cp-resume > span { display: block; }"));
-        Assert.That(css, Does.Not.Contain(".pause-dock .cprog .cp-resume > span { display: inline; }"), "窄条也逐行，不接排");
-        Assert.That(css, Does.Contain(".wasteland .pause-dock:has(.cp-resume) { max-height: none; }"), "不裁字");
+        // B60 改期望（S01／S14 Q1038 选 C 撤窄条）：原“窄条也逐行、不裁字”随窄条撤掉；弹窗里逐行仍由上面 .cp-resume > span 块级保证
+        Assert.That(css, Does.Not.Contain(".pause-dock"), "窄条已撤");
         Assert.That(GameEngine.LockedAbortNote, Is.EqualTo("本次行动无法继续，点击「继续行动」后将自动中止。"));
     }
 
@@ -122,15 +122,14 @@ public class B46ShellTests
         Assert.That(js, Does.Contain("return shown(el) && !(el.closest && el.closest('.pop-ghosts'));"));
     }
 
-    /// <summary>B46 试玩修复 2：窄条不限高、压紧间距；休息面板在窄条让位后整块滚动、开始条贴底。</summary>
+    /// <summary>B46 试玩修复 2：窄条不限高、压紧间距；休息面板在窄条让位后整块滚动、开始条贴底。
+    /// B60 改期望（S01／S14 Q1038 选 C 撤窄条）：窄条与面板为它让位的规则一并撤掉，这里改断它们已不在。</summary>
     [Test]
     public void Fix2_DockStripNotClipped_RestPanelScrolls()
     {
         var css = Web("wwwroot/css/shell.css");
         var fix = css.Substring(css.IndexOf("B46 试玩修复（线上构建 b6a1d4b）", StringComparison.Ordinal));
-        Assert.That(fix, Does.Contain(".wasteland :is(.cprog.docked, .pause-dock) { max-height: none; }"));
-        Assert.That(fix, Does.Contain(".center-scroll.four.docked-prog .panel-host .rest-panel { overflow-y: auto; overscroll-behavior: contain; }"));
-        Assert.That(fix, Does.Contain(".center-scroll.four.docked-prog .panel-host .rest-panel > .rest-go { position: sticky; bottom: 0; }"));
+        Assert.That(fix, Does.Not.Contain(".cprog.docked").And.Not.Contain(".pause-dock").And.Not.Contain("docked-prog"));
     }
 
     /// <summary>B46 试玩修复 3：完整暂停弹窗每次打开都滚回顶部（标题与说明可见）。</summary>
@@ -139,7 +138,8 @@ public class B46ShellTests
     {
         var pause = Web("Components/PauseLayer.razor");
         Assert.That(pause, Does.Contain("@inject IJSRuntime JS").And.Contain("await JS.InvokeVoidAsync(\"survival.pauseTop\")"));
-        Assert.That(pause, Does.Contain("Docked ? null : $\"{G.S.Main.ActionId}|{G.S.Sub?.ActionId}\""));
+        // B60 改期望（Q1038 C）：没有窄条后只按行动键判断新开
+        Assert.That(pause, Does.Contain("var key = G.State == null || G.S.Main == null ? null : $\"{G.S.Main.ActionId}|{G.S.Sub?.ActionId}\";"));
         Assert.That(Web("wwwroot/js/app.js"), Does.Contain("var g = document.querySelector('.pause-scrim > .pause-grid'); if (g && g.scrollTop > 0) g.scrollTop = 0;"));
     }
 }

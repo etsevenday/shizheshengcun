@@ -330,7 +330,8 @@ public class BM5b1FacMenuTests : TestBase
         Assert.That(dlg, Is.GreaterThan(menuModal));
         Assert.That(trap, Is.GreaterThan(dlg), "更高层先接管");
         var fac = Web("Services", "GameSession.FacMenu.cs");
-        Assert.That(fac, Does.Contain("public bool FireMenuTop => State != null && Panel == FireMenuPanel && FireMenu != null && EscOwner is EscOwner.FacBack or EscOwner.Panel;"));
+        // B60（Q1030）：中央行动进度浮窗在最上层时火堆菜单不是最高输入层（不写 data-tab-trap）
+        Assert.That(fac, Does.Contain("public bool FireMenuTop => State != null && Panel == FireMenuPanel && FireMenu != null && !ProgressLock && EscOwner is EscOwner.FacBack or EscOwner.Panel;"));
         var keys = Web("Services", "GameSession.Keys.cs");
         var order = new[] { "if (DiskMaskShown) return EscOwner.Disk;", "if (Pop != null) return EscOwner.Pop;", "if (IgniteMenuOpen) return EscOwner.Ignite;", "if (Panel == FireMenuPanel && FireMenuLevel > 0) return EscOwner.FacBack;" };
         var at = keys.IndexOf("public EscOwner NormalEscOwner()", StringComparison.Ordinal);

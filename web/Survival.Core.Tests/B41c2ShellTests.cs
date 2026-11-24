@@ -65,10 +65,13 @@ public class B41c2ShellTests
     public void Fix_P2_P3_P5_P6_ShellLayoutAndTexts()
     {
         var css = Web("wwwroot/css/shell.css");
-        Assert.That(css, Does.Contain(".wasteland .pause-dock:has(.cp-resume) { max-height: none; }"));
+        // B60 改期望（S01／S14 Q1038 选 C 撤窄条）：原 P2“窄条不裁复核原因”随窄条撤掉
+        Assert.That(css, Does.Not.Contain(".pause-dock"));
         Assert.That(css, Does.Contain(".pause-scrim.pick-open { bottom: calc(50% + var(--sh-gap) / 2); }"));
         Assert.That(Web("Components/CentralProgress.razor"), Does.Contain("<div class=\"cp-note cp-resume warn-text\">"));
-        Assert.That(Web("Components/PauseLayer.razor"), Does.Contain("e.LockedToolPickupOpen(s, pickTool) ? \"pick-open\""));
+        // B60：pick-open 判定原样移到 GameSession.PausePickOpen（进度遮罩挖洞同源），只是搬家
+        Assert.That(Web("Components/PauseLayer.razor"), Does.Contain("@(G.PausePickOpen ? \"pick-open\" : \"\")"));
+        Assert.That(Web("Services/GameSession.ProgressLock.cs"), Does.Contain("PauseLayerShown && S.Sub == null && E.LockedPickupTool(S) is ItemInstance tool && E.LockedToolPickupOpen(S, tool);"));
         // B41e3：旧常驻敌人详情（含「ESC 不能关掉战斗」脚注）与旧接近按钮随旧流程删除；新版敌踪详情脚注与禁用原因见 B41e1ShellTests、B46ShellTests
         Assert.That(Web("Components/EnemyDetail.razor"), Does.Contain("<div class=\"under\">@GameEngine.EnemyCardFootnote</div>"));
     }

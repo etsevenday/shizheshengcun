@@ -91,6 +91,31 @@ window.survival = {
     window.__survivalDlgPrev = a && a !== document.body && !(a.closest && a.closest('.dlg-layer')) ? a : null;
     if (a && a.blur && !(a.closest && a.closest('.dlg-layer'))) a.blur();
   },
+  // B60（S01／S14 Q1038 选 C、S11／S14 Q1030）：中央行动进度浮窗成为最上层——取消未提交的拖拽（已开始的连续转移不再提交，退出后要新的明确输入），
+  // 收起浮窗以外的键盘焦点（背景控件不再接 Enter／Space）；记下原焦点，浮窗退出后回它
+  progLockOnset: function () {
+    try { if (window.survivalDrag) survivalDrag.cancel(); } catch (e) { }
+    var a = document.activeElement;
+    var inLock = a && a.closest && a.closest('[data-prog-lock], .pause-scrim, .cprog, .menu-modal, .modal');
+    window.__survivalProgPrev = a && a !== document.body && !inLock ? a : null;
+    if (a && a.blur && a !== document.body && !inLock) a.blur();
+  },
+  // B60（Q1038「退出浮窗或真实结束后恢复当前仍合法的上级面板与焦点」）：原焦点仍在、可用、不在 inert 里就回它；否则不动（留给当前合法的最上层）。只聚焦、不执行
+  progLockEnd: function () {
+    var prev = window.__survivalProgPrev;
+    window.__survivalProgPrev = null;
+    if (!prev) return;
+    var tries = 0;
+    function go() {
+      if (!prev.isConnected || prev.disabled) return;
+      if (prev.closest && prev.closest('[inert]')) { if (++tries < 20) requestAnimationFrame(go); return; }
+      if (!(prev.offsetWidth || prev.offsetHeight)) return;
+      var ae = document.activeElement;
+      if (ae && ae !== document.body && ae !== prev) return;   // 已有新的明确焦点：不抢
+      try { prev.focus({ preventScroll: true }); } catch (e) { }
+    }
+    setTimeout(go, 0);
+  },
   // B45b（Q585 首段）：引导对白读完、回到原火堆加工菜单时恢复焦点——对白前的焦点仍在该菜单里且可用就回它，
   // 否则进菜单第一个可用控件（FACPROC 第 4 条「焦点进入菜单标题／首个操作」）。只聚焦、不执行；菜单已不在就不动。
   dialogueEnd: function (hostSel) {
@@ -443,6 +468,26 @@ window.survival = {
         }
         return;
       }
+      // B60（S01／S14 Q1038 选 C、S11／S14 Q1030）：中央行动进度浮窗在最上层（C# 判定后在浮窗根写 data-prog-lock，Q523／Q569 例外开放行时不写）：
+      // Tab／Shift+Tab 只在浮窗里循环；空格（焦点不在浮窗里的具体控件上时）只点浮窗自己的「跳过动画」；Esc 交给游戏（只开游戏菜单）；
+      // 其余字母、数字、地图键、回车都不落到背景。浮窗之上的数量框、强制整理等更高层照它们自己的规则（菜单、对白已在上面先拦下）
+      var plk = document.querySelector('[data-prog-lock]');
+      if (plk && shown(plk) && !(plk.closest && plk.closest('[inert]')) && !Array.prototype.some.call(document.querySelectorAll('.modal-back, .overflow-layer'), shown)) {
+        if (mod) return;
+        if (k === 'Escape') { if (!ev.repeat) send('Escape'); else ev.preventDefault(); return; }
+        if (k === 'Tab') { trapTab(ev, plk, plk.matches('[tabindex]') ? plk : null); return; }
+        var pae = document.activeElement;
+        var onCtl = pae && plk.contains(pae) && (control(pae) || editable(pae));
+        if (k === ' ' && !onCtl) {
+          ev.preventDefault();
+          var psk = plk.querySelector('[data-skip-anim]');
+          if (psk && !psk.disabled && shown(psk)) { eatSpace(ev); psk.click(); }
+          return;
+        }
+        if (onCtl) return;   // 浮窗里的按钮、输入框：按它自己的原生语义
+        if (k === 'Enter' || /^[0-9]$/.test(k) || (k && k.length === 1)) ev.preventDefault();
+        return;
+      }
       // BM5b1（S14 Q602）：中央加工菜单是当前最高输入层时（由 C# 判定并在菜单根写 data-tab-trap＝安全落点 id，JS 不自己猜层级），
       // Tab／Shift+Tab 只在该层当前可见、可用、可聚焦的控件间按文档顺序首尾循环，跳过禁用、隐藏与 inert；不点按钮、不换来源。
       // 一时没有可聚焦控件时留在菜单标题（安全位置）。菜单、对白、反馈窗等更高层已在上面先拦下，被盖住时 C# 不写该属性、这里不接管。
@@ -742,7 +787,8 @@ window.survivalDlg = (function () {
 // 菜单打开时冻结入场表现，关闭后续原进度。系统减少动态效果时 CSS 不做渐变，静态压暗与模糊照常。
 window.survivalFocus = (function () {
   var raf = 0, timer = 0, paused = [];
-  function scrims() { return document.querySelectorAll('.dlg-focus'); }
+  // B60：中央行动进度遮罩（.prog-focus）沿用同一挖洞做法（白名单在 data-keep，GameSession.ProgressKeep）
+  function scrims() { return document.querySelectorAll('.dlg-focus, .prog-focus'); }
   function active(s) {
     if (s.classList.contains('on')) return true;
     try { return getComputedStyle(s).visibility !== 'hidden'; } catch (e) { return false; }
@@ -1260,24 +1306,10 @@ window.survivalPop = (function () {
       for (var i = 0; i < live.length; i++) { if (!host.contains(live[i])) { done(); return; } }
     });
   }
-  // B31c（B31b 遗留）：中央行动位收成窄条时，把窄条实际高度写到中部 --dock-live，一级面板只让出这么高（不多留空、不盖③④）
-  var dockRo = window.ResizeObserver ? new ResizeObserver(syncDock) : null, dockEl = null;
-  function syncDock() {
-    var c = document.querySelector('section.center');
-    if (!c) return;
-    var bar = c.querySelector(':scope > .cprog.docked, :scope > .pause-dock');
-    if (bar !== dockEl) {
-      if (dockRo && dockEl) dockRo.unobserve(dockEl);
-      dockEl = bar;
-      if (dockRo && bar) dockRo.observe(bar);
-    }
-    var v = bar ? bar.offsetHeight + 'px' : '';
-    if (c.style.getPropertyValue('--dock-live') !== v) { if (v) c.style.setProperty('--dock-live', v); else c.style.removeProperty('--dock-live'); }
-  }
+  // B60（Q1038 选 C）：中央行动位不再收成窄条，原 B31c 按窄条实际高度给面板让位的 syncDock 一并撤掉
   function start() {
     if (!window.MutationObserver || !document.body) return;
     new MutationObserver(function (muts) {
-      syncDock();
       if (reduced()) return;
       for (var i = 0; i < muts.length; i++) {
         var m = muts[i];

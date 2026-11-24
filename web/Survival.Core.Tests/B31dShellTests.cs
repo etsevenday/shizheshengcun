@@ -208,7 +208,8 @@ public class B31dShellTests : TestBase
 
     /// <summary>
     /// Q338-A01：居中局部盘开着时四轨上有遮罩、四轨 inert（不能点、拖、取得键盘焦点）；点遮罩与 Esc 只撤回本盘（同该盘 ×／取消），焦点回到仍存在的触发控件；
-    /// 窄条（「退出行动」）在遮罩之上；菜单、对白锁、死亡、强制整理时不另加；悬停、整备／制作页内工作区、行动进度窗不走这一层。
+    /// 菜单、对白锁、死亡、强制整理时不另加；悬停、整备／制作页内工作区、行动进度窗不走这一层。
+    /// B60 改期望（S01／S14 Q1038 选 C）：原“窄条（「退出行动」）在遮罩之上”改为行动推进时局部盘收起、进度浮窗与暂停弹窗在整屏进度遮罩（z 44）之上。
     /// </summary>
     [Test]
     public void Q338_A01_DiskMask()
@@ -225,7 +226,7 @@ public class B31dShellTests : TestBase
         var screen = Web("Components", "GameScreen.razor");
         Assert.That(screen, Does.Contain("<div class=\"disk-scrim\" aria-hidden=\"true\" @onclick=\"CancelDisk\"></div>"));
         Assert.That(screen, Does.Contain("_diskMask = G.DiskMaskShown;"));
-        Assert.That(screen.IndexOf("<div class=\"disk-scrim\""), Is.LessThan(screen.IndexOf("<PauseLayer Docked=")), "遮罩在窄条之前（窄条 z 更高，在遮罩之上）");
+        Assert.That(screen.IndexOf("<div class=\"disk-scrim\""), Is.LessThan(screen.IndexOf("<PauseLayer />")), "局部盘遮罩在暂停弹窗之前");
         // B43：Esc 逐层顺序移到 GameSession.NormalEscOwner（界面 ESC 键帽同源），GameScreen.NormalStep 按它分派
         Assert.That(screen.Substring(screen.IndexOf("private void NormalStep()")), Does.Contain("case EscOwner.Disk: CancelDisk(); break;"));
         var step = Web("Services", "GameSession.Keys.cs");
@@ -246,7 +247,8 @@ public class B31dShellTests : TestBase
         var css = Web("wwwroot", "css", "shell.css");
         var scrim = Block(css, ".wasteland .center > .disk-scrim {");
         Assert.That(scrim, Does.Contain("position: absolute; inset: 0; z-index: 42;"));
-        Assert.That(Block(css, ".wasteland .cprog.float.docked, .pause-dock {"), Does.Contain("z-index: 45"), "窄条在遮罩之上");
+        Assert.That(Block(css, ".pause-scrim {"), Does.Contain("z-index: 46"), "B60：暂停弹窗在局部盘遮罩（42）与进度遮罩（44）之上");
+        Assert.That(Block(css, ".prog-focus {"), Does.Contain("z-index: 44"));
         Assert.That(css, Does.Contain(".wasteland:not(:has(.apop.apop-c:not(.card-pop), .apop.card-pop.apop-c .tbar)) .center > .disk-scrim { display: none; }"));
         Assert.That(Block(css, ".wasteland .apop.apop-c > .apop-body {"), Does.Contain("overscroll-behavior: contain"), "盘内滚动独立");
 

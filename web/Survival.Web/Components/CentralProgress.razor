@@ -4,7 +4,9 @@
    在中部正中显示「行动进行中」浮窗——行动名、「已推进{已耗时} / {计划时长}」与「剩余{时长}」（工作量型与等待烹饪为「已推进{已耗时}」与
    「预计剩余{时长}」，算不出时剩余行让位给实际原因）、进度条、「退出行动」。暂停时同一组件嵌在「行动暂停中」居中弹窗里，给「暂停原因」与
    「继续行动」「退出行动」。150ms 淡入淡出只是表现（不推进 tick、不延迟退出、淡出期间不拦截操作）。数据全部来自内核 ActionProgress。
-   InFlow：嵌在暂停弹窗中间行；Docked：中部开着一级面板时收成底部窄条，不盖面板里的按钮（修 1280 下浮窗盖住城市面板「接取」）。
+   InFlow：嵌在暂停弹窗中间行。B60（S01／S14 Q1038 选 C，取代 B31b R55／Q324 的底部窄条与城市层右下角进度）：开着地图、日志、火堆、设施、
+   城市服务等面板时同样是居中浮窗，框外整个游戏界面由 GameScreen 的进度遮罩（.prog-focus）压暗模糊并阻断输入；浮窗自身（data-prog-lock）是
+   键盘 Tab 循环与空格「跳过动画」的范围。
    B41c2（S01 Q506、S14 Q506／Q514）：开工 5 分钟锁定的行动（p.Locked）浮窗、暂停弹窗、窄条与子行动一律不放「退出行动」按钮、焦点与后果行
    （不留灰色占位），只写「本次行动不可中途退出。」；锁定行动暂停时写复核原因，永久失效再加「本次行动无法继续，点击「继续行动」后将自动中止。」，
    「继续行动」仍可点（受理复核／系统收尾），只受原更高输入锁限制。 *@
@@ -17,7 +19,8 @@
     var (advanced, remain) = ShellText.ProgressLines(p);
     var pct = Math.Clamp(p.Fraction, 0, 1) * 100;
     var busy = G.Running || G.S.Sub != null;
-    <div class="cprog @(InFlow ? "inflow" : Docked ? "float docked" : "float") @(Fading ? "fading" : "") @(p.Paused ? "paused" : "") @(dlg ? "dlg" : "")"
+    <div class="cprog @(InFlow ? "inflow" : "float") @(Fading ? "fading" : "") @(p.Paused ? "paused" : "") @(dlg ? "dlg" : "")" data-pt="@(InFlow ? null : "cprog-float")"
+         data-prog-lock="@(!InFlow && !Fading && G.ProgressBgInert ? "1" : null)"
          role="status" aria-live="polite" aria-label="@($"{p.Label}：{(dlg ? "对话中，时间未推进" : remain ?? advanced)}")" inert="@(Fading || G.DialogueLocked)"
          data-single-show="@(G.SingleShowing && !Fading ? "1" : null)">
         <div class="cp-head">
@@ -64,7 +67,7 @@
                 @if (!string.IsNullOrEmpty(p.StashedLabel)) { <span class="cp-stash-note">@GameEngine.StashedWorkNote</span> }
             </div>
         }
-        @* B41c2 试玩修复（P2）：复核原因与系统收尾说明合在一块（完整弹窗里各占一行，窄条里接排一行），窄条按内容放高，不裁字 *@
+        @* B41c2 试玩修复（P2）：复核原因与系统收尾说明合在一块（各占一行，B46 Q533 起逐行），不裁字 *@
         @if (p.Paused && (!string.IsNullOrEmpty(p.ResumeNote) || p.ResumeAborts))
         {
             <div class="cp-note cp-resume warn-text">
@@ -114,8 +117,6 @@
 @code {
     /// <summary>嵌在暂停弹窗中间行；false 时悬浮在中部正中。</summary>
     [Parameter] public bool InFlow { get; set; }
-    /// <summary>中部开着一级面板：收成中部底部窄条，不盖面板内容。</summary>
-    [Parameter] public bool Docked { get; set; }
     /// <summary>淡出中的最后一帧（行动已结束/退出）：不拦截输入。</summary>
     [Parameter] public bool Fading { get; set; }
     /// <summary>淡出时沿用的最后数据；为 null 时取当前行动。</summary>

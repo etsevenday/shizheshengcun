@@ -162,7 +162,8 @@ public class B31cShellTests : TestBase
         Assert.That(Web("Components", "RestOverlay.razor"), Does.Contain("class=\"sub-panel rest-panel\""));
         var css = Web("wwwroot", "css", "shell.css");
         Assert.That(css, Does.Contain(".panel-host .rest-panel > .rest-scroll { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));"));
-        Assert.That(css, Does.Contain(".center-scroll.four.docked-prog:not(.locked) ~ :is(.cprog.docked, .pause-dock) { bottom: calc(50% + var(--sh-gap) / 2); }"));
+        // B60 改期望（S01／S14 Q1038 选 C 撤窄条）：原 E1“只开局部盘时窄条停在②底”随窄条撤掉
+        Assert.That(css, Does.Not.Contain("docked-prog"));
         Assert.That(css, Does.Contain(".overflow-layer > .overflow-box > .ov-foot { order: 1; }"));
         Assert.That(css, Does.Contain(".overflow-layer > .overflow-box > .ov-foot > .secondary { order: -1; flex: 0 1 190px;"));
         Assert.That(css, Does.Contain(".overflow-layer > .overflow-box > .ov-foot > .primary { flex: 0 1 238px;"));
@@ -184,7 +185,8 @@ public class B31cShellTests : TestBase
         Assert.That(Block(css, ".modal-back > .modal {"), Does.Contain("width: min(var(--pop-w), calc(100vw - 16px));"), "转移数量框同一居中框");
     }
 
-    /// <summary>Q324：居中局部盘开着时中央行动位收成底部窄条，不被盖住「退出行动」；整备、制作页内工作区不走 AnchorPop（保持原位）。</summary>
+    /// <summary>Q324：居中局部盘（LocalDiskOpen）的判定；整备、制作页内工作区不走 AnchorPop（保持原位）。
+    /// B60 改期望（S01／S14 Q1038 选 C，取代 Q324“局部盘开着时中央行动位收成底部窄条”）：GameScreen 不再据 LocalDiskOpen 收窄条，行动推进开始时局部盘收起（见 B60 测试）。</summary>
     [Test]
     public void Q324_ProgressDocksUnderLocalDisk()
     {
@@ -195,7 +197,7 @@ public class B31cShellTests : TestBase
         Assert.That(Web("Components", "CardPop.razor"), Does.Contain("var menuHide = G.MenuOpen || G.BattleMenuOpen || G.CardPopHeldUnderPanel ? \" menu-hidden\" : \"\";"));   // BM4a（Q590）：被顶栏面板盖住时同样只隐藏
         Assert.That(g, Does.Contain("public bool CardPopShown => State != null && Pop == null && FeedPending == null && !IgniteMenuOpen && !DialogueLocked && !OverflowPending && !DuplicateWeaponsPending"),
             "CardPop 显示条件与 CardPopShown 一致");
-        Assert.That(Web("Components", "GameScreen.razor"), Does.Contain("if (!centerPanel && G.LocalDiskOpen) dockProgress = true;"));
+        Assert.That(Web("Components", "GameScreen.razor"), Does.Not.Contain("G.LocalDiskOpen").And.Not.Contain("dockProgress"), "B60（Q1038 C）：不再收窄条");
         Assert.That(Web("Components", "GearOverlay.razor"), Does.Not.Contain("<AnchorPop"), "整备页内工作区保持原位置");
         Assert.That(Web("Components", "CraftOverlay.razor"), Does.Not.Contain("<AnchorPop"), "制作页内工作区保持原位置");
     }
@@ -222,15 +224,14 @@ public class B31cShellTests : TestBase
 
     // ───────────── B31b 外壳遗留 ─────────────
 
-    /// <summary>窄条贴面板覆盖区底边、面板让出窄条高度（不盖③④）；1280 暂停弹窗整窗一个滚动区、行动位吸附；开发传送离开后收起原地点面板。</summary>
+    /// <summary>1280 暂停弹窗整窗一个滚动区、行动位吸附；开发传送离开后收起原地点面板。
+    /// B60 改期望（S01／S14 Q1038 选 C 撤窄条）：原“窄条贴面板覆盖区底边、面板让出窄条高度（--dock-live）”随窄条撤掉。</summary>
     [Test]
     public void B31bLeftovers()
     {
         var css = Web("wwwroot", "css", "shell.css");
-        Assert.That(css, Does.Contain(".center-scroll.four.locked.docked-prog .panel-host { bottom: var(--dock-live, var(--dock-h)); }"));
-        Assert.That(Web("wwwroot", "js", "app.js"), Does.Contain("c.style.setProperty('--dock-live', v)"), "面板只让出窄条实际高度");
-        Assert.That(css, Does.Contain(":is(.cprog.docked, .pause-dock) { bottom: calc(50% + var(--sh-gap) / 2); }"));
-        Assert.That(css, Does.Contain(":is(.cprog.docked, .pause-dock) { bottom: calc(25% + var(--sh-gap) / 4); }"));
+        Assert.That(css, Does.Not.Contain("--dock-live").And.Not.Contain("--dock-h").And.Not.Contain(".cprog.docked"));
+        Assert.That(Web("wwwroot", "js", "app.js"), Does.Not.Contain("--dock-live"), "B60：撤 syncDock");
         Assert.That(css, Does.Contain("display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; gap: 10px;"), "暂停弹窗整窗一个滚动区");
         Assert.That(Block(css, ".pause-scrim > .center-layer.pause-grid > .pg-mid {"), Does.Contain("position: sticky"));
         var menu = Web("Components", "MenuOverlay.razor");

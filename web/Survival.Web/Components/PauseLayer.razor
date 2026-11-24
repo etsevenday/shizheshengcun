@@ -21,21 +21,16 @@
 
 @* 暂停层（S01 §7、S14 §8、§11；B31b R55 按 a9b93f0 PXe）：中部遮罩上的「行动暂停中」居中弹窗（1600 基准 760×547，随 Q325 三档）。
    上半区原因/剩余/预留，中间一行是中央行动位（「继续行动」「退出行动」、暂停原因，或补给子行动的进度与退出），下半区补给与点火；
-   上下两区各自滚动，中间一行始终可达。遮罩只盖中部，左右栏照常可看。
-   中部开着一级面板（事项盘等）时收成中部底部窄条：只留中央行动位与原反馈，不盖面板（修暂停时城市面板盖住暂停层标题与原因）；关面板回到完整弹窗。 *@
-@if (Docked)
-{
-    <div class="pause-dock" role="alertdialog" aria-label="@ShellText.ActionPaused" inert="@G.DialogueLocked">
-        <CentralProgress InFlow="true" />
-        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
-    </div>
-    return;
-}
+   上下两区各自滚动，中间一行始终可达。
+   B60（S01／S14 Q1038 选 C，取代 B31b R55 的底部窄条）：开着一级面板（火堆、地图、日志、城市服务等）时同样是这个居中弹窗，盖在面板之上；
+   框外整个游戏界面（含左右栏、顶栏、底栏）由 GameScreen 的进度遮罩压暗模糊并阻断输入，只有本弹窗里的合法控件可用（弹窗 data-prog-lock 是 Tab 循环范围）。 *@
 @* B41c2 试玩修复（P3，S14 Q523）：原工具可按例外拾取时，遮罩与弹窗只占①②两行，③当前地面、④随身露出来，拾取箭头、操作条与拖放可点 *@
 @* B41e4（S14 Q569）：撤退离地保留暂停、地图前往开放（与内核移动例外同一判定 PausedTravelOpen）时，遮罩与弹窗让出①地图与场景行，
    相邻地点卡「前往 ▸」可见、可点、可聚焦，走原移动浮窗与确认；②③④仍被遮罩挡住，其他暂停限制不变 *@
-<div class="pause-scrim @(sub == null && e.LockedPickupTool(s) is ItemInstance pickTool && e.LockedToolPickupOpen(s, pickTool) ? "pick-open" : "") @(e.PausedTravelOpen(s) ? "travel-open" : "")">
-<div class="center-layer pause-grid" role="alertdialog" aria-label="@ShellText.ActionPaused" inert="@G.DialogueLocked">
+@* B60：两种例外（GameSession.PausePickOpen／PauseTravelOpen，判定同原 LockedToolPickupOpen／PausedTravelOpen）在进度遮罩上挖洞保留原开放行，见 G.ProgressKeep *@
+<div class="pause-scrim @(G.PausePickOpen ? "pick-open" : "") @(G.PauseTravelOpen ? "travel-open" : "")">
+<div class="center-layer pause-grid" role="alertdialog" aria-label="@ShellText.ActionPaused" inert="@G.DialogueLocked" data-pt="pause-dialog"
+     data-prog-lock="@(G.ProgressBgInert ? "1" : null)" tabindex="-1">
     <div class="pg-top" data-wheel="y">
     @if (sub != null)
     {
@@ -147,18 +142,15 @@
 </div>
 
 @code {
-    /// <summary>中部开着一级面板：收成底部窄条。</summary>
-    [Parameter] public bool Docked { get; set; }
-
     private async Task Sub(ActionRequest r) => await G.StartAction(r);
 
-    // B46 试玩修复：完整暂停弹窗每次打开（新的暂停或补给子行动换了、从窄条回到完整弹窗）都从顶部开始，标题与说明不被滚走；
+    // B46 试玩修复：完整暂停弹窗每次打开（新的暂停或补给子行动换了）都从顶部开始，标题与说明不被滚走；
     // 之后玩家自己的滚动不动
     private string? _topKey;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var key = G.State == null || G.S.Main == null || Docked ? null : $"{G.S.Main.ActionId}|{G.S.Sub?.ActionId}";
+        var key = G.State == null || G.S.Main == null ? null : $"{G.S.Main.ActionId}|{G.S.Sub?.ActionId}";
         if (key == _topKey) return;
         _topKey = key;
         if (key == null) return;

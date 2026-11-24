@@ -251,7 +251,8 @@ public class B31bShellTests : TestBase
     }
 
     /// <summary>R55、PXn／PXe（Q320）：中央行动位逐字（「行动进行中」「行动暂停中」「暂停原因」「继续行动」「退出行动」）、进度两行取内核；
-    /// 暂停层为中部遮罩上的居中弹窗；开着一级面板时两者收成中部底部窄条（不盖面板，原反馈仍在暂停条下）。</summary>
+    /// 暂停层为中部的居中弹窗。B60 改期望（S01／S14 Q1038 选 C「撤掉原行动底部窄条和城市右下角进度」，取代本条原“开着一级面板时两者收成中部底部窄条”）：
+    /// 不再有 pause-dock／Docked，开着面板也是同一居中弹窗与浮窗（行为见 Survival.Web.Tests B60ProgressLockUiTests）。</summary>
     [Test]
     public void R55_CentralActionPosition()
     {
@@ -261,14 +262,15 @@ public class B31bShellTests : TestBase
         Assert.That(cp, Does.Not.Contain(">退出</button>").And.Not.Contain(">继续</button>").And.Not.Contain("\"进行中\""));
         var pause = Web("Components", "PauseLayer.razor");
         // B41c2 试玩修复（P3）：遮罩在原工具可拾取时另挂 pick-open（只盖①②）
-        Assert.That(pause, Does.Contain("<div class=\"pause-scrim @(").And.Contain("<div class=\"pause-dock\""));
-        Assert.That(pause, Does.Contain("@if (G.Notice != null) { <div class=\"notice\">@G.Notice</div> }"), "收成窄条时 Q318 忙碌句仍在暂停条下");
+        Assert.That(pause, Does.Contain("<div class=\"pause-scrim @(").And.Not.Contain("pause-dock"), "B60（Q1038 C）：撤暂停窄条");
+        Assert.That(pause, Does.Contain("@if (G.Notice != null) { <div class=\"notice\" style=\"max-width:720px\">@G.Notice</div> }"), "Q318 忙碌句在暂停弹窗底部");
         var screen = Web("Components", "GameScreen.razor");
         // B35c 改期望（S14 2026-11-13 B35 节 Q595、2026-11-16 B36 节 Q807）：独立 citymap 面板撤掉，鸟瞰成为地图城市层；城市层仍盖①②③，进度卡沿用原鸟瞰位置，判据改为 G.CityBrowsing
-        Assert.That(screen, Does.Contain("var dockProgress = centerPanel && !G.CityBrowsing;").And.Not.Contain("\"citymap\""));
-        Assert.That(screen, Does.Contain("<PauseLayer Docked=\"@dockProgress\" />").And.Contain("<CentralProgress Info=\"progress\" Docked=\"@dockProgress\" />"));
+        // B60 改期望（Q1038 C）：撤 dockProgress（原 B31b R55 窄条判据与 B35c 城市层例外），两处一律不带 Docked
+        Assert.That(screen, Does.Not.Contain("dockProgress").And.Not.Contain("\"citymap\""));
+        Assert.That(screen, Does.Contain("<PauseLayer />").And.Contain("<CentralProgress Info=\"progress\" />"));
         var css = Web("wwwroot", "css", "shell.css");
-        Assert.That(css, Does.Contain(".pause-scrim {").And.Contain(".wasteland .cprog.float.docked, .pause-dock {"));
+        Assert.That(css, Does.Contain(".pause-scrim {").And.Not.Contain(".cprog.float.docked").And.Not.Contain(".pause-dock {"));
     }
 
     /// <summary>P01a 地点角标「当前位置」（各档都显示，不再用样式补“· 当前”）；§2 底栏「已保存」不带圆点字符；Q331 移动中品牌行「起点 → 终点」。</summary>

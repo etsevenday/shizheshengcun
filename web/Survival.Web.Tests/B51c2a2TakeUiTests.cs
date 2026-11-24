@@ -184,7 +184,11 @@ public class B51c2a2TakeUiTests : WebTestBase
         Assert.That((btn.HasAttribute("disabled"), btn.GetAttribute("title")), Is.EqualTo((true, Empty)));
     }
 
-    /// <summary>FAC-Q871-01（火堆）网页壳：主行动进行中「全部取出」置灰、悬停「行动进行中，暂不能整理物品」，锅不动。</summary>
+    /// <summary>
+    /// FAC-Q871-01（火堆）网页壳：主行动进行中「全部取出」置灰，锅不动。
+    /// B60 改期望（S11／S14 §Q1030「被弹框覆盖的火堆层不显示……全部取出悬停原因」，02 Q1030 按新裁定；B51C2A2-Q1030-01「框外不出现本题两条禁用原因」）：
+    /// 主行动进行中中央进度浮窗必在最上层、火堆菜单被遮罩覆盖，原悬停「行动进行中，暂不能整理物品」不再给出（title 不写）；内核拒绝原因不变。
+    /// </summary>
     [Test]
     public void FireMenu_TakeAll_BusyGreyed()
     {
@@ -193,7 +197,8 @@ public class B51c2a2TakeUiTests : WebTestBase
         Ok(E.Start(S, ActionRequest.Wait(30)));
         var cut = Ctx.RenderComponent<FireMenu>();
         var btn = cut.Find("[data-pt=fire-take-all]");
-        Assert.That((btn.HasAttribute("disabled"), btn.GetAttribute("title")), Is.EqualTo((true, Busy)));
+        Assert.That((btn.HasAttribute("disabled"), btn.HasAttribute("title")), Is.EqualTo((true, false)), "B60 Q1030：置灰、无悬停原因");
+        Assert.That(E.TakeAllBlocked(S, S.Ground, GameEngine.FireTakeAllId), Is.EqualTo(Busy), "内核门槛原句不变（Q871 B）");
         Assert.That(pot.InFacility, Is.True);
     }
 

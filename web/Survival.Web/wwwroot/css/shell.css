@@ -168,9 +168,8 @@
 :root {
   --sh-dx: calc((var(--sh-right) - var(--sh-left)) / 2);
   --sh-dy: calc((var(--sh-foot) + var(--sh-pad-bottom) - var(--sh-top) - var(--sh-pad-top)) / 2);
-  --dock-h: 104px;
 }
-.wasteland .cprog.float:not(.docked) {
+.wasteland .cprog.float {
   width: min(var(--float-w), calc(100% - 16px));
   transform: translate(calc(-50% + var(--sh-dx)), calc(-50% + var(--sh-dy)));
   padding: 14px 18px; gap: 10px;
@@ -184,10 +183,12 @@
 .cprog .cp-ctrl .cp-exit { min-width: 120px; min-height: 40px; }
 .cprog .cp-ctrl .cp-go { min-width: 140px; }
 
-/* 暂停弹窗：遮罩只盖中部，弹窗居中（三档 608×438／760×547／912×656，放不下时限制在中部内、留 8px） */
+/* 暂停弹窗：弹窗在中部居中（三档 608×438／760×547／912×656，放不下时限制在中部内、留 8px）。
+   B60（S01／S14 Q1038 选 C）：压暗与模糊改由整屏进度遮罩（.prog-focus，见文末 B60 节）负责，本层透明、只承接中部的点击；
+   层级在一级面板（30／31）与进度遮罩（44）之上，开着火堆、地图、日志、城市服务等面板时同样盖在面板上 */
 .pause-scrim {
-  position: absolute; inset: 0; z-index: 25; display: grid; place-items: center;
-  background: color-mix(in srgb, var(--ink2-black) 42%, transparent);
+  position: absolute; inset: 0; z-index: 46; display: grid; place-items: center;
+  background: transparent;
 }
 .pause-scrim > .center-layer.pause-grid {
   position: relative; inset: auto;
@@ -196,24 +197,7 @@
 }
 .pause-scrim .pg-mid .cprog.inflow { width: 100%; }
 
-/* 一级面板开着时：中央行动位收成中部底部窄条（不盖面板），整备、成长这类四轨面板让出这一条 */
-.wasteland .cprog.float.docked, .pause-dock {
-  position: absolute; left: 0; right: 0; bottom: 0; top: auto; transform: none; z-index: 45; width: auto;
-}
-.pause-dock { display: flex; flex-direction: column; gap: 4px; }
-.pause-dock .notice { margin: 0; }
-.wasteland .cprog.docked, .pause-dock .cprog.inflow {
-  width: auto; margin: 0; display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
-  align-items: center; gap: 4px 14px; padding: 6px 12px;
-}
-.cprog.docked > *, .pause-dock .cprog.inflow > * { grid-column: 1 / -1; }
-.cprog.docked > .cp-head, .pause-dock .cprog > .cp-head { grid-column: 1; grid-row: 1; }
-.cprog.docked > .cp-lines, .pause-dock .cprog > .cp-lines { grid-column: 2; grid-row: 1; }
-.cprog.docked > .cp-ctrl, .pause-dock .cprog > .cp-ctrl { grid-column: 3; grid-row: 1; }
-.cprog.docked .cp-name, .pause-dock .cprog .cp-name { font-size: var(--fs-body); }
-.cprog.docked .cp-adv, .pause-dock .cprog .cp-adv { font-size: var(--fs-body); }
-.cprog.docked .cp-exit-note, .pause-dock .cprog .cp-exit-note { max-width: 260px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.center-scroll.four.full-panel.docked-prog .panel-host { bottom: calc(var(--dock-h) + var(--sh-gap)); }
+/* B60（Q1038 选 C）：撤掉 B31b R55 一级面板开着时的中部底部窄条（行动位窄条与暂停窄条两类）与面板让位 */
 
 /* ───── P01a 地点角标「当前位置」、底栏「已保存」 ───── */
 .mc-chip.name em { margin-left: 6px; white-space: nowrap; }
@@ -331,14 +315,6 @@ button { transition-duration: var(--mo-hover); }
 .wasteland .toast.leaving { animation: b31c-fade-out var(--mo-pop-out) ease-in forwards; pointer-events: none; }
 .wasteland .toast.bad { border-color: var(--ink2-badge-red-edge); box-shadow: inset 4px 0 0 var(--ink2-badge-red-edge), 0 6px 20px color-mix(in srgb, var(--ink2-black) 55%, transparent); }
 
-/* ───── B31b 遗留：中央行动位窄条与一级面板 ───── */
-/* 窄条贴在面板覆盖区底边（①② 面板：② 底；①②③ 面板：③ 底；四轨面板：中部底），面板让出窄条高度，③④ 不被盖住；
-   没开面板、只开着居中局部盘时贴中部底边 */
-/* --dock-live 由 app.js 按窄条实际高度写在 section.center 上（取不到时用 --dock-h） */
-.center-scroll.four.locked.docked-prog .panel-host { bottom: var(--dock-live, var(--dock-h)); }
-.center-scroll.four.locked.docked-prog:not(.tall-panel, .full-panel) ~ :is(.cprog.docked, .pause-dock) { bottom: calc(50% + var(--sh-gap) / 2); }
-.center-scroll.four.locked.docked-prog.tall-panel ~ :is(.cprog.docked, .pause-dock) { bottom: calc(25% + var(--sh-gap) / 4); }
-.wasteland :is(.cprog.docked, .pause-dock) { max-height: var(--dock-h); overflow: hidden; }
 
 /* 1280 暂停弹窗：原上下两块各自滚动、各只分到一小截；改为整窗一个滚动区，中间的行动位一行吸附在可视区内（继续与退出始终可达） */
 .pause-scrim > .center-layer.pause-grid {
@@ -377,8 +353,6 @@ button { transition-duration: var(--mo-hover); }
   .panel-host .rest-panel > .rest-go .rg-start { min-height: 36px; padding: 4px 18px; }
 }
 
-/* E1：只开局部盘（没有一级面板）时，行动窄条停在②底（同一级面板的情形），不压③④；被居中盘挡住时右端“退出行动”仍露出可点 */
-.center-scroll.four.docked-prog:not(.locked) ~ :is(.cprog.docked, .pause-dock) { bottom: calc(50% + var(--sh-gap) / 2); }
 
 /* E3：居中确认框底栏统一：取消/关闭在左（190 宽），主动作在右（238 宽），原因与提示行排在底栏之上，底栏贴框底 */
 .overflow-layer > .overflow-box > .ov-foot { order: 1; }
@@ -496,30 +470,15 @@ button .kc, .wasteland button kbd.kc { color: inherit; border-color: currentColo
 /* BM9（S14 Q708）：战场根（tabindex=-1）只作鼠标打开战斗信息后的安全焦点，不画焦点框 */
 .bfs:focus, .bfs:focus-visible { outline: none; }
 /* ═════ B41c2 试玩修复（线上构建 95f7eba）═════ */
-/* P2：锁定行动暂停的复核原因与「本次行动无法继续…」——完整弹窗里各占一行；窄条里接排成一行，窄条按内容放高（不再裁掉），
-   一级面板按窄条实际高度让位（--dock-live，不小于原 --dock-h） */
+/* P2：锁定行动暂停的复核原因与「本次行动无法继续…」——弹窗里各占一行（B46 Q533：逐行显示，不接排） */
 .cprog .cp-resume > span { display: block; }
-/* B46（S14 Q533）：窄条里也按「原暂停原因 → 下一行复核原因 → 永久失效再下一行中止说明」逐行显示，不接排 */
-.wasteland .pause-dock:has(.cp-resume) { max-height: none; }
-.center-scroll.four.full-panel.docked-prog .panel-host { bottom: calc(max(var(--dock-h), var(--dock-live, 0px)) + var(--sh-gap)); }
 /* P3：原工具例外拾取开放时，暂停遮罩只盖①②两行，③当前地面、④随身不被挡住（弹窗在上半区内滚动，中间行动位仍吸附可见） */
 .pause-scrim.pick-open { bottom: calc(50% + var(--sh-gap) / 2); }
 /* B41e4（S14 Q569）：撤退离地保留暂停、地图前往开放时，遮罩与弹窗让出①地图与场景行：遮罩从②顶开始（四轨等高：①高＝(100%-3gap)/4），弹窗居中在②③④内（1280 档整窗一个滚动区、行动位吸附，「继续行动」始终可达）；相邻地点卡「前往 ▸」不被盖住或截走点击。与 pick-open 同时成立时只盖②。 */
 .pause-scrim.travel-open { top: calc(25% + var(--sh-gap) / 4); }
 
 /* ═════ B46 试玩修复（线上构建 b6a1d4b）═════ */
-/* 中央行动位窄条不再限高：暂停原因、复核原因、中止说明（Q533）与等待加工的目标行都直接完整可见，不裁字；一级面板按窄条实际高度让位（--dock-live） */
-.wasteland :is(.cprog.docked, .pause-dock) { max-height: none; }
-/* 窄条压紧：内边距、行距与按钮高度收一点（字号、文字不变），少占面板的高度 */
-.wasteland .pause-dock { gap: 2px; }
-.wasteland .cprog.docked, .wasteland .pause-dock .cprog.inflow { padding: 4px 10px; row-gap: 2px; }
-.wasteland :is(.cprog.docked, .pause-dock .cprog.inflow) :is(.cp-reason, .cp-resume, .cp-note, .cp-targets) { line-height: 1.35; }
-.wasteland :is(.cprog.docked, .pause-dock .cprog.inflow) .cp-ctrl button { min-height: 36px; padding-top: 2px; padding-bottom: 2px; }
-/* 休息面板在窄条让位后放不下时：整块面板一起纵向滚动（标题随之滚走），开始条贴底常驻，说明与时长卡都能滚到、不被压成一条缝 */
-.center-scroll.four.docked-prog .panel-host .rest-panel { overflow-y: auto; overscroll-behavior: contain; }
-.center-scroll.four.docked-prog .panel-host .rest-panel > * { flex-shrink: 0; }
-.center-scroll.four.docked-prog .panel-host .rest-panel > .rest-scroll { overflow: visible; }
-.center-scroll.four.docked-prog .panel-host .rest-panel > .rest-go { position: sticky; bottom: 0; }
+/* B60（Q1038 选 C）：窄条与休息面板为窄条让位的规则随窄条一并撤掉 */
 
 /* ───── BM6（S14「2026-11-14 BM5c／BM5a Q620—Q628」§Q625、§Q625／Q628、§Q628，沿 §Q612）：对白聚焦 ─────
    一层遮罩（.dlg-focus：主界面一层、全屏战斗内一层）盖住整屏对白以外的背景——黑色遮罩 0.48、背景模糊 2px（只作用于遮罩背后，backdrop-filter）；
@@ -551,3 +510,16 @@ button .kc, .wasteland button kbd.kc { color: inherit; border-color: currentColo
 .wasteland .top .nav button .nk-ico { flex: 0 0 auto; display: inline-flex; width: 18px; height: 18px; }
 .wasteland .top .nav button .nk-ico > svg { width: 18px; height: 18px; }
 .wasteland .top .nav button:is(:disabled, .off) .nk-ico { opacity: .7; }
+
+/* ═════ B60：中央行动进度遮罩（S01／S14 文首「2026-11-24 Q1038 主动行动统一居中显示进度」选 C；S11／S14 §Q1030） ═════
+   执行或暂停浮窗显示期间，框外整个游戏界面一次性压暗＋模糊（沿 BM6 对白聚焦的 0.48／2px），点击、触摸、拖放、悬停都落在遮罩上点不穿。
+   层级：一级面板（30／31）、局部盘遮罩（42）之上，进度浮窗（.cprog.float 45）与暂停弹窗（.pause-scrim 46）之下；局部盘、数量框（50）、结果提示（60）、
+   对白聚焦（62）、游戏菜单（85）在它之上。白名单（顶栏「菜单」、底栏存档处理按钮、Q523／Q569 例外开放的行）由 app.js survivalFocus 按 data-keep 挖洞。
+   撤遮罩不留退场拦截（浮窗结束即恢复交互，同中央条淡出期间不拦截）。 */
+.prog-focus {
+  position: fixed; inset: 0; z-index: 44;
+  background: rgb(0 0 0 / .48);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.prog-focus.on { opacity: 1; visibility: visible; pointer-events: auto; animation: dlg-in calc(180ms * var(--motion-k, 1)) ease-out; }

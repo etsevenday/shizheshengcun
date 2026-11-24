@@ -18,8 +18,10 @@ public class B41e4Tests : B41bTestBase
     public void Q569_A01_Shell_PauseScrimYieldsMapRowOnlyWhenPausedTravelOpen()
     {
         var pause = Web("Components/PauseLayer.razor");
-        Assert.That(pause, Does.Contain("@(e.PausedTravelOpen(s) ? \"travel-open\" : \"\")"), "与地图、移动浮窗同一判定");
-        Assert.That(pause, Does.Contain("e.LockedToolPickupOpen(s, pickTool) ? \"pick-open\""), "Q523 原工具拾取让位不变");
+        // B60：两处判定原样移到 GameSession.PauseTravelOpen／PausePickOpen（进度遮罩挖洞同源），只是搬家
+        Assert.That(pause, Does.Contain("@(G.PauseTravelOpen ? \"travel-open\" : \"\")"), "与地图、移动浮窗同一判定");
+        Assert.That(pause, Does.Contain("@(G.PausePickOpen ? \"pick-open\" : \"\")"), "Q523 原工具拾取让位不变");
+        Assert.That(Web("Services/GameSession.ProgressLock.cs"), Does.Contain("public bool PauseTravelOpen => State != null && PauseLayerShown && E.PausedTravelOpen(S);"));
         var css = Web("wwwroot/css/shell.css");
         Assert.That(css, Does.Contain(".pause-scrim.travel-open { top: calc(25% + var(--sh-gap) / 4); }"), "遮罩与弹窗从②顶开始，①地图与场景行露出");
         // 地点卡「前往 ▸」仍是原移动浮窗入口，确认移动按同一 moveBusy 判定（M809）

@@ -14,7 +14,8 @@
     var locked = G.DialogueLocked;
 }
 
-<aside class="sidebar panel sl" aria-label="@ShellText.LeftTitle" inert="@locked">
+@* B60（Q1038 C、Q1030）：中央行动进度浮窗在最上层时整栏 inert（遮罩外背景不取得焦点） *@
+<aside class="sidebar panel sl" aria-label="@ShellText.LeftTitle" inert="@(locked || G.ProgressBgInert)">
     <h2 class="sl-title">@ShellText.LeftTitle</h2>
     @* §2「{时段} · {时刻}」；第几日在顶栏品牌行（「第{世界日}日 · {地点}」），此处不重复 *@
     <div class="sl-clock">

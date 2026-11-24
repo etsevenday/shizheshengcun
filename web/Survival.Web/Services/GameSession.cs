@@ -684,15 +684,15 @@ public sealed partial class GameSession
     public bool PanelFocusPending { get; set; }
 
     /// <summary>
-    /// B31c（Q324）：屏幕中央有局部操作盘（选卡操作、移动／接近／投炭／采集等就近盘、点火工具、食饮）开着。中央行动位此时与一级面板开着时一样
-    /// 收成中部底部窄条，不被居中盘挡住「退出行动」（排版处理，不改规则）。
+    /// B31c（Q324）：屏幕中央有局部操作盘（选卡操作、移动／接近／投炭／采集等就近盘、点火工具、食饮）开着（Q338 四轨遮罩的前提）。
+    /// 原“中央行动位此时收成中部底部窄条”已被 B60（S01／S14 Q1038 选 C）撤掉：行动推进开始时这些盘收起，进度一律居中浮窗。
     /// </summary>
     public bool LocalDiskOpen => State != null && !InBattleUi && (Pop != null || FeedPending != null || IgniteMenuOpen || CardPopShown);
 
     /// <summary>
     /// B31d（逐字稿 §1.2 Q338 选 B）：居中局部操作盘是当前操作层，四轨上加遮罩——遮罩后的四轨不能点、拖或取得键盘焦点（inert 由 app.js survivalPop
     /// 在盘真正显示时加上、收盘时去掉）。菜单、对白锁、死亡结算与强制整理（超五卡、同类双武器）各有自己的层，此时不另加；食饮盘在说明打开时让位，
-    /// 不算开着。中央行动位（窄条）在遮罩之上，「退出行动」照原规则可用。悬停说明、页内常驻工作区（整备交接、制作工作区）、行动进度窗不是这类盘。
+    /// 不算开着。悬停说明、页内常驻工作区（整备交接、制作工作区）、行动进度窗不是这类盘（B60 起行动进度浮窗有自己的整屏遮罩，见 ProgressLock）。
     /// </summary>
     public bool DiskMaskShown => LocalDiskOpen && !DialogueLocked && !MenuOpen && !BattleMenuOpen && !S.Progress.Dead && !OverflowPending && !DuplicateWeaponsPending
         && (Pop != null || IgniteMenuOpen || (FeedPending != null && Panel != "help") || CardPopShown);
@@ -2358,6 +2358,8 @@ public sealed partial class GameSession
         if (Running) return;
         Running = true;
         _skip = false;
+        // B60（Q1038 C、Q1030）：进度浮窗成为最上层，收起层级本会高过遮罩的临时局部层（一级面板保留）
+        if (State != null) CollapseForProgressLock();
         var segs = 0;
         var rgen = _fxGen;   // B47b 试玩修复：本次推进开始时的代号（读档、新局、回标题后旧循环取到的镜头不在新局上播）
         try

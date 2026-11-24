@@ -85,11 +85,14 @@
                                可用时无悬停，被挡置灰、悬停写真实原因（Q871 B 门槛、空设施「没有可取出的物品。」）；带计划快照戳，双击第二下不再提交 *@
                             var takeAllWhy = e.TakeAllBlocked(s, here, GameEngine.FireTakeAllId);
                             var takeAllStamp = e.TakeAllStamp(s, here, GameEngine.FireTakeAllId);
+                            @* B60（S11／S14 §Q1030）：中央行动进度浮窗盖在本菜单上（遮罩期间）时，不显示投入木材的常驻禁用句和「全部取出」悬停原因——
+                               背景禁用控件不作为读取提示的入口；不调换提示位置。浮窗退出后按届时状态照原规则显示 *@
+                            var bgLocked = G.ProgressLock;
                             <div class="btn-row fm-quick">
                                 <FireQuickActions InMenu="true" />
-                                <button type="button" class="loc-btn res-btn fc-btn plain" data-pt="fire-take-all" disabled="@(G.Running || takeAllWhy != null)" title="@takeAllWhy"
+                                <button type="button" class="loc-btn res-btn fc-btn plain" data-pt="fire-take-all" disabled="@(G.Running || takeAllWhy != null)" title="@(bgLocked ? null : takeAllWhy)"
                                         @onclick="(MouseEventArgs ev) => TakeAll(here, takeAllStamp, ev)">@GameEngine.TakeAllLabel</button>
-                                @if (woodWhy != null) { <span class="tiny muted">@woodWhy</span> }
+                                @if (woodWhy != null && !bgLocked) { <span class="tiny muted" data-pt="fire-wood-why">@woodWhy</span> }
                             </div>
                         }
                         <div class="fire-slots fm-slots">

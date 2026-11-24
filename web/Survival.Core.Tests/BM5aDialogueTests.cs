@@ -74,10 +74,11 @@ public class BM5aDialogueTests : TestBase
     public void DLG_LOWER_A04_BehindIsInert()
     {
         var g = Web("Components", "GameScreen.razor");
-        Assert.That(g, Does.Contain("<div class=\"rows2-inner\" inert=\"@dlgLock\">"));
-        Assert.That(g, Does.Contain("<div class=\"panel-host\" data-panel=\"@G.Panel\" inert=\"@dlgLock\">"));
-        Assert.That(g, Does.Contain("<div class=\"apop-host\" inert=\"@dlgLock\">"));
-        Assert.That(Web("Components", "ItemShelf.razor"), Does.Contain("inert=\"@(G.DialogueLocked || (!carried && G.CityBrowsing))\""));
+        // B60（Q1038 C／Q1030）：同几处另加进度遮罩期间的 inert（progInert／G.ProgressBgInert），对白锁条件不变
+        Assert.That(g, Does.Contain("<div class=\"rows2-inner\" inert=\"@(dlgLock || progInert)\">"));
+        Assert.That(g, Does.Contain("<div class=\"panel-host\" data-panel=\"@G.Panel\" inert=\"@(dlgLock || progInert)\">"));
+        Assert.That(g, Does.Contain("<div class=\"apop-host\" inert=\"@(dlgLock || progInert)\">"));
+        Assert.That(Web("Components", "ItemShelf.razor"), Does.Contain("inert=\"@(G.DialogueLocked || G.ProgressBgInert || (!carried && G.CityBrowsing))\""));
         Assert.That(Web("Components", "DialogueLayer.razor"), Does.Contain("inert=\"@(G.MenuOpen || G.BattleMenuOpen)\""));
     }
 

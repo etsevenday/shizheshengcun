@@ -78,7 +78,7 @@ public sealed partial class GameSession
     /// BM5b1（S14 Q602）：中央加工菜单此刻是最高输入层——菜单开着、在最上面（没有被顶栏页盖住），且这一下 Esc 正由它承接（返回上一层或关闭）；
     /// 游戏菜单、对白、就近盘、点火盘、食饮浮窗、数量框等更高层开着时为 false（不让被盖住的菜单抢焦点／消费 Tab）。与 <see cref="EscOwner"/> 同源。
     /// </summary>
-    public bool FireMenuTop => State != null && Panel == FireMenuPanel && FireMenu != null && EscOwner is EscOwner.FacBack or EscOwner.Panel;
+    public bool FireMenuTop => State != null && Panel == FireMenuPanel && FireMenu != null && !ProgressLock && EscOwner is EscOwner.FacBack or EscOwner.Panel;
 
     /// <summary>
     /// BM5b1（S14 Q604）：自动内容变化（取出、内容消失／失效、设施失效）后的焦点修复目标——只在当前焦点因该项消失而失效（落到页面本身）时才交给它，
