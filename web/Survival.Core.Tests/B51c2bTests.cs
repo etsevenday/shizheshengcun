@@ -898,4 +898,31 @@ public class B51c2bTests : TestBase
         Ok(Take(s, Inputs(s, KilnBatches(s)[0]).Single(), 1, s.Ground));
         Assert.That(E.StationProcessingCount(s, "kiln"), Is.EqualTo(2));
     }
+
+    // ───────────── B51c2b.10 试玩遗留修复（2026-11-24） ─────────────
+
+    /// <summary>
+    /// 验收 B51C2A1-Q1007-01（S11／S14 §Q1007 A：位置字段有展示的详情和悬停处，陶窑与固定净水台的批内原料用“{区域}／{设施名}”，例“临时营地／陶窑”，省去批次序号）：
+    /// 右栏来源行对第二批的黏土整行写「临时营地／陶窑」，不再只写区名「临时营地」，也不带批次序号。
+    /// </summary>
+    [Test]
+    public void Q1007_RailSourceLine_KilnInput_ZoneSlashFacility()
+    {
+        var s = Workshop();
+        KilnInputs(s, 2);
+        Ok(E.StartStationBatch(s, Kiln, "k", 2));
+        var second = Inputs(s, KilnBatches(s)[1]).Single();
+        Assert.That(E.RailSourceLine(s, second), Is.EqualTo("临时营地／陶窑"));
+    }
+
+    /// <summary>
+    /// 配对（Q1007 只管陶窑与固定净水台；其余沿 S14 Q589「{真实地点}[ · {区域}] · {真实持有人或来源}」）：晾制位里的野果来源行仍是「临时营地 · 晾制架工位1」。
+    /// </summary>
+    [Test]
+    public void Q1007_RailSourceLine_DryingInput_Unchanged()
+    {
+        var s = Rack();
+        var berry = BerriesInSlot0(s);
+        Assert.That(E.RailSourceLine(s, berry), Is.EqualTo("临时营地 · 晾制架工位1"));
+    }
 }

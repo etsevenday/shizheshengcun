@@ -70,6 +70,9 @@ namespace Survival.Core.Engine
         /// </summary>
         public string RailSourceLine(GameState s, ItemInstance i)
         {
+            // B51c2b 试玩遗留（S11／S14 §Q1007 A：位置字段有展示的详情和悬停处，陶窑与固定净水台的批内原料用“{区域}／{设施名}”，
+            // 例“临时营地／陶窑”，省去批次序号；验收 B51C2A1-Q1007-01）：整行就是这一写法（区域已在其中，不再叠「{地点} · 」）
+            if (ItemInstance.TryStation(i.Owner, out _, out _)) return WherePath(s, i);
             var loc = s.CurrentLocation;
             var head = LocName(loc);
             if (s.CurrentZone == GameState.SafehouseZone) head += " · 屋内";
