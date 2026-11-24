@@ -310,6 +310,32 @@ public class B59aTests : TestBase
         Assert.That(E.DryingContents(s, s.Ground, 0).Select(i => i.InstanceId), Is.EqualTo(new[] { inSlot[0].InstanceId }));
     }
 
+    /// <summary>
+    /// Q1035 本位同物品取到随身的容量拒绝（句式同同组拾取 GroupPickupBlockedText，B10 拾取原句）：位里野果两个实例各 1 份（每份 200 克，配置），
+    /// 随身已 29800 克、3 张卡（硬上限 30 公斤，配置 carry.hardGrams；取 2 份多 2 张卡仍不超 5 张）——取 2 份拒「携带后将超过30公斤，最多可取1份」、上限 1；
+    /// 配对：随身五张卡占满且野果会多出一张新卡时先报卡位句「随身卡位已满（5/5张）：…」。
+    /// </summary>
+    [Test]
+    public void Q1035_01_CarriedLimit_WeightThenCards()
+    {
+        var s = Rack();
+        Ok(Commit(s, Drop(s, Make(s, "berry", 1, ItemInstance.Carried, s.GameMinute + 600), "dryslot:0"), 1));
+        Ok(Commit(s, Drop(s, Make(s, "berry", 1, s.Ground, s.GameMinute + 900), "dryslot:0"), 1));
+        var first = E.DryingContents(s, s.Ground, 0)[0];
+        s.Items.RemoveAll(i => i.Owner == ItemInstance.Carried);
+        E.CreateItems(s, "plank", 38, ItemInstance.Carried);   // 起点：38×600 克（两张卡）
+        E.CreateItems(s, "steel", 14, ItemInstance.Carried);   // 起点：14×500 克（一张卡），共 29800 克、3 张卡
+        Assert.That(E.CarriedGrams(s), Is.EqualTo(29800), "起点");
+
+        Assert.That(E.FacilityItemMax(s, first, ItemInstance.Carried), Is.EqualTo(1));
+        Assert.That(E.FacilityItemTakeBlocked(s, first, 2, ItemInstance.Carried), Is.EqualTo("携带后将超过30公斤，最多可取1份"));
+        Assert.That(E.FacilityItemTakeBlocked(s, first, 1, ItemInstance.Carried), Is.Null, "对照：1 份可取");
+
+        s.Items.RemoveAll(i => i.Owner == ItemInstance.Carried);
+        foreach (var id in new[] { "wood", "stone", "rope", "plank", "cloth" }) E.CreateItems(s, id, 1, ItemInstance.Carried);
+        Assert.That(E.FacilityItemTakeBlocked(s, first, 2, ItemInstance.Carried), Is.EqualTo("随身卡位已满（5/5张）：会多出一张新卡，请先放下或用掉一张"));
+    }
+
     // ───────────── Q1028：火源和锅的满位、空锅条件与拒收静默 ─────────────
 
     private const string Fire = "facility:camp:fire";

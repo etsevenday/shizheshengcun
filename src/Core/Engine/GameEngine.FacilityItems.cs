@@ -84,15 +84,16 @@ namespace Survival.Core.Engine
             var total = set.Sum(x => x.Count);
             if (zone != ItemInstance.Carried) return total;
             if (set.Count == 1) return MaxPickupBatch(s, ResumedCopy(s, i), i.Count);
-            for (var n = total; n >= 1; n--)
-            {
-                var plan = PlanGroup(set.Select(x => ResumedCopy(s, x)), n);
-                if (!RootCardsAllowOf(s, GameState.PlayerId, RootCardsAfterPlan(s, GameState.PlayerId, plan))) continue;
-                if (CarriedGrams(s) + plan.Sum(p => ItemGrams(s, p.inst) * p.n / System.Math.Max(1, p.inst.Count)) > Config.Carry.HardGrams) continue;
-                return n;
-            }
-            return 0;
+            return MaxMonotone(total, n => TakeSetCardsOk(s, set, n) && TakeSetWeightOk(s, set, n));
         }
+
+        /// <summary>本位同物品取 n 份到随身（按取出顺序配批、C＋R 后合堆）后根卡仍合法。</summary>
+        private bool TakeSetCardsOk(GameState s, List<ItemInstance> set, int n) =>
+            RootCardsAllowOf(s, GameState.PlayerId, RootCardsAfterPlan(s, GameState.PlayerId, PlanGroup(set.Select(x => ResumedCopy(s, x)), n)));
+
+        /// <summary>本位同物品取 n 份到随身后不超过携带硬上限。</summary>
+        private bool TakeSetWeightOk(GameState s, List<ItemInstance> set, int n) =>
+            CarriedGrams(s) + PlanGroup(set.Select(x => ResumedCopy(s, x)), n).Sum(p => ItemGrams(s, p.inst) * p.n / System.Math.Max(1, p.inst.Count)) <= Config.Carry.HardGrams;
 
         /// <summary>
         /// 把这张设施物品卡的 count 份取到 zone（随身或当前地面）现在不能做的原因：门槛 → 去向 → 份数 → 在制原料已腐败（旧档未受保护）→ 随身容量
@@ -109,10 +110,13 @@ namespace Survival.Core.Engine
                 return DryingSpoiledInputText;
             if (zone != ItemInstance.Carried) return null;
             if (set.Count == 1) return PickupBlockedText(s, ResumedCopy(s, i), count);
-            // B59a（§Q1035）：本位同物品跨实例取到随身——按整次真实合堆、五卡与 30 公斤预演；超出时沿原拾取拒绝句并写最多可取几份
+            // B59a（§Q1035）：本位同物品跨实例取到随身——按整次真实合堆、五卡与 30 公斤预演；超出时句式同同组拾取（GroupPickupBlockedText：先报根卡，再报重量，写最多可取几份）
+            var total = set.Sum(x => x.Count);
+            var byCards = MaxMonotone(total, n => TakeSetCardsOk(s, set, n));
+            if (byCards < count) return byCards <= 0 ? RootCardsFullText(s) : $"{RootCardsFullText(s)}；最多可取{byCards}份";
             var max = FacilityItemMax(s, i, zone);
-            if (count <= max) return null;
-            return max <= 0 ? RootCardsFullText(s) : $"{RootCardsFullText(s)}；最多可取{max}份";
+            if (max < count) return max <= 0 ? $"携带后将超过{Config.Carry.HardGrams / 1000}公斤，拿不动了" : $"携带后将超过{Config.Carry.HardGrams / 1000}公斤，最多可取{max}份";
+            return null;
         }
 
         /// <summary>
