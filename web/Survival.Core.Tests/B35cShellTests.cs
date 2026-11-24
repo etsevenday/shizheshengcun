@@ -205,7 +205,9 @@ public class B35cShellTests
         Assert.That(shown, Does.Contain("var layer = E.ResolveMapLayer(S, MapLayer);").And.Contain("var city = layer.StartsWith(\"city:\") ? layer.Substring(5) : null;"));
         var screen = Web("Components/GameScreen.razor");
         Assert.That(screen, Does.Contain("<section class=\"center @(G.CityBrowsing ? \"city-open\" : \"\")\""));
-        Assert.That(screen, Does.Contain("G.Panel is \"craft\" or \"safehouse\" or \"drying\" || G.CityBrowsing ||"));
+        // B51c2b.10（S11／S14 §Q778：被动设施面板只盖①②）：覆盖范围类移到 GameSession.PanelRowsClass，晾制架不再在 tall-panel 条件里；城市层仍盖①②③
+        Assert.That(screen, Does.Contain("@G.PanelRowsClass"));
+        Assert.That(Web("Services/GameSession.FacilityItems.cs"), Does.Contain(": Panel is \"craft\" or \"safehouse\" || CityBrowsing || (Panel == \"city\" && CityPanelTall) ? \"tall-panel\""));
         Assert.That(screen, Does.Contain("case EscOwner.MapPick: G.PickMapNode(null); break;"));
         Assert.That(Web("Services/GameSession.Keys.cs"), Does.Contain("if (Panel == \"map\" && MapPicked != null && SourceItem == null) return EscOwner.MapPick;"));
     }

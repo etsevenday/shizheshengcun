@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @* B51c2b（S11／S07／S14「2026-11-17 B51c2、B47b与B52b」§Q870 B 快捷箭头，「2026-11-17 B51c2a／B51c2b」§Q925 B）：
    晾制位、陶窑／净水台批内的一张真实物品卡——图标、名称×份数、状态行、取到随身箭头（TransferArrow：点一下 1 份，按住连续取同一张卡）。
@@ -33,7 +34,7 @@
     var n = int.TryParse(d.Qty.Trim(), out var v) ? v : 0;
     var why = gate ?? (max < 1 ? e.FacilityItemTakeBlocked(s, Item, 1, zone) : null);
     var invalid = why != null || n < 1 || n > max;
-    <div class="fi-take" data-pt="fac-take" @onclick:stopPropagation="true">
+    <div class="fi-take" data-pt="fac-take" @ref="_box" @onclick:stopPropagation="true">
         <h3 class="dq-head"><span class="ir-icon">@Icons.Markup(Item.ItemId)</span>@GameEngine.TakeLabel · @e.ItemName(Item.ItemId)</h3>
         <div class="btn-row fi-dest">
             <button type="button" class="@(d.ToCarried ? "primary" : "secondary")" data-pt="fac-take-carried" aria-pressed="@(d.ToCarried ? "true" : "false")" @onclick="() => G.SetFacilityTakeDest(true)">@GameEngine.DryingToCarriedLabel</button>
@@ -68,6 +69,22 @@
     [Parameter] public string? Status { get; set; }
 
     private void Pick() => G.PickFacilityItem(Item);
+
+    private ElementReference _box;
+    private bool _revealed;
+
+    /// <summary>
+    /// B51c2b 试玩遗留 N3 顺带（1280×720 数量窗「确认／取消」落在面板可视区外）：数量窗刚在这张卡下打开时，把整个窗滚到可见处
+    /// （只定位，最近边对齐：已完整可见就不动；不改状态、不抢焦点）。
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var open = G.FacTake?.InstanceId == Item.InstanceId;
+        if (open == _revealed) return;
+        _revealed = open;
+        if (!open) return;
+        try { await JS.InvokeVoidAsync("survival.revealNearest", _box); } catch (Exception) { /* 只影响定位 */ }
+    }
 
     private void Key(KeyboardEventArgs ev)
     {

@@ -144,4 +144,58 @@ public class B51c2bPlayFixUiTests : WebTestBase
         Assert.That(G.Selected.Kind, Is.EqualTo(SelectionKind.None));
         Assert.That(RailTitle(rail), Is.EqualTo(KilnOutput));
     }
+
+    // ───────────── N3：被动设施面板只盖①②，③当前地面与④随身照常可见 ─────────────
+
+    /// <summary>
+    /// N3（S11／S14 §Q778「火堆主层覆盖①地图②设施……原地面③与随身④的可见及原权限不变。其余被动设施……不覆盖另加的区域」；Q1028 答复只盖设施栏与地图栏）：
+    /// 晾制架面板、陶窑工作区、火堆加工菜单开着时，主画面四行网格不加加高类（tall-panel／full-panel），面板只在①②合并区。
+    /// 配对：工作台工作区仍盖①②③（tall-panel），整备仍盖四行（full-panel），沿原排版。面板实际几何（遮挡、落点可见）bUnit 看不到，交试玩。
+    /// </summary>
+    [Test]
+    public void N3_PassivePanels_LeaveGroundAndCarriedRows()
+    {
+        DryingAndKiln();
+        var screen = Ctx.RenderComponent<GameScreen>();
+        string Rows()
+        {
+            screen.Render();
+            return screen.Find(".center-scroll.four").ClassName ?? "";
+        }
+
+        G.OpenPanel("drying");
+        Assert.That(Rows(), Does.Not.Contain("tall-panel").And.Not.Contain("full-panel"), "晾制架面板");
+        OpenKiln();
+        Assert.That(G.Panel, Is.EqualTo("craft"));
+        Assert.That(Rows(), Does.Not.Contain("tall-panel").And.Not.Contain("full-panel"), "陶窑工作区");
+        G.OpenPanel(null);
+        G.OpenFireMenu();
+        Assert.That(G.Panel, Is.EqualTo(GameSession.FireMenuPanel));
+        Assert.That(Rows(), Does.Not.Contain("tall-panel").And.Not.Contain("full-panel"), "火堆加工菜单");
+        G.OpenPanel(null);
+
+        G.OpenWorkspace(E.WorkspaceForStationHere(S, "workbench")!);
+        Assert.That(Rows(), Does.Contain("tall-panel"), "配对：工作台工作区沿原排版盖①②③");
+        G.OpenPanel(null);
+        G.OpenPanel("gear");
+        Assert.That(Rows(), Does.Contain("full-panel"), "配对：整备沿原排版盖四行");
+    }
+
+    /// <summary>
+    /// N3 顺带（1280×720 数量窗「确认／取消」落在面板可视区外）：点卡本体打开数量窗时把整个窗滚到可见（survival.revealNearest，最近边对齐），只调一次；
+    /// 配对：没开数量窗时不调。实际滚动效果交试玩。
+    /// </summary>
+    [Test]
+    public void N3_QuantityBox_RevealedOnOpen()
+    {
+        DryingAndKiln();
+        G.OpenPanel("drying");
+        var dry = Ctx.RenderComponent<DryingOverlay>();
+        Assert.That(Ctx.JSInterop.Invocations.Count(i => i.Identifier == "survival.revealNearest"), Is.EqualTo(0), "配对：没开数量窗不滚");
+
+        dry.Find("[data-pt=fac-item]").Click();
+        dry.Render();
+
+        Assert.That(Ctx.JSInterop.Invocations.Count(i => i.Identifier == "survival.revealNearest"), Is.EqualTo(1));
+    }
 }

@@ -108,6 +108,26 @@ public sealed partial class GameSession
         return res;
     }
 
+    // ───────────── 试玩遗留 N3：被动设施面板只盖①②两行 ─────────────
+
+    /// <summary>
+    /// B51c2b 试玩遗留 N3（S11／S14 §Q778「火堆主层覆盖①地图②设施……原地面③与随身④的可见及原权限不变。其余被动设施……不覆盖另加的区域」；
+    /// Q1028 答复同样只盖设施栏与地图栏；S11 §Q925 B 设施物品卡「可拖到…本设施所在地面」）：
+    /// 火堆／柴炉加工菜单、晾制架面板、陶窑／固定净水台工作区开着时，③当前地面与④随身照常可见、可作拖放落点。
+    /// </summary>
+    public bool PassivePanelOpen => State != null
+        && (Panel is "drying" or FireMenuPanel || (Panel == "craft" && CraftSite?.StationId is "kiln" or "water_station"));
+
+    /// <summary>
+    /// 中部四行网格上标面板覆盖范围的样式类：被动设施面板（<see cref="PassivePanelOpen"/>）不加类，只在①②合并区；
+    /// 整备、成长盖四行（full-panel）；其余手工制作、安全屋、城市层盖①②③（tall-panel），沿原排版。
+    /// </summary>
+    public string PanelRowsClass =>
+        PassivePanelOpen ? ""
+        : Panel is "gear" or "growth" ? "full-panel"
+        : Panel is "craft" or "safehouse" || CityBrowsing || (Panel == "city" && CityPanelTall) ? "tall-panel"
+        : "";
+
     // ───────────── Q926 A：拖到晾制位只做导航 ─────────────
 
     /// <summary>晾制架面板选中的位（「查看配方」或拖入定位）；面板重新打开时清空。</summary>
