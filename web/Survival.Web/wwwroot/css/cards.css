@@ -551,11 +551,17 @@
 .center-scroll.four.passive-panel .craft-go[data-station-go] .cg-act > .batch-row { grid-column: auto; margin: 0; }
 .center-scroll.four.passive-panel .craft-go[data-station-go] .cg-act > .cg-start { min-width: 0; min-height: 34px; padding: 4px 12px; }
 
-/* B35b（Q593 A）：投料栏移进内右列“本次制作”后不再贴卡底，按列竖排（上面原 sticky／单行规则只对旧位置） */
-.center-scroll.four.passive-panel .craft-run { padding: 6px 10px; gap: 6px; }
-.center-scroll.four.passive-panel .craft-run > .craft-go[data-station-go] .cg-facts { display: flex; flex-direction: column; }
-.center-scroll.four.passive-panel .craft-run > .craft-go[data-station-go] .cg-facts > * { white-space: normal; }
-.center-scroll.four.passive-panel .craft-run > .craft-go[data-station-go] .cg-act { flex-direction: column; align-items: stretch; }
+/* B35b（Q593 A）：投料栏移进内右列“本次制作”后不再贴卡底，按列竖排（上面原 sticky／单行规则只对旧位置）。
+   B35b 试玩修复 M1155（FACPROC-A11「主要动作可见、长内容内部滚动」）：①② 只有约 190—290px 高时，“本次制作”列不整列滚动，
+   说明与预计（cg-facts）在列内自己滚动，投料批数／投料／全部取出（cg-act）固定在列底、始终在面板内可见可点，不落到下方地面卡行 */
+.center-scroll.four.passive-panel .craft-run { padding: 6px 10px; gap: 4px; overflow: hidden; }
+.center-scroll.four.passive-panel .craft-run > .cr-title { flex: none; line-height: 1.2; }
+.center-scroll.four.passive-panel .craft-run > .craft-go[data-station-go] { flex: 1 1 auto; min-height: 0; margin: 0; gap: 4px; }
+.center-scroll.four.passive-panel .craft-run > .craft-go[data-station-go] .cg-facts { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.center-scroll.four.passive-panel .craft-run > .craft-go[data-station-go] .cg-facts > * { white-space: normal; flex: none; }
+.center-scroll.four.passive-panel .craft-run > .craft-go[data-station-go] .cg-act { flex: none; flex-direction: column; align-items: stretch; gap: 4px; }
+.center-scroll.four.passive-panel .craft-run > .craft-go[data-station-go] .cg-act > .batch-row .tbar-step { min-height: 28px; }
+.center-scroll.four.passive-panel .craft-run > .craft-go[data-station-go] .cg-act > .cg-start { min-height: 32px; padding: 3px 8px; }
 
 /* ③ 设施物品卡数量窗（晾制架、陶窑／净水台共用） */
 .center-scroll.four.passive-panel .fi-take { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 4px 8px; }

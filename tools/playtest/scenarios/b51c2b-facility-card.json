@@ -8,7 +8,7 @@
     {"key": "Escape", "until": "text==保存并返回标题", "max": 6},
     {"click": "text=陶窑1批＋净水台2批原料", "label": "开发入口：陶窑1批＋净水台2批原料"},
     {"click": "#fac-kiln"},
-    {"click": "pt=station-load", "label": "投料（1批）"},
+    {"click": "pt=station-load", "label": "投料（1批 · 1小时）"},
     {"expect": "[data-station-batch]", "count": 1},
 
     {"note": "N3：陶窑工作区只盖①②，③当前地面与④随身完整可见"},
@@ -40,7 +40,7 @@
 
     {"note": "N3：批内卡拖到当前地面（③可见落点）"},
     {"drag": "pt=shelf-carried >> pt=card-clay", "to": "pt=shelf-ground", "label": "随身黏土拖回地面（复位）"},
-    {"click": "pt=station-load", "label": "再投料（1批）"},
+    {"click": "pt=station-load", "label": "再投料（1批 · 1小时）"},
     {"expect": "[data-station-batch]", "count": 1},
     {"drag": "[data-station-batch] >> pt=fac-item", "to": "pt=shelf-ground", "label": "批内黏土卡拖到当前地面"},
     {"expect": "pt=shelf-ground >> pt=card-clay"},
