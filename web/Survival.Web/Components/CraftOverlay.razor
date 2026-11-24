@@ -28,7 +28,9 @@
     var busy = G.Running || s.Sub != null;
     var candidates = G.CraftCandidates;
     // 拆解（B4）走配方流程但只在选中装备的卡下开始，不进制作列表；候选列表的筛选（已掌握、可显示、本地真实设施）在内核 DropRecipeCandidates 里
-    var recipes = candidates == null ? G.CraftTabRecipes(tab).Select(r => (r, (CraftWorkspace?)null)).ToList()
+    // B67（S08 D25、Q1042 A）：左列＝当前分类原列表与搜索词取交集（保持原顺序）；拖拽候选列表不带搜索
+    var tabAll = candidates == null ? G.CraftTabRecipes(tab) : new List<RecipeConfig>();
+    var recipes = candidates == null ? G.CraftListRecipes(tab).Select(r => (r, (CraftWorkspace?)null)).ToList()
         : candidates.Select(c => (e.Recipe(c.RecipeId), c.Workspace)).ToList();
     var locks = e.RecipeLocks(s, rc);
     var batchable = !rc.IsBuild && !rc.IsRepair && !rc.IsFixedWait && !rc.IsDrying;   // B16：固定等待每次只做1批；B22c 试玩修复 M470：晾制每位一批
@@ -83,6 +85,12 @@
                     </div>
             }
             <div class="recipe-list">
+                @if (candidates == null)
+                {
+                    @* B67（S08 D25、S14 D25-01；Q1042 A）：手工制作、设施工作区与设施建造入口的「搜索配方或材料」，与分类组合；打字与清词只刷新本列（来源侧页与所选来源不变） *@
+                    <input type="search" class="craft-search" data-pt="craft-search" placeholder="@GameEngine.CraftSearchPlaceholder" aria-label="@GameEngine.CraftSearchPlaceholder"
+                           value="@G.CraftQuery" @oninput="(ChangeEventArgs ev) => G.SetCraftQuery(ev.Value?.ToString())" />
+                }
                 @if (candidates != null)
                 {
                     <div class="tiny muted candidates-head">拖拽找到的候选配方 · 缺料的不能开始 <button class="linkish" data-candidates-all @onclick="G.CandidatesShowAll">显示全部</button></div>
@@ -104,7 +112,12 @@
                         <span>@r.Name<small>@prefix@small</small></span>
                     </button>
                 }
-                @if (recipes.Count == 0)
+                @if (recipes.Count == 0 && candidates == null && tabAll.Count > 0)
+                {
+                    @* B67（S08 D25）：分类本身有配方、搜索后无匹配 *@
+                    <div class="risk none" data-pt="craft-no-match">@GameEngine.NoMatchRecipeText</div>
+                }
+                else if (recipes.Count == 0)
                 {
                     @* Q600 逐字稿：当前分类没有可显示的配方（不显示锁定占位） *@
                     <div class="risk none" data-craft-empty>@GameEngine.NoVisibleRecipeText</div>

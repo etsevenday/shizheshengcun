@@ -133,7 +133,7 @@ public sealed partial class GameSession
         switch (p)
         {
             case FireMenuPanel: FireMenu = null; break;
-            case "craft": CraftSite = null; _candidateReturn = null; CraftCandidates = null; DropCraftSources(); break;
+            case "craft": CraftSite = null; _candidateReturn = null; CraftCandidates = null; DropCraftSources(); CraftQuery = ""; break;
             case "map": SourceItem = null; MapSourceSpot = null; CityHover = null; CityLegacyNote = false; break;
             case "formation": FormationDraft = null; FormationPick = null; FormationLeader = null; break;
             case "growth": ClosePracticeDraft(); break;

@@ -51,6 +51,23 @@ public sealed partial class GameSession
     public List<RecipeConfig> CraftTabRecipes(string tab) =>
         State == null ? new() : CraftSite is { } w ? E.WorkspaceRecipes(S, w.StationId, tab) : E.HandCraftRecipes(S, tab);
 
+    /// <summary>
+    /// B67（S08 D25、Q1042 A）：制作入口「搜索配方或材料」的原样输入。只是界面状态、不进存档：离开当前制作工作区（面板真正关闭、新开、换工作区）时清除；
+    /// 从合法子层（来源侧页、来源地图、来源定位）返回同一工作区保留；打字与清词只刷新左列，不退出来源侧页、不改所选来源与配方。
+    /// </summary>
+    public string CraftQuery { get; private set; } = "";
+
+    /// <summary>D25／Q1042：输入或清空搜索词——只改左列可见列表（与当前分类取交集），不改所选配方、份数与来源侧页。</summary>
+    public void SetCraftQuery(string? text)
+    {
+        if (State == null || Panel != "craft") return;
+        CraftQuery = text ?? "";
+        Notify();
+    }
+
+    /// <summary>D25：左列当前可见的配方——当前分类原列表与搜索词取交集，保持原顺序；空搜索即原列表。</summary>
+    public List<RecipeConfig> CraftListRecipes(string tab) => State == null ? new() : E.FilterRecipesByQuery(CraftTabRecipes(tab), CraftQuery);
+
     /// <summary>当前上下文的默认分类（Q594 顶栏徒手制造；Q797／Q908 工作区全部配方）。</summary>
     private string CraftDefaultTab => CraftSite != null ? GameEngine.WorkspaceDefaultTab : GameEngine.HandCraftDefaultTab;
 
@@ -79,6 +96,7 @@ public sealed partial class GameSession
         CraftSite = _pendingSite;
         _pendingSite = null;
         _candidateReturn = null;
+        CraftQuery = "";   // B67（D25）：新开或换工作区清除搜索词
         var tab = RememberedCraftTab();
         RecipeConfig? pick = null;
         var main = S.Main;
@@ -121,7 +139,8 @@ public sealed partial class GameSession
         CraftTab = tab;
         CraftTabs.Set(CraftTabKey, tab);
         try { _store.SetPref("craftTabs", CraftTabs.Serialize()); } catch { /* 本地存储不可用时只在本次有效 */ }
-        var first = CraftTabRecipes(tab).FirstOrDefault();
+        // B67（D25）：搜索词保留、与新分类组合；选新分类可见列表里的第一条（无匹配时不选）
+        var first = CraftListRecipes(tab).FirstOrDefault();
         SelectCraftRecipe(first?.Id);
     }
 
@@ -157,6 +176,7 @@ public sealed partial class GameSession
         _candidateReturn = new CandidateReturn(CraftCandidates, CraftRecipe, CraftPot);
         CraftCandidates = null;
         CraftSite = real;
+        CraftQuery = "";   // B67（D25）：进入另一工作区，搜索词不带过去
         CraftBatch = 1;
         CraftTarget = null;
         CraftPot = null;
@@ -177,6 +197,7 @@ public sealed partial class GameSession
         var back = _candidateReturn!;
         _candidateReturn = null;
         CraftSite = null;
+        CraftQuery = "";   // B67（D25）：离开该工作区
         var keep = back.Candidates.Where(CandidateStillValid).ToList();
         if (keep.Count == 0) { CraftCandidates = null; OpenPanel(null); return; }
         if (keep.Count < back.Candidates.Count) Notice = GameEngine.ContentChangedText;
@@ -205,6 +226,7 @@ public sealed partial class GameSession
         CraftCandidates = null;
         _candidateReturn = null;
         CraftSite = null;
+        CraftQuery = "";   // B67（D25）
         CraftTab = GameEngine.TabAll;
         if (CraftRecipe == null || E.Config.Recipes.FirstOrDefault(r => r.Id == CraftRecipe) is not { } rc || !InCraftScope(rc))
             CraftRecipe = CraftTabRecipes(GameEngine.TabAll).FirstOrDefault()?.Id;
@@ -223,6 +245,7 @@ public sealed partial class GameSession
             Panel = null;
             CraftSite = null;
             _candidateReturn = null;
+            CraftQuery = "";   // B67（D25）
             ClearPanelChain();
             Notice = GameEngine.WorkspaceGoneText;
         }

@@ -851,6 +851,7 @@ public sealed partial class GameSession
             // B35a1：工作区上下文与候选返回随制作页真正关闭或重新打开结束（盖在下层或恢复时保留）
             if (next != "craft") { CraftSite = null; _candidateReturn = null; }
             DropCraftSources();   // B35b：材料来源侧页随制作页真正关闭或重新打开结束（盖在下层或恢复时保留）
+            CraftQuery = "";   // B67（S08 D25）：离开当前制作工作区即清除搜索词（盖在下层或恢复时保留）
             CraftCandidates = null;
             CraftPot = null;
             CraftBatch = 1;
