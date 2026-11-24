@@ -101,16 +101,17 @@ else
 
     private bool _starting;
 
-    /// <summary>开始所选休息/睡眠（内核再校验）；开始成功后收起面板，让中央推进条与地块栏可见。执行中锁住按钮，重复点击不重复开始。</summary>
+    /// <summary>
+    /// 开始所选休息/睡眠（内核再校验）。B60a（S14 B60 Q1103 选 B，取代 BM4a Q590 开工即收起休息页）：开始成功后休息页留在居中进度浮窗下，结束后仍合法就回到本页。
+    /// 执行中锁住按钮，重复点击不重复开始。
+    /// </summary>
     private async Task Start()
     {
         if (_starting) return;
         _starting = true;
         try
         {
-            var t = G.StartAction(G.RestKind == "sleep" ? ActionRequest.Sleep(G.RestMinutes) : ActionRequest.Rest(G.RestMinutes));
-            if (G.S.Main != null && G.Panel == "rest") G.CloseAllPanels();   // BM4a（Q590）：真实开工回中央进度，返回链作废
-            await t;
+            await G.StartAction(G.RestKind == "sleep" ? ActionRequest.Sleep(G.RestMinutes) : ActionRequest.Rest(G.RestMinutes));
         }
         finally { _starting = false; }
     }

@@ -103,12 +103,15 @@ public class B45FacMenuShellTests : TestBase
         Assert.That(js, Does.Contain("input[data-qty-jump]"));
     }
 
-    /// <summary>FACPROC 第 5 条、FACPROC-A09：耗时行动成功开始后收起菜单；换地点／战斗／死亡关闭；来源用完右栏回设施摘要。</summary>
+    /// <summary>
+    /// FACPROC 第 5 条、FACPROC-A09：换地点／战斗／死亡关闭；来源用完右栏回设施摘要。
+    /// B60a 改期望（S14 B60 Q1103 选 B，取代 FACPROC-A09／Q581「耗时行动成功开始后收起菜单」）：开工不再收菜单（行为见 Web 测试 B60aPageReturnUiTests）。
+    /// </summary>
     [Test]
     public void FacProc_A09_CloseOnActionAndReconcile()
     {
         var s = Web("Services", "GameSession.cs");
-        Assert.That(s, Does.Contain("CloseFireMenuForAction();"));
+        Assert.That(s, Does.Not.Contain("CloseFireMenuForAction"));
         Assert.That(s, Does.Contain("ReconcileFireMenu"));
         var fac = Web("Services", "GameSession.FacMenu.cs");
         Assert.That(fac, Does.Contain("S.CurrentLocation != m.Location || S.Ground != m.Ground"));

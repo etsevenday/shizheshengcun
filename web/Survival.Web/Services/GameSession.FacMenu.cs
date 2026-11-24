@@ -536,15 +536,6 @@ public sealed partial class GameSession
         if (FireMenuTop) FocusIdSoftPending = FireMenuReturnFocus(2, k);
     }
 
-    /// <summary>主动耗时行动成功开始（食饮、点火、等待加工……）：收起加工菜单，交给中央行动进度层（FACPROC 第 5 条、FACPROC-A09）。</summary>
-    private void CloseFireMenuForAction()
-    {
-        // BM4a（Q590）：菜单盖在下层时同样收起（不在新面板关掉后又弹回旧菜单盖住进度）
-        if (Panel != FireMenuPanel) { if (_chain.Remove(FireMenuPanel)) FireMenu = null; return; }
-        Panel = null;
-        LeaveFireMenu(true);
-    }
-
     /// <summary>火堆维护（投料、熄灭、点火）：空闲或主行动暂停时可做，移动途中与执行中不可（拖拽与容器案 8；原 FireCard 判断，B45 起卡面与菜单同源）。</summary>
     public bool FireMaintBlocked => State != null && (Running || S.Sub != null || (S.Main != null && (S.Main.Status != ActionStatus.Paused || S.Main.Type == ActionType.Travel)));
 

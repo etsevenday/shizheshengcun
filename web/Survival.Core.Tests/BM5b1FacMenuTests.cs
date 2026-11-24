@@ -107,7 +107,7 @@ public class BM5b1FacMenuTests : TestBase
         Assert.That(Slice(fac, "public void FireMenuPickSource(", "public bool FireMenuTarget("), Does.Contain("m.SourceFor = FireMenuTargetKey();"), "来源绑定为之选的目标");
         Assert.That(Slice(fac, "private string? FireMenuTargetKey()", "private void FireMenuRetarget()"), Does.Contain("$\"pot:{k}:{pot.InstanceId}\""), "锅与空位是不同目标");
         // 内容变化核对不经过换目标（Q582 被占位保留草稿不变）
-        Assert.That(Slice(fac, "private void ReconcileFireMenu()", "private void CloseFireMenuForAction()"), Does.Not.Contain("FireMenuRetarget();"));
+        Assert.That(Slice(fac, "private void ReconcileFireMenu()", "public bool FireMaintBlocked"), Does.Not.Contain("FireMenuRetarget();"));
         var menu = Web("Components", "FireMenu.razor");
         Assert.That(menu, Does.Contain("var all = s.Items.Where(i => (i.IsCarried || i.Owner == here) && !i.InFacility && !i.InContainer && i.Count > 0)"), "来源区不列工位内容");
     }
@@ -478,7 +478,7 @@ public class BM5b1FacMenuTests : TestBase
     public void Q604_A01_FocusReturnsToRelatedSlot()
     {
         var fac = Web("Services", "GameSession.FacMenu.cs");
-        var rec = Slice(fac, "private void ReconcileFireMenu()", "private void CloseFireMenuForAction()");
+        var rec = Slice(fac, "private void ReconcileFireMenu()", "public bool FireMaintBlocked");
         Assert.That(rec, Does.Contain("if (m.SlotItem != null && FireMenuTop) FocusIdSoftPending = FireMenuSlotId(k);"));
         Assert.That(rec, Does.Contain("FireMenuSoftBack(k);"), "锅里内容没了回锅卡");
         Assert.That(fac, Does.Contain("if (FireMenuTop) FocusIdSoftPending = FireMenuReturnFocus(2, k);"));

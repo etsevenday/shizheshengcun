@@ -77,8 +77,9 @@ public class B35cShellTests
         Assert.That(route, Does.Not.Contain("前往下一站"));
         var session = Web("Services/GameSession.cs");
         var depart = Slice(session, "public async Task MapDepart(", "await RunLoop();");
-        Assert.That(depart, Does.Contain("E.StartMapDeparture(S, targetId, requestId)").And.Contain("CloseAllPanels();"));
-        Assert.That(depart.IndexOf("if (!res.Ok)", StringComparison.Ordinal), Is.LessThan(depart.IndexOf("CloseAllPanels();", StringComparison.Ordinal)), "失败留在原页");
+        // B60a 改期望（S14 B60 Q1103 选 B，取代 Q590 出发即收起地图）：成功出发后地图留在进度浮窗下，不再 CloseAllPanels（行为见 Web 测试 B60aPageReturnUiTests）
+        Assert.That(depart, Does.Contain("E.StartMapDeparture(S, targetId, requestId)").And.Not.Contain("CloseAllPanels();"));
+        Assert.That(depart, Does.Contain("if (!res.Ok) { Notice = res.Reason; Notify(); return; }"), "失败留在原页");
     }
 
     /// <summary>B35-Q793-01、B35S-Q915-01：远处只看路线——出发灰，旁边写拦截原因（远处为“先选相邻地点。”，其他真实原因照原）；“选中下一段”在路线区。</summary>

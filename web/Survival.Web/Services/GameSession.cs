@@ -993,6 +993,23 @@ public sealed partial class GameSession
         MapPicked = null;
     }
 
+    /// <summary>
+    /// B60a（S14「2026-11-24 B60 暂停窗入口与原页返回」Q1103 选 B「人物已移动时地图按当前位置刷新」；S08 Q1104 验收「回到刷新了当前位置的地图」）：
+    /// 地图开着而当前位置已变（地图出发走完一段）——同重新打开地图的阅读状态规则（EXUI13：位置变了回默认层居中），取消已走到的所选目的地；
+    /// 下层返回链已因换场作废（Q586／Q590 不远程恢复旧窗口），来源定位链随之结束，地图回普通地图（关闭键不再写「返回材料来源」）。
+    /// </summary>
+    private void ReconcileMapForMove()
+    {
+        if (State == null || Panel != "map" || MapAnchor == null || MapAnchor == S.CurrentLocation) return;
+        PeekClear();
+        MapPicked = null;
+        MapLayer = null;
+        MapZoom = MapDefaultZoom;
+        MapAnchor = S.CurrentLocation;
+        MapFocus = S.CurrentLocation;
+        if (SourceItem != null && !_chain.Contains("craft")) { SourceItem = null; MapSourceSpot = null; }
+    }
+
     /// <summary>地图上点选／取消所选目的地（城市层建筑、普通层地点同一状态；只选中，不移动、不办服务）。</summary>
     public void PickMapNode(string? nodeId)
     {
@@ -1004,7 +1021,8 @@ public sealed partial class GameSession
 
     /// <summary>
     /// 地图路线区“出发”（B35c；Q591、Q793 B，Q595 城市层与普通层同源）：内核按真实相邻关系与移动规则重验后只提交这一段，
-    /// 成功立即收起地图（返回链作废，BM4a Q590），用中央推进条与退出按钮；失败留在原页并给原具体原因。
+    /// 成功后地图留在居中进度浮窗下（B60a：S14 B60 Q1103 选 B，取代 BM4a Q590 出发即收起地图），走完人物已移动时地图按当前位置刷新（<see cref="ReconcileMapForMove"/>）；
+    /// 失败留在原页并给原具体原因。从材料来源定位打开的地图同样可出发（S08 B35b Q1104 选 A）。
     /// 从城市层出发且这一段真实到达时提示“已到达{地点}。”（Q804；Q1005 A 定稿 R315：普通地图沿原反馈不加）。不走 BeginAction 的城市只读拦截（出发本身就是城市层的合法入口）。
     /// </summary>
     public async Task MapDepart(string targetId, string requestId)
@@ -1021,7 +1039,6 @@ public sealed partial class GameSession
         ClearHoverNow();
         ReconcileSelection();
         if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
-        CloseAllPanels();   // BM4a（Q590）：真实出发，返回链作废
         Drain();
         Commit();
         Notify();
@@ -1389,6 +1406,7 @@ public sealed partial class GameSession
         ResetOnLocationChange();
         OnBattleOnset();   // BM5c（Q605）：真实入战关闭当前最高顶栏页与整条战前返回链，战后不恢复
         ReconcilePanelChain();   // BM4a（Q590）：换场、战斗、终局或原规则直接收盘时返回链作废
+        ReconcileMapForMove();   // B60a（Q1103）：地图留在进度浮窗下、人物已移动——按当前位置刷新
         ReconcileFireMenu();
         ReconcileCraftAndSafehouse();   // B35a1（Q594、Q931）：工作区设施失效、离开安全屋所在地即关页
         ReconcileFeed();
@@ -1878,8 +1896,8 @@ public sealed partial class GameSession
         Notice = null;
         // 就近确认浮窗已完成使命（S14 §14.1：执行后不留下可再次点击的旧按钮）
         Pop = null;
-        // B45（FACPROC-A09）：耗时行动成功开始后收起火堆加工菜单，交给中央行动进度层
-        CloseFireMenuForAction();
+        // B60a（S14「2026-11-24 B60 暂停窗入口与原页返回」Q1103 选 B，取代 B45 FACPROC-A09／Q581 与 Q590 开工即收起火堆菜单）：火堆菜单留在居中进度浮窗下，
+        // 结束后仍合法就回到该菜单（失效由 ReconcileFireMenu 按原安全返回处理）
         // 开始新行动：上一条结果提示与悬停预测作废（试玩修复 G5、L6：按钮开始后消失或禁用，收不到离开事件）
         Toast = null;
         ClearHoverNow();

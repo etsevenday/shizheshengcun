@@ -14,7 +14,7 @@ public class B45bFacMenuTests : TestBase
 
     /// <summary>
     /// Q581-A01：加工菜单主层与火堆卡面挂同一个快捷入口组件（不复制一份）——按钮原句、可用条件、原因、点火盘、耗时与结算同源；
-    /// 点火盘锚在发起它的按钮；耗时行动成功开始才收起菜单（BeginAction → CloseFireMenuForAction），未成功留在原层。
+    /// 点火盘锚在发起它的按钮。B60a 改期望（S14 B60 Q1103 选 B，取代 Q581 开工即收起）：开工成功也不收菜单（行为见 Web 测试 B60aPageReturnUiTests）。
     /// </summary>
     [Test]
     public void Q581_A01_MenuMainLayerSharesCardQuickActions()
@@ -34,12 +34,7 @@ public class B45bFacMenuTests : TestBase
         Assert.That(Web("Components", "IgniteMenu.razor"), Does.Contain("AnchorId=\"@G.IgniteAnchor\""));
         var session = Web("Services", "GameSession.cs");
         Assert.That(session, Does.Contain("IgniteAnchorMenu = \"fm-ignite\""));
-        // 成功开始才收起：BeginAction 里 res.Ok 之后
-        var begin = session.IndexOf("private ActionResult BeginAction(", StringComparison.Ordinal);
-        var fail = session.IndexOf("if (!res.Ok)", begin, StringComparison.Ordinal);
-        var close = session.IndexOf("CloseFireMenuForAction();", begin, StringComparison.Ordinal);
-        Assert.That(fail, Is.GreaterThan(0));
-        Assert.That(close, Is.GreaterThan(fail), "开工失败先返回，不收菜单");
+        Assert.That(session, Does.Not.Contain("CloseFireMenuForAction"), "Q1103：开工成功也不收菜单");
     }
 
     // ───────────── Q582 放入后不自动换动作；空位被别处占用保留草稿 ─────────────
@@ -54,7 +49,7 @@ public class B45bFacMenuTests : TestBase
         Assert.That(submit, Does.Contain("m.SourceId = null;"));
         Assert.That(submit, Does.Not.Contain("m.Qty ="), "清来源不擅改数量");
         Assert.That(submit, Does.Contain("_fireMenuOwnPut = true;"));
-        var rec = Slice(fac, "private void ReconcileFireMenu()", "private void CloseFireMenuForAction()");
+        var rec = Slice(fac, "private void ReconcileFireMenu()", "public bool FireMaintBlocked");
         Assert.That(rec, Does.Contain("m.Open = false;"), "新内容只显示在加工位卡上");
         Assert.That(rec, Does.Not.Contain("m.Open = occ != null;"));
         var menu = Web("Components", "FireMenu.razor");
@@ -192,7 +187,7 @@ public class B45bFacMenuTests : TestBase
         // BM5b1（Q603）：主层无目标时只有木材灰显，其余仍不判定
         Assert.That(fac, Does.Contain("if (slot == null) return it.ItemId == WoodItemId ? WoodMainWhy(it) : null;"), "主层无目标不判定（木材除外）");
         Assert.That(fac, Does.Contain("if (m.Taken && pot == null) return null;"));
-        var rec = Slice(fac, "private void ReconcileFireMenu()", "private void CloseFireMenuForAction()");
+        var rec = Slice(fac, "private void ReconcileFireMenu()", "public bool FireMaintBlocked");
         Assert.That(rec, Does.Contain("else if (!_fireMenuOwnPut && FireMenuBlockWhy(src) is string why)"));
         Assert.That(rec, Does.Contain("m.SrcWhy = why;"));
         var menu = Web("Components", "FireMenu.razor");

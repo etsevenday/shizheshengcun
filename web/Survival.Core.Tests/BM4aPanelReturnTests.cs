@@ -125,12 +125,14 @@ public class BM4aPanelReturnTests : TestBase
         Assert.That(notify.IndexOf("ReconcilePanelChain();", StringComparison.Ordinal), Is.LessThan(notify.IndexOf("ReconcileFireMenu();", StringComparison.Ordinal)));
         Assert.That(Slice(session, "private void ResetUi()", "FireMenu = null;"), Does.Contain("ClearPanelChain();"));
         // B35c（S14 B35 节 Q591／Q595）：地图与城市层统一由路线区“出发”（MapDepart）真实出发，原鸟瞰 CityGo 与地图节点旁浮窗的收图并入这里
-        Assert.That(Slice(session, "public async Task MapDepart(", "await RunLoop();"), Does.Contain("CloseAllPanels();"), "从地图真实出发");
+        // B60a 改期望（S14「2026-11-24 B60 暂停窗入口与原页返回」Q1103 选 B，取代 Q590 中地图／休息页／火堆菜单因确认开工而收起）：
+        // 地图出发、休息页开始、火堆菜单开工都不再 CloseAllPanels／收菜单（行为见 Web 测试 B60aPageReturnUiTests）；成长页练习开工仍按 Q590 收起
+        Assert.That(Slice(session, "public async Task MapDepart(", "await RunLoop();"), Does.Not.Contain("CloseAllPanels();"), "从地图真实出发：地图留在进度浮窗下");
         Assert.That(Web("Components", "MapRouteArea.razor"), Does.Contain("await G.MapDepart(to, _req);"));
-        Assert.That(Web("Components", "RestOverlay.razor"), Does.Contain("G.Panel == \"rest\") G.CloseAllPanels();"));
+        Assert.That(Web("Components", "RestOverlay.razor"), Does.Not.Contain("CloseAllPanels"));
         Assert.That(Web("Services", "GameSession.EnemyCardsV2.cs"), Does.Contain("if (Panel == \"growth\") CloseAllPanels();"));
         var fac = Web("Services", "GameSession.FacMenu.cs");
-        Assert.That(Slice(fac, "private void CloseFireMenuForAction()", "public bool FireMaintBlocked"), Does.Contain("if (_chain.Remove(FireMenuPanel)) FireMenu = null;"), "菜单在下层时开工也收起");
+        Assert.That(fac, Does.Not.Contain("CloseFireMenuForAction"), "Q1103：开工不收火堆菜单（含下层）");
         Assert.That(Slice(fac, "private void ReconcileFireMenu()", "var passive"), Does.Contain("if (!_chain.Contains(FireMenuPanel)) FireMenu = null;"));
     }
 
