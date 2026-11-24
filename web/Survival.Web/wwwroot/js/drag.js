@@ -64,7 +64,9 @@ window.survivalDrag = (function () {
 
   // B51c2b／B59a 试玩修复 M1137：拖动中指针贴近可纵滚区域（晾制架、陶窑／净水台、火堆加工菜单等面板的内部滚动区）的上／下沿时自动滚动，
   // 越靠边越快；离开边沿、滚到头、松手或取消即停。滚动触发上面的 scroll 捕获监听，按最后指针坐标重算落点（不按滚动前坐标投放）。
-  var EDGE = 28, auto = null;
+  // 试玩修复 M1138（从④行拖进面板时先经过面板滚动区下沿，内容被误滚走）：只有指针已在该滚动区内部（不在触发带里）停留满 ARM_MS 之后再移到边沿才滚；
+  // 从区外直接穿过边沿进来不触发。触发带取可视高度的 15%，上限 28px。换了滚动区、离开滚动区、松手或取消都复位。
+  var EDGE = 28, EDGE_RATIO = 0.15, ARM_MS = 280, auto = null, arm = null;
   function scrollerAt(x, y) {
     if (ghost) ghost.style.display = 'none';
     var el = document.elementFromPoint(x, y);
@@ -78,13 +80,24 @@ window.survivalDrag = (function () {
     return null;
   }
   function autoScroll(x, y) {
-    var sc = scrollerAt(x, y), dir = 0, k = 0;
-    if (sc) {
-      var r = sc.getBoundingClientRect();
-      var edge = Math.min(EDGE, r.height / 4);
-      if (y < r.top + edge && sc.scrollTop > 0) { dir = -1; k = (r.top + edge - y) / edge; }
-      else if (y > r.bottom - edge && sc.scrollTop + sc.clientHeight < sc.scrollHeight - 1) { dir = 1; k = (y - (r.bottom - edge)) / edge; }
+    var sc = scrollerAt(x, y), dir = 0, k = 0, now = performance.now();
+    if (!sc) { arm = null; stopAuto(); return; }
+    if (!arm || arm.el !== sc) { arm = { el: sc, since: 0, armed: false }; stopAuto(); }
+    var r = sc.getBoundingClientRect();
+    var edge = Math.min(EDGE, r.height * EDGE_RATIO);
+    var inBand = y < r.top + edge || y > r.bottom - edge;
+    if (!inBand) {
+      // 在内部：记下开始停留的时刻；停满 ARM_MS 即具备贴边滚动资格
+      if (!arm.since) arm.since = now;
+      if (now - arm.since >= ARM_MS) arm.armed = true;
+      stopAuto();
+      return;
     }
+    // 在触发带：上一次在内部且已停满 ARM_MS 的也算具备资格；否则（从区外穿边进来、内部停留不够）不滚，并重新计时
+    if (!arm.armed && arm.since && now - arm.since >= ARM_MS) arm.armed = true;
+    if (!arm.armed) { arm.since = 0; stopAuto(); return; }
+    if (y < r.top + edge && sc.scrollTop > 0) { dir = -1; k = (r.top + edge - y) / edge; }
+    else if (y > r.bottom - edge && sc.scrollTop + sc.clientHeight < sc.scrollHeight - 1) { dir = 1; k = (y - (r.bottom - edge)) / edge; }
     if (!dir) { stopAuto(); return; }
     var step = Math.max(2, Math.round(14 * Math.min(1, k)));
     if (auto && auto.el === sc) { auto.dir = dir; auto.step = step; return; }
@@ -296,6 +309,7 @@ window.survivalDrag = (function () {
 
   function cleanup() {
     stopAuto();
+    arm = null;
     if (st && st.hoverKey) { try { net.invokeMethodAsync('DragHover', st.src, null); } catch (e) { } }
     if (st && st.el) st.el.classList.remove('drag-source');
     document.body.classList.remove('dragging');

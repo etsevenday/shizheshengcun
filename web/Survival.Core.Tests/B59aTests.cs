@@ -461,4 +461,32 @@ public class B59aTests : TestBase
         Assert.That(js.Substring(clean, 40), Does.Contain("stopAuto();"), "松手／取消清理时即停");
         Assert.That(js, Does.Contain("if (oy === 'auto' || oy === 'scroll') return n;"), "只认可纵滚区域");
     }
+
+    /// <summary>
+    /// 试玩修复 M1138（M1137 贴边自动滚动误滚：从④行拖进面板必先经过滚动区下沿，内容被滚走）网页壳接线（drag.js 源码断言，测试规则第 9 条）：
+    /// 触发带＝可视高度 15%、上限 28px；指针须先在该滚动区内部（不在触发带）停留满 280ms 才有贴边滚动资格，未具备资格时进触发带不滚并重新计时；
+    /// 不在任何滚动区、换了滚动区、松手／取消都复位。配对：具备资格后仍按原逻辑向上／向下滚。
+    /// </summary>
+    [Test]
+    public void M1138_DragJs_EdgeAutoScroll_OnlyAfterInsideDwell()
+    {
+        var js = SourceText.Web("wwwroot/js/drag.js");
+        Assert.That(js, Does.Contain("var EDGE = 28, EDGE_RATIO = 0.15, ARM_MS = 280, auto = null, arm = null;"), "上限 28px、15%、280ms");
+        Assert.That(js, Does.Contain("var edge = Math.min(EDGE, r.height * EDGE_RATIO);"), "触发带按可视高度比例");
+        var fn = js.IndexOf("function autoScroll(x, y)", StringComparison.Ordinal);
+        var end = js.IndexOf("function stopAuto()", StringComparison.Ordinal);
+        Assert.That(fn >= 0 && end > fn, Is.True);
+        var body = js.Substring(fn, end - fn);
+        Assert.That(body, Does.Contain("if (!sc) { arm = null; stopAuto(); return; }"), "不在滚动区即复位");
+        Assert.That(body, Does.Contain("if (!arm || arm.el !== sc) { arm = { el: sc, since: 0, armed: false }; stopAuto(); }"), "换了滚动区即复位");
+        var dwell = body.IndexOf("if (!arm.since) arm.since = now;", StringComparison.Ordinal);
+        var armIn = body.IndexOf("if (now - arm.since >= ARM_MS) arm.armed = true;", StringComparison.Ordinal);
+        var gate = body.IndexOf("if (!arm.armed) { arm.since = 0; stopAuto(); return; }", StringComparison.Ordinal);
+        var up = body.IndexOf("dir = -1;", StringComparison.Ordinal);
+        var down = body.IndexOf("dir = 1;", StringComparison.Ordinal);
+        Assert.That(dwell >= 0 && dwell < armIn, Is.True, "在内部计时，停满才具备资格");
+        Assert.That(armIn < gate && gate < up && up < down, Is.True, "未具备资格先拦下，具备后才按上／下沿滚（配对：滚动分支仍在）");
+        var clean = js.IndexOf("function cleanup() {", StringComparison.Ordinal);
+        Assert.That(js.Substring(clean, 60), Does.Contain("arm = null;"), "松手／取消复位");
+    }
 }
