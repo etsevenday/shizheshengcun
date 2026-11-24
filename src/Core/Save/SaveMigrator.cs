@@ -94,6 +94,7 @@ namespace Survival.Core.Save
         public const string Schema55 = "55";
         public const string Schema56 = "56";
         public const string Schema57 = "57";
+        public const string Schema58 = "58";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -166,6 +167,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema55) From55To56(s, config);
             if (s.SchemaVersion == Schema56) From56To57(s, config);
             if (s.SchemaVersion == Schema57) From57To58(s, config);
+            if (s.SchemaVersion == Schema58) From58To59(s);
             RejudgeGates(s, config);
             AdoptEnemyCards(s, config);
             PurgeSafePlaceEnemies(s, config);   // B48（R05 Q636）：迁移完成后、呈现敌踪与接敌检查前清岗位安全地点残留敌人
@@ -1630,7 +1632,7 @@ namespace Survival.Core.Save
         /// </summary>
         private static void From57To58(GameState s, GameConfig config)
         {
-            s.SchemaVersion = GameState.CurrentSchema;
+            s.SchemaVersion = Schema58;
             var water = new HashSet<string>(config.Items.Where(i => i.Kind == "water").Select(i => i.Id));
             foreach (var it in s.Items.Where(i => water.Contains(i.ItemId))) it.Count *= WaterUnitScale;
 
@@ -1663,6 +1665,32 @@ namespace Survival.Core.Save
                     if (cfg == null || cfg.WaterCostMl <= 0 || p.ReservedWaterMl <= 0) continue;
                     if (p.ReservedWaterMl < cfg.WaterCostMl) p.ReservedWaterMl = 0;
                 }
+        }
+
+        /// <summary>
+        /// 58 → 59（B59b，S11「2026-11-20 Q769、Q770」§Q769、「2026-11-24 Q1033–Q1039」§Q1033／Q1034／Q1036／Q1037；S06／S10 Q770 的 2026-11-24 补正）：
+        /// 晾制位留位原料与烹饪中原料改为冻结真实剩余保鲜量，按升级世界分钟 U 的剩余量冻结。静默（S06 Q770「旧期限兼容沿原办法处理，不新增迁移日志或新玩家动作」）。
+        /// <para>① 晾制位：各区晾制架上不是「已晾好」的位（晾制中、余料／新投未齐、已停止）里的原料，尚无可信 R、不是腐败物且在 U 仍未到原截止的，
+        /// 记 R＝旧E−U、原截止暂为空（晾制位口径）。晾制中位的原料自 53 起已冻结，已有 R 不重算；已晾好位的成品照常计时，不冻结。</para>
+        /// <para>② 烹饪：已取得受热保护（HeatProtected）的进程的目标、锅食谱主食材与辅料，尚无 R、不是腐败物且在 U 仍未到原截止的，记 R＝旧E−U（原截止保留作合堆键）。</para>
+        /// <para>U 时已越过原截止的不在这里冻结、也不在这里转换：晾制位与未受保护的物品由读档后的普通到期转换处理（Q770）；受热保护中越过原截止的旧档食材
+        /// 沿原 Q16 办法（保护中不腐败、取出即腐败），见开发记录 B59b 遗留。只在本版本跳转执行一次，重复读档不再加 R。</para>
+        /// </summary>
+        private static void From58To59(GameState s)
+        {
+            s.SchemaVersion = GameState.CurrentSchema;
+            var u = s.GameMinute;
+            foreach (var (place, fac) in DryingFacilities(s))
+            {
+                foreach (var b in fac.DryingSlots ?? new List<DryingSlot>())
+                {
+                    if (b.Status == DryingSlot.Done) continue;
+                    var owner = ItemInstance.DryingOwner(place, b.Slot);
+                    foreach (var it in s.Items.Where(i => i.Owner == owner)) Engine.GameEngine.FreezeShelfAt(it, u, clearExpiry: true);
+                }
+            }
+            foreach (var id in Engine.GameEngine.CookFrozenIds(s))
+                if (s.Items.FirstOrDefault(i => i.InstanceId == id) is ItemInstance it) Engine.GameEngine.FreezeShelfAt(it, u, clearExpiry: false);
         }
 
         /// <summary>

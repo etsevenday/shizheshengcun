@@ -67,7 +67,7 @@ public class B50aTests : TestBase
     [Test]
     public void M946_Schema53_CloneDeepCopiesLedger_StopReasonField()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("59"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         var i = new ItemInstance { ItemId = Rot, Count = 3, SpoiledOrigins = new Dictionary<string, int> { ["raw_meat"] = 1, ["cooked_meat"] = 2 } };
         var c = i.Clone();
         c.SpoiledOrigins!["raw_meat"] = 9;
@@ -89,7 +89,7 @@ public class B50aTests : TestBase
             foreach (var it in o["Items"]!) ((JObject)it).Remove("SpoiledOrigins");
         });
         var t = SaveSerializer.Deserialize(json, Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
+        Assert.That(t.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         var r = t.Items.Single(i => i.InstanceId == rot.InstanceId);
         Assert.That((r.SpoiledFrom, r.SpoiledOrigins, r.Count, r.SpoiledUnitGrams), Is.EqualTo(("raw_meat", (Dictionary<string, int>?)null, 2, rot.SpoiledUnitGrams)));
         Assert.That(t.Log.Count, Is.EqualTo(s.Log.Count), "静默迁移，不写说明（Q714）");
@@ -462,7 +462,7 @@ public class B50aTests : TestBase
         var logs = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema(s, "52"), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
+        Assert.That(t.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(t.Log.Count, Is.EqualTo(logs), "52→53 静默，不写说明");
         var ts = DrySlots(t);
         var f0 = t.Items.Where(i => i.Owner == ItemInstance.DryingOwner(place, 0)).ToList();
@@ -546,7 +546,8 @@ public class B50aTests : TestBase
         AdvanceTo(s, s.GameMinute + 10);
         Assert.That((b3.Status, b3.StopReason), Is.EqualTo((DryingSlot.Spoiled, DryingSlot.StopSpoiled)));
         // B59a 改期望（S11 §Q1029 空异常位自动恢复空位）：原「缺料2…空4」——工位2 已恢复空位
-        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "缺料1", "停止1", "腐败1", "空5" }), "按原因分开计工位数");
+        // B59b 改期望（S11「2026-11-20」§Q769「不计「缺料{n}」」，取代 Q713 缺料摘要）：原「缺料1 · 停止1 · 腐败1 · 空5」
+        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "停止1", "腐败1", "空5" }), "按原因分开计工位数，缺料不计");
         // B59a 改期望（S11 §Q1029 撤停止位悬停）：原「取出剩余物品。」
         Assert.That(E.DryingSlotViews(s)[3].CleanupHint, Is.Null);
 
@@ -587,7 +588,8 @@ public class B50aTests : TestBase
         var b = DrySlots(s).Single();
         Assert.That(b.StopReason, Is.EqualTo(DryingSlot.StopMissing), "原停止原因仍缺料");
         Assert.That(E.DryingSlotViews(s)[0].XpText, Is.EqualTo("原料不全，无成品和经验。"));
-        Assert.That(E.DryingSummaryParts(s)[0], Is.EqualTo("缺料1"));
+        // B59b 改期望（S11「2026-11-20」§Q769「不计「缺料{n}」」）：原摘要首段「缺料1」——缺料停止位不再计数
+        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "空7" }));
     }
 
     /// <summary>Q666-A05：受保护晾制越过原截止不生成假腐败结果；无保护的旧在制位真腐败时结果句接停工分句一次（另见 BM5b2 Q610_A05）。</summary>
@@ -651,7 +653,7 @@ public class B50aTests : TestBase
         foreach (var p in procs) { p.ReservedWaterMl = 500; p.HeatProtected = true; }   // 57 旧档：每份水煮预留 500 毫升、都已受热保护
         foreach (var w in s0.Items.Where(i => i.Owner == ItemInstance.ContainerOwner(pot0.InstanceId) && i.ItemId == "clean_water")) w.Count /= 5;   // 57 旧档：锅水每份 500 毫升（1000 毫升＝2 份）
         var s = SaveSerializer.Deserialize(AsSchema(s0, "57"), Cfg);
-        Assert.That(s.SchemaVersion, Is.EqualTo("58"));
+        Assert.That(s.SchemaVersion, Is.EqualTo("59"));   // B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         return (s, s.Items.Single(i => i.InstanceId == pot0.InstanceId));
     }
 
@@ -664,7 +666,7 @@ public class B50aTests : TestBase
         Assert.That(c0.Spoils, Is.Empty);
         Assert.That(c0.Text, Does.Not.Contain("已过原保质期").And.Not.Contain(GameEngine.TakeOutSpoilRiskText), "无过期项不生成");
         var foods = E.PotFood(s, pot.InstanceId);
-        foreach (var f in foods.Where(f => f.ItemId == "raw_root")) f.ExpiresAt = s.GameMinute + 5;
+        foreach (var f in foods.Where(f => f.ItemId == "raw_root")) { f.ExpiresAt = s.GameMinute + 5; f.ShelfPausedMinutes = null; }   // B59b 改起点：造旧档受热食材（S06 Q770 补正「旧期限兼容沿原办法处理」；B59b 迁移 58→59 时已越过原截止、没有正余量可冻结的旧档受热食材沿原 Q16 办法，见开发记录 B59b 遗留）
         WaitUntil(s, s.GameMinute + 5);
         var c = E.TakeOutConsequenceOf(s, pot);
         Assert.That(c.Spoils, Is.EqualTo(new[] { $"{E.ItemName("raw_root")}×2" }), "同名两份合计一项");
@@ -673,10 +675,10 @@ public class B50aTests : TestBase
 
         // 多种：生块根过期、生肉未过期 → 只列生块根；都过期 → 按首次出现顺序顿号连接
         var (m, mp) = OldPotWith("raw_root", "raw_meat");   // B56 改起点：同上
-        foreach (var f in E.PotFood(m, mp.InstanceId).Where(f => f.ItemId == "raw_root")) f.ExpiresAt = m.GameMinute + 5;
+        foreach (var f in E.PotFood(m, mp.InstanceId).Where(f => f.ItemId == "raw_root")) { f.ExpiresAt = m.GameMinute + 5; f.ShelfPausedMinutes = null; }   // B59b 改起点：同上
         WaitUntil(m, m.GameMinute + 5);
         Assert.That(E.TakeOutConsequenceOf(m, mp).Spoils, Is.EqualTo(new[] { $"{E.ItemName("raw_root")}×1" }), "未过期生肉不误列");
-        foreach (var f in E.PotFood(m, mp.InstanceId).Where(f => f.ItemId == "raw_meat")) f.ExpiresAt = m.GameMinute + 5;
+        foreach (var f in E.PotFood(m, mp.InstanceId).Where(f => f.ItemId == "raw_meat")) { f.ExpiresAt = m.GameMinute + 5; f.ShelfPausedMinutes = null; }   // B59b 改起点：同上
         WaitUntil(m, m.GameMinute + 5);
         var c2 = E.TakeOutConsequenceOf(m, mp);
         Assert.That(c2.Text, Does.Contain($"已过原保质期：{E.ItemName("raw_root")}×1、{E.ItemName("raw_meat")}×1。"), "多种一次列明");

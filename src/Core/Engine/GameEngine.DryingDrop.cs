@@ -17,7 +17,9 @@ namespace Survival.Core.Engine
     /// <item>非法物品、无容量（满位、在制、成品、停止位、本项原料已齐）或无操作资格的目标一律静默：不高亮、松手不投放、不扣物、不弹提示（Q1029）。</item>
     /// <item>空的异常停止位（及任何已无物品的非晾制中记录）自动恢复成普通空位（Q1029），见 <see cref="PruneEmptyDryingSlots"/>。</item>
     /// </list>
-    /// 本批不改留位原料的保鲜：未齐原料与余料沿 B51c2b 现状（不暂停保质、照常计时）；Q769／Q1033「位内冻结保鲜」留给 B59b。
+    /// B59b（S11「2026-11-20 Q769、Q770」§Q769、「2026-11-24」§Q1033「合法投入后，这次物品实际进入原位并冻结保鲜」、§Q1034「新投未齐和部分取出留下的真实余料继续冻结」；
+    /// 验收 Q769-01／02、Q1033-02）：拖入的这次实物进位即冻结真实剩余保鲜量 R＝原截止−投入分钟（截止暂为空，晾制位口径），未齐也冻结；齐料开晾沿用这份 R、不刷新，
+    /// 实际移出架子的份额才在那次成功移出时恢复 C＋R。
     /// </summary>
     public sealed partial class GameEngine
     {
@@ -116,6 +118,8 @@ namespace Survival.Core.Engine
                 var moved = n < inst.Count ? SplitOff(s, inst, n) : inst;
                 moved.Owner = owner;
                 moved.PlacedOrder = null;
+                // B59b（§Q769、§Q1033「这次物品实际进入原位并冻结保鲜」）：未齐也冻结真实余量，位内时间推进不扣
+                FreezeShelfAt(moved, s.GameMinute, clearExpiry: true);
             }
             Normalize(s, ItemInstance.Carried);
             Normalize(s, place);
@@ -133,7 +137,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 齐料即按原事务开始晾制（同 <see cref="StartDrying"/> 的开批：新批 ID、进度 0、开始分钟、经验快照、投料者；Q215／Q666 暂停位内原料保质 R＝E−S），
-        /// 复用这一位，不继承已失效的进度（§Q1029「匹配新一批时不继承已失效的进度」）。
+        /// 复用这一位，不继承已失效的进度（§Q1029「匹配新一批时不继承已失效的进度」）。B59b（§Q769「重新补足后开的是新批……保鲜量不刷新」）：位内已冻结的原料沿用原 R。
         /// </summary>
         private void BeginDryingInPlace(GameState s, string place, DryingSlot b, RecipeConfig rc)
         {

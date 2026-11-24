@@ -301,7 +301,7 @@ public class B56MutationGapTests : TestBase
         s.Resources["water"].Reserved = 2;
         s.SchemaVersion = "57";
         var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(m.SchemaVersion, Is.EqualTo("58"));
+        Assert.That(m.SchemaVersion, Is.EqualTo("59"));   // B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(m.Main!.ReservedResourceUnits, Is.EqualTo(5), "采集储水池预留 1×500 → 5×100");
         Assert.That(m.ExploreCheckPending!.LootCount, Is.EqualTo(5), "水掉落 1 → 5");
         Assert.That(m.ExploreCheckPending.ReservedResourceUnits, Is.EqualTo(1), "非采集行动的预留不换算");
@@ -366,7 +366,7 @@ public class B56MutationGapTests : TestBase
         s.Locations["camp"].Facility.Processes.Add(new FacilityProcess { ProcessId = "p-gone", RecipeId = "gone_recipe", TargetInstanceId = 999999, ReservedWaterMl = 500 });
         s.SchemaVersion = "57";
         var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(m.SchemaVersion, Is.EqualTo("58"));
+        Assert.That(m.SchemaVersion, Is.EqualTo("59"));   // B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         var gone = m.Locations["camp"].Facility.Processes.Where(p => p.RecipeId == "gone_recipe").ToList();
         Assert.That(gone, Has.Count.EqualTo(1));
         Assert.That(gone[0].ReservedWaterMl, Is.EqualTo(500));

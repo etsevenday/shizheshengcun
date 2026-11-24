@@ -157,8 +157,10 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 晾制位被取走物品之后：位已空即空出这一位（任何状态）；晾制中的位同一事务结束这一批（Q870 B／Q924 B）——剩下的原料成余料：解锁、恢复 C＋R，
+        /// 晾制位被取走物品之后：位已空即空出这一位（任何状态）；晾制中的位同一事务结束这一批（Q870 B／Q924 B）——剩下的原料成余料：解锁，
         /// 位改为余料（不计晾制中、不结算、无成品无经验），仍占这一位。已晾好／已停止的位只是少了物品。
+        /// B59b（S11「2026-11-20」§Q769「取出一部分结束旧加工后，按 Q924 留在同一晾制位的真实余料仍保留各自的冻结余量」，取代 Q924 晾制余料立即恢复计时）：
+        /// 留位余料不恢复 C＋R、继续冻结；只有实际移出架子的份额在移出时恢复（<see cref="TakeFacilityItem"/>）。
         /// </summary>
         private void SettleDryingAfterTake(GameState s, string place, int slot)
         {
@@ -175,11 +177,7 @@ namespace Survival.Core.Engine
             b.Status = DryingSlot.Residual;
             b.EndMinute = s.GameMinute;
             b.ShelfPaused = false;
-            foreach (var it in rest)
-            {
-                ResumeShelf(s, it);
-                it.ReservedBy = null;
-            }
+            foreach (var it in rest) it.ReservedBy = null;   // B59b（§Q769）：余料留位继续冻结，不恢复计时
         }
 
         /// <summary>

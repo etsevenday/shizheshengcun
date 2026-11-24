@@ -99,7 +99,8 @@ namespace Survival.Core.Engine
                 return ContentChangedText;
             var take = TakeOutBlocked(s, food, here);
             if (take != null) return take;
-            if (food.ExpiresAt is int ex && ex <= s.GameMinute && AllProcesses(s).Any(p => p.HeatProtected && TouchesItem(p, food.InstanceId)))
+            // B59b（§Q1036）：实际开工冻结真实余量的原料不按旧截止判过期，只剩无冻结余量的旧档受热食材
+            if (food.ShelfPausedMinutes == null && food.ExpiresAt is int ex && ex <= s.GameMinute && AllProcesses(s).Any(p => p.HeatProtected && TouchesItem(p, food.InstanceId)))
                 return MoveToPotSpoiledText(ItemName(food.ItemId));
             // 第二步按“已取到当前地面”的真实资格预验（只在本方法内临时改归属，返回前复原，不改任何状态）
             var keep = food.Owner;

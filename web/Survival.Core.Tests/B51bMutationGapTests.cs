@@ -261,7 +261,7 @@ public class B51bMutationGapTests : TestBase
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         obj["SchemaVersion"] = "54";
         var old = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(old.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
+        Assert.That(old.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(old.GameMinute, Is.EqualTo(t0 + 20));
 
         var b = Batches(old, "water_station").Single();

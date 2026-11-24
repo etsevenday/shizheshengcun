@@ -410,7 +410,7 @@ public class B51c2a1Tests : TestBase
         Assert.That((string?)obj["SchemaVersion"], Is.EqualTo("56"));
 
         var m = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(m.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
+        Assert.That(m.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         var wIn = m.Items.Where(i => i.Owner == ItemInstance.StationOwner(m.Ground, wb.BatchId)).OrderBy(i => i.ItemId).ToList();
         Assert.That(wIn.Select(i => (i.ItemId, i.Count)), Is.EqualTo(new[] { ("dirty_water", 20), ("filter_media", 1) }));   // B56 改期望：旧4份经 57→58 水份数×5（SaveMigrator.From57To58）＝20：原 4
         Assert.That(wIn.All(i => i.ReservedBy == null && i.PlacedOrder == null), Is.True, "预留标记与地面排序清掉");
@@ -659,7 +659,7 @@ public class B51c2a1Tests : TestBase
         // B56 起点：DebugLegacyStation56 已把水按旧每份500毫升还原（SaveMigrator.DebugToLegacyWaterUnits），读档链 57→58 再×5
         q[1].RecipeId = "no_such_recipe";   // 起点：旧档里这一批的配方已从配置删除
         var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(m.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
+        Assert.That(m.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(m.Items.Where(i => i.Owner == ItemInstance.StationOwner(m.Ground, q[0].BatchId)).Sum(i => i.Count), Is.EqualTo(21), "配方在的批：脏水20＋滤材1移进设施");   // B56 改期望：旧4份经 57→58 ×5＝20（SaveMigrator.From57To58）：原 5
         var left = m.Items.Where(i => i.ReservedBy == q[1].BatchId).ToList();
         Assert.That(left.Sum(i => i.Count), Is.EqualTo(21));   // B56 改期望：同上，地面预留的旧4份×5＝20＋滤材1：原 5

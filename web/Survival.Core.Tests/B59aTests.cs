@@ -206,7 +206,11 @@ public class B59aTests : TestBase
         Assert.That(s.Log.Count, Is.EqualTo(logs), "三种常规晾制转移都不写日志");
     }
 
-    /// <summary>§Q1029：自动停止日志撤「原料留在这一位，回到当地取出」尾句（B51c2a2 暂用）——晾制中的位缺料停止，日志只到「没有成品、不给经验。」。</summary>
+    /// <summary>
+    /// §Q1029：自动停止日志撤「原料留在这一位，回到当地取出」尾句（B51c2a2 暂用）。
+    /// B59b 改期望（S11「2026-11-20」§Q769「不发缺料停止日志。开发内部缺失输入护栏可保留，仍不产食物和经验」）：原断缺料停止日志
+    /// 「临时营地晾制架工位1：原料不全，晾制果干停止，没有成品、不给经验。」——缺料护栏只停这一位、不写日志、不出果干；真腐败停止仍写日志（尾句不含「回到当地取出」）见 B59bTests。
+    /// </summary>
     [Test]
     public void Q1029_StopLog_NoReturnToTakeTail()
     {
@@ -214,8 +218,10 @@ public class B59aTests : TestBase
         Make(s, "berry", 2, ItemInstance.Carried, s.GameMinute + 600);
         Ok(E.StartDrying(s, "dry_berries"));
         foreach (var i in E.DryingContents(s, s.Ground, 0)) s.Items.Remove(i);   // 起点：位内原料异常缺失（开发护栏，S11 Q769「开发内部缺失输入护栏可保留」）
+        var n0 = s.Log.Count;
         AdvanceTo(s, s.GameMinute + 5);
-        Assert.That(s.Log.Select(l => l.Text), Does.Contain("临时营地晾制架工位1：原料不全，晾制果干停止，没有成品、不给经验。"));
+        Assert.That(s.Log.Skip(n0).Select(l => l.Text), Has.None.Contains("晾制架工位1"), "缺料护栏不写停止日志");
+        Assert.That(s.Items.Count(i => i.ItemId == "dried_berries"), Is.EqualTo(0), "不产果干");
     }
 
     // ───────────── Q1034：收起标题与摘要 ─────────────

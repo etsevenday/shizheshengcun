@@ -263,6 +263,8 @@ namespace Survival.Core.Engine
         public void SyncFacilities(GameState s)
         {
             foreach (var place in FirePlaces(s).ToList()) SyncFacility(s, place);
+            // B59b（§Q1036）：进程移除（取出、取下整锅、锅食谱作废等）后不再受烹饪保护的冻结原料，在这一刻按 C＋R 恢复计时
+            ReleaseCookFreeze(s);
         }
 
         /// <summary>
@@ -669,8 +671,9 @@ namespace Survival.Core.Engine
                 : AllProcesses(s).Where(p => TouchesItem(p, inst.InstanceId)).ToList();
             var reset = touched.Any(p => p.HeatDoneMinutes > 0);
             // Q16：成功取出即解除保护；原保质期已过的食材取出后在同一事务转为腐败物（Q610／Q641；失败的取出在上面已整次拒绝，什么都不变）
+            // B59b（§Q1036）：只剩无冻结余量的旧档受热食材；实际开工冻结的原料取出后从 C＋R 继续计时，不在取出时转换
             var lost = touched.Where(p => p.HeatProtected).Select(p => FindItem(s, p.TargetInstanceId))
-                .Where(t => t != null && t.ExpiresAt.HasValue && t.ExpiresAt.Value <= s.GameMinute)
+                .Where(t => t != null && PastExpiryButProtected(s, t))
                 .Select(t => t!.InstanceId).Distinct().ToList();
             var cardsBefore = new Dictionary<string, int> { [GameState.PlayerId] = RootCardCount(s) };
             var name = IsPot(inst) || inst.Count <= 1 ? $"{ItemName(inst.ItemId)}" : $"{ItemName(inst.ItemId)}×{inst.Count}";
@@ -778,11 +781,13 @@ namespace Survival.Core.Engine
         public sealed class FacilitySnapshot
         {
             public HashSet<string> Eligible { get; } = new HashSet<string>();
+            /// <summary>段首世界分钟（B59b §Q1036：首次有效受热「在该段推进前」冻结剩余保鲜量，R＝原截止−段首）。</summary>
+            public int StartMinute { get; set; }
         }
 
         private FacilitySnapshot SnapshotFacilities(GameState s, ActionState? running)
         {
-            var snap = new FacilitySnapshot();
+            var snap = new FacilitySnapshot { StartMinute = s.GameMinute };
             foreach (var place in FirePlaces(s).ToList())
             {
                 var fac = FacOf(s, place)!;
@@ -837,11 +842,31 @@ namespace Survival.Core.Engine
                     p.HeatDoneMinutes += Tick;
                     // 烹饪受热保护只给食材（Q16）；净水批次与 Q111 煅烧（木材/木炭无食物腐败保护）不用
                     var tg = Process(p.RecipeId).Target;
-                    if (tg == ProcessTargets.SingleFood || tg == ProcessTargets.PotRecipe) p.HeatProtected = true;
+                    if (tg == ProcessTargets.SingleFood || tg == ProcessTargets.PotRecipe)
+                    {
+                        // B59b（§Q1036「按食材首次进入合格有效受热段的原判定，在该段推进前冻结」）：只在首次取得保护的这一段冻结一次
+                        if (!p.HeatProtected) FreezeCookInputs(s, p, snap.StartMinute);
+                        p.HeatProtected = true;
+                    }
                     if (p.HeatDoneMinutes >= p.RequiredHeatMinutes) CompleteProcess(s, place, fac, p);
                 }
             }
             SyncFacilities(s);
+        }
+
+        /// <summary>
+        /// B59b（S11「2026-11-24 Q1033–Q1039」§Q1036、Q1037；验收 Q1036-01、Q1037-01）：实际开始烹饪时，在该段推进前冻结本次已投入的全部有效原料
+        /// （单份烹饪的目标；锅食谱的主食材与辅料）各自的剩余保鲜量 R＝原截止−段首分钟；没有期限的不记，已有生产／晾制冻结的沿用真实余额（不双重冻结或延长），
+        /// 段首已到期的原物不在这里救活（段首资格已排除）。原截止保留作合堆／批次键（生产输入口径）。冻结期间继续受热、熄火暂停、退出等待都不衰减；
+        /// 进程结束保护时由 <see cref="ReleaseCookFreeze"/> 按 C＋R 恢复，完成时原料核销（单份目标转成成品时清掉 R）。
+        /// </summary>
+        private void FreezeCookInputs(GameState s, FacilityProcess p, int startMinute)
+        {
+            var ids = new List<int> { p.TargetInstanceId };
+            ids.AddRange(p.InputInstanceIds ?? new List<int>());
+            ids.AddRange(p.AuxInstanceIds ?? new List<int>());
+            foreach (var id in ids.Distinct())
+                if (FindItem(s, id) is ItemInstance it) FreezeShelfAt(it, startMinute, clearExpiry: false);
         }
 
         /// <summary>生块根物品 ID（目标判定用）。</summary>
@@ -875,6 +900,7 @@ namespace Survival.Core.Engine
                 t.ItemId = cfg.OutputId;
                 t.Count = cfg.OutputCount;
                 t.ExpiresAt = null;
+                t.ShelfPausedMinutes = null;
                 text = $"{ZoneName(s, loc)}火堆：{before}已煅烧成{ItemName(cfg.OutputId)}×{cfg.OutputCount}，留在火堆加工位（煅烧不给经验）。";
             }
             else
@@ -884,6 +910,7 @@ namespace Survival.Core.Engine
                 var outCfg = _items[cfg.OutputId];
                 // Q16（S11 §10，取代 T03 继承原烤肉期限）：所有合法烹饪/复煮成品一律从完成时刻起算自己的保质（水煮肉 24 小时）
                 t.ExpiresAt = outCfg.ShelfLifeMinutes.HasValue ? s.GameMinute + outCfg.ShelfLifeMinutes.Value : (int?)null;
+                t.ShelfPausedMinutes = null;   // B59b（§Q1036「成品成功生成后再按自身原保质计时」）：原料的烹饪冻结随原料核销
                 var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
                 if (cfg.WaterCostMl > 0 && pot != null) ConsumeWater(s, pot, cfg.RequiredLiquid!, cfg.WaterCostMl);
                 var potWorn = "";

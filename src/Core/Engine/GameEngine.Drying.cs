@@ -557,12 +557,13 @@ namespace Survival.Core.Engine
                         // B50a（Q713）：停止那一刻记真实原因（有腐败原料记腐败，否则缺料），之后不再改
                         b.StopReason = bad != null ? DryingSlot.StopSpoiled : DryingSlot.StopMissing;
                         b.EndMinute = s.GameMinute;
-                        // BM5b2（Q610）：腐败的原料就地转为腐败物（静默，原料仍留这一位待取出），结果句接停工分句
-                        // B51c2a2（S11 Q880：清理只用于地图）：句尾「回到当地清理」改「回到当地取出」（沿完成句「回到当地取出」，暂用）
-                        var badName = bad != null ? ItemName(OriginItemId(bad)) : null;
-                        var turned = bad != null && SpoilWorkInputs(s, items.Select(i => i.InstanceId).ToList());
-                        Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架工位{b.Slot + 1}："
-                                                    + (bad != null ? $"{badName}已腐败" : "原料不全")
+                        // B59b（S11「2026-11-20」§Q769「不发缺料停止日志。开发内部缺失输入护栏可保留，仍不产食物和经验，不生成虚假腐败原因」）：
+                        // 缺料只停这一位（记缺料原因、无成品无经验），不写日志；位内原料冻结，正常玩法走不到（取走部分原料在同一事务改为余料）
+                        if (bad == null) continue;
+                        // BM5b2（Q610）：腐败的原料就地转为腐败物（静默，原料仍留这一位待取出），结果句接停工分句（只剩未冻结的旧档原料会走到）
+                        var badName = ItemName(OriginItemId(bad));
+                        var turned = SpoilWorkInputs(s, items.Select(i => i.InstanceId).ToList());
+                        Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架工位{b.Slot + 1}：{badName}已腐败"
                                                     // B59a（S11 §Q1029）：撤自动停止日志的「原料留在这一位，回到当地取出」尾句（B51c2a2 暂用）
                                                     + $"，{rc.Name}停止，没有成品、不给经验。"
                                                     + (turned ? SpoiledWorkClause : ""));
@@ -733,7 +734,6 @@ namespace Survival.Core.Engine
             var drying = slots.Count(b => b.Status == DryingSlot.Drying);
             var done = slots.Count(b => b.Status == DryingSlot.Done);
             var stopped = slots.Where(b => b.Status == DryingSlot.Spoiled).Select(DryingStopKind).ToList();
-            var missing = stopped.Count(k => k == DryingSlot.StopMissing);
             var unknown = stopped.Count(k => k == DryingSlot.StopUnknown);
             var bad = stopped.Count(k => k == DryingSlot.StopSpoiled);
             var free = Math.Max(0, DryingSlotCount - slots.Count);
@@ -742,7 +742,7 @@ namespace Survival.Core.Engine
             if (done > 0) parts.Add($"待取{done}");
             // B59a（S11 §Q1034「不另列余料位数或缺料提示」、S14 Q1034-02「没有……余料位数摘要」）：撤 B51c2b 暂用的「余料{n}」计数
             // B50a（Q713）：按停止原因分开计工位数（不是原料份数）
-            if (missing > 0) parts.Add($"缺料{missing}");
+            // B59b（S11「2026-11-20」§Q769「不计「缺料{n}」」，取代 Q713／Q861 的缺料摘要）：缺料停止位不再计数，缺口由实际槽位与卡片表达
             if (unknown > 0) parts.Add($"停止{unknown}");
             if (bad > 0) parts.Add($"腐败{bad}");
             parts.Add($"空{free}");

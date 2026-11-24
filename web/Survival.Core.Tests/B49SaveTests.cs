@@ -24,7 +24,7 @@ public class B49SaveTests : BattleTestBase
     [Test]
     public void C01_SchemaUnchanged()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("59"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
     }
 
     /// <summary>

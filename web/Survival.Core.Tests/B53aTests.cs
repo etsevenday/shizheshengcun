@@ -202,7 +202,7 @@ public class B53aTests : TestBase
     public void Schema56_Current()
     {
         // 开发假设：B53a 把存档升到 56（Q764 迁移）；字面量对照，防止版本号被别处挪动
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("59"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
     }
 
     /// <summary>
@@ -241,7 +241,7 @@ public class B53aTests : TestBase
         var logs = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema(s, "55"), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"
+        Assert.That(t.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：存档升 58（57→58 水卡与锅水每份100毫升、份数×5，SaveMigrator.From57To58；S10 文首 B53a Q929）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         var reasons = DrySlots(t).OrderBy(b => b.Slot).Select(b => b.StopReason).ToList();
         Assert.That(reasons, Is.EqualTo(new[] { "missing", "spoiled", "unknown", "unknown", "missing", "missing" }));
         Assert.That(t.Items.Select(i => (i.InstanceId, i.ItemId, i.Count, i.Owner)), Is.EquivalentTo(items), "只补原因，不改实物");
@@ -267,7 +267,8 @@ public class B53aTests : TestBase
         // B51c2a2 改期望（S11／逐字稿 §Q880 映射表「异常停止位“待清理” → 待取出」）：原「待清理」
         Assert.That(views.Take(4).Select(v => CardStates.DryingStatusText(v.Status)), Is.All.EqualTo("待取出"));
         Assert.That(views.Take(4).Select(v => v.StopKind), Is.EqualTo(new[] { "missing", "missing", "unknown", "spoiled" }), "各位原实际原因仍可查看");
-        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "缺料2", "停止1", "腐败1", "空4" }), "不合并成待清理总数");
+        // B59b 改期望（S11「2026-11-20」§Q769「不计「缺料{n}」」，取代 Q861 摘要里的缺料计数）：原「缺料2 · 停止1 · 腐败1 · 空4」
+        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "停止1", "腐败1", "空4" }), "不合并成待清理总数，缺料不计");
     }
 
     /// <summary>B53-Q861-01 对照：没有异常位时摘要不出异常计数，正常晾制位短状态仍是晾制中；正常齐料晾制越过原截止照常晾好（Q765-A01）。</summary>

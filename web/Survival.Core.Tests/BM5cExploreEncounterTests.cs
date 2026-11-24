@@ -278,10 +278,10 @@ public class BM5cExploreEncounterTests : B41bTestBase
     {
         var s = Field(3, "shambler");
         Explore(s, 0.5, null);
-        var json = SaveSerializer.Serialize(s).Replace("\"SchemaVersion\": \"58\"", "\"SchemaVersion\": \"49\"").Replace("\"SchemaVersion\":\"58\"", "\"SchemaVersion\":\"49\"");   // B56：当前版本 58（M1083 57→58），改它造 49 档
+        var json = SaveSerializer.Serialize(s).Replace($"\"SchemaVersion\": \"{GameState.CurrentSchema}\"", "\"SchemaVersion\": \"49\"").Replace($"\"SchemaVersion\":\"{GameState.CurrentSchema}\"", "\"SchemaVersion\":\"49\"");   // B56：当前版本 58（M1083 57→58），改它造 49 档；B59b：当前版本 59（58→59），改读 CurrentSchema
         Assert.That(json, Does.Contain("\"49\""));
         var t = SaveSerializer.Deserialize(json, CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水每份100毫升份数×5，SaveMigrator.From57To58，M1083；S10 文首 B53a Q929）
+        Assert.That(t.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：存档升 58（57→58 水每份100毫升份数×5，SaveMigrator.From57To58，M1083；S10 文首 B53a Q929）；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(t.Main!.EncounterSegment, Is.Null);
         Assert.That(GameEngine.LegacyExploreCheck(t.Main), Is.True, "旧在办探索按原完成边界检查");
         Assert.That(t.ExploreCheckPending, Is.Null);

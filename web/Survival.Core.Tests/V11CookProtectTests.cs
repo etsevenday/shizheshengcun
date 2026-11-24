@@ -63,7 +63,10 @@ public class V11CookProtectTests : TestBase
         Assert.That(p.HeatDoneMinutes, Is.EqualTo(5));
         Assert.That(E.IsSpoiled(s, root), Is.False, "受保护不判腐败");
         Assert.That(root.ExpiresAt, Is.EqualTo(s.GameMinute), "不改写原 expiresAt");
-        Assert.That(E.ContentStatus(s, root), Does.Contain("受热保护中").And.Contain("取出即腐败"));
+        // B59b 改期望（S11「2026-11-24」§Q1036「实际开始烹饪时……在该段推进前冻结本次已投入有效主食材及辅料各自的剩余保鲜量」、S10 Q770 补正「旧截止不会让这份食材过期」）：
+        // 原「受热保护中」＋「取出即腐败」——首段冻结 R＝原截止−段首＝5 分钟，越过旧截止仍是正余量，不再写取出即腐败
+        Assert.That(root.ShelfPausedMinutes, Is.EqualTo(5), "段首冻结剩余保鲜量");
+        Assert.That(E.ContentStatus(s, root), Does.Contain("受热保护中").And.Not.Contain("取出即腐败"));
 
         // 待净化（脏水）：食材还没受热，到期照常腐败
         var (t, tpot) = PotOnFire("dirty_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
@@ -102,20 +105,26 @@ public class V11CookProtectTests : TestBase
         var stone = s.Items.First(i => i.ItemId == "stone" && i.IsCarried);
         stone.Count = Cfg.Carry.HardGrams / E.Item("stone").WeightGrams;
         var cons = E.TakeOutConsequenceOf(s, root);
-        Assert.That(cons.Spoils, Has.Count.EqualTo(1), "提前写明取出即腐败");
-        Assert.That(cons.Text, Does.Contain("已过原保质期：生块根×1。取出后失去烹饪保护，过期食材将变为腐败物。"), "B50a（Q712）：取出风险原句");
+        // B59b 改期望（S11 §Q1036「越旧截止仍可完成」「已冻结食材主动取出后从原余额继续计时」，S14 B51C2A2-Q1028-02 补正「烹饪中的食材取出后恢复剩余保鲜计时」）：
+        // 原 Spoils 1 项、「已过原保质期：生块根×1。取出后失去烹饪保护，过期食材将变为腐败物。」——冻结 R＝10 分钟，取出不会腐败，不列后果
+        Assert.That(root.ShelfPausedMinutes, Is.EqualTo(10), "首段冻结 R＝原截止−段首");
+        Assert.That(cons.Spoils, Is.Empty, "冻结正余量取出不腐败");
+        Assert.That(cons.Text, Does.Not.Contain("已过原保质期").And.Not.Contain(GameEngine.TakeOutSpoilRiskText));
         var fail = E.DoInstant(s, InstantRequest.TakeOut(root.InstanceId, ItemInstance.Carried));
         Assert.That(fail.Ok, Is.False, "超重取出失败");
         Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.True, "失败取出不先解除保护");
         Assert.That(E.ProcessOf(s, root)!.HeatDoneMinutes, Is.EqualTo(10));
 
-        // 成功取到地面：解除保护，原期限已过立即腐败，不能再放回烹饪
+        // 成功取到地面：解除保护
+        // B59b 改期望（S11 §Q1036「主动取出……原料按当前时刻加真实冻结余额恢复倒计时」）：原「按原 expiresAt 立即腐败」、日志尾「生块根×1已腐败，变为腐败物×1。」、
+        // 「已变质不能重新放回烹饪」——取出后截止＝取出时刻＋R（10），不腐败、不写转换句，仍可放回锅里
+        var c = s.GameMinute;
         Assert.That(E.DoInstant(s, InstantRequest.TakeOut(root.InstanceId, "camp")).Ok, Is.True);
         Assert.That(E.ProcessOf(s, root), Is.Null);
-        Assert.That(E.IsSpoiled(s, root), Is.True, "取出后按原 expiresAt 立即腐败");
-        Assert.That(s.Log.Last().Text, Does.EndWith("，相关加工进度清零。生块根×1已腐败，变为腐败物×1。").And.Not.Contain("解除烹饪保护"), "BM5b2（Q641）：主句后接一次原位腐败句，删旧尾句");
+        Assert.That((root.ItemId, root.ExpiresAt, root.ShelfPausedMinutes, E.IsSpoiled(s, root)), Is.EqualTo(("raw_root", (int?)(c + 10), (int?)null, false)), "取出后从冻结余额继续计时");
+        Assert.That(s.Log.Last().Text, Does.EndWith("，相关加工进度清零。").And.Not.Contain("已腐败"), "无转换句");
         var back = E.DoInstant(s, InstantRequest.PutFoodInPot(root.InstanceId, pot.InstanceId, 1));
-        Assert.That(back.Ok, Is.False, "已变质不能重新放回烹饪");
+        Assert.That(back.Ok, Is.True, "正余量可重新放回烹饪");
 
         // 仍新鲜的受保护食材取出：只解除保护，不腐败
         var (t, tpot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
@@ -147,12 +156,14 @@ public class V11CookProtectTests : TestBase
         Wait(s, 5);
         var mp = E.ProcessOf(s, meat)!;
         Assert.That(mp.HeatProtected, Is.True);
-        Assert.That(E.PastExpiryButProtected(s, meat), Is.True, "受保护且已过原期限");
+        // B59b 改期望（S11 §Q1036「继续受热或暂停时不衰减……越旧截止仍可完成」）：原「受保护且已过原期限」PastExpiryButProtected 为真——
+        // 首段冻结 R＝5，越过旧截止仍是正余量（不是过期原物），食用照常
+        Assert.That((meat.ShelfPausedMinutes, E.PastExpiryButProtected(s, meat), E.IsSpoiled(s, meat)), Is.EqualTo(((int?)5, false, false)), "越过旧截止仍是冻结正余量");
         Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.False, "没有水预留的不受热、不取得保护");
 
         SetStats(s, 20, 50, 50, 18, 90, 60);
         var req = ActionRequest.UseInstance(meat.InstanceId).WithRequestId("eat-q23");
-        Assert.That(E.CanStart(s, req), Is.Null, "Q23：受保护期间过原期限仍可直接食用");
+        Assert.That(E.CanStart(s, req), Is.Null, "Q23：受保护期间越过旧截止仍可直接食用");
         var pv = E.Preview(s, req);
         Assert.That(pv.Ok, Is.True, pv.Reason);
         Assert.That(string.Join("；", pv.Notes), Does.Contain("复煮随之终止").And.Contain("释放预留净水1000毫升").And.Contain("已耗燃料不退"));
@@ -197,12 +208,13 @@ public class V11CookProtectTests : TestBase
         meat.ExpiresAt = s.GameMinute - 1;
         Assert.That(E.CanStart(s, ActionRequest.UseInstance(meat.InstanceId)), Is.EqualTo("已腐败，不能食用"));
 
-        // 受保护后取出：按原期限立即腐败
+        // 受保护后取出：旧档（迁移时已越过原截止、没有正余量可冻结）按原期限立即腐败
         var (t, tpot) = PotOnFire("clean_water", 10);   // B56：每份100毫升，×5 保持原 1000 毫升
         var m2 = E.CreateItems(t, "cooked_meat", 1, "camp").Single();
         m2.ExpiresAt = t.GameMinute + 5;
         Assert.That(E.DoInstant(t, InstantRequest.PutFoodInPot(m2.InstanceId, tpot.InstanceId, 1)).Ok, Is.True);
         Wait(t, 5);
+        m2.ShelfPausedMinutes = null;   // B59b 改起点：造旧档受热食材（S06 Q770 补正「旧期限兼容沿原办法处理」；B59b 迁移 58→59 时已越过原截止、没有正余量可冻结的旧档受热食材沿原 Q16 办法，见开发记录 B59b 遗留）；正常冻结取出见 B59bTests
         Assert.That(E.CanStart(t, ActionRequest.UseInstance(m2.InstanceId)), Is.Null);
         Assert.That(E.DoInstant(t, InstantRequest.TakeOut(m2.InstanceId, "camp")).Ok, Is.True);
         // B53a 改期望：食用腐败物拒绝句改「腐败物不可食用。」（S12／S06 文首 2026-11-15 Q767；逐字稿 rotNotEdible）

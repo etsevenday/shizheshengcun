@@ -142,7 +142,9 @@ public class BM5b1FacMenuTests : TestBase
         Assert.That(meat.Owner, Is.EqualTo(ItemInstance.ContainerOwner(pot.InstanceId)));
         Assert.That(E.FireSlots(s, Here)[0], Is.Null, "源位释放");
         Assert.That(E.FireSlots(s, Here)[1], Is.SameAs(pot), "锅不挪位");
-        Assert.That(meat.ExpiresAt, Is.EqualTo(exp), "原期限不刷新");
+        // B59b 改期望（S11「2026-11-24」§Q1036「主动取出或原业务作废等导致实际结束保护时，原料按当前时刻加真实冻结余额恢复倒计时」）：
+        // 原 ExpiresAt＝exp（原期限不变）——直烤首段冻结 R＝exp−段首，移入锅结束直烤保护，截止＝此刻＋R＝exp＋已受热 10 分钟；仍不刷新为完整保质
+        Assert.That((meat.ExpiresAt, meat.ShelfPausedMinutes), Is.EqualTo(((int?)(exp + 10), (int?)null)), "从冻结余额继续计时，不刷新");
         var boil = E.ProcessOf(s, meat)!;
         Assert.That(boil.RecipeId, Is.EqualTo("boil_meat"));
         Assert.That(boil.HeatDoneMinutes, Is.EqualTo(0), "不继承直烤热量");
@@ -253,6 +255,7 @@ public class BM5b1FacMenuTests : TestBase
         WaitMinutes(u, 10);
         Assert.That(E.ProcessOf(u, m3)!.HeatProtected, Is.True);
         m3.ExpiresAt = u.GameMinute - 1;
+        m3.ShelfPausedMinutes = null;   // B59b 改起点：造旧档受热食材（S06 Q770 补正「旧期限兼容沿原办法处理」；B59b 迁移 58→59 时已越过原截止、没有正余量可冻结的旧档受热食材沿原 Q16 办法，见开发记录 B59b 遗留）
         var snap3 = Snap(u);
         var r3 = E.DoInstant(u, E.MoveToPotOptionFor(u, 0)!.Request);
         Assert.That(r3.Reason, Is.EqualTo("生肉取出后已腐败，不能移入锅。"));

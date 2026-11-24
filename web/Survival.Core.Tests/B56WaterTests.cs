@@ -352,7 +352,7 @@ public class B56WaterTests : TestBase
         s.SchemaVersion = "57";
 
         var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(m.SchemaVersion, Is.EqualTo("58"));
+        Assert.That(m.SchemaVersion, Is.EqualTo("59"));   // B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(Count(m, "dirty_water", ItemInstance.Carried), Is.EqualTo(15), "随身脏水 3×500 → 15×100");
         Assert.That(E.PotUnits(m, pot.InstanceId), Is.EqualTo(10), "锅水 2×500 → 10×100");
         var mc = m.Items.Single(i => i.InstanceId == canteen.InstanceId);
@@ -380,7 +380,7 @@ public class B56WaterTests : TestBase
         var items = s.Items.Sum(i => i.Count);
         s.SchemaVersion = "57";
         var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(m.SchemaVersion, Is.EqualTo("58"));
+        Assert.That(m.SchemaVersion, Is.EqualTo("59"));   // B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(m.Items.Sum(i => i.Count), Is.EqualTo(items));
         Assert.That(m.Resources["w16_service_cistern"].Available, Is.EqualTo(stock is int a ? a * 5 : (int?)null), "产水点库存×5（原未初始化为 null 时仍 null）");
     }

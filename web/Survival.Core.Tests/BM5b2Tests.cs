@@ -290,6 +290,7 @@ public class BM5b2Tests : TestBase
         }
         foreach (var f in E.PotFood(s, pot.InstanceId)) f.ExpiresAt = s.GameMinute + 5;
         WaitUntil(s, s.GameMinute + 5);
+        foreach (var f in E.PotFood(s, pot.InstanceId)) f.ShelfPausedMinutes = null;   // B59b 改起点：造旧档受热食材（S06 Q770 补正「旧期限兼容沿原办法处理」；B59b 迁移 58→59 时已越过原截止、没有正余量可冻结的旧档受热食材沿原 Q16 办法，见开发记录 B59b 遗留）；正常冻结取出见 B59bTests
         // B56（b53a-q928-q929-water-100ml.json foodProcesses boil_root waterCostMl 1000、W100-Q929-08／09）：1 升锅两份生块根只有先投放的一份
         // 获得 1000 毫升预留并受热保护，另一份无热等水不获保护、到期照常转腐败物（原两份都受保护、合计「生块根×2」）
         var heated = E.PotFood(s, pot.InstanceId);
@@ -406,7 +407,7 @@ public class BM5b2Tests : TestBase
         var json = o.ToString();
         Assert.That(json, Does.Contain("\"SchemaVersion\": \"50\""));
         var t = SaveSerializer.Deserialize(json, Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）；B56 改期望：存档升 58（M1083 57→58 水份数×5）
+        Assert.That(t.SchemaVersion, Is.EqualTo("59"));   // B51c2a1 改期望：存档升 57（56→57 陶窑／净水台原料移进设施，S11 Q872 选 B）；B56 改期望：存档升 58（M1083 57→58 水份数×5）；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(Rotten(t, "berry", "camp"), Is.EqualTo(3), "过期物一次迁移为腐败物");
         Assert.That(t.Items.Count(i => i.ItemId == "berry"), Is.EqualTo(0), "原名下不留副本");
         Assert.That(t.Items.Single(i => i.InstanceId == r.InstanceId).ItemId, Is.EqualTo("raw_root"), "可信烹饪保护保留");

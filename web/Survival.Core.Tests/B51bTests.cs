@@ -164,7 +164,7 @@ public class B51bTests : TestBase
         var obj = JObject.Parse(SaveSerializer.Serialize(s));
         obj["SchemaVersion"] = "54";
         var old = SaveSerializer.Deserialize(obj.ToString(), Cfg);
-        Assert.That(old.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
+        Assert.That(old.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         var u = old.GameMinute;
         var nq = Batches(old, "water_station");
         Assert.That(nq.Select(b => (b.BatchId, b.XpSnapshot)), Is.EqualTo(ids), "批次 ID 与经验快照不变");
@@ -201,7 +201,7 @@ public class B51bTests : TestBase
         Assert.That(s.SchemaVersion, Is.EqualTo("54"));
         Assert.That(Batches(s, "water_station").Select(b => (b.Queued, b.DoneMinutes)), Is.EqualTo(new[] { (false, 10), (true, 0) }));
         var back = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
-        Assert.That(back.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"
+        Assert.That(back.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：读档链升到 58（SaveMigrator.From57To58）：原 "57"；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(Batches(back, "water_station").Select(b => (b.Queued, b.DoneMinutes, b.StartMinute)),
             Is.EqualTo(new[] { (false, 10, Batches(s, "water_station")[0].StartMinute), (false, 0, back.GameMinute) }));
     }

@@ -207,8 +207,9 @@ namespace Survival.Core.Engine
                 .Where(p => (p.PotInstanceId is int pid && pots.Contains(pid)) || plan.Any(i => !IsPot(i) && TouchesItem(p, i.InstanceId)))
                 .ToList();
             // 同单件取出（Q16／Q610／Q641）：受热保护且原保质已过的目标在取出事务里转为腐败物
+            // B59b（§Q1036）：只剩无冻结余量的旧档受热食材；实际开工冻结的原料取出后从 C＋R 继续计时，不在取出时转换
             var lost = touched.Where(p => p.HeatProtected).Select(p => FindItem(s, p.TargetInstanceId))
-                .Where(t => t != null && t.ExpiresAt.HasValue && t.ExpiresAt.Value <= s.GameMinute)
+                .Where(t => t != null && PastExpiryButProtected(s, t))
                 .Select(t => t!.InstanceId).Distinct().ToList();
             // 锅食谱作废时辅料真实退回地面（原 AbandonPotRecipe），按真实移出列在该锅之后
             var aux = touched.Where(p => Process(p.RecipeId).IsPotRecipe)

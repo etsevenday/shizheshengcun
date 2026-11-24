@@ -22,9 +22,13 @@ namespace Survival.Core.Engine
         public bool IsHeatProtected(GameState s, ItemInstance i) =>
             (i.InFacility || i.InContainer) && AllProcesses(s).Any(p => p.HeatProtected && (p.TargetInstanceId == i.InstanceId || (p.InputInstanceIds?.Contains(i.InstanceId) ?? false)));
 
-        /// <summary>受保护且原保质期已过：取出后会立即腐败（界面提前写明后果）。</summary>
+        /// <summary>
+        /// 受保护且原保质期已过：取出后会立即腐败（界面提前写明后果）。
+        /// B59b（S11 §Q1036、S06／S10 Q770 的 2026-11-24 补正「判定不采用开工前的旧到期时刻」）：实际开工即冻结真实余量（有 R）的原料越过旧截止仍是正余量，不在此列；
+        /// 只剩 B59b 之前已在旧规则下越过原截止、迁移时没有正余量可冻结的旧档受热食材（沿原办法，见开发记录 B59b 遗留）。
+        /// </summary>
         public bool PastExpiryButProtected(GameState s, ItemInstance i) =>
-            i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute && IsHeatProtected(s, i);
+            i.ShelfPausedMinutes == null && i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute && IsHeatProtected(s, i);
 
         public ItemInstance? FindItem(GameState s, int instanceId) => s.Items.FirstOrDefault(i => i.InstanceId == instanceId);
 

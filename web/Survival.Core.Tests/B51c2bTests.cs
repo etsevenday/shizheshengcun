@@ -106,8 +106,10 @@ public class B51c2bTests : TestBase
         Assert.That((slot.Slot, slot.BatchId, slot.Status), Is.EqualTo((0, batch, DryingSlot.Residual)), "这一位结束、成余料、仍占位");
         var rest = E.DryingContents(s, s.Ground, 0);
         Assert.That(rest, Has.Count.EqualTo(1));
+        // B59b 改期望（S11「2026-11-20」§Q769「取出一部分结束旧加工后，按 Q924 留在同一晾制位的真实余料仍保留各自的冻结余量」，取代 Q924 晾制余料立即恢复计时）：
+        // 原期望余料恢复 C＋R（ExpiresAt＝c＋30、R 空）——留位余料继续冻结 R＝30、截止暂为空
         Assert.That((rest[0].ItemId, rest[0].Count, rest[0].ExpiresAt, rest[0].ShelfPausedMinutes, rest[0].ReservedBy),
-            Is.EqualTo(("berry", 1, (int?)(c + 30), (int?)null, (int?)null)), "余料解锁、恢复 C＋R、留原位");
+            Is.EqualTo(("berry", 1, (int?)null, (int?)30, (int?)null)), "余料解锁、继续冻结 R、留原位");
         Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(xp), "无经验");
 // B59a 改期望（S11 §Q1029「同步撤下常规晾制入位、取出和全部取出重复播报」）：原「把野果从临时营地／晾制架工位1取出到随身。」（B51c2b 沿火堆单件取出原句）——晾制位取出不写日志
         Assert.That(s.Log.Last().Text, Does.Not.StartWith("把野果"));
@@ -518,8 +520,10 @@ public class B51c2bTests : TestBase
     }
 
     /// <summary>
-    /// Q924 B「本位对应配方合法余料」：位内有一份不是本配方原料（盐之于果干）、已到期未转换的野果、
+    /// Q924 B「本位对应配方合法余料」：位内有一份不是本配方原料（盐之于果干）、腐败物、
     /// 同名合计超过所需（两份野果 1＋2＞2）、或一种超量一种合法（生肉×1＋生肉×1＋盐×1），都不能补投，按占用拒「已满」（不吞物）；对照合法余料可补投。
+    /// B59b 改起点（S11「2026-11-20」§Q769：留位余料冻结、不会在位内到期）：工位2 原「已到期、尚未转换」的野果起点作废，改为旧档留下的真实腐败物
+    /// （到期野果经一次变更边界的普通到期转换变成腐败物，§Q769「旧档实际存在的异常位沿原……真实取出」）；期望不变。
     /// </summary>
     [Test]
     public void MT_DryingRefillable_IllegalResidual_Full()
@@ -533,7 +537,9 @@ public class B51c2bTests : TestBase
         MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 0), s.GameMinute + 300);
         MakeIn(s, "salt", 1, ItemInstance.DryingOwner(s.Ground, 0));
         ResidualSlot(s, 1, "dry_berries");
-        MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 1), s.GameMinute);   // 已到期、尚未转换
+        MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 1), s.GameMinute);
+        E.UpdateFlags(s);   // 旧档未冻结的到期野果在变更边界转为腐败物
+        Assert.That(E.DryingContents(s, s.Ground, 1).Single().ItemId, Is.EqualTo(GameEngine.SpoiledMatterId), "起点：工位2 是腐败物");
         ResidualSlot(s, 2, "dry_berries");
         MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 2), s.GameMinute + 300);
         MakeIn(s, "berry", 2, ItemInstance.DryingOwner(s.Ground, 2), s.GameMinute + 400);
@@ -636,8 +642,10 @@ public class B51c2bTests : TestBase
     }
 
     /// <summary>
-    /// Q880「原料已腐败。」只挡晾制中的位：在制原料已到期（旧档未暂停）拒取；余料位里到期未转换的野果可以取出（取出后同一边界转为腐败物，
-    /// 结果沿原转换句；S06 Q610 每个变更边界做一次到期转换）。
+    /// Q880「原料已腐败。」只挡晾制中的位：在制原料已到期（旧档未暂停）拒取；余料位里的余料可以取出。
+    /// B59b 改后半（S11「2026-11-20」§Q769「留在晾制位的真实原料（含余料）不在位内腐败……实际移出架子的份额，才在这次成功移出时恢复所剩保质并继续倒计时」）：
+    /// 原后半造「余料位里到期未转换的野果」取出后落地转为腐败物、写「野果×1已腐败，变为腐败物×1。」——留位余料冻结、不会在位内到期，这个起点作废；
+    /// 改为冻结余料（R＝30）取出后从取出时刻＋R 继续计时、不转换、不写转换句。
     /// </summary>
     [Test]
     public void MT_SpoiledInput_OnlyBlocksDrying_ResidualTakeConverts()
@@ -649,12 +657,15 @@ public class B51c2bTests : TestBase
         Assert.That(E.FacilityItemTakeBlocked(s, card, 1, s.Ground), Is.EqualTo("原料已腐败。"));
 
         ResidualSlot(s, 1, "dry_berries");
-        var old = MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 1), s.GameMinute);
+        var old = MakeIn(s, "berry", 1, ItemInstance.DryingOwner(s.Ground, 1), null, keep: true);
+        old.ShelfPausedMinutes = 30;   // 起点：留位余料冻结 R＝30（§Q769），截止暂为空
+        var c = s.GameMinute;
+        var n0 = s.Log.Count;
         Assert.That(E.FacilityItemTakeBlocked(s, old, 1, s.Ground), Is.Null);
         Ok(Take(s, old, 1, s.Ground));
         var ground = s.Items.Where(i => i.Owner == s.Ground).ToList();
-        Assert.That(ground.Select(i => (i.ItemId, i.Count)), Is.EqualTo(new[] { (GameEngine.SpoiledMatterId, 1) }), "落地即转为腐败物");
-        Assert.That(s.Log.Select(l => l.Text), Does.Contain("野果×1已腐败，变为腐败物×1。"));
+        Assert.That(ground.Select(i => (i.ItemId, i.Count, i.ExpiresAt, i.ShelfPausedMinutes)), Is.EqualTo(new[] { ("berry", 1, (int?)(c + 30), (int?)null) }), "移出时恢复 C＋R、不转换");
+        Assert.That(s.Log.Skip(n0).Select(l => l.Text), Has.None.Contains("已腐败"));
         Assert.That(DrySlots(s).Any(x => x.Slot == 1), Is.False, "位取空即空出");
     }
 

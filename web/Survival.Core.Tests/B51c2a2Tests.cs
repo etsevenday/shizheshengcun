@@ -321,6 +321,7 @@ public class B51c2a2Tests : TestBase
     {
         var s = New();
         var (pot, meat) = FireWithPotAndMeat(s, meatExpires: 5);
+        meat.ShelfPausedMinutes = null;   // B59b 改起点：造旧档受热食材（S06 Q770 补正「旧期限兼容沿原办法处理」；B59b 迁移 58→59 时已越过原截止、没有正余量可冻结的旧档受热食材沿原 Q16 办法，见开发记录 B59b 遗留）；正常冻结全部取出见 B59bTests
         Assert.That(E.ProcessOf(s, meat)!.HeatProtected, Is.True, "起点：受热保护中");
         Assert.That(E.IsSpoiled(s, meat), Is.False, "保护期间不腐败");
         Assert.That(meat.ExpiresAt, Is.LessThan(s.GameMinute), "原保质已过");
@@ -342,6 +343,7 @@ public class B51c2a2Tests : TestBase
         var s = New();
         var (pot, _) = FireWithPotAndMeat(s, rootExpires: 5);
         var root = E.PotContents(s, pot.InstanceId).Single(i => i.ItemId == "raw_root");
+        root.ShelfPausedMinutes = null;   // B59b 改起点：造旧档受热食材（S06 Q770 补正「旧期限兼容沿原办法处理」；B59b 迁移 58→59 时已越过原截止、没有正余量可冻结的旧档受热食材沿原 Q16 办法，见开发记录 B59b 遗留）；正常冻结全部取出见 B59bTests
         Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.True, "起点：受热保护中");
 
         Ok(TakeAllNow(s, GameEngine.FireTakeAllId));
@@ -598,6 +600,7 @@ public class B51c2a2Tests : TestBase
     {
         var s = New();
         var (_, meat) = FireWithPotAndMeat(s, meatExpires: 10);   // 受热 10 分钟后原截止＝此刻
+        meat.ShelfPausedMinutes = null;   // B59b 改起点：造旧档受热食材（S06 Q770 补正「旧期限兼容沿原办法处理」；B59b 迁移 58→59 时已越过原截止、没有正余量可冻结的旧档受热食材沿原 Q16 办法，见开发记录 B59b 遗留）；正常冻结全部取出见 B59bTests
         Assert.That(meat.ExpiresAt, Is.EqualTo(s.GameMinute), "起点：原截止恰为此刻");
         Assert.That(E.ProcessOf(s, meat)!.HeatProtected, Is.True);
         var n0 = s.Log.Count;

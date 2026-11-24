@@ -82,8 +82,10 @@ namespace Survival.Core.State
         /// 燃料（配方 Fuel）仍在该区地面以批次 ID 预留（Q921 燃料库存待 B35a2a）。56→57 把在办批仍在该区地面、按本批预留的原料移进设施（暂停保质剩余 R 不变，燃料不动，静默）。
         /// "58" 起水卡与锅水每份 100 毫升（B56，S10 文首 B53a Q929）：57→58 把一切水物品份数、产水资源点库存与在办采集预留、已锁鉴定产水报价与换物输出×5（真实毫升不变），
         /// 水煮／复煮旧 500 毫升预留清零待读档后按 1000 毫升重新预留（静默）。
+        /// "59" 起晾制位留位原料（余料、新投未齐、停止位）与烹饪中原料冻结真实剩余保鲜量（ItemInstance.ShelfPausedMinutes；S11 §Q769、§Q1036，开发记录 B59b）：
+        /// 58→59 按升级时刻剩余量冻结（静默），升级时已越过原截止的不冻结。
         /// </summary>
-        public const string CurrentSchema = "58";
+        public const string CurrentSchema = "59";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";

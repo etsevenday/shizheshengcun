@@ -894,6 +894,8 @@ namespace Survival.Core.Engine
         /// <summary>引导与七日检查标记：达成即锁存（实施方案 9B-13）。</summary>
         public void UpdateFlags(GameState s)
         {
+            // B59b（§Q1036）：不再受烹饪保护的冻结原料先按 C＋R 恢复计时，再做到期转换
+            ReleaseCookFreeze(s);
             // BM5b2（Q610）：每个变更边界补做到期转换（不走世界段的时间跳跃、取出解除保护后等）；无到期物时不做事
             ConvertDueSpoilage(s);
             PruneEmptyDryingSlots(s);   // B59a（S11 §Q1029）：空的异常停止位等无物非在制位自动恢复成空位

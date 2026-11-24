@@ -32,7 +32,7 @@ public class B41aMigrationTests : B41aTestBase
     [Test]
     public void NewGame_ModelVersionIsV2()
     {
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水每份100毫升份数×5，SaveMigrator.From57To58，M1083；S10 文首 B53a Q929）
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("59"));   // B56 改期望：存档升 58（57→58 水每份100毫升份数×5，SaveMigrator.From57To58，M1083；S10 文首 B53a Q929）；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(E.NewGame(1).EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2), "新局直接是新版卡模型");
     }
 
@@ -47,7 +47,7 @@ public class B41aMigrationTests : B41aTestBase
         var log = s.Log.Count;
 
         var t = SaveSerializer.Deserialize(AsSchema45(s), CfgV2);
-        Assert.That(t.SchemaVersion, Is.EqualTo("58"));   // B56 改期望：存档升 58（57→58 水每份100毫升份数×5，SaveMigrator.From57To58，M1083；S10 文首 B53a Q929）
+        Assert.That(t.SchemaVersion, Is.EqualTo("59"));   // B56 改期望：存档升 58（57→58 水每份100毫升份数×5，SaveMigrator.From57To58，M1083；S10 文首 B53a Q929）；B59b 改期望：存档升 59（58→59 晾制留位原料与烹饪中原料冻结保鲜，SaveMigrator.From58To59；S11 §Q769、§Q1036）：原 "58"
         Assert.That(t.EnemyCards.ModelVersion, Is.EqualTo(GameEngine.EnemyCardsModelV2));
         Assert.That(t.Encounter, Is.Null, "旧待处理名单转成组卡后清掉");
         Assert.That(t.EnemyCards.Groups, Has.Count.EqualTo(1));
