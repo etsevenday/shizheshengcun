@@ -87,7 +87,7 @@ node tools/playtest/run.mjs
 | saveFixture | `{"saveFixture": "名字", "note": "说明"}` | 只在加了 `--write-fixtures` 时写 `fixtures/名字.json` |
 | click／dblclick／rclick | `{"click": "选择器", "nth": 0}` | 等它出现并可用（最多 `timeout` 毫秒，默认 5000），滚进视口后按真实鼠标点中心 |
 | hover | `{"hover": "选择器"}` 或 `[x, y]` | |
-| drag | `{"drag": "选择器", "to": "选择器"}` | 坐标也行 |
+| drag | `{"drag": "选择器", "to": "选择器"}` | 坐标也行；`"shift": true` 按住 Shift 松手（拖放数量框）；`"holdEval": "JS", "holdEquals": 值` 在落点悬停 `hold` 毫秒（默认 200）后、松手前求值并断言（看高亮／禁止标／拖影短句）；起拖后界面会重排，落点在第 4 步和倒数第 2 步（先等 200ms）按当时位置重取，`"noRelocate": true` 关掉；`"steps"`／`"stepMs"` 放慢拖动（默认 12 步×16ms，试贴边自动滚动用 40×25）；`"toAt": [0.5, 0.97]` 落点取 to 元素矩形里的比例位置（贴下沿）；`"dwell": 400` 起拖后先在源卡处停这么久再走（自动滚动要先在滚动区内停满 280ms） |
 | wheel | `{"wheel": "选择器", "dy": 300, "shift": false}` | |
 | key | `{"key": "Escape", "repeat": 1}` | 支持 `ctrl+s` 这类组合 |
 | type | `{"type": "文字"}` | |
@@ -124,6 +124,7 @@ node tools/playtest/run.mjs
 | `discard-list` | 新局＋B53b 清单丢弃试用组：同伴林昭随身三样、临时营地四种箱 |
 | `drying-rack` | 临时营地有晾制架，工位 1 晾制果干中；随身一份腐败物 |
 | `city-square` | 营区登记已记，人在营区广场（首次到城已处理） |
+| `old58-cook-drying` | **58 版旧档**（用 B59a 包 ff8ee888 造，造法见 `fixtures/build-old58/`，不在 `build/` 顺序重造里）：晾制架工位2余料生肉、火堆锅里生肉受热中 |
 
 重造（按文件名顺序串行跑，后面的以前面的为起点）：
 

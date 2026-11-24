@@ -1,0 +1,31 @@
+{
+  "desc": "B59b 存档 58→59 迁移（B59b.5，静默）：58 版旧档里晾制余料位的生肉、锅里正受热的生肉，读档后显示「保质暂停，剩余…」，无迁移提示；再存再读不变。来源：doc/开发记录/B59b 晾制保鲜冻结与到期即转腐败.md（B59b.5）；fixture old58-cook-drying 用 B59a 包（存档 58）造，见 fixtures/build-old58/",
+  "batch": "B59b",
+  "fixture": "old58-cook-drying",
+  "steps": [
+    {"use": "continue"},
+    {"expectNoText": ["迁移", "存档已升级", "旧存档"], "label": "无迁移提示"},
+    {"click": "#drying-rack"},
+    {"expect": "[data-dry-slot='1'] >> .dry-title", "textIs": "生肉等"},
+    {"click": "[data-dry-slot='1'] >> pt=dry-toggle", "label": "展开工位2（余料生肉）"},
+    {"expect": "[data-dry-slot='1'] >> pt=fac-item", "text": "保质暂停，剩余", "label": "余料生肉读档后冻结"},
+    {"shot": "old58-drying", "mask": [".sl-now"]},
+    {"key": "Escape", "while": ".drying-panel", "max": 3},
+    {"click": "#fire-card .k2-art", "label": "打开火堆加工菜单"},
+    {"click": ".fm-slot.pot .pc-head"},
+    {"expectText": "受热保护中", "in": "#fm-obj"},
+    {"click": "#fm-obj .pc-row.food >> text=生肉", "label": "选锅里的生肉"},
+    {"expectText": "保质暂停，剩余", "label": "受热中的生肉读档后冻结（右栏批次）"},
+    {"eval": "(document.documentElement.dataset.ptFresh = document.body.innerText.match(/保质暂停，剩余[0-9小时分天]*/g).join('|'), true)"},
+    {"shot": "old58-pot", "mask": [".sl-now"]},
+    {"note": "再存再读：冻结余量不再变（只在 58→59 跳转执行一次）"},
+    {"key": "Escape", "while": ".fm-slot", "max": 4},
+    {"use": "save-to-title"},
+    {"eval": "JSON.parse(localStorage.getItem('survival.save.v2.auto5')).Schema", "equals": "59"},
+    {"use": "continue"},
+    {"click": "#fire-card .k2-art"},
+    {"click": ".fm-slot.pot .pc-head"},
+    {"click": "#fm-obj .pc-row.food >> text=生肉"},
+    {"eval": "document.body.innerText.match(/保质暂停，剩余[0-9小时分天]*/g).join('|') === document.documentElement.dataset.ptFresh", "label": "再读档冻结余量不变"}
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "desc": "B51c2b 试玩遗留修复复验：N1 选过设施物品卡后点配方行右栏回到配方预估；N2 设施物品卡整张取走不弹随身卡操作窗；N3 陶窑工作区只盖①②（③地面、④随身可见，卡可拖到地面）；Q1007 批内卡右栏位置行「临时营地／陶窑」；右栏不显示设施物品卡用不了的操作脚注。来源：doc/开发记录/B51c2b 被动设施余料箭头与拖入.md（B51c2b.10，M1120—M1124）",
+  "batch": "B51c2b",
+  "fixture": "stations-built",
+  "watch": ["pt=fac-take"],
+  "steps": [
+    {"use": "continue"},
+    {"key": "Escape", "until": "text==保存并返回标题", "max": 6},
+    {"click": "text=陶窑1批＋净水台2批原料", "label": "开发入口：陶窑1批＋净水台2批原料"},
+    {"click": "#fac-kiln"},
+    {"click": "pt=station-load", "label": "投料（1批）"},
+    {"expect": "[data-station-batch]", "count": 1},
+
+    {"note": "N3：陶窑工作区只盖①②，③当前地面与④随身完整可见"},
+    {"expect": "pt=shelf-ground", "inView": true},
+    {"expect": "pt=shelf-carried", "inView": true},
+
+    {"note": "Q1007：点批内黏土卡 → 右栏位置行「临时营地／陶窑」；不显示「操作窗里……」脚注"},
+    {"click": "[data-station-batch] >> pt=fac-item", "label": "点批内黏土卡本体"},
+    {"expect": "pt=fac-take", "text": "取出 · 黏土"},
+    {"expectText": "临时营地／陶窑"},
+    {"expectNoText": ["在被选中卡片旁的操作窗里", "转移目标与数量在被选中卡片旁的操作窗里"], "label": "右栏无设施物品卡用不了的操作脚注"},
+    {"shot": "q1007-rail", "mask": [".sl-now"]},
+
+    {"note": "N1：点配方行 → 右栏回到「陶壳 · 配方」预估"},
+    {"click": "pt=fac-take-cancel"},
+    {"click": "text=60分钟 · 制造3级", "label": "点中间配方行「陶壳」"},
+    {"expectText": "陶窑 · 配方"},
+    {"expectNoText": "临时营地／陶窑"},
+
+    {"note": "N2：先点卡身选中，再用数量窗「最多」整张取到随身 → 不弹随身卡操作窗（不出「放下…到地面」）"},
+    {"click": "[data-station-batch] >> pt=fac-item", "label": "再点批内黏土卡（选中）"},
+    {"click": "pt=fac-take >> .tbar-max"},
+    {"click": "pt=fac-take-ok"},
+    {"expect": "pt=shelf-carried >> pt=card-clay"},
+    {"expect": "pt=fac-take", "absent": true},
+    {"expectNoText": ["放下1份到地面", "放下黏土"], "label": "没有弹出随身卡操作窗"},
+    {"expectText": "陶窑 · 配方", "label": "右栏回到配方预估"},
+    {"shot": "n2-after-take", "mask": [".sl-now"]},
+
+    {"note": "N3：批内卡拖到当前地面（③可见落点）"},
+    {"drag": "pt=shelf-carried >> pt=card-clay", "to": "pt=shelf-ground", "label": "随身黏土拖回地面（复位）"},
+    {"click": "pt=station-load", "label": "再投料（1批）"},
+    {"expect": "[data-station-batch]", "count": 1},
+    {"drag": "[data-station-batch] >> pt=fac-item", "to": "pt=shelf-ground", "label": "批内黏土卡拖到当前地面"},
+    {"expect": "pt=shelf-ground >> pt=card-clay"},
+    {"expect": "pt=fac-take", "absent": true}
+  ]
+}

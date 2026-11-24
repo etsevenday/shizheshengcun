@@ -1,0 +1,19 @@
+{
+  "desc": "B59b 系统说明暂用文案：「物品、容器与负重 › 保质与腐败」烹饪保护段、「锅、水与食材」末段改为开工冻结、取出从剩余保质接着计时（只看有没有截断、与规则是否一致）。来源：doc/开发记录/B59b 晾制保鲜冻结与到期即转腐败.md（B59b.6 暂用文案）",
+  "batch": "B59b",
+  "fixture": "new-game",
+  "steps": [
+    {"use": "continue"},
+    {"key": "h"},
+    {"click": ".help-topic >> text=物品、容器与负重"},
+    {"click": ".help-entry >> text=保质与腐败"},
+    {"expectText": ["第一次实际受热时，这次投入的全部原料保质暂停", "受热保护中", "原来的保质时间过了也照常做熟", "保护就结束，从剩下的保质时间接着计时"], "in": ".help-body"},
+    {"expectNoText": ["取出后立刻腐败", "取出即腐败", "已过原保质期"], "in": ".help-body"},
+    {"shot": "help-spoil"},
+    {"click": "text=‹ 返回"},
+    {"click": ".help-entry >> text=锅、水与食材"},
+    {"expectText": ["清掉对应的加工进度并结束烹饪保护", "食材从剩下的保质时间接着计时", "取出失败（超重、卡位满）时什么都不变"], "in": ".help-body"},
+    {"expectNoText": ["取出后立刻腐败", "取出即腐败"], "in": ".help-body"},
+    {"shot": "help-pot"}
+  ]
+}

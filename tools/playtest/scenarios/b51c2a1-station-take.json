@@ -2,7 +2,7 @@
   "desc": "B51c2a1 陶窑／净水台原料入设施、每批「取出」与「全部取出」。来源：doc/开发记录/B51c2a1 被动设施取出1 陶窑净水台.md（B51c2a1.4）",
   "batch": "B51c2a1",
   "fixture": "stations-built",
-  "watch": ["[data-station-take]", "[data-station-take-all]", "pt=station-load"],
+  "watch": ["[data-station-take-all]", "pt=station-load"],
   "steps": [
     { "use": "continue" },
     { "key": "Escape" }, { "click": "text=陶窑1批＋净水台2批原料", "label": "开发入口：陶窑1批＋净水台2批原料" },
@@ -17,6 +17,9 @@
     { "shot": "kiln-1batch", "settle": 1000, "label": "投料后按钮有短暂防连点锁，等它解开再截" },
 
     { "note": "每批「取出」：原料回地面，日志写清单，燃料不进清单" },
+    { "note": "M1137 后投料栏粘底、批次列表在配方卡内部滚动区（S14 FACPROC-A11「长内容内部滚动」），批次「取出」要滚轮滚到；watch 只盯粘底的主要动作" },
+    { "wheel": ".station-mats", "dy": 400, "label": "滚轮滚配方卡到批次行" },
+    { "expect": "[data-station-take]", "inView": true, "label": "滚动后批次「取出」完整可见、没被盖住" },
     { "click": "[data-station-take]" },
     { "expectText": "已取出至临时营地地面：黏土×2。" },
     { "expect": "[data-station-batch]", "absent": true },

@@ -355,9 +355,23 @@ class Job {
       case 'hover': { const p = await this.point(a, st.nth); await this.mouse('mouseMoved', p.x, p.y); await sleep(250); break; }
       case 'drag': {
         const p1 = await this.point(a, st.nth); const p2 = await this.point(st.to, st.toNth);
+        // "toAt": [fx, fy] 落点取 to 元素矩形里的比例位置（如 [0.5, 0.97] 贴下沿）；"dwell": 毫秒 起拖后先在源卡处停这么久（试自动滚动的停留资格）
+        const at = q => st.toAt && q.w != null ? { x: Math.round(q.x - q.w / 2 + st.toAt[0] * q.w), y: Math.round(q.y - q.h / 2 + st.toAt[1] * q.h) } : { x: q.x, y: q.y };
+        Object.assign(p2, at(p2));
+        // "shift": true 按住 Shift 松手（拖放数量框）；"hold": 毫秒 在落点悬停这么久再松手（看高亮／拖影标签时配合前一步截不到，用 holdShot）
+        const mods = st.shift ? 8 : 0;
         await this.mouse('mouseMoved', p1.x, p1.y); await this.mouse('mousePressed', p1.x, p1.y);
-        for (let i = 1; i <= 12; i++) { await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p1.x + (p2.x - p1.x) * i / 12, y: p1.y + (p2.y - p1.y) * i / 12, button: 'left', buttons: 1, pointerType: 'mouse' }, this.sid); await sleep(16); }
-        await this.mouse('mouseReleased', p2.x, p2.y); break;
+        if (st.dwell) { await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p1.x + 8, y: p1.y + 8, button: 'left', buttons: 1, pointerType: 'mouse' }, this.sid); await sleep(st.dwell); }
+        const N = st.steps || 12, gap = st.stepMs || 16;   // "steps"／"stepMs"：放慢拖动（模拟人手，试贴边自动滚动）；"noRelocate": true 不重取落点
+        for (let i = 1; i <= N; i++) {
+          // 起拖后界面可能重排（选中源卡、落点高亮、面板内容变化），落点在第 4 步后按当时位置重新取一次（不滚动）
+          if (!st.noRelocate && (i === 4 || i === N - 1) && typeof st.to === 'string') { if (i === N - 1) await sleep(200); try { const q = await this.locate(st.to, st.toNth || 0, 1000, false); if (q.found !== false && q.x != null) Object.assign(p2, at(q)); } catch { } }
+          await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p1.x + (p2.x - p1.x) * i / N, y: p1.y + (p2.y - p1.y) * i / N, button: 'left', buttons: 1, pointerType: 'mouse', modifiers: i === N ? mods : 0 }, this.sid); await sleep(gap);
+        }
+        if (st.holdEval) { await sleep(st.hold || 200); rec.holdValue = await this.ev(`(async () => (${st.holdEval}))()`); }
+        await this.mouse('mouseReleased', p2.x, p2.y, { modifiers: mods });
+        if (st.holdEval && 'holdEquals' in st && JSON.stringify(rec.holdValue) !== JSON.stringify(st.holdEquals)) throw new Error(`拖到落点未松手时 ${st.holdEval} 为 ${JSON.stringify(rec.holdValue)}，应为 ${JSON.stringify(st.holdEquals)}`);
+        break;
       }
       case 'wheel': { const p = await this.point(a, st.nth); await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: p.x, y: p.y, deltaX: st.dx || 0, deltaY: st.dy ?? 300, modifiers: st.shift ? 8 : 0 }, this.sid); await sleep(150); break; }
       case 'key': for (let i = 0; i < (st.repeat || 1); i++) await this.key(a); break;
