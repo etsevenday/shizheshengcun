@@ -1498,8 +1498,6 @@ namespace Survival.Core.Engine
             else if (outcome == "retreat" && WorldRetreatLanding(s, b) is string worldLanded) fixedLines.Add(worldLanded);
             // B22h 试玩修复（M448）：远征外的地牢节点、上线前开始的旧战撤退留在原地——结果提示与预览一致写“留在<地点>”
             else if (outcome == "retreat" && !s.Progress.Dead) fixedLines.Add($"留在{LocName(loc)}");
-            // B41b（R05 Q440、Q463）：主行动已暂停、撤退又让队伍离开原行动地点／区域——保留这次暂停（不限最初暂停原因），开放地图移动
-            if (outcome == "retreat" && !s.Progress.Dead) KeepPausedWorkOnRetreat(s);
             var me = b.Fighter(GameState.PlayerId);
             var loss = Math.Min(Config.Panic.MoraleLossMax, me.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Actor(GameState.PlayerId).Stats.Add(StatId.Morale, -loss);
@@ -1523,6 +1521,8 @@ namespace Survival.Core.Engine
             s.Battle = null;
             Emit(s, GameEventKind.BattleEnd, text, null, outcome == "victory" ? b.Loot.Where(l => l.ItemId != null).Select(l => l.ItemId!) : null);
             UpdateFlags(s);
+            // B60a（S01 B60 Q1100，取代 R05 Q440、Q463 的撤退离地保留）：撤退让队伍离开暂停工作的原地点／区域——这次工作按原中止结算结束，写在撤退战报之后
+            if (outcome == "retreat" && !s.Progress.Dead) EndPausedWorkOnRetreat(s);
             // B41b（R05 Q416 第 4 条）：战后回到非战斗是敌踪接近边界——这里只修剪与抽时限；下一场到期战由本次战斗指令／推进结束后
             // 在 AfterBattleBoundary 里开（不在结算途中换掉 s.Battle）
             if (!DialogueLocked(s)) EnemyApproachBoundary(s, false);

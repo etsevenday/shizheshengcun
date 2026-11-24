@@ -24,11 +24,9 @@
    上下两区各自滚动，中间一行始终可达。
    B60（S01／S14 Q1038 选 C，取代 B31b R55 的底部窄条）：开着一级面板（火堆、地图、日志、城市服务等）时同样是这个居中弹窗，盖在面板之上；
    框外整个游戏界面（含左右栏、顶栏、底栏）由 GameScreen 的进度遮罩压暗模糊并阻断输入，只有本弹窗里的合法控件可用（弹窗 data-prog-lock 是 Tab 循环范围）。 *@
-@* B41c2 试玩修复（P3，S14 Q523）：原工具可按例外拾取时，遮罩与弹窗只占①②两行，③当前地面、④随身露出来，拾取箭头、操作条与拖放可点 *@
-@* B41e4（S14 Q569）：撤退离地保留暂停、地图前往开放（与内核移动例外同一判定 PausedTravelOpen）时，遮罩与弹窗让出①地图与场景行，
-   相邻地点卡「前往 ▸」可见、可点、可聚焦，走原移动浮窗与确认；②③④仍被遮罩挡住，其他暂停限制不变 *@
-@* B60：两种例外（GameSession.PausePickOpen／PauseTravelOpen，判定同原 LockedToolPickupOpen／PausedTravelOpen）在进度遮罩上挖洞保留原开放行，见 G.ProgressKeep *@
-<div class="pause-scrim @(G.PausePickOpen ? "pick-open" : "") @(G.PauseTravelOpen ? "travel-open" : "")">
+@* B60a（S14「2026-11-24 B60 暂停窗入口与原页返回」Q1100）：撤 B41c2 Q523 原工具拾取让位与 B41e4 Q569 撤退返程地图行让位两种遮罩开口，
+   暂停遮罩一律整屏盖住，也不在本弹窗新设这两个入口；原工具在当地地面时直接「继续行动」，撤退离开原地点的工作已按原中止结算结束 *@
+<div class="pause-scrim">
 <div class="center-layer pause-grid" role="alertdialog" aria-label="@ShellText.ActionPaused" inert="@G.DialogueLocked" data-pt="pause-dialog"
      data-prog-lock="@(G.ProgressBgInert ? "1" : null)" tabindex="-1">
     <div class="pg-top" data-wheel="y">

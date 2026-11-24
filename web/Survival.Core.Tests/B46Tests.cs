@@ -112,37 +112,33 @@ public class B46Tests : TestBase
         return (e, s, bar);
     }
 
+    /// <summary>
+    /// 原 Q532-A01「锁定采集只缺拾取原工具：复核写『需要先拾取原工具：{工具名}。』、继续拒绝」——B60a 改期望（出处 S01「2026-11-24 B60 暂停继续与撤退后重新开始」Q1100，
+    /// 取代 Q532 以拾回原工具为继续门槛）：原撬棍在当前地面时复核没有原因、继续直接成功（同一行动、不拿工具、不推进时间），做完照常得产物。
+    /// </summary>
     [Test]
-    public void Q532_A01_LockedGather_OnlyPickupMissing_ToolNameSentence_ReadOnly()
+    public void Q532_A01_LockedGather_ToolOnGround_ResumeDirectly()
     {
         var (e, s, bar) = LockedGather();
         bar.Owner = s.Ground;
-        var why = $"需要先拾取原工具：{e.ItemName(bar.ItemId)}。";
-        Assert.That(why, Is.EqualTo("需要先拾取原工具：撬棍。"));
-        var before = SaveSerializer.Serialize(s);
+        var id = s.Main!.ActionId;
         var p = e.ActionProgress(s)!;
-        Assert.That((p.ResumeNote, p.ResumeAborts), Is.EqualTo((why, false)), "复核原因用公开名，不是永久失败");
-        Assert.That(e.LockedResume(s).Kind, Is.EqualTo(LockedResumeKind.Temporary));
-        var r = e.Resume(s);
-        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, why)), "真实继续拒绝同句");
-        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "只读、拒绝都不拿工具、不取消、不推进时间");
-        Assert.That(why, Does.Not.Contain("#").And.Not.Contain(bar.InstanceId.ToString()));
+        Assert.That((p.ResumeNote, p.ResumeAborts), Is.EqualTo(((string?)null, false)));
+        Assert.That(e.LockedResume(s).Kind, Is.EqualTo(LockedResumeKind.Ok));
+        var t0 = s.GameMinute;
+        Assert.That(e.Resume(s).Ok, Is.True);
+        Assert.That((s.Main!.ActionId, s.Main.Status, s.GameMinute, bar.Owner), Is.EqualTo((id, ActionStatus.Running, t0, s.Ground)));
     }
 
+    /// <summary>
+    /// 其他失败仍各用原句（Q532-A02）：原工具不在随身、也不在当前地面（别处）为原永久原因；已损坏为原句。
+    /// 非锁定采集同样：原工具在当前地面直接继续（Q1100），不在当前地面仍「先拾取工具」；新开工仍要求随身工具（开工门槛不变）。
+    /// </summary>
     [Test]
-    public void Q532_A02_OtherFailures_KeepOwnReasons_PickupKeepsLockAndPause_UnlockedOldText()
+    public void Q532_A02_OtherFailures_KeepOwnReasons_UnlockedSameRule()
     {
         var (e, s, bar) = LockedGather();
-        // 合法拾取：0 时间、同一实例同一锁，仍暂停须手动继续
-        bar.Owner = s.Ground;
-        var t0 = s.GameMinute;
-        var r = e.DoInstant(s, InstantRequest.Pickup(bar.InstanceId, bar.Count));
-        Assert.That((r.Ok, r.Aborted), Is.EqualTo((true, false)), r.Reason);
-        Assert.That((bar.Owner, s.GameMinute, s.Main!.Status), Is.EqualTo((ItemInstance.Carried, t0, ActionStatus.Paused)));
-        Assert.That(s.Main.LockedItemIds.Contains(bar.InstanceId) || s.Main.ToolInstanceId == bar.InstanceId, Is.True);
-        Assert.That(e.LockedResume(s).Kind, Is.EqualTo(LockedResumeKind.Ok));
-
-        // 不在当前地面（别处）：原具体永久原因，不误报可拾取
+        // 不在当前地面（别处）：原具体永久原因
         bar.Owner = "camp";
         Assert.That((e.ActionProgress(s)!.ResumeNote, e.ActionProgress(s)!.ResumeAborts), Is.EqualTo((GameEngine.LockedGatherToolGone, true)));
         // 已损坏：原句
@@ -150,12 +146,26 @@ public class B46Tests : TestBase
         bar.Durability = 0;
         Assert.That(e.ActionProgress(s)!.ResumeNote, Is.EqualTo(GameEngine.LockedGatherToolBroken));
 
-        // 非锁定采集：原「先拾取工具」不变
+        // 非锁定采集
+        var u = NewOn(e);
+        e.DebugMapTeleport(u, "w19_survey");
+        if (u.Locations["w19_survey"].Progress < 100) e.DebugSetProgress(u, "w19_survey", 100);
+        u.WorldEnemies.RemoveAll(x => x.LocationId == "w19_survey");
+        e.DebugGive(u, "crowbar", 1);
+        var ub = u.Items.Where(i => i.ItemId == "crowbar" && i.IsCarried).OrderByDescending(i => i.InstanceId).First();
+        StartOk(e, u, ActionRequest.Gather("w19_survey_b", ub.InstanceId));
+        u.Main!.NoExit = false;
+        Pause(u);
+        ub.Owner = u.Ground;
+        Assert.That(e.ResumeBlockReason(u), Is.Null, "原工具在当前地面：直接继续");
+        ub.Owner = "camp";
+        Assert.That(e.ResumeBlockReason(u), Is.EqualTo("先拾取工具"), "配对：不在当前地面仍原句");
+
         var (e2, s2) = (E, NewOn(E));
         E.DebugMapTeleport(s2, "w19_survey");
         if (s2.Locations["w19_survey"].Progress < 100) E.DebugSetProgress(s2, "w19_survey", 100);
         var ground = E.DebugCreateEquipment(s2, "fire_axe", "white", "w19_survey");
-        Assert.That(e2.CanStart(s2, ActionRequest.Gather("w19_survey_b", ground.InstanceId)), Is.EqualTo("先拾取工具"));
+        Assert.That(e2.CanStart(s2, ActionRequest.Gather("w19_survey_b", ground.InstanceId)), Is.EqualTo("先拾取工具"), "开工门槛不变");
     }
 
     // ───────────── Q533 暂停条信息（内核只读部分） ─────────────

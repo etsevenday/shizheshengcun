@@ -445,6 +445,7 @@ public class B51aTests : TestBase
 /// <summary>B51a 中撤退离地保留（Q471）的恢复句分组（Q723-A01）：同目的地／物主／卡侧内同名同精确截止合计，不同截止或不同目的地分句。</summary>
 // B51c1 改期望（出处 S08 文首 2026-11-16 B51 §Q771 拼接顺序与短稿、02 Q874 开发方建议 A 暂用）：撤退保留／普通退出预告引句「退出将放弃本次{动作}。」→「退出将取消{动作}。」（维护→维修，现场修补用原名）、
 // 结果尾句「已耗时间保留。」→「已耗时间不退。」、删「未生成半成品。」「不会生成半成品。」；处理尸体沿 Q722 引句，只改尾句。锁定自动中止仍「已耗时间保留。」。
+// B60a 改起点（出处 S01 B60 Q1100）：撤退离地保留只剩旧档，起点改为 LegacyKeptAtField，期望不变。
 public class B51aKeptTests : B41bTestBase
 {
     [Test]
@@ -452,7 +453,7 @@ public class B51aKeptTests : B41bTestBase
     {
         var s = Field(3);
         var field = E.LocName("field");
-        var id = KeptAtField(s, g =>
+        var id = LegacyKeptAtField(s, g =>
         {
             g.Items.RemoveAll(i => i.ItemId is "cloth" or "herb" or "bandage");
             E.DebugGive(g, "cloth", 3);

@@ -10,8 +10,26 @@ namespace Survival.Core.Tests;
 /// </summary>
 // B51c1 改期望（出处 S08 文首 2026-11-16 B51 §Q771 拼接顺序与短稿、02 Q874 开发方建议 A 暂用）：撤退保留／普通退出预告引句「退出将放弃本次{动作}。」→「退出将取消{动作}。」（维护→维修，现场修补用原名）、
 // 结果尾句「已耗时间保留。」→「已耗时间不退。」、删「未生成半成品。」「不会生成半成品。」；处理尸体沿 Q722 引句，只改尾句。锁定自动中止仍「已耗时间保留。」。
+// B60a 改起点（出处 S01「2026-11-24 B60 暂停继续与撤退后重新开始」Q1100）：新规则下撤退离地即按原中止结算结束工作、不再保留，
+// 原「撤退保留→退出」只剩旧档——起点改为旧档撤退离地保留（LegacyKeptAtField），返还规则与期望不变；撤退当刻的中止结算另见 Q1100_RetreatAway_FullCarry_OverflowToWorkGround。
 public class B54KeptTests : B41bTestBase
 {
+    /// <summary>
+    /// Q1100＋Q787：撤退离地当刻按原中止结算结束（RetreatEndsAtField），随身五卡已满时草药×2 留原工作地点荒地地面，结果句沿系统中止格式、返还段按实际去向（Q787 actual／overflow 句）。
+    /// </summary>
+    [Test]
+    public void Q1100_RetreatAway_FullCarry_OverflowToWorkGround()
+    {
+        var s = Field(3);
+        var id = RetreatEndsAtField(s, Setup(3, 2, "stone", "wood", "fiber", "scrap"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo(
+            $"{LastLabel}已中止。原因：已撤退离开{FieldName}。{Cloth}×2已退回{FieldName}地面。随身已满，{Herb}×2留在{FieldName}地面。已耗时间保留。"));
+        Assert.That(E.RootCardCount(s), Is.EqualTo(5), "不新增第六张根卡");
+        Assert.That(s.Items.Single(i => i.ItemId == "herb" && i.Owner == "field").Count, Is.EqualTo(2));
+        Assert.That(s.Items.Where(i => i.ItemId == "herb" && i.Owner == "camp").Sum(i => i.Count), Is.EqualTo(0), "不落撤退落点");
+        Assert.That(s.Items.Any(i => i.ReservedBy == id), Is.False);
+    }
+
     private string Herb => E.ItemName("herb");
     private string Cloth => E.ItemName("cloth");
     private string FieldName => E.ZoneName(V2Field(), "field");
@@ -34,7 +52,7 @@ public class B54KeptTests : B41bTestBase
     public void Q787_A01_FullCarry_OverflowToWorkGround_NotRetreatGround()
     {
         var s = Field(3);
-        var id = KeptAtField(s, Setup(3, 2, "stone", "wood", "fiber", "scrap"));
+        var id = LegacyKeptAtField(s, Setup(3, 2, "stone", "wood", "fiber", "scrap"));
         Assert.That(E.RootCardCount(s), Is.EqualTo(5));
         var bound = Reserved(s, "herb", id);
         var r = bound.ShelfPausedMinutes!.Value;
@@ -64,7 +82,7 @@ public class B54KeptTests : B41bTestBase
     public void Q787_A02_ExactlyFiveStillCarried_OriginalSentence()
     {
         var s = Field(3);
-        var id = KeptAtField(s, Setup(3, 2, "stone", "wood", "fiber"));
+        var id = LegacyKeptAtField(s, Setup(3, 2, "stone", "wood", "fiber"));
         Assert.That(E.RootCardCount(s), Is.EqualTo(4));
         var r = Reserved(s, "herb", id).ShelfPausedMinutes!.Value;
         Assert.That(E.ActionProgress(s)!.ExitNote, Does.StartWith($"退出将取消制作。随身预留材料解除预留后留在随身，地面预留材料会返还{FieldName}地面。"));
@@ -82,7 +100,7 @@ public class B54KeptTests : B41bTestBase
     public void Q787_A02_ReservedOrder_EarlierFitsLaterOverflows()
     {
         var s = Field(3);
-        var id = KeptAtField(s, g =>
+        var id = LegacyKeptAtField(s, g =>
         {
             g.Items.RemoveAll(i => i.Owner == ItemInstance.Carried || i.ItemId is "cloth" or "herb" or "bandage");
             E.DebugGive(g, "cloth", 2, ItemInstance.Carried);
@@ -107,7 +125,7 @@ public class B54KeptTests : B41bTestBase
     {
         var s = Field(3);
         ItemInstance? holder = null;
-        var id = KeptAtField(s, g =>
+        var id = LegacyKeptAtField(s, g =>
         {
             g.Items.RemoveAll(i => i.Owner == ItemInstance.Carried || i.ItemId is "cloth" or "herb" or "bandage");
             E.DebugGive(g, "cloth", 3, "field");
@@ -143,7 +161,7 @@ public class B54KeptTests : B41bTestBase
     public void Q787_A03_NoStateChangeUntilRelease_PlanRecomputedAtCommit()
     {
         var s = Field(3);
-        KeptAtField(s, Setup(3, 2, "stone", "wood", "fiber"));
+        LegacyKeptAtField(s, Setup(3, 2, "stone", "wood", "fiber"));
         // 预告时四卡、能回随身；提交前随身又多一张卡，提交按当时事实重算为溢出
         Assert.That(E.ActionProgress(s)!.ExitNote, Does.Not.Contain("随身放不下"));
         E.DebugGive(s, "scrap", 1, ItemInstance.Carried);
@@ -159,7 +177,7 @@ public class B54KeptTests : B41bTestBase
     public void Q789_A01_SameNameSameExpiry_TwoDestinations_Labeled()
     {
         var s = Field(3);
-        var id = KeptAtField(s, g =>
+        var id = LegacyKeptAtField(s, g =>
         {
             g.Items.RemoveAll(i => i.ItemId is "cloth" or "herb" or "bandage");
             E.DebugGive(g, "cloth", 2);
@@ -201,7 +219,7 @@ public class B54KeptTests : B41bTestBase
     public void Q789_A02_SingleDestinationKeepsOriginalSentence()
     {
         var s = Field(3);
-        var id = KeptAtField(s, Setup(3, 2, "stone", "wood", "fiber", "scrap"));
+        var id = LegacyKeptAtField(s, Setup(3, 2, "stone", "wood", "fiber", "scrap"));
         var r = Reserved(s, "herb", id).ShelfPausedMinutes!.Value;
         Assert.That(E.Cancel(s).Ok, Is.True);
         var text = s.Log.Last().Text;

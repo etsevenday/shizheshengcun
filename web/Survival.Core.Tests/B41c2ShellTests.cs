@@ -55,8 +55,9 @@ public class B41c2ShellTests
         var session = Web("Services/GameSession.cs");
         Assert.That(session, Does.Contain("if (res.Aborted || S.Main == null || S.Main.Status != ActionStatus.Running)"));
         Assert.That(session, Does.Not.Contain("ExitNoteAction"), "旧「本段完成后结束」延迟退出说明已移除");
-        Assert.That(Web("Components/CardActions.razor"), Does.Contain("e.LockedToolPickupOpen(s, it)"));
-        Assert.That(Web("Components/ItemShelf.razor"), Does.Contain("e.LockedToolPickupOpen(s, t)"));
+        // B60a 改期望（S01／S14 B60 Q1100 取消 Q523 原工具例外拾取）：原「操作条、箭头接 LockedToolPickupOpen」撤掉；行为见 Web 测试 B60aPauseResumeUiTests
+        Assert.That(Web("Components/CardActions.razor"), Does.Not.Contain("LockedToolPickupOpen"));
+        Assert.That(Web("Components/ItemShelf.razor"), Does.Not.Contain("LockedToolPickupOpen"));
         Assert.That(Web("Components/CityOverview.razor"), Does.Contain("est?.NoExit == true ? GameEngine.LockedTravelHover"));
     }
 
@@ -67,11 +68,11 @@ public class B41c2ShellTests
         var css = Web("wwwroot/css/shell.css");
         // B60 改期望（S01／S14 Q1038 选 C 撤窄条）：原 P2“窄条不裁复核原因”随窄条撤掉
         Assert.That(css, Does.Not.Contain(".pause-dock"));
-        Assert.That(css, Does.Contain(".pause-scrim.pick-open { bottom: calc(50% + var(--sh-gap) / 2); }"));
+        // B60a 改期望（S14 B60 Q1100 取消 Q523 拾取让位）：原 P3「遮罩让出③④」与 GameSession.PausePickOpen 撤掉（bUnit 见 B60aPauseResumeUiTests）
+        Assert.That(css, Does.Not.Contain(".pause-scrim.pick-open"));
         Assert.That(Web("Components/CentralProgress.razor"), Does.Contain("<div class=\"cp-note cp-resume warn-text\">"));
-        // B60：pick-open 判定原样移到 GameSession.PausePickOpen（进度遮罩挖洞同源），只是搬家
-        Assert.That(Web("Components/PauseLayer.razor"), Does.Contain("@(G.PausePickOpen ? \"pick-open\" : \"\")"));
-        Assert.That(Web("Services/GameSession.ProgressLock.cs"), Does.Contain("PauseLayerShown && S.Sub == null && E.LockedPickupTool(S) is ItemInstance tool && E.LockedToolPickupOpen(S, tool);"));
+        Assert.That(Web("Components/PauseLayer.razor"), Does.Not.Contain("pick-open"));
+        Assert.That(Web("Services/GameSession.ProgressLock.cs"), Does.Not.Contain("PausePickOpen"));
         // B41e3：旧常驻敌人详情（含「ESC 不能关掉战斗」脚注）与旧接近按钮随旧流程删除；新版敌踪详情脚注与禁用原因见 B41e1ShellTests、B46ShellTests
         Assert.That(Web("Components/EnemyDetail.razor"), Does.Contain("<div class=\"under\">@GameEngine.EnemyCardFootnote</div>"));
     }

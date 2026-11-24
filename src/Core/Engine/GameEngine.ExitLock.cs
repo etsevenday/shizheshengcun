@@ -25,8 +25,6 @@ namespace Survival.Core.Engine
     {
         public LockedResumeKind Kind { get; set; }
         public string Reason { get; set; } = "";
-        /// <summary>Q523：复核停在「只缺把同一原工具拾取到随身」这一支（含容量／重量不允许而转为永久的情形）时为该工具实例。</summary>
-        public int? PickupToolId { get; set; }
 
         public static LockedResumeVerdict Ok() => new LockedResumeVerdict { Kind = LockedResumeKind.Ok };
         public static LockedResumeVerdict Higher(string why) => new LockedResumeVerdict { Kind = LockedResumeKind.Higher, Reason = why };
@@ -61,9 +59,6 @@ namespace Survival.Core.Engine
         public const string LockedGatherToolBroken = "这件工具已损坏，无法继续。";
         public const string LockedSubRunning = "当前行动还没结束。";
         public const string ElapsedKept = "已耗时间保留。";
-
-        /// <summary>B46（Q532、逐字稿「B41c2 Q531—Q534 实施补充逐字稿」）：锁定采集／处理尸体只缺拾取同一有效原工具时的复核与继续拒绝句。</summary>
-        public string LockedPickupOwnTool(ItemInstance tool) => $"需要先拾取原工具：{ItemName(tool.ItemId)}。";
 
         /// <summary>开工后不可中途退出（运行、暂停、子行动都一样）：本次开工认定的锁定，加上原本就不可取消的单段事务与潜行接近／躲避（旧档原限制保持）。</summary>
         public static bool ExitLocked(ActionState a) => a.NoExit || IsSingleTransaction(a.Type) || IsStealthCheck(a);
@@ -100,7 +95,7 @@ namespace Survival.Core.Engine
         // ───────────────────────── Q514／Q515／Q523 继续复核 ─────────────────────────
 
         /// <summary>
-        /// 锁定主行动「继续行动」的只读复核（Q514）：先更高输入锁，再撤退离地保留的原地点／世代（Q440），再按原目标、预留、工具、用途准入的实际失败分支分类，
+        /// 锁定主行动「继续行动」的只读复核（Q514）：先更高输入锁，再撤退离地保留的原地点／世代（Q440，B60a 起只剩旧档），再按原目标、预留、工具、用途准入的实际失败分支分类，
         /// 只给当前第一条实际原因。不推进时间、不扣物、不释放、不改暂停原因。主行动不是锁定暂停时为 Higher。
         /// </summary>
         public LockedResumeVerdict LockedResume(GameState s)
@@ -115,8 +110,10 @@ namespace Survival.Core.Engine
             if (a.RetreatKept)
             {
                 if (a.StartGeneration is int g && DungeonGenerationAt(s, a.SourceLocation) != g) return LockedResumeVerdict.Perm(LockedPlaceGone);
+                // B60a（S01「2026-11-24 B60 暂停继续与撤退后重新开始」Q1100）：撤退离开原地点的暂停工作按原中止结算结束，不再保留、也不再开放返程；
+                // 旧档里仍保留在异地的锁定工作没有退出入口，继续即按同一中止结算收束（不再停在「请返回」等待走回去）
                 if (s.CurrentLocation != a.SourceLocation || s.CurrentZone != (a.StartZone ?? ExteriorZone))
-                    return LockedResumeVerdict.Temp($"请返回{WorkPlaceName(s, a)}后再继续{a.Label}。");
+                    return LockedResumeVerdict.Perm(RetreatLeftReason(s, a));
             }
             return LockedWorkCheck(s, a);
         }
@@ -134,11 +131,11 @@ namespace Survival.Core.Engine
                     if (a.ReservedResourceUnits > 0 && rs.Reserved < a.ReservedResourceUnits) return LockedResumeVerdict.Perm(LockedReserveChanged);
                     if (a.ToolInstanceId is int tid)
                     {
+                        // B60a（Q1100，取代 Q514／Q523／Q532 以拾回原工具为继续门槛）：原工具在随身或仍在当地地面都沿用开工时的绑定直接继续
                         var tool = FindItem(s, tid);
                         if (tool == null || (!OnPlayer(tool) && !OwnGroundTool(s, a, tool))) return LockedResumeVerdict.Perm(LockedGatherToolGone);
                         if (!HasWear(tool, GatherWear))
                             return LockedResumeVerdict.Perm(tool.Durability <= 0 ? LockedGatherToolBroken : $"这件工具耐久不足（{DurabilityText(tool)}），无法继续。");
-                        if (!OnPlayer(tool)) return ToolPickupVerdict(s, tool, LockedPickupOwnTool(tool));   // B46（Q532）：与处理尸体同句，取原工具公开名
                     }
                     return LockedResumeVerdict.Ok();
                 }
@@ -195,8 +192,8 @@ namespace Survival.Core.Engine
                     if (IsSpoiled(s, carcass)) return LockedResumeVerdict.Perm("尸体已腐败，不能处理");
                     var missing = $"缺少本次处理所需的有效{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}，无法继续。";
                     var tool = a.ToolInstanceId is int tid ? FindItem(s, tid) : null;
+                    // B60a（Q1100）：原工具在当地地面也直接继续，不先拾回
                     if (tool == null || !ProductionToolStillOk(a, tool) || (!OnPlayer(tool) && !OwnGroundTool(s, a, tool))) return LockedResumeVerdict.Perm(missing);
-                    if (!OnPlayer(tool)) return ToolPickupVerdict(s, tool, LockedPickupOwnTool(tool));
                     return LockedResumeVerdict.Ok();
                 }
                 case ActionType.WaitCook:
@@ -217,61 +214,11 @@ namespace Survival.Core.Engine
             }
         }
 
-        /// <summary>Q523：原工具确由本行动自己锁住、整件在当前地点当前区域地面、没有被预留／部署／他人占用。</summary>
+        /// <summary>
+        /// 原工具确由本行动自己锁住、整件在当前地点当前区域地面、没有被预留／部署／他人占用（原 Q523 判定；B60a 起凭它直接继续，不再要求先拾回）。
+        /// </summary>
         private bool OwnGroundTool(GameState s, ActionState a, ItemInstance tool) =>
             tool.Owner == s.Ground && a.LockedItemIds.Contains(tool.InstanceId) && tool.ReservedBy == null && !IsDeployed(s, tool) && !OccupiedByOther(s, tool, a);
-
-        /// <summary>
-        /// Q523：只缺把同一有效原工具拾取到本人随身。原容量／重量预演允许为暂时（保持暂停、开放这一项拾取）；不允许为永久（卡位优先于重量，只取第一条）。
-        /// </summary>
-        private LockedResumeVerdict ToolPickupVerdict(GameState s, ItemInstance tool, string tempWhy)
-        {
-            var v = LockedToolCapacityBlock(s, tool) is string cap ? LockedResumeVerdict.Perm(cap) : LockedResumeVerdict.Temp(tempWhy);
-            v.PickupToolId = tool.InstanceId;
-            return v;
-        }
-
-        /// <summary>例外拾取的原容量／重量预演（逐字稿 Q523 两句）；都允许为 null。</summary>
-        private string? LockedToolCapacityBlock(GameState s, ItemInstance tool)
-        {
-            if (MaxIntoCarriedByCards(s, tool, tool.Count) < tool.Count) return $"随身卡位已满（{RootCardCount(s)}/{MaxRootCards}张），无法拾取原工具。";
-            if (MaxPickupBatch(s, tool, tool.Count) < tool.Count) return $"拾取后将超过{Config.Carry.HardGrams / 1000}公斤，无法拾取原工具。";
-            return null;
-        }
-
-        /// <summary>Q523：此刻按例外可拾取（或拾取请求会触发自动中止）的原工具实例；不适用为 null。只读。</summary>
-        public ItemInstance? LockedPickupTool(GameState s)
-        {
-            if (s.Expedition?.IsExtracting == true) return null;
-            var v = LockedResume(s);
-            if (v.PickupToolId is not int id || (v.Kind != LockedResumeKind.Temporary && v.Kind != LockedResumeKind.Permanent)) return null;
-            return FindItem(s, id) is ItemInstance t && t.Owner == s.Ground ? t : null;
-        }
-
-        /// <summary>这件物品此刻能按 Q523 例外从当前地面拾取到随身（容量／重量也允许）。</summary>
-        public bool LockedToolPickupOpen(GameState s, ItemInstance inst) =>
-            LockedPickupTool(s) is ItemInstance t && t.InstanceId == inst.InstanceId && LockedToolCapacityBlock(s, t) == null;
-
-        /// <summary>
-        /// Q523 例外拾取的真实提交：整件、0 分钟、同一实例、本行动的工具锁与暂停不变（成功后仍须手动继续）；原普通拾取的成功反馈照旧。
-        /// 容量／重量重验不允许时按原取消规则自动收束本次行动（工具不移动）。返回 null 表示这件物品不适用例外，走原拾取校验。
-        /// </summary>
-        private ActionResult? LockedToolPickup(GameState s, InstantRequest r)
-        {
-            var tool = LockedPickupTool(s);
-            if (tool == null || tool.InstanceId != r.InstanceId) return null;
-            if (r.Count != tool.Count) return ActionResult.Fail("数量无效");
-            var m = s.Main!;
-            if (LockedToolCapacityBlock(s, tool) is string cap)
-            {
-                AbortLocked(s, m, cap);
-                return new ActionResult { Ok = true, ActionId = m.ActionId, Aborted = true, Reason = cap };
-            }
-            MoveItems(s, tool, tool.Count, ItemInstance.Carried);
-            NoteTransfer(s);   // B13 PRO11（同原普通拾取）
-            UpdateFlags(s);
-            return ActionResult.Success();
-        }
 
         // ───────────────────────── Q514／Q515 真实继续 ─────────────────────────
 
@@ -333,7 +280,8 @@ namespace Survival.Core.Engine
         /// 永久失效的锁定主行动自动中止（Q506 第 4、5 条，Q514、Q518）：按原取消规则释放仍实际归本行动的预留与锁一次（撤退离地保留者按开工来源），
         /// 不给未完成产物、经验；结果句「{行动名}已中止。原因：{原因正文}」＋实际返还分句＋原后果＋「已耗时间保留。」。
         /// </summary>
-        private void AbortLocked(GameState s, ActionState a, string reason)
+        /// <param name="boundary">B60a：战斗撤退结算途中收束时为 false——战后边界由战斗指令的 AfterBattleBoundary 统一走，不在结算途中开下一场。</param>
+        private void AbortLocked(GameState s, ActionState a, string reason, bool boundary = true)
         {
             // Q518-A02：已丢失或改属别人的预留不在本次释放之列（不补造、不解别人的标记）
             a.ReservedItemIds.RemoveAll(id => FindItem(s, id) is not ItemInstance i || i.ReservedBy != a.ActionId);
@@ -379,7 +327,7 @@ namespace Survival.Core.Engine
             if (keptWork != null) text += StillPausedText(keptWork);
             Emit(s, GameEventKind.ActionAborted, text);
             UpdateFlags(s);
-            EnemyApproachBoundary(s);   // 行动结束边界（同原合法退出）
+            if (boundary) EnemyApproachBoundary(s);   // 行动结束边界（同原合法退出）
         }
     }
 }

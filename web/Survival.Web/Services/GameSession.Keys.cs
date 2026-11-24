@@ -109,8 +109,8 @@ public sealed partial class GameSession
         if (PendingDrop != null) return EscOwner.DropQty;
         if (StatusPinned != null) return EscOwner.Status;
         // B60（S01／S14 Q1038 C、S11／S14 Q1030）：中央行动进度浮窗在最上层时，背景（面板、选中、局部盘）不承接 Esc——Esc 只打开游戏菜单（S14 Q322
-        // 行动推进和暂停均可），不收被遮住的层；浮窗退出后按届时状态恢复原逐层顺序。Q523／Q569 例外开放行时仍按原顺序（见 ProgressLockOpenRows）
-        if (ProgressLock && !ProgressLockOpenRows) return EscOwner.OpenMenu;
+        // 行动推进和暂停均可），不收被遮住的层；浮窗退出后按届时状态恢复原逐层顺序（B60a Q1100 起没有例外开放行）
+        if (ProgressLock) return EscOwner.OpenMenu;
         if (Discarding != null && ShelfSelectionKind) return EscOwner.Discard;   // B53a：右栏丢弃子区是最近打开的一层——先逐层退，再收选卡盘／清选中
         if (Discarding is { ListHost: not null }) return EscOwner.Discard;   // B53b：清单行末开的子区同样先逐层退，再关所在窗口
         if (DiskMaskShown) return EscOwner.Disk;

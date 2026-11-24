@@ -12,7 +12,7 @@
     var here = s.CurrentLocation;
     var route = e.MapRouteOf(s, G.MapPicked);
     if (route.TargetId != _reqFor) { _reqFor = route.TargetId; _req = NewReq(); _tried = false; }
-    var moveBusy = (e.IsBusy(s) && !e.PausedTravelOpen(s)) || G.Running || G.BattleBusy || G.DialogueLocked || _go;
+    var moveBusy = e.IsBusy(s) || G.Running || G.BattleBusy || G.DialogueLocked || _go;
     // 相邻目的地：与原节点旁浮窗同一移动请求的预估（B21 R03 D3：01→危险房间要确认开始远征）
     var to = route.TargetId;
     var needExp = to != null && route.Adjacent && e.NeedsExpeditionConfirm(s, to);

@@ -54,7 +54,8 @@ namespace Survival.Core.Engine
                         // Q475：原指定采集工具缺失用采集原句；损坏、耐久不足沿开工原句，不自动换工具（原单次磨损完成时才提交，仍须够付）
                         var tool = FindItem(s, tid);
                         if (tool == null) return "这件工具已不在，请重新选择";
-                        if (!OnPlayer(tool)) return "先拾取工具";
+                        // B60a（S01 B60 Q1100）：继续沿用开工时的工具绑定——原工具仍在当地地面也直接继续，不要求先拾回随身
+                        if (!OnPlayer(tool) && !OwnGroundTool(s, a, tool)) return "先拾取工具";
                         if (!HasWear(tool, GatherWear)) return tool.Durability <= 0 ? "这件工具已损坏，请重新选择" : $"这件工具耐久不足（{DurabilityText(tool)}），请维护或重新选择";
                     }
                     return null;
@@ -115,7 +116,8 @@ namespace Survival.Core.Engine
                     if (IsSpoiled(s, carcass)) return "尸体已腐败，不能处理";
                     var tool = a.ToolInstanceId is int tid ? FindItem(s, tid) : null;
                     if (tool == null) return ResumeToolGone;
-                    if (!OnPlayer(tool) || !ProductionToolStillOk(a, tool)) return $"需要随身有效的{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}";
+                    // B60a（Q1100）：原工具在当地地面也直接继续
+                    if ((!OnPlayer(tool) && !OwnGroundTool(s, a, tool)) || !ProductionToolStillOk(a, tool)) return $"需要随身有效的{string.Join("/", c.RequiredCarriedTools.Select(ItemName))}";
                     return null;
                 }
                 case ActionType.WaitCook:

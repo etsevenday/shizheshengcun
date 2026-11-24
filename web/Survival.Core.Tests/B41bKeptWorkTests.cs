@@ -1,4 +1,3 @@
-using System.Reflection;
 using Survival.Core.Engine;
 using Survival.Core.Save;
 using Survival.Core.State;
@@ -6,188 +5,147 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// B41b 里程碑 5：战后撤退离地保留暂停、暂存原工作的地图移动与续接（R05「B41b Q439—Q444」Q440、「Q463—Q471」Q463—Q464、
-/// 「Q472—Q476」Q472—Q474；逐字稿「B41b Q472—Q476 暂存与移动逐字稿」；验收 Q440-A01 地点部分、Q463-A01、Q464-A01、Q472-A01—A03、Q473-A01、Q474-A01）。
+/// 战后撤退与暂停工作。原 B41b 里程碑 5（R05 Q440、Q463—Q464、Q472—Q474：撤退离地保留暂停、暂存原工作去走地图、回原地续接）
+/// 已被 S01「2026-11-24 B60 暂停继续与撤退后重新开始」Q1100 取代：撤退实际离开原行动地点／区域时，本次暂停工作按原中止结算结束、未完成进度清零，
+/// 未用预留与工具锁按原规则释放一次（Q466 开工来源返还仍用于结算），已真实结算的时间、消耗与结果保留；之后走正常路线回原地从原入口重新开工、从零算。
+/// B60a 删去的旧测试（出处 Q1100 取代 Q463—Q465、Q473、Q569、R05 Q440 的保留安排，Q472 暂存移动随之不再发生）：Q472_A01／A02／A03、Q473 两条、Q474。
 /// </summary>
 public class B41bKeptWorkTests : B41bTestBase
 {
+    private string FieldName => E.LocName("field");
+
+    /// <summary>
+    /// Q1100 验收「战斗撤到相邻地点后，这次未完成工作结束」：状态提醒先停、再敌方到期开战、撤退回营地（不看最初暂停原因）——
+    /// 主行动位清空，结果句按原中止格式「{行动名}已中止。原因：{原因}」＋Q466／Q471 分来源返还句＋「已耗时间保留。」（S01 Q506 第 4 条系统中止、S08 拼接顺序）；
+    /// 原因正文为暂用文案（策划案未给原句）。原随身石头解除预留留随身，原地面纤维回原行动地点荒地（不落到当前营地），不给成品；之后移动不受原工作限制。
+    /// </summary>
     [Test]
-    public void Q463_StatAlertPauseThenEnemyRetreat_KeepsWork_MayTravel()
+    public void Q1100_StatAlertPauseThenRetreatAway_WorkEnds_SourcesReturned_FreeToTravel()
     {
         var s = Field(3);
-        var id = KeptCraft(s, pauseFirstByAlert: true);
-        Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.StatAlert), "原暂停原因保留");
-        Assert.That(E.CanStart(s, ActionRequest.Travel("field")), Is.Null, "不因暂停起因卡死");
-        Assert.That(s.Main.ReserveSources![Reserved(s, "stone", id).InstanceId], Is.EqualTo(ItemInstance.Carried));
-        Assert.That(s.Main.ReserveSources![Reserved(s, "fiber", id).InstanceId], Is.EqualTo("field"));
+        var id = RetreatEndsCraft(s, pauseFirstByAlert: true);
+        var stone = s.Items.Single(i => i.ItemId == "stone" && i.Owner == ItemInstance.Carried);
+        var fiber = s.Items.Single(i => i.ItemId == "fiber" && i.Owner == "field");
+        Assert.That((stone.ReservedBy, fiber.ReservedBy), Is.EqualTo(((int?)null, (int?)null)), "预留只释放一次、不留给本行动");
+        Assert.That(s.Items.Any(i => i.ReservedBy == id), Is.False);
+        Assert.That(s.Items.Any(i => i.ItemId == "stone_knife"), Is.False, "不给未完成成品");
+        Assert.That(s.Log.Last().Text,
+            Is.EqualTo($"{LastLabel}已中止。原因：已撤退离开{FieldName}。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。已耗时间保留。"));
+        Assert.That(s.Log[^2].Text, Does.StartWith("撤退成功"), "中止句写在撤退战报之后");
+        Assert.That(E.CanStart(s, ActionRequest.Travel("field")), Is.Null, "空闲：走正常路线回原地");
+        Assert.That(E.Resume(s).Reason, Is.EqualTo("没有暂停中的行动"));
     }
 
+    /// <summary>
+    /// Q1100「之后玩家走正常路线回到原地，从原入口主动重新开始。新行动重新按原开工规则校验，进度从零起算」：走回荒地、材料拾回后重新开工——
+    /// 新行动号、已提交工作量为 0，正常做完得 1 把石刀。
+    /// </summary>
     [Test]
-    public void Q464_OffSite_NoResume_NoNewMainWork_SuppliesStillAllowed()
+    public void Q1100_WalkBackAndRestart_NewActionFromZero()
     {
         var s = Field(3);
-        KeptCraft(s);
-        var r = E.Resume(s);
-        Assert.That(r.Ok, Is.False);
-        Assert.That(r.Reason, Is.EqualTo($"请返回{E.LocName("field")}后再继续{s.Main!.Label}。"));
-        Assert.That(s.Main.Status, Is.EqualTo(ActionStatus.Paused), "失败不改状态");
-        Assert.That(E.CanStart(s, ActionRequest.Wait(30)), Is.EqualTo("暂停中只能补给、休息或点火维护"), "不开第二项主工作");
-        Assert.That(E.CanStart(s, ActionRequest.Rest(30)), Is.Null, "原补给、休息白名单保持");
-        Assert.That(E.CanStart(s, ActionRequest.Travel("field")), Is.Null);
-    }
-
-    [Test]
-    public void Q472_A01_TravelStashesWork_PausedTravelSubOnlyActsOnTravel()
-    {
-        var s = Field(3);
-        var id = KeptCraft(s);
-        var progress = s.Main!.WorkDone;
-        // 校验失败不留下半次转接
-        Assert.That(E.Start(s, ActionRequest.Travel("stream")).Ok, Is.False);
-        Assert.That(s.Main.ActionId, Is.EqualTo(id));
-        Assert.That(s.StashedWork, Is.Null);
-
-        Start(s, ActionRequest.Travel("field"));
-        Assert.That(s.Main.Type, Is.EqualTo(ActionType.Travel));
-        Assert.That(s.StashedWork!.ActionId, Is.EqualTo(id), "只有一份暂存");
-        Assert.That(s.StashedWork.Status, Is.EqualTo(ActionStatus.Paused));
-        Assert.That(Reserved(s, "stone", id).Owner, Is.EqualTo(ItemInstance.Carried), "随身预留随物主移动");
-
-        Assert.That(Step(s), Is.EqualTo(SegmentStatus.Running));
-        // 移动在段后被提醒停下：只可随身补给／露天休息，继续作用于当前移动
-        s.Main.Status = ActionStatus.Paused;
-        s.Main.PauseReason = PauseReason.StatAlert;
-        Assert.That(E.CanStart(s, ActionRequest.Craft("knife")), Is.EqualTo("暂停中只能补给、休息或点火维护"));
-        Assert.That(E.CanStart(s, ActionRequest.Travel("camp")), Is.EqualTo("暂停中只能补给、休息或点火维护"), "不嵌套第二次移动");
-        Start(s, ActionRequest.Rest(30));
-        Assert.That(s.Sub!.ForceOutdoor, Is.True, "途中休息按露天");
-        Assert.That(Run(s, autoResume: false), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(s.Main.Type, Is.EqualTo(ActionType.Travel), "补给完成后移动保持暂停");
-        Assert.That(s.Main.Status, Is.EqualTo(ActionStatus.Paused));
-        Assert.That(E.Resume(s).Ok, Is.True, "继续作用于当前移动");
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-
-        Assert.That(s.CurrentLocation, Is.EqualTo("field"));
-        Assert.That(s.StashedWork, Is.Null);
-        Assert.That(s.Main.ActionId, Is.EqualTo(id), "到达后原工作放回、仍暂停");
-        Assert.That(s.Main.Status, Is.EqualTo(ActionStatus.Paused));
-        Assert.That(s.Main.WorkDone, Is.EqualTo(progress), "移动不推进原工作");
-        Assert.That(s.Log.Last(l => l.Text.StartsWith("到达")).Text, Does.EndWith($"{s.Main.Label}仍保持暂停。"));
-    }
-
-    [Test]
-    public void Q472_A02_CancelTravel_RestoresSamePausedWork_ReservationsKept_NoNesting()
-    {
-        var s = Field(3);
-        var id = KeptCraft(s);
-        var stone = Reserved(s, "stone", id);
-        var fiber = Reserved(s, "fiber", id);
-        Start(s, ActionRequest.Travel("field"));
-        Step(s);
-        Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.CurrentLocation, Is.EqualTo("camp"), "沿原结果留在移动起点");
-        Assert.That(s.Main!.ActionId, Is.EqualTo(id));
-        Assert.That(s.Main.Status, Is.EqualTo(ActionStatus.Paused));
-        Assert.That(s.StashedWork, Is.Null);
-        Assert.That(stone.ReservedBy, Is.EqualTo(id), "移动取消不释放原预留");
-        Assert.That(fiber.ReservedBy, Is.EqualTo(id));
-        Assert.That(fiber.Owner, Is.EqualTo("field"), "原地面材料仍在原地点");
-        var last = s.Log.Last().Text;
-        Assert.That(last, Does.StartWith("已取消移动，留在"));
-        Assert.That(last, Does.EndWith($"{s.Main.Label}仍保持暂停。"));
-
-        // 多步：每次新开移动都只暂存这一份
-        Start(s, ActionRequest.Travel("field"));
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(s.Main.ActionId, Is.EqualTo(id));
-        Start(s, ActionRequest.Travel("camp"));
-        Assert.That(s.StashedWork!.ActionId, Is.EqualTo(id));
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(s.Main.ActionId, Is.EqualTo(id));
-        Assert.That(s.StashedWork, Is.Null);
-    }
-
-    [Test]
-    public void Q472_A03_SaveLoadMidTravelAndSub_RestoresLayers_TerminalReleasesOnce()
-    {
-        var s = Field(3);
-        var id = KeptCraft(s);
-        Start(s, ActionRequest.Travel("field"));
-        Step(s);
-        s.Main!.Status = ActionStatus.Paused;
-        s.Main.PauseReason = PauseReason.StatAlert;
-        Start(s, ActionRequest.Rest(30));
-        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), CfgV2);
-        Assert.That(t.Main!.Type, Is.EqualTo(ActionType.Travel));
-        Assert.That(t.Sub!.Type, Is.EqualTo(ActionType.Rest));
-        Assert.That(t.StashedWork!.ActionId, Is.EqualTo(id));
-        Assert.That(t.StashedWork.RetreatKept, Is.True);
-        Assert.That(t.StashedWork.ReserveSources, Has.Count.EqualTo(2));
-        var visits = t.TraveledEdges.Count;
-
-        // 终局：主角在途中倒下，移动、补给与暂存工作一起收束，预留按真实归属只释放一次
-        var kill = typeof(GameEngine).GetMethod("Kill", BindingFlags.NonPublic | BindingFlags.Instance, new[] { typeof(GameState), typeof(string) })!;
-        kill.Invoke(E, new object[] { t, "测试" });
-        Assert.That(t.Main, Is.Null);
-        Assert.That(t.Sub, Is.Null);
-        Assert.That(t.StashedWork, Is.Null);
-        Assert.That(t.Items.Any(i => i.ReservedBy == id), Is.False);
-        Assert.That(t.Items.Count(i => i.ItemId == "fiber" && i.Owner == "field"), Is.EqualTo(1), "原地面材料不搬到终局地点");
-        Assert.That(t.Items.Count(i => i.ItemId == "stone" && i.Owner == ItemInstance.Carried), Is.EqualTo(1), "随身部分留随身");
-        Assert.That(t.Items.Any(i => i.ItemId == "stone_knife"), Is.False, "不给未完成成果");
-        Assert.That(t.TraveledEdges.Count, Is.EqualTo(visits));
-    }
-
-    [Test]
-    public void Q473_BackAtOrigin_MapStillOpen_UntilResumed()
-    {
-        var s = Field(3);
-        var id = KeptCraft(s);
+        var id = RetreatEndsCraft(s, stoneCarried: true, fiberOnGround: false);
+        s.WorldEnemies.Clear();
+        s.EnemyCards.Timers.Clear();
         TravelTo(s, "field");
-        Assert.That(s.Main!.ActionId, Is.EqualTo(id));
-        Assert.That(E.CanStart(s, ActionRequest.Travel("camp")), Is.Null, "回原地点不收回移动例外");
-        Assert.That(E.Resume(s).Ok, Is.True, "回原地点手动继续");
-        Assert.That(s.Main.RetreatMoveOpen, Is.False);
-        Assert.That(s.Main.RetreatKept, Is.True);
-        // 之后普通暂停不再能移动
-        s.Main.Status = ActionStatus.Paused;
-        s.Main.PauseReason = PauseReason.StatAlert;
-        Assert.That(E.CanStart(s, ActionRequest.Travel("camp")), Is.EqualTo("暂停中只能补给、休息或点火维护"));
-    }
-
-    [Test]
-    public void Q473_StashIsNotIdle_ForLocksAndOtherWork()
-    {
-        var s = Field(3);
-        var id = KeptCraft(s);
-        Start(s, ActionRequest.Travel("field"));
-        Assert.That(E.CanStart(s, ActionRequest.Wait(30)), Is.EqualTo("已有进行中的行动"));
-        Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Main!.ActionId, Is.EqualTo(id));
-    }
-
-    [Test]
-    public void Q474_ResumeStartedTravel_OnlyGeneralChecks_NewTravelFullyValidated()
-    {
-        var s = Field(3);
-        KeptCraft(s);
-        Start(s, ActionRequest.Travel("field"));
-        Step(s);
-        s.Main!.Status = ActionStatus.Paused;
-        s.Main.PauseReason = PauseReason.StatAlert;
-        // 不套原工作返回地点的校验：人在途中（不在原地点）照样能继续这次移动
-        Assert.That(E.Resume(s).Ok, Is.True);
+        Start(s, ActionRequest.Craft("knife"));
+        Assert.That(s.Main!.ActionId, Is.Not.EqualTo(id), "新开工，不是原行动");
+        Assert.That(s.Main.WorkDone, Is.EqualTo(0), "进度从零起算");
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(E.CanStart(s, ActionRequest.Travel("stream")), Is.Not.Null, "新移动仍走完整校验");
+        Assert.That(s.Items.Count(i => i.ItemId == "stone_knife"), Is.EqualTo(1));
+    }
+
+    /// <summary>
+    /// 配对（Q1100「同地暂停后继续」、测试规则第 4 条）：撤退没有离开原地点（没有可退的来路，留在原地）时，暂停工作不结束——
+    /// 同一行动仍暂停、预留仍归本行动，「继续行动」从已提交进度接着做、正常完成。
+    /// </summary>
+    [Test]
+    public void Q1100_RetreatStaysAtSite_WorkKeptPaused_ResumeContinuesSameProgress()
+    {
+        var s = Field(3);
+        E.DebugTeleport(s, "field");   // 起点：开发传送清掉来路记录，撤退只能留在原地
+        E.DebugGive(s, "stone", 1, ItemInstance.Carried);
+        E.DebugGive(s, "fiber", 1, "field");
+        E.DebugSpawnEnemy(s, "shambler", "field");
+        Start(s, ActionRequest.Craft("knife"));
+        var id = s.Main!.ActionId;
+        SetLeft(s, GameEngine.SingleCardKey(s.WorldEnemies.Single().Id), 0);
+        Assert.That(Step(s), Is.EqualTo(SegmentStatus.Paused));
+        var work = s.Main.WorkDone;
+        Assert.That(work, Is.GreaterThan(0), "起点：已提交一段进度");
+        RetreatOk(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("field"), "起点核对：留在原地");
+        Assert.That((s.Main?.ActionId, s.Main?.Status), Is.EqualTo(((int?)id, (ActionStatus?)ActionStatus.Paused)), "没离开原地点：不结束");
+        Assert.That(s.Items.Count(i => i.ReservedBy == id), Is.EqualTo(2), "预留仍归本行动");
+        Assert.That(s.Log.Last().Text, Does.Not.Contain("已中止"));
+        s.WorldEnemies.Clear();
+        s.EnemyCards.Timers.Clear();
+        Assert.That(E.Resume(s).Ok, Is.True, E.ResumeBlockReason(s));
+        Assert.That(s.Main!.WorkDone, Is.EqualTo(work), "从已提交进度接着做");
+        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
+        Assert.That(s.Items.Count(i => i.ItemId == "stone_knife"), Is.EqualTo(1));
+    }
+
+    /// <summary>
+    /// 旧档（B60a 之前存下的撤退离地保留、人在异地）：Q1100 起不再有撤退返程的移动例外（取代 Q464／Q473 的地图放行）——暂停中开新移动按普通暂停拒绝；
+    /// 非锁定工作仍可「退出行动」，按 Q466／Q471 开工来源返还收束。
+    /// </summary>
+    [Test]
+    public void Legacy_KeptAway_NoTravelException_ExitReturnsBySource()
+    {
+        var s = Field(3);
+        var id = LegacyKeptCraft(s);
+        var fiber = Reserved(s, "fiber", id);
+        Assert.That(E.CanStart(s, ActionRequest.Travel("field")), Is.EqualTo("暂停中只能补给、休息或点火维护"), "不再开放撤退返程");
+        Assert.That(E.Start(s, ActionRequest.Travel("field")).Ok, Is.False);
+        Assert.That(s.StashedWork, Is.Null, "不暂存原工作");
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        Assert.That(s.Log.Last().Text,
+            Is.EqualTo($"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。已耗时间不退。"));
+        Assert.That(s.Items.Any(i => i.ReservedBy == id), Is.False);
+        Assert.That((fiber.Owner, fiber.ReservedBy), Is.EqualTo(("field", (int?)null)));
+    }
+
+    /// <summary>
+    /// 旧档锁定工作在异地（没有退出入口、又不能再走回去）：只读复核给自动中止说明，「继续行动」按同一中止结算收束（Q1100 撤退离地即结束），不卡在暂停里。
+    /// 配对：人在原地时同一旧档工作可正常继续（见 <see cref="Q1100_RetreatStaysAtSite_WorkKeptPaused_ResumeContinuesSameProgress"/> 与 B41c Q488）。
+    /// </summary>
+    [Test]
+    public void Legacy_LockedKeptAway_ResumeAbortsWithRetreatReason()
+    {
+        var s = Field(3);
+        var id = LegacyKeptCraft(s);
+        s.Main!.NoExit = true;
+        var label = s.Main.Label;
+        var p = E.ActionProgress(s)!;
+        Assert.That((p.ResumeNote, p.ResumeAborts), Is.EqualTo(($"已撤退离开{FieldName}", true)));
+        var t0 = s.GameMinute;
+        var r = E.Resume(s);
+        Assert.That((r.Ok, r.Aborted), Is.EqualTo((true, true)));
+        Assert.That((s.Main, s.GameMinute), Is.EqualTo(((ActionState?)null, t0)), "不推进时间");
+        Assert.That(s.Log.Last().Text,
+            Is.EqualTo($"{label}已中止。原因：已撤退离开{FieldName}。随身预留材料已解除预留，仍在随身；地面预留材料已返还{FieldName}地面。已耗时间保留。"));
+        Assert.That(s.Items.Any(i => i.ReservedBy == id), Is.False);
     }
 
     [Test]
     public void StartRecordsZoneAndSources_UnderV2()
     {
         var s = Field(3);
-        var id = KeptCraft(s);
+        PausedCraft(s);
         Assert.That(s.Main!.StartZone, Is.EqualTo(GameState.ExteriorZone));
         Assert.That(s.Main.StartGeneration, Is.Null, "不在地牢");
         Assert.That(s.Main.ReserveSources!.Keys, Is.EquivalentTo(s.Main.ReservedItemIds));
+    }
+
+    /// <summary>旧档保留标记存读档不丢（结算仍按开工来源）。</summary>
+    [Test]
+    public void Legacy_KeptFlags_RoundTrip()
+    {
+        var s = Field(3);
+        LegacyKeptCraft(s);
+        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), CfgV2);
+        Assert.That(t.Main!.RetreatKept, Is.True);
+        Assert.That(t.Main.ReserveSources, Is.EquivalentTo(s.Main!.ReserveSources!));
     }
 }

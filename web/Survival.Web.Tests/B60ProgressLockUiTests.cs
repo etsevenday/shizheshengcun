@@ -86,7 +86,7 @@ public class B60ProgressLockUiTests : WebTestBase
         Ok(E.Start(S, ActionRequest.Wait(60)));
         S.Main!.Status = ActionStatus.Paused;   // 起点：主行动暂停（原规则下由属性偏低等触发，此处只造起点）
         G.Notify();
-        Assert.That(G.PausePickOpen || G.PauseTravelOpen, Is.False, "起点：不是 Q523／Q569 例外");
+        // B60a：原「起点：不是 Q523／Q569 例外」断言随两种例外（PausePickOpen／PauseTravelOpen）撤掉而删（S14 B60 Q1100）
         var cut = Ctx.RenderComponent<GameScreen>();
 
         Assert.That(cut.FindAll(".pause-dock"), Is.Empty, "撤掉 R55 暂停窄条");

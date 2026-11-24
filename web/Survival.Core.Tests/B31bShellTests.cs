@@ -261,8 +261,8 @@ public class B31bShellTests : TestBase
             .And.Contain("ShellText.PauseReason").And.Contain("ShellText.ResumeAction").And.Contain("ShellText.ExitAction"));
         Assert.That(cp, Does.Not.Contain(">退出</button>").And.Not.Contain(">继续</button>").And.Not.Contain("\"进行中\""));
         var pause = Web("Components", "PauseLayer.razor");
-        // B41c2 试玩修复（P3）：遮罩在原工具可拾取时另挂 pick-open（只盖①②）
-        Assert.That(pause, Does.Contain("<div class=\"pause-scrim @(").And.Not.Contain("pause-dock"), "B60（Q1038 C）：撤暂停窄条");
+        // B60a 改期望（S14 B60 Q1100 取消 Q523／Q569 两种让位）：原「<div class="pause-scrim @(」（挂 pick-open／travel-open）改为不带让位类
+        Assert.That(pause, Does.Contain("<div class=\"pause-scrim\">").And.Not.Contain("pause-dock"), "B60（Q1038 C）：撤暂停窄条");
         Assert.That(pause, Does.Contain("@if (G.Notice != null) { <div class=\"notice\" style=\"max-width:720px\">@G.Notice</div> }"), "Q318 忙碌句在暂停弹窗底部");
         var screen = Web("Components", "GameScreen.razor");
         // B35c 改期望（S14 2026-11-13 B35 节 Q595、2026-11-16 B36 节 Q807）：独立 citymap 面板撤掉，鸟瞰成为地图城市层；城市层仍盖①②③，进度卡沿用原鸟瞰位置，判据改为 G.CityBrowsing

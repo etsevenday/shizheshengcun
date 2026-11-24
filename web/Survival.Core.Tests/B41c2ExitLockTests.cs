@@ -185,64 +185,88 @@ public class B41c2ExitLockTests : TestBase
         Assert.That(e.Resume(s).Ok, Is.False, "只收束一次");
     }
 
+    /// <summary>
+    /// Q514 暂时原因：保持暂停、不中止，只给修复提示。B60a 改起点（出处 S01 B60 Q1100：原工具在当地地面已不是暂时原因，见下一条）——
+    /// 改用锁定等待加工的「火堆未燃烧」（锁定版原句沿 Q465）。
+    /// </summary>
     [Test]
     public void Q514_A02_TemporaryReason_StaysPaused_NoAbort()
     {
-        var (e, s, knife, _, _) = LockedButcher();
-        knife.Owner = s.Ground;   // 原工具在当前地面：只缺拾取（暂时）
-        var why = $"需要先拾取原工具：{e.ItemName(knife.ItemId)}。";
-        var p = e.ActionProgress(s)!;
+        var s = New();
+        var pot = First(s, "pot");
+        E.DebugGive(s, "dirty_water", 1, "camp");
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 1)).Ok, Is.True);
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true;
+        fac.FuelMinutes = 180;
+        Assert.That(E.Start(s, ActionRequest.WaitCook()).Ok, Is.True);
+        s.Main!.NoExit = true;   // 视作开工 5 分钟锁定的等待加工（只验复核分支）
+        Pause(s);
+        fac.FireLit = false;
+        var why = "火堆未燃烧：请先点火（等待加工不会自动点火）";
+        var p = E.ActionProgress(s)!;
         Assert.That((p.ResumeNote, p.ResumeAborts), Is.EqualTo((why, false)));
+        Assert.That(E.LockedResume(s).Kind, Is.EqualTo(LockedResumeKind.Temporary));
         var before = SaveSerializer.Serialize(s);
-        var r = e.Resume(s);
+        var r = E.Resume(s);
         Assert.That((r.Ok, r.Reason), Is.EqualTo((false, why)));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "暂时原因保持暂停，不中止");
     }
 
-    // ───────────── Q523 原工具例外拾取 ─────────────
+    // ───────────── Q1100 原工具在当地地面直接继续（取代 Q523 原工具例外拾取） ─────────────
 
+    /// <summary>
+    /// S01「2026-11-24 B60 暂停继续与撤退后重新开始」Q1100（B60 验收「原工具在脚边也可直接点『继续行动』」，取代 Q514／Q523 以拾回原工具为继续门槛）：
+    /// 锁定处理尸体暂停、原刀在当前地面——只读复核没有原因、不报自动中止；「继续行动」沿用开工绑定直接继续、同一行动、不推进额外时间、不重复登记开工，
+    /// 做完照常得肉、刀按原规则磨损。
+    /// </summary>
     [Test]
-    public void Q523_A01_OwnGroundTool_PickupWhole_ZeroTime_LockKept_ThenResume()
+    public void Q1100_A01_OwnToolOnGround_ResumeDirectly_SameAction_Completes()
     {
         var (e, s, knife, _, _) = LockedButcher();
         knife.Owner = s.Ground;
-        Assert.That(e.LockedToolPickupOpen(s, knife), Is.True);
-        var t0 = s.GameMinute;
         var id = s.Main!.ActionId;
-        var r = e.DoInstant(s, InstantRequest.Pickup(knife.InstanceId, knife.Count));
-        Assert.That((r.Ok, r.Aborted), Is.EqualTo((true, false)), r.Reason);
-        Assert.That((knife.Owner, s.GameMinute, s.Main!.ActionId, s.Main.Status), Is.EqualTo((ItemInstance.Carried, t0, id, ActionStatus.Paused)), "0 时间、同一行动仍暂停");
-        Assert.That(s.Main.LockedItemIds, Does.Contain(knife.InstanceId), "原工具锁保持");
-        Assert.That(e.Resume(s).Ok, Is.True, "拾取后手动继续");
+        var work = s.Main.WorkDone;
+        var started = s.Log.Count(l => l.Text.StartsWith("开始"));
+        var p = e.ActionProgress(s)!;
+        Assert.That((p.ResumeNote, p.ResumeAborts), Is.EqualTo(((string?)null, false)));
+        Assert.That(e.LockedResume(s).Kind, Is.EqualTo(LockedResumeKind.Ok));
+        var t0 = s.GameMinute;
+        Assert.That(e.Resume(s).Ok, Is.True);
+        Assert.That((s.Main!.ActionId, s.Main.Status, s.Main.WorkDone, s.GameMinute), Is.EqualTo((id, ActionStatus.Running, work, t0)), "同一行动、已提交进度不变、不推进时间");
+        Assert.That(knife.Owner, Is.EqualTo(s.Ground), "不搬动工具");
         Run(s);
         Assert.That(s.Main, Is.Null);
         Assert.That(s.Items.Count(i => i.ItemId == "raw_meat"), Is.GreaterThan(0));
+        Assert.That(s.Log.Count(l => l.Text.StartsWith("开始")), Is.EqualTo(started), "继续不是新开工，不再写开工句");
     }
 
+    /// <summary>
+    /// Q1100 取消 Q523 例外拾取：暂停中原工具仍被本行动锁着，拾取按原规则拒绝（不再有 0 分钟例外拾取），其他地面物品照原暂停规则；
+    /// 随身满卡也不影响继续（原「随身卡位已满，无法拾取原工具」自动中止分支随之撤掉）。
+    /// 配对：原工具不在随身也不在当前地面（别处）仍按原永久原因自动中止（见 Q514_A01、B46 Q532_A02）。
+    /// </summary>
     [Test]
-    public void Q523_A02_OtherItemsStillBlocked_CapacityFull_PickupAbortsAndToolStays()
+    public void Q1100_A02_NoExceptionPickup_FullCarryStillResumes()
     {
-        var (e, s, knife, _, label) = LockedButcher();
+        var (e, s, knife, _, _) = LockedButcher();
         knife.Owner = s.Ground;
-        // 其他地面物品不因例外放开
+        var r = e.DoInstant(s, InstantRequest.Pickup(knife.InstanceId, knife.Count));
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "行动占用：该物品正被当前行动使用")));
+        Assert.That(knife.Owner, Is.EqualTo(s.Ground));
         var rope = e.CreateItems(s, "cloth", 1, s.Ground).Single();
-        Assert.That(e.DoInstant(s, InstantRequest.Pickup(rope.InstanceId, 1)).Ok, Is.False);
-        // 塞满随身卡位
+        Assert.That(e.DoInstant(s, InstantRequest.Pickup(rope.InstanceId, 1)).Ok, Is.False, "其他地面物品照原暂停规则");
         foreach (var id in new[] { "herb", "wood", "stone", "fiber", "scrap", "parts", "salt", "thread" })
         {
             if (e.RootCardCount(s) >= e.MaxRootCards) break;
             e.CreateItems(s, id, 1, ItemInstance.Carried);
         }
         Assert.That(e.RootCardCount(s), Is.EqualTo(e.MaxRootCards));
-        var why = $"随身卡位已满（{e.MaxRootCards}/{e.MaxRootCards}张），无法拾取原工具。";
-        var p = e.ActionProgress(s)!;
-        Assert.That((p.ResumeNote, p.ResumeAborts), Is.EqualTo((why, true)), "只读显示具体原因与自动中止说明");
-        Assert.That(e.LockedToolPickupOpen(s, knife), Is.False);
-        var r = e.DoInstant(s, InstantRequest.Pickup(knife.InstanceId, knife.Count));
-        Assert.That((r.Ok, r.Aborted), Is.EqualTo((true, true)));
-        Assert.That(s.Main, Is.Null);
-        Assert.That((knife.Owner, e.IsLocked(s, knife)), Is.EqualTo((s.Ground, false)), "工具不移动，锁随行动释放");
-        Assert.That(s.Log.Last().Text, Does.StartWith($"{label}已中止。原因：{why}").And.EndWith("已耗时间保留。"));
+        Assert.That(e.ActionProgress(s)!.ResumeNote, Is.Null, "满卡不构成继续原因");
+        var resumed = e.Resume(s);
+        Assert.That((resumed.Ok, resumed.Aborted), Is.EqualTo((true, false)));
+        Assert.That(s.Main!.Status, Is.EqualTo(ActionStatus.Running));
     }
 
     // ───────────── Q515 等待加工全部完成 ─────────────

@@ -336,21 +336,25 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 撤退成功、队伍落地之后：主行动已经暂停且队伍已离开它的原地点／区域，就按 Q440 保留这次暂停（不限最初暂停原因，Q463）——
-        /// 记保留标记、开放地图移动（Q464、Q473），旧行动缺的区域／世代／来源在这里按仍在原处的真实状态补齐（Q466）。移动、撤出不适用。
+        /// B60a（S01「2026-11-24 B60 暂停继续与撤退后重新开始」Q1100，取代 R05 Q440、Q463—Q465、Q473、Q569 的撤退离地保留）：
+        /// 撤退成功、队伍落地之后，暂停中的主行动若已实际离开原行动地点／区域，本次暂停工作按原中止结算结束——未完成进度清零，
+        /// 未用预留与工具锁按原规则释放一次（Q466 开工来源返还：原随身留原物主随身、原地面回原地点／区域），已真实结算的时间、消耗与结果保留。
+        /// 之后玩家走正常路线回原地、从原入口重新开工（重新校验、从零算）。没离开原地点／区域的暂停照旧保留，继续时沿用本次已提交进度。移动、撤出不适用。
+        /// 在战斗结算末尾调用（战斗已清、战报已写），不在结算途中开下一场战斗。
         /// </summary>
-        private void KeepPausedWorkOnRetreat(GameState s)
+        private void EndPausedWorkOnRetreat(GameState s)
         {
             var a = s.Main;
-            if (a == null || a.IsSub || a.Status != ActionStatus.Paused || a.Type is ActionType.Travel or ActionType.Extract) return;
-            // 暂停期间不能进出安全屋、不能移动（除本例外），开战只在屋外：旧行动缺区域时就是屋外，缺世代时取原地点当前世代（撤退不换代）
-            a.StartZone ??= ExteriorZone;
-            if (a.StartGeneration == null) a.StartGeneration = DungeonGenerationAt(s, a.SourceLocation);
-            if (s.CurrentLocation == a.SourceLocation && s.CurrentZone == a.StartZone) return;
-            BackfillReserveSources(s, a);
-            a.RetreatKept = true;
-            a.RetreatMoveOpen = true;
+            if (a == null || a.IsSub || s.Sub != null || a.Status != ActionStatus.Paused || a.Type is ActionType.Travel or ActionType.Extract) return;
+            // 旧行动缺区域时就是屋外（暂停期间不能进出安全屋，开战只在屋外）
+            if (s.CurrentLocation == a.SourceLocation && s.CurrentZone == (a.StartZone ?? ExteriorZone)) return;
+            BackfillReserveSources(s, a);   // Q466：旧行动缺来源记录的批次按仍在原处的真实归属补齐
+            a.RetreatKept = true;   // Q466：按开工来源返还（Release／AbortLocked 的来源分支）
+            AbortLocked(s, a, RetreatLeftReason(s, a), boundary: false);
         }
+
+        /// <summary>B60a（Q1100）：撤退离开原行动地点而结束时的中止原因正文（暂用，策划案未给原句）。</summary>
+        public string RetreatLeftReason(GameState s, ActionState a) => $"已撤退离开{WorkPlaceName(s, a)}";
 
         /// <summary>移动到达或退出后把暂存的原工作放回主行动位（仍暂停、不自动继续）；没有暂存返回 null（Q472 第 4、5 条）。</summary>
         private ActionState? RestoreStashedWork(GameState s)

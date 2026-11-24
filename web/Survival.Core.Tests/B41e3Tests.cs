@@ -116,69 +116,24 @@ public class B41e3Tests : B41cTestBase
         Assert.That(E.CanApproachCard(s, a), Is.EqualTo("当前行动还没结束。"));
     }
     /// <summary>
-    /// B41e3 试玩修复 B1（R05 Q464、Q473；逐字稿「原暂停层需允许进入既有地图和合法返程移动入口」）：
-    /// 农野荒地采集中敌方到期开战、撤退成功退到营地，原采集保留暂停；内核判定移动入口开放，可走回原地，到达后仍暂停、「继续行动」可用。
+    /// 原 B41e3 试玩修复 B1 三条（撤退离地保留采集的地图前往开放 PausedTravelOpen、走回原地续接、地图／移动浮窗按它放行的源码接线）随
+    /// S01／S14「2026-11-24 B60」Q1100 取代 R05 Q464、Q473、S14 Q569 删去（B60a）：撤退离地的工作已结束，暂停中不再有地图移动例外。
+    /// 留下的规则：普通暂停中开新移动按暂停白名单拒绝（同内核校验），有补给子行动时同样不能移动。网页壳的出发按钮置灰见 Web 测试 B60aPauseResumeUiTests。
     /// </summary>
     [Test]
-    public void PlayFix_B1_RetreatKeptGather_PausedTravelOpen_WalkBack_Resume()
-    {
-        var s = Field(3);
-        var id = KeptAtField(s, ActionRequest.Gather("field_fiber"), g =>
-        {
-            var rs = g.Resources["field_fiber"];
-            rs.Discovered = true;
-            rs.Available = Math.Max(3, rs.Available ?? 0);
-        });
-        Assert.That(E.IsBusy(s), Is.True, "原工作仍在（暂停），不是空闲");
-        Assert.That(E.PausedTravelOpen(s), Is.True, "撤退离地保留的暂停：地图前往与移动确认开放");
-        Assert.That(E.Resume(s).Ok, Is.False, "离地时不能继续");
-        Assert.That(E.Preview(s, ActionRequest.Travel("field")).Ok, Is.True, "移动预览可走");
-
-        Start(s, ActionRequest.Travel("field"));
-        Assert.That(E.PausedTravelOpen(s), Is.False, "移动途中（原工作暂存）不再算暂停层的移动入口");
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(s.CurrentLocation, Is.EqualTo("field"));
-        Assert.That(s.Main!.ActionId, Is.EqualTo(id), "到达后原采集放回");
-        Assert.That(s.Main.Status, Is.EqualTo(ActionStatus.Paused));
-        Assert.That(E.PausedTravelOpen(s), Is.True, "回到原地也不收回移动例外（Q473）");
-        Assert.That(E.Resume(s).Ok, Is.True, "回到原地「继续行动」可用");
-        Assert.That(E.PausedTravelOpen(s), Is.False, "继续后收回");
-    }
-
-    [Test]
-    public void PlayFix_B1_PausedTravelOpen_FalseForOrdinaryPause_AndWithSub()
+    public void OrdinaryPause_TravelRejected_AlsoWithSub()
     {
         var s = Field(3);
         Start(s, ActionRequest.Explore());
         s.Main!.Status = ActionStatus.Paused;
         s.Main.PauseReason = PauseReason.StatAlert;
-        Assert.That(E.PausedTravelOpen(s), Is.False, "普通暂停不开放移动");
-        Assert.That(E.CanStart(s, ActionRequest.Travel("camp")), Is.EqualTo("暂停中只能补给、休息或点火维护"), "与内核校验一致");
-
-        var k = Field(3);
-        KeptCraft(k);
-        Start(k, ActionRequest.Rest(30));
-        Assert.That(k.Sub, Is.Not.Null);
-        Assert.That(E.PausedTravelOpen(k), Is.False, "补给／休息子行动进行中不开放");
-    }
-
-    [Test]
-    public void PlayFix_B1_Shell_MapAndTravelPopUsePausedTravelOpen()
-    {
-        var pops = Web("Components/ActionPops.razor");
-        Assert.That(pops, Does.Contain("var moveBusy = (e.IsBusy(s) && !e.PausedTravelOpen(s)) || G.Running || G.BattleBusy || _go;"));
-        Assert.That(pops, Does.Contain("disabled=\"@(!p.Ok || moveBusy)\""), "移动确认按 moveBusy 判定");
-        Assert.That(pops, Does.Contain("<EnterCap On=\"@(p.Ok && !moveBusy)\" />"));
-        var map = Web("Components/MapOverlay.razor");
-        Assert.That(map, Does.Contain("else if (adjacent.Contains(target) && (!e.IsBusy(s) || e.PausedTravelOpen(s)))"), "右栏显示移动预估");
-        Assert.That(map, Does.Contain("@if (e.IsBusy(s) && !e.PausedTravelOpen(s))"), "不再提示「行动进行中，地图只能浏览」");
-        // B35c（S14 B35 节 Q591：撤区域地图节点旁确认浮窗，改在地图路线区点“出发”）：暂停期间的移动入口改由路线区同一 moveBusy 判定
-        Assert.That(map, Does.Not.Contain("G.OpenPop(\"mapnode\""), "Q591：不再在节点旁打开移动确认");
-        var route = Web("Components/MapRouteArea.razor");
-        Assert.That(route, Does.Contain("var moveBusy = (e.IsBusy(s) && !e.PausedTravelOpen(s)) || G.Running || G.BattleBusy || G.DialogueLocked || _go;"));
-        Assert.That(route, Does.Contain("disabled=\"@(!p.Ok || moveBusy)\""), "路线区出发按 moveBusy 判定");
-        var card = Web("Components/LocationCard.razor");
-        Assert.That(card, Does.Contain("前往 ▸"), "地点卡「前往 ▸」入口沿用");
+        Assert.That(E.CanStart(s, ActionRequest.Travel("camp")), Is.EqualTo("暂停中只能补给、休息或点火维护"));
+        Start(s, ActionRequest.Rest(30));
+        Assert.That(s.Sub, Is.Not.Null);
+        Assert.That(E.CanStart(s, ActionRequest.Travel("camp")), Is.Not.Null, "补给／休息子行动进行中不能移动");
+        // 配对：空闲时同一移动可走
+        var t = Field(3);
+        Assert.That(E.CanStart(t, ActionRequest.Travel("camp")), Is.Null);
     }
 
     [Test]

@@ -14,14 +14,6 @@ public class B41bResumeReturnTests : B41bTestBase
 {
     private string Field => E.LocName("field");
 
-    /// <summary>撤退保留后走回荒地（原工作恢复为暂停）。</summary>
-    private void BackToField(GameState s, int id)
-    {
-        TravelTo(s, "field");
-        Assert.That(s.Main!.ActionId, Is.EqualTo(id));
-        Assert.That(s.Main.Status, Is.EqualTo(ActionStatus.Paused));
-    }
-
     /// <summary>重验失败：给定原因，且状态、预留、原暂停原因都不变。</summary>
     private void AssertBlocked(GameState s, string why)
     {
@@ -33,61 +25,58 @@ public class B41bResumeReturnTests : B41bTestBase
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "失败不推进时间、不扣物、不改预留与暂停原因");
     }
 
+    // B60a 改用例（出处 S01「2026-11-24 B60 暂停继续与撤退后重新开始」Q1100，取代 R05 Q440 撤退离地保留）：原「撤退保留→异地退出」的 Q466／Q471 返还，
+    // 改为撤退离地当刻按原中止结算返还（Q466 开工来源返还仍用于结算）；结果句由「已取消制作。…已耗时间不退。」改为系统中止格式「{行动名}已中止。原因：…已耗时间保留。」。
+    // 原「撤退保留→走回原地→续接复核」的 Q465／Q475 用例改用同地暂停起点（PausedAtField），复核规则本身不变。
+
     [Test]
-    public void Q466_Q471_ExitOffSite_CarriedStaysCarried_GroundBackToOrigin_Once()
+    public void Q1100_Q466_RetreatAway_CarriedStaysCarried_GroundBackToOrigin_Once()
     {
         var s = Field(3);
-        var id = KeptCraft(s);
-        var stone = Reserved(s, "stone", id);
-        var fiber = Reserved(s, "fiber", id);
-        var campFiber = s.Items.Where(i => i.ItemId == "fiber" && i.Owner == "camp").Sum(i => i.Count);
-        var allFiber = s.Items.Where(i => i.ItemId == "fiber").Sum(i => i.Count);
-        Assert.That(E.ActionProgress(s)!.ExitNote,
-            Is.EqualTo($"退出将取消制作。随身预留材料解除预留后留在随身，地面预留材料会返还{Field}地面。已耗时间不退。"));
-        Assert.That(E.ActionProgress(s)!.WorkPlace, Is.EqualTo(Field));
-        Assert.That(E.Cancel(s).Ok, Is.True);
+        var campFiber0 = -1;
+        var allFiber0 = -1;
+        var id = RetreatEndsAtField(s, ActionRequest.Craft("knife"), g =>
+        {
+            E.DebugGive(g, "stone", 1, ItemInstance.Carried);
+            E.DebugGive(g, "fiber", 1, "field");
+            campFiber0 = g.Items.Where(i => i.ItemId == "fiber" && i.Owner == "camp").Sum(i => i.Count);
+            allFiber0 = g.Items.Where(i => i.ItemId == "fiber").Sum(i => i.Count);
+        });
         Assert.That(s.Log.Last().Text,
-            Is.EqualTo($"已取消制作。随身预留材料已解除预留，仍在随身；地面预留材料已返还{Field}地面。已耗时间不退。"));
-        Assert.That(stone.ReservedBy, Is.Null);
-        Assert.That(stone.Owner, Is.EqualTo(ItemInstance.Carried), "随身部分不被抛回远处");
-        Assert.That(fiber.ReservedBy, Is.Null);
-        Assert.That(fiber.Owner, Is.EqualTo("field"), "原地面材料回原行动地点，不落到当前营地");
-        Assert.That(s.Items.Where(i => i.ItemId == "fiber" && i.Owner == "camp").Sum(i => i.Count), Is.EqualTo(campFiber));
+            Is.EqualTo($"{LastLabel}已中止。原因：已撤退离开{Field}。随身预留材料已解除预留，仍在随身；地面预留材料已返还{Field}地面。已耗时间保留。"));
+        Assert.That(s.Items.Any(i => i.ReservedBy == id), Is.False);
+        Assert.That(s.Items.Count(i => i.ItemId == "stone" && i.Owner == ItemInstance.Carried), Is.EqualTo(1), "随身部分不被抛回远处");
+        Assert.That(s.Items.Where(i => i.ItemId == "fiber" && i.Owner == "field").Sum(i => i.Count), Is.EqualTo(1), "原地面材料回原行动地点，不落到当前营地");
+        Assert.That(s.Items.Where(i => i.ItemId == "fiber" && i.Owner == "camp").Sum(i => i.Count), Is.EqualTo(campFiber0));
         Assert.That(s.Items.Any(i => i.ItemId == "stone_knife"), Is.False, "没有半成品");
-        Assert.That(E.Cancel(s).Ok, Is.False, "不能重复退出");
-        Assert.That(s.Items.Where(i => i.ItemId == "fiber").Sum(i => i.Count), Is.EqualTo(allFiber), "不重复返还");
+        Assert.That(E.Cancel(s).Ok, Is.False, "已结束，不能再退出");
+        Assert.That(s.Items.Where(i => i.ItemId == "fiber").Sum(i => i.Count), Is.EqualTo(allFiber0), "不重复返还");
     }
 
     [Test]
-    public void Q471_GroundOnly_And_CarriedOnly_Clauses()
+    public void Q1100_Q471_GroundOnly_And_CarriedOnly_Clauses()
     {
         var s = Field(3);
-        KeptCraft(s, stoneCarried: false, fiberOnGround: true);
-        Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(s.Log.Last().Text, Is.EqualTo($"已取消制作。地面预留材料已返还{Field}地面。已耗时间不退。"));
+        RetreatEndsCraft(s, stoneCarried: false, fiberOnGround: true);
+        Assert.That(s.Log.Last().Text, Is.EqualTo($"{LastLabel}已中止。原因：已撤退离开{Field}。地面预留材料已返还{Field}地面。已耗时间保留。"));
 
         var t = Field(3);
-        var tid = KeptCraft(t, stoneCarried: true, fiberOnGround: false);
-        var mine = new[] { Reserved(t, "stone", tid), Reserved(t, "fiber", tid) };
-        Assert.That(E.ActionProgress(t)!.ExitNote, Is.EqualTo("退出将取消制作。随身预留材料解除预留后留在随身。已耗时间不退。"));
-        Assert.That(E.Cancel(t).Ok, Is.True);
-        Assert.That(t.Log.Last().Text, Is.EqualTo("已取消制作。随身预留材料已解除预留，仍在随身。已耗时间不退。"));
-        Assert.That(mine.All(i => i.Owner == ItemInstance.Carried && i.ReservedBy == null), Is.True);
+        RetreatEndsCraft(t, stoneCarried: true, fiberOnGround: false);
+        Assert.That(t.Log.Last().Text, Is.EqualTo($"{LastLabel}已中止。原因：已撤退离开{Field}。随身预留材料已解除预留，仍在随身。已耗时间保留。"));
+        var mine = t.Items.Where(i => (i.ItemId == "stone" || i.ItemId == "fiber") && i.Owner == ItemInstance.Carried).ToList();
+        Assert.That(mine, Has.Count.EqualTo(2));
+        Assert.That(mine.All(i => i.ReservedBy == null), Is.True);
     }
 
     [Test]
     public void Q466_A02_SaveLoadKeepsSources_LegacyActionBackfilledFromRealOwner()
     {
         var s = Field(3);
-        var id = KeptAtField(s, ActionRequest.Craft("knife"), g =>
-        {
-            E.DebugGive(g, "stone", 1);
-            E.DebugGive(g, "fiber", 1, "field");
-        });
+        PausedCraft(s);
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), CfgV2);
         Assert.That(t.Main!.ReserveSources, Is.EquivalentTo(s.Main!.ReserveSources!));
 
-        // 旧行动没有来源记录：采纳 Q440 时按仍在原处的真实归属补齐，不按队伍当前地点
+        // 旧行动没有来源记录：撤退离地结算时按仍在原处的真实归属补齐后返还，不按队伍当前地点
         var u = Field(3);
         TravelTo(u, "camp");
         TravelTo(u, "field");
@@ -96,25 +85,22 @@ public class B41bResumeReturnTests : B41bTestBase
         E.DebugGive(u, "fiber", 1, "field");
         Start(u, ActionRequest.Craft("knife"));
         var uf = Reserved(u, "fiber", u.Main!.ActionId);
+        var us = Reserved(u, "stone", u.Main.ActionId);
         u.Main!.ReserveSources = null;
         u.Main.StartZone = null;
         SetLeft(u, GameEngine.SingleCardKey(u.WorldEnemies.Single().Id), 0);
         Step(u);
         RetreatOk(u);
-        Assert.That(u.Main.RetreatKept, Is.True);
-        Assert.That(u.Main.StartZone, Is.EqualTo(GameState.ExteriorZone));
-        Assert.That(u.Main.ReserveSources!.Values, Is.EquivalentTo(new[] { ItemInstance.Carried, "field" }));
-        Assert.That(E.Cancel(u).Ok, Is.True);
-        Assert.That(uf.Owner, Is.EqualTo("field"));
-        Assert.That(uf.ReservedBy, Is.Null);
+        Assert.That(u.Main, Is.Null);
+        Assert.That((uf.Owner, uf.ReservedBy), Is.EqualTo(("field", (int?)null)));
+        Assert.That((us.Owner, us.ReservedBy), Is.EqualTo((ItemInstance.Carried, (int?)null)));
     }
 
     [Test]
     public void Q465_A01_SpoiledReservationChangedTargetGone_BlockWithoutSideEffects()
     {
         var s = Field(3);
-        var id = KeptCraft(s);
-        BackToField(s, id);
+        var id = PausedCraft(s);
         var fiber = Reserved(s, "fiber", id);
 
         fiber.ExpiresAt = s.GameMinute;
@@ -137,9 +123,9 @@ public class B41bResumeReturnTests : B41bTestBase
     public void Q465_A02_OwnReservationNotReRequested_ContinuesSameProgress()
     {
         var s = Field(3);
-        var id = KeptCraft(s);
-        BackToField(s, id);
+        PausedCraft(s);
         var work = s.Main!.WorkDone;
+        Assert.That(work, Is.GreaterThan(0), "起点：已提交一段进度");
         Assert.That(E.CanStart(s, ActionRequest.Craft("knife")), Is.Not.Null, "材料都在本行动预留里，新开工会缺料");
         Assert.That(E.Resume(s).Ok, Is.True, "自己的预留计入可用，不再要求同额材料");
         Assert.That(s.Main.WorkDone, Is.EqualTo(work));
@@ -151,8 +137,7 @@ public class B41bResumeReturnTests : B41bTestBase
     public void Q465_A02_PaidClearChargeNotReRequested()
     {
         var s = Field(3);
-        var id = KeptAtField(s, ActionRequest.Clear(), g => g.Locations["field"].ClearCharges = Math.Max(1, g.Locations["field"].ClearCharges));
-        BackToField(s, id);
+        PausedAtField(s, ActionRequest.Clear(), g => g.Locations["field"].ClearCharges = Math.Max(1, g.Locations["field"].ClearCharges));
         s.Locations["field"].ClearCharges = 0;
         Assert.That(E.ResumeBlockReason(s), Is.Null, "已扣的清理次数视为已付");
     }
@@ -161,18 +146,19 @@ public class B41bResumeReturnTests : B41bTestBase
     public void Q465_Q491_SubRunning_GeneralReason_TravelSameText()
     {
         var s = Field(3);
-        var id = KeptCraft(s);
+        PausedCraft(s);
         Start(s, ActionRequest.Rest(30));
         Assert.That(E.ResumeBlockReason(s), Is.EqualTo("当前行动还没结束。"));
         Assert.That(Run(s, autoResume: false), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(E.ResumeBlockReason(s), Is.EqualTo($"请返回{Field}后再继续{s.Main!.Label}。"));
+        Assert.That(E.ResumeBlockReason(s), Is.Null, "子行动结束后同地继续可用");
 
-        Start(s, ActionRequest.Travel("field"));
-        Step(s);
-        s.Main!.Status = ActionStatus.Paused;
-        s.Main.PauseReason = PauseReason.StatAlert;
-        Start(s, ActionRequest.Rest(30));
-        Assert.That(E.ResumeBlockReason(s), Is.EqualTo("当前行动还没结束。"), "Q491：移动有未结束子行动也统一用此句");
+        var t = Field(3);
+        Start(t, ActionRequest.Travel("camp"));
+        Step(t);
+        t.Main!.Status = ActionStatus.Paused;
+        t.Main.PauseReason = PauseReason.StatAlert;
+        Start(t, ActionRequest.Rest(30));
+        Assert.That(E.ResumeBlockReason(t), Is.EqualTo("当前行动还没结束。"), "Q491：移动有未结束子行动也统一用此句");
     }
 
     [Test]
@@ -180,7 +166,7 @@ public class B41bResumeReturnTests : B41bTestBase
     {
         var s = Field(3);
         ItemInstance? knife = null;
-        var id = KeptAtField(s, ActionRequest.Gather("field_fiber"), g =>
+        PausedAtField(s, ActionRequest.Gather("field_fiber"), g =>
         {
             var rs = g.Resources["field_fiber"];
             rs.Discovered = true;
@@ -188,7 +174,6 @@ public class B41bResumeReturnTests : B41bTestBase
             knife = E.DebugCreateEquipment(g, "stone_knife", "white", ItemInstance.Carried);
         });
         Assert.That(s.Main!.ToolInstanceId, Is.EqualTo(knife!.InstanceId));
-        BackToField(s, id);
 
         knife.Durability = 0;
         AssertBlocked(s, "这件工具已损坏，请重新选择");
@@ -209,16 +194,13 @@ public class B41bResumeReturnTests : B41bTestBase
         var s = Field(3);
         ItemInstance? knife = null;
         ItemInstance? carcass = null;
-        var id = KeptAtField(s, g =>
+        PausedAtField(s, g =>
         {
             knife = E.DebugCreateEquipment(g, "stone_knife", "white", ItemInstance.Carried);
             carcass = E.CreateItems(g, "carcass_feral_dog", 1, "field").Single();
             return ActionRequest.Butcher(carcass.InstanceId);
         });
-        // B51a（Q722）：后果改「不会获得产物。」；BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
         var r0 = carcass!.ShelfPausedMinutes!.Value;   // 保护仍在（只撤说明）
-        Assert.That(E.ActionProgress(s)!.ExitNote, Is.EqualTo($"退出将放弃本次处理。尸体会返还{Field}地面。不会获得产物。已耗时间不退。"));
-        BackToField(s, id);
         s.Items.Remove(knife!);
         AssertBlocked(s, GameEngine.ResumeToolGone);
         s.Items.Add(knife!);
@@ -236,16 +218,14 @@ public class B41bResumeReturnTests : B41bTestBase
         Assert.That(carcass.Owner, Is.EqualTo("field"));
         Assert.That((carcass.ExpiresAt, carcass.ShelfPausedMinutes), Is.EqualTo(((int?)(s.GameMinute + r0), (int?)null)), "C＋R");
 
-        // 随身尸体：解除预留留在随身
+        // 随身尸体、撤退离地结束：Q466 解除预留留在随身（系统中止格式，Q1100）
         var t = Field(3);
-        KeptAtField(t, g =>
+        RetreatEndsAtField(t, g =>
         {
             E.DebugCreateEquipment(g, "stone_knife", "white", ItemInstance.Carried);
             return ActionRequest.Butcher(E.CreateItems(g, "carcass_feral_dog", 1, ItemInstance.Carried).Single().InstanceId);
         });
-        Assert.That(E.Cancel(t).Ok, Is.True);
-        // BM11 改断言出处：S08 文首 2026-11-17 §Q882 用户新裁定（返料不附恢复保质说明）
-        Assert.That(t.Log.Last().Text, Is.EqualTo("已取消处理尸体。尸体已解除预留，仍在随身。没有产物。已耗时间不退。"));
+        Assert.That(t.Log.Last().Text, Is.EqualTo($"{LastLabel}已中止。原因：已撤退离开{Field}。尸体已解除预留，仍在随身。没有产物。已耗时间保留。"));
         Assert.That(t.Items.Single(i => i.ItemId == "carcass_feral_dog").Owner, Is.EqualTo(ItemInstance.Carried));
     }
 

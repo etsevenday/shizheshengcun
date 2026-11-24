@@ -282,7 +282,7 @@ else
             <div class="tiny muted">@MapCopy.DefaultHint</div>
         </div>
     }
-    else if (adjacent.Contains(target) && (!e.IsBusy(s) || e.PausedTravelOpen(s)))
+    else if (adjacent.Contains(target) && !e.IsBusy(s))
     {
         <PreviewView Request="ActionRequest.Travel(target, e.NeedsExpeditionConfirm(s, target))" Eyebrow="@($"区域地图 · {tl.Name} · {(ts.Visited ? $"探索度{ts.Progress}%" : "待访问")}")" Title="@($"前往{tl.Name}")"
                      Confirmable="false" FootNote="@MapCopy.FootNote" />
@@ -297,7 +297,7 @@ else
                 <h2>@tl.Name</h2>
                 <p>@(tl.IsIndoor ? "室内" : "露天")@(tl.Danger is int dg ? $" · 危险{dg}" : "") · @e.RegionName(e.RegionOf(target)) · @e.MapLayerName(e.MapLayerOf(target))</p>
             </div>
-            @if (e.IsBusy(s) && !e.PausedTravelOpen(s))
+            @if (e.IsBusy(s))
             {
                 <div class="blocked">行动进行中，地图只能浏览</div>
             }

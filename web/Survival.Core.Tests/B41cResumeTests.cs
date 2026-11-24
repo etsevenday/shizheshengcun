@@ -35,38 +35,32 @@ public class B41cResumeTests : B41cTestBase
     }
 
     // ───────────── Q488 ─────────────
+    // B60a 改起点（出处 S01「2026-11-24 B60 暂停继续与撤退后重新开始」Q1100）：新规则下撤退离地不再保留工作，Q488「保留过、回原点继续后仍按开工来源」只剩旧档；
+    // 起点改为旧档里已走回原地、尚未继续的保留工作（LegacyKeptCraft away:false）。撤 Q473 地图放行后 RetreatMoveOpen 不再被读，不再断言它。
 
     [Test]
     public void Q488_A01_ResumedThenPausedAgain_SourcesKept_MoveNotReopened_ExitReturnsByOrigin_Once()
     {
         var s = Field(3);
-        var id = KeptCraft(s);
+        var id = LegacyKeptCraft(s, away: false);
         var stone = s.Items.Single(i => i.ItemId == "stone" && i.ReservedBy == id);
         var fiber = s.Items.Single(i => i.ItemId == "fiber" && i.ReservedBy == id);
         var sources = s.Main!.ReserveSources!.ToDictionary(kv => kv.Key, kv => kv.Value);
-        TravelTo(s, "field");
-        Assert.That(s.Main!.ActionId, Is.EqualTo(id));
         Assert.That(E.Resume(s).Ok, Is.True, E.ResumeBlockReason(s));
-        Assert.That(s.Main.RetreatMoveOpen, Is.False, "成功继续结束本次暂停的移动放行");
         Assert.That(s.Main.RetreatKept, Is.True, "来源标记保留到最终结算");
         Assert.That(s.Main.ReserveSources, Is.EquivalentTo(sources));
 
-        // 继续后的普通暂停：不能凭历史标记再开放地图移动
+        // 继续后的普通暂停：不能凭历史标记开放地图移动
         Pause(s);
-        var before = SaveSerializer.Serialize(s);
-        var mv = E.Start(s, ActionRequest.Travel("camp"));
+        Assert.That(E.CanStart(s, ActionRequest.Travel("camp")), Is.EqualTo("暂停中只能补给、休息或点火维护"));
         Assert.That(s.StashedWork, Is.Null, "不把原工作暂存去移动");
-        Assert.That(s.CurrentLocation, Is.EqualTo("field"));
-        if (mv.Ok) Assert.That(s.Main!.ActionId, Is.EqualTo(id));
-        else Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before));
-        if (s.Sub != null) { Assert.That(E.Cancel(s).Ok, Is.True); }
 
         // 存读档后相同：退出仍按开工来源返还、用 Q471 整句、只返一次
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), CfgV2);
         foreach (var g in new[] { s, t })
         {
             var main = g.Main!;
-            Assert.That((main.RetreatKept, main.RetreatMoveOpen), Is.EqualTo((true, false)));
+            Assert.That(main.RetreatKept, Is.True);
             // 人在原地时，地面部分返还原行动地＝当前地点；随身部分仍留随身（不落地）
             Assert.That(E.ActionProgress(g)!.ExitNote,
                 Is.EqualTo($"退出将取消制作。随身预留材料解除预留后留在随身，地面预留材料会返还{FieldName}地面。已耗时间不退。"));
@@ -85,24 +79,28 @@ public class B41cResumeTests : B41cTestBase
         }
     }
 
+    /// <summary>
+    /// 原「继续后又一次撤退离地保留、不覆盖最初来源」：Q1100 起再次撤退离地即结束这次工作——仍按最初开工来源返还（原地面纤维回荒地、原随身石头留随身），不按新落点覆盖。
+    /// </summary>
     [Test]
-    public void Q488_ResumedThenRetreatKeptAgain_OriginalSourcesNotOverwritten()
+    public void Q488_ResumedThenRetreatAwayAgain_EndsWithOriginalSources()
     {
         var s = Field(3);
-        var id = KeptCraft(s);
-        var sources = s.Main!.ReserveSources!.ToDictionary(kv => kv.Key, kv => kv.Value);
-        TravelTo(s, "field");
+        var id = LegacyKeptCraft(s, away: false);
+        var fiber = s.Items.Single(i => i.ItemId == "fiber" && i.ReservedBy == id);
+        var stone = s.Items.Single(i => i.ItemId == "stone" && i.ReservedBy == id);
         Assert.That(E.Resume(s).Ok, Is.True);
-        // 又一次敌方接近撤退离地：新一轮保留不覆盖最初开工来源
         s.WorldEnemies.Clear();
         s.EnemyCards.Timers.Clear();
         var w2 = E.DebugSpawnEnemy(s, "shambler", "field");
         SetLeft(s, GameEngine.SingleCardKey(w2.Id), 0);
         Assert.That(Step(s), Is.EqualTo(SegmentStatus.Paused));
         RetreatOk(s);
-        Assert.That(s.Main!.ActionId, Is.EqualTo(id));
-        Assert.That((s.Main.RetreatKept, s.Main.RetreatMoveOpen), Is.EqualTo((true, true)), "新的撤退离地保留重新放行移动");
-        Assert.That(s.Main.ReserveSources, Is.EquivalentTo(sources));
+        Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
+        Assert.That(s.Main, Is.Null, "Q1100：撤退离地结束本次工作");
+        Assert.That(s.Items.Any(i => i.ReservedBy == id), Is.False);
+        Assert.That((fiber.Owner, fiber.ReservedBy), Is.EqualTo(("field", (int?)null)), "原地面部分回原行动地");
+        Assert.That((stone.Owner, stone.ReservedBy), Is.EqualTo((ItemInstance.Carried, (int?)null)), "原随身部分留随身");
     }
 
     // ───────────── Q489 ─────────────

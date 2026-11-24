@@ -15,7 +15,7 @@
     var busy = e.IsBusy(s) || G.Running || G.BattleBusy || _go;
     // B41e3 试玩修复（R05 Q464、Q473；逐字稿「原暂停层需允许进入既有地图和合法返程移动入口」）：撤退离地保留的暂停期间，
     // 移动确认不按“行动进行中”锁住，能否走仍看移动预览（与内核 Validate 的移动例外同源）
-    var moveBusy = (e.IsBusy(s) && !e.PausedTravelOpen(s)) || G.Running || G.BattleBusy || _go;
+    var moveBusy = e.IsBusy(s) || G.Running || G.BattleBusy || _go;
     switch (pop.Kind)
     {
         case "travel":

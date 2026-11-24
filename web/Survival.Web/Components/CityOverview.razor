@@ -121,7 +121,7 @@
                     @if (route.Adjacent)
                     {
                         var est = G.Preview(ActionRequest.Travel(to, e.NeedsExpeditionConfirm(s, to)));
-                        var busy = (e.IsBusy(s) && !e.PausedTravelOpen(s)) || G.Running || G.BattleBusy || G.DialogueLocked || _go;
+                        var busy = e.IsBusy(s) || G.Running || G.BattleBusy || G.DialogueLocked || _go;
                         <button type="button" data-pt="city-depart" class="primary" disabled="@(!est.Ok || busy)" title="@(est.Ok == false ? est.Reason : est?.NoExit == true ? GameEngine.LockedTravelHover : "按真实路线移动，中途可退出")"
                                 @onclick="() => Go(to)">@MapCopy.Depart</button>
                         @if (est!.Ok) { <div class="ci-line ci-est">预计@(est.PlanFailed ? GameEngine.UnknownText(est) : $"{est.EstimatedMinutes}分钟")</div> }

@@ -260,8 +260,9 @@ public class B41e2Tests : B41cTestBase
     [Test]
     public void Q440_KeptWork_ProgressShowsWorkPlace_AndResumeBlockedAwayFromSite()
     {
+        // B60a 改起点（S01 B60 Q1100：新规则下撤退离地即结束工作，异地保留只剩旧档）：用旧档的撤退离地保留暂停
         var s = Field(1);
-        KeptCraft(s);
+        LegacyKeptCraft(s);
         var p = E.ActionProgress(s)!;
         Assert.That(p.Paused, Is.True);
         Assert.That(p.WorkPlace, Is.EqualTo(E.LocName("field")));
