@@ -51,11 +51,13 @@ public class B10cForgeFuelTests : TestBase
 
         var s = Forge(("iron_ore", 9), ("charcoal", 6));
         var note = E.Preview(s, Craft("make_steel", 3)).Notes.Single(n => n.StartsWith("执行3份配方"));
-        Assert.That(note, Does.Contain("成品钢材6").And.Contain("原料木炭3＋燃料木炭3＝共6").And.Contain("锻炉每份配方另需木炭1"));
+        // B35b（S14／S08 2026-11-18 B35b Q946 B）：右栏注记删“原料木炭3＋燃料木炭3＝共6”混算与设施名需求句，只留“每份耗木炭1”；执行份数与成品保留
+        Assert.That(note, Is.EqualTo("执行3份配方 · 成品钢材6 · 每份耗木炭1"));
         Assert.That(note, Does.Not.Contain("每批"));
         var t = Forge(("steel", 3), ("charcoal", 3));
-        Assert.That(E.Preview(t, Craft("make_spring", 3)).Notes, Has.Some.Contains("成品弹簧6").And.Some.Contains("燃料木炭3（原料无木炭）"));
-        Assert.That(E.Preview(t, Craft("make_spring", 3)).ConfirmText, Is.EqualTo("开始制作×3份"));
+        Assert.That(E.Preview(t, Craft("make_spring", 3)).Notes, Has.Some.EqualTo("执行3份配方 · 成品弹簧6 · 每份耗木炭1"), "Q946 B：原“燃料木炭3（原料无木炭）”混算写法撤");
+        // B35b（S14 2026-11-14 B35 次要 Q597 A）：份数不再拼进按钮，按钮写“开始制作（{同源预计耗时}）”（完整断言见 B35bCraftButtonTests）
+        Assert.That(E.Preview(t, Craft("make_spring", 3)).ConfirmText, Does.StartWith("开始制作（").And.Not.Contain("×3份"));
     }
 
     /// <summary>WS-Q112-01：单份钢材2要炭2；3份钢材6要矿9、炭6；3份弹簧6要钢3、燃料炭3。完成后正好核销、产物=单份输出×N。</summary>

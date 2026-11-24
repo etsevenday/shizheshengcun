@@ -46,7 +46,8 @@ public class B32gTests : TestBase
         E.CreateItems(s, "clay", 6, s.Ground);
         E.CreateItems(s, "charcoal", 3, s.Ground);
         var note = E.Preview(s, Craft(Kiln, 3)).Notes.Single(n => n.StartsWith("执行3批"));
-        Assert.That(note, Does.StartWith("执行3批 · ").And.Contain("燃料木炭3").And.EndWith("（陶窑每批另需木炭1）"));
+        // B35b（Q946 B）：右栏注记删混算与设施名需求句，陶窑只留“每批耗木炭1”；执行批数与成品保留
+        Assert.That(note, Does.StartWith("执行3批 · ").And.EndWith(" · 每批耗木炭1"));
         Assert.That(note, Does.Not.Contain("份"));
 
         // 锻炉仍用「份」

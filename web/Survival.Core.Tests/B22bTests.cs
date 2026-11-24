@@ -127,7 +127,8 @@ public class B22bTests : TestBase
         // 绿/蓝都能修满 100；蓝耗 10、绿耗 20 → 默认蓝
         Assert.That(DefaultPack(s, mach), Is.SameAs(blue), "Q349：预览不显示包编号，按实际选中的实例核对");
         Assert.That(p.Notes, Has.Some.Contains("恢复100"));
-        Assert.That(p.ConfirmText, Is.EqualTo("开始修补"));
+        // B35b（S14 2026-11-17 B35 次要 Q912 A、2026-11-14 Q597 A）：现场修补按钮统一“开始维修（{同源预计耗时}）”
+        Assert.That(p.ConfirmText, Is.EqualTo($"开始维修（{Clock.Duration(p.EstimatedMinutes)}）"));
         // 只剩白包：可恢复 50，预览写“这次修不满”
         s.Items.Remove(blue);
         s.Items.Remove(green);

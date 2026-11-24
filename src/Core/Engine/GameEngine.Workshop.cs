@@ -49,21 +49,17 @@ namespace Survival.Core.Engine
             : $"{StationName(rc.Station)}{(IsStationBatchRecipe(rc) ? "每批" : "每份配方")}另需{string.Join("、", rc.Fuel.Select(kv => $"{ItemName(kv.Key)}{kv.Value}"))}";
 
         /// <summary>
-        /// Q112 预览分账（S14 本轮章）：“执行N份 · 成品… · 原料木炭a＋燃料木炭b＝共c”。只读、不预留；无燃料配方为 null。
+        /// 右栏预估燃料注记。原 Q112 写“执行N份配方 · 成品… · 原料木炭a＋燃料木炭b＝共c（…）”；
+        /// B35b（Q946 B，S14／S08 2026-11-18 B35b）删原料＋燃料＝总计混算，燃料只留“每份耗{燃料名}{数量}”（陶窑／净水台“每批耗…”），
+        /// 原执行份数／批数与成品等非混算事实保留。只读、不预留；无燃料配方为 null。
         /// </summary>
         public string? RecipeFuelSummary(RecipeConfig rc, int portions)
         {
             if (rc.Fuel.Count == 0) return null;
             var n = Math.Max(1, portions);
             var outs = string.Join("、", rc.Outputs.Select(kv => $"{ItemName(kv.Key)}{kv.Value * n}"));
-            var parts = rc.Fuel.Keys.Select(id =>
-            {
-                var (ing, fuel, total) = RecipeItemSplit(rc, id, n);
-                var name = ItemName(id);
-                return ing > 0 ? $"原料{name}{ing}＋燃料{name}{fuel}＝共{total}" : $"燃料{name}{fuel}（原料无{name}）";
-            });
             // B32g（S08 Q400）：陶窑／固定净水台的执行次数合计预览写“执行{投料批数}批”，锻炉仍“执行{n}份配方”
-            return $"{(IsStationBatchRecipe(rc) ? $"执行{n}批" : $"执行{n}份配方")} · 成品{outs} · {string.Join("；", parts)}（{RecipeFuelRule(rc)}）";
+            return $"{(IsStationBatchRecipe(rc) ? $"执行{n}批" : $"执行{n}份配方")} · 成品{outs} · {RecipeFuelPerNote(rc)}";
         }
 
         /// <summary>某区（place：外部区为地点 ID，安全屋屋内为屋内地面）是否已建成该工坊（hand 永远可用）；Q107 唯一键 地点+区+类别。</summary>

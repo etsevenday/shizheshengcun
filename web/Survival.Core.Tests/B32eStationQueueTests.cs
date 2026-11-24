@@ -81,7 +81,8 @@ public class B32eStationQueueTests : TestBase
         Assert.That(E.StationBatchMaxNew(s, rc), Is.EqualTo(3), "上限 = min(10−0, 材料够的 3 批)");
         var p = E.Preview(s, Craft(Water, 3));
         Assert.That(p.Outputs.Single(o => o.ItemId == "clean_water").Count, Is.EqualTo(60), "显示预估净水×60");   // B56（W100-Q929-11）：ex_station_water 一批脏水 4→20、净水 4→20（2 升不变）（原 ×12）
-        Assert.That(p.Reason, Does.Contain("投料（3批）"));
+        // B35b（S14 2026-11-14 B35 次要 Q597 A、B35b Q947 A）：投料按钮名带原固定配方时长“投料（{批数}批 · {时长}）”，原因句随按钮名
+        Assert.That(p.Reason, Does.Contain("投料（3批 · 30分钟）"));
         var t0 = s.GameMinute;
         Assert.That(E.StationNewFinishes(s, rc, 3), Is.EqualTo(new[] { t0 + 30, t0 + 30, t0 + 30 }), "各批都从现在开始，30 分钟完成");
 

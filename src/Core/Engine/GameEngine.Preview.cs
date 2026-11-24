@@ -105,6 +105,8 @@ namespace Survival.Core.Engine
             if (p.Feed != null) p.Feed.TargetAfter = c.Actors[p.Feed.TargetActorId].Stats.Clone();
             p.EstimatedEndMinute = c.GameMinute;
             p.EstimatedMinutes = c.GameMinute - s.GameMinute;
+            // B35b（Q597 A、Q801 A、Q873 A）：制作／建造／维修／拆解的开工按钮带与“预计耗时”同源的时长，求不出可信完成写“未预估”及实际原因
+            if (r.Type is ActionType.Craft or ActionType.Build && _recipes.TryGetValue(r.TargetId, out var startRc)) p.ConfirmText = StartButtonText(startRc, p);
             if (carryKey != null && run.Done)
             {
                 var done = (plan.IsSub ? c.Sub : c.Main)?.ActionId != id;
@@ -310,7 +312,8 @@ namespace Survival.Core.Engine
                     var batch = Math.Max(1, r.BatchCount);
                     p.BaseMinutes = rc.BaseMinutes * batch;
                     p.Outputs = rc.Outputs.Select(kv => Line(kv.Key, kv.Value * batch)).ToList();
-                    p.ConfirmText = rc.IsBuild ? "开始建造" : IsFieldPatchRecipe(rc) ? "开始修补" : rc.IsRepair ? "开始维护" : rc.IsSalvage ? "开始拆解" : batch > 1 ? $"开始制作×{batch}份" : "开始制作";
+                    // B35b（Q597、Q947、Q912、Q965）：先写动作名（不能开工时就是全文，份数不再拼进按钮）；能开工时在预估跑完后换成“{动作名}（{时长}）”（见 Preview 末尾）
+                    p.ConfirmText = StartVerb(rc);
                     // Q57 选 B：制造等级不再折减工作量，只看装备与节点效果（见工作倍率行）
                     // B10b 试玩修复：经验归医疗的配方不写“制造等级”，免得误以为看制造
                     // B16 试玩修复 M351：固定等待不写“基础工作量”（模式说明里已写固定等待分钟）
