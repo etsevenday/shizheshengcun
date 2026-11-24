@@ -163,7 +163,8 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 饮水落到 actor（主角自饮与同行食饮共用）：扣 N 单位一次并按 6N 给补水、脏水腹泻一次。actualDelta 见 ApplyUseEffect。
+        /// 饮水落到 actor（主角自饮与同行食饮共用）：扣 N 单位一次并按 6N 给补水、脏水腹泻一次。actualDelta 见 ApplyUseEffect
+        /// （BM13 起两处都传 true：02 Q1010 A 自饮日志与同行结果句都写实际补水）。
         /// 水壶在{变化}末尾不追加余量（主角自饮的「壶里剩…」由调用方加）。
         /// </summary>
         private void ApplyDrink(GameState s, ItemInstance i, ActorState actor, int units, List<string> parts, bool actualDelta)

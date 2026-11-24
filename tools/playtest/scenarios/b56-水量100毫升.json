@@ -34,7 +34,7 @@
     { "expect": "[data-drink-lines]", "text": "补水：18" },
     { "eval": "(document.documentElement.dataset.ptT0 = document.querySelector('.sl-now .time').textContent.trim())", "noAssert": true },
     { "click": "[data-drink] .tbar-go", "label": "饮用300毫升" },
-    { "expect": ".event", "text": "饮用净水300毫升：水分+18。", "timeout": 15000 },
+    { "expect": ".event", "text": "饮用净水300毫升：水分+14.2。", "timeout": 15000, "label": "BM13 起按 02 Q1010 A 写实际补水：85.8 补 18 截到上限 100（右栏理论补水仍是 18）" },
     { "waitGone": "text=行动进行中", "timeout": 60000 },
     { "eval": "(()=>{const m=s=>{const [a,b]=s.split(':');return a*60+ +b};return m(document.querySelector('.sl-now .time').textContent.trim())-m(document.documentElement.dataset.ptT0)})()", "equals": 5,"label": "3份也只走5分钟" },
     { "expect": "pt=shelf-ground >> pt=card-clean_water", "text": "×6" },

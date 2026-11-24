@@ -117,13 +117,12 @@
             <div class="tbar-row keep-row canteen-ops">
                 @foreach (var wid in cc.Accepts)
                 {
-                    var src = s.Items.Where(i => i.ItemId == wid && (i.IsCarried || i.Owner == s.Ground) && i.ReservedBy == null)
-                        .OrderBy(i => i.IsCarried ? 0 : 1).ThenBy(i => i.InstanceId).FirstOrDefault();
+                    var src = e.CanteenFillSource(s, wid);   // 随身优先、其次当前地面（BM13 起取堆逻辑移进内核，规则不变）
                     if (src == null) continue;
                     var fmax = e.MaxFillCanteen(s, src, cInst, out var fwhy);
                     var srcId = src.InstanceId;
                     var fkey = $"fill:{srcId}";
-                    <button type="button" class="tbar-go alt" disabled="@(fwhy != null || moveBusy)" aria-expanded="@(_cOp == fkey ? "true" : "false")" title="@(fwhy ?? CanteenFillTitle)"
+                    <button type="button" class="tbar-go alt" data-pt="canteen-fill" data-water="@wid" disabled="@(fwhy != null || moveBusy)" aria-expanded="@(_cOp == fkey ? "true" : "false")" title="@(fwhy ?? CanteenFillTitle)"
                             @onclick="() => OpenCanteenOp(fkey)">装入@(e.ItemName(wid))</button>
                 }
                 @foreach (var zone in new[] { ItemInstance.Carried, s.Ground })
@@ -131,7 +130,7 @@
                     var z = zone;
                     var pmax = e.MaxPourCanteen(s, cInst, z, out var pwhy);
                     var pkey = $"pour:{z}";
-                    <button type="button" class="tbar-go alt" disabled="@(pwhy != null || moveBusy)" aria-expanded="@(_cOp == pkey ? "true" : "false")" title="@(pwhy ?? CanteenPourTitle)"
+                    <button type="button" class="tbar-go alt" data-pt="canteen-pour" data-zone="@(z == ItemInstance.Carried ? "carried" : "ground")" disabled="@(pwhy != null || moveBusy)" aria-expanded="@(_cOp == pkey ? "true" : "false")" title="@(pwhy ?? CanteenPourTitle)"
                             @onclick="() => OpenCanteenOp(pkey)">倒出到@(z == ItemInstance.Carried ? "随身" : "地面")</button>
                 }
             </div>
@@ -148,13 +147,15 @@
                 var oinvalid = owhy == null && (on < 1 || on > omax);
                 <div class="ca-drink" role="group" aria-label="@(fill ? CanteenFillTitle : CanteenPourTitle)" data-canteen-op="@(fill ? "fill" : "pour")">
                     <div class="ca-drink-head"><b>@(fill ? CanteenFillTitle : CanteenPourTitle)</b></div>
+                    @* BM13（02 Q1011 A）：标题下写所选这一堆的实际归属、水名与整份数；上限仍是 min(这堆整份数, 壶内空余) *@
+                    @if (fill && fsrc != null) { <div class="ca-note" data-pt="canteen-fill-source">@e.FillSourceText(fsrc)</div> }
                     <div class="tbar-row">
                         <button type="button" class="tbar-step" aria-label="减少" @onclick="() => CStep(-1, omax)">−</button>
                         <input type="text" inputmode="numeric" value="@_cText" @oninput="COnInput" aria-label="@(fill ? CanteenFillTitle : CanteenPourTitle)" />
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => CStep(1, omax)">+</button>
                         <span class="tbar-qlabel">@DrinkCopy.AmountText(Math.Max(0, on) * unitMl)</span>
                         @* 开发假设：不贴 data-enter——卡下已有移动主确认，再贴就成两个、回车失效；与旧喝一口按钮一样只点按 *@
-                        <button type="button" class="tbar-go" disabled="@(owhy != null || oinvalid || moveBusy)"
+                        <button type="button" class="tbar-go" data-pt="canteen-op-confirm" disabled="@(owhy != null || oinvalid || moveBusy)"
                                 @onclick="() => CanteenGo(cid, fill, fsrc?.InstanceId, pzone, on)">确认@(on)</button>
                     </div>
                     @if (owhy != null) { <div class="ca-note bad">@owhy</div> }

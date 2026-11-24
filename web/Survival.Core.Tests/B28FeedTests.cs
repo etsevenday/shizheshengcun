@@ -809,7 +809,8 @@ public class B28FeedTests : TestBase
         var c = Canteen(s, ItemInstance.Carried, "clean_water", 1000);
         Start(s, ActionRequest.UseInstance(c.InstanceId, 2));
         // B56（S10 文首 B53a Q929；02 Q975 A 暂用日志「饮用{水种}{毫升}毫升」）：自用水壶选 2 份＝200 毫升、补水 12（原固定一口 250／+15）
-        Assert.That(s.Log.Last().Text, Is.EqualTo("饮用净水200毫升：水分+12，壶里剩净水 800/2000毫升。"), "自用仍写配置量，不改裁上限口径");
+        // BM13（02 Q1010 A）：自饮日志改写实际补水——水分 90 补 12 按上限 100 截断，写「水分+10」（原期望「水分+12」名义值）；食物自用「饱食+35」不在本题范围
+        Assert.That(s.Log.Last().Text, Is.EqualTo("饮用净水200毫升：水分+10，壶里剩净水 800/2000毫升。"), "自饮写实际补水（Q1010 A）");
         Assert.That(s.Actors[Me].Stats.Hydration, Is.EqualTo(100));
     }
 }

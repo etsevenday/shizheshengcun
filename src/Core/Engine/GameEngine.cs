@@ -986,10 +986,12 @@ namespace Survival.Core.Engine
                     if (p.WaterUnits > 0)
                     {
                         // B56：自选饮水一次结清 N 单位（补水 6N、脏水腹泻一次），整次只这一个 5 分钟动作
+                        // BM13（02 Q1010 A）：日志写本次补水前后的实际水分差（按真实上限截断），沿同行饮水结果句的数值格式与零值「水分无变化」；
+                        // 补水在开始时一次结清，之后 5 分钟的自然失水不算进本句
                         var sip = new List<string>();
                         var sb = s.Stats.Satiety;
                         var hb = s.Stats.Hydration;
-                        ApplyDrink(s, inst, s.Player, p.WaterUnits, sip, false);
+                        ApplyDrink(s, inst, s.Player, p.WaterUnits, sip, true);
                         if (cfg.Canteen != null) sip.Add($"壶里剩{CanteenLabel(inst)}");
                         Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", sip)}。");
                         NoteUse(s, a, sb, hb);

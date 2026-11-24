@@ -12,9 +12,30 @@ namespace Survival.Core.Engine
     /// 壶内饮用走自选饮水（GameEngine.Drink：N×100 毫升一次 5 分钟、补水 6N；脏水同样必定腹泻 12 小时；战斗中不能喝），不再有固定一口 250 毫升。
     /// 水量按真实毫升等量转移，重量按 1 克/毫升计入，不凭空增减。水量存在实例 LiquidId/LiquidMl 上（存档 28）。
     /// </summary>
+    /// <summary>水壶装水专窗的来源行（BM13；02 Q1011 A 定稿，合同 assets/20261119/b56-q1010-q1011-drink-delta-fill-source.json fillSource.label）。</summary>
+    public static class CanteenCopy
+    {
+        /// <summary>「装水」标题下：实际归属为「随身」或「地面」，份数为所选这一堆的可用整份数（不是本次上限）。</summary>
+        public const string FillSource = "来源：{实际归属}{水名} {该堆可用份数}份";
+    }
+
     public sealed partial class GameEngine
     {
         public CanteenConfig? CanteenOf(ItemInstance i) => _items.TryGetValue(i.ItemId, out var c) ? c.Canteen : null;
+
+        /// <summary>
+        /// 水壶「装入{水名}」按钮取的那一堆（沿 B16 原取堆：随身优先、其次当前地面，同处按实例号先后；未被预留）；没有为 null。
+        /// BM13（02 Q1011 A）：一次只从这一堆取，数量上限仍按 MaxFillCanteen（这堆整份数与壶内空余）。
+        /// </summary>
+        public ItemInstance? CanteenFillSource(GameState s, string waterId) =>
+            s.Items.Where(i => i.ItemId == waterId && (i.IsCarried || i.Owner == s.Ground) && i.ReservedBy == null)
+                .OrderBy(i => i.IsCarried ? 0 : 1).ThenBy(i => i.InstanceId).FirstOrDefault();
+
+        /// <summary>BM13（02 Q1011 A）：「来源：随身净水 5份」——归属按这一堆现在的真实位置，份数为这一堆的整份数。</summary>
+        public string FillSourceText(ItemInstance water) => CanteenCopy.FillSource
+            .Replace("{实际归属}", water.IsCarried ? "随身" : "地面")
+            .Replace("{水名}", ItemName(water.ItemId))
+            .Replace("{该堆可用份数}", water.Count.ToString());
 
         public bool IsCanteen(ItemInstance i) => CanteenOf(i) != null;
 

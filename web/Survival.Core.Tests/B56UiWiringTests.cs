@@ -48,15 +48,8 @@ public class B56UiWiringTests
         Assert.That(pause, Does.Not.Contain("仍然饮用1份脏水").And.Not.Contain("应急补水30"));
     }
 
-    [Test]
-    public void CanteenFillPour_QuantityWindow_Q978A()
-    {
-        var card = Web("Components/CardActions.razor");
-        Assert.That(card, Does.Contain("CanteenFillTitle = \"装水\"").And.Contain("CanteenPourTitle = \"倒出\""));
-        Assert.That(card, Does.Contain(">确认@(on)</button>"), "按钮「确认{数量}」");
-        Assert.That(card, Does.Contain("InstantRequest.FillCanteen(sid, canteenId, n)").And.Contain("InstantRequest.PourCanteen(canteenId, zone, n)"), "所选份数一次装／倒");
-        Assert.That(card, Does.Not.Contain("InstantRequest.FillCanteen(srcId, cid, 1)"), "不再固定 1 份");
-    }
+    // 原 CanteenFillPour_QuantityWindow_Q978A（读 CardActions 源码比字符串）BM13 起迁到 bUnit：
+    // Survival.Web.Tests.BM13CanteenFillUiTests（02 Q978 A 标题、默认 1 份、「确认{数量}」、所选份数一次装／倒；2026-11-19 防假绿第 8 条）
 
     [Test]
     public void FeedPop_WaterUnitsStepper_ResetOnSourceChange()
