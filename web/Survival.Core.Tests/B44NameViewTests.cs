@@ -141,14 +141,15 @@ public class B44NameViewTests : TestBase
 
     /// <summary>
     /// Q493-A01 原为未建设施卡悬停版脚注「时间为预计值」。B35a1（S14 Q594／Q805「未建设施不摆场景占位卡」「删掉设施行里虚线框的未建造卡说明」）撤掉未建占位卡，
-    /// 悬停版随之撤除；制作面板右栏原脚注（含「在中间配方卡下方点…」）不变。
+    /// 悬停版随之撤除。制作面板右栏脚注 B35b 起按 S14 2026-11-13 B35 Q593 A 改为「在‘本次制作’区点‘{按钮名}’；时间为预计值。」（渲染结果见 bUnit B35bCraftPageUiTests）。
     /// </summary>
     [Test]
     public void Q493_UnbuiltHoverFootNote()
     {
         var co = Web("Components/CraftOverlay.razor");
         Assert.That(co, Does.Not.Contain("UnbuiltPeek"), "没有未建卡悬停版");
-        Assert.That(co, Does.Contain("$\"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值\""), "点击进入制作后原脚注保持");
+        // B35b 改（Q593 A 取代 Q493 同处“在中间配方卡下方点…”）：脚注走内核 GameEngine.CraftAreaFootNote，渲染见 bUnit B35bCraftPageUiTests.RightBar_FootNote_PointsToCraftArea
+        Assert.That(co, Does.Not.Contain("中间配方卡"), "Q593：不再说中间配方卡下方");
         Assert.That(Web("Components/FacilityCard.razor"), Does.Not.Contain("<CraftOverlay"), "设施卡不再带配方预估悬停");
         Assert.That(Web("Components/PeekDetail.razor"), Does.Contain("<CraftOverlay Part=\"detail\" PeekRecipe=\"@first\" />"), "制作面板里悬停配方仍是原脚注");
     }

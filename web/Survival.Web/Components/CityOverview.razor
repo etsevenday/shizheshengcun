@@ -73,7 +73,7 @@
                 var state = b.IsHere ? "here" : !b.Discovered ? "unknown" : !v.Remote && b.Path == null ? "locked" : "open";
                 var label = b.Discovered ? b.Name : "尚未发现";
                 var aria = $"{label}{(b.IsHere ? "：当前位置" : v.Remote ? "" : $"：{b.Blocked ?? $"可前往，基础{b.PathMinutes}分钟"}")}{(b.QuestNote.Length > 0 ? "；" + b.QuestNote : "")}";
-                <button type="button" @key="id" @ref="_refs[idx]" class="city-bldg @state @(sel ? "picked" : "")" data-node="@id"
+                <button type="button" @key="id" @ref="_refs[idx]" class="city-bldg @state @(sel ? "picked" : "") @(id == G.MapSourceSpot ? "source-spot" : "")" data-node="@id"
                         style="left:@F(Cx(b))%;top:@F(Cy(b))%" aria-pressed="@sel" aria-label="@aria"
                         @onclick="() => Pick(id)" @onmouseenter="() => G.HoverCity(id)" @onmouseleave="() => G.HoverCity(null)"
                         @onfocus="() => G.HoverCity(id)" @onkeydown="ev => Arrow(ev, idx)">

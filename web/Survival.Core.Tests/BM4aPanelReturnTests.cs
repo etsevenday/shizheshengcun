@@ -103,7 +103,9 @@ public class BM4aPanelReturnTests : TestBase
     [Test]
     public void Q590_CloseButtonsUseChainLabel()
     {
-        foreach (var f in new[] { "MapOverlay", "RestOverlay", "LogOverlay", "GoalsOverlay", "TipsOverlay", "DialogueLogOverlay", "GrowthOverlay", "JourneyOverlay", "CityServiceOverlay", "DryingOverlay", "FireMenu" })
+        // B35b 改（S14 2026-11-13 B35 Q592 A）：地图关闭键在来源链里写「返回材料来源」，普通地图仍按返回链；渲染见 bUnit B35bCraftPageUiTests.Sources_LocateOnMap_BackToSourcesKeepsPick
+        Assert.That(Web("Components", "MapOverlay.razor"), Does.Contain("@(G.SourceItem != null ? BackToSources : G.PanelCloseLabel)<EscCap On=\"@(G.EscOwner == EscOwner.Panel)\" />"));
+        foreach (var f in new[] { "RestOverlay", "LogOverlay", "GoalsOverlay", "TipsOverlay", "DialogueLogOverlay", "GrowthOverlay", "JourneyOverlay", "CityServiceOverlay", "DryingOverlay", "FireMenu" })
             Assert.That(Web("Components", f + ".razor"), Does.Contain("@G.PanelCloseLabel<EscCap On=\"@(G.EscOwner == EscOwner.Panel)\" />"), f);
         Assert.That(Web("Components", "HelpOverlay.razor"), Does.Contain("@G.PanelCloseLabel<EscCap On=\"@G.EscOnHelpClose\" />"));
         Assert.That(Web("Components", "GearOverlay.razor"), Does.Contain("G.PanelHasUnder ? PanelReturnChain.ReturnLabel : GearPanelCopy.Close"));
@@ -134,12 +136,16 @@ public class BM4aPanelReturnTests : TestBase
 
     // ───────────── Q586 查看来源与返回重验 ─────────────
 
-    /// <summary>Q586-A01：「查看来源」把地图盖在制作页上（制作页的选择与选择设施父链留在下层），关地图按返回链恢复；不再另存旧快照。</summary>
+    /// <summary>
+    /// Q586-A01：来源查询的地图盖在制作页上（制作页的选择与选择设施父链留在下层），关地图按返回链恢复；不再另存旧快照。
+    /// B35b 改（S14 2026-11-13 B35 Q592 A）：“查看来源”先在制作窗口内开材料来源侧页，侧页“在地图上定位”才把地图盖上（原 OpenSources 直接开图撤）；
+    /// 整条“侧页→地图→返回材料来源→返回配方”由 bUnit B35bCraftPageUiTests.Sources_LocateOnMap_BackToSourcesKeepsPick 走真实按钮断言。
+    /// </summary>
     [Test]
     public void Q586_A01_SourcesCoverCraftAndReturn()
     {
         var session = Web("Services", "GameSession.cs");
-        var open = Slice(session, "public void OpenSources(string itemId)", "public void FocusSource(");
+        var open = Slice(Web("Services", "GameSession.CraftSources.cs"), "public void LocateCraftSource()", "private void RevalidateCraftSources()");
         Assert.That(open, Does.Contain("SwitchPanel(\"map\", null, true);"));
         Assert.That(session, Does.Not.Contain("_craftReturn"), "不恢复库存快照，恢复时重读");
         var fac = Web("Services", "GameSession.FacMenu.cs");

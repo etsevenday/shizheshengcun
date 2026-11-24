@@ -4,7 +4,7 @@
      data-drag="@DataDrag" data-drag-title="@(DataDrag == null ? null : Name)" data-drag-from="@DragFrom">
     <span class="ir-icon">@Icons.Markup(Icon)</span>
     <span class="ir-text">
-        <span class="ir-name">@Name@if (!string.IsNullOrEmpty(Qty)) {<b class="ir-qty">@Qty</b>}</span>
+        <span class="ir-name">@Name@if (!string.IsNullOrEmpty(Qty)) {<b class="ir-qty" title="@QtyTitle" aria-label="@QtyTitle">@Qty</b>}</span>
         @if (!string.IsNullOrEmpty(Status)) { <span class="ir-status">@Status</span> }
     </span>
     @if (ChildContent != null) { <span class="ir-extra">@ChildContent</span> }
@@ -15,6 +15,8 @@
     [Parameter, EditorRequired] public string Icon { get; set; } = "";
     [Parameter, EditorRequired] public string Name { get; set; } = "";
     [Parameter] public string? Qty { get; set; }
+    /// <summary>B35b（Q598）：主数量的悬停与读屏说明（如“可选7，需要3”）；没有为 null。</summary>
+    [Parameter] public string? QtyTitle { get; set; }
     [Parameter] public string? Status { get; set; }
     [Parameter] public bool Missing { get; set; }
     [Parameter] public string CssClass { get; set; } = "";

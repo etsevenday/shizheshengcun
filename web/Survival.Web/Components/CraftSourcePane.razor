@@ -1,0 +1,68 @@
+@inherits GameComponent
+
+@* B35b 材料来源侧页（05 P06／F08、逐字稿 P06b「材料来源」「已知来源」「在地图上定位」「返回配方」；S14 2026-11-13 B35 Q592 A、Q593 A，
+   2026-11-14 B35 次要 Q599 B，2026-11-17 B35 次要 Q911 A，2026-11-18 B35b Q949 A）。
+   占制作窗口的中列（来源列表）与内右列（所选来源详情、定位与返回）；本次制作区随侧页隐藏，看来源时不能开工。
+   来源分“可获取”“其他已知来源”两组（按原资格 Usable 归组，组内原顺序，空组隐藏）；耗尽、已领、概率、不可达等原句不改；没有可获取时末尾一条公开线索（Q250）。
+   悬停／键盘聚焦有已知地点的行，全局右栏只读显示该地点详情（B42 data-peek，同地图节点）；点行只在本页选中。全部只读、0 分钟。 *@
+@{
+    var e = G.E;
+    var item = G.CraftSourceItem ?? "";
+    var srcs = G.CraftSources();
+    var hint = e.ItemSourceHint(srcs, item);   // Q250：没有一行可获取时末尾一条公开线索
+    var picked = G.CraftSourcePicked();
+    var usable = srcs.Where(v => v.Usable).ToList();
+    var others = srcs.Where(v => !v.Usable).ToList();
+}
+<div class="panel craft-sources" data-pt="craft-sources" data-sources="@item" role="region" aria-label="材料来源">
+    <div class="eyebrow">@Eyebrow</div>
+    <div class="cs-head"><h3>材料来源</h3><span class="cs-item">@Icons.Markup(item)<b>@e.ItemName(item)</b></span></div>
+    <div class="tiny muted cs-sub">已知来源</div>
+    <div class="cs-list" data-wheel="y">
+        @if (usable.Count > 0)
+        {
+            <div class="cs-group" data-pt="src-group-usable">可获取</div>
+            @foreach (var v in usable) { @Row(v) }
+        }
+        @if (others.Count > 0)
+        {
+            <div class="cs-group" data-pt="src-group-other">其他已知来源</div>
+            @foreach (var v in others) { @Row(v) }
+        }
+        @if (hint != null) { <div class="ms-row ms-hint" data-source-hint>@hint</div> }
+    </div>
+</div>
+<div class="panel craft-src-detail" data-pt="src-detail">
+    <div class="csd-body">
+        @if (picked != null)
+        {
+            @* Q911 A：所选来源的原公开信息与定位；没有符合默认条件的来源时不选、这里留空（不另加提示） *@
+            <div class="ms-title" data-pt="src-detail-title">@if (!string.IsNullOrEmpty(picked.Account)) { <span class="ms-acct"><AccountIcon Label="@picked.Account" />@picked.Account</span> }<b>@picked.Title</b></div>
+            <div class="ms-detail">@picked.Detail</div>
+            <div class="ms-status @(picked.Usable ? "" : "warn-text")">@picked.Status@(string.IsNullOrEmpty(picked.Route) ? "" : $" · {picked.Route}")</div>
+            @if (G.SourceLocatable(picked))
+            {
+                @* Q592 A：只有合法已知地点才可定位；定位只打开地图并高亮，不移动、不拿物 *@
+                <button type="button" class="secondary" data-pt="src-locate" @onclick="G.LocateCraftSource">在地图上定位</button>
+            }
+        }
+    </div>
+    <button type="button" class="secondary" data-pt="src-back" @onclick="G.CloseCraftSources">返回配方<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+</div>
+
+@code {
+    /// <summary>侧页保留的配方标题（05 P06“继续保留配方标题和返回”），与配方卡抬头同一写法。</summary>
+    [Parameter] public string Eyebrow { get; set; } = "";
+
+    private RenderFragment Row(ItemSourceView v) => __builder =>
+    {
+        var key = GameSession.SourceKey(v);
+        var on = key == G.CraftSourceKey;
+        var peek = G.SourceLocatable(v) ? Peek.Node(v.LocationId!) : null;
+        <button type="button" class="ms-row @(v.Usable ? "ok" : "off") @(on ? "on" : "")" data-pt="src-row" data-source-key="@key" data-source-kind="@v.Kind"
+                aria-pressed="@(on ? "true" : "false")" data-peek="@peek" @onclick="() => G.PickCraftSource(key)">
+            <span class="ms-title">@if (!string.IsNullOrEmpty(v.Account)) { <span class="ms-acct"><AccountIcon Label="@v.Account" />@v.Account</span> }<b>@v.Title</b></span>
+            <span class="ms-status @(v.Usable ? "" : "warn-text")">@v.Status</span>
+        </button>
+    };
+}

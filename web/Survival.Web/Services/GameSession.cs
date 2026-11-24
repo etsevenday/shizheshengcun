@@ -601,47 +601,11 @@ public sealed partial class GameSession
     /// <summary>现场修补选用的修补包实例（B22b，Q168）；为空时由内核默认选能恢复最多、消耗最少的一包。</summary>
     public int? CraftPatch { get; set; }
 
-    // ───── B23 来源查询（A10-EXUI §4：缺料→“查看来源”进入只读地图定位，关掉地图回制作面板恢复配方/份数/指定批次/目标） ─────
-    /// <summary>正在地图上查来源的物品；null 为没有在查。</summary>
+    // ───── B23 来源查询 → B35b 材料来源侧页（GameSession.CraftSources.cs）：缺料→“查看来源”在制作窗口内只读侧页，“在地图上定位”才开地图 ─────
+    /// <summary>地图正为材料来源侧页定位（来源链）：工具条关闭键写“返回材料来源”，关闭／ESC 回侧页；null 为普通地图。</summary>
     public string? SourceItem { get; private set; }
     /// <summary>地图打开后要居中的地点（MapOverlay 渲染后取用一次）。</summary>
     public string? MapFocus { get; set; }
-
-    /// <summary>
-    /// 从制作面板的缺料行打开来源查询：打开地图并定位到第一个可获取（或第一个）已知来源地点。只读、0 分钟。
-    /// BM4a（Q586、Q590）：地图覆盖在制作面板之上，制作面板连同配方、分类、份数、指定批次／锅／目标／修补包与「选择设施」父链留在下层，
-    /// 关地图（关闭、ESC、M）按返回链恢复并重验（<see cref="RestorePanel"/>）。
-    /// </summary>
-    public void OpenSources(string itemId)
-    {
-        if (State == null) return;
-        SwitchPanel("map", null, true);
-        if (Panel != "map") return;
-        SourceItem = itemId;
-        var src = E.ItemSources(S, itemId).Where(x => x.LocationId != null).ToList();
-        var loc = (src.FirstOrDefault(x => x.Usable) ?? src.FirstOrDefault())?.LocationId;
-        if (loc != null) FocusSource(loc);
-        Notify();
-    }
-
-    /// <summary>来源列表里“定位”：切到该地点所在层、选中并居中（只读，不移动）。</summary>
-    public void FocusSource(string locationId)
-    {
-        MapLayer = E.MapLayerOf(locationId);
-        MapAnchor = S.CurrentLocation;
-        MapPicked = locationId;
-        MapFocus = locationId;
-        ClosePop();
-        Notify();
-    }
-
-    /// <summary>来源列表「返回制作」：制作面板就在地图下面时同关闭地图（返回一层）；不在紧挨着的下层时把制作面板提到最上层（沿用原选择）。</summary>
-    public void ReturnFromSources()
-    {
-        if (_chain.Count > 0 && _chain.Under[_chain.Count - 1] == "craft") { OpenPanel(null); return; }
-        if (_chain.Contains("craft")) { SwitchPanel("craft", null, true); return; }
-        OpenPanel(null);
-    }
 
 
     /// <summary>火堆卡“点燃”按钮下的点火工具菜单是否打开（v0.7 第 4.2 节）；只在会话内，Esc 或点菜单外关闭。</summary>
@@ -851,7 +815,7 @@ public sealed partial class GameSession
         // B51c2b 试玩遗留 N1：离开这一层面板时，面板里的设施物品卡（晾制位、陶窑／净水台批内）的选中与数量窗一起清掉
         if (next != from) DropFacilityItemSel();
         // B23：查来源的地图真正关闭即结束这次查询（BM4a：关地图回制作由返回链恢复，不再另存快照）
-        if (!InChainAfter("map")) SourceItem = null;
+        if (!InChainAfter("map")) { SourceItem = null; MapSourceSpot = null; }
         // B32g（逐字稿 §1.5 Q401 选 C）：打开新的一级浏览／工具面板时收起原物品操作盘，保留选中与右栏；焦点随后交给新面板。
         // BM4a（Q590）：从没有面板的画面覆盖打开时记下这张盘，整条链按返回逐层关完后原样再显示（来源仍有效才显示）
         if (panel != null)
@@ -886,6 +850,7 @@ public sealed partial class GameSession
         {
             // B35a1：工作区上下文与候选返回随制作页真正关闭或重新打开结束（盖在下层或恢复时保留）
             if (next != "craft") { CraftSite = null; _candidateReturn = null; }
+            DropCraftSources();   // B35b：材料来源侧页随制作页真正关闭或重新打开结束（盖在下层或恢复时保留）
             CraftCandidates = null;
             CraftPot = null;
             CraftBatch = 1;

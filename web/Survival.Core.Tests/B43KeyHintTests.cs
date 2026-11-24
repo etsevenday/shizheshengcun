@@ -93,7 +93,9 @@ public class B43KeyHintTests : TestBase
         Assert.That(screen, Does.Contain("switch (G.NormalEscOwner())").And.Not.Contain("EncounterEscOwner"), "Esc 执行与键帽同一判定（B41e3 删旧敌踪选择层）");
         Assert.That(screen, Does.Not.Contain("private bool NormalLayer()"));
         var panel = "<EscCap On=\"@(G.EscOwner == EscOwner.Panel)\" />";
-        foreach (var f in new[] { "MapOverlay", "CraftOverlay", "RestOverlay", "LogOverlay", "GoalsOverlay", "TipsOverlay", "DialogueLogOverlay", "GearOverlay", "GrowthOverlay",
+        // B35b 改（S14 2026-11-13 B35 Q592 A、2026-11-18 B35b Q949 A；测试规则第 8 条）：制作窗口的来源侧页开着时 ESC 归侧页「返回配方」，
+        // 标题栏关闭键的键帽改按侧页判定，由 bUnit B35bCraftPageUiTests.Sources_EscCapMovesToBackToRecipe 断言渲染结果，这里不再读 CraftOverlay 源码
+        foreach (var f in new[] { "MapOverlay", "RestOverlay", "LogOverlay", "GoalsOverlay", "TipsOverlay", "DialogueLogOverlay", "GearOverlay", "GrowthOverlay",
                                   "FormationOverlay", "SafehouseOverlay", "DryingOverlay", "JourneyOverlay", "CityServiceOverlay", "ExpeditionAbort", "ExpeditionSeal", "DungeonReset" })
         {
             var src = Web($"Components/{f}.razor");

@@ -38,6 +38,11 @@
     var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot && !other ? G.CraftPot : null, null, batch);
     if (rc.IsRepair) request.InstanceId = other ? null : G.CraftTarget;
     if (GameEngine.IsFieldPatchRecipe(rc)) request.PatchInstanceId = other ? null : G.CraftPatch;   // B22b（Q168）：选用的修补包，空为默认
+    // B35b（Q597、Q947、Q801、Q873）：“本次制作”区开工按钮全文——内核同一次预估（GameEngine.StartButtonText）；行动进行中等不能开工时只写动作名
+    var runP = !stationRecipe && !rc.IsDrying ? G.Preview(request) : null;
+    var runBusy = busy || (main != null && runP != null && !runP.AsSubAction);
+    var runLabel = rc.IsDrying ? DryingOpenLabel : stationRecipe ? GameEngine.StationLoadText(rc, batch) : runP!.Ok && !runBusy ? runP.ConfirmText : GameEngine.StartVerb(rc);
+    var sourcesOpen = Part == "center" && G.CraftSourcesOpen;
 }
 
 @if (Part == "center")
@@ -46,11 +51,12 @@
     <div class="sub-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="@siteTitle" data-craft-site="@(site?.Key ?? "")">
         <div class="sub-head">
             @* 试玩修复 M77-B7（Q21）：材料来源等教学短文移进悬浮说明。B35a1：工作区标题写该座真实设施名 *@
-            <div><h2>@siteTitle</h2><span class="sub" title="@($"材料来自随身与{lc.Name}地面（火堆与锅里的物资要先取出）；未掌握的做法也列出并写来源；在配方卡下方开始，详细预估在右栏对象信息。")">@(site != null ? (site.Public ? "公共设施" : "工坊作业") : "配方") · 详细预估在右栏 ⓘ</span></div>
-            @* B35a1（Q934）：从拖拽候选进入设施工作区时为「返回 ESC」（回保留的候选列表），其余入口照原 *@
-            <button class="secondary" data-craft-close @onclick="Close">@(G.CraftFromCandidates && !G.PanelHasUnder ? "返回" : G.PanelCloseLabel)<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+            @* B35b（Q593 A，逐字稿 B35 表“制作副标题”“副标题悬停”）：副标题“{配方／工坊作业／公共设施} · 完整预估在右栏 ⓘ”，悬停“在‘本次制作’区点‘{按钮名}’；右栏显示完整预估。” *@
+            <div><h2>@siteTitle</h2><span class="sub" data-pt="craft-sub" title="@GameEngine.CraftAreaHint(runLabel)">@(site != null ? (site.Public ? "公共设施" : "工坊作业") : "配方")@GameEngine.CraftSubtitleTail</span></div>
+            @* B35a1（Q934）：从拖拽候选进入设施工作区时为「返回 ESC」（回保留的候选列表），其余入口照原。B35b：来源侧页开着时 ESC 归侧页「返回配方」 *@
+            <button class="secondary" data-craft-close @onclick="CloseWhole">@(G.CraftFromCandidates && !G.PanelHasUnder ? "返回" : G.PanelCloseLabel)<EscCap On="@(G.EscOwner == EscOwner.Panel && !sourcesOpen)" /></button>
         </div>
-        <div class="sub-body craft-grid @(candidates == null ? "tabbed" : "")">
+        <div class="sub-body craft-grid @(candidates == null ? "tabbed" : "") @(sourcesOpen ? "sources" : "")">
             @if (candidates == null)
             {
                     @* B10（A10 §9.1）：一级分类控制数量，长列表只在二级局部滚动。
@@ -62,6 +68,8 @@
                             var siteCard = e.FacilityCardsHere(s).FirstOrDefault(c => c.Workspace?.Key == site.Key);
                             var siteBlock = siteCard?.Blocked;
                             var siteState = siteCard?.State ?? (e.CraftingAt(s, site) ? GameEngine.CraftingText : GameEngine.IdleText);
+                            @* B35b（逐字稿 P06a「制作设施」）：工作区左列设施块的区名；顶栏手工制作不放设施块（Q907） *@
+                            <small class="craft-site-cap muted" data-pt="craft-site-cap">制作设施</small>
                             <div class="craft-site" data-craft-site-block title="@(siteBlock != null ? GameEngine.LockedPublicTooltip(site.Name, siteBlock) : siteState)">
                                 @Icons.Markup("facility:" + site.StationId)
                                 <span><b>@site.Name</b><small class="@(siteBlock != null ? "warn-text" : "muted")">@siteState</small></span>
@@ -103,6 +111,13 @@
                 }
             </div>
 
+            @if (sourcesOpen)
+            {
+                @* B35b（05 P06／F08、逐字稿 P06b；Q592 A、Q593 A、Q599 B、Q911 A、Q949 A）：材料来源侧页占中列与内右列，本次制作区随侧页隐藏 *@
+                <CraftSourcePane Eyebrow="@e.RecipeDetailEyebrow(rc, site)" />
+            }
+            else
+            {
             <div class="craft-side">
                 @if (picked == null)
                 {
@@ -203,38 +218,6 @@
                                 @if (pots.Count == 0) { <div class="risk none">随身和当前地面没有锅。</div> }
                             </div>
                         }
-                        @* B32e（Q380）陶窑／净水台的「投料批数」步进器：B51b 试玩修复 M972 移到卡底投料栏「投料」按钮上方（见下） *@
-                        @if (batchable && !stationRecipe)
-                        {
-                            var enough = rc.AllInputs.Count == 0 ? 1 : rc.AllInputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value));
-                            var maxBatch = Math.Max(1, enough);
-                            @* Q112（S08/S14 本轮章）：数量是“配方份数”（执行一次配方的输入→输出），不是成品件数；钢材一份产2件 *@
-                            <div class="batch-row">
-                                <span class="tiny muted" title="N是配方执行份数，不是成品件数；同批次合并工作量">配方份数</span>
-                                <button type="button" class="tbar-step" aria-label="减少份数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
-                                <b>@batch</b>
-                                <button type="button" class="tbar-step" aria-label="增加份数" disabled="@(batch >= maxBatch)" @onclick="() => SetBatch(batch + 1)">+</button>
-                                <span class="tiny @(enough == 0 ? "warn-text" : "muted")" title="同批次合并工作量，高熟练度一段可做多份">@(enough == 0 ? "材料不足，一份也不够" : $"执行{batch}份 · 材料最多够{enough}份")</span>
-                            </div>
-                        }
-                        @if (rc.IsFixedWait)
-                        {
-                            @* B16 试玩修复 M351：固定等待（净水片/滤芯处理脏水）每次一批 2L，份数锁在 1 *@
-                            <div class="batch-row" title="固定等待的处理每次只做1批（一次2L）">
-                                <span class="tiny muted">配方份数</span>
-                                <button type="button" class="tbar-step" aria-label="减少份数" disabled>−</button>
-                                <b>1</b>
-                                <button type="button" class="tbar-step" aria-label="增加份数" disabled>+</button>
-                                <span class="tiny muted">固定等待每次只做1批</span>
-                            </div>
-                        }
-                        @if (rc.IsDrying)
-                        {
-                            @* B22c 试玩修复 M470：晾制每位一批，份数不可调；在晾制架面板选位投料 *@
-                            <div class="batch-row" title="晾制每位一批，共@(e.DryingSlotCount)位；在晾制架面板选空位投料">
-                                <span class="tiny muted">每位一批 · 共@(e.DryingSlotCount)位（在晾制架面板选位）</span>
-                            </div>
-                        }
                         @if (rc.Fuel.Count > 0)
                         {
                             @* Q112：锻炉每份配方另需木炭1；分列份数/成品/原料炭/燃料炭/总炭，原料与燃料按同一库存合计校验 *@
@@ -257,7 +240,8 @@
                         }
                         <div class="mat-scroll @(rc.AllInputs.Count == 0 && rc.Outputs.Count == 0 && rc.Catalysts.Count == 0 ? "mat-empty" : "")" data-wheel="y">
                         @* B32e 试玩修复 M680 曾把队列区放进原料滚动区顶部；B51b 试玩修复 M972 移出到 .cm-body 下方自成一区（见下） *@
-                        <div class="tiny muted">原料@(rc.Fuel.Count > 0 ? "与燃料" : "")</div>
+                        @* B35b（逐字稿 P06a「所需材料」）：材料表标题；燃料行与混算分账条的删除（Q905 B）随燃料库存挪到 B35a2a *@
+                        <div class="tiny muted" data-pt="craft-mats-head">所需材料</div>
                         <div class="mat-grid">
                         @foreach (var kv in rc.Fuel)
                         {
@@ -278,13 +262,15 @@
                             var reserved = s.Items.Where(i => i.ItemId == item && i.ReservedBy != null && (i.IsCarried || i.Owner == s.Ground)).Sum(i => i.Count);
                             var plan = Fill(item, need);
                             var lack = Math.Max(0, need - have);
-                            <ItemRow Icon="@item" Name="@e.ItemName(item)" Qty="@($"需{need}")" Missing="@(lack > 0)" CssClass="mat-row"
-                                     Status="@($"现有{have}（随身{carried}／地面{have - carried}）{(reserved > 0 ? $" · 预留{reserved}" : "")}{(lack > 0 ? $" · 缺少{lack}" : "")}")"
+                            @* B35b（Q598，逐字稿 B35 次要表）：主数量“{可选数量}/{所需数量}”（可选＝当前允许来源中合格、未预留的数量，不封顶），悬停／读屏“可选{可选数量}，需要{所需数量}”；
+                               去掉“需／缺少”数量标签，第二行保留现有（随身／地面）与预留明细；缺料仍整行标出、不能开工 *@
+                            <ItemRow Icon="@item" Name="@e.ItemName(item)" Qty="@MatRatio(have, need)" QtyTitle="@MatRatioTitle(have, need)" Missing="@(lack > 0)" CssClass="mat-row"
+                                     Status="@($"现有{have}（随身{carried}／地面{have - carried}）{(reserved > 0 ? $" · 预留{reserved}" : "")}")"
                                      DataDrop="@($"slot:{recipeId}:{item}")">
                                 @if (lack > 0)
                                 {
-                                    @* B23（A10 §4）：缺料→查看来源（只读地图定位，关掉地图回这里并恢复选择） *@
-                                    <button type="button" class="linkish src-btn" data-source-item="@item" title="在地图上查看@(e.ItemName(item))的已知来源（只读，不移动；关掉地图回到这里）" @onclick="() => G.OpenSources(item)">查看来源</button>
+                                    @* B23（A10 §4）→ B35b（05 P06、Q592 A）：缺料→“查看来源”在本窗口打开只读的材料来源侧页（不开地图） *@
+                                    <button type="button" class="linkish src-btn" data-source-item="@item" @onclick="() => G.OpenCraftSources(item)">查看来源</button>
                                 }
                                 @* BM5b2（S08／S06 Q606）：材料批次只读明细——系统在同一合格来源级内按早到期配够，不再手工指定批次 *@
                                 <span class="slot-batches readonly">
@@ -363,96 +349,155 @@
                                 </div>
                             </div>
                         }
-                        @* 唯一“开始制作/开始建造”入口在所选配方卡内（S08 §5、S14 §14.1）：选配方、改份数、指定批次/锅只预览，不扣物不预留；
-                           点开始才交内核按真实材料/工具/锅/占用重验并预留开工（E.Start），执行中锁住按钮，重复点击不重复制作。右栏只作可选详细预测。 *@
-                        @if (rc.IsDrying)
-                        {
-                            @* B22c（Q170）：晾制在设施栏“晾制架”卡的面板里选空位投料（0 分钟，被动晾制），这里只说明并跳转 *@
-                            var dryHere = e.DryingRackHere(s);
-                            var dryWhy = busy ? "行动进行中" : e.DryingBlocked(s, rc);
-                            <div class="craft-go">
-                                <span class="cg-facts">
-                                    <b>被动@(Clock.Duration(rc.BaseMinutes))</b><small class="cg-xp">@e.DryingXpPreview(s, rc)</small>
-                                    <small class="cg-sum" title="@e.RecipeModeText(rc)">@(dryWhy ?? $"在晾制架面板选空位投料：{e.DryingSummary(s)}")</small>
-                                </span>
-                                <button type="button" class="primary cg-start" disabled="@(!dryHere)" title="@(dryHere ? "打开晾制架面板，选食谱与空位，预览后确认投料" : $"{e.ZoneName(s, s.Ground)}没有晾制架（在“设施建造”里建）")"
-                                        @onclick='() => G.OpenPanel("drying")'>打开晾制架</button>
-                            </div>
-                        }
-                        else if (e.IsStationBatchRecipe(rc))
-                        {
-                            @* B17（A07 X1.4）：陶窑/固定净水台是被动批次：投料0分钟、不占行动，离开也继续；B51c2a1（Q872 B）起原料移进设施该批、燃料仍地面预留。
-                               B32e（Q380）原为每座一个加工位＋等待队列；B51b（Q701.2）起每座最多10批同时加工，面板逐批列出，B51c2a1 起每批「取出」、操作区「全部取出」，
-                               投料按钮「投料（{批数}批）」可在加工中继续投新批（新批从投料时刻开始） *@
-                            var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc, batch);
-                            var loadKey = $"station-load:{s.Ground}:{rc.Station}:{s.NextActionId}:{batch}";
-                            var stMax = e.StationBatchMaxNew(s, rc);
-                            // B51c2a1（Q778／Q923 B）：操作区常驻「全部取出」；空设施置灰、悬停「没有可取出的物品。」，被挡时悬停真实原因（Q879 不加别的悬停）
-                            var allPlace = s.Ground;
-                            var allStation = rc.Station;
-                            var allWhy = e.TakeAllBlocked(s, allPlace, allStation);
-                            var allStamp = e.StationTakeStamp(s, allPlace, allStation);
-                            var allKey = $"station-takeall:{allPlace}:{allStation}:{string.Join(",", sbList.Select(b => b.BatchId))}";
-                            <div class="craft-go" data-station-go>
-                                <span class="cg-facts">
-                                    @if (sbWhy == null)
-                                    {
-                                        @* B22d 试玩修复 M418：经验句放在说明前面单独一行，窄屏（≤1400）时说明压成一行省略、悬停看全文，经验句不被裁掉。
-                                           B51b（Q701.2／Q727）：新批都从现在开始，预计完成时刻同刻合成「预计{日期时刻}完成」；经验按预计完成日与先完成的在途批次估算 *@
-                                        var etas = e.StationEtaText(s, rc, batch);   // Q399
-                                        var refill = e.StationRefillText(s, rc, batch);   // B51c2b（Q924 B）：会复用余料条目时列出余料与补足来源（暂用句）
-                                        <b>被动@(rc.BaseMinutes)分钟</b><small class="cg-xp" title="@e.StationBatchXpPreview(s, rc, batch)">@e.StationBatchXpPreview(s, rc, batch)</small><small class="cg-sum cg-eta" title="@etas" data-station-eta>@etas</small><small class="cg-sum" title="@e.StationBatchSummary(rc)">@e.StationBatchSummary(rc)</small>
-                                        @if (refill != null) { <small class="cg-sum" data-station-refill title="@refill">@refill</small> }
-                                    }
-                                    else { <small class="warn-text">@sbWhy</small> }
-                                </span>
-                                @* B32e（Q380，S08「2026-11-10 Q380」）：陶窑/固定净水台的数量字段是「投料批数」，默认1；上限 = min(10−未完成批数, 材料与燃料够的完整批数)。
-                                   上限变小使所选批数无效时不自动缩批，原因写在投料按钮旁，由玩家重选。
-                                   B51b 试玩修复 M972：步进器从卡顶移到「投料」按钮上方，与按钮同一列，不再单占一行 *@
-                                <div class="cg-act">
-                                    <div class="batch-row" data-station-batches>
-                                        <span class="tiny muted">投料批数</span>
-                                        <button type="button" class="tbar-step" aria-label="减少批数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
-                                        <b>@batch</b>
-                                        <button type="button" class="tbar-step" aria-label="增加批数" disabled="@(batch >= stMax)" @onclick="() => SetBatch(batch + 1)">+</button>
-                                    </div>
-                                    <button type="button" data-pt="station-load" class="primary cg-start" disabled="@(sbWhy != null || StationHeld)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
-                                            data-enter @onclick="(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)">投料（@(batch)批）<EnterCap On="@(sbWhy == null && !StationHeld)" /></button>
-                                    <button type="button" class="secondary cg-start" data-station-take-all title="@allWhy" disabled="@(allWhy != null || StationHeld)"
-                                            @onclick="(MouseEventArgs ev) => TakeAllStation(allPlace, allStation, allStamp, allKey, ev)">@GameEngine.TakeAllLabel</button>
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            var p = G.Preview(request);
-                            var startBusy = busy || (main != null && !p.AsSubAction) || _starting;
-                            <div class="craft-go">
-                                <span class="cg-facts">
-                                    @if (p.Ok)
-                                    {
-                                        @* B47a3（Q682）：求不出可信完成时耗时写“未预估”，第一条提示即“按当前条件无法预估完成。”与原因 *@
-                                        @if (p.PlanFailed)
-                                        {
-                                            <b>@GameEngine.UnknownText(p)</b><small>@(p.Warnings.Count > 0 ? p.Warnings[0] : "")</small>
-                                        }
-                                        else
-                                        {
-                                            <b>@Clock.Duration(p.EstimatedMinutes)</b><small>预计@(Clock.HHmm(p.EstimatedEndMinute))完成@(p.Warnings.Count > 0 ? " · " + p.Warnings[0] : "")</small>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <small class="warn-text">@p.Reason</small>
-                                    }
-                                </span>
-                                <button type="button" data-pt="craft-start" class="primary cg-start" disabled="@(!p.Ok || startBusy)" title="@(p.Ok ? "确认后才预留材料并推进游戏时间" : p.Reason)"
-                                        data-enter @onclick="() => Start(request)">@(p.Ok ? p.ConfirmText : StartLabel(rc))<EnterCap On="@(p.Ok && !startBusy)" /></button>
-                            </div>
-                        }
                     </div>
                 }
             </div>
+            @if (picked != null)
+            {
+                @* B35b（Q593 A，逐字稿 P06a／B35 表“制作内右列”）：内右列“本次制作”——耗时、产物、预计完成、份数（Q597：份数移进本次制作）与唯一开工按钮／不能开始原因；
+                   全局右栏仍是完整预估（只读）。陶窑／净水台的投料栏、晾制的“打开晾制架”也在这里。
+                   唯一开工入口（S08 §5、S14 §14.1）：选配方、改份数、指定批次/锅只预览，不扣物不预留；点开始才交内核按真实材料/工具/锅/占用重验并预留开工（E.Start），
+                   执行中锁住按钮，重复点击不重复制作。 *@
+                <div class="panel craft-run" data-pt="craft-run" role="group" aria-label="@GameEngine.CraftRunTitle">
+                    <div class="cr-title">@GameEngine.CraftRunTitle</div>
+                    @if (rc.IsDrying)
+                    {
+                        @* B22c 试玩修复 M470：晾制每位一批，份数不可调；在晾制架面板选位投料 *@
+                        <div class="batch-row" title="晾制每位一批，共@(e.DryingSlotCount)位；在晾制架面板选空位投料">
+                            <span class="tiny muted">每位一批 · 共@(e.DryingSlotCount)位（在晾制架面板选位）</span>
+                        </div>
+                        @* B22c（Q170）：晾制在设施栏“晾制架”卡的面板里选空位投料（0 分钟，被动晾制），这里只说明并跳转 *@
+                        var dryHere = e.DryingRackHere(s);
+                        var dryWhy = busy ? "行动进行中" : e.DryingBlocked(s, rc);
+                        <div class="craft-go">
+                            <span class="cg-facts">
+                                <b>被动@(Clock.Duration(rc.BaseMinutes))</b><small class="cg-xp">@e.DryingXpPreview(s, rc)</small>
+                                <small class="cg-sum" title="@e.RecipeModeText(rc)">@(dryWhy ?? $"在晾制架面板选空位投料：{e.DryingSummary(s)}")</small>
+                            </span>
+                            <button type="button" class="primary cg-start" disabled="@(!dryHere)" title="@(dryHere ? "打开晾制架面板，选食谱与空位，预览后确认投料" : $"{e.ZoneName(s, s.Ground)}没有晾制架（在“设施建造”里建）")"
+                                    @onclick='() => G.OpenPanel("drying")'>@DryingOpenLabel</button>
+                        </div>
+                    }
+                    else if (stationRecipe)
+                    {
+                        @* B17（A07 X1.4）：陶窑/固定净水台是被动批次：投料0分钟、不占行动，离开也继续；B51c2a1（Q872 B）起原料移进设施该批、燃料仍地面预留。
+                           B32e（Q380）原为每座一个加工位＋等待队列；B51b（Q701.2）起每座最多10批同时加工，面板逐批列出，B51c2a1 起每批「取出」、操作区「全部取出」。
+                           B35b（Q597、Q947 A）：投料按钮“投料（{批数}批 · {时长}）”，{时长}是原固定配方时长，受阻时也照写；可在加工中继续投新批（新批从投料时刻开始） *@
+                        var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc, batch);
+                        var loadKey = $"station-load:{s.Ground}:{rc.Station}:{s.NextActionId}:{batch}";
+                        var stMax = e.StationBatchMaxNew(s, rc);
+                        // B51c2a1（Q778／Q923 B）：操作区常驻「全部取出」；空设施置灰、悬停「没有可取出的物品。」，被挡时悬停真实原因（Q879 不加别的悬停）
+                        var allPlace = s.Ground;
+                        var allStation = rc.Station;
+                        var allWhy = e.TakeAllBlocked(s, allPlace, allStation);
+                        var allStamp = e.StationTakeStamp(s, allPlace, allStation);
+                        var allKey = $"station-takeall:{allPlace}:{allStation}:{string.Join(",", sbList.Select(b => b.BatchId))}";
+                        <div class="craft-go" data-station-go>
+                            <span class="cg-facts">
+                                @if (sbWhy == null)
+                                {
+                                    @* B22d 试玩修复 M418：经验句放在说明前面单独一行，说明压成一行省略、悬停看全文。
+                                       B51b（Q701.2／Q727）：新批都从现在开始，预计完成时刻同刻合成「预计{日期时刻}完成」；经验按预计完成日与先完成的在途批次估算 *@
+                                    var etas = e.StationEtaText(s, rc, batch);   // Q399
+                                    var refill = e.StationRefillText(s, rc, batch);   // B51c2b（Q924 B）：会复用余料条目时列出余料与补足来源（暂用句）
+                                    <b>被动@(rc.BaseMinutes)分钟</b><small class="cg-xp" title="@e.StationBatchXpPreview(s, rc, batch)">@e.StationBatchXpPreview(s, rc, batch)</small><small class="cg-sum cg-eta" title="@etas" data-station-eta>@etas</small><small class="cg-sum" title="@e.StationBatchSummary(rc)">@e.StationBatchSummary(rc)</small>
+                                    @if (refill != null) { <small class="cg-sum" data-station-refill title="@refill">@refill</small> }
+                                }
+                                else { <small class="warn-text" data-pt="craft-why">@sbWhy</small> }
+                            </span>
+                            @* B32e（Q380，S08「2026-11-10 Q380」）：陶窑/固定净水台的数量字段是「投料批数」，默认1；上限 = min(10−未完成批数, 材料与燃料够的完整批数)。
+                               上限变小使所选批数无效时不自动缩批，原因写在投料按钮旁，由玩家重选。步进器在「投料」按钮上方 *@
+                            <div class="cg-act">
+                                <div class="batch-row" data-station-batches>
+                                    <span class="tiny muted">投料批数</span>
+                                    <button type="button" class="tbar-step" aria-label="减少批数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
+                                    <b>@batch</b>
+                                    <button type="button" class="tbar-step" aria-label="增加批数" disabled="@(batch >= stMax)" @onclick="() => SetBatch(batch + 1)">+</button>
+                                </div>
+                                <button type="button" data-pt="station-load" class="primary cg-start" disabled="@(sbWhy != null || StationHeld)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc, batch))"
+                                        data-enter @onclick="(MouseEventArgs ev) => LoadStation(rc.Id, batch, loadKey, ev)">@runLabel<EnterCap On="@(sbWhy == null && !StationHeld)" /></button>
+                                <button type="button" class="secondary cg-start" data-station-take-all title="@allWhy" disabled="@(allWhy != null || StationHeld)"
+                                        @onclick="(MouseEventArgs ev) => TakeAllStation(allPlace, allStation, allStamp, allKey, ev)">@GameEngine.TakeAllLabel</button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        var p = runP!;
+                        var startBusy = runBusy || _starting;
+                        @if (batchable)
+                        {
+                            var enough = rc.AllInputs.Count == 0 ? 1 : rc.AllInputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value));
+                            var maxBatch = Math.Max(1, enough);
+                            @* Q112（S08/S14 本轮章）：数量是“配方份数”（执行一次配方的输入→输出），不是成品件数；钢材一份产2件 *@
+                            <div class="batch-row" data-pt="craft-batch">
+                                <span class="tiny muted" title="N是配方执行份数，不是成品件数；同批次合并工作量">配方份数</span>
+                                <button type="button" class="tbar-step" aria-label="减少份数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
+                                <b>@batch</b>
+                                <button type="button" class="tbar-step" aria-label="增加份数" disabled="@(batch >= maxBatch)" @onclick="() => SetBatch(batch + 1)">+</button>
+                                <span class="tiny @(enough == 0 ? "warn-text" : "muted")" title="同批次合并工作量，高熟练度一段可做多份">@(enough == 0 ? "材料不足，一份也不够" : $"执行{batch}份 · 材料最多够{enough}份")</span>
+                            </div>
+                        }
+                        @if (rc.IsFixedWait)
+                        {
+                            @* B16 试玩修复 M351：固定等待（净水片/滤芯处理脏水）每次一批 2L，份数锁在 1 *@
+                            <div class="batch-row" title="固定等待的处理每次只做1批（一次2L）">
+                                <span class="tiny muted">配方份数</span>
+                                <button type="button" class="tbar-step" aria-label="减少份数" disabled>−</button>
+                                <b>1</b>
+                                <button type="button" class="tbar-step" aria-label="增加份数" disabled>+</button>
+                                <span class="tiny muted">固定等待每次只做1批</span>
+                            </div>
+                        }
+                        @* 逐字稿 P06a「耗时」「产物」：耗时只在能开工时有（字段无数据省略该行，§2）；产物是配方产物×份数 *@
+                        var runOut = RunOutputs(rc, batch);
+                        <dl class="cr-facts">
+                            @if (p.Ok)
+                            {
+                                <div data-pt="craft-run-time"><dt>@GameEngine.CraftRunTime</dt><dd>
+                                @* B47a3（Q682）：求不出可信完成时耗时写“未预估”，第一条提示即“按当前条件无法预估完成。”与原因 *@
+                                @if (p.PlanFailed)
+                                {
+                                    <b>@GameEngine.UnknownText(p)</b>
+                                }
+                                else
+                                {
+                                    <b>@Clock.Duration(p.EstimatedMinutes)</b>
+                                }
+                                </dd></div>
+                            }
+                            @if (runOut != null)
+                            {
+                                <div data-pt="craft-run-output"><dt>@GameEngine.CraftRunOutput</dt><dd>@runOut</dd></div>
+                            }
+                        </dl>
+                        <div class="craft-go">
+                            <span class="cg-facts">
+                                @if (!p.Ok)
+                                {
+                                    <small class="warn-text" data-pt="craft-why">@p.Reason</small>
+                                }
+                                else if (runBusy)
+                                {
+                                    <small class="warn-text" data-pt="craft-why">行动进行中</small>
+                                }
+                                else if (p.PlanFailed)
+                                {
+                                    <small>@(p.Warnings.Count > 0 ? p.Warnings[0] : "")</small>
+                                }
+                                else
+                                {
+                                    <small data-pt="craft-run-eta">预计@(Clock.HHmm(p.EstimatedEndMinute))完成@(p.Warnings.Count > 0 ? " · " + p.Warnings[0] : "")</small>
+                                }
+                            </span>
+                            @* B35b（Q597 A、Q947 A、Q801 A、Q873 A）：按钮全文来自内核同一次预估（能开工“{动作名}（{时长}）”／“（未预估…）”，不能开工只写动作名） *@
+                            <button type="button" data-pt="craft-start" class="primary cg-start" disabled="@(!p.Ok || startBusy)" title="@(p.Ok ? "确认后才预留材料并推进游戏时间" : p.Reason)"
+                                    data-enter @onclick="() => Start(request)">@runLabel<EnterCap On="@(p.Ok && !startBusy)" /></button>
+                        </div>
+                    }
+                </div>
+            }
+            }
         </div>
     </div>
 }
@@ -463,7 +508,7 @@ else if (picked == null)
 else
 {
     <PreviewView Request="request" Eyebrow="@($"{(site?.Name ?? "手工制作")} · {(rc.IsBuild ? "设施建造" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)"
-                 Confirmable="false" FootNote="@(rc.IsDrying ? "晾制在设施栏“晾制架”卡的面板里选空位投料；0分钟投料、不占行动，离开也继续" : e.IsStationBatchRecipe(rc) ? $"在中间配方卡下方点“投料（{batch}批）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
+                 Confirmable="false" FootNote="@(rc.IsDrying ? "晾制在设施栏“晾制架”卡的面板里选空位投料；0分钟投料、不占行动，离开也继续" : e.IsStationBatchRecipe(rc) ? GameEngine.StationAreaGuide(runLabel) + "被动加工0分钟投料、不占行动，离开也继续" : GameEngine.CraftAreaFootNote(runLabel))" />
 }
 
 @code {
@@ -564,7 +609,23 @@ else
         if (res.Ok && !res.Duplicate) SetBatch(1);
     }
 
-    private static string StartLabel(RecipeConfig r) => r.IsBuild ? "开始建造" : GameEngine.IsFieldPatchRecipe(r) ? "开始修补" : r.IsRepair ? "开始维护" : "开始制作";
+    /// <summary>晾制配方在本次制作区的跳转按钮（原文，B22c Q170）。</summary>
+    private const string DryingOpenLabel = "打开晾制架";
+
+    /// <summary>B35b（Q598）：材料主数量“{可选数量}/{所需数量}”。</summary>
+    private static string MatRatio(int have, int need) => $"{have}/{need}";
+
+    /// <summary>B35b（Q598）：主数量的悬停与读屏说明“可选{可选数量}，需要{所需数量}”。</summary>
+    private static string MatRatioTitle(int have, int need) => $"可选{have}，需要{need}";
+
+    /// <summary>B35b（逐字稿 P06a「产物」）：本次制作区的产物“{名}×{数}”（“、”连接，同配方产物静态行写法）；建造写设施×1；没有产物（维修）为 null。</summary>
+    private string? RunOutputs(RecipeConfig r, int n)
+    {
+        var parts = new List<string>();
+        if (r.FacilityResult != null) parts.Add($"{r.Name.Replace("建", "").Replace("铺", "")}×1");
+        parts.AddRange(r.Outputs.Select(kv => $"{G.E.ItemName(kv.Key)}×{kv.Value * n}"));
+        return parts.Count == 0 ? null : string.Join("、", parts);
+    }
 
     /// <summary>开始制作/建造/维护：内核再校验并预留；开始成功后保持面板（与原右栏确认一致），中央推进条接管进度与退出。</summary>
     private async Task Start(ActionRequest request)
@@ -631,6 +692,10 @@ else
         return res;
     }
 
-    /// <summary>B35a1（Q934）：从拖拽候选进入的工作区先回候选，其余照原关闭（与 ESC 同一入口）。</summary>
-    private void Close() => G.PanelEscape();
+    /// <summary>B35a1（Q934）：从拖拽候选进入的工作区先回候选，其余照原关闭（与 ESC 同一入口）。B35b：来源侧页开着时标题栏关闭键仍关整个窗口（侧页逐层由「返回配方」／ESC 承接）。</summary>
+    private void CloseWhole()
+    {
+        if (G.CraftSourcesOpen) G.CloseCraftSources();
+        G.PanelEscape();
+    }
 }

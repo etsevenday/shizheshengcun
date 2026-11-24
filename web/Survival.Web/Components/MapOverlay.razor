@@ -75,38 +75,13 @@
                 @* B35a1（S02／S14 2026-11-17 Q931 B、Q798）：地图「安全屋返程」按钮删除，不改名保留远程入口（与 B35c 地图改版联动交付） *@
                 <button type="button" class="secondary @(G.MapLegend ? "on" : "")" aria-expanded="@G.MapLegend" @onclick="ToggleLegend">图例</button>
                 }
-                <button type="button" class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+                @* B35b（Q592 A，逐字稿 B35 表“来源链地图返回”）：来源链地图的关闭键业务名“返回材料来源”，与关闭／ESC 同效：先回材料来源侧页（保留所选来源），不一键两退 *@
+                <button type="button" class="secondary" data-pt="map-close" @onclick="Close">@(G.SourceItem != null ? BackToSources : G.PanelCloseLabel)<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
             </div>
         </div>
         <div class="map-stage @(cityLayer != null ? "city-stage" : "")">
         <div class="map-view">
-        @if (G.SourceItem is string srcItem)
-        {
-            @* B23（A10-EXUI §4）：缺料来源查询——只列已发现的来源（产量、工时、库存/日补、合格工具、路线），耗尽/已领/本代搜空不亮“可获取”；
-               “定位”只切层并居中，不移动；关闭地图（或“返回制作”）回制作面板并恢复原选择 *@
-            var srcs = e.ItemSources(s, srcItem);
-            var srcHint = e.ItemSourceHint(srcs, srcItem);   // Q250：没有一行可获取时末尾一条公开线索，全空时也只有这一条
-            <div class="map-sources" data-wheel="y" data-sources="@srcItem">
-                <div class="ms-head">
-                    <b>@e.ItemName(srcItem)的已知来源</b>
-                    <button type="button" class="secondary ms-back" title="回到手工制作，恢复刚才的配方与选择（关闭地图或 ESC 同效）" @onclick="G.ReturnFromSources">返回制作</button>
-                </div>
-                @foreach (var x in srcs)
-                {
-                    var loc = x.LocationId;
-                    <div class="ms-row @(x.Usable ? "ok" : "off")" data-source-kind="@x.Kind">
-                        <div class="ms-title">@if (!string.IsNullOrEmpty(x.Account)) { <span class="ms-acct"><AccountIcon Label="@x.Account" />@x.Account</span> }<b>@x.Title</b></div>
-                        <div class="ms-detail">@x.Detail</div>
-                        <div class="ms-status @(x.Usable ? "" : "warn-text")">@x.Status@(string.IsNullOrEmpty(x.Route) ? "" : $" · {x.Route}")</div>
-                        @if (loc != null)
-                        {
-                            <button type="button" class="secondary ms-loc" title="在地图上定位（只平移视口，不移动）" @onclick="() => G.FocusSource(loc)">定位</button>
-                        }
-                    </div>
-                }
-                @if (srcHint != null) { <div class="ms-row ms-hint" data-source-hint>@srcHint</div> }
-            </div>
-        }
+        @* B35b（Q592 A）：来源列表不再浮在地图上（改在制作窗口的材料来源侧页）；来源链地图只高亮所定位的已知地点（MapSourceSpot），不选为移动目的地 *@
         @if (cityLayer != null)
         {
             <CityOverview CityId="@cityLayer" />
@@ -148,7 +123,7 @@
                         var state = n.IsHere || n.HereInside ? "here" : n.Visited ? "visited" : "known";
                         var status = n.IsHere ? "● 当前位置" : n.HereInside ? "● 你在城内" : n.Visited ? $"探索度{n.Progress}%" : "待访问";
                         var tip = $"{n.Name} · {status}{(n.Danger is int dg ? $" · 危险{dg}" : "")}{(n.Roles.Count > 0 ? " · " + string.Join("、", n.Roles) : "")}{(n.Water.Count > 0 ? " · " + string.Join("、", n.Water.Select(m => m.Title)) : "")}";
-                        <g class="map-node @state @(isPicked ? "picked" : "")" id="@($"mn-{id}")" tabindex="0" role="button" aria-label="@tip" data-peek="@Peek.Node(id)"
+                        <g class="map-node @state @(isPicked ? "picked" : "") @(id == G.MapSourceSpot ? "source-spot" : "")" id="@($"mn-{id}")" tabindex="0" role="button" aria-label="@tip" data-peek="@Peek.Node(id)"
                            @onclick="() => Pick(id)" @onkeydown="ev => NodeKey(ev, id)" @onkeydown:stopPropagation="true">
                             <title>@tip</title>
                             @if (overview)
@@ -351,6 +326,9 @@ else
 }
 
 @code {
+    /// <summary>B35b（Q592 A，S14 2026-11-13 B35 Q592、逐字稿 B35 表“来源链地图返回”）：来源链地图关闭键的业务名。</summary>
+    public const string BackToSources = "返回材料来源";
+
     [Parameter] public string Part { get; set; } = "center";
     /// <summary>B42：右栏悬停查看的地图节点（只读，不选中、不开移动浮窗、不给「选中下一段」）。</summary>
     [Parameter] public string? PeekNode { get; set; }

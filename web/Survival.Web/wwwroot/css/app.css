@@ -1529,6 +1529,25 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .fm-why { padding: 0 14px 8px; }
 @media (max-height: 760px) { .fm-slot { min-height: 0; padding: 5px 8px; } .formation-panel .formation-body { gap: 6px; padding: 6px 12px; } .fm-foot .primary { min-height: 34px; padding: 5px 16px; } .fm-foot .secondary { padding-top: 5px; padding-bottom: 5px; } }
 
+/* B35b（05 P06、逐字稿 P06a、Q593 A）：制作窗口三列——左分类与配方列表、中产物与材料、内右“本次制作”（耗时／产物／预计完成／份数与唯一开工按钮）；
+   来源侧页（Q592、Q949）时中列换成来源列表、内右列换成来源详情，本次制作区不渲染。像素与排版为开发方取舍 */
+.craft-grid { grid-template-columns: 210px minmax(0, 1fr) 236px; }
+@media (max-width: 1400px) { .craft-grid { grid-template-columns: 176px minmax(0, 1fr) 212px; } }
+.craft-tabs .craft-site-cap { display: block; padding: 0 8px; font-size: var(--fs-aux); }
+.craft-run { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; min-height: 0; overflow-y: auto; }
+.craft-run .cr-title { font-size: var(--fs-body); font-weight: 600; }
+.craft-run .cr-facts { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.craft-run .cr-facts > div { display: flex; gap: 8px; align-items: baseline; }
+.craft-run .cr-facts dt { flex: 0 0 auto; font-size: var(--fs-aux); color: var(--muted); }
+.craft-run .cr-facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.craft-run .batch-row { margin: 0; flex-wrap: wrap; }
+.craft-run .batch-row .tbar-step { width: 32px; min-height: 30px; }
+.craft-run > .craft-go { position: static; margin: auto 0 0; padding: 0; flex-direction: column; align-items: stretch; gap: 6px; background: none; border: 0; border-radius: 0; }
+.craft-run > .craft-go .cg-start { width: 100%; min-width: 0; padding: 8px 10px; }
+.craft-run > .craft-go .cg-facts small.cg-sum { white-space: normal; }
+.craft-run > .craft-go .cg-act { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+.craft-run > .craft-go .cg-act .batch-row { justify-content: flex-start; }
+
 /* B10 工坊分类标签与配方来源（A10 §9.1）：标签换行排、不撑高配方卡 */
 .craft-grid.tabbed { grid-template-rows: auto minmax(0, 1fr); }
 .craft-tabs { grid-column: 1 / -1; display: flex; flex-wrap: nowrap; gap: 4px; overflow-x: auto; scrollbar-width: thin; }

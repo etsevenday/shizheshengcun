@@ -117,6 +117,7 @@ public sealed partial class GameSession
     public void PickCraftTab(string tab)
     {
         if (State == null || CraftTabList().All(t => t.Id != tab)) return;
+        DropCraftSources();   // B35b（Q949 A）：来源侧页开着时改分类＝一次退出侧页并改选，不保留来源选择
         CraftTab = tab;
         CraftTabs.Set(CraftTabKey, tab);
         try { _store.SetPref("craftTabs", CraftTabs.Serialize()); } catch { /* 本地存储不可用时只在本次有效 */ }
@@ -128,6 +129,7 @@ public sealed partial class GameSession
     public void SelectCraftRecipe(string? id)
     {
         PeekClear();
+        DropCraftSources();   // B35b（Q949 A）：来源侧页开着时点左列配方＝一次退出侧页并改选，不保留来源选择与定位意图
         // B51c2b 试玩遗留 N1：点配方行回到这条配方的右栏预估——清掉工作区里批内物品卡的选中与数量窗
         DropFacilityItemSel();
         if (CraftRecipe != id)
@@ -149,6 +151,7 @@ public sealed partial class GameSession
     {
         if (State == null || CraftCandidates == null) return;
         if (c.Workspace == null) { SelectCraftRecipe(c.RecipeId); return; }
+        DropCraftSources();   // B35b（Q949 A）
         if (E.WorkspaceHere(S, c.Workspace.Key) is not { } real) { Notice = GameEngine.WorkspaceGoneText; Notify(); return; }
         PeekClear();
         _candidateReturn = new CandidateReturn(CraftCandidates, CraftRecipe, CraftPot);
@@ -198,6 +201,7 @@ public sealed partial class GameSession
     public void CandidatesShowAll()
     {
         if (State == null) return;
+        DropCraftSources();   // B35b（Q949 A）
         CraftCandidates = null;
         _candidateReturn = null;
         CraftSite = null;

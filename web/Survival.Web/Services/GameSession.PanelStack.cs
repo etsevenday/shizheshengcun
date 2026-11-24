@@ -120,6 +120,7 @@ public sealed partial class GameSession
                 if (CraftTarget is int t && E.FindItem(S, t) == null) { CraftTarget = null; lost = true; }
                 if (CraftPatch is int pk && E.FindItem(S, pk) == null) { CraftPatch = null; lost = true; }
                 if (lost) Notice = GameEngine.ContentChangedText;
+                RevalidateCraftSources();   // B35b（Q592）：从来源地图回到侧页，所选来源失效就清掉选择
                 break;
             }
         }
@@ -132,8 +133,8 @@ public sealed partial class GameSession
         switch (p)
         {
             case FireMenuPanel: FireMenu = null; break;
-            case "craft": CraftSite = null; _candidateReturn = null; CraftCandidates = null; break;
-            case "map": SourceItem = null; CityHover = null; CityLegacyNote = false; break;
+            case "craft": CraftSite = null; _candidateReturn = null; CraftCandidates = null; DropCraftSources(); break;
+            case "map": SourceItem = null; MapSourceSpot = null; CityHover = null; CityLegacyNote = false; break;
             case "formation": FormationDraft = null; FormationPick = null; FormationLeader = null; break;
             case "growth": ClosePracticeDraft(); break;
             case "gear": GivePending = null; break;

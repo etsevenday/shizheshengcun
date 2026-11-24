@@ -334,7 +334,9 @@ public class B32eStationQueueTests : TestBase
     {
         var razor = RazorOf(Path.Combine("Components", "CraftOverlay.razor"));
         Assert.That(razor, Does.Contain(">投料批数<"));
-        Assert.That(razor, Does.Contain("投料（@(batch)批）"));
+        // B35b 改（S14 2026-11-14 B35 次要 Q597 A、B35b Q947 A；测试规则第 8 条）：投料按钮改“投料（{批数}批 · {时长}）”，文字由内核 GameEngine.StationLoadText 给出，
+        // 渲染出的按钮文字由 bUnit B35bCraftPageUiTests.Station_LoadButton_BatchAndStaticDuration 断言；这里只留不再写死旧格式
+        Assert.That(razor, Does.Not.Contain("投料（@(batch)批）"));
         // B51c2b 删断言（S11 §Q870 B「只数真实正在加工的批」／§Q924 B 余料条目不计加工中；测试规则第 8 条）：标题改按真实加工批数，
         // 由 bUnit B51c2bFacilityItemUiTests.Station_PartialArrow_ResidualRow_TitleCountsProcessing 断渲染出的「加工中{批数}批」
         Assert.That(razor, Does.Contain("@GameEngine.StationParallelHelp"));
@@ -424,14 +426,15 @@ public class B32eStationQueueTests : TestBase
         // 「投料批数」步进器移进投料栏、在「投料」按钮上方
         var body = razor.IndexOf("<div class=\"cm-body\"", StringComparison.Ordinal);
         var scroll = razor.IndexOf("<div class=\"mat-scroll", StringComparison.Ordinal);
-        var mats = razor.IndexOf("原料@(rc.Fuel.Count > 0 ? \"与燃料\" : \"\")", StringComparison.Ordinal);
+        // B35b 改锚点（逐字稿 P06a「所需材料」）：材料表标题从「原料／原料与燃料」改「所需材料」，按 data-pt 钩子定位
+        var mats = razor.IndexOf("data-pt=\"craft-mats-head\"", StringComparison.Ordinal);
         var queue = razor.IndexOf("data-station-queue", StringComparison.Ordinal);
         var rows = razor.IndexOf("<div class=\"sq-rows\"", StringComparison.Ordinal);
         var go = razor.IndexOf("data-station-go", StringComparison.Ordinal);
         var stepper = razor.IndexOf("data-station-batches", StringComparison.Ordinal);
         var load = razor.IndexOf("(MouseEventArgs ev) => LoadStation(", StringComparison.Ordinal);
         Assert.That(body >= 0 && body < scroll && scroll < mats && mats < queue, Is.True, "批次区在原料滚动区之后、配方说明区外");
-        Assert.That(queue < rows && rows < go, Is.True, "逐批列表单独滚动，投料条在批次区下、卡底");
+        Assert.That(queue < rows && rows < go, Is.True, "逐批列表单独滚动；投料栏在批次区之后（B35b Q593 A 起在内右列“本次制作”）");
         Assert.That(go < stepper && stepper < load, Is.True, "投料批数在投料栏内、投料按钮上方");
         Assert.That(css, Does.Contain(".craft-side > .craft-mats.station-mats { overflow-y: auto; }"));
         Assert.That(css, Does.Contain(".craft-side > .craft-mats > .cm-body { display: contents; }"), "一般配方布局不变");

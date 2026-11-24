@@ -563,6 +563,8 @@ public sealed partial class GameSession
     /// </summary>
     public void PanelEscape()
     {
+        // B35b（Q592／Q949）：制作窗口的材料来源侧页开着时，返回／ESC 先回配方（一次只退一层）
+        if (CraftSourcesOpen) { CloseCraftSources(); return; }
         // BM4a（Q590）：制作页下面另有被盖住的窗口时返回先回紧挨着的下层
         if (CraftFromCandidates && State != null && _chain.Count == 0) { ReturnToCandidates(); return; }
         OpenPanel(null);

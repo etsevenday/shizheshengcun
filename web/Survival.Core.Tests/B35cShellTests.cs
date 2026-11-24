@@ -188,7 +188,7 @@ public class B35cShellTests
         Assert.That(faction, Is.GreaterThan(world));
         Assert.That(foot.IndexOf("data-map-cmd=\"here\"", StringComparison.Ordinal), Is.GreaterThan(faction), "回到当前位置在底部第三键（0 键同一按钮）");
         Assert.That(Regex.Matches(map, "data-map-cmd=\"here\"").Count, Is.EqualTo(1), "工具条上不再重复");
-        var tools = Slice(map, "@if (cityLayer == null)", "<button type=\"button\" class=\"secondary\" @onclick=\"Close\">");
+        var tools = Slice(map, "@if (cityLayer == null)", "<button type=\"button\" class=\"secondary\" data-pt=\"map-close\" @onclick=\"Close\">");   // B35b：关闭键加 data-pt 钩子（来源链写“返回材料来源”，Q592 A）
         Assert.That(tools, Does.Contain("data-map-cmd=\"out\"").And.Contain("data-map-cmd=\"in\"").And.Contain(">总览</button>").And.Contain(">图例</button>"));
         var pickFirst = Slice(map, "private string? FactionLayer(", "private void ToggleLegend()");
         Assert.That(pickFirst.IndexOf("G.MapPicked is string p && G.E.IsCityParent(p)", StringComparison.Ordinal), Is.LessThan(pickFirst.IndexOf("G.E.CityOf(G.S.CurrentLocation)", StringComparison.Ordinal)), "Q1004 A 定稿：先所选城，再所在城");
