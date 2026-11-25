@@ -347,7 +347,8 @@ public class B51c1Tests : TestBase
         p.PlanFailed = false;
         Assert.That(GameEngine.ToolAfterText(p), Is.EqualTo("4.00"), "可靠照旧（两位小数）");
         var pv = Web("Components", "PreviewView.razor");
-        Assert.That(pv, Does.Contain("<div><span>预计耗时</span><b>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.Duration(p.EstimatedMinutes))</b></div>"));
+        // B36a 改（02 Q897 A）：休息页右栏耗时用小时，写法由调用方传入（DurationText，未传沿 Clock.Duration）；另加试玩选择器 data-pt
+        Assert.That(pv, Does.Contain("<div><span>预计耗时</span><b data-pt=\"pv-minutes\">@(p.PlanFailed ? GameEngine.UnknownText(p) : (DurationText ?? Clock.Duration)(p.EstimatedMinutes))</b></div>"));
         Assert.That(pv, Does.Contain("<div><span>预计完成</span><b>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.HHmm(p.EstimatedEndMinute))</b></div>"));
         Assert.That(pv, Does.Not.Contain("p.PlanFailed ? GameEngine.NotEstimated"), "依赖完成的值不再写不带原因的裸「未预估」（Q683 致死判定健康仍裸写，见 BodyUnknown 测试）");
         Assert.That(Web("Components", "CraftOverlay.razor"), Does.Contain("<b>@GameEngine.UnknownText(p)</b>"));

@@ -428,7 +428,8 @@ public class B47a3Tests : BattleTestBase
             Assert.That(pv.IndexOf(x, StringComparison.Ordinal), Is.GreaterThan(body).And.LessThan(plan), x);
         Assert.That(pv, Does.Contain("@GameEngine.PlanNote"));
         // B51c1 改期望（出处 S08 B51 §Q775、02 Q873 A 暂用）：未预估带同源实际原因，经 UnknownText
-        Assert.That(pv, Does.Contain("p.PlanFailed ? GameEngine.UnknownText(p) : Clock.Duration(p.EstimatedMinutes)"));
+        // B36a 改（02 Q897 A：休息页本页右栏计划时长用小时）：耗时写法可由调用方传入（DurationText），未传沿 Clock.Duration；未预估仍经 UnknownText
+        Assert.That(pv, Does.Contain("p.PlanFailed ? GameEngine.UnknownText(p) : (DurationText ?? Clock.Duration)(p.EstimatedMinutes)"));
         Assert.That(pv, Does.Contain("p.HealthUnknown.Contains(GameState.PlayerId)"));
         Assert.That(pv, Does.Contain("@if (p.Ok && p.BodyCut)"), "无危险不加两区标题");
         // B51c1 改期望（出处 S08 B51 §Q775、02 Q873 A 暂用）：未知后值写法改走 BodyUnknownText（完成不可信带原因，Q683 健康仍只写未预估）

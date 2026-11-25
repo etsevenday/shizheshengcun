@@ -154,7 +154,8 @@ public class B43KeyHintTests : TestBase
         Has("ExpeditionAbort", "确认终止并撤出<EnterCap");
         Has("DungeonReset", "确认重置<EnterCap");
         Has("FormationOverlay", "保存编队<EnterCap On=\"@(saveWhy == null)\" />");
-        Has("RestOverlay", "<EnterCap On=\"@(p.Ok && !busy)\" />");
+        // B36a 改（02 Q887 B；测试规则第 8 条）：休息页开始条移到 RestPlan 组件，未选时长不可开始；Enter 键帽有无由 bUnit
+        // B36aRestUiTests.NewOpen_TwoHourRows_NoPreselect_StartDisabledWithReason／ClickPick_StartEnabledWithHours_HoverOtherThenBackToPicked 断言渲染结果
         Has("JourneyOverlay", "准备好了<EnterCap");
         Has("CraftOverlay", "<EnterCap On=\"@(p.Ok && !startBusy)\" />", 2);
         Assert.That(Web("Components/AnchorPop.razor"), Does.Contain("data-enter-scope tabindex=\"-1\""), "居中局部盘是确认区");

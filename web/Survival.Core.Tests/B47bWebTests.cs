@@ -51,7 +51,7 @@ public class B47bWebTests
         Assert.That(bs, Does.Contain("@(dying ? \"dying\" : \"\")"));
         Assert.That(bs, Does.Contain("G.E.ResistanceShort(s.Player)"));
         Assert.That(Web("Components", "BattlePanel.razor"), Does.Contain("GameEngine.DyingHealthText(va.Stats.HealthMax)"));
-        Assert.That(Web("Components", "RestOverlay.razor"), Does.Contain("GameEngine.DyingIconText"));
+        // B36a 改（02 Q896 A；测试规则第 8 条）：休息页濒死原因移到 RestPlan「风险」下，渲染见 bUnit B36aRestUiTests.ConditionAlways_RiskOnlyWhenReal
         var css = Web("wwwroot", "css", "battle.css");
         Assert.That(css, Does.Contain(".anc.ally.dying .anc-art img { filter: brightness(var(--dying-dim, .72))"));
     }

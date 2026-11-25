@@ -187,7 +187,10 @@ public class B60aPlayFixUiTests : WebTestBase
         Assert.That(cut.FindAll(".fire-menu"), Has.Count.EqualTo(1));
     }
 
-    /// <summary>配对（休息页现状不变）：休息页开工、结束回休息页——不另给落点（空），沿原焦点与其所在区域。</summary>
+    /// <summary>
+    /// 配对：休息页开工、结束回休息页。B36a 改（开发方 D1＝02 Q1123 A「行动结束回到休息页时……焦点按 Q1038，不落在开始键」）：
+    /// 原期望「不另给落点（空）」改为给本页落点——所选时长，没有就取本页第一个可用控件（开始键标 data-lock-noreturn 不拿回焦点）。
+    /// </summary>
     [Test]
     public async Task RestPage_LockEnd_NoExtraFallback()
     {
@@ -196,6 +199,6 @@ public class B60aPlayFixUiTests : WebTestBase
         await cut.InvokeAsync(() => G.StartAction(ActionRequest.Wait(30)));
         await cut.InvokeAsync(() => cut.Render());
         Assert.That((S.Main, G.Panel), Is.EqualTo(((ActionState?)null, "rest")), "起点核对：已结束、回到休息页");
-        Assert.That(LastLockEndArg(), Is.EqualTo(Array.Empty<string>()));
+        Assert.That(LastLockEndArg(), Is.EqualTo(new[] { ".rest-panel [data-pt=rest-pick].on", ".rest-panel" }));
     }
 }

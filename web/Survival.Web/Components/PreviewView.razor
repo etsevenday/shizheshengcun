@@ -57,7 +57,7 @@
         {
             @* B47a3（Q682）：按当前条件求不出可信完成时，耗时与完成时刻写“未预估”（原因见下方风险行） *@
             @* B51c1（Q775、Q873 A 暂用）：未预估带同源实际原因「未预估（{原因}）」，没有原因只写「未预估」 *@
-            <div><span>预计耗时</span><b>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.Duration(p.EstimatedMinutes))</b></div>
+            <div><span>预计耗时</span><b data-pt="pv-minutes">@(p.PlanFailed ? GameEngine.UnknownText(p) : (DurationText ?? Clock.Duration)(p.EstimatedMinutes))</b></div>
             <div><span>预计完成</span><b>@(p.PlanFailed ? GameEngine.UnknownText(p) : Clock.HHmm(p.EstimatedEndMinute))</b></div>
             @if (p.ClearCharges.HasValue)
             {
@@ -290,6 +290,8 @@
     [Parameter] public string? ConfirmLabel { get; set; }
     /// <summary>BM4b（Q589）：折叠偏好所属对象类型——选中资源／地点／路线传 RailTypes.Place，其余为当前操作预估。</summary>
     [Parameter] public string RailType { get; set; } = RailTypes.Op;
+    /// <summary>B36a（02 Q897 A）：「预计耗时」的时长写法（休息页本页右栏用小时，如 0.5小时）；不给沿原 Clock.Duration。</summary>
+    [Parameter] public Func<int, string>? DurationText { get; set; }
 
     private bool starting;
 

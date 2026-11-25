@@ -40,6 +40,8 @@ public partial class GameSession
             if (Panel == "map")
                 return [$"[id=\"mn-{S.CurrentLocation}\"]", $".city-bldg[data-node=\"{S.CurrentLocation}\"]", ".map-viewport", ".map-panel"];
             if (Panel == FireMenuPanel) return [".fire-menu"];
+            // B36a D1（02 Q1123 A）：休息页结束后焦点回所选时长（开始键不拿回焦点，见 app.js data-lock-noreturn），所选已失效就取本页第一个可用控件
+            if (Panel == "rest") return [".rest-panel [data-pt=rest-pick].on", ".rest-panel"];
             return [];
         }
     }

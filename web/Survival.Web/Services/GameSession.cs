@@ -769,8 +769,16 @@ public sealed partial class GameSession
     public string? MapAnchor { get; set; }
     /// <summary>图例浮窗是否展开。</summary>
     public bool MapLegend { get; set; }
-    public string RestKind { get; set; } = "rest";
-    public int RestMinutes { get; set; } = 60;
+    /// <summary>
+    /// B36a（02 Q887 B）：休息页已明确选中的方式（"rest"／"sleep"）与原分钟档；真正新开为空（不预选），开始键禁用。
+    /// 从本页进子页再返回、开工后留在进度浮窗下再回到本页都是同一窗口，保留所选（Q887、Q1103；D1＝02 Q1123 A）。
+    /// </summary>
+    public string? RestKind { get; set; }
+    public int? RestMinutes { get; set; }
+    /// <summary>B36a（Q815、Q887 B）：鼠标悬停或键盘聚焦中的那一档（只让右栏看预估，不选中、不开始）。</summary>
+    public (string Kind, int Minutes)? RestHover { get; set; }
+    /// <summary>右栏要预估的那一档：悬停／聚焦优先，否则已选；都没有为 null（右栏回常规内容，D3＝02 Q1125 A）。</summary>
+    public (string Kind, int Minutes)? RestShown => RestHover ?? (RestKind is string k && RestMinutes is int m ? (k, m) : null);
 
     /// <summary>
     /// 打开或关闭二级面板（地图、加工、休息、日志）。二级面板只覆盖中部上方，
@@ -868,12 +876,9 @@ public sealed partial class GameSession
         }
         // B35a1（Q594／Q797／Q908）：新开时按上下文（顶栏或某座设施工作区）恢复本机记忆的合法分类并选配方
         if (next == "craft" && !restore && State != null) InitCraftContext(recipe);
-        if (next == "rest" && !restore && State != null)
-        {
-            var sleepy = S.Stats.Wakefulness < 50 || !E.IsDaylight(S.GameMinute);
-            RestKind = sleepy ? "sleep" : "rest";
-            RestMinutes = sleepy ? 480 : 60;
-        }
+        // B36a（02 Q887 B，取代原按困倦／昼夜预选睡8小时或休1小时）：真正新开休息页不预选方式时长；盖在下层或恢复时保留所选
+        if (next == "rest" && !restore) { RestKind = null; RestMinutes = null; }
+        if (next != "rest") RestHover = null;
         if (next == "map" && !restore)
         {
             MapPicked = null;

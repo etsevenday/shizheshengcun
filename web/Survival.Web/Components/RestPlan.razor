@@ -1,0 +1,155 @@
+@inherits GameComponent
+
+@* B36a 休息页中部（02 Q815 用户自定、Q887 B、Q896 A、Q897 A；逐字稿 2026-11-16／11-17 B36 本批 P08c）：
+   同屏两行「休息」「睡眠」，每行只给原档位的小时数（内核仍传原分钟；休息0.5／1／2小时、睡眠2／4／8小时只是单位换算），行名后保留原方式短说明；
+   两行下方「休息条件」（真实露天／遮蔽／野营布与床垫条件），实际有精神低、濒死等风险才出「风险」；不用中部「可用方式／预计恢复」，数值预测都在右栏。
+   真正新开不预选：开始键禁用、旁边短原因「先选时长」；悬停／键盘聚焦某档只让右栏显示该组合的完整预估（不选中、不开始），点一下才选中，开始仍要另点开始键。
+   档位列表作参数传入，留给 B71（有床／无床档位）复用；本批照现有 cfg.Actions.RestMinutes／SleepMinutes，不改数值。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var cfg = e.Config;
+    var here = s.Ground;   // B17：按所在区（安全屋屋内有遮蔽/床）
+    var sheltered = e.IsSheltered(s, here);
+    var fac = e.FacOf(s, here) ?? s.Locations[s.CurrentLocation].Facility;
+    var lowMorale = cfg.Thresholds["morale"].IsBelow(s.Stats.Morale);
+    var dying = e.IsDying(s, s.Player);
+    // B22e 试玩修复 M455：铺开野营遮雨布只让睡眠算遮蔽（休息仍露天）
+    var sleepSheltered = e.SleepSheltered(s, here);
+    var tarpOnly = sleepSheltered && !sheltered;
+    var kind = G.RestKind;
+    var minutes = G.RestMinutes;
+    var picked = kind != null && minutes is int;
+    var req = picked ? RestRequest(kind!, minutes!.Value) : null;
+}
+
+<div class="sub-body rest-scroll" data-pt="rest-plan">
+    @Row("rest", "休息", "只恢复体力，不恢复清醒度；任何时间都可以休息", RestOptions ?? cfg.Actions.RestMinutes)
+    @Row("sleep", "睡眠", "恢复清醒度与体力；任何时间都可以睡", SleepOptions ?? cfg.Actions.SleepMinutes)
+    @* Q896 A：两行下方「休息条件」（原「当前条件」），条件事实照真实条件；恢复规则等教学短文仍在悬浮说明（Q21） *@
+    <div class="rest-cond" data-pt="rest-cond">
+        <h3 class="choice-title">@CondTitle</h3>
+        <div class="lines" style="max-width:560px"
+             title="@($"健康自然恢复：{(sheltered ? $"饱食与水分≥{Ui.T(cfg.HealthRules.RecoveryMinSatiety)}且精神≥{Ui.T(cfg.HealthRules.RecoveryMinMorale)}时每小时{Ui.SignedT(cfg.HealthRules.ShelteredRestRecoveryPerHour)}" : "露天不恢复")}。期间仍消耗饱食、水分与火堆燃料，不会因满值自动结束；越过低值阈值时会暂停，可补给后继续。完整规则见系统说明。")">
+            <div><b data-pt="rest-cond-text">@(sheltered ? "遮蔽" : tarpOnly ? "休息露天，睡眠有野营布遮蔽" : "露天")@(fac.BedBuilt && sheltered ? $"，床垫：睡眠体力{Ui.SignedT(cfg.FacilityEffects.BedExtraSleepEnergyPerHour)}/小时" : "")</b></div>
+        </div>
+    </div>
+    @if (dying || lowMorale)
+    {
+        @* Q896 A：实际有风险才出「风险」小标题；原精神低、濒死两行（B47b S14 B34 节、R09 Q695） *@
+        <div class="rest-risk" data-pt="rest-risk">
+            <h3 class="choice-title">@RiskTitle</h3>
+            <div class="lines" style="max-width:560px">
+                @if (dying) { <div><span>健康</span><b class="warn-text">@GameEngine.DyingIconText</b></div> }
+                @if (lowMorale)
+                {
+                    <div><span>精神</span><b class="warn-text">@Ui.N(s.Stats.Morale)（低于@(Ui.T(cfg.Thresholds["morale"].Value))，体力恢复减半）</b></div>
+                }
+            </div>
+        </div>
+    }
+</div>
+@* 就近执行（S14 §14.1）：开始条只写所选方式与小时数和开始控件，数值预测在右栏；没选档时开始禁用、短原因「先选时长」（Q887 B） *@
+@{
+    var p = req != null ? G.Preview(req) : null;
+    var busy = G.Running || s.Main != null && p is { AsSubAction: false } || _starting;
+}
+<div class="rest-go" data-pt="rest-go">
+    <span class="rg-pick">
+        @if (picked)
+        {
+            <b data-pt="rest-picked">@KindName(kind!) · @Hours(minutes!.Value)</b>
+            @if (!p!.Ok) { <small class="warn-text" data-pt="rest-why">@p.Reason</small> }
+        }
+        else
+        {
+            <small class="muted" data-pt="rest-why">@NoPickReason</small>
+        }
+    </span>
+    @* D1（02 Q1123 A）：开工结束回到本页时焦点不落在开始键（data-lock-noreturn，app.js progLockEnd 跳过），改回所选时长 *@
+    <button type="button" class="primary rg-start" data-enter data-pt="rest-start" data-lock-noreturn disabled="@(p is not { Ok: true } || busy)" @onclick="Start">@StartText(kind, minutes, p)<EnterCap On="@(p is { Ok: true } && !busy)" /></button>
+</div>
+
+@code {
+    /// <summary>休息档位（分钟，内核原值）；不给就用 cfg.Actions.RestMinutes。留给 B71 传有床／无床档位。</summary>
+    [Parameter] public IReadOnlyList<int>? RestOptions { get; set; }
+    /// <summary>睡眠档位（分钟，内核原值）；不给就用 cfg.Actions.SleepMinutes。</summary>
+    [Parameter] public IReadOnlyList<int>? SleepOptions { get; set; }
+
+    /// <summary>中部小标题（02 Q896 A；逐字稿 §2 P08c「休息条件」「风险」）。</summary>
+    public const string CondTitle = "休息条件";
+    public const string RiskTitle = "风险";
+    /// <summary>没选时长时的短原因（02 Q887 B；逐字稿 2026-11-17 B36 本批「本批新增未选短原因仅“先选时长”」）。</summary>
+    public const string NoPickReason = "先选时长";
+    /// <summary>没选时长时开始键的字（开发方 D2，02 Q1124 A，暂用待文案定稿）。</summary>
+    public const string StartIdle = "开始";
+
+    public static ActionRequest RestRequest(string kind, int minutes) => kind == "sleep" ? ActionRequest.Sleep(minutes) : ActionRequest.Rest(minutes);
+
+    public static string KindName(string kind) => kind == "sleep" ? "睡眠" : "休息";
+
+    /// <summary>Q897 A：本页时长只用小时（30分钟写“0.5小时”）；内核分钟值不变，中央推进条与日志沿原分钟格式。</summary>
+    public static string Hours(int minutes) => (minutes / 60.0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "小时";
+
+    /// <summary>开始键：选了档且可开始写「{方式}{小时}」（Q896／Q897 例「休息0.5小时」）；选了但不能开始沿原「无法开始」；没选写「开始」（D2）。</summary>
+    public static string StartText(string? kind, int? minutes, ActionPreview? p) =>
+        kind == null || minutes is not int m ? StartIdle : p is { Ok: true } ? KindName(kind) + Hours(m) : "无法开始";
+
+    private RenderFragment Row(string k, string name, string note, IReadOnlyList<int> options) => __builder =>
+    {
+        <div class="rest-row" data-pt="rest-row" data-kind="@k">
+            <h3 class="choice-title">@name <small class="muted">@note</small></h3>
+            <div class="choice-group">
+                @foreach (var m in options)
+                {
+                    var mm = m;
+                    var on = G.RestKind == k && G.RestMinutes == m;
+                    <button type="button" class="choice @(on ? "on" : "")" aria-pressed="@on" data-pt="rest-pick" data-kind="@k" data-min="@m"
+                            @onclick="() => Pick(k, mm)" @onmouseenter="() => Hover(k, mm)" @onmouseleave="Unhover" @onfocus="() => Hover(k, mm)" @onblur="Unhover">
+                        <b>@Hours(m)</b>
+                    </button>
+                }
+            </div>
+        </div>
+    };
+
+    private void Pick(string k, int m)
+    {
+        G.RestKind = k;
+        G.RestMinutes = m;
+        // B13d（Q128）：选睡眠计划是 PRO12 的操作前上下文（打开恢复面板时已给过的不重复）
+        if (k == "sleep") G.Guide("rest");
+        G.Notify();
+    }
+
+    /// <summary>Q815／Q887：悬停或聚焦只让右栏看这一档的预估，不选中、不开始。</summary>
+    private void Hover(string k, int m)
+    {
+        G.RestHover = (k, m);
+        G.Notify();
+    }
+
+    private void Unhover()
+    {
+        if (G.RestHover == null) return;
+        G.RestHover = null;
+        G.Notify();
+    }
+
+    private bool _starting;
+
+    /// <summary>
+    /// 开始所选休息/睡眠（内核再校验）。B60a（Q1103 B）：开始成功后休息页留在居中进度浮窗下，结束后仍合法就回到本页，所选时长保留（D1，Q1123 A）。
+    /// 没选时长不开始；执行中锁住按钮，重复点击不重复开始。
+    /// </summary>
+    private async Task Start()
+    {
+        if (_starting || G.RestKind is not string k || G.RestMinutes is not int m) return;
+        _starting = true;
+        try
+        {
+            await G.StartAction(RestRequest(k, m));
+        }
+        finally { _starting = false; }
+    }
+}

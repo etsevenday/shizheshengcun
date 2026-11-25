@@ -117,6 +117,8 @@ window.survival = {
     // 再取原焦点所在区域里仍在的第一个可用控件；都没有就不动。不落到 body、不进 inert
     function usable(c) {
       if (!c || !c.isConnected || c.disabled) return false;
+      // B36a D1（02 Q1123 A）：标了 data-lock-noreturn 的开工键（休息页「开始」）结束后不再拿回焦点，改回原页给的落点（所选时长）
+      if (c.hasAttribute && c.hasAttribute('data-lock-noreturn')) return false;
       if (c.closest && c.closest('[inert]')) { blocked = true; return false; }
       return !!(c.getClientRects && c.getClientRects().length);
     }
