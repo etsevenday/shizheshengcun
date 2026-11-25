@@ -2,7 +2,8 @@
 
 @* 休息与睡眠。Part="center"：中部两行小时档、休息条件／风险与开始条（RestPlan，就近执行，S14 §14.1）；Part="detail"：右栏的详细预估（只读）。
    B36a（02 Q815、Q887 B、Q896 A、Q897 A）：右栏显示悬停／聚焦中的那一档，否则显示已选那一档；都没有时右栏回常规内容（DetailPanel 不进本组件，D3＝02 Q1125 A）。
-   本页右栏的计划时长用小时（预计耗时），结束时刻仍 HH:mm。 *@
+   本页右栏的计划时长用小时（预计耗时），结束时刻仍 HH:mm。
+   B36a 试玩修复 B1（Q897 A「本页右栏计划时长用小时」）：右栏预估名也按小时写「休息0.5小时」（同开始键），不用内核行动名「休息30分钟」；别处行动名不动。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -15,7 +16,9 @@
 
 @if (Part == "center")
 {
-    <div class="sub-panel rest-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="休息与睡眠">
+    @* B36a 试玩修复 B2（02 Q1123 A）：鼠标点开始键时焦点先归到本页容器（B43 鼠标归位），容器也标 data-lock-noreturn——
+       开工结束后焦点不回容器（否则回车又按本页唯一确认再开一轮），改落原页给的所选时长 *@
+    <div class="sub-panel rest-panel" data-enter-scope data-lock-noreturn tabindex="-1" role="dialog" aria-label="休息与睡眠">
         <div class="sub-head">
             <div><h2>休息与睡眠</h2><span class="sub">@e.ZoneName(s, here) · @(sheltered ? "遮蔽" : tarpOnly ? "露天（野营布：睡眠算遮蔽）" : "露天")@(fac.BedBuilt ? " · 有床垫" : "") · 选时长后在下方开始，详细预估在右侧</span></div>
             <button class="secondary" data-pt="rest-close" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
@@ -25,7 +28,7 @@
 }
 else if (shown is var (kind, minutes))
 {
-    <PreviewView Request="RestPlan.RestRequest(kind, minutes)" Eyebrow="@($"休息与睡眠 · {RestPlan.KindName(kind)}")" Title="" Subtitle=""
+    <PreviewView Request="RestPlan.RestRequest(kind, minutes)" Eyebrow="@($"休息与睡眠 · {RestPlan.KindName(kind)}")" Title="@RestPlan.PlanName(kind, minutes)" Subtitle=""
                  Confirmable="false" DurationText="RestPlan.Hours" FootNote="在中间所选时长下方点开始；时间为预计值" />
 }
 

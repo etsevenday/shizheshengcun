@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @* 顶栏“系统说明”（B36a：02 Q812 A、Q889 A、Q890 B、Q899 A、Q955 B、Q821；逐字稿 §2 P08g、2026-11-16／11-17 B36 本批，取代 S14 §13.3 首页图标网格）：
    左栏「主题」列现有9主题，所选主题在左栏展开它的原条目；右栏是条目正文，没选条目时显示该主题摘要，顶栏正常新开（没选主题）时列9个主题的原摘要。
@@ -126,6 +127,25 @@
 </div>
 
 @code {
+    private string? _revealed;
+
+    /// <summary>
+    /// B36a 试玩修复 D2：所选主题／条目变了（含从食饮盘、详情直接定位进来）就把左栏所选那一项滚到可见（最近边对齐，已可见不动）；
+    /// 只定位，不改选择、不抢焦点。
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var key = G.HelpTopic == null ? null : $"{G.HelpTopic}|{G.HelpEntry}";
+        if (key == _revealed) return;
+        _revealed = key;
+        if (NavSelector(G.HelpTopic, G.HelpEntry) is not string sel) return;
+        try { await JS.InvokeVoidAsync("survival.revealQuery", sel); } catch (Exception) { /* 只影响定位 */ }
+    }
+
+    /// <summary>左栏所选项的选择器：有条目取条目，否则取主题；都没有返回 null。</summary>
+    public static string? NavSelector(string? topic, string? entry) =>
+        topic == null ? null : entry != null ? $"[data-pt=help-entry][data-entry='{entry}']" : $"[data-pt=help-topic][data-topic='{topic}']";
+
     /// <summary>左栏标题（逐字稿 §2 P08g「主题」；2026-11-16 B36 逐字表「系统说明左栏：主题及现有9主题／原条目名」）。</summary>
     public const string TopicsTitle = "主题";
 

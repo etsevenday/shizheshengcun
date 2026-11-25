@@ -92,8 +92,11 @@
     public static string Hours(int minutes) => (minutes / 60.0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "小时";
 
     /// <summary>开始键：选了档且可开始写「{方式}{小时}」（Q896／Q897 例「休息0.5小时」）；选了但不能开始沿原「无法开始」；没选写「开始」（D2）。</summary>
+    /// <summary>B36a 试玩修复 B1（Q897 A）：本页右栏预估名「{方式}{小时}」，与开始键同写法（如「休息0.5小时」）。</summary>
+    public static string PlanName(string kind, int minutes) => KindName(kind) + Hours(minutes);
+
     public static string StartText(string? kind, int? minutes, ActionPreview? p) =>
-        kind == null || minutes is not int m ? StartIdle : p is { Ok: true } ? KindName(kind) + Hours(m) : "无法开始";
+        kind == null || minutes is not int m ? StartIdle : p is { Ok: true } ? PlanName(kind, m) : "无法开始";
 
     private RenderFragment Row(string k, string name, string note, IReadOnlyList<int> options) => __builder =>
     {

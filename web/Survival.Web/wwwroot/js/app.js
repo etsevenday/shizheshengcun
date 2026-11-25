@@ -117,7 +117,7 @@ window.survival = {
     // 再取原焦点所在区域里仍在的第一个可用控件；都没有就不动。不落到 body、不进 inert
     function usable(c) {
       if (!c || !c.isConnected || c.disabled) return false;
-      // B36a D1（02 Q1123 A）：标了 data-lock-noreturn 的开工键（休息页「开始」）结束后不再拿回焦点，改回原页给的落点（所选时长）
+      // B36a D1（02 Q1123 A）：标了 data-lock-noreturn 的开工键（休息页「开始」）与本页容器（鼠标点开始键时焦点归到这里）结束后不再拿回焦点，改回原页给的落点（所选时长）
       if (c.hasAttribute && c.hasAttribute('data-lock-noreturn')) return false;
       if (c.closest && c.closest('[inert]')) { blocked = true; return false; }
       return !!(c.getClientRects && c.getClientRects().length);
@@ -145,7 +145,8 @@ window.survival = {
     }
     function go() {
       var ae = document.activeElement;
-      if (ae && ae !== document.body && ae !== prev) return;   // 已有新的明确焦点：不抢
+      // B36a 试玩修复 B2（Q1123 A）：标了 data-lock-noreturn 的控件或容器（休息页开始键、本页容器）不算新的明确焦点，照常改落原页落点
+      if (ae && ae !== document.body && ae !== prev && !(ae.hasAttribute && ae.hasAttribute('data-lock-noreturn'))) return;   // 已有新的明确焦点：不抢
       var t = pick();
       if (!t) { if (blocked && ++tries < 20) requestAnimationFrame(go); return; }
       try { t.focus({ preventScroll: true }); } catch (e) { }
@@ -199,6 +200,11 @@ window.survival = {
     // B51c2b／B59a 试玩修复 M1137（S14 FACPROC-A11「不遮唯一确认」）：窗比滚动区高时，最后保证标了 data-reveal-last 的确认行可见
     var last = el.querySelector && el.querySelector('[data-reveal-last]');
     if (last) { try { last.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { last.scrollIntoView(false); } }
+  },
+  // B36a 试玩修复 D2：把选择器找到的第一个元素滚到可见（最近边对齐，同 revealNearest），找不到不动；不动焦点
+  revealQuery: function (sel) {
+    var el = sel ? document.querySelector(sel) : null;
+    if (el) window.survival.revealNearest(el);
   },
   // B59a 试玩修复 M1137：把焦点放到选择器找到的第一个元素上（不滚动），找不到不动
   focusQuery: function (sel) {
