@@ -155,7 +155,7 @@ button:is(:disabled, .gate-off) { cursor: not-allowed; }
 }
 .sub-head, .apop-head { border-color: var(--ink2-btn-edge); }
 .sub-head h2, .apop-title, .menu-box h2 { color: var(--ink2-light); font-family: var(--title-font); }
-.help-topic, .help-fig, .goal-day { background: var(--ink2-dark); border-color: var(--ink2-paper-bottom); }
+.help-topic, .help-summary, .help-fig, .goal-day { background: var(--ink2-dark); border-color: var(--ink2-paper-bottom); }
 .risk.danger, .toast.bad { background: var(--ink2-btn-fill); border-color: var(--ink2-btn-primary-edge); }
 /* BM4b（Q585）：对白层不再铺整块铁框底板；只给头像框、推进条带必要底色 */
 .dlg-face, .dlg-layer .dlg-aux .dlg-hint, .dlg-layer .dlg-title { background: var(--iron-texture), color-mix(in srgb, var(--ink2-dark) 95%, transparent); border-color: var(--ink2-meter-gold); }

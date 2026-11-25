@@ -1,8 +1,10 @@
 @inherits GameComponent
 
-@* 顶栏“系统说明”（S14 §13.3）：带图标的主题目录 → 主题条目 → 正文，正文独立滚动；始终有返回/关闭。
-   Esc 每次返回一级（条目 → 主题 → 目录 → 关闭）；从详情定位进来的直接回原入口。只读浏览：不推进时间、不改选择、不执行玩法。
-   正文与插图（方位图例、状态图标、指令图）由 HelpCatalog 按配置现算；属性/状态详情的“相关说明”直接定位到同一条目。 *@
+@* 顶栏“系统说明”（B36a：02 Q812 A、Q889 A、Q890 B、Q899 A、Q955 B、Q821；逐字稿 §2 P08g、2026-11-16／11-17 B36 本批，取代 S14 §13.3 首页图标网格）：
+   左栏「主题」列现有9主题，所选主题在左栏展开它的原条目；右栏是条目正文，没选条目时显示该主题摘要，顶栏正常新开（没选主题）时列9个主题的原摘要。
+   两个退出控件：正文里的「‹ 返回」只回所属主题摘要（只在显示条目正文时出现）；另一个独立退出按真实来路写「关闭」（回主界面）或「返回」（回原窗口，含食饮盘）。
+   Esc／返回语义每次一层：条目正文 → 所属主题摘要 → 真实原入口；直接定位进来的同样先退主题（撤掉原 _helpDirect 一步直关），不额外插9摘要总览。
+   左栏目录点击不压窗口返回链。只读浏览：不推进时间、不改选择、不执行玩法。正文与插图由 HelpCatalog 按配置现算。 *@
 @{
     var e = G.E;
     var s = G.S;
@@ -13,34 +15,45 @@
 <div class="sub-panel help-panel" role="dialog" aria-label="系统说明">
     <div class="sub-head">
         <div class="help-crumb">
-            @if (topic != null)
+            @if (entry != null)
             {
-                @if (G.HelpFromFeed)
-                {
-                    <button type="button" class="secondary help-back" data-help-feed-back @onclick="G.CloseHelp">‹ @FeedPanelCopy.HelpBack<EscCap On="@G.EscOnHelpBack" /></button>
-                }
-                else
-                {
-                    <button type="button" class="secondary help-back" @onclick="G.HelpBack">‹ 返回<EscCap On="@G.EscOnHelpBack" /></button>
-                }
+                <button type="button" class="secondary help-back" data-pt="help-back" @onclick="G.HelpBack">‹ 返回<EscCap On="@G.EscOnHelpBack" /></button>
             }
             <h2>系统说明</h2>
             @if (topic != null) { <span class="sub">@HelpCatalog.Crumb(topic, entry)</span> }
             else { <span class="sub">通用规则 · 只读浏览，不消耗时间</span> }
         </div>
-        <button class="secondary" @onclick="G.CloseHelp">@G.PanelCloseLabel<EscCap On="@G.EscOnHelpClose" /></button>
+        <button class="secondary" data-pt="help-exit" @onclick="G.CloseHelp">@G.HelpExitLabel<EscCap On="@G.EscOnHelpClose" /></button>
     </div>
-    <div class="sub-body help-body" data-wheel="y">
+    <ReadingSplit Pt="help-split" Class="help-body" NavTitle="@TopicsTitle" NavLabel="@TopicsTitle" BodyLabel="说明内容">
+        <Nav>
+            @foreach (var t in HelpCatalog.Topics)
+            {
+                var id = t.Id;
+                var tOn = topic?.Id == id;
+                <button type="button" class="@ReadingSplit.ItemClass(tOn && entry == null) help-topic-item" aria-expanded="@(tOn ? "true" : "false")" data-pt="help-topic" data-topic="@id" @onclick="() => G.HelpPick(id, null)">
+                    <span class="ht-icon small">@Icons.Markup(t.Icon)</span><b>@t.Title</b>
+                </button>
+                @if (tOn)
+                {
+                    @foreach (var en in t.Entries)
+                    {
+                        var eid = en.Id;
+                        <button type="button" class="@ReadingSplit.ItemClass(entry?.Id == eid) sub" data-pt="help-entry" data-entry="@eid" @onclick="() => G.HelpPick(id, eid)">@en.Title</button>
+                    }
+                }
+            }
+        </Nav>
+        <Body>
         @if (topic == null)
         {
-            <div class="help-topics">
+            <div class="help-overview" data-pt="help-overview">
                 @foreach (var t in HelpCatalog.Topics)
                 {
-                    var id = t.Id;
-                    <button type="button" class="help-topic" @onclick="() => G.HelpPick(id, null)">
+                    <div class="help-summary" data-pt="help-summary" data-topic="@t.Id">
                         <span class="ht-icon">@Icons.Markup(t.Icon)</span>
                         <span class="ht-text"><b>@t.Title</b><small>@t.Summary</small></span>
-                    </button>
+                    </div>
                 }
             </div>
         }
@@ -48,23 +61,16 @@
         {
             @if (topic.Entries.Count == 0)
             {
-                <div class="empty-zone help-empty">
+                <div class="empty-zone help-empty" data-pt="help-topic-summary">
                     <strong>内容整理中</strong>
                     <span>@topic.Summary</span>
                 </div>
             }
             else
             {
-                <div class="help-entries">
-                    @foreach (var en in topic.Entries)
-                    {
-                        var tid = topic.Id;
-                        var eid = en.Id;
-                        <button type="button" class="help-entry" @onclick="() => G.HelpPick(tid, eid)">
-                            @if (en.Icon != null) { <span class="ht-icon small">@Icons.Markup(en.Icon)</span> }
-                            <b>@en.Title</b><span class="muted">›</span>
-                        </button>
-                    }
+                <div class="help-summary one" data-pt="help-topic-summary">
+                    <span class="ht-icon">@Icons.Markup(topic.Icon)</span>
+                    <span class="ht-text"><b>@topic.Title</b><small>@topic.Summary</small></span>
                 </div>
             }
         }
@@ -115,10 +121,14 @@
                 }
             </article>
         }
-    </div>
+        </Body>
+    </ReadingSplit>
 </div>
 
 @code {
+    /// <summary>左栏标题（逐字稿 §2 P08g「主题」；2026-11-16 B36 逐字表「系统说明左栏：主题及现有9主题／原条目名」）。</summary>
+    public const string TopicsTitle = "主题";
+
     /// <summary>插图：Icons 键，或 "dir:N" 方位箭头（与地块卡方位徽标同一画法）。</summary>
     private static MarkupString FigIcon(string key)
     {

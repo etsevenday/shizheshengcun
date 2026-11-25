@@ -1029,6 +1029,13 @@ kbd { font-size: var(--fs-aux); }
 .help-topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
 .help-topic { display: flex; gap: 10px; align-items: center; min-height: 72px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #1f2721; text-align: left; }
 .help-topic:hover, .help-topic:focus-visible { border-color: var(--accent); }
+/* B36a（Q812 A、Q889 A）：左栏主题＋展开条目；右栏9主题摘要总览／单主题摘要（沿原主题卡样式） */
+.help-overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.help-summary { display: flex; gap: 10px; align-items: center; min-height: 72px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #1f2721; }
+.help-summary.one { max-width: 560px; }
+.help-topic-item .ht-icon.small { width: 28px; height: 28px; }
+.help-topic-item .ht-icon.small svg { width: 24px; height: 24px; }
+.help-topic-item b { font-weight: 500; }
 .ht-icon { flex: 0 0 auto; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; background: #efe9d5; border-radius: 8px; }
 .ht-icon svg { width: 44px; height: 44px; }
 .ht-icon.small { width: 36px; height: 36px; }

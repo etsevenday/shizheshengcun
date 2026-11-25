@@ -138,7 +138,7 @@ public sealed partial class GameSession
             case "formation": FormationDraft = null; FormationPick = null; FormationLeader = null; break;
             case "growth": ClosePracticeDraft(); break;
             case "gear": GivePending = null; break;
-            case "help": HelpTopic = null; HelpEntry = null; _helpDirect = false; break;
+            case "help": HelpTopic = null; HelpEntry = null; break;
         }
     }
 

@@ -133,9 +133,9 @@ public sealed partial class GameSession
     /// <summary>居中局部盘里的「取消／关闭」此刻承接 Esc（盘只有一个，所以盘里的取消即是这一层）。</summary>
     public bool EscOnDisk => EscOwner is EscOwner.Disk or EscOwner.Pop or EscOwner.Ignite or EscOwner.Feed;
 
-    /// <summary>系统说明「‹ 返回」此刻承接 Esc（不在目录层；从详情定位进来的返回即关闭，也算返回键）。</summary>
-    public bool EscOnHelpBack => (EscOwner == EscOwner.HelpBack || EscOwner == EscOwner.BattleHelp) && HelpTopic != null;
+    /// <summary>系统说明正文「‹ 返回」此刻承接 Esc（B36a Q890 B、Q899 A：显示条目正文时 Esc 先回所属主题）。</summary>
+    public bool EscOnHelpBack => (EscOwner == EscOwner.HelpBack || EscOwner == EscOwner.BattleHelp) && HelpEntry != null;
 
-    /// <summary>系统说明「关闭」此刻承接 Esc（目录层的退一级就是关闭）。</summary>
-    public bool EscOnHelpClose => (EscOwner == EscOwner.HelpBack || EscOwner == EscOwner.BattleHelp) && HelpTopic == null;
+    /// <summary>系统说明独立退出（关闭／返回）此刻承接 Esc（主题摘要或9主题总览时，退一层就是退出说明回原入口）。</summary>
+    public bool EscOnHelpClose => (EscOwner == EscOwner.HelpBack || EscOwner == EscOwner.BattleHelp) && HelpEntry == null;
 }

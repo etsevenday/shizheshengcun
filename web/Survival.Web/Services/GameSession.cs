@@ -436,10 +436,12 @@ public sealed partial class GameSession
         StatusHover = null;
     }
 
-    /// <summary>系统说明当前主题与条目（null 为目录 / 主题页）。Esc 每次返回一级：条目 → 主题 → 关闭（S14 §13.3）。</summary>
+    /// <summary>
+    /// 系统说明当前主题与条目（B36a，02 Q812 A、Q889 A、Q890 B）：HelpTopic 为 null 是顶栏新开的9主题摘要总览；有主题无条目是该主题摘要；有条目是正文。
+    /// Esc／返回语义每次一层：条目 → 所属主题摘要 → 真实原入口（直接定位进来的同样先退主题，撤掉原 _helpDirect 一步直关；不额外插总览一层）。
+    /// </summary>
     public string? HelpTopic { get; private set; }
     public string? HelpEntry { get; private set; }
-    private bool _helpDirect;
     /// <summary>从固定的状态说明浮层“相关说明”进入时，关闭说明后要恢复的那个浮层与锚点（试玩修复 B8：Esc 逐层回到来源）。</summary>
     private string? _helpReturnStatus;
     private (double Left, double Top) _helpReturnAnchor;
@@ -474,7 +476,6 @@ public sealed partial class GameSession
             }
             else _chain.Remove("help");
         }
-        _helpDirect = topic != null;
         _helpReturnStatus = null;
         HelpTopic = topic;
         HelpEntry = entry;
@@ -484,30 +485,33 @@ public sealed partial class GameSession
     }
 
     /// <summary>
-    /// 系统说明内退一级：条目 → 主题 → 目录 → 关闭。从对象/属性/状态详情直接定位进来的，返回时回到原入口上下文（直接关闭），不强制跳到目录首页。
+    /// 系统说明内退一层（Esc 与正文「‹ 返回」，B36a Q812 A、Q890 B、Q899 A）：显示条目正文时回所属主题摘要；其余（主题摘要、9主题总览）退出说明回真实原入口。
+    /// 从详情、食饮盘直接定位进来的也先退主题，再一次回原入口；每次只退一层。
     /// </summary>
     public void HelpBack()
     {
-        if (_helpDirect) { CloseHelp(); return; }
         if (HelpEntry != null) { HelpEntry = null; Notify(); return; }
-        if (HelpTopic != null) { HelpTopic = null; Notify(); return; }
         CloseHelp();
     }
 
-    /// <summary>在说明内点选主题/条目（玩家主动翻阅后按目录层级返回）。</summary>
+    /// <summary>在说明左栏点选主题／条目（B36a Q812、Q821：目录选择不往窗口返回链压层）。</summary>
     public void HelpPick(string? topic, string? entry)
     {
         HelpTopic = topic;
         HelpEntry = entry;
-        _helpDirect = false;
         Notify();
     }
+
+    /// <summary>
+    /// 系统说明独立退出控件的字（B36a，02 Q821 A、Q899 A、Q955 B）：退出回主界面写「关闭」，回真实保留的原窗口写「返回」；
+    /// 从食饮盘进来回原食饮盘也写「返回」（停用「返回食饮」，FeedPanelCopy.HelpBack）。
+    /// </summary>
+    public string HelpExitLabel => HelpFromFeed && BattleDrawer != "help" ? FeedPanelCopy.HelpBack : PanelCloseLabel;
 
     public void CloseHelp()
     {
         HelpTopic = null;
         HelpEntry = null;
-        _helpDirect = false;
         if (BattleDrawer == "help") BattleDrawer = null;   // B9：战斗内的说明抽屉随之收起
         // B29：从食饮盘进来的回到原来的面板（整备也算），食饮盘由 FeedPop 重新校验后显示；
         // BM4a（Q590）：关说明只退这一层，下面有窗口（说明打开前的面板，或之前叠上的各层）就恢复紧挨着的那一层
@@ -839,7 +843,7 @@ public sealed partial class GameSession
         HelpFromFeed = false;
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
         if (next != null) { IgniteMenuOpen = false; if (next is "map" or "craft" or "rest" or FireMenuPanel) DetailTab = DetailTab.Object; }
-        if (next == "help" && !restore) { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturnStatus = null; }
+        if (next == "help" && !restore) { HelpTopic = null; HelpEntry = null; _helpReturnStatus = null; }
         if (next == "dialogs" && !restore) DialogLogPick = null;
         // B36a（Q814 A、Q822 A）：行动日志新开回最新一天、生存提示新开回「当前状况」（盖在下层或恢复时保留所选目录）
         if (next == "log" && !restore) LogDay = null;
@@ -2810,7 +2814,7 @@ public sealed partial class GameSession
         // B34 试玩修复 E4：子页占场景与操作台两行，打开时页面回到顶部，让标题、副标与「返回战斗」在视口内；关回时阅读区仍开着就滚回阅读区
         if (!wasOpen && BattleDrawer != null) BattleScrollTo = "top";
         else if (wasOpen && BattleDrawer == null && BattleInfoPage != null) BattleScrollTo = "info";
-        if (BattleDrawer == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturnStatus = null; }
+        if (BattleDrawer == "help") { HelpTopic = null; HelpEntry = null; _helpReturnStatus = null; }
         MedTrayOpen = false;
         Notify();
     }
@@ -3638,7 +3642,7 @@ public sealed partial class GameSession
     /// <summary>队伍面板里展开随身物品的成员，同一时刻最多一人；只是界面状态。</summary>
     public string? PartyItemsOpen { get; private set; }
 
-    /// <summary>系统说明是从食饮盘打开的：返回按钮写“返回食饮”，关闭后回原盘。</summary>
+    /// <summary>系统说明是从食饮盘打开的：独立退出写「返回」（B36a Q955 B），关闭后回原盘。</summary>
     public bool HelpFromFeed { get; private set; }
 
     /// <summary>从入口开盘：目标留空，所点实例只作待重验候选。</summary>
@@ -3710,6 +3714,7 @@ public sealed partial class GameSession
         if (FeedPending == null || InBattleUi || DialogueLocked) return;
         OpenHelp("body", FeedHelpEntry);
         HelpFromFeed = true;
+        Notify();   // B36a（Q955 B）：退出控件的「返回」按来路取字，标记后再刷新一次（OpenHelp 内的刷新早于标记）
     }
 
     /// <summary>切成员或收起列表都清掉未提交意图。</summary>

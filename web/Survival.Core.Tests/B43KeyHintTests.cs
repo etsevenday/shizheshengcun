@@ -102,7 +102,8 @@ public class B43KeyHintTests : TestBase
             Assert.That(src, Does.Contain(panel), f);
             Assert.That(src, Does.Not.Contain("<kbd>Esc</kbd>"), f + "：旧的常驻 Esc 换成按层显示的 ESC");
         }
-        Assert.That(Web("Components/HelpOverlay.razor"), Does.Contain("@G.PanelCloseLabel<EscCap On=\"@G.EscOnHelpClose\" />").And.Contain("‹ 返回<EscCap On=\"@G.EscOnHelpBack\" />"));
+        // B36a 改（02 Q890 B、Q899 A、Q955 B；测试规则第 8 条）：系统说明独立退出改按来路取字（G.HelpExitLabel），正文「‹ 返回」只在条目正文时出现；
+        // 两个控件的 ESC 键帽随层移动由 bUnit B36aHelpUiTests.DirectEntry_Esc_TopicThenExit 断言渲染结果，这里不再读 HelpOverlay 源码
         Assert.That(Web("Components/GearCompare.razor") + Web("Components/GearGive.razor"), Does.Contain("@GearPanelCopy.Back<EscCap On=\"@(G.EscOwner == EscOwner.GearSub)\" />"));
         Assert.That(Web("Components/AttrDetail.razor"), Does.Contain("‹ 人物<EscCap On=\"@(G.EscOwner == EscOwner.CharPage)\" />"));
         // B35c 改期望（S14 2026-11-16 B35 节 Q804：城市层撤“返回当前地点”；Q595：鸟瞰并入地图）：城市层不再有自己的关闭键，Esc 先取消所选目的地（MapPick），再由地图关闭键（EscOwner.Panel，上面 MapOverlay 已断）收起

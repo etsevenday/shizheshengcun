@@ -29,7 +29,8 @@ namespace Survival.Core.Engine
         public const string Cancel = "取消";
         public const string CloseAria = "关闭食饮窗口";
         public const string Help = "查看食饮说明";
-        public const string HelpBack = "返回食饮";
+        /// <summary>从食饮盘进系统说明时独立退出控件的字（02 Q955 B：只写「返回」，停用 B29 helpBack「返回食饮」；仍回真实食饮盘）。</summary>
+        public const string HelpBack = "返回";
         public const string LabelTarget = "目标：{目标}";
         public const string LabelSource = "出物人：{出物人}";
         public const string LabelPortion = "本次用量：{用量}";

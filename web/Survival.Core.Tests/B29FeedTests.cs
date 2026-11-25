@@ -149,6 +149,9 @@ public class B29FeedTests : TestBase
             ["sourceRows.canteen"] = ("{出物人}的随身{水壶}#{壶号} · {水种}{毫升}/{容量}毫升（{可饮次数}次，每次250毫升）", "{出物人}的随身{水壶}#{壶号} · {水种}{毫升}/{容量}毫升（可用{可饮份数}份，每份100毫升）"),
             ["portion.water"] = ("{水种}500毫升", "{水种}{所选毫升}毫升"),
             ["portion.canteen"] = ("{水种}250毫升", "{水种}{所选毫升}毫升"),
+            // B36a（02 Q955 B，合同 b36a-q950-q955-ui-copy.json help.deprecateOldFoodBackCopy／independentExitFromFood）：从食饮进系统说明的独立退出只写「返回」，停用 B29「返回食饮」
+            ["helpBack"] = (SourceText.Contract("b36a-q950-q955-ui-copy.json")["help"]!["deprecateOldFoodBackCopy"]!.Value<string>()!,
+                            SourceText.Contract("b36a-q950-q955-ui-copy.json")["help"]!["independentExitFromFood"]!.Value<string>()!),
         };
         foreach (var (path, text) in flat)
         {

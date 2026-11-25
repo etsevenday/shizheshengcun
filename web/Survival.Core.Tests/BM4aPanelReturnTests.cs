@@ -107,7 +107,7 @@ public class BM4aPanelReturnTests : TestBase
         Assert.That(Web("Components", "MapOverlay.razor"), Does.Contain("@(G.SourceItem != null ? BackToSources : G.PanelCloseLabel)<EscCap On=\"@(G.EscOwner == EscOwner.Panel)\" />"));
         foreach (var f in new[] { "RestOverlay", "LogOverlay", "GoalsOverlay", "TipsOverlay", "DialogueLogOverlay", "GrowthOverlay", "JourneyOverlay", "CityServiceOverlay", "DryingOverlay", "FireMenu" })
             Assert.That(Web("Components", f + ".razor"), Does.Contain("@G.PanelCloseLabel<EscCap On=\"@(G.EscOwner == EscOwner.Panel)\" />"), f);
-        Assert.That(Web("Components", "HelpOverlay.razor"), Does.Contain("@G.PanelCloseLabel<EscCap On=\"@G.EscOnHelpClose\" />"));
+        // B36a 改（02 Q821 A、Q955 B；测试规则第 8 条）：系统说明独立退出改 G.HelpExitLabel（食饮来路也写「返回」），渲染见 bUnit B36aHelpUiTests.OverCraft_ExitReturn_BackToCraft_TopicClicksNoExtraLayer、FromFeed_ExitSaysReturn_EscEntryTopicThenFeed
         Assert.That(Web("Components", "GearOverlay.razor"), Does.Contain("G.PanelHasUnder ? PanelReturnChain.ReturnLabel : GearPanelCopy.Close"));
         Assert.That(Web("Components", "CraftOverlay.razor"), Does.Contain("G.CraftFromCandidates && !G.PanelHasUnder ? \"返回\" : G.PanelCloseLabel"), "B35a1（Q934）：选择层撤后改为从候选进入的工作区写「返回」");
         Assert.That(Web("Components", "FormationOverlay.razor"), Does.Contain(">取消<EscCap"), "编队原是「取消」，不改");

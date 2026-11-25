@@ -62,7 +62,8 @@ public class B29FeedUiWiringTests
         var help = Web("Services/HelpCatalog.cs");
         var topic = help.IndexOf("Id = \"body\"");
         Assert.That(help.IndexOf("Id = GameSession.FeedHelpEntry"), Is.GreaterThan(topic));
-        Assert.That(Web("Components/HelpOverlay.razor"), Does.Contain("FeedPanelCopy.HelpBack"));
+        // B36a 改（02 Q955 B 取代 B29 helpBack「返回食饮」；测试规则第 8 条）：食饮来路的独立退出字改由 GameSession.HelpExitLabel 取 FeedPanelCopy.HelpBack，
+        // 渲染「返回」与回原食饮盘见 bUnit B36aHelpUiTests.FromFeed_ExitSaysReturn_EscEntryTopicThenFeed
         Assert.That(Web("Services/GameSession.cs"), Does.Contain("OpenHelp(\"body\", FeedHelpEntry);"));
     }
 }
