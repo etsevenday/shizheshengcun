@@ -1778,6 +1778,16 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .goal-task small { font-size: var(--fs-aux); color: #b9bfae; line-height: 1.4; }
 .goal-day li.done .goal-task small { color: inherit; opacity: .85; }
 .goal-gate { font-style: normal; font-size: var(--fs-aux); color: var(--accent); border: 1px solid var(--accent); border-radius: 3px; padding: 0 3px; margin-left: 6px; }
+/* B36a（Q813 B、Q888 A、Q954）：生存目标右栏所选任务详情 */
+.goal-detail { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-body); }
+.goal-detail header { display: flex; gap: 8px; align-items: baseline; }
+.goal-detail.done header b { color: var(--good); }
+.goal-detail .goal-mark.done { color: var(--good); }
+.goal-stage { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; font-size: var(--fs-aux); }
+.goal-stage span { color: var(--muted); flex-basis: 100%; }
+.goal-quest-foot { font-size: var(--fs-aux); }
+.goal-quick { margin-top: 2px; }
+.goal-now { margin-bottom: 0; }
 /* 远行准备（PRO17） */
 .journey-body { display: flex; flex-direction: column; gap: 12px; }
 .journey-body h3 { margin: 0 0 6px; font-size: var(--fs-body); font-weight: 500; color: var(--accent); }

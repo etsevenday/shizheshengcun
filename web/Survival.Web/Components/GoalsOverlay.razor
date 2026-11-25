@@ -1,10 +1,13 @@
 @inherits GameComponent
 
-@* 顶栏“生存目标”= 序章任务册（S15 §3/§4、S14「序章引导」、A10-TUTOR §1/§5；开发计划 v0.9 B13 R39/R43）。
-   前台七日目标、倒计时与七日成功窗已退役；这里列当前主目标与最多两条建议、完整 PRO01—18（按建议阶段分组，已完成写完成时间，旧档追认另标），
-   每项的完成条件与中性系统提示（关闭过的也可回看），求医路线日志与远行准备入口，以及旧档的七日检查历史记录。
-   只浏览：打开/关闭/Esc 不推进时间、不领奖、不重播剧情；建议日程不是失败倒计时。任务角与本入口并存（开发假设 B13-H10）。
-   B13d（Q129 选 B）：分组标题用策划 6 阶段短句（标题+重点），每项写任务标题与“下一步”短句（按实际缺项替换），已完成另写简短结果；不显示内部完成条件。 *@
+@* 顶栏“生存目标”= 主线委托＋序章任务册（S15 §3/§4、S14「序章引导」、A10-TUTOR §1/§5；开发计划 v0.9 B13 R39/R43）。
+   B36a（02 Q813 B、Q888 A、Q898 B、Q954①②③；逐字稿 §2 P08d 与 2026-11-17／11-18 B36、B36a 本批）：
+   左栏每条真实任务一项——主线与委托在前，序章随后按原六阶段的稳定顺序，各部分内部沿原顺序；不插阶段组头，不加「当前目标／已完成」文字标签，完成仍✓；
+   旧档的七日检查「历史」放左栏最后。右栏是所选任务的原全文：上方固定共用的主目标区（主目标下一步、最多两条求生建议），下方固定原有效快捷按钮
+   （查看路线／远行准备／定位营地／暂停或恢复操作提示，各按原资格出现）；没有真实主目标就不生成这整块。
+   委托详情的「下一步：」改「当前进度：」，原结果保持，原「主线与委托」组头说明移到每条委托末尾浅色；序章任务名下写所属阶段原标题与重点两段、当前阶段带原「当前」角标。
+   新开默认选主目标对应的原任务；主目标没有对应任务条目时选左栏第一条未完成任务（开发方 D4，02 Q1126 A）。
+   只浏览：打开/关闭/Esc/换任务不推进时间、不领奖、不接取、不重播剧情；建议日程不是失败倒计时。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -15,108 +18,162 @@
     var sugg = e.CurrentSuggestions(s);
     var routeKnown = s.Progress.Flags.Contains(GameEngine.FactCampRouteKnown);
     var book = e.QuestBook(s);
+    // 左栏顺序（Q898 B）：主线与委托 → 序章按阶段稳定顺序
+    var order = new List<(string Key, bool Done)>();
+    foreach (var v in book) order.Add((QuestKey(v.Id), v.Status == "done"));
+    foreach (var st in cfg.Stages)
+        foreach (var t in tasks.Where(t => t.Config.Stage == st.Id)) order.Add((TaskKey(t.Config.Id), t.Done));
+    var history = s.Progress.SevenDayShown;
+    var pick = PickOf(G.GoalPick, obj, order, history);
 }
 
 <div class="sub-panel goals-panel" role="dialog" aria-label="生存目标">
     <div class="sub-head">
-        <div><h2>生存目标</h2><span class="sub">存活第@(Clock.Day(s.GameMinute))日 · 序章任务 @(done)/@(tasks.Count) · 建议日程，不是失败倒计时</span></div>
-        <button class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+        <div><h2>生存目标</h2><span class="sub" data-pt="goals-sub">存活第@(Clock.Day(s.GameMinute))日 · 序章任务@(done)/@(tasks.Count) · 建议日程，不是失败倒计时</span></div>
+        <button class="secondary" data-pt="goals-close" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
-    <div class="sub-body goals-body" data-wheel="y">
-        @if (obj != null)
-        {
-            <section class="goal-now">
-                <header><b>主目标</b><span>@obj.Title</span></header>
-                <p>@obj.Step</p>
-                @if (sugg.Count > 0)
-                {
-                    <div class="goal-sugg"><b>求生建议</b>@foreach (var x in sugg) {<span title="@x.Step">@x.Title</span>}</div>
-                }
-                <div class="btn-row">
-                    @if (routeKnown)
-                    {
-                        <button class="secondary" title="重读求医路线（不移动、不揭开未知、不替你探索）" @onclick="RouteLog">查看路线</button>
-                        <button class="secondary" title="路线、当前状态与随身预览，确认远行准备（不耗时）" @onclick='() => G.OpenPanel("journey")'>远行准备</button>
-                    }
-                    @if (GameEngine.VisitorRegistered(s))
-                    {
-                        <button class="secondary" title="在区域地图上定位临时营地（只看地图，不移动）" @onclick="LocateCamp">定位@(e.LocName(cfg.Visitor.LocationId))</button>
-                    }
-                    @if (s.Prologue.HintsPaused)
-                    {
-                        <button class="secondary" title="恢复中性操作提示" @onclick="() => G.SetHintsPaused(false)">恢复操作提示</button>
-                    }
-                    else
-                    {
-                        <button class="secondary" title="只关闭中性操作提示；剧情、危险提示与任务不受影响" @onclick="() => G.SetHintsPaused(true)">暂停操作提示</button>
-                    }
-                </div>
-            </section>
-        }
-        <div class="goal-days">
-            @* B15（R46/R47）：主线与城市委托——只列已知的（前置未满足的写真实条件），在岗位“事项”里接取与办理；浏览不耗时 *@
-            @if (book.Count > 0)
+    <ReadingSplit Pt="goals-split" NavLabel="任务">
+        <Nav>
+            @foreach (var v in book)
             {
-                <section class="goal-day quest-book">
-                    <header><b>主线与委托</b><span>到相应地点与岗位交谈或在“事项”里办理；浏览不耗时</span></header>
-                    <ul>
-                        @foreach (var v in book)
-                        {
-                            var qdone = v.Status == "done";
-                            var qmark = qdone ? "✓" : v.Status == "locked" ? "·" : "○";
-                            var qkey = Peek.Card("goal-q-" + v.Id);
-                            <li class="@(qdone ? "done" : "") @(v.Status == "locked" ? "later" : "")" tabindex="0" data-peek="@qkey">
-                                <span class="goal-mark" aria-hidden="true">@qmark</span>
-                                <span class="goal-task">
-                                    <b>@v.Title</b><em class="goal-gate">@v.KindLabel</em>
-                                    @QuestLines(v)
-                                </span>
-                                <span class="sr-only">@(qdone ? "（已完成）" : "（未完成）")</span>
-                                @* B42：悬停或聚焦条目时右栏显示同一条目的原公开内容（只读） *@
-                                <PeekSource Key="@qkey" Title="@v.Title" State="@v.KindLabel" Body="@QuestLines(v)" />
-                            </li>
-                        }
-                    </ul>
-                </section>
+                var qdone = v.Status == "done";
+                var qmark = qdone ? "✓" : v.Status == "locked" ? "·" : "○";
+                var qkey = Peek.Card("goal-q-" + v.Id);
+                var k = QuestKey(v.Id);
+                <button type="button" class="@ReadingSplit.ItemClass(k == pick) @(qdone ? "done" : "") @(v.Status == "locked" ? "later" : "")" aria-pressed="@(k == pick)"
+                        data-pt="goal-item" data-goal="@k" data-peek="@qkey" @onclick="() => Pick(k)">
+                    <span class="rn-mark" aria-hidden="true">@qmark</span><b>@v.Title</b>
+                    <span class="sr-only">@(qdone ? "（已完成）" : "（未完成）")</span>
+                    @* B42：悬停或聚焦条目时右栏显示同一条目的原公开内容（只读） *@
+                    <PeekSource Key="@qkey" Title="@v.Title" State="@v.KindLabel" Body="@QuestLines(v)" />
+                </button>
             }
             @foreach (var st in cfg.Stages)
             {
-                var group = tasks.Where(t => t.Config.Stage == st.Id).ToList();
-                if (group.Count == 0) continue;
-                var now = st.Id == s.Prologue.StageId;
-                var allDone = group.All(t => t.Done);
-                <section class="goal-day @(now ? "now" : "") @(allDone ? "done" : "")">
-                    <header><b>@st.Headline</b><span>@st.Focus</span>@if (now) {<em class="oc-badge here">当前</em>}</header>
-                    <ul>
-                        @foreach (var t in group)
-                        {
-                            var c = t.Config;
-                            var mark = t.Done ? "✓" : t.Relevant ? "○" : "·";
-                            var tkey = Peek.Card("goal-t-" + c.Id);
-                            <li class="@(t.Done ? "done" : "") @(t.Relevant || t.Done ? "" : "later")" tabindex="0" data-peek="@tkey">
-                                <span class="goal-mark" aria-hidden="true">@mark</span>
-                                <span class="goal-task">
-                                    <b>@c.Title</b>@if (c.ExitGate) {<em class="goal-gate">出区相关</em>}
-                                    @TaskLines(t)
-                                </span>
-                                <span class="sr-only">@(t.Done ? "（已完成）" : "（未完成）")</span>
-                                <PeekSource Key="@tkey" Title="@c.Title" State="@(c.ExitGate ? "出区相关" : null)" Body="@TaskLines(t)" />
-                            </li>
-                        }
-                    </ul>
-                </section>
+                @foreach (var t in tasks.Where(t => t.Config.Stage == st.Id))
+                {
+                    var c = t.Config;
+                    var mark = t.Done ? "✓" : t.Relevant ? "○" : "·";
+                    var tkey = Peek.Card("goal-t-" + c.Id);
+                    var k = TaskKey(c.Id);
+                    <button type="button" class="@ReadingSplit.ItemClass(k == pick) @(t.Done ? "done" : "") @(t.Relevant || t.Done ? "" : "later")" aria-pressed="@(k == pick)"
+                            data-pt="goal-item" data-goal="@k" data-peek="@tkey" @onclick="() => Pick(k)">
+                        <span class="rn-mark" aria-hidden="true">@mark</span><b>@c.Title</b>
+                        <span class="sr-only">@(t.Done ? "（已完成）" : "（未完成）")</span>
+                        <PeekSource Key="@tkey" Title="@c.Title" State="@(c.ExitGate ? "出区相关" : null)" Body="@TaskLines(t)" />
+                    </button>
+                }
             }
-            @if (s.Progress.SevenDayShown)
+            @if (history)
             {
-                <section class="goal-day done">
-                    <header><b>历史</b><span>七日基础生存检查（旧版记录，已退役，不再作为目标）</span></header>
+                <button type="button" class="@ReadingSplit.ItemClass(pick == HistoryKey) done" aria-pressed="@(pick == HistoryKey)" data-pt="goal-item" data-goal="@HistoryKey" @onclick="() => Pick(HistoryKey)">
+                    <span class="rn-mark" aria-hidden="true"></span><b>历史</b>
+                </button>
+            }
+        </Nav>
+        <Body>
+            @if (obj != null)
+            {
+                @* Q888 A：所有任务详情共用的主目标区（上方：主目标下一步与最多两条建议） *@
+                <section class="goal-now" data-pt="goal-main">
+                    <header><b>主目标</b><span>@obj.Title</span></header>
+                    <p>@obj.Step</p>
+                    @if (sugg.Count > 0)
+                    {
+                        <div class="goal-sugg"><b>求生建议</b>@foreach (var x in sugg) {<span title="@x.Step">@x.Title</span>}</div>
+                    }
                 </section>
             }
-        </div>
-    </div>
+            @if (pick == HistoryKey)
+            {
+                <section class="goal-detail" data-pt="goal-detail">
+                    <header><b>历史</b></header>
+                    <p class="muted">七日基础生存检查（旧版记录，已退役，不再作为目标）</p>
+                </section>
+            }
+            else if (pick != null && pick.StartsWith("q:") && book.FirstOrDefault(v => QuestKey(v.Id) == pick) is QuestView qv)
+            {
+                <section class="goal-detail @(qv.Status == "done" ? "done" : "")" data-pt="goal-detail" data-goal="@pick">
+                    <header><b>@qv.Title</b><em class="goal-gate">@qv.KindLabel</em>@if (qv.Status == "done") {<span class="goal-mark done" aria-hidden="true">✓</span>}</header>
+                    <div class="goal-task">@QuestLines(qv)</div>
+                    @* Q954③：原「主线与委托」组头说明移到每条委托详情末尾（浅色） *@
+                    <small class="muted goal-quest-foot" data-pt="goal-quest-foot">@QuestFoot</small>
+                </section>
+            }
+            else if (pick != null && pick.StartsWith("t:") && tasks.FirstOrDefault(t => TaskKey(t.Config.Id) == pick) is PrologueTaskView tv)
+            {
+                var c = tv.Config;
+                var st = cfg.Stages.FirstOrDefault(x => x.Id == c.Stage);
+                <section class="goal-detail @(tv.Done ? "done" : "")" data-pt="goal-detail" data-goal="@pick">
+                    <header><b>@c.Title</b>@if (c.ExitGate) {<em class="goal-gate">出区相关</em>}@if (tv.Done) {<span class="goal-mark done" aria-hidden="true">✓</span>}</header>
+                    @if (st != null)
+                    {
+                        @* Q954②：任务名下写该任务所属阶段的原标题与重点两段，当前阶段带原「当前」角标，不加「所属阶段：」前缀 *@
+                        <div class="goal-stage" data-pt="goal-stage">
+                            <b>@st.Headline</b>@if (st.Id == s.Prologue.StageId) {<em class="oc-badge here" data-pt="goal-stage-now">当前</em>}
+                            <span>@st.Focus</span>
+                        </div>
+                    }
+                    <div class="goal-task">@TaskLines(tv)</div>
+                </section>
+            }
+            @if (obj != null)
+            {
+                @* Q888 A：下方固定原有效快捷按钮（各按原资格出现；定位营地只看地图不移动） *@
+                <div class="btn-row goal-quick" data-pt="goal-quick">
+                    @if (routeKnown)
+                    {
+                        <button class="secondary" data-pt="goal-route" title="重读求医路线（不移动、不揭开未知、不替你探索）" @onclick="RouteLog">查看路线</button>
+                        <button class="secondary" data-pt="goal-journey" title="路线、当前状态与随身预览，确认远行准备（不耗时）" @onclick='() => G.OpenPanel("journey")'>远行准备</button>
+                    }
+                    @if (GameEngine.VisitorRegistered(s))
+                    {
+                        <button class="secondary" data-pt="goal-camp" title="在区域地图上定位临时营地（只看地图，不移动）" @onclick="LocateCamp">定位@(e.LocName(cfg.Visitor.LocationId))</button>
+                    }
+                    @if (s.Prologue.HintsPaused)
+                    {
+                        <button class="secondary" data-pt="goal-hints" title="恢复中性操作提示" @onclick="() => G.SetHintsPaused(false)">恢复操作提示</button>
+                    }
+                    else
+                    {
+                        <button class="secondary" data-pt="goal-hints" title="只关闭中性操作提示；剧情、危险提示与任务不受影响" @onclick="() => G.SetHintsPaused(true)">暂停操作提示</button>
+                    }
+                </div>
+            }
+        </Body>
+    </ReadingSplit>
 </div>
 
 @code {
+    /// <summary>委托详情末尾的原办理说明（原「主线与委托」组头说明，02 Q954③ A；合同 b36a-q950-q955-ui-copy.json goals.commissionFooter）。</summary>
+    public const string QuestFoot = "到相应地点与岗位交谈或在“事项”里办理；浏览不耗时";
+    /// <summary>委托进度行前缀（02 Q954① A；合同 goals.commissionProgress「当前进度：{真实进度}」）。</summary>
+    public const string QuestProgressPrefix = "当前进度：";
+    public const string HistoryKey = "history";
+
+    public static string QuestKey(string id) => "q:" + id;
+    public static string TaskKey(string id) => "t:" + id;
+
+    /// <summary>
+    /// 右栏显示哪一条：本窗口里点过且仍在左栏的那条；否则主目标对应的原任务（Q888 A，序章任务或营区登记后的主线）；
+    /// 主目标没有对应任务条目（继续前进、安顿、主线全部完成、暂无主线等）时取左栏第一条未完成任务（D4，Q1126 A）；全都完成取第一条。
+    /// </summary>
+    public static string? PickOf(string? picked, PrologueObjectiveView? obj, List<(string Key, bool Done)> order, bool history)
+    {
+        bool Listed(string? k) => k != null && (order.Any(x => x.Key == k) || history && k == HistoryKey);
+        if (Listed(picked)) return picked;
+        var main = obj?.QuestId != null ? QuestKey(obj.QuestId) : obj?.TaskId != null ? TaskKey(obj.TaskId) : null;
+        if (Listed(main)) return main;
+        return order.FirstOrDefault(x => !x.Done).Key ?? order.FirstOrDefault().Key ?? (history ? HistoryKey : null);
+    }
+
+    private void Pick(string key)
+    {
+        G.PeekClear();   // B42：明确点选结束悬停查看
+        G.GoalPick = key;
+        G.Notify();
+    }
+
     private void Close() => G.OpenPanel(null);
 
     private RenderFragment QuestLines(QuestView v) => __builder =>
@@ -129,7 +186,7 @@
         }
         else
         {
-            <small>下一步：@v.Step</small>
+            <small data-pt="goal-quest-progress">@QuestProgressPrefix@v.Step</small>
             @* B15b（Q161 选 C）：进行中委托的工作提示与岗位事项同句（八条各自的定稿句） *@
             @if (!string.IsNullOrEmpty(v.WorkHint)) { <small class="muted">@v.WorkHint</small> }
             @if (v.Retro) { <small class="good-text">旧档追认（已接取）</small> }

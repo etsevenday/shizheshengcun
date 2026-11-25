@@ -16,6 +16,8 @@ namespace Survival.Core.Engine
         public string Step { get; set; } = "";
         /// <summary>对应任务（没有为 null）。</summary>
         public string? TaskId { get; set; }
+        /// <summary>B36a（02 Q888 A）：营区登记后主目标对应的主线任务（任务册 QuestView.Id，FA01—FA05）；不是主线为 null。生存目标页默认选中用，不参与序章提示。</summary>
+        public string? QuestId { get; set; }
     }
 
     /// <summary>前进类主目标下一真实路段的玩家可知状态（Q139）。</summary>
@@ -933,7 +935,7 @@ namespace Survival.Core.Engine
             var views = live.Select(id => QuestViewOf(s, id)).Where(v => v != null && v.Status != "done").Select(v => v!).ToList();
             var pick = views.FirstOrDefault(v => v.Status == "active") ?? views.FirstOrDefault(v => v.Status == "available");
             if (pick == null) return Special("main_quest_none", null, MainQuestObjectiveId);
-            return new PrologueObjectiveView { Id = MainQuestObjectiveId, Title = pick.Title, Step = pick.Step };
+            return new PrologueObjectiveView { Id = MainQuestObjectiveId, QuestId = pick.Id, Title = pick.Title, Step = pick.Step };
         }
 
         private PrologueObjectiveView Special(string id, string? taskId, string? viewId = null)

@@ -848,6 +848,7 @@ public sealed partial class GameSession
         // B36a（Q814 A、Q822 A）：行动日志新开回最新一天、生存提示新开回「当前状况」（盖在下层或恢复时保留所选目录）
         if (next == "log" && !restore) LogDay = null;
         if (next == "tips" && !restore) TipsList = false;
+        if (next == "goals" && !restore) GoalPick = null;
         // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）。
         // 试玩修复 M77-B8：原来这句 else 挂在 dialogs 判断上，打开休息/制作/地图也会被切回人物页，右栏看不到“详细预估”
         if (next == null && Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
@@ -1385,6 +1386,9 @@ public sealed partial class GameSession
 
     /// <summary>B36a（Q822 A）：生存提示左栏选的是「当前建议」（false＝默认「当前状况」）。</summary>
     public bool TipsList { get; set; }
+
+    /// <summary>B36a（Q813 B、Q888 A）：生存目标左栏点选的任务（"q:{委托}"、"t:{序章任务}"、"history"；null＝默认主目标对应任务）。只在本窗口内，不存档。</summary>
+    public string? GoalPick { get; set; }
 
     public GameEngine E => Engine!;
     public GameState S => State!;
