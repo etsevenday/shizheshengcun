@@ -1461,6 +1461,8 @@ public sealed partial class GameSession
     private void ResetOnLocationChange()
     {
         if (State == null) { _uiLocation.Reset(); return; }
+        // B36a（Q891 A）：换地点或区域（屋内／屋外）后本地箱区回默认收起
+        if (_boxesAt is var (bl, bz) && (bl != S.CurrentLocation || bz != S.CurrentZone)) _boxesAt = null;
         if (!_uiLocation.Observe(S.CurrentLocation)) return;
         ClearSelectionSilently();
         SelectedBatchKey = null;
@@ -3500,10 +3502,30 @@ public sealed partial class GameSession
     /// <summary>B22 试玩修复 M408：要在人物页滚到并高亮的遗物容器（回收箱卡“取出…”设，PartyPanel 渲染后滚动并清空）。</summary>
     public string? FocusRemainsKey { get; set; }
 
-    /// <summary>父地点“回收箱”卡“取出…”：切到人物页并滚到这座地牢的回收箱/遗物箱块。</summary>
+    /// <summary>
+    /// B36a（02 Q891 A）：右栏人物页本地箱区（遗物／认领箱／远征回收箱）展开时所在的地点与区域；新地点／区域回默认收起（ResetOnLocationChange 里重验）。
+    /// 只是界面收展，不取物、不耗时；在同一区打开数量／确认子窗再回来保持展开。
+    /// </summary>
+    private (string Loc, string? Zone)? _boxesAt;
+
+    public bool BoxesOpen => State != null && _boxesAt is var (l, z) && l == S.CurrentLocation && z == S.CurrentZone;
+
+    /// <summary>「查看认领箱」展开本地全部箱子；同一位置「返回」只收起箱区（不关人物页）。</summary>
+    public void ToggleBoxes()
+    {
+        if (State == null) return;
+        _boxesAt = BoxesOpen ? null : (S.CurrentLocation, S.CurrentZone);
+        Notify();
+    }
+
+    /// <summary>
+    /// 父地点“回收箱”卡“取出…”：切到人物页并滚到这座地牢的回收箱/遗物箱块。
+    /// B36a（02 Q953 A）：这次跳转视同点了「查看认领箱」——自动展开本地箱区再滚到并高亮对应箱一次；只是界面导航，不取物、不耗时、不移动。
+    /// </summary>
     public void ShowDungeonBoxes(string dungeonId)
     {
         if (State == null) return;
+        _boxesAt = (S.CurrentLocation, S.CurrentZone);
         FocusRemainsKey = E.RemainsItems(S, GameEngine.RecoveryBoxKey(dungeonId)).Count > 0 ? GameEngine.RecoveryBoxKey(dungeonId) : GameEngine.RelicBoxKey(dungeonId);
         _nameView.Reset();   // B44：不是读者点「人物」返回，不把焦点拉回人物页名称
         SetDetailTab(DetailTab.Character);

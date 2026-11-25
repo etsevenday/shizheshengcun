@@ -1951,3 +1951,9 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .fi-take .fi-dest { margin-bottom: 4px; }
 .sq-row.residual { opacity: .9; }
 .dry-option.on { outline: 2px solid var(--accent, #c9a227); }
+
+/* B36a（Q891、Q952）：右栏候补单列「留守候补」组、箱区收展与「认领箱」总标题 */
+.party-group-title { font-size: var(--fs-aux); color: var(--muted); padding: 4px 0 2px; border-bottom: 1px solid var(--line); margin-bottom: 2px; }
+.party-where { color: var(--muted); }
+.boxes-toggle { align-self: flex-start; margin-top: 4px; }
+.party-boxes { display: flex; flex-direction: column; gap: 6px; }

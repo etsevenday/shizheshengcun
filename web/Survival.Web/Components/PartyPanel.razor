@@ -15,6 +15,8 @@
     var remains = e.RemainsHere(s);
     var show = s.Roster.Count > 0 || remains.Count > 0;
     var care = e.Config.Party.ReserveCare;
+    var reserves = e.Reserves(s);
+    var boxesOpen = G.BoxesOpen;
 }
 @if (show)
 {
@@ -32,14 +34,21 @@
                 if (slotsNow[k] == "") continue;
                 @Row(slotsNow[k], $"{k + 1}号位", true)
             }
-            @foreach (var r in e.Reserves(s))
-            {
-                @Row(r.ActorId, "候补", false)
-            }
         </div>
+        @if (reserves.Count > 0)
+        {
+            @* B36a（02 Q952 A；合同 reserve）：候补从同行列表单列为「留守候补」组，沿原候补顺序；每人行首仍「候补」，行内直显「所在地点 {地点名}」 *@
+            <div class="party-list party-reserves" data-pt="reserve-group">
+                <div class="party-group-title" data-pt="reserve-title">@ReserveTitle</div>
+                @foreach (var r in reserves)
+                {
+                    @Row(r.ActorId, "候补", false)
+                }
+            </div>
+        }
         @* B22g（Q183 retrieve）：广场候补在营区广场编入/留作候补；安全屋屋内候补要实地进那间屋编入；屋里的同行者可“留守此屋” *@
         <div class="ca-note tiny" data-pt="party-note">@(FormationOverlay.StationName)在顶栏“编队”里改（任何地点空闲时都可以）；编入同行/留作候补在@(e.LocName(e.HubLocation(s)))办理；安全屋里的候补要你进那间屋才能编入同行，在屋里可让同行者“留守此屋”。</div>
-        @if (e.Reserves(s).Count > 0)
+        @if (reserves.Count > 0)
         {
             @* Q90（B8c，S14 本轮章）：候补只读显示自主休息/睡眠与营区实际设施；慢速公共恢复放悬停（二级），不出现投喂/排班/逐人切模式按钮 *@
             <div class="ca-note" title="@ReserveCareDetail()">候补在所在处（@(e.LocName(e.HubLocation(s)))或安全屋屋内）自主休息或睡眠（按各自体力与清醒自动切换），饱食、水分、精神由公共照护慢慢补到@(Fmt.T(care.PublicNutritionTarget))，不用你送食水、不扣你的物资或屋柜；伤病与病毒照常发展。同行队员仍要你自己补给。</div>
@@ -61,6 +70,16 @@
         {
             <div class="ca-note tiny">补员：@rbWhy</div>
         }
+        @if (remains.Count > 0)
+        {
+            @* B36a（02 Q891 A、Q952 A、Q953 A）：本地遗物／认领箱／远征回收箱统一收进箱区，新地点／区域默认收起；有任一合法箱才给「查看认领箱」，
+               展开后同一位置写「返回」只收起箱区；展开区顶上总标题「认领箱」，原各箱名、归属、领物与丢弃入口不变。从回收箱卡「取出…」跳来时自动展开 *@
+            <button type="button" class="secondary small-btn boxes-toggle" data-pt="boxes-toggle" aria-expanded="@(boxesOpen ? "true" : "false")" @onclick="G.ToggleBoxes">@(boxesOpen ? BoxesBack : BoxesOpenLabel)</button>
+        }
+        @if (remains.Count > 0 && boxesOpen)
+        {
+        <div class="party-boxes" data-pt="boxes">
+        <div class="party-group-title" data-pt="boxes-title">@BoxesTitle</div>
         @foreach (var kv in remains)
         {
             var deadId = kv.Key;
@@ -98,10 +117,19 @@
                 }
             </div>
         }
+        </div>
+        }
     </section>
 }
 
 @code {
+    /// <summary>B36a 右栏候补与箱区的字（02 Q891 A、Q952 A；逐字稿 §2 P08h「留守候补」「所在地点」「认领箱」「查看认领箱」「返回」；合同 reserve）。</summary>
+    public const string ReserveTitle = "留守候补";
+    public const string WherePrefix = "所在地点";
+    public const string BoxesTitle = "认领箱";
+    public const string BoxesOpenLabel = "查看认领箱";
+    public const string BoxesBack = "返回";
+
     /// <summary>BM4b：放在右栏人物页「成员」折叠组里（组头已写队伍人数）。</summary>
     [Parameter] public bool InFold { get; set; }
 
@@ -151,7 +179,7 @@
            行内编入同行／留作候补／留守此屋、展开随身物品与其中的食饮按钮与姓名分开，沿原按钮与操作权限，可逐个 Tab 到达。 *@
         <div class="party-row @(active ? "" : "reserve") @(G.FedActor == id ? "fed" : "")" data-actor="@id">
             @* M191（B8 试玩）：按钮并到姓名行右侧（窄时折到下一行），每人少占一行，1280×720 下最后一人的按钮不再落到右栏底部说明条下面 *@
-            <div class="party-name"><span class="party-pos">@where</span> <button type="button" class="peek-name" data-peek-name="@Peek.Member(id)" aria-label="@PeekNameView.Label(name)" @onclick="() => G.ViewByName(Peek.Member(id))" @onclick:stopPropagation><b>@name</b><kbd class="kc peek-name-cap" aria-hidden="true">@PeekNameView.Cap</kbd></button>@if (kind != "") {<span class="muted tiny party-kind" title="@kindTip" data-background="@(named?.Background)"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</span>} <span class="muted tiny">速度@(Fmt.Speed(e.ActorBaseSpeed(s, id)))</span>
+            <div class="party-name"><span class="party-pos">@where</span> <button type="button" class="peek-name" data-peek-name="@Peek.Member(id)" aria-label="@PeekNameView.Label(name)" @onclick="() => G.ViewByName(Peek.Member(id))" @onclick:stopPropagation><b>@name</b><kbd class="kc peek-name-cap" aria-hidden="true">@PeekNameView.Cap</kbd></button>@if (kind != "") {<span class="muted tiny party-kind" title="@kindTip" data-background="@(named?.Background)"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</span>} <span class="muted tiny">速度@(Fmt.Speed(e.ActorBaseSpeed(s, id)))</span>@if (!active) {<span class="tiny party-where" data-pt="reserve-where"> @WherePrefix @(roster != null ? e.ReserveWhereName(s, roster) : e.LocName(e.HubLocation(s)))</span>}
             @if (!isMe)
             {
                 <span class="party-acts">
@@ -171,7 +199,8 @@
             </div>
             @if (!active)
             {
-                <div class="party-care tiny" data-reserve-mode="@e.ReserveModeOf(a)" data-reserve-where="@(roster?.ReserveSafehouse ?? "square")" title="@ReserveCareDetail()">@e.ReserveCareLabel(s, a) · 在@(roster != null ? e.ReserveWhereName(s, roster) : e.LocName(e.HubLocation(s)))</div>
+                @* B36a（Q952 A）：所在地点改在姓名行直显（取实际驻留处），这一行只留原作息状态 *@
+                <div class="party-care tiny" data-reserve-mode="@e.ReserveModeOf(a)" data-reserve-where="@(roster?.ReserveSafehouse ?? "square")" title="@ReserveCareDetail()">@e.ReserveCareLabel(s, a)</div>
             }
             @if (roster != null && e.IdentityText(roster) is string ident)
             {
