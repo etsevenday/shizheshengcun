@@ -1,0 +1,30 @@
+@* B36a（02 Q812—Q814、Q822；逐字稿 §2 P08d—P08g、05 P08「目录／列表左、内容右」）：阅读页通用骨架。
+   左栏目录（可选栏标题），右栏内容，两栏各自滚动；页内换目录只换右栏，不压窗口返回链（Q821）。
+   系统说明、生存目标、生存提示、行动日志共用；目录项用 ReadingSplit.ItemClass 统一样式。 *@
+<div class="sub-body read-split @Class" data-pt="@Pt">
+    <nav class="read-nav" data-wheel="y" aria-label="@NavLabel" data-pt="read-nav">
+        @if (!string.IsNullOrEmpty(NavTitle)) { <div class="read-nav-title" data-pt="read-nav-title">@NavTitle</div> }
+        @Nav
+    </nav>
+    <div class="read-body" data-wheel="y" tabindex="-1" aria-label="@BodyLabel" data-pt="read-body">
+        @Body
+    </div>
+</div>
+
+@code {
+    /// <summary>左栏目录内容（一串 <see cref="ItemClass"/> 按钮）。</summary>
+    [Parameter] public RenderFragment? Nav { get; set; }
+    /// <summary>右栏正文。</summary>
+    [Parameter] public RenderFragment? Body { get; set; }
+    /// <summary>左栏标题（没有就不显示）。</summary>
+    [Parameter] public string? NavTitle { get; set; }
+    [Parameter] public string NavLabel { get; set; } = "目录";
+    [Parameter] public string BodyLabel { get; set; } = "内容";
+    /// <summary>额外样式类（各页自己的版式微调）。</summary>
+    [Parameter] public string? Class { get; set; }
+    /// <summary>试玩场景选择器（只加属性，不影响样式）。</summary>
+    [Parameter] public string? Pt { get; set; }
+
+    /// <summary>目录项按钮的样式类（选中加 on）。</summary>
+    public static string ItemClass(bool on) => on ? "read-nav-item on" : "read-nav-item";
+}

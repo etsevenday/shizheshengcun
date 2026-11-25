@@ -10,16 +10,29 @@
     var now = Stats.All.Where(id => s.Stats.Get(id) <= 0 && id != StatId.Health || cfg.Thresholds[GameEngine.StatKey(id)].IsBelow(s.Stats.Get(id)))
         .Select(id => (id, zero: s.Stats.Get(id) <= 0 && id != StatId.Health)).ToList();
     var cur = tips.Count == 0 ? -1 : ((G.TipIndex % tips.Count) + tips.Count) % tips.Count;
+    var showTips = G.TipsList && tips.Count > 0;
 }
 
 <div class="sub-panel tips-panel" role="dialog" aria-label="生存提示">
+    @* B36a（Q903 C）：删去重复副标「求生建议，不消耗时间」，也不另加「当前建议」副标 *@
     <div class="sub-head">
-        <div><h2>生存提示</h2><span class="sub">求生建议，不消耗时间</span></div>
-        <button class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+        <div><h2>生存提示</h2></div>
+        <button class="secondary" data-pt="tips-close" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
-    <div class="sub-body tips-body" data-wheel="y">
-        <section class="tips-now">
-            <h3>当前状况</h3>
+    @* B36a（Q822 设计A、文案A）：左栏两目录「当前状况」「当前建议」，新开默认当前状况；建议仍全表并高亮当前相关 *@
+    <ReadingSplit Pt="tips-split" NavLabel="生存提示目录">
+        <Nav>
+            <button type="button" class="@ReadingSplit.ItemClass(!showTips)" aria-pressed="@(!showTips)" data-pt="tips-tab-now" @onclick="() => Pick(false)">@NowTitle</button>
+            @if (tips.Count > 0)
+            {
+                <button type="button" class="@ReadingSplit.ItemClass(showTips)" aria-pressed="@showTips" data-pt="tips-tab-list" @onclick="() => Pick(true)">@ListTitle</button>
+            }
+        </Nav>
+        <Body>
+        @if (!showTips)
+        {
+        <section class="tips-now" data-pt="tips-now">
+            <h3>@NowTitle</h3>
             @if (now.Count == 0)
             {
                 <div class="risk none">各项状态都在提醒线以上。</div>
@@ -29,22 +42,34 @@
                 <div class="risk @(zero || id == StatId.Health ? "danger" : "")">@e.AlertText(id, zero) 当前@(GameEngine.StatName(id))@Ui.N(s.Stats.Get(id))。</div>
             }
         </section>
-        @if (tips.Count > 0)
+        }
+        else
         {
-            <section class="tips-list">
-                <h3>求生建议</h3>
+            <section class="tips-list" data-pt="tips-list">
+                <h3>@ListTitle</h3>
                 <ol>
                     @for (var k = 0; k < tips.Count; k++)
                     {
                         @* B41e2（Q446 ⑩）：第13条旧「接敌／绕行10分钟」已在配置里换成「主动接近、潜行接近或躲避」（B41e3） *@
-                        <li class="@(k == cur ? "now" : "")">@Ui.TipText(e, tips[k])</li>
+                        <li class="@(k == cur ? "now" : "")" data-pt="tip-row" data-now="@(k == cur ? "1" : null)">@Ui.TipText(e, tips[k])</li>
                     }
                 </ol>
             </section>
         }
-    </div>
+        </Body>
+    </ReadingSplit>
 </div>
 
 @code {
+    /// <summary>两个目录名（02 Q822 A；逐字稿 2026-11-16 B36 逐字表「生存提示两目录：当前状况／当前建议」）。</summary>
+    public const string NowTitle = "当前状况";
+    public const string ListTitle = "当前建议";
+
+    private void Pick(bool list)
+    {
+        G.TipsList = list;
+        G.Notify();
+    }
+
     private void Close() => G.OpenPanel(null);
 }

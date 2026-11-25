@@ -255,6 +255,23 @@ kbd { font-family: inherit; font-size: var(--fs-aux); color: var(--muted); margi
 .rest-scroll { overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
 .choice-title { margin: 0 0 6px; font-size: var(--fs-body); font-weight: 500; }
 .sub-panel .log-list { flex: 1; min-height: 0; padding: 8px 14px 14px; }
+/* B36a（Q812—Q814、Q822）：阅读页通用骨架「目录左、内容右」，两栏各自滚动 */
+.read-split { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 12px; min-height: 0; overflow: hidden; }
+.read-nav { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-height: 0; padding-right: 4px; }
+.read-nav-title { font-size: var(--fs-aux); color: var(--muted); padding: 2px 4px 4px; }
+.read-nav-item { flex: none; display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 5px; background: transparent; text-align: left; font-size: var(--fs-body); }
+.read-nav-item:hover, .read-nav-item:focus-visible { border-color: var(--accent); }
+.read-nav-item.on { border-color: var(--accent); background: #2c3427; }
+.read-nav-item.sub { margin-left: 14px; min-height: 36px; }
+.read-nav-item .rn-mark { width: 18px; flex: none; color: var(--muted); }
+.read-nav-item.done { color: var(--good); }
+.read-nav-item.done .rn-mark { color: var(--good); }
+.read-nav-item.later { opacity: .6; }
+.read-body { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+.read-body:focus { outline: none; }
+.read-body .log-list { padding: 0; overflow: visible; }
+.read-empty { min-height: 160px; }
+@media (max-width: 760px) { .read-split { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); } .read-nav { max-height: 30vh; } }
 
 
 /* 卡牌通用 */
@@ -1001,7 +1018,7 @@ kbd { font-size: var(--fs-aux); }
 .goal-day li.done .goal-mark { color: var(--good); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .tips-body { display: flex; flex-direction: column; gap: 14px; }
-.tips-body h3 { margin: 0 0 6px; font-size: var(--fs-body); font-weight: 500; color: var(--accent); }
+.tips-panel h3 { margin: 0 0 6px; font-size: var(--fs-body); font-weight: 500; color: var(--accent); }
 .tips-now { display: flex; flex-direction: column; gap: 6px; }
 .tips-now .risk.danger { color: #f0c7b9; border-color: #7d4f45; background: #6f2f2229; }
 .tips-list ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-body); line-height: 1.7; }

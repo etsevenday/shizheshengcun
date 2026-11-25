@@ -1,19 +1,51 @@
 @inherits GameComponent
 
-<div class="sub-panel" role="dialog" aria-label="行动日志">
+@* 顶栏“行动日志”（B36a：02 Q814 A、Q903 C；逐字稿 §2 P08f、2026-11-16 B36 逐字表「第{世界日}日；最近{n}条 · 最新在上；还没有行动记录。」）：
+   左栏按真实游戏日分组「第{世界日}日」，最新一天在上、新开默认选中；右栏是该日记录，最新在上，每条只写 HH:mm。
+   原副标与真实条数（最多500条）不变；没有记录时显示空态句。换日只换右栏，不压返回链。 *@
+@{
+    var s = G.S;
+    var days = s.Log.Select(l => Clock.Day(l.Minute)).Distinct().OrderByDescending(d => d).ToList();
+    var day = G.LogDay is int d0 && days.Contains(d0) ? d0 : days.Count > 0 ? days[0] : (int?)null;
+}
+
+<div class="sub-panel log-panel" role="dialog" aria-label="行动日志">
     <div class="sub-head">
-        <div><h2>行动日志</h2><span class="sub">最近@(G.S.Log.Count)条 · 最新在上</span></div>
-        <button class="secondary" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+        <div><h2>行动日志</h2><span class="sub">最近@(s.Log.Count)条 · 最新在上</span></div>
+        <button class="secondary" data-pt="log-close" @onclick="Close">@G.PanelCloseLabel<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
-    <div class="log-list">
-        @foreach (var l in Enumerable.Reverse(G.S.Log))
-        {
-            <div><span class="t">@Clock.DayTime(l.Minute)</span><span class="@Cls(l.Kind)">@G.E.HideInstanceTags(l.Text)</span></div>
-        }
-    </div>
+    @if (day == null)
+    {
+        <div class="sub-body">
+            <div class="empty-zone read-empty" data-pt="log-empty"><span>@EmptyText</span></div>
+        </div>
+    }
+    else
+    {
+        <ReadingSplit Pt="log-split" NavLabel="日期">
+            <Nav>
+                @foreach (var d in days)
+                {
+                    var dd = d;
+                    <button type="button" class="@ReadingSplit.ItemClass(dd == day)" aria-pressed="@(dd == day)" data-pt="log-day" data-day="@dd" @onclick="() => PickDay(dd)">第@(dd)日</button>
+                }
+            </Nav>
+            <Body>
+                <div class="log-list" data-pt="log-rows">
+                    @foreach (var l in Enumerable.Reverse(s.Log).Where(x => Clock.Day(x.Minute) == day))
+                    {
+                        <div data-pt="log-row"><span class="t">@Clock.HHmm(l.Minute)</span><span class="@Cls(l.Kind)">@G.E.HideInstanceTags(l.Text)</span></div>
+                    }
+                </div>
+            </Body>
+        </ReadingSplit>
+    }
 </div>
 
 @code {
+    /// <summary>空态（逐字稿 §2 P08f、02 Q814 A）。</summary>
+    public const string EmptyText = "还没有行动记录。";
+
     private static string Cls(string kind) => kind switch
     {
         "Alert" or "ActionPaused" => "warn-text",
@@ -21,6 +53,12 @@
         "ActionCompleted" or "SevenDay" => "good-text",
         _ => "",
     };
+
+    private void PickDay(int d)
+    {
+        G.LogDay = d;
+        G.Notify();
+    }
 
     private void Close() => G.OpenPanel(null);
 }
