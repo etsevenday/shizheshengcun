@@ -38,7 +38,7 @@
             }
         </div>
         @* B22g（Q183 retrieve）：广场候补在营区广场编入/留作候补；安全屋屋内候补要实地进那间屋编入；屋里的同行者可“留守此屋” *@
-        <div class="ca-note tiny">开战号位在顶栏“编队”里改（任何地点空闲时都可以）；编入同行/留作候补在@(e.LocName(e.HubLocation(s)))办理；安全屋里的候补要你进那间屋才能编入同行，在屋里可让同行者“留守此屋”。</div>
+        <div class="ca-note tiny" data-pt="party-note">@(FormationOverlay.StationName)在顶栏“编队”里改（任何地点空闲时都可以）；编入同行/留作候补在@(e.LocName(e.HubLocation(s)))办理；安全屋里的候补要你进那间屋才能编入同行，在屋里可让同行者“留守此屋”。</div>
         @if (e.Reserves(s).Count > 0)
         {
             @* Q90（B8c，S14 本轮章）：候补只读显示自主休息/睡眠与营区实际设施；慢速公共恢复放悬停（二级），不出现投喂/排班/逐人切模式按钮 *@

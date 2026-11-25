@@ -4,7 +4,7 @@
    四格（前排1→后排4）草稿：点角色再点号位——空位移入、有人交换；也可直接点有人的号位选中他。只改草稿，底部“保存编队/取消”，
    Esc 等于取消，关闭不自动保存。保存 0 时间、0AP、0 体力，下一场战斗按此开局（不按武器自动改位），战斗中的站位变化不反写。
    每人显示开战武器页的合法使用位作参考，站在用不了的号位也可以保存。禁用原因都来自内核 SaveFormationBlocked。
-   C 只限制同行人数，不限制号位；单人也可选 1—4。队友暂不入战（多人战斗未做，开发计划 B8.4），下一战只有你按预设号位入场。 *@
+   C 只限制同行人数，不限制号位；单人也可选 1—4。队友按实际编队参战（Q630），编队页旧「队友暂时还不会跟你进战斗」句已删（B36a Q825 A）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -17,7 +17,7 @@
 
 <div class="sub-panel formation-panel" data-enter-scope tabindex="-1" role="dialog" aria-label="编队">
     <div class="sub-head">
-        <div><h2>编队</h2><span class="sub">开战号位 · 前排1号位→后排4号位 · 同行@(members.Count)/C@(cap)（C只限人数，不限号位）· 保存不花时间、AP和体力</span></div>
+        <div><h2>编队</h2><span class="sub" data-pt="fm-sub">@StationName · 前排1号位→后排4号位 · 同行@(members.Count)/C@(cap)（C只限人数，不限号位）· 保存不花时间、AP和体力</span></div>
         <button class="secondary" @onclick="G.CancelFormation">取消<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
     </div>
     <div class="sub-body formation-body" data-wheel="y">
@@ -36,7 +36,7 @@
                     @* 号位与名字同一行（1280×720 下压缩行高，底部说明不被挤出；试玩修复 B8a 第 1 轮 B5） *@
                     <span class="fm-top">
                         <span class="fm-num">@(slot)号位<small>@(slot == 1 ? "（前排）" : slot == 4 ? "（后排）" : "")</small></span>
-                        <b class="fm-name">@(who == "" ? "空位" : e.ActorDisplayName(s, who))</b>
+                        <b class="fm-name" data-pt="fm-slot-name">@(who == "" ? EmptyName : e.ActorDisplayName(s, who))</b>
                     </span>
                     @if (who != "")
                     {
@@ -77,9 +77,10 @@
                 <div class="tiny muted fm-leader-note">@GameEngine.SquadLeaderNote</div>
             </div>
         }
-        <div class="ca-note tiny">
+        @* B36a（02 Q825 A）：删去「队友暂时还不会跟你进战斗，下一场只有你按这里的号位入场。」旧错误句，前半句办理地点与安全屋说明保留 *@
+        <div class="ca-note tiny" data-pt="fm-note">
             站位不会按武器自动更正：站在用不了的号位也能保存，进战后那页技能按真实号位禁用，可以在战斗里花1AP“调整站位”。
-            战斗中的拉扯、击退、调整站位不会改这里的编队。@(s.Roster.Any(r => r.Present) ? $"编入同行/留作候补在{e.LocName(e.HubLocation(s))}办理（安全屋候补要进那间屋编入，屋里可留守此屋）；队友暂时还不会跟你进战斗，下一场只有你按这里的号位入场。" : "")
+            战斗中的拉扯、击退、调整站位不会改这里的编队。@(s.Roster.Any(r => r.Present) ? $"编入同行/留作候补在{e.LocName(e.HubLocation(s))}办理（安全屋候补要进那间屋编入，屋里可留守此屋）。" : "")
         </div>
     </div>
     <div class="fm-foot">
@@ -94,12 +95,17 @@
 </div>
 
 @code {
+    /// <summary>B36a（02 Q950 A；逐字稿 §2 P08a；合同 b36a-q950-q955-ui-copy.json formation）：「开战号位」统一「入场站位」，编队空号位「未分配」及其悬停；战斗里的「空位」不动。</summary>
+    public const string StationName = "入场站位";
+    public const string EmptyName = "未分配";
+    public const string EmptyHover = "{n}号位未分配：先点一名角色，再点这里";
+
     private static string PosText(HashSet<int> own) => string.Join("、", own.OrderBy(x => x)) + "号位";
 
     private string SlotTitle(int slot, string who, string? pick)
     {
         var s = G.S;
-        if (pick == null) return who == "" ? $"{slot}号位空着：先点一名角色，再点这里" : $"点选{G.E.ActorDisplayName(s, who)}";
+        if (pick == null) return who == "" ? EmptyHover.Replace("{n}", slot.ToString()) : $"点选{G.E.ActorDisplayName(s, who)}";
         if (who == pick) return "取消选择";
         var name = G.E.ActorDisplayName(s, pick);
         return who == "" ? $"把{name}移到{slot}号位" : $"{name}与{G.E.ActorDisplayName(s, who)}交换号位";

@@ -44,7 +44,7 @@
                敌踪/战斗中按钮照样禁用，但悬停写内核 FormationEditBlocked 的原因（“先处理眼前的敌踪”），不用统一的“战斗中锁定”（试玩修复 B8a 第 1 轮 B1） *@
             @{ var formWhy = G.Panel == "formation" ? null : G.FormationBlocked; }
             <button class="@(G.Panel == "formation" ? "on" : "") @(formWhy != null ? "off" : "")" disabled="@navOff" inert="@progInert" aria-disabled="@(formWhy != null)" data-nav="formation" aria-keyshortcuts="P"
-                    title="@(G.DialogueLocked ? NavTitle("编队", -1) : formWhy != null ? $"现在不能编队：{formWhy}" : navOff ? NavTitle("编队", -1) : NavTitle("编队：安排开战号位（前排1→后排4），保存不花时间", 4))"
+                    title="@(G.DialogueLocked ? NavTitle("编队", -1) : formWhy != null ? $"现在不能编队：{formWhy}" : navOff ? NavTitle("编队", -1) : NavTitle($"编队：安排{FormationOverlay.StationName}（前排1→后排4），保存不花时间", 4))"
                     @onclick="() => ActivateTop(4)">@TopFace(4)</button>
             <button class="@(G.Panel == "gear" ? "on" : "")" disabled="@navOff" inert="@progInert" data-nav="gear" aria-keyshortcuts="G" title="@NavTitle("整备：七槽装备、随身五卡与队员交接（不花时间）", 5)" @onclick="() => ActivateTop(5)">@TopFace(5)</button>
             <button class="@(G.Panel == "growth" ? "on" : "")" disabled="@navOff" inert="@progInert" data-nav="growth" aria-keyshortcuts="K" title="@NavTitle("成长：十六门熟练度的十级轨道与技能节点", 6)" @onclick="() => ActivateTop(6)">@TopFace(6)</button>
