@@ -44,6 +44,14 @@
 <div class="panel map-row" aria-label="@($"地图与场景 · {lc.Name}")">
     <div class="row-tag" aria-hidden="true">地图与场景</div>
     <LocationCard LocationId="@here" Current="true" />
+    @if (G.CraftLocating)
+    {
+        @* B67（S05 D22、S14 D22）：定位层沿来源页返回链提供「返回材料来源」（与 ESC 同效），回侧页并恢复原来源行与滚动。
+           B67 试玩修复 M1174：放在①行当前地点卡与相邻地点子栏之间、参与排版（相邻子栏让出宽度横滚，溢出的卡只往右侧滚出），不再浮在卡上 *@
+        <div class="src-locate-bar" data-pt="src-locate-bar">
+            <button type="button" class="secondary" data-pt="src-locate-back" @onclick="G.EndCraftLocate">@MapOverlay.BackToSources<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+        </div>
+    }
     <div class="map-adjacent" data-wheel="x" aria-label="相邻地图">
         @foreach (var to in entrances)
         {

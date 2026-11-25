@@ -81,6 +81,25 @@ public class B67SourceLocateUiTests : WebTestBase
         Assert.That(screen.FindAll(".panel-host"), Has.Count.EqualTo(1));
     }
 
+    /// <summary>
+    /// B67 试玩修复 M1174（排版为开发方取舍，不涉规则）：「返回材料来源」参与①行排版——在 .map-row 里、紧跟当前地点卡、在相邻地点子栏之前，
+    /// 不再是 rows2 上浮在卡上的绝对定位层（1280 档曾压住相邻地点卡）。像素位置由试玩场景 b67-src-locate 第 41、42 步核对。
+    /// </summary>
+    [Test]
+    public void M1174_BackBar_InMapRow_BeforeAdjacent()
+    {
+        var cut = OpenKnifeSourcesAtField();
+        cut.Find("[data-pt=src-locate-here]").Click();
+        var screen = Ctx.RenderComponent<GameScreen>();
+        var bars = screen.FindAll("[data-pt=src-locate-bar]");
+        Assert.That(bars, Has.Count.EqualTo(1));
+        var bar = bars[0];
+        Assert.That(bar.ParentElement!.ClassList, Does.Contain("map-row"), "在①行里参与排版");
+        Assert.That(bar.NextElementSibling!.ClassList, Does.Contain("map-adjacent"), "相邻地点子栏在它右侧");
+        Assert.That(bar.PreviousElementSibling!.ClassList, Does.Contain("map-card"), "紧跟当前地点大图卡");
+        Assert.That(screen.FindAll(".rows2 > .src-locate-bar"), Is.Empty, "不再浮在 rows2 上");
+    }
+
     /// <summary>D22-02 后半：异地的同名来源（树林）不出本地「定位来源」，原可公开的异地地图定位仍可用；没有地点的概率来源两种定位都没有。</summary>
     [Test]
     public void D22_02_RemoteRow_NoLocalLocate_MapLocateKept()

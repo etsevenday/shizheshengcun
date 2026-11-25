@@ -78,13 +78,6 @@
                         @if (G.BattleFullscreen) { <div class="rows2-blank" aria-hidden="true"></div> }
                         else { <LocationStrip /> }
                     </div>
-                    @if (G.CraftLocating)
-                    {
-                        @* B67（S05 D22、S14 D22）：定位层沿来源页返回链提供「返回材料来源」（与 ESC 同效），回侧页并恢复原来源行与滚动 *@
-                        <div class="src-locate-bar" data-pt="src-locate-bar" inert="@(dlgLock || progInert)">
-                            <button type="button" class="secondary" data-pt="src-locate-back" @onclick="G.EndCraftLocate">@MapOverlay.BackToSources<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
-                        </div>
-                    }
                     @if (centerPanel)
                     {
                         <div class="panel-host" data-panel="@G.Panel" inert="@(dlgLock || progInert)">
