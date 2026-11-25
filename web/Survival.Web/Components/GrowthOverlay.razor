@@ -42,7 +42,9 @@
         </div>
     }
     <div class="sub-body growth-body">
-        <div class="growth-list" data-wheel="y">
+        <div class="growth-list" data-wheel="y" data-pt="growth-list">
+            @* B36a（02 Q951 A；逐字稿 §2 P08b「熟练度」）：左栏标题，原三组与实际17项保留 *@
+            <div class="read-nav-title" data-pt="growth-list-title">@ListTitle</div>
             @foreach (var grp in new[] { ("combat", "战斗"), ("both", "医疗（战内外）"), ("survival", "求生与行动") })
             {
                 <div class="skill-group muted">@grp.Item2</div>
@@ -73,10 +75,11 @@
         var stealth = sk.Id == GameEngine.StealthSkill;
         <div class="growth-detail" data-wheel="y">
             <div class="eyebrow">@e.ActorDisplayName(s, me) · @sk.Name</div>
+            @* B36a（02 Q951 A；合同 b36a-q950-q955-ui-copy.json growth）：详情头「当前等级」「经验」「下一个技能：」；满级沿原说明，不编下一等级 *@
             <div class="growth-head">
-                <b>@(sk.Level)/@(sk.Cap)级</b>
-                <span class="muted">@(sk.Maxed ? (stealth ? "潜行已满级" : "满级，不再获得经验") : $"经验{sk.Xp}/{sk.NextXp}，升到{sk.Level + 1}级")</span>
-                @if (NextNode(sk) is { } nx) { <span>下一节点：@(nx.Level)级 @nx.Name</span> }
+                <b data-pt="growth-level">当前等级 @(sk.Level)/@(sk.Cap)级</b>
+                <span class="muted" data-pt="growth-xp">@(sk.Maxed ? (stealth ? "潜行已满级" : "满级，不再获得经验") : $"经验 {sk.Xp}/{sk.NextXp}，升到{sk.Level + 1}级")</span>
+                @if (NextNode(sk) is { } nx) { <span data-pt="growth-next">下一个技能：@(nx.Level)级 @nx.Name</span> }
             </div>
             @* 十级轨道：1—10 格，五个节点格有技能名；已达到的点亮 *@
             <div class="growth-track" aria-label="十级轨道">
@@ -106,26 +109,64 @@
                    本人达到该级就点亮，不写已解锁／未解锁与“需要意志{L}级（当前{n}级）” *@
                 <p class="growth-will-effect">@e.WillpowerEffectText(actor)</p>
                 @if (e.WillpowerDayLeft(s, actor) is int left) { <p class="growth-will-day">@e.WillpowerDayLeftText(left)</p> }
-                <div class="growth-nodes growth-will-refs">
+                @* B36a（02 Q824 A、Q892 B）：五个参考格一排，点格切单张说明（只读，不学习）；单张说明只该格原句与点亮状态，不写已解锁／未解锁 *@
+                var willPick = G.GrowthCardOf(sk);
+                <div class="growth-nodes growth-cards growth-will-refs" role="group" aria-label="@sk.Name">
                     @foreach (var rl in GameEngine.WillpowerRefLevels)
                     {
                         var on = sk.Level >= rl;
-                        <div class="growth-node growth-will-ref @(on ? "attained" : "")" data-will-ref="@rl"><b>@e.WillpowerRefText(rl)</b></div>
+                        var cid = GameSession.WillCardId(rl);
+                        @if (Part == "detail")
+                        {
+                            <div class="growth-node growth-will-ref @(on ? "attained" : "") @(cid == willPick ? "picked" : "")" data-will-ref="@rl"><b>@e.WillpowerRefText(rl)</b></div>
+                        }
+                        else
+                        {
+                            <button type="button" class="growth-node growth-will-ref @(on ? "attained" : "") @(cid == willPick ? "picked" : "")" aria-pressed="@(cid == willPick)" data-will-ref="@rl"
+                                    data-pt="growth-card" data-card="@cid" @onclick="() => PickCard(sk.Id, cid)"><b>@e.WillpowerRefText(rl)</b></button>
+                        }
                     }
                 </div>
-            }
-            <div class="growth-nodes">
-                @foreach (var n in sk.Nodes)
+                @if (GameEngine.WillpowerRefLevels.FirstOrDefault(rl => GameSession.WillCardId(rl) == willPick) is int wl and > 0)
                 {
-                    var on = sk.Level >= n.Level;
-                    <div class="growth-node @(on ? "unlocked" : "locked")" data-node="@n.Id">
-                        <header><b>@(n.Level)级 · @n.Name</b><em class="@(on ? "ok" : "muted")">@(on ? "已解锁" : "未解锁")</em></header>
-                        <p>@n.Text</p>
-                        <small class="muted">@NodeMeta(n)</small>
-                        <small class="@(on ? "muted" : "warn-text")">@(on ? Status(actor, sk, n) : $"需要{sk.Name}{n.Level}级（当前{sk.Level}级）")</small>
+                    <div class="growth-card-desc growth-node growth-will-ref @(sk.Level >= wl ? "attained" : "")" data-pt="growth-card-desc" data-card="@willPick"><b>@e.WillpowerRefText(wl)</b></div>
+                }
+            }
+            @if (sk.Nodes.Count > 0)
+            {
+                @* B36a（02 Q824 A、Q892 B）：技能卡一排只作索引（原状态词保留），点卡切单张说明；默认下一个未解锁，全解锁最高一张；本次运行每门类记住上次点的卡 *@
+                var pickId = G.GrowthCardOf(sk);
+                <div class="growth-nodes growth-cards" role="group" aria-label="@sk.Name">
+                    @foreach (var n in sk.Nodes)
+                    {
+                        var on = sk.Level >= n.Level;
+                        var nid = n.Id;
+                        @if (Part == "detail")
+                        {
+                            <div class="growth-node @(on ? "unlocked" : "locked") @(nid == pickId ? "picked" : "")" data-node="@n.Id">
+                                <header><b>@(n.Level)级 · @n.Name</b><em class="@(on ? "ok" : "muted")">@(on ? "已解锁" : "未解锁")</em></header>
+                            </div>
+                        }
+                        else
+                        {
+                            <button type="button" class="growth-node @(on ? "unlocked" : "locked") @(nid == pickId ? "picked" : "")" aria-pressed="@(nid == pickId)" data-node="@n.Id"
+                                    data-pt="growth-card" data-card="@nid" @onclick="() => PickCard(sk.Id, nid)">
+                                <header><b>@(n.Level)级 · @n.Name</b><em class="@(on ? "ok" : "muted")">@(on ? "已解锁" : "未解锁")</em></header>
+                            </button>
+                        }
+                    }
+                </div>
+                @if (sk.Nodes.FirstOrDefault(n => n.Id == pickId) is { } pn)
+                {
+                    var pon = sk.Level >= pn.Level;
+                    <div class="growth-card-desc growth-node @(pon ? "unlocked" : "locked")" data-pt="growth-card-desc" data-card="@pn.Id">
+                        <header><b>@(pn.Level)级 · @pn.Name</b><em class="@(pon ? "ok" : "muted")">@(pon ? "已解锁" : "未解锁")</em></header>
+                        <p>@pn.Text</p>
+                        <small class="muted">@NodeMeta(pn)</small>
+                        <small class="@(pon ? "muted" : "warn-text")">@(pon ? Status(actor, sk, pn) : $"需要{sk.Name}{pn.Level}级（当前{sk.Level}级）")</small>
                     </div>
                 }
-            </div>
+            }
             @* B52b（R09 Q736）：意志页底部整行换意志经验句，其他技能页原句不动 *@
             <div class="tiny muted">@(sk.Id == GameEngine.Willpower ? e.WillpowerBottomText : "经验只给实际出手/工作的本人；两件同门类武器不叠经验、不多解锁技能。命中、伤害等公式见系统说明。")</div>
         </div>
@@ -181,6 +222,17 @@
     private void PickActor(string id)
     {
         G.GearActor = id;
+        G.Notify();
+    }
+
+    /// <summary>左栏标题（02 Q951 A；合同 growth.leftTitle）。</summary>
+    public const string ListTitle = "熟练度";
+
+    /// <summary>点卡只切单张说明并记住（本次运行、每门类，Q892 B）；不学习、不扣点、不付费。</summary>
+    private void PickCard(string skillId, string cardId)
+    {
+        G.PeekClear();
+        G.GrowthCards[skillId] = cardId;
         G.Notify();
     }
 

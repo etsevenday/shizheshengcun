@@ -3632,6 +3632,28 @@ public sealed partial class GameSession
     /// <summary>成长页当前选中的熟练门类。</summary>
     public string? GrowthSkill { get; set; }
 
+    /// <summary>
+    /// B36a（02 Q892 B）：成长页本次运行里每个门类（稳定技能 ID）上次主动点选的卡（技能节点 ID，意志为参考格 <see cref="WillCardId"/>）。
+    /// 只在内存里，不存档、不进本机长期记忆；切人物保留（卡说明全角色共用，状态按当前人物）。
+    /// </summary>
+    public Dictionary<string, string> GrowthCards { get; } = new();
+
+    public static string WillCardId(int level) => "will:" + level;
+
+    /// <summary>
+    /// 这一门当前显示哪张卡的说明（Q824 A、Q892 B）：记住的卡仍在这一门就用它；否则默认——技能取下一个未解锁、全解锁取最高一张；
+    /// 意志取下一个尚未达到的参考格、全达到取 10 级。这一门没有卡为 null。
+    /// </summary>
+    public string? GrowthCardOf(SkillView sk)
+    {
+        var will = sk.Id == GameEngine.Willpower;
+        var ids = will ? GameEngine.WillpowerRefLevels.Select(WillCardId).ToList() : sk.Nodes.Select(n => n.Id).ToList();
+        if (ids.Count == 0) return null;
+        if (GrowthCards.TryGetValue(sk.Id, out var kept) && ids.Contains(kept)) return kept;
+        if (will) return WillCardId(GameEngine.WillpowerRefLevels.FirstOrDefault(rl => sk.Level < rl, GameEngine.WillpowerRefLevels[^1]));
+        return (sk.Nodes.FirstOrDefault(n => n.Level > sk.Level) ?? sk.Nodes[^1]).Id;
+    }
+
     /// <summary>为某名同行角色穿上随身或当前地面的装备（0 时间，内核原子校验）。</summary>
     public ActionResult EquipFor(string actorId, int instanceId, string slot, bool oldToGround = false) =>
         Commit(E.Equip(S, actorId, instanceId, slot, Guid.NewGuid().ToString("N"), oldToGround));

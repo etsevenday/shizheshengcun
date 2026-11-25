@@ -565,10 +565,8 @@ public class B52bWebTests
     public void Q736_A01_WillpowerTiles_AttainedHighlightOnly()
     {
         var g = Web("Components", "GrowthOverlay.razor");
-        var will = g[g.IndexOf("@if (sk.Id == GameEngine.Willpower)")..];
-        will = will[..will.IndexOf("<div class=\"growth-nodes\">")];
-        Assert.That(will, Does.Contain("<div class=\"growth-node growth-will-ref @(on ? \"attained\" : \"\")\" data-will-ref=\"@rl\"><b>@e.WillpowerRefText(rl)</b></div>"));
-        Assert.That(will, Does.Not.Contain("\"已解锁\"").And.Not.Contain("$\"需要{sk.Name}"));
+        // B36a 改（02 Q824 A、Q892 B；测试规则第 8 条）：意志五格改成可点的卡＋单张说明，格内仍只写「{L}级 · 致死抵抗{P}%」、达到点亮、不写已解锁／未解锁，
+        // 渲染结果由 bUnit B36aGrowthUiTests.Willpower_RefCards_TextAndLitOnly_DefaultNextUnattained 断言，这里不再切片读源码
         Assert.That(g, Does.Contain("@(sk.Id == GameEngine.Willpower ? e.WillpowerBottomText : \"经验只给实际出手/工作的本人；两件同门类武器不叠经验、不多解锁技能。命中、伤害等公式见系统说明。\")"));
         var css = Web("wwwroot", "css", "app.css");
         Assert.That(css, Does.Contain(".growth-will-ref.attained {"));

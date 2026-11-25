@@ -105,7 +105,8 @@ public class B34R218Tests
         Assert.That(bs, Does.Contain("<span class=\"cmdt-why cmdt-need\">@why</span>"), "卡面用 LockedText 原句");
         Assert.That(bs, Does.Not.Contain("当前@(e.SkillLevel(G.S, node.SkillId))级"));
         var growth = Web("Components/GrowthOverlay.razor");
-        Assert.That(growth, Does.Contain("$\"需要{sk.Name}{n.Level}级（当前{sk.Level}级）\"").And.Not.Contain("达到{n.Level}级"));
+        // B36a 改（02 Q824 A 单张说明）：锁级句移到所选卡的单张说明里，变量名由 n 改 pn，句式不变
+        Assert.That(growth, Does.Contain("$\"需要{sk.Name}{pn.Level}级（当前{sk.Level}级）\"").And.Not.Contain("达到{n.Level}级").And.Not.Contain("达到{pn.Level}级"));
         var core = File.ReadAllText(Path.Combine(Root(), "src", "Core", "Engine", "GameEngine.CombatSkills.cs"));
         Assert.That(core, Does.Contain("$\"需要{SkillName(n.SkillId)}{n.Level}级（当前{SkillLevel(s, n.SkillId)}级）\""));
     }
