@@ -98,6 +98,12 @@ namespace Survival.Core.Engine
 
         // ───────────── R347 D22：当前场景的真实资源卡 ─────────────
 
+        /// <summary>S05 D22、S14 D22：来源行详情里的本地定位按钮。</summary>
+        public const string SourceLocateHereText = "定位来源";
+
+        /// <summary>S05 D22、S14 D22-02：按下时资源已失效。</summary>
+        public const string SourceLocateFailText = "当前无法定位该来源。";
+
         /// <summary>
         /// 当前场景里显示的资源卡：当前地点已发现的资源点；安全屋屋内不显示资源（B17）。主界面“采集资源”组与 D22 定位共用这一处。
         /// </summary>

@@ -1413,6 +1413,7 @@ public sealed partial class GameSession
         ReconcileMapForMove();   // B60a（Q1103）：地图留在进度浮窗下、人物已移动——按当前位置刷新
         ReconcileFireMenu();
         ReconcileCraftAndSafehouse();   // B35a1（Q594、Q931）：工作区设施失效、离开安全屋所在地即关页
+        if (State != null) ReconcileCraftLocate();   // B67（S05 D22）：定位的资源卡已不在当前场景就回来源侧页
         ReconcileFeed();
         ReconcileGear();
         OnDialogueOnset();

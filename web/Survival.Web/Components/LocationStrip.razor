@@ -11,7 +11,8 @@
     var here = s.CurrentLocation;
     var lc = e.Location(here);
     var sel = G.Selected;
-    var resources = e.Config.Resources.Where(r => r.LocationId == here && s.Resources[r.NodeId].Discovered).ToList();
+    // B67（S05 D22）：资源卡清单与“定位来源”同源（内核 ResourceCardsHere：当前地点已发现、屋内不显示）
+    var resources = e.ResourceCardsHere(s);
     var entrances = e.AdjacentUnlocked(s).Select(x => x.Other(here)).ToList();
     // B11（S03、EXP30-01）：已揭示但门槛未满足的路线显示为“未开通”卡并写明原因，不能前往
     var locked = e.AdjacentLocked(s);
@@ -28,7 +29,6 @@
     var hasFacilities = e.HasFireAt(s, place) || facCards.Count > 0 || showSafehouse || tarp != null || e.DryingRackHere(s);
     // B41e1：单卡、随机组卡、固定战、可选强敌并成一个「敌踪」分组，读内核 EnemyCardsHere（B41e3 删旧三组）
     var cards = !inside ? e.EnemyCardsHere(s) : new List<EnemyCardView>();
-    if (inside) resources = new List<ResourceConfig>();
     // B21（R03 D5、A10 §7）：本次远征的安全点（safeNodes）给“终止本次远征”明显入口
     // 试玩修复 M399：撤出中不显示（按钮本就不可用，且会被中央撤出进度条盖住）
     var expHere = s.Expedition != null && !s.Expedition.IsExtracting && !inside && e.DungeonAt(here) == s.Expedition.DungeonId
@@ -294,8 +294,9 @@
                     var cardWhy = e.ResourceCardReason(s, req, busy);   // Q252：卡面第二行只写资源自身状态，全局状态不让主图消失
                     var noOutputLine = e.NoOutputYieldLine(r);   // Q254：没有确定产出的资源点
                     @* B32a（Q340、Q345）：重墨 V2 卡模板——副标＝账短标 · 每次产量（日补写在悬停与右栏），第二行＝风险行与资源自身原因；
-                       库存为 0（Dim）与资源自身阻断（Blocked）为不可用，当前采集对象为加工中 *@
-                    <ObjectCard Ink2="true" @key="r.NodeId" Id="@($"res-{nodeId}")" PeekId="@Peek.Sel(SelectionKind.Resource, nodeId)" CssClass="k2-res" Title="@r.Name" AriaLabel="@(noOutputLine == null ? null : $"{r.Name}：{noOutputLine}")" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
+                       库存为 0（Dim）与资源自身阻断（Blocked）为不可用，当前采集对象为加工中。
+                       B67（S05 D22）：来源定位层指着的这张卡加原来源定位高亮 source-spot（同地图来源地点），不选中、不开操作窗 *@
+                    <ObjectCard Ink2="true" @key="r.NodeId" Id="@GameSession.ResourceCardDomId(nodeId)" PeekId="@Peek.Sel(SelectionKind.Resource, nodeId)" CssClass="@(G.CraftLocating && G.CraftLocateNode == nodeId ? "k2-res source-spot" : "k2-res")" Title="@r.Name" AriaLabel="@(noOutputLine == null ? null : $"{r.Name}：{noOutputLine}")" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
                                 Blocked="@(cardWhy != null)" Busy="@CardStates.BusyResource(s, nodeId)"
                                 Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
                                 DataDrop="@($"res:{nodeId}")" Tooltip="@(r.IsRecord ? "核心记录：点击查看领取预估" : r.IsCampaign ? "本局唯一领取：点击查看领取预估" : toolNames != null ? $"{(r.ToolBonus!.LockedSearch ? "锁闭储物点" : "资源点")}：点击查看采集预估；可用工具：{toolNames}（把它拖到这里指定使用）{(r.ToolBonus.LockedSearch ? "；" + e.ConditionalToolHint(r) : "")}" : "资源点：点击查看采集预估；这里没有可用工具，徒手进行")" OnClick="() => SelectResource(nodeId)">

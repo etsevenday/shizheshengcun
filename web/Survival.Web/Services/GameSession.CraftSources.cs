@@ -23,8 +23,79 @@ public sealed partial class GameSession
     /// <summary>来源地图定位时高亮的地点（只高亮，不是所选目的地）；不在来源链里为 null。</summary>
     public string? MapSourceSpot { get; private set; }
 
-    /// <summary>来源行的稳定键：种类、标题与地点（列表行号不当身份）。</summary>
-    public static string SourceKey(ItemSourceView v) => $"{v.Kind}|{v.Title}|{v.LocationId}";
+    /// <summary>来源行的稳定键：种类、标题、地点与资源点实例（列表行号不当身份；B67 D22 起资源行带资源点实例，同名行不互认）。</summary>
+    public static string SourceKey(ItemSourceView v) => $"{v.Kind}|{v.Title}|{v.LocationId}|{v.NodeId}";
+
+    // ───── B67 R347（S05 D22、S14 D22、D22-01／02）：来源页定位本地资源卡 ─────
+
+    /// <summary>定位层正指着的资源点实例（只高亮，不选中、不开资源动作）；null 为不在定位层。</summary>
+    public string? CraftLocateNode { get; private set; }
+
+    /// <summary>
+    /// D22 定位层：制作窗口（连同来源侧页、所选来源、搜索词与配方草稿）留在会话里但不画，当前场景露出并高亮该资源卡；
+    /// 「返回材料来源」或 ESC 回侧页。
+    /// </summary>
+    public bool CraftLocating => CraftSourcesOpen && CraftLocateNode != null;
+
+    /// <summary>上一次按「定位来源」时资源已失效（侧页内右列显示「当前无法定位该来源。」）；换选来源、重开侧页或离开侧页时清掉。</summary>
+    public bool CraftLocateMissed { get; private set; }
+
+    /// <summary>定位层刚打开、待渲染后滚到并聚焦的资源卡 DOM id（GameScreen 读一次即清）。</summary>
+    public string? LocateFocusPending { get; set; }
+
+    /// <summary>资源卡的 DOM id（与 LocationStrip 资源卡同一写法）。</summary>
+    public static string ResourceCardDomId(string nodeId) => $"res-{nodeId}";
+
+    /// <summary>
+    /// D22：该来源行能解析到当前地点、当前区里可见的真实资源卡（按资源点实例，不按同名卡、异地资源）才给「定位来源」；
+    /// 公开可查看但暂不能采集的资源照样可定位。
+    /// </summary>
+    public bool SourceLocalCard(ItemSourceView v) =>
+        State != null && v.Kind == "resource" && v.NodeId is string node && E.ResourceCardHere(S, node) != null;
+
+    /// <summary>
+    /// 内右列「定位来源」：按下时按当前真实状态重验所选来源行与资源卡——仍在就进定位层（0 分钟，不开资源动作、不选容器、不开始采集、不改地图目的地）；
+    /// 已失效就留在侧页、刷新该行并提示「当前无法定位该来源。」。
+    /// </summary>
+    public void LocateCraftSourceHere()
+    {
+        if (!CraftSourcesOpen) return;
+        PeekClear();
+        if (CraftSourcePicked() is not { } v || !SourceLocalCard(v))
+        {
+            CraftLocateMissed = true;
+            Notify();
+            return;
+        }
+        CraftLocateMissed = false;
+        CraftLocateNode = v.NodeId;
+        LocateFocusPending = ResourceCardDomId(v.NodeId!);
+        ClosePop();
+        Notify();
+    }
+
+    /// <summary>
+    /// 定位层「返回材料来源」（与 ESC 同效）：回侧页，恢复原来源行、滚动与合法配方草稿，并重验来源——原行已消失则回有效来源列表（不选别的行）。
+    /// </summary>
+    public void EndCraftLocate()
+    {
+        if (CraftLocateNode == null) return;
+        CraftLocateNode = null;
+        LocateFocusPending = null;
+        if (Panel == "craft") RestorePanel("craft");
+        Notify();
+    }
+
+    /// <summary>每次刷新前：定位层的资源卡已不在当前场景（换场、换区、失效）就回侧页并重验；面板已不是制作窗口则直接结束定位。</summary>
+    private void ReconcileCraftLocate()
+    {
+        if (CraftLocateNode is not string node) return;
+        if (!CraftSourcesOpen) { CraftLocateNode = null; LocateFocusPending = null; return; }
+        if (E.ResourceCardHere(S, node) != null) return;
+        CraftLocateNode = null;
+        LocateFocusPending = null;
+        RestorePanel("craft");
+    }
 
     /// <summary>该来源行有合法已知地点（已发现的地点）才可定位、悬停看地点详情；未知地点不泄露。</summary>
     public bool SourceLocatable(ItemSourceView v) =>
@@ -49,6 +120,8 @@ public sealed partial class GameSession
         if (State == null || Panel != "craft") return;
         PeekClear();
         CraftSourceItem = itemId;
+        CraftLocateNode = null;
+        CraftLocateMissed = false;
         CraftSourceKey = E.ItemSources(S, itemId).FirstOrDefault(v => v.Usable && SourceLocatable(v)) is { } first ? SourceKey(first) : null;
         Notify();
     }
@@ -58,6 +131,7 @@ public sealed partial class GameSession
     {
         if (!CraftSourcesOpen) return;
         CraftSourceKey = key;
+        CraftLocateMissed = false;
         Notify();
     }
 
@@ -75,6 +149,9 @@ public sealed partial class GameSession
     {
         CraftSourceItem = null;
         CraftSourceKey = null;
+        CraftLocateNode = null;   // B67（D22）：定位层随侧页结束
+        CraftLocateMissed = false;
+        LocateFocusPending = null;
     }
 
     /// <summary>

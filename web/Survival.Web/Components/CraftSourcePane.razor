@@ -40,11 +40,21 @@
             <div class="ms-title" data-pt="src-detail-title">@if (!string.IsNullOrEmpty(picked.Account)) { <span class="ms-acct"><AccountIcon Label="@picked.Account" />@picked.Account</span> }<b>@picked.Title</b></div>
             <div class="ms-detail">@picked.Detail</div>
             <div class="ms-status @(picked.Usable ? "" : "warn-text")">@picked.Status@(string.IsNullOrEmpty(picked.Route) ? "" : $" · {picked.Route}")</div>
+            @if (G.SourceLocalCard(picked))
+            {
+                @* B67（S05 D22、S14 D22-01）：能解析到当前地点、当前区里可见的真实资源卡（按资源点实例）才给本地定位；异地、未知来源不出 *@
+                <button type="button" class="secondary" data-pt="src-locate-here" @onclick="G.LocateCraftSourceHere">@GameEngine.SourceLocateHereText</button>
+            }
             @if (G.SourceLocatable(picked))
             {
                 @* Q592 A：只有合法已知地点才可定位；定位只打开地图并高亮，不移动、不拿物 *@
                 <button type="button" class="secondary" data-pt="src-locate" @onclick="G.LocateCraftSource">在地图上定位</button>
             }
+        }
+        @if (G.CraftLocateMissed)
+        {
+            @* B67（S05 D22、S14 D22-02）：按下时资源已失效——留在来源页，刷新该行并提示 *@
+            <div class="warn-text" data-pt="src-locate-miss" role="status">@GameEngine.SourceLocateFailText</div>
         }
     </div>
     <button type="button" class="secondary" data-pt="src-back" @onclick="G.CloseCraftSources">返回配方<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>

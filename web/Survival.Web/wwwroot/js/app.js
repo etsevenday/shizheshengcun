@@ -1164,6 +1164,17 @@ window.survivalPop = (function () {
       }
       setTimeout(go, 0);
     },
+    // B67（S14 D22）：来源定位层——把当前场景里的真实资源卡滚进可视区并给它焦点（不点它、不开操作窗）；卡还没画出来就等几帧
+    locateId: function (id) {
+      var tries = 0;
+      function go() {
+        var c = document.getElementById(id);
+        if (!c || (c.closest && c.closest('[inert]')) || !(c.offsetWidth || c.offsetHeight)) { if (++tries < 20) requestAnimationFrame(go); return; }
+        try { c.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch (e) { try { c.scrollIntoView(); } catch (e2) { } }
+        try { c.focus({ preventScroll: true }); } catch (e3) { try { c.focus(); } catch (e4) { } }
+      }
+      setTimeout(go, 0);
+    },
     // BM5b1（S14 Q604）：自动内容变化后的焦点修复——只在焦点已失效（落在页面本身或原元素已卸下）时才交给目标；仍有效的输入／阅读焦点不动
     focusIdIfLost: function (id) {
       var tries = 0;

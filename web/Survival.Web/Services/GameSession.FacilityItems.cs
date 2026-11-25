@@ -126,7 +126,8 @@ public sealed partial class GameSession
     /// 整备、成长盖四行（full-panel）；其余手工制作、安全屋、城市层盖①②③（tall-panel），沿原排版。
     /// </summary>
     public string PanelRowsClass =>
-        PassivePanelOpen ? "passive-panel"
+        CraftLocating ? ""   // B67（S14 D22）：来源定位层露出当前场景，四行回常态几何
+        : PassivePanelOpen ? "passive-panel"
         : Panel is "gear" or "growth" ? "full-panel"
         : Panel is "craft" or "safehouse" || CityBrowsing || (Panel == "city" && CityPanelTall) ? "tall-panel"
         : "";

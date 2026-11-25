@@ -62,7 +62,8 @@
         @{
             // 顶栏面板（地图/制作/休息/日志/目标/提示/对话记录/说明）只覆盖①②两行，③当前地面、④随身不动（S14 §18.1：
             // 导航面板不得重新分配四行高度）；手工制作仍能把地面卡拖进材料槽
-            var centerPanel = GameSession.IsTopPanel(G.Panel);
+            // B67（S14 D22）：来源定位层时制作窗口留在会话里但不画，①②露出当前场景（资源卡高亮）
+            var centerPanel = GameSession.IsTopPanel(G.Panel) && !G.CraftLocating;
             // B60（Q1038 C）：撤掉 B31b R55 一级面板开着时的底部窄条、B24→B35c 城市层右下角进度与 B31c Q324 局部盘开着时的窄条——中央行动进度一律居中浮窗
             // B31d（Q338）：居中局部盘开着时四轨加遮罩（点遮罩＝取消本盘）
             _diskMask = G.DiskMaskShown;
@@ -70,13 +71,20 @@
         @* 固定四行（S14 §18.1）：中部净高均分四份——①地图/场景 ②设施/资源 ③当前地面 ④随身；选卡、展开锅、悬停、开面板、对白、
            战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。战斗/面板只占①②合并区域；普通对白（BM5a）覆盖③④。 *@
         <section class="center @(G.CityBrowsing ? "city-open" : "")" aria-label="当前地点">
-            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @G.PanelRowsClass @(battleUi ? "battle" : "")">
+            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" && !G.CraftLocating ? "craft-panel" : "") @G.PanelRowsClass @(battleUi ? "battle" : "")">
                 <div class="rows2" data-row="1-2">
                     <div class="rows2-inner" inert="@(dlgLock || progInert)">
                         @* 全屏战斗时地块栏两行换成空白（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
                         @if (G.BattleFullscreen) { <div class="rows2-blank" aria-hidden="true"></div> }
                         else { <LocationStrip /> }
                     </div>
+                    @if (G.CraftLocating)
+                    {
+                        @* B67（S05 D22、S14 D22）：定位层沿来源页返回链提供「返回材料来源」（与 ESC 同效），回侧页并恢复原来源行与滚动 *@
+                        <div class="src-locate-bar" data-pt="src-locate-bar" inert="@(dlgLock || progInert)">
+                            <button type="button" class="secondary" data-pt="src-locate-back" @onclick="G.EndCraftLocate">@MapOverlay.BackToSources<EscCap On="@(G.EscOwner == EscOwner.Panel)" /></button>
+                        </div>
+                    }
                     @if (centerPanel)
                     {
                         <div class="panel-host" data-panel="@G.Panel" inert="@(dlgLock || progInert)">
@@ -317,6 +325,13 @@
             catch (JSException) { /* 旧缓存 app.js：只少了表现，结果照常 */ }
         }
         // B32g（逐字稿 §1.5 Q401 选 C）：新开的一级浏览／工具面板已收起原物品操作盘；盘卸下、遮罩解除后焦点交给新面板第一个可用控件
+        // B67（S14 D22）：来源定位层——滚到当前场景的真实资源卡并给它焦点（不点它、不开操作窗）
+        if (G.LocateFocusPending is string lid)
+        {
+            G.LocateFocusPending = null;
+            try { await JS.InvokeVoidAsync("survivalPop.locateId", lid); }
+            catch (JSException) { /* 旧缓存 app.js：只是不滚动聚焦，高亮照常 */ }
+        }
         // B45：关闭火堆加工菜单后焦点回原火堆卡（卡已失效则不动）
         if (G.FocusIdPending is string fid)
         {
