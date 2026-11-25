@@ -180,4 +180,61 @@ public class B67CraftFindTests : TestBase
         s.Resources["field_fiber"].Discovered = false;
         Assert.That(E.ResourceCardHere(s, "field_fiber"), Is.Null, "未发现不出卡");
     }
+
+    // ───────────── B67 变异测试补测（M1173） ─────────────
+
+    /// <summary>Q1042 A“去掉首尾空白…中间空格按字面”：只去首尾空白、中间空格原样保留；空输入（null）等于空搜索，恒命中。</summary>
+    [Test]
+    public void Q1042_Normalize_TrimEndsOnly_NullIsEmpty()
+    {
+        Assert.That(GameEngine.NormalizeCraftQuery("  草药 绷带 "), Is.EqualTo("草药 绷带"));
+        Assert.That(GameEngine.NormalizeCraftQuery(null), Is.EqualTo(""));
+        Assert.That(E.RecipeMatchesQuery(Rc("bandage"), null), Is.True, "空搜索沿该分类原列表");
+    }
+
+    /// <summary>
+    /// D25“关键词按公开配方名、实际公开产物名或该配方已公开的材料名匹配”：「净水」只出现在“滤芯处理脏水”的产物名（净水）里——
+    /// 配方名（滤芯处理脏水）和原料名（脏水、长效滤芯）都不含它，仍命中。配对：「黏土」不在该配方任一名字里，不命中。
+    /// </summary>
+    [Test]
+    public void D25_MatchByProductNameOnly()
+    {
+        var rc = Rc("ex_cartridge_water");
+        Assert.That(rc.Name, Does.Not.Contain("净水"));
+        Assert.That(E.RecipeMatchesQuery(rc, "净水"), Is.True);
+        Assert.That(E.RecipeMatchesQuery(rc, "黏土"), Is.False);
+    }
+
+    /// <summary>
+    /// D28“列出已公开的上一步配方和把它当原料的已公开后续工序”、Q1040-01“查不到符合条件的节点时不显示空入口”：
+    /// 黏土只有后续（陶窑的陶壳、建陶窑），草药绷带只有上一步（草药绷带配方）——两者都有「已知工艺」入口。
+    /// </summary>
+    [Test]
+    public void D28_OnlyPrevOrOnlyNext_StillHasEntry()
+    {
+        var s = New();
+        E.DebugLearnAllKnowledge(s);
+        Assert.That(E.CraftChainPrev(s, "clay"), Is.Empty);
+        Assert.That(E.CraftChainNext(s, "clay").Select(r => r.Id), Is.EqualTo(new[] { "ex_ceramic_shell", "build_kiln" }));
+        Assert.That(E.HasCraftChain(s, "clay"), Is.True, "只有后续");
+        Assert.That(E.CraftChainPrev(s, "bandage").Select(r => r.Id), Is.EqualTo(new[] { "bandage" }));
+        Assert.That(E.CraftChainNext(s, "bandage"), Is.Empty);
+        Assert.That(E.HasCraftChain(s, "bandage"), Is.True, "只有上一步");
+    }
+
+    /// <summary>
+    /// S05 D22“玩家当前实际地点及区域中可见、可查看的真实资源卡”：人在农野荒地屋外时荒地纤维丛是当前场景的卡；
+    /// 进到安全屋屋内（B17 屋内不显示资源卡）后，同一地点的这张卡不在当前场景，ResourceCardsHere 为空。
+    /// </summary>
+    [Test]
+    public void D22_InsideSafehouseZone_NoLocalCard_OutsideHas()
+    {
+        var s = New();
+        E.DebugTeleport(s, "field");
+        s.Resources["field_fiber"].Discovered = true;
+        Assert.That(E.ResourceCardHere(s, "field_fiber")?.NodeId, Is.EqualTo("field_fiber"), "配对：屋外有");
+        s.CurrentZone = GameState.SafehouseZone;
+        Assert.That(E.ResourceCardsHere(s), Is.Empty);
+        Assert.That(E.ResourceCardHere(s, "field_fiber"), Is.Null);
+    }
 }
