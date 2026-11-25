@@ -1,0 +1,30 @@
+{
+  "desc": "B36a 休息页键盘路线与右栏计划时长：键盘聚焦档位只换右栏（Q815「悬停、键盘聚焦」）、空格选中、确认键开始；结束后焦点不落开始键、落所选时长（Q1123 A）；本页右栏计划时长用小时、不出「30分钟」（Q897 A「仅休息页时长格、开始键／已选时长及本页右栏计划时长用小时，如0.5小时」）。来源：doc/开发记录/B36a 阅读与队伍页.md（B36a.1 范围 6，开发假设 8／9）",
+  "batch": "B36a",
+  "fixture": "new-game",
+  "steps": [
+    { "use": "continue" },
+    { "key": "r" },
+    { "eval": "(document.querySelector('[data-pt=rest-pick][data-kind=rest][data-min=\"30\"]').focus(), true)", "label": "键盘聚焦休息0.5小时" },
+    { "expect": "pt=pv-minutes", "textIs": "0.5小时", "label": "聚焦只换右栏预估" },
+    { "expect": "[data-pt=rest-pick].on", "absent": true, "label": "聚焦不选中" },
+    { "key": "Space", "label": "空格选中" },
+    { "expect": "[data-pt=rest-pick][data-kind=rest][data-min='30'].on" },
+    { "expect": "pt=rest-start", "disabled": false },
+    { "eval": "(a => a ? (a.getAttribute('data-pt') || a.className) : 'none')(document.activeElement)", "noAssert": true, "label": "（记录）选中后焦点" },
+    { "eval": "(document.querySelector('[data-pt=rest-start]').focus(), document.activeElement.getAttribute('data-pt'))", "equals": "rest-start" },
+    { "key": "Space", "label": "开始键上按空格开始", "checks": false },
+    { "waitGone": "[data-prog-lock]", "timeout": 60000 },
+    { "expect": ".rest-panel" },
+    { "expect": "[data-pt=rest-pick][data-kind=rest][data-min='30'].on", "label": "所选保留" },
+    { "eval": "/08:30/.test(document.querySelector('.sl-now').textContent)", "label": "确实休息了30分钟" },
+    { "wait": 600 },
+    { "eval": "(a => a ? (a.getAttribute('data-pt') || a.className) : 'none')(document.activeElement)", "noAssert": true, "label": "（记录）结束后焦点在哪" },
+    { "eval": "document.activeElement.matches('[data-pt=rest-pick].on')", "label": "Q1123 A：键盘开工，结束后焦点落所选时长、不在开始键" },
+    { "eval": "document.querySelector('.panel.detail [aria-pressed], .panel.detail .on')?.textContent.trim()", "noAssert": true, "label": "（记录）行动结束后右栏停在哪一页（B60a 起会切到「人物」）" },
+    { "click": ".panel.detail >> text==对象", "label": "右栏切回「对象」看本页预估" },
+    { "hover": [5, 700] },
+    { "expect": "pt=pv-minutes", "textIs": "0.5小时" },
+    { "expectNoText": "30分钟", "in": ".panel.detail", "label": "Q897 A：本页右栏计划时长用小时（右栏预估名不应写「休息30分钟」）" }
+  ]
+}

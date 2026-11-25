@@ -7,6 +7,9 @@
     { "use": "continue" },
     { "click": "text==人物", "label": "右栏人物页" },
     { "click": "[aria-label=展开成员]", "label": "展开「成员」组" },
+    { "expect": "pt=boxes", "absent": true, "label": "B36a（02 Q891 A）：本地三类箱默认收起" },
+    { "expect": "pt=boxes-toggle", "textIs": "查看认领箱", "label": "Q891 A 有合法箱才出「查看认领箱」" },
+    { "click": "pt=boxes-toggle", "label": "展开箱区（Q891 A）" },
     { "expect": "[data-remains-item] >> pt=row-discard" },
     { "expect": "[data-remains]", "count": 4, "label": "四种箱" },
 
@@ -26,6 +29,7 @@
     { "key": "l", "label": "打开行动日志" },
     { "key": "Escape" },
     { "expect": "pt=discard-sub", "absent": true },
+    { "expect": "pt=boxes", "label": "Q891 A：子窗（行动日志）返回后箱区保持展开" },
 
     { "note": "同伴随身：展开林昭的随身物品，第一行「丢弃水」是锅里的水（1000毫升）" },
     { "click": "text==随身物品 3/5" },
@@ -48,6 +52,8 @@
     { "use": "continue" },
     { "click": "text==人物" },
     { "click": "[aria-label=展开成员]", "optional": true, "timeout": 1000, "label": "折叠状态会记住，已展开就跳过" },
+    { "eval": "document.querySelector('[data-pt=boxes-toggle]')?.getAttribute('aria-expanded')", "noAssert": true, "label": "（记录）同一会话读档回同一地点时箱区是否仍展开（展开状态只在会话内存，按地点＋区域记）" },
+    { "click": "[data-pt=boxes-toggle][aria-expanded=false]", "optional": true, "timeout": 1000, "label": "箱区收着就展开" },
     { "expect": "[data-remains]", "count": 3 }
   ]
 }

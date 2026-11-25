@@ -5,13 +5,14 @@
   "steps": [
     {"use": "continue"},
     {"key": "h"},
-    {"click": ".help-topic >> text=物品、容器与负重"},
-    {"click": ".help-entry >> text=保质与腐败"},
+    {"click": "[data-pt=help-topic][data-topic=items]", "label": "左栏主题「物品、容器与负重」（B36a Q812 A 左右分栏）"},
+    {"click": "[data-pt=help-entry][data-entry=spoil]", "label": "左栏条目「保质与腐败」"},
     {"expectText": ["第一次实际受热时，这次投入的全部原料保质暂停", "受热保护中", "原来的保质时间过了也照常做熟", "保护就结束，从剩下的保质时间接着计时"], "in": ".help-body"},
     {"expectNoText": ["取出后立刻腐败", "取出即腐败", "已过原保质期"], "in": ".help-body"},
     {"shot": "help-spoil"},
-    {"click": "text=‹ 返回"},
-    {"click": ".help-entry >> text=锅、水与食材"},
+    {"click": "pt=help-back", "label": "正文「‹ 返回」回所属主题摘要（Q899 A）"},
+    {"expect": "pt=help-topic-summary"},
+    {"click": "[data-pt=help-entry][data-entry=pot]", "label": "左栏条目「锅、水与食材」"},
     {"expectText": ["清掉对应的加工进度并结束烹饪保护", "食材从剩下的保质时间接着计时", "取出失败（超重、卡位满）时什么都不变"], "in": ".help-body"},
     {"expectNoText": ["取出后立刻腐败", "取出即腐败"], "in": ".help-body"},
     {"shot": "help-pot"}
